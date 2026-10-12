@@ -44,3 +44,5 @@ Jedyny nieudany test baseline miał błędne oczekiwanie etykiety Review due; ak
 ## Odbiór lokalny
 
 Final independent LunaHigh acceptance **PASS** po samodzielnym odczycie pełnego logu, źródeł, referencji i wyników. Reviewer przeliczył wszystkie36median/p95, potwierdził baselinehash==HEAD oraz afterhash==current source,18exactpairs, niezmienione distinctpredicates i entrycounts. Brak pozostałych referencji usuniętych helperów. PERF-02 odebrane w wymaganym zakresie projekcji CPU; usunięte z kolejki. Source-package push/exactCI pozostają sprawdzeniem dostarczenia, osobno od nativeUI/pozostałychPERF/PERSIST/GO.
+
+Pakiet dostarczono na main jako `9e0f5691934fe80cc625ded8a88b240efe139bb1`. [Exact CI38282891666](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38282891666) oba jobs SUCCESS:2520total/2515PASS/0FAIL/5SKIP,contentcontracts3/3,generatednativePASS. Dwa dodatkowe testy obecne w lokalnym przebiegu należą do zachowanej, niewłączonej poprawki offline-account; exactCI weryfikuje wyłącznie dostarczony pakiet. Receipt nie wymaga metadata-only push; przenieść z następnym source-package.

@@ -1,5 +1,5 @@
 import { projectLearningEvidence } from "./learningPlan/learningEvidenceProjection";
-import { readLearningPlanInputSnapshot, type LearningPlanInputSnapshot } from "../storage/repositories/learningPlanInputSnapshot";
+import { readLearningPlanInputSnapshot, type LearningPlanInputSnapshot, type CompleteLearningPlanInputSnapshot } from "../storage/repositories/learningPlanInputSnapshot";
 import { calculatePaceForecast } from "../domain/learning/paceForecast";
 import {
   isIsoDate,
@@ -18,12 +18,6 @@ import {
 } from "../domain";
 import type { ResolvedContentRef } from "../domain/learning/resolvedContentRef";
 import type { PaceForecast, ImmutableCompletedFacts } from "../domain/learning/paceForecast";
-import {
-  getActiveTrainingSession,
-  getTrainingSessions,
-} from "../storage/repositories";
-import type { StorageRepositoryResult } from "../storage/repositories/result";
-import { isTrainingSessionArray } from "../storage/repositories/trainingModelGuards";
 import { canonicalSerialize } from "../domain/identity/canonicalSerialization";
 import { contentPackageRuntimeOwner, type ResolvedPackageRuntime } from "./contentPackageRuntimeOwner";
 import { requireGoalPolicy } from "../domain/tracks/trackGoalPolicies";
@@ -121,13 +115,8 @@ export type HomePlanReadInput = Readonly<{
   premiumAccess?: "allowed" | "denied" | "unavailable";
 }>;
 
-type Awaitable<T> = T | Promise<T>;
-type ReadCollection<T> = readonly T[] | StorageRepositoryResult<T[]>;
-
 export type HomePlanSnapshotReaderDependencies = Readonly<{
-  readInputs(trackId: TrackId, policy: ReturnType<typeof requireGoalPolicy>): LearningPlanInputSnapshot;
-  getActiveTrainingSession(): Awaitable<TrainingSession | null>;
-  getTrainingSessions(): Awaitable<ReadCollection<TrainingSession>>;
+  readInputs(trackId: TrackId, policy: ReturnType<typeof requireGoalPolicy>): CompleteLearningPlanInputSnapshot;
   resolveExactArtifact(identity: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ResolvedPackageRuntime>;
 }>;
 
@@ -143,8 +132,6 @@ type HomeReadGeneration = Readonly<{
 
 const defaultDependencies: HomePlanSnapshotReaderDependencies = {
   readInputs: (trackId) => readLearningPlanInputSnapshot(trackId, requireGoalPolicy(trackId), productionTrackAdmissionContext),
-  getActiveTrainingSession: () => getActiveTrainingSession(productionTrackAdmissionContext),
-  getTrainingSessions: async () => (await getTrainingSessions(productionTrackAdmissionContext)),
   resolveExactArtifact: (identity) => contentPackageRuntimeOwner.resolveExactArtifact(identity),
 };
 
@@ -173,8 +160,8 @@ export class HomePlanSnapshotReader {
     try {
       first = await this.readGeneration(input.trackId);
       second = await this.readGeneration(input.trackId);
-    } catch (error) {
-      return unavailable(input.trackId, error instanceof HomePlanReadFailure ? error.reason : "storage_error");
+    } catch {
+      return unavailable(input.trackId, "storage_error");
     }
     if (!generationsEqual(first, second)) return unavailable(input.trackId, "concurrent_change");
 
@@ -184,17 +171,10 @@ export class HomePlanSnapshotReader {
   private async readGeneration(trackId: TrackId): Promise<HomeReadGeneration> {
     const policy = requireGoalPolicy(trackId);
     const inputs = this.dependencies.readInputs(trackId, policy);
-    const [activeSession, sessionsRead] = await Promise.all([
-      this.dependencies.getActiveTrainingSession(), this.dependencies.getTrainingSessions(),
-    ]);
-    if (inputs.activeSession !== undefined && canonicalSerialize(inputs.activeSession ?? null) !== canonicalSerialize(activeSession ?? null)) {
-      throw new HomePlanReadFailure("concurrent_change", "Home active-session pointer changed during the canonical snapshot.");
-    }
-    if (!learningInputsEqual(inputs, this.dependencies.readInputs(trackId, policy))) throw new HomePlanReadFailure("concurrent_change", "Home inputs changed while reading sessions.");
     return Object.freeze({
       storageScope: inputs.storageScope, goal: inputs.goal, plan: inputs.plan,
-      activeSession: activeSession ?? null,
-      sessions: validateCollection(unwrapCollection(sessionsRead, "training sessions"), (value) => isTrainingSessionArray(value, productionTrackAdmissionContext), "training sessions"),
+      activeSession: inputs.activeSession,
+      sessions: inputs.sessions,
       attempts: inputs.attempts, reviews: inputs.reviews,
     });
   }
@@ -242,8 +222,8 @@ export class HomePlanSnapshotReader {
     try {
       const finalGeneration = await this.readGeneration(trackId);
       if (!generationsEqual(generation, finalGeneration)) return unavailable(trackId, "concurrent_change");
-    } catch (error) {
-      return unavailable(trackId, error instanceof HomePlanReadFailure ? error.reason : "storage_error");
+    } catch {
+      return unavailable(trackId, "storage_error");
     }
     if (!isResolvedPackageForPlan(resolved, plan)) return unavailable(trackId, "identity_mismatch");
 
@@ -415,29 +395,6 @@ export function selectRequiredCoverageAction(
 
 export async function readHomePlanSnapshot(input: HomePlanReadInput, dependencies?: HomePlanSnapshotReaderDependencies): Promise<HomePlanSnapshot> {
   return new HomePlanSnapshotReader(dependencies).read(input);
-}
-
-class HomePlanReadFailure extends Error {
-  constructor(readonly reason: HomePlanUnavailableReason, message: string) {
-    super(message);
-    this.name = "HomePlanReadFailure";
-  }
-}
-
-function unwrapCollection<T>(value: ReadCollection<T>, source: string): readonly T[] {
-  if (Array.isArray(value)) return Object.freeze([...value]);
-  if (!isRepositoryResult(value) || !Array.isArray(value.value)) throw new HomePlanReadFailure("storage_error", `${source} could not be read.`);
-  if (value.issues && value.issues.length > 0) throw new HomePlanReadFailure("storage_error", `${source} has read issues.`);
-  return Object.freeze([...value.value]);
-}
-
-function isRepositoryResult<T>(value: ReadCollection<T>): value is StorageRepositoryResult<T[]> {
-  return typeof value === "object" && value !== null && !Array.isArray(value) && (value as { ok?: unknown }).ok === true;
-}
-
-function validateCollection<T>(value: readonly T[], guard: (candidate: unknown) => candidate is T[], source: string): readonly T[] {
-  if (!guard(value)) throw new HomePlanReadFailure("corrupt_record", `${source} contains an invalid record.`);
-  return value;
 }
 
 function normalizeGoalSnapshot(value: GoalSnapshot, trackId: TrackId): GoalSnapshot {

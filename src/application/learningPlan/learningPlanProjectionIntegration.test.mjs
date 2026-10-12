@@ -35,12 +35,7 @@ function addAttempt(attempt) {
 function addReviews(entries) {
   return repositories.addReviewQueueItems(entries, productionTrackAdmissionContext);
 }
-function getActiveTrainingSession() {
-  return repositories.getActiveTrainingSession(productionTrackAdmissionContext);
-}
-function getTrainingSessions() {
-  return repositories.getTrainingSessions(productionTrackAdmissionContext);
-}
+
 const CONTENT = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? fileURLToPath(new URL('../../../../patternly-content/', import.meta.url)));
 const APP_ROOT = path.resolve(fileURLToPath(new URL('../../../', import.meta.url)));
 const { buildTrack, buildAll } = await import(pathToFileURL(path.join(CONTENT, 'scripts/build.mjs')).href);
@@ -88,7 +83,6 @@ test('Home rejects a goal change during exact package resolution instead of publ
   repositories.saveLearningPlanAtomically({ policy, plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
   const reader = new HomePlanSnapshotReader({
     readInputs: readPlanInputs,
-    getActiveTrainingSession, getTrainingSessions,
     resolveExactArtifact: async () => {
       await repositories.saveGoalSnapshot({ ...goal.record, targetDate: '2026-11-01' }, goal.revision, policy);
       return resolved;
@@ -134,7 +128,6 @@ async function learningFixture(resolved, install = true, goalOverrides = {}) {
   let now = '2026-10-02T12:00:00.000Z';
   const base = {
     readInputs: readPlanInputs,
-    getActiveTrainingSession, getTrainingSessions,
     resolveExactArtifact: async () => resolved,
   };
   const proposal = new LearningPlanProposalCoordinator({
@@ -693,8 +686,6 @@ test('P13: production lifecycle submit materializes one exact attempt into fresh
 
   const home = new HomePlanSnapshotReader({
     readInputs: readPlanInputs,
-    getActiveTrainingSession,
-    getTrainingSessions,
     resolveExactArtifact: identity => contentPackageRuntimeOwner.resolveExactArtifact(identity),
   });
   const snapshot = await home.read({ trackId, now: f.now });
@@ -736,8 +727,6 @@ test('P20: completed Free chapter remains complete while every required Premium 
 
   const home = new HomePlanSnapshotReader({
     readInputs: readPlanInputs,
-    getActiveTrainingSession,
-    getTrainingSessions,
     resolveExactArtifact: identity => contentPackageRuntimeOwner.resolveExactArtifact(identity),
   });
   const snapshot = await home.read({ trackId, now: f.now, premiumAccess: 'denied' });

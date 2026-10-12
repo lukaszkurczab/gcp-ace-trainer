@@ -1,0 +1,1323 @@
+{
+  "before": {
+    "schema": "patternly.home-plan-snapshot-measurement.v1",
+    "runtime": "v22.22.3",
+    "sourceSha256": "064aefbc3012452d33b05ebd33451dffc36151f782a5d83eea435ee80b45fd06",
+    "trackId": "coding-interview-dsa-problem-solving",
+    "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2",
+    "artifactSha256": "3271bba1a0ad518a365c69c62c610a6a69cb296ee4f453d3b55d06a5fcddede1",
+    "warmups": 1,
+    "samples": 7,
+    "results": [
+      {
+        "attempts": 100,
+        "reviews": 0,
+        "sessions": 10,
+        "hasPlan": false,
+        "active": false,
+        "inputSha256": "b336a4b70116165203e7fb093500c8311ee37f09d3b4bc3c3be18b79b4b4f6d1",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 14.898374999999987,
+        "p95Ms": 20.43966599999999,
+        "measurements": [
+          {
+            "elapsedMs": 19.52562499999999,
+            "reads": 1000,
+            "readCharacters": 669524
+          },
+          {
+            "elapsedMs": 13.93729099999996,
+            "reads": 1000,
+            "readCharacters": 669524
+          },
+          {
+            "elapsedMs": 16.977499999999964,
+            "reads": 1000,
+            "readCharacters": 669524
+          },
+          {
+            "elapsedMs": 12.345250000000078,
+            "reads": 1000,
+            "readCharacters": 669524
+          },
+          {
+            "elapsedMs": 14.898374999999987,
+            "reads": 1000,
+            "readCharacters": 669524
+          },
+          {
+            "elapsedMs": 13.120333999999957,
+            "reads": 1000,
+            "readCharacters": 669524
+          },
+          {
+            "elapsedMs": 20.43966599999999,
+            "reads": 1000,
+            "readCharacters": 669524
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 400,
+          "review": 0,
+          "session": 60,
+          "legacySessionArray": 20
+        }
+      },
+      {
+        "attempts": 100,
+        "reviews": 0,
+        "sessions": 10,
+        "hasPlan": false,
+        "active": true,
+        "inputSha256": "334ab9e52c818d3428e6ea513dfaeae6fd08e001205495480401d96cd7b9504e",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 12.971083000000135,
+        "p95Ms": 16.75395800000001,
+        "measurements": [
+          {
+            "elapsedMs": 16.75395800000001,
+            "reads": 1024,
+            "readCharacters": 730496
+          },
+          {
+            "elapsedMs": 13.282083000000057,
+            "reads": 1024,
+            "readCharacters": 730496
+          },
+          {
+            "elapsedMs": 12.861541999999872,
+            "reads": 1024,
+            "readCharacters": 730496
+          },
+          {
+            "elapsedMs": 12.843916000000036,
+            "reads": 1024,
+            "readCharacters": 730496
+          },
+          {
+            "elapsedMs": 14.139124999999922,
+            "reads": 1024,
+            "readCharacters": 730496
+          },
+          {
+            "elapsedMs": 12.971083000000135,
+            "reads": 1024,
+            "readCharacters": 730496
+          },
+          {
+            "elapsedMs": 12.927834000000075,
+            "reads": 1024,
+            "readCharacters": 730496
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 400,
+          "review": 0,
+          "session": 72,
+          "legacySessionArray": 22
+        }
+      },
+      {
+        "attempts": 100,
+        "reviews": 0,
+        "sessions": 10,
+        "hasPlan": true,
+        "active": false,
+        "inputSha256": "869800acb36f37bcd618cc812ce1f75ef89c4d6eb6916c720b8743b149a899fc",
+        "outputSha256": "25adbc544cee8cd7c808d38f82bf4d9255cb139033ff00ba8026bb977b9c2a0b",
+        "medianMs": 38.32945800000016,
+        "p95Ms": 38.810917000000245,
+        "measurements": [
+          {
+            "elapsedMs": 37.92599999999993,
+            "reads": 1738,
+            "readCharacters": 1162599
+          },
+          {
+            "elapsedMs": 37.17762499999981,
+            "reads": 1738,
+            "readCharacters": 1162599
+          },
+          {
+            "elapsedMs": 38.32945800000016,
+            "reads": 1738,
+            "readCharacters": 1162599
+          },
+          {
+            "elapsedMs": 38.6411250000001,
+            "reads": 1738,
+            "readCharacters": 1162599
+          },
+          {
+            "elapsedMs": 37.35779099999991,
+            "reads": 1738,
+            "readCharacters": 1162599
+          },
+          {
+            "elapsedMs": 38.48000000000002,
+            "reads": 1738,
+            "readCharacters": 1162599
+          },
+          {
+            "elapsedMs": 38.810917000000245,
+            "reads": 1738,
+            "readCharacters": 1162599
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 700,
+          "review": 0,
+          "session": 100,
+          "legacySessionArray": 30
+        }
+      },
+      {
+        "attempts": 100,
+        "reviews": 0,
+        "sessions": 10,
+        "hasPlan": true,
+        "active": true,
+        "inputSha256": "cd4920b6c8174228b903a4952845b95d487605a7a1e456f2099a9affcab96d96",
+        "outputSha256": "abaa9cf7ed3005eb0ff0e24c7bc690d2d12b9fc18c3793d2f2aff4810288c774",
+        "medianMs": 42.31725000000006,
+        "p95Ms": 47.3941249999998,
+        "measurements": [
+          {
+            "elapsedMs": 47.3941249999998,
+            "reads": 1778,
+            "readCharacters": 1264219
+          },
+          {
+            "elapsedMs": 45.408792000000176,
+            "reads": 1778,
+            "readCharacters": 1264219
+          },
+          {
+            "elapsedMs": 41.65833299999986,
+            "reads": 1778,
+            "readCharacters": 1264219
+          },
+          {
+            "elapsedMs": 38.948249999999916,
+            "reads": 1778,
+            "readCharacters": 1264219
+          },
+          {
+            "elapsedMs": 42.31725000000006,
+            "reads": 1778,
+            "readCharacters": 1264219
+          },
+          {
+            "elapsedMs": 40.09658300000001,
+            "reads": 1778,
+            "readCharacters": 1264219
+          },
+          {
+            "elapsedMs": 44.16266600000017,
+            "reads": 1778,
+            "readCharacters": 1264219
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 700,
+          "review": 0,
+          "session": 120,
+          "legacySessionArray": 33
+        }
+      },
+      {
+        "attempts": 1000,
+        "reviews": 100,
+        "sessions": 100,
+        "hasPlan": false,
+        "active": false,
+        "inputSha256": "45f567ac508f8f3f30efbf4bedaa2d8acf32cbb996833b933e2a2e3390e8917e",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 170.4715839999999,
+        "p95Ms": 177.9670000000001,
+        "measurements": [
+          {
+            "elapsedMs": 170.72362500000008,
+            "reads": 10080,
+            "readCharacters": 6995528
+          },
+          {
+            "elapsedMs": 169.94012500000008,
+            "reads": 10080,
+            "readCharacters": 6995528
+          },
+          {
+            "elapsedMs": 171.44620799999984,
+            "reads": 10080,
+            "readCharacters": 6995528
+          },
+          {
+            "elapsedMs": 170.4715839999999,
+            "reads": 10080,
+            "readCharacters": 6995528
+          },
+          {
+            "elapsedMs": 169.98324999999977,
+            "reads": 10080,
+            "readCharacters": 6995528
+          },
+          {
+            "elapsedMs": 170.35550000000012,
+            "reads": 10080,
+            "readCharacters": 6995528
+          },
+          {
+            "elapsedMs": 177.9670000000001,
+            "reads": 10080,
+            "readCharacters": 6995528
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 4000,
+          "review": 400,
+          "session": 600,
+          "legacySessionArray": 200
+        }
+      },
+      {
+        "attempts": 1000,
+        "reviews": 100,
+        "sessions": 100,
+        "hasPlan": false,
+        "active": true,
+        "inputSha256": "0dbbfeffebdbc729c70f0fcc30b7073908baef7c2325c779545ce28cc690886c",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 170.94858399999976,
+        "p95Ms": 178.04416700000002,
+        "measurements": [
+          {
+            "elapsedMs": 170.41949999999997,
+            "reads": 10104,
+            "readCharacters": 7056500
+          },
+          {
+            "elapsedMs": 170.46437499999956,
+            "reads": 10104,
+            "readCharacters": 7056500
+          },
+          {
+            "elapsedMs": 171.83300000000054,
+            "reads": 10104,
+            "readCharacters": 7056500
+          },
+          {
+            "elapsedMs": 170.94858399999976,
+            "reads": 10104,
+            "readCharacters": 7056500
+          },
+          {
+            "elapsedMs": 178.04416700000002,
+            "reads": 10104,
+            "readCharacters": 7056500
+          },
+          {
+            "elapsedMs": 173.42599999999948,
+            "reads": 10104,
+            "readCharacters": 7056500
+          },
+          {
+            "elapsedMs": 170.20258300000023,
+            "reads": 10104,
+            "readCharacters": 7056500
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 4000,
+          "review": 400,
+          "session": 612,
+          "legacySessionArray": 202
+        }
+      },
+      {
+        "attempts": 1000,
+        "reviews": 100,
+        "sessions": 100,
+        "hasPlan": true,
+        "active": false,
+        "inputSha256": "89158ace87661b75f40d8cae9fcb8904ca1c877260eba6fa8c6335282e7d12dd",
+        "outputSha256": "76645be04a25d1de860a1d3d95025b00aa4c7555b3d1130aa1681933da141088",
+        "medianMs": 449.7107500000002,
+        "p95Ms": 568.5313750000005,
+        "measurements": [
+          {
+            "elapsedMs": 454.59858299999996,
+            "reads": 17538,
+            "readCharacters": 12053466
+          },
+          {
+            "elapsedMs": 487.1677499999996,
+            "reads": 17538,
+            "readCharacters": 12053466
+          },
+          {
+            "elapsedMs": 441.7419580000005,
+            "reads": 17538,
+            "readCharacters": 12053466
+          },
+          {
+            "elapsedMs": 438.4735419999997,
+            "reads": 17538,
+            "readCharacters": 12053466
+          },
+          {
+            "elapsedMs": 449.7107500000002,
+            "reads": 17538,
+            "readCharacters": 12053466
+          },
+          {
+            "elapsedMs": 568.5313750000005,
+            "reads": 17538,
+            "readCharacters": 12053466
+          },
+          {
+            "elapsedMs": 448.209499999999,
+            "reads": 17538,
+            "readCharacters": 12053466
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 7000,
+          "review": 700,
+          "session": 1000,
+          "legacySessionArray": 300
+        }
+      },
+      {
+        "attempts": 1000,
+        "reviews": 100,
+        "sessions": 100,
+        "hasPlan": true,
+        "active": true,
+        "inputSha256": "567744f3d17a476d42178ecb07f79ead2b21452da493a2fc988f42b092ec2d00",
+        "outputSha256": "fd978084f264f212f56637942232630d313ccdfee5bbb66bae9ddf3cf936491e",
+        "medianMs": 485.89666699999907,
+        "p95Ms": 536.7128329999996,
+        "measurements": [
+          {
+            "elapsedMs": 460.8665409999994,
+            "reads": 17578,
+            "readCharacters": 12155086
+          },
+          {
+            "elapsedMs": 514.8486249999987,
+            "reads": 17578,
+            "readCharacters": 12155086
+          },
+          {
+            "elapsedMs": 536.7128329999996,
+            "reads": 17578,
+            "readCharacters": 12155086
+          },
+          {
+            "elapsedMs": 490.04179100000147,
+            "reads": 17578,
+            "readCharacters": 12155086
+          },
+          {
+            "elapsedMs": 460.2789580000008,
+            "reads": 17578,
+            "readCharacters": 12155086
+          },
+          {
+            "elapsedMs": 450.5699170000007,
+            "reads": 17578,
+            "readCharacters": 12155086
+          },
+          {
+            "elapsedMs": 485.89666699999907,
+            "reads": 17578,
+            "readCharacters": 12155086
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 7000,
+          "review": 700,
+          "session": 1020,
+          "legacySessionArray": 303
+        }
+      },
+      {
+        "attempts": 10000,
+        "reviews": 1000,
+        "sessions": 1000,
+        "hasPlan": false,
+        "active": false,
+        "inputSha256": "459de5ccf72b76473982fb3f5bdd939d38113e96a79a003542fbdd9e703f1a29",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 6753.4519169999985,
+        "p95Ms": 7055.617374999998,
+        "measurements": [
+          {
+            "elapsedMs": 6393.266792000002,
+            "reads": 100080,
+            "readCharacters": 70804866
+          },
+          {
+            "elapsedMs": 7055.617374999998,
+            "reads": 100080,
+            "readCharacters": 70804866
+          },
+          {
+            "elapsedMs": 6779.732625000004,
+            "reads": 100080,
+            "readCharacters": 70804866
+          },
+          {
+            "elapsedMs": 6526.595833000007,
+            "reads": 100080,
+            "readCharacters": 70804866
+          },
+          {
+            "elapsedMs": 6863.010792000001,
+            "reads": 100080,
+            "readCharacters": 70804866
+          },
+          {
+            "elapsedMs": 6753.4519169999985,
+            "reads": 100080,
+            "readCharacters": 70804866
+          },
+          {
+            "elapsedMs": 6581.940749999994,
+            "reads": 100080,
+            "readCharacters": 70804866
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 40000,
+          "review": 4000,
+          "session": 6000,
+          "legacySessionArray": 2000
+        }
+      },
+      {
+        "attempts": 10000,
+        "reviews": 1000,
+        "sessions": 1000,
+        "hasPlan": false,
+        "active": true,
+        "inputSha256": "54ee94f9805a0a002907ffb169601e82682aaaaddbd3a0d3d9cc255e374b632b",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 6740.441917000018,
+        "p95Ms": 6887.067582999996,
+        "measurements": [
+          {
+            "elapsedMs": 6788.293624999991,
+            "reads": 100104,
+            "readCharacters": 70865838
+          },
+          {
+            "elapsedMs": 6733.312624999991,
+            "reads": 100104,
+            "readCharacters": 70865838
+          },
+          {
+            "elapsedMs": 6421.7720830000035,
+            "reads": 100104,
+            "readCharacters": 70865838
+          },
+          {
+            "elapsedMs": 6825.356333000003,
+            "reads": 100104,
+            "readCharacters": 70865838
+          },
+          {
+            "elapsedMs": 6563.502458000003,
+            "reads": 100104,
+            "readCharacters": 70865838
+          },
+          {
+            "elapsedMs": 6887.067582999996,
+            "reads": 100104,
+            "readCharacters": 70865838
+          },
+          {
+            "elapsedMs": 6740.441917000018,
+            "reads": 100104,
+            "readCharacters": 70865838
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 40000,
+          "review": 4000,
+          "session": 6012,
+          "legacySessionArray": 2002
+        }
+      },
+      {
+        "attempts": 10000,
+        "reviews": 1000,
+        "sessions": 1000,
+        "hasPlan": true,
+        "active": false,
+        "inputSha256": "9c62b1d353cf68a8119ea9517e80afd73f641ab9c4efdae374f6144bbff347d5",
+        "outputSha256": "0e3d906427c59357edd1ce400e39fefb4ce2e71984ed8e28003bf799e6d136a6",
+        "medianMs": 13141.64633400002,
+        "p95Ms": 13249.274166999996,
+        "measurements": [
+          {
+            "elapsedMs": 13194.14624999999,
+            "reads": 174138,
+            "readCharacters": 121895004
+          },
+          {
+            "elapsedMs": 13249.274166999996,
+            "reads": 174138,
+            "readCharacters": 121895004
+          },
+          {
+            "elapsedMs": 12908.361334000016,
+            "reads": 174138,
+            "readCharacters": 121895004
+          },
+          {
+            "elapsedMs": 12873.253375,
+            "reads": 174138,
+            "readCharacters": 121895004
+          },
+          {
+            "elapsedMs": 13050.640542000008,
+            "reads": 174138,
+            "readCharacters": 121895004
+          },
+          {
+            "elapsedMs": 13143.578666000016,
+            "reads": 174138,
+            "readCharacters": 121895004
+          },
+          {
+            "elapsedMs": 13141.64633400002,
+            "reads": 174138,
+            "readCharacters": 121895004
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 70000,
+          "review": 7000,
+          "session": 10000,
+          "legacySessionArray": 3000
+        }
+      },
+      {
+        "attempts": 10000,
+        "reviews": 1000,
+        "sessions": 1000,
+        "hasPlan": true,
+        "active": true,
+        "inputSha256": "b498be02399489bd6f90cf537b87ec1f5880b3c46bce5d9666447bad5aef66a2",
+        "outputSha256": "19fd39214f4ebfbec89bedff458004b80a3afff5159ca67bbaa02581cb510c8c",
+        "medianMs": 12858.299332999974,
+        "p95Ms": 13199.608416000032,
+        "measurements": [
+          {
+            "elapsedMs": 12728.041957999987,
+            "reads": 174178,
+            "readCharacters": 121996624
+          },
+          {
+            "elapsedMs": 12759.464584000001,
+            "reads": 174178,
+            "readCharacters": 121996624
+          },
+          {
+            "elapsedMs": 12941.310125000018,
+            "reads": 174178,
+            "readCharacters": 121996624
+          },
+          {
+            "elapsedMs": 13199.608416000032,
+            "reads": 174178,
+            "readCharacters": 121996624
+          },
+          {
+            "elapsedMs": 12721.317417000013,
+            "reads": 174178,
+            "readCharacters": 121996624
+          },
+          {
+            "elapsedMs": 12858.299332999974,
+            "reads": 174178,
+            "readCharacters": 121996624
+          },
+          {
+            "elapsedMs": 12921.597834000015,
+            "reads": 174178,
+            "readCharacters": 121996624
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 70000,
+          "review": 7000,
+          "session": 10020,
+          "legacySessionArray": 3003
+        }
+      }
+    ]
+  },
+  "after": {
+    "schema": "patternly.home-plan-snapshot-measurement.v1",
+    "runtime": "v22.22.3",
+    "sourceSha256": "9a2dd1b0c5981c5323c1250631ffa074a1a01143ffd3720fe52a1df7f13ca2f8",
+    "trackId": "coding-interview-dsa-problem-solving",
+    "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2",
+    "artifactSha256": "3271bba1a0ad518a365c69c62c610a6a69cb296ee4f453d3b55d06a5fcddede1",
+    "warmups": 1,
+    "samples": 7,
+    "results": [
+      {
+        "attempts": 100,
+        "reviews": 0,
+        "sessions": 10,
+        "hasPlan": false,
+        "active": false,
+        "inputSha256": "b336a4b70116165203e7fb093500c8311ee37f09d3b4bc3c3be18b79b4b4f6d1",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 9.805207999999993,
+        "p95Ms": 12.67924999999991,
+        "measurements": [
+          {
+            "elapsedMs": 12.67924999999991,
+            "reads": 476,
+            "readCharacters": 294702
+          },
+          {
+            "elapsedMs": 12.128333000000111,
+            "reads": 476,
+            "readCharacters": 294702
+          },
+          {
+            "elapsedMs": 11.706042000000025,
+            "reads": 476,
+            "readCharacters": 294702
+          },
+          {
+            "elapsedMs": 9.805207999999993,
+            "reads": 476,
+            "readCharacters": 294702
+          },
+          {
+            "elapsedMs": 7.6847499999998945,
+            "reads": 476,
+            "readCharacters": 294702
+          },
+          {
+            "elapsedMs": 7.501541999999972,
+            "reads": 476,
+            "readCharacters": 294702
+          },
+          {
+            "elapsedMs": 7.6189580000000205,
+            "reads": 476,
+            "readCharacters": 294702
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 200,
+          "review": 0,
+          "session": 20,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 100,
+        "reviews": 0,
+        "sessions": 10,
+        "hasPlan": false,
+        "active": true,
+        "inputSha256": "334ab9e52c818d3428e6ea513dfaeae6fd08e001205495480401d96cd7b9504e",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 7.862957999999708,
+        "p95Ms": 11.379249999999956,
+        "measurements": [
+          {
+            "elapsedMs": 7.976749999999811,
+            "reads": 484,
+            "readCharacters": 315026
+          },
+          {
+            "elapsedMs": 11.379249999999956,
+            "reads": 484,
+            "readCharacters": 315026
+          },
+          {
+            "elapsedMs": 8.515083000000232,
+            "reads": 484,
+            "readCharacters": 315026
+          },
+          {
+            "elapsedMs": 7.5808750000001055,
+            "reads": 484,
+            "readCharacters": 315026
+          },
+          {
+            "elapsedMs": 7.777207999999973,
+            "reads": 484,
+            "readCharacters": 315026
+          },
+          {
+            "elapsedMs": 7.862957999999708,
+            "reads": 484,
+            "readCharacters": 315026
+          },
+          {
+            "elapsedMs": 7.708166999999776,
+            "reads": 484,
+            "readCharacters": 315026
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 200,
+          "review": 0,
+          "session": 24,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 100,
+        "reviews": 0,
+        "sessions": 10,
+        "hasPlan": true,
+        "active": false,
+        "inputSha256": "869800acb36f37bcd618cc812ce1f75ef89c4d6eb6916c720b8743b149a899fc",
+        "outputSha256": "25adbc544cee8cd7c808d38f82bf4d9255cb139033ff00ba8026bb977b9c2a0b",
+        "medianMs": 41.46558300000015,
+        "p95Ms": 60.740208999999595,
+        "measurements": [
+          {
+            "elapsedMs": 41.515292000000045,
+            "reads": 952,
+            "readCharacters": 595668
+          },
+          {
+            "elapsedMs": 42.46241700000019,
+            "reads": 952,
+            "readCharacters": 595668
+          },
+          {
+            "elapsedMs": 38.636165999999776,
+            "reads": 952,
+            "readCharacters": 595668
+          },
+          {
+            "elapsedMs": 40.422207999999955,
+            "reads": 952,
+            "readCharacters": 595668
+          },
+          {
+            "elapsedMs": 41.46558300000015,
+            "reads": 952,
+            "readCharacters": 595668
+          },
+          {
+            "elapsedMs": 60.740208999999595,
+            "reads": 952,
+            "readCharacters": 595668
+          },
+          {
+            "elapsedMs": 39.010833000000275,
+            "reads": 952,
+            "readCharacters": 595668
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 400,
+          "review": 0,
+          "session": 40,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 100,
+        "reviews": 0,
+        "sessions": 10,
+        "hasPlan": true,
+        "active": true,
+        "inputSha256": "cd4920b6c8174228b903a4952845b95d487605a7a1e456f2099a9affcab96d96",
+        "outputSha256": "abaa9cf7ed3005eb0ff0e24c7bc690d2d12b9fc18c3793d2f2aff4810288c774",
+        "medianMs": 39.991791999999805,
+        "p95Ms": 45.14066700000012,
+        "measurements": [
+          {
+            "elapsedMs": 42.79466599999978,
+            "reads": 968,
+            "readCharacters": 636316
+          },
+          {
+            "elapsedMs": 38.56458299999986,
+            "reads": 968,
+            "readCharacters": 636316
+          },
+          {
+            "elapsedMs": 38.520458999999846,
+            "reads": 968,
+            "readCharacters": 636316
+          },
+          {
+            "elapsedMs": 39.73783300000014,
+            "reads": 968,
+            "readCharacters": 636316
+          },
+          {
+            "elapsedMs": 39.991791999999805,
+            "reads": 968,
+            "readCharacters": 636316
+          },
+          {
+            "elapsedMs": 45.14066700000012,
+            "reads": 968,
+            "readCharacters": 636316
+          },
+          {
+            "elapsedMs": 43.66650000000027,
+            "reads": 968,
+            "readCharacters": 636316
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 400,
+          "review": 0,
+          "session": 48,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 1000,
+        "reviews": 100,
+        "sessions": 100,
+        "hasPlan": false,
+        "active": false,
+        "inputSha256": "45f567ac508f8f3f30efbf4bedaa2d8acf32cbb996833b933e2a2e3390e8917e",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 106.18204100000003,
+        "p95Ms": 116.08341599999994,
+        "measurements": [
+          {
+            "elapsedMs": 106.18204100000003,
+            "reads": 4836,
+            "readCharacters": 3098424
+          },
+          {
+            "elapsedMs": 105.12379199999987,
+            "reads": 4836,
+            "readCharacters": 3098424
+          },
+          {
+            "elapsedMs": 103.71995800000013,
+            "reads": 4836,
+            "readCharacters": 3098424
+          },
+          {
+            "elapsedMs": 107.00179100000014,
+            "reads": 4836,
+            "readCharacters": 3098424
+          },
+          {
+            "elapsedMs": 101.63250000000016,
+            "reads": 4836,
+            "readCharacters": 3098424
+          },
+          {
+            "elapsedMs": 110.79166600000008,
+            "reads": 4836,
+            "readCharacters": 3098424
+          },
+          {
+            "elapsedMs": 116.08341599999994,
+            "reads": 4836,
+            "readCharacters": 3098424
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 2000,
+          "review": 200,
+          "session": 200,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 1000,
+        "reviews": 100,
+        "sessions": 100,
+        "hasPlan": false,
+        "active": true,
+        "inputSha256": "0dbbfeffebdbc729c70f0fcc30b7073908baef7c2325c779545ce28cc690886c",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 146.25541599999997,
+        "p95Ms": 155.73462500000005,
+        "measurements": [
+          {
+            "elapsedMs": 153.40312499999982,
+            "reads": 4844,
+            "readCharacters": 3118748
+          },
+          {
+            "elapsedMs": 133.45174999999927,
+            "reads": 4844,
+            "readCharacters": 3118748
+          },
+          {
+            "elapsedMs": 140.30304199999955,
+            "reads": 4844,
+            "readCharacters": 3118748
+          },
+          {
+            "elapsedMs": 139.5283329999993,
+            "reads": 4844,
+            "readCharacters": 3118748
+          },
+          {
+            "elapsedMs": 146.5595000000003,
+            "reads": 4844,
+            "readCharacters": 3118748
+          },
+          {
+            "elapsedMs": 146.25541599999997,
+            "reads": 4844,
+            "readCharacters": 3118748
+          },
+          {
+            "elapsedMs": 155.73462500000005,
+            "reads": 4844,
+            "readCharacters": 3118748
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 2000,
+          "review": 200,
+          "session": 204,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 1000,
+        "reviews": 100,
+        "sessions": 100,
+        "hasPlan": true,
+        "active": false,
+        "inputSha256": "89158ace87661b75f40d8cae9fcb8904ca1c877260eba6fa8c6335282e7d12dd",
+        "outputSha256": "76645be04a25d1de860a1d3d95025b00aa4c7555b3d1130aa1681933da141088",
+        "medianMs": 490.45424999999886,
+        "p95Ms": 524.6172499999993,
+        "measurements": [
+          {
+            "elapsedMs": 524.6172499999993,
+            "reads": 9672,
+            "readCharacters": 6203112
+          },
+          {
+            "elapsedMs": 464.99341600000025,
+            "reads": 9672,
+            "readCharacters": 6203112
+          },
+          {
+            "elapsedMs": 507.55774999999994,
+            "reads": 9672,
+            "readCharacters": 6203112
+          },
+          {
+            "elapsedMs": 508.9687920000006,
+            "reads": 9672,
+            "readCharacters": 6203112
+          },
+          {
+            "elapsedMs": 490.45424999999886,
+            "reads": 9672,
+            "readCharacters": 6203112
+          },
+          {
+            "elapsedMs": 484.2122500000005,
+            "reads": 9672,
+            "readCharacters": 6203112
+          },
+          {
+            "elapsedMs": 488.8692910000009,
+            "reads": 9672,
+            "readCharacters": 6203112
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 4000,
+          "review": 400,
+          "session": 400,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 1000,
+        "reviews": 100,
+        "sessions": 100,
+        "hasPlan": true,
+        "active": true,
+        "inputSha256": "567744f3d17a476d42178ecb07f79ead2b21452da493a2fc988f42b092ec2d00",
+        "outputSha256": "fd978084f264f212f56637942232630d313ccdfee5bbb66bae9ddf3cf936491e",
+        "medianMs": 484.4808329999996,
+        "p95Ms": 544.195667,
+        "measurements": [
+          {
+            "elapsedMs": 476.5247500000005,
+            "reads": 9688,
+            "readCharacters": 6243760
+          },
+          {
+            "elapsedMs": 491.2247499999994,
+            "reads": 9688,
+            "readCharacters": 6243760
+          },
+          {
+            "elapsedMs": 484.4808329999996,
+            "reads": 9688,
+            "readCharacters": 6243760
+          },
+          {
+            "elapsedMs": 463.3207080000011,
+            "reads": 9688,
+            "readCharacters": 6243760
+          },
+          {
+            "elapsedMs": 459.8199999999997,
+            "reads": 9688,
+            "readCharacters": 6243760
+          },
+          {
+            "elapsedMs": 509.10641699999906,
+            "reads": 9688,
+            "readCharacters": 6243760
+          },
+          {
+            "elapsedMs": 544.195667,
+            "reads": 9688,
+            "readCharacters": 6243760
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 4000,
+          "review": 400,
+          "session": 408,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 10000,
+        "reviews": 1000,
+        "sessions": 1000,
+        "hasPlan": false,
+        "active": false,
+        "inputSha256": "459de5ccf72b76473982fb3f5bdd939d38113e96a79a003542fbdd9e703f1a29",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 3158.149041000004,
+        "p95Ms": 4229.759083000001,
+        "measurements": [
+          {
+            "elapsedMs": 4229.759083000001,
+            "reads": 48036,
+            "readCharacters": 31353486
+          },
+          {
+            "elapsedMs": 3541.639041999999,
+            "reads": 48036,
+            "readCharacters": 31353486
+          },
+          {
+            "elapsedMs": 3123.670417000001,
+            "reads": 48036,
+            "readCharacters": 31353486
+          },
+          {
+            "elapsedMs": 3158.149041000004,
+            "reads": 48036,
+            "readCharacters": 31353486
+          },
+          {
+            "elapsedMs": 3496.992124999997,
+            "reads": 48036,
+            "readCharacters": 31353486
+          },
+          {
+            "elapsedMs": 3134.588917000001,
+            "reads": 48036,
+            "readCharacters": 31353486
+          },
+          {
+            "elapsedMs": 3048.8195420000047,
+            "reads": 48036,
+            "readCharacters": 31353486
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 20000,
+          "review": 2000,
+          "session": 2000,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 10000,
+        "reviews": 1000,
+        "sessions": 1000,
+        "hasPlan": false,
+        "active": true,
+        "inputSha256": "54ee94f9805a0a002907ffb169601e82682aaaaddbd3a0d3d9cc255e374b632b",
+        "outputSha256": "72a58cc342446801f0c9048c65d2bc543713938dda7b246fabaad887af288d4d",
+        "medianMs": 3262.8010000000068,
+        "p95Ms": 3560.5450830000045,
+        "measurements": [
+          {
+            "elapsedMs": 3265.58312499999,
+            "reads": 48044,
+            "readCharacters": 31373810
+          },
+          {
+            "elapsedMs": 3268.9925000000076,
+            "reads": 48044,
+            "readCharacters": 31373810
+          },
+          {
+            "elapsedMs": 3087.328791000007,
+            "reads": 48044,
+            "readCharacters": 31373810
+          },
+          {
+            "elapsedMs": 3262.8010000000068,
+            "reads": 48044,
+            "readCharacters": 31373810
+          },
+          {
+            "elapsedMs": 3560.5450830000045,
+            "reads": 48044,
+            "readCharacters": 31373810
+          },
+          {
+            "elapsedMs": 3002.3736659999995,
+            "reads": 48044,
+            "readCharacters": 31373810
+          },
+          {
+            "elapsedMs": 2987.9273749999993,
+            "reads": 48044,
+            "readCharacters": 31373810
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 20000,
+          "review": 2000,
+          "session": 2004,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 10000,
+        "reviews": 1000,
+        "sessions": 1000,
+        "hasPlan": true,
+        "active": false,
+        "inputSha256": "9c62b1d353cf68a8119ea9517e80afd73f641ab9c4efdae374f6144bbff347d5",
+        "outputSha256": "0e3d906427c59357edd1ce400e39fefb4ce2e71984ed8e28003bf799e6d136a6",
+        "medianMs": 8022.548791999987,
+        "p95Ms": 12120.681582999998,
+        "measurements": [
+          {
+            "elapsedMs": 8651.807291999998,
+            "reads": 96072,
+            "readCharacters": 62713236
+          },
+          {
+            "elapsedMs": 8369.213333000007,
+            "reads": 96072,
+            "readCharacters": 62713236
+          },
+          {
+            "elapsedMs": 8017.965333,
+            "reads": 96072,
+            "readCharacters": 62713236
+          },
+          {
+            "elapsedMs": 7845.4437920000055,
+            "reads": 96072,
+            "readCharacters": 62713236
+          },
+          {
+            "elapsedMs": 8022.548791999987,
+            "reads": 96072,
+            "readCharacters": 62713236
+          },
+          {
+            "elapsedMs": 7998.513458000001,
+            "reads": 96072,
+            "readCharacters": 62713236
+          },
+          {
+            "elapsedMs": 12120.681582999998,
+            "reads": 96072,
+            "readCharacters": 62713236
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 40000,
+          "review": 4000,
+          "session": 4000,
+          "legacySessionArray": 0
+        }
+      },
+      {
+        "attempts": 10000,
+        "reviews": 1000,
+        "sessions": 1000,
+        "hasPlan": true,
+        "active": true,
+        "inputSha256": "b498be02399489bd6f90cf537b87ec1f5880b3c46bce5d9666447bad5aef66a2",
+        "outputSha256": "19fd39214f4ebfbec89bedff458004b80a3afff5159ca67bbaa02581cb510c8c",
+        "medianMs": 7908.3267909999995,
+        "p95Ms": 8192.980833000009,
+        "measurements": [
+          {
+            "elapsedMs": 7908.3267909999995,
+            "reads": 96088,
+            "readCharacters": 62753884
+          },
+          {
+            "elapsedMs": 8013.183124999981,
+            "reads": 96088,
+            "readCharacters": 62753884
+          },
+          {
+            "elapsedMs": 7857.108790999977,
+            "reads": 96088,
+            "readCharacters": 62753884
+          },
+          {
+            "elapsedMs": 7653.027208000014,
+            "reads": 96088,
+            "readCharacters": 62753884
+          },
+          {
+            "elapsedMs": 8017.565292000014,
+            "reads": 96088,
+            "readCharacters": 62753884
+          },
+          {
+            "elapsedMs": 7893.568083999999,
+            "reads": 96088,
+            "readCharacters": 62753884
+          },
+          {
+            "elapsedMs": 8192.980833000009,
+            "reads": 96088,
+            "readCharacters": 62753884
+          }
+        ],
+        "derivedEvidenceRecordGuardPasses": {
+          "attempt": 40000,
+          "review": 4000,
+          "session": 4008,
+          "legacySessionArray": 0
+        }
+      }
+    ]
+  },
+  "guardMetricMethod": "Source-derived successful evidence-record guard calls in canonical readers, plus removed legacy session-array scans. Excludes index/envelope/pointer-string guards and nested domain/projection guards; not directly instrumented."
+}

@@ -23,6 +23,12 @@ export type LearningPlanInputSnapshot = Readonly<{
   activeSession?: TrainingSession | null;
 }>;
 
+/** Complete canonical facts required by Home; optional proposal inputs keep their separate contract. */
+export type CompleteLearningPlanInputSnapshot = LearningPlanInputSnapshot & Readonly<{
+  sessions: readonly TrainingSession[];
+  activeSession: TrainingSession | null;
+}>;
+
 /** Opaque published lease: callers may compare it, never read raw storage. */
 export function readLearningPlanStorageScope(): object {
   if (isProfileTransitionActive()) throw new Error("Learning plan storage is transitioning.");
@@ -30,7 +36,7 @@ export function readLearningPlanStorageScope(): object {
 }
 
 /** No await between validated canonical reads; journaled materialization is not an empty history. */
-export function readLearningPlanInputSnapshot(trackId: TrackId | null, policy: GoalPolicy | null, admission: TrackAdmissionContext): LearningPlanInputSnapshot {
+export function readLearningPlanInputSnapshot(trackId: TrackId | null, policy: GoalPolicy | null, admission: TrackAdmissionContext): CompleteLearningPlanInputSnapshot {
   if ((trackId === null) !== (policy === null) || (trackId !== null && policy !== null && !isGoalPolicyForTrack(policy, trackId))) throw new Error("A matching goal policy is required for the selected track.");
   const storageScope = readLearningPlanStorageScope();
   if (hasPendingMutationJournal()) throw new Error("Learning plan evidence is being materialized.");
