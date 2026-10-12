@@ -204,12 +204,6 @@ export function buildProgressTabModel(input: BuildProgressTabModelInput): Progre
   return Object.freeze({ ...model, weeklyActivity: projectWeeklySessionActivity(input.activityRecords, { trackId: input.activeTrackId, now, timezone }) });
 }
 
-type PackageProgressItem = Readonly<{
-  domain?: unknown;
-  id: string;
-  taxonomy?: Readonly<{ roadmapNodeId?: unknown }>;
-}>;
-
 function buildInstalledPackageProgressTabModel(
   trackId: TrackDisplay["id"],
   trainingAttempts: readonly TrainingAttempt[],
@@ -218,34 +212,27 @@ function buildInstalledPackageProgressTabModel(
   now: string,
 ): ProgressEvidenceModel {
   const packageResolution = contentPackageRuntimeOwner.getPreparedDiscovery(trackId);
-  const packageItems = packageResolution.track.questions.map((question) => ({ id: question.questionId, taxonomy: { roadmapNodeId: question.nodeId } })) as readonly PackageProgressItem[];
-  const packageItemIds = new Set(packageItems.map((item) => item.id));
+  const itemById = new Map(packageResolution.track.questions.map((question) => [question.questionId, question]));
   const currentAttempts = trainingAttempts.filter((attempt) =>
     attempt.trackId === trackId &&
     attempt.item.trackId === trackId &&
     attempt.item.contentVersion === packageResolution.track.contentVersion &&
     attempt.item.artifactSha256 === packageResolution.track.artifactSha256 &&
-    packageItemIds.has(attempt.item.questionId),
+    itemById.has(attempt.item.questionId),
   );
   const currentReviews = reviewQueueItems.filter((entry) =>
     entry.trackId === trackId &&
     entry.sourceItem.trackId === trackId &&
     entry.sourceItem.contentVersion === packageResolution.track.contentVersion &&
     entry.sourceItem.artifactSha256 === packageResolution.track.artifactSha256 &&
-    packageItemIds.has(entry.sourceItem.questionId),
+    itemById.has(entry.sourceItem.questionId),
   );
   const dueReviewCount = currentReviews.filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt <= now).length;
   const manualReviewCount = currentReviews.filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt > now && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined).length;
   const scores = new Map<string, { correct: number; earned: number; max: number; total: number }>();
 
   for (const attempt of currentAttempts) {
-    const item = packageItems.find((candidate) => candidate.id === attempt.item.questionId);
-    const firstNodeId = packageItems[0]?.taxonomy?.roadmapNodeId;
-    const nodeId = typeof item?.domain === "string"
-      ? item.domain
-      : typeof item?.taxonomy?.roadmapNodeId === "string"
-        ? item.taxonomy.roadmapNodeId
-        : typeof firstNodeId === "string" ? firstNodeId : "unknown";
+    const nodeId = itemById.get(attempt.item.questionId)!.nodeId;
     const score = scores.get(nodeId) ?? { correct: 0, earned: 0, max: 0, total: 0 };
     scores.set(nodeId, {
       correct: score.correct + (attempt.result.kind === "correct" ? 1 : 0),
@@ -351,7 +338,8 @@ function buildAlgorithmsProgressTabModel(
 ): ProgressEvidenceModel {
   const packageResolution = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID);
   const packageItems = packageResolution.track.questions;
-  const facts = buildCanonicalProgressFacts(packageItems, trainingAttempts, reviewQueueItems, now, packageResolution.track.contentVersion, packageResolution.track.artifactSha256);
+  const itemById = new Map(packageItems.map((question) => [question.questionId, question]));
+  const facts = buildCanonicalProgressFacts(packageItems, itemById, trainingAttempts, reviewQueueItems, now, packageResolution.track.contentVersion, packageResolution.track.artifactSha256);
   const algorithmsReviewItems = reviewQueueItems.filter((item) =>
     item.trackId === CODING_INTERVIEW_TRACK_ID &&
     item.sourceItem.trackId === CODING_INTERVIEW_TRACK_ID &&
@@ -366,12 +354,12 @@ function buildAlgorithmsProgressTabModel(
     attempt.item.trackId === CODING_INTERVIEW_TRACK_ID &&
     attempt.item.contentVersion === packageResolution.track.contentVersion &&
     attempt.item.artifactSha256 === packageResolution.track.artifactSha256 &&
-    packageItems.some((item) => item.questionId === attempt.item.questionId),
+    itemById.has(attempt.item.questionId),
   );
   const algorithmsProgress = buildAlgorithmsProgressScreenModel({
     dueReviewItems,
     facts,
-    packageItems,
+    itemById,
     trainingAttempts: currentAttempts,
   });
 
@@ -429,26 +417,31 @@ type CanonicalProgressFacts = {
 
 function buildCanonicalProgressFacts(
   questions: readonly TrainingQuestionSummary[],
+  itemById: ReadonlyMap<string, TrainingQuestionSummary>,
   attempts: readonly TrainingAttempt[],
   reviews: readonly ReviewQueueEntry[],
   now: string,
   contentVersion: string,
   artifactSha256: string,
 ): CanonicalProgressFacts {
-  const questionIds = new Set(questions.map((question) => question.questionId));
-  const current = attempts.filter((attempt) => attempt.trackId === CODING_INTERVIEW_TRACK_ID && attempt.item.contentVersion === contentVersion && attempt.item.artifactSha256 === artifactSha256 && questionIds.has(attempt.item.questionId));
-  const latest = new Map<string, TrainingAttempt>();
-  for (const attempt of current.sort((a, b) => a.answeredAt.localeCompare(b.answeredAt) || a.id.localeCompare(b.id))) latest.set(attempt.item.questionId, attempt);
+  const current = attempts.filter((attempt) => attempt.trackId === CODING_INTERVIEW_TRACK_ID && attempt.item.contentVersion === contentVersion && attempt.item.artifactSha256 === artifactSha256 && itemById.has(attempt.item.questionId));
+  const practicedIds = new Set(current.map((attempt) => attempt.item.questionId));
+  const dueByNode = new Map<string, number>();
+  for (const review of reviews) {
+    if (!isActiveReviewQueueEntry(review) || review.dueAt === undefined || review.dueAt > now || review.sourceItem.artifactSha256 !== artifactSha256) continue;
+    const nodeId = itemById.get(review.sourceItem.questionId)?.nodeId;
+    if (nodeId !== undefined) dueByNode.set(nodeId, (dueByNode.get(nodeId) ?? 0) + 1);
+  }
   const byNode = new Map<string, TrainingQuestionSummary[]>();
   for (const question of questions) (byNode.get(question.nodeId) ?? (byNode.set(question.nodeId, []), byNode.get(question.nodeId)!)).push(question);
   const nodeProgress = [...byNode].map(([nodeId, nodeQuestions]) => {
-    const practiced = nodeQuestions.filter((question) => latest.has(question.questionId)).length;
-    const due = reviews.filter((review) => isActiveReviewQueueEntry(review) && review.dueAt !== undefined && review.dueAt <= now && review.sourceItem.artifactSha256 === artifactSha256 && nodeQuestions.some((question) => question.questionId === review.sourceItem.questionId)).length;
+    const practiced = nodeQuestions.filter((question) => practicedIds.has(question.questionId)).length;
+    const due = dueByNode.get(nodeId) ?? 0;
     const status: CanonicalNodeProgress["status"] = due > 0 ? "review_due" : practiced > 0 ? "practicing" : "not_started";
     return { uniquePracticedItemCount: practiced, itemCount: nodeQuestions.length, label: nodeId, nodeId, status, itemCoveragePercent: nodeQuestions.length ? Math.round(practiced / nodeQuestions.length * 100) : 0, sampledCoreSkillAtomCount: 0, coreSkillAtomCount: 0, dueReviewCount: due, remediationDueCount: due, criticalRemediationDueCount: 0 };
   });
   const active = nodeProgress.find((node) => node.uniquePracticedItemCount > 0) ?? nodeProgress[0] ?? { nodeId: "", label: "", itemCount: 0 };
-  return { activeRoadmapNode: { id: active.nodeId, label: active.label }, contentVersion, correctCount: current.filter((a) => a.result.kind === "correct").length, incorrectCount: current.filter((a) => a.result.kind === "incorrect").length, partialCount: current.filter((a) => a.result.kind === "partial").length, itemsCompleted: latest.size, roadmapNodesStarted: nodeProgress.filter((node) => node.uniquePracticedItemCount > 0).length, nodeProgress };
+  return { activeRoadmapNode: { id: active.nodeId, label: active.label }, contentVersion, correctCount: current.filter((a) => a.result.kind === "correct").length, incorrectCount: current.filter((a) => a.result.kind === "incorrect").length, partialCount: current.filter((a) => a.result.kind === "partial").length, itemsCompleted: practicedIds.size, roadmapNodesStarted: nodeProgress.filter((node) => node.uniquePracticedItemCount > 0).length, nodeProgress };
 }
 
 function buildActivityItems(
@@ -499,7 +492,7 @@ function getAlgorithmsRemediationState(input: {
 function buildAlgorithmsProgressScreenModel(input: {
   dueReviewItems: readonly ReviewQueueEntry[];
   facts: CanonicalProgressFacts;
-  packageItems: readonly TrainingQuestionSummary[];
+  itemById: ReadonlyMap<string, TrainingQuestionSummary>;
   trainingAttempts: readonly TrainingAttempt[];
 }): AlgorithmsProgressScreenModel {
   const activeIndex = input.facts.nodeProgress.findIndex(
@@ -557,7 +550,7 @@ function buildAlgorithmsProgressScreenModel(input: {
     ...buildAlgorithmEvidenceModel({
       facts: input.facts,
       focusNode,
-      packageItems: input.packageItems,
+      itemById: input.itemById,
       trainingAttempts: input.trainingAttempts,
     }),
     diagnostics: {
@@ -589,16 +582,18 @@ const ALGORITHM_TREND_POINT_COUNT = 4;
 function buildAlgorithmEvidenceModel(input: {
   facts: CanonicalProgressFacts;
   focusNode: CanonicalProgressFacts["nodeProgress"][number];
-  packageItems: readonly TrainingQuestionSummary[];
+  itemById: ReadonlyMap<string, TrainingQuestionSummary>;
   trainingAttempts: readonly TrainingAttempt[];
 }): Pick<AlgorithmsProgressScreenModel, "effectivenessTrend" | "evidenceSummary" | "trackNodes"> {
-  const attemptsByNode = groupScoredAlgorithmAttemptsByNode(input.trainingAttempts, input.packageItems);
+  const scoredAttempts = sortAttemptsChronologically(input.trainingAttempts).filter((attempt) =>
+    attempt.result.maxPoints > 0 && Boolean(input.itemById.get(attempt.item.questionId)?.nodeId),
+  );
+  const attemptsByNode = groupOrderedAlgorithmAttemptsByNode(scoredAttempts, input.itemById);
   const focusAttempts = attemptsByNode.get(input.focusNode.nodeId) ?? [];
-  const focusWindow = takeLatestAttempts(focusAttempts, ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
+  const focusWindow = focusAttempts.slice(-ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
   const focusState = getEvidenceState(focusAttempts.length, ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
   const focusPercent = focusState === "established" ? calculateEffectiveness(focusWindow) : undefined;
-  const scoredAttempts = sortAttemptsChronologically([...attemptsByNode.values()].flat());
-  const trendWindow = takeLatestAttempts(scoredAttempts, ALGORITHM_TREND_WINDOW);
+  const trendWindow = scoredAttempts.slice(-ALGORITHM_TREND_WINDOW);
   const trendAvailable = scoredAttempts.length >= ALGORITHM_TREND_MIN_RESPONSES;
 
   return {
@@ -634,7 +629,7 @@ function buildAlgorithmEvidenceModel(input: {
     trackNodes: input.facts.nodeProgress.map((node) => {
       const nodeAttempts = attemptsByNode.get(node.nodeId) ?? [];
       const nodeState = getEvidenceState(nodeAttempts.length, ALGORITHM_NODE_EFFECTIVENESS_MIN_RESPONSES);
-      const nodeWindow = takeLatestAttempts(nodeAttempts, ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
+      const nodeWindow = nodeAttempts.slice(-ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
       const effectivenessPercent = nodeState === "established" ? calculateEffectiveness(nodeWindow) : undefined;
       return {
         detail: formatTrackNodeEvidence(nodeState, nodeAttempts.length, effectivenessPercent, nodeWindow.length),
@@ -649,15 +644,13 @@ function buildAlgorithmEvidenceModel(input: {
   };
 }
 
-function groupScoredAlgorithmAttemptsByNode(
+function groupOrderedAlgorithmAttemptsByNode(
   attempts: readonly TrainingAttempt[],
-  packageItems: readonly TrainingQuestionSummary[],
+  itemById: ReadonlyMap<string, TrainingQuestionSummary>,
 ): Map<string, TrainingAttempt[]> {
-  const itemById = new Map(packageItems.map((item) => [item.questionId, item]));
   const attemptsByNode = new Map<string, TrainingAttempt[]>();
 
-  for (const attempt of sortAttemptsChronologically(attempts)) {
-    if (attempt.result.maxPoints <= 0) continue;
+  for (const attempt of attempts) {
     const nodeId = itemById.get(attempt.item.questionId)?.nodeId;
     if (!nodeId) continue;
     const nodeAttempts = attemptsByNode.get(nodeId) ?? [];
@@ -672,10 +665,6 @@ function sortAttemptsChronologically(attempts: readonly TrainingAttempt[]): Trai
   return [...attempts].sort((left, right) =>
     left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id),
   );
-}
-
-function takeLatestAttempts(attempts: readonly TrainingAttempt[], count: number): TrainingAttempt[] {
-  return sortAttemptsChronologically(attempts).slice(-count);
 }
 
 function getEvidenceState(
