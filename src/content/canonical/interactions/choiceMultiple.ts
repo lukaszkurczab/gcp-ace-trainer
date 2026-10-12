@@ -85,4 +85,3 @@ export function choiceDiagnostics(question: ChoiceMultipleQuestion, response: un
   const selected = new Set(response.optionIds), expected = new Set(question.answer.optionIds);
   return Object.freeze(question.interaction.options.map(({ optionId }) => Object.freeze({ id: optionId, state: selected.has(optionId) ? expected.has(optionId) ? "correct" as const : "incorrect" as const : expected.has(optionId) ? "omitted_correct" as const : "neutral" as const })));
 }
-

@@ -7,4 +7,3 @@ export function isDenseArray(value: readonly unknown[]): boolean { for (let inde
 export function canonicalEvaluation(question: Readonly<{ feedback: CanonicalFeedback }>, _response: unknown, complete: boolean, result: AttemptResult | null, diagnostics: unknown, feedback: CanonicalFeedback | null = complete ? question.feedback : null): InteractionEvaluation {
   return Object.freeze({ complete, result, diagnostics, feedback });
 }
-

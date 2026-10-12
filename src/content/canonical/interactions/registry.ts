@@ -107,4 +107,3 @@ export const canonicalInteractionRegistry = createCanonicalInteractionRegistry([
   complexityHandler,
   decisionMatrixHandler,
 ]);
-

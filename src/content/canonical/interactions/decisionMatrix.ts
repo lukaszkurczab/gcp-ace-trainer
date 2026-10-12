@@ -68,4 +68,3 @@ export const decisionMatrixHandler: InteractionHandler<DecisionMatrixQuestion> =
     return canonicalEvaluation(question, response, complete, complete ? scoreDecisionMatrixResponse(question, response) : null, diagnostics, feedback);
   },
 });
-

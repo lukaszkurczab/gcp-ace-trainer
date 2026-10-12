@@ -83,4 +83,3 @@ export function choiceDiagnostics(question: ChoiceSingleQuestion, response: unkn
     state: optionId === selected ? optionId === question.answer.optionId ? "correct" as const : "incorrect" as const : optionId === question.answer.optionId ? "omitted_correct" as const : "neutral" as const,
   })));
 }
-

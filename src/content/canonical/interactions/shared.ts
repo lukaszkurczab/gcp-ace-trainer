@@ -74,4 +74,3 @@ export type InteractionHandler<Q = unknown> = Readonly<{
   score(question: Q, response: unknown): AttemptResult;
   evaluate(question: Q, response: unknown): InteractionEvaluation;
 }>;
-

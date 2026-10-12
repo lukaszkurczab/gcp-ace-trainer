@@ -92,4 +92,3 @@ export const orderingHandler: InteractionHandler<OrderingQuestion> = Object.free
     return canonicalEvaluation(question, response, complete, complete ? scoreOrderingResponse(question, response) : null, diagnostics, feedback);
   },
 });
-

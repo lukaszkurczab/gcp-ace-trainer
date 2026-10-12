@@ -47,4 +47,3 @@ export function exactCanonicalQuestionRef(catalog: TrainingCatalog, questionId: 
   if (!question || question.trackId !== catalog.trackId) throw new Error("Selected canonical question is unavailable in the exact catalog.");
   return createResolvedContentRef({ trackId: catalog.trackId, questionId: question.questionId, contentVersion: catalog.contentVersion, artifactSha256: catalog.artifactSha256 });
 }
-

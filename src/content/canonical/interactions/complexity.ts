@@ -153,4 +153,3 @@ export function scoreDimensions<T extends Readonly<{ dimensionId: string; values
   }
   return createAttemptResult({ kind: earnedPoints === dimensions.length ? "correct" : earnedPoints > 0 ? "partial" : "incorrect", earnedPoints, maxPoints: dimensions.length });
 }
-
