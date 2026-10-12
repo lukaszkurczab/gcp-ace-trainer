@@ -1,3 +1,4 @@
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -242,6 +243,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       };
     }, [shellReload]),
   );
+
+  useEffect(() => {
+    if (hasLoadedActiveTrack && !shellReadError) markStartup("home_data_commit");
+  }, [hasLoadedActiveTrack, shellReadError]);
 
   useEffect(() => {
     const unavailable = homeResumeContext?.unavailable;

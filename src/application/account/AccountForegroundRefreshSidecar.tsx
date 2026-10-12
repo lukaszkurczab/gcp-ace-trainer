@@ -1,3 +1,4 @@
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { useEffect, useRef } from "react";
 import { AppState, type AppStateStatus } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
@@ -93,6 +94,7 @@ export function AccountForegroundRefreshSidecar() {
     });
     let previousState: AppStateStatus = AppState.currentState;
     const subscription = AppState.addEventListener("change", (nextState) => {
+      markStartup(`app:${nextState}`);
       const returnedToForeground = previousState !== "active" && nextState === "active";
       previousState = nextState;
       if (!returnedToForeground) return;

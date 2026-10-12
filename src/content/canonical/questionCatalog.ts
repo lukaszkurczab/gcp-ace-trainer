@@ -1,3 +1,4 @@
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 import type { ContentArtifactMetadata } from "../contracts";
 import type { CanonicalArtifact, CanonicalContentLockRecord, CanonicalProductSimulationProfile, Question } from "./questionTypes";
@@ -23,12 +24,24 @@ export type Sha256Utf8 = (canonicalUtf8: string) => Promise<string>;
 
 export async function createCanonicalQuestionCatalog(value: unknown, lock: CanonicalContentLockRecord, expectedTrackId: string, sha256Utf8: Sha256Utf8, interactionRegistry: CanonicalInteractionRegistry = canonicalInteractionRegistry): Promise<CanonicalQuestionCatalog> {
   // Structural validation intentionally precedes the sole integrity boundary below.
-  const artifact: CanonicalArtifact = validateCanonicalArtifact(value, lock, expectedTrackId, interactionRegistry);
-  const actualSha256 = await sha256Utf8(JSON.stringify(artifact));
+  markStartup("artifact_validate", "begin");
+  let artifact: CanonicalArtifact;
+  try { artifact = validateCanonicalArtifact(value, lock, expectedTrackId, interactionRegistry); }
+  finally { markStartup("artifact_validate", "end"); }
+  markStartup("artifact_stringify", "begin");
+  let serialized: string;
+  try { serialized = JSON.stringify(artifact); }
+  finally { markStartup("artifact_stringify", "end"); }
+  markStartup("artifact_hash", "begin");
+  let actualSha256: string;
+  try { actualSha256 = await sha256Utf8(serialized); }
+  finally { markStartup("artifact_hash", "end"); }
   if (actualSha256 !== lock.sha256) throw new Error(`Canonical artifact ${expectedTrackId} SHA-256 does not match its lock record.`);
+  markStartup("artifact_index", "begin");
   const byQuestion = new Map(artifact.questions.map((question) => [question.questionId, question]));
   const byNode = group(artifact.questions, (question) => question.nodeId);
   const byMentalUnit = group(artifact.questions, (question) => question.mentalUnitId);
+  markStartup("artifact_index", "end");
   const artifactMetadata: ContentArtifactMetadata = Object.freeze({ artifactSha256: lock.sha256, contentVersion: artifact.contentVersion, contentReleaseId: "canonical-content-v1" });
   return Object.freeze({ trackId: artifact.trackId, contentVersion: artifact.contentVersion, artifactSha256: lock.sha256, questions: artifact.questions, ...(artifact.completionRule ? { completionRule: artifact.completionRule } : {}), ...(artifact.simulationProfiles ? { simulationProfiles: artifact.simulationProfiles } : {}), ...(artifact.planningPolicy ? { planningPolicy: artifact.planningPolicy as LearningPlanningPolicy } : {}), artifactMetadata, getQuestionById: (id) => byQuestion.get(id), getQuestionsByNodeId: (id) => byNode.get(id) ?? Object.freeze([]), getQuestionsByMentalUnitId: (id) => byMentalUnit.get(id) ?? Object.freeze([]) });
 }

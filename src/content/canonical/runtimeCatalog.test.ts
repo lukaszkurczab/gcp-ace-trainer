@@ -61,6 +61,47 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and exa
   assert.equal(catalog.getTrack("aws-certified-solutions-architect-associate").simulationProfiles, undefined);
 });
 
+test("all nine predecessor projections preserve exact deep-copy bytes and leave source JSON unchanged", async () => {
+  const sources = [aws, backend, claude, coding, frontend, gcp, az104, ai901, objectDesign];
+  const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value), "utf8").digest("hex");
+  const before = sources.map((source) => ({
+    root: fingerprint(source), questions: source.questions, nested: fingerprint(source.questions),
+    schemaVersion: source.schemaVersion, contentVersion: source.contentVersion, planningPolicy: source.planningPolicy,
+  }));
+  const reconstructed: string[] = [];
+  const catalog = await buildCanonicalRuntimeCatalog({
+    artifacts: sources, locks: lockFile.tracks, successorLedger,
+    sha256Utf8: async (serialized) => {
+      const input = JSON.parse(serialized) as { trackId: string; schemaVersion: string };
+      const source = sources.find((candidate) => candidate.trackId === input.trackId)!;
+      const entry = successorLedger.tracks.find((candidate) => candidate.trackId === input.trackId)!;
+      if (input.schemaVersion === "patternly-content-artifact-v1") {
+        // Independent reference for the old algorithm; production only edits the root.
+        const reference = structuredClone(source) as unknown as Record<string, unknown>;
+        delete reference.planningPolicy;
+        reference.schemaVersion = "patternly-content-artifact-v1";
+        reference.contentVersion = entry.training.contentVersion;
+        assert.equal(serialized, JSON.stringify(reference));
+        reconstructed.push(input.trackId);
+      } else {
+        assert.equal(serialized, JSON.stringify(source));
+      }
+      return createHash("sha256").update(serialized, "utf8").digest("hex");
+    },
+  });
+  assert.deepEqual(reconstructed, sources.map((source) => source.trackId));
+  for (const [index, source] of sources.entries()) {
+    assert.equal(fingerprint(source), before[index]!.root);
+    assert.equal(source.questions, before[index]!.questions);
+    assert.equal(fingerprint(source.questions), before[index]!.nested);
+    assert.equal(source.schemaVersion, before[index]!.schemaVersion);
+    assert.equal(source.contentVersion, before[index]!.contentVersion);
+    assert.equal(source.planningPolicy, before[index]!.planningPolicy);
+    assert.equal(catalog.getTrack(source.trackId).trainingIdentity?.artifactSha256,
+      successorLedger.tracks.find((entry) => entry.trackId === source.trackId)!.training.artifactSha256);
+  }
+});
+
 test("runtime refuses a successor ledger that no longer reconstructs the exact training artifact", async () => {
   const altered = structuredClone(successorLedger) as unknown as { tracks: Array<{ training: { artifactSha256: string } }> };
   altered.tracks[0]!.training.artifactSha256 = "0".repeat(64);

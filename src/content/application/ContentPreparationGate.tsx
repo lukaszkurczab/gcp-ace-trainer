@@ -1,3 +1,4 @@
+import { beginStartupSpan, markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -108,12 +109,17 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
   }, []);
 
   useEffect(() => {
+    if (state.kind === "ready" || state.kind === "home_ready_resume_unavailable") markStartup("content_ready_commit");
+  }, [state.kind]);
+
+  useEffect(() => {
     if (state.kind === "home_ready_resume_unavailable" && !state.actorFence.isCurrent()) {
       setState({ kind: "ready" });
     }
   }, [account.state, state]);
 
   useEffect(() => {
+    const endGateTrace = beginStartupSpan("content_gate");
     let live = true;
     let settled = false;
     const bootstrapProgress = createBootstrapProgressObserver();
@@ -125,6 +131,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
     exactMissingActorAnchor.current = null;
 
     const setPhase = (phase: ContentPreparationPhase) => {
+      markStartup(phase);
       currentPhase = phase;
       if (live && !settled) setState({ kind: "loading", phase });
     };
@@ -132,6 +139,8 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
     const complete = (nextState: ContentPreparationState) => {
       if (!live || settled) return;
       settled = true;
+      markStartup(nextState.kind);
+      endGateTrace();
       if (timeoutId !== undefined) clearTimeout(timeoutId);
       setState(nextState);
       if (nextState.kind === "ready" && auditResetAwaitingBootstrap.current) {
@@ -156,8 +165,12 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
         () => {
           setPhase("verifying-content");
           return (async () => {
-            await contentPackageRuntimeOwner.verifyBundledPackages();
-            await contentPackageRuntimeOwner.verifyInstalledPackages();
+            const endBundledTrace = beginStartupSpan("bundled_materialization");
+            try { await contentPackageRuntimeOwner.verifyBundledPackages(); }
+            finally { endBundledTrace(); }
+            const endInstalledTrace = beginStartupSpan("installed_inventory");
+            try { await contentPackageRuntimeOwner.verifyInstalledPackages(); }
+            finally { endInstalledTrace(); }
           })();
         },
         async () => {
@@ -228,6 +241,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
     return () => {
       live = false;
       settled = true;
+      endGateTrace();
       bootstrapProgress.dispose();
       if (timeoutId !== undefined) clearTimeout(timeoutId);
     };

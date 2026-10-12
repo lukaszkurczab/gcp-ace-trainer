@@ -1,3 +1,4 @@
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
 import { ExactContentArtifactUnavailableError, TrainingApplicationFailure, type ExactArtifactIdentity } from "../trainingLifecycle/contracts";
 import type { TrainingSession } from "../../domain";
@@ -73,6 +74,7 @@ export async function bootstrapApplication(
     const instrumentedRepositoryDependencies: CanonicalRepositoryBootstrapDependencies = {
       ...repositoryDependencies,
       onStep: (step) => {
+        markStartup(`repository:${step}`);
         currentRepositoryStep = step;
         try { repositoryDependencies?.onStep?.(step); } catch { /* diagnostic observers are best-effort */ }
       },

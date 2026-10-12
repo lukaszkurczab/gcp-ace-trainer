@@ -1,3 +1,4 @@
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 import aws from "../generated/canonical-content/aws-certified-solutions-architect-associate.json";
 import backend from "../generated/canonical-content/backend-system-design-interview.json";
@@ -82,46 +83,61 @@ export async function buildCanonicalRuntimeCatalog(dependencies: CanonicalRuntim
 }
 
 async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}): Promise<CanonicalRuntimeCatalog> {
-  const sourceArtifacts = dependencies.artifacts ?? artifacts;
-  const sourceLocks = new Map((dependencies.locks ?? [...locks.values()]).map((entry) => [entry.trackId, entry]));
-  const sha256 = dependencies.sha256Utf8 ?? contentHasher.sha256;
-  const interactionRegistry = dependencies.interactionRegistry ?? canonicalInteractionRegistry;
-  const successorLedger = dependencies.successorLedger ?? (dependencies.artifacts === undefined ? successorLedgerFile : undefined);
-  if (successorLedger !== undefined) assertValidContentSuccessorLedger(successorLedger);
-  const catalogs: CanonicalQuestionCatalog[] = [];
-  for (const artifact of sourceArtifacts) {
-    if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || typeof (artifact as Record<string, unknown>).trackId !== "string") throw new Error("Canonical artifact is unavailable; restart to load canonical content.");
-    const trackId = (artifact as Record<string, unknown>).trackId as string;
-    const lock = sourceLocks.get(trackId);
-    if (!lock) throw new Error(`Canonical content lock is missing for ${trackId}.`);
-    catalogs.push(await createCanonicalQuestionCatalog(artifact, lock, trackId, sha256, interactionRegistry));
-    if (successorLedger !== undefined) {
-      const entry = contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, trackId);
-      const source = artifact as Record<string, unknown>;
-      if (source.schemaVersion !== "patternly-content-artifact-v2" || source.contentVersion !== entry.planningPolicy.contentVersion || lock.sha256 !== entry.planningPolicy.artifactSha256 ||
-        (source.planningPolicy as Record<string, unknown> | undefined)?.policyVersion !== entry.planningPolicy.policyVersion || !Array.isArray(source.questions) || source.questions.length !== entry.training.questionCount) {
-        throw new Error(`Content successor ledger does not match the current v2 policy artifact for ${trackId}.`);
+  markStartup("catalog_build", "begin");
+  try {
+    const sourceArtifacts = dependencies.artifacts ?? artifacts;
+    const sourceLocks = new Map((dependencies.locks ?? [...locks.values()]).map((entry) => [entry.trackId, entry]));
+    const sha256 = dependencies.sha256Utf8 ?? contentHasher.sha256;
+    const interactionRegistry = dependencies.interactionRegistry ?? canonicalInteractionRegistry;
+    const successorLedger = dependencies.successorLedger ?? (dependencies.artifacts === undefined ? successorLedgerFile : undefined);
+    if (successorLedger !== undefined) assertValidContentSuccessorLedger(successorLedger);
+    const catalogs: CanonicalQuestionCatalog[] = [];
+    for (const artifact of sourceArtifacts) {
+      if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || typeof (artifact as Record<string, unknown>).trackId !== "string") throw new Error("Canonical artifact is unavailable; restart to load canonical content.");
+      const trackId = (artifact as Record<string, unknown>).trackId as string;
+      const lock = sourceLocks.get(trackId);
+      if (!lock) throw new Error(`Canonical content lock is missing for ${trackId}.`);
+      catalogs.push(await createCanonicalQuestionCatalog(artifact, lock, trackId, sha256, interactionRegistry));
+      if (successorLedger !== undefined) {
+        const entry = contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, trackId);
+        const source = artifact as Record<string, unknown>;
+        if (source.schemaVersion !== "patternly-content-artifact-v2" || source.contentVersion !== entry.planningPolicy.contentVersion || lock.sha256 !== entry.planningPolicy.artifactSha256 ||
+          (source.planningPolicy as Record<string, unknown> | undefined)?.policyVersion !== entry.planningPolicy.policyVersion || !Array.isArray(source.questions) || source.questions.length !== entry.training.questionCount) {
+          throw new Error(`Content successor ledger does not match the current v2 policy artifact for ${trackId}.`);
+        }
+        markStartup("predecessor_clone_stringify", "begin");
+        // Only root fields change; nested generated JSON is read-only during serialization.
+        const historical = { ...source };
+        delete historical.planningPolicy;
+        historical.schemaVersion = "patternly-content-artifact-v1";
+        historical.contentVersion = entry.training.contentVersion;
+        const serialized = JSON.stringify(historical);
+        markStartup("predecessor_clone_stringify", "end");
+        markStartup("predecessor_hash", "begin");
+        let predecessorHash: string;
+        try { predecessorHash = await sha256(serialized); }
+        finally { markStartup("predecessor_hash", "end"); }
+        if (predecessorHash !== entry.training.artifactSha256) throw new Error(`Content successor ledger does not reconstruct the exact training predecessor for ${trackId}.`);
       }
-      const historical = structuredClone(source);
-      delete historical.planningPolicy;
-      historical.schemaVersion = "patternly-content-artifact-v1";
-      historical.contentVersion = entry.training.contentVersion;
-      if (await sha256(JSON.stringify(historical)) !== entry.training.artifactSha256) throw new Error(`Content successor ledger does not reconstruct the exact training predecessor for ${trackId}.`);
     }
-  }
-  const projections = catalogs.map((catalog) => ({ schemaVersion: "patternly-content-artifact-v1", trackId: catalog.trackId, contentVersion: catalog.contentVersion, questions: catalog.questions.map((question) => ({ trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, questionId: question.questionId, interaction: { type: question.interaction.type } })) }));
-  const modeConfigs = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, projections);
-  const byTrack = new Map(catalogs.map((catalog) => [catalog.trackId, createTrackRuntime(catalog, modeConfigs,
-    successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId), interactionRegistry)]));
-  return Object.freeze({
-    tracks: Object.freeze(catalogs.map((catalog) => catalog.trackId)),
-    getTrack(trackId: string) { const result = byTrack.get(trackId); if (!result) throw new Error(`Canonical track ${trackId} is unavailable; restart to load canonical content.`); return result; },
-    getQuestion(trackId: string, questionId: string) { return this.getTrack(trackId).getQuestion(questionId); },
-    getNode(trackId: string, nodeId: string) { return this.getTrack(trackId).getQuestionsForNode(nodeId); },
-    getMentalUnit(trackId: string, mentalUnitId: string) { return this.getTrack(trackId).getQuestionsForMentalUnit(mentalUnitId); },
-    getMode(trackId: string, modeId: string) { return this.getTrack(trackId).getMode(modeId); },
-    getPool(trackId: string, modeId: string) { return this.getTrack(trackId).getPool(modeId); },
-  });
+    markStartup("catalog_projection", "begin");
+    const projections = catalogs.map((catalog) => ({ schemaVersion: "patternly-content-artifact-v1", trackId: catalog.trackId, contentVersion: catalog.contentVersion, questions: catalog.questions.map((question) => ({ trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, questionId: question.questionId, interaction: { type: question.interaction.type } })) }));
+    const modeConfigs = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, projections);
+    markStartup("catalog_projection", "end");
+    markStartup("catalog_tracks", "begin");
+    const byTrack = new Map(catalogs.map((catalog) => [catalog.trackId, createTrackRuntime(catalog, modeConfigs,
+      successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId), interactionRegistry)]));
+    markStartup("catalog_tracks", "end");
+    return Object.freeze({
+      tracks: Object.freeze(catalogs.map((catalog) => catalog.trackId)),
+      getTrack(trackId: string) { const result = byTrack.get(trackId); if (!result) throw new Error(`Canonical track ${trackId} is unavailable; restart to load canonical content.`); return result; },
+      getQuestion(trackId: string, questionId: string) { return this.getTrack(trackId).getQuestion(questionId); },
+      getNode(trackId: string, nodeId: string) { return this.getTrack(trackId).getQuestionsForNode(nodeId); },
+      getMentalUnit(trackId: string, mentalUnitId: string) { return this.getTrack(trackId).getQuestionsForMentalUnit(mentalUnitId); },
+      getMode(trackId: string, modeId: string) { return this.getTrack(trackId).getMode(modeId); },
+      getPool(trackId: string, modeId: string) { return this.getTrack(trackId).getPool(modeId); },
+    });
+  } finally { markStartup("catalog_build", "end"); }
 }
 
 function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): CanonicalTrackRuntime {

@@ -1,3 +1,4 @@
+import { markStartup } from "../infrastructure/diagnostics/startupTrace";
 import { ContentError } from "../content/errors";
 import { CorruptStoredRecordError, JournalMaterializationError, JournalVerificationError, JournalWriteError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../storage/errors";
 import { CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER, type CanonicalRepositoryBootstrapStep as CanonicalRepositoryBootstrapStepCode } from "../storage/repositories/canonicalRepositories";
@@ -191,6 +192,7 @@ export function createAccountStartupDiagnosticWriter(): AccountStartupDiagnostic
   const write = (status: AccountStartupDiagnostic["status"], stage: AccountStartupDiagnosticStage, accountStateKind?: AccountStartupDiagnosticStateKind, error?: unknown) => {
     try {
       if (host[ACCOUNT_STARTUP_DIAGNOSTIC_OWNER_SYMBOL] !== owner) return;
+      markStartup(`account:${stage}`);
       const receipt: AccountStartupDiagnostic = Object.freeze({
         schema: "patternly.account-startup-diagnostic.v1",
         status,
@@ -228,6 +230,7 @@ export function createProfileStoragePreparationDiagnosticWriter(): ProfileStorag
   const write = (status: ProfileStoragePreparationDiagnostic["status"], stage: ProfileStoragePreparationDiagnosticStage, error?: unknown) => {
     try {
       if (host[PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_OWNER_SYMBOL] !== owner) return;
+      markStartup(`profile_storage:${stage}`);
       const receipt: ProfileStoragePreparationDiagnostic = Object.freeze({
         schema: "patternly.profile-storage-preparation-diagnostic.v1",
         status,
@@ -282,6 +285,7 @@ export function createBootstrapProgressObserver(): Readonly<{
   const ownsCurrentAttempt = () => currentBootstrapProgressOwner(host) === owner;
   const observeStep: BootstrapRecoveryStepObserver = (step) => {
     if (!ownsCurrentAttempt()) return;
+    markStartup(`recovery:${step ?? "idle"}`);
     try {
       if (step === null) {
         Reflect.deleteProperty(host, BOOTSTRAP_PENDING_STEP_SYMBOL);

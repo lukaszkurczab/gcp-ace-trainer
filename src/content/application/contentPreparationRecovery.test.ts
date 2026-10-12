@@ -13,7 +13,8 @@ const simulationScreen = readFileSync("src/features/simulation/DesignInterviewSi
 
 test("production content preparation strictly verifies the installed package inventory before resuming", () => {
   const prepareContent = source.slice(source.indexOf("return bootstrapApplication("), source.indexOf("async () => {\n          setPhase(\"resuming-session\")"));
-  assert.match(prepareContent, /await contentPackageRuntimeOwner\.verifyBundledPackages\(\);\s*await contentPackageRuntimeOwner\.verifyInstalledPackages\(\);/);
+  assert.match(prepareContent, /try \{ await contentPackageRuntimeOwner\.verifyBundledPackages\(\); \}\s*finally \{ endBundledTrace\(\); \}\s*const endInstalledTrace = beginStartupSpan\("installed_inventory"\);\s*try \{ await contentPackageRuntimeOwner\.verifyInstalledPackages\(\); \}\s*finally \{ endInstalledTrace\(\); \}/);
+  assert.doesNotMatch(prepareContent, /\bcatch\b/);
 });
 
 test("blocking operational reasons are translated while dynamic fallback text remains intact", () => {
