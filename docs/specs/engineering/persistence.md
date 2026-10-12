@@ -1,40 +1,44 @@
-# Trwałość i recovery — zakres pozostałych zadań
+# Trwałość i recovery — zakres i kryteria odbioru
 
-Status i kolejność należą wyłącznie do [planu głównego](../../PATTERNLY-WORKING-PLAN.md). Ten dokument precyzuje zadania; nie stanowi drugiej kolejki ani dowodu obecnego defektu.
+Status i kolejność należą wyłącznie do [planu głównego](../../PATTERNLY-WORKING-PLAN.md). Ten dokument zachowuje pełne kryteria odbioru; datowane diagnozy i opisy wymaganych poprawek są historią, chyba że sekcja „Bieżący status” wskazuje jawnie pozostały zakres. Nie stanowi drugiej kolejki ani samodzielnego dowodu obecnego defektu.
 
-Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3fac115`, backend `039f7f000e701c4fbc69e18a1fb66528cbc5cdcb`, content `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03`. Poniżej podano aktualną brakującą pracę i granicę dowodu. Nie trzeba odtwarzać audytu02.10 ani dawnych pakietów; zwykły preflight wykonawcy ma tylko wykryć późniejszą zmianę źródła. Historyczne probes/pomiary przytoczone w opisach nie są nowym native acceptance. CH-01–05 pozostają zakończone.
+Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3fac115`, backend `039f7f000e701c4fbc69e18a1fb66528cbc5cdcb`, content `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03`. Nie opisuje on bieżącego stanu tych gałęzi. Historyczne probes/pomiary nie są nowym native acceptance. CH-01–05 pozostają zakończone.
 
 
 ## PERSIST-01 — P1 — Recovery przed strict active/content reads
 
-**Stan po zmianach PERSIST-02/03, sprawdzenie źródeł 11.10.2026 (`8a591248`):** produkcyjny bootstrap wykonuje inspect/preflight i recovery przed strict active/unavailable/content reads. Istnieją testy terminal S + pointer-clear failure przez produkcyjny bootstrap oraz drugiego uruchomienia bez odtworzenia stanu. Historyczny defekt kolejności opisany niżej został usunięty; pozostają exact-envelope/replay kryteria wspólne z PERSIST-05/06 oraz natywny kill na pointer-clear boundary przez PERSIST-13. To rozpoznanie źródeł, nie pełny odbiór PERSIST-01.
+**Bieżący status:** PERSIST-01 został odebrany dla source/local/exact CI: bootstrap wykonuje inspect/preflight i recovery przed strict active/unavailable/content reads. [Dowody odbioru PERSIST-01/14](../../reports/persist01-14-acceptance-2026-10-11.md) obejmują terminal S + pointer-clear failure i drugie uruchomienie bez odtworzenia stanu. Historyczny defekt kolejności opisany niżej został usunięty; natywny kill na pointer-clear boundary pozostaje częścią PERSIST-13.
 
 - **Operacje i granica:** ordinary completion, simulation finalization, abandonment; crash po zapisie terminal S, przed usunięciem active pointer. Dodatkowo unavailable-active record współistniejący z pending J (P2 wariant tego samego zadania).
 - **Invariant / expected:** prefix terminal mutation jest legalnym stanem przejściowym; replay i verify J poprzedzają strict active/content resolution. Brak ready przed rozstrzygnięciem.
 - **Historyczna reprodukcja tego zakresu:** `src/application/bootstrap/applicationBootstrap.ts:66-83` zwraca unavailable albo wywołuje `getActiveTrainingSession()` przed recovery. `trainingSessionRepository.ts:11,39-44` odrzuca pointer→terminal S. Próba przez production-shaped bootstrap po failure `remove(ACTIVE_TRAINING_SESSION)` daje `recoveryCalls=0`, `journalStillPending=true` (VERIFIED). Test finalization odtwarza bezpośrednio `recoverPendingMutation`, omijając ten błąd. Skutek: **impossible resume**, trwały ekran blocking, bez automatycznej nawigacji na partial state.
-- **Required fix / scope:** bootstrap i lifecycle operation projection; najpierw recover immutable J, później active/unavailable checks. Usunąć przedwczesny strict read/early return oraz test utrwalający błędną kolejność, zachowując dostęp do jawnego unavailable state po recovery.
+- **Historyczny required fix, wykonany w PERSIST-01:** bootstrap i lifecycle operation projection; najpierw recover immutable J, później active/unavailable checks. Usunąć przedwczesny strict read/early return oraz test utrwalający błędną kolejność, zachowując dostęp do jawnego unavailable state po recovery.
 - **Fault tests / idempotency AC:** start, complete, finalize i abandon po każdym physical S/index/pointer write/remove → nowa instancja lifecycle → produkcyjny bootstrap; również unavailable + J, malformed J, brak contentu. Dwa bootstrapy dają identyczne payloads/revisions i zero pending J albo ten sam jawny integrity block; result raz, bez utraty A. Native: kill na pointer-clear boundary i restart iPhone17 po udostępnieniu 13.
 - **Dependencies:** brak; reuse 05/06 do pełnych postconditions. **Out of scope:** heuristic repair pointera, reset użytkownika, content replacement, account auth.
 
 ## PERSIST-02 — P1 — Integralność indeksów przed odczytem evidence i tombstones
 
-**Potwierdzenie w bieżącym kodzie:** Bieżące readers session/attempt/review używają brakującego indeksu jako [] i przyjmują duplicate IDs; snapshot/outbox nadal opiera się na tych widocznych kolekcjach. Nowe partial readers BIZQ-02 nie ustanawiają integralności całego namespace.
+**Bieżący status:** PERSIST-02 został odebrany dla source/local/hosted CI; integralność indeksów i blokada eksportu na uszkodzonym stanie są objęte produkcyjnymi testami. Dowody i ich granice: [odbiór eksportu Gościa oraz PERSIST-02/03](../../reports/guest-local-export-acceptance-2026-10-09.md). To zadanie nie pozostaje w planie.
+
+**Historyczna diagnoza:** W baseline przed PERSIST-02 czytniki session/attempt/review traktowały brak indeksu jako `[]`, akceptowały duplicate IDs, a snapshot/outbox pracował na widocznych kolekcjach. Partial readers BIZQ-02 nie ustanawiały wtedy integralności całego namespace.
 
 - **Operacje i granica:** bootstrap/history/review/account snapshot; utrata indeksu, pusta/stara lista, duplicate ID, record-key/payload-ID mismatch przy istniejących canonical bytes.
 - **Invariant / expected:** niespójny indeks nie oznacza pustej historii ani autoryzowanego usunięcia. Repositories zwracają jawny integrity error; snapshot/outbox/tombstones są blokowane, bytes zachowane.
 - **Historyczna reprodukcja tego zakresu:** `trainingAttemptRepository.ts:7`, `trainingSessionRepository.ts:10`, `reviewQueueRepository.ts:12` używają index `?? []` i akceptują powtarzające się string IDs. `accountDataRepository.ts:617-650,730-759` interpretuje niewidoczny acknowledged record jako deletion. VERIFIED: zapisać A, zbudować outbox i ACK, usunąć tylko `TRAINING_ATTEMPT_INDEX`, ponownie zbudować outbox → `{storedAttemptRemains:true, visibleAttempts:0, outbox:[{recordType:"training_attempt",deleted:true}]}`. Duplicate index `['attempt-1','attempt-1']` zwraca dwie A. **Silent data loss**, ryzyko usunięcia chmurowej kopii oraz duplicate evidence w konsumentach bez dedup.
-- **Required fix / scope:** canonical session/attempt/review/result index readers, bootstrap integrity gate i account snapshot/tombstone boundary; walidacja relacji key↔ID↔index, uniqueness, missing i orphan targets. Usunąć interpretację niespójnego namespace jako pustego sukcesu. Nie rekonstruować indeksów ani nie usuwać orphanów automatycznie.
+- **Historyczny required fix, wykonany w PERSIST-02:** canonical session/attempt/review/result index readers, bootstrap integrity gate i account snapshot/tombstone boundary; walidacja relacji key↔ID↔index, uniqueness, missing i orphan targets. Usunięto interpretację niespójnego namespace jako pustego sukcesu. Nie dodano automatycznej rekonstrukcji indeksów ani usuwania orphanów.
 - **Fault tests / idempotency AC:** brak/empty/stale/duplicate index, missing target, wrong payload ID i unknown track dla S/A/R/results; za każdym razem brak nowych writes, ACK, tombstones i uploadu; bytes niezmienne po ponowieniu/restart. Prawdziwy pusty nowy store nadal działa. Testować rzeczywisty snapshot→outbox, nie sam validator. Native niepotrzebny do tej deterministycznej reguły.
 - **Dependencies:** brak; przed 03 i odbiorem preservation/sync. **Out of scope:** auto-reindex, odzyskiwanie zgubionych danych, zmiana review/progression policy, BIZQ-02 implementacja.
 
 ## PERSIST-03 — P1 — Pełny reset plan i verification fizycznych targets
 
-**Potwierdzenie w bieżącym kodzie:** Clearers i mutationVerifier nadal wyliczają/porównują indeksowane kolekcje. Potrzebny exact reset set i physical absence lub jawny failure; SEC-11 należy do tego samego tasku.
+**Bieżący status:** PERSIST-03 został odebrany dla source/local/hosted CI, w tym bounded native interruption/recovery fixture resetu. Ten fixture nie stanowi pełnej native macierzy PERSIST-13. Dowody i granice: [odbiór eksportu Gościa oraz PERSIST-02/03](../../reports/guest-local-export-acceptance-2026-10-09.md). Zadanie nie pozostaje w planie.
+
+**Historyczna diagnoza:** W baseline przed PERSIST-03 clearers i `mutationVerifier` wyliczały lub porównywały targets przez indeksowane kolekcje, co pozwalało zgłosić sukces mimo pozostawionego fizycznego rekordu.
 
 - **Operacje i granica:** local history reset; orphan S/A/R/result lub crash po dowolnym delete/index delete.
 - **Invariant / expected:** sukces wyłącznie po usunięciu całego jawnie zatwierdzonego learning write/delete set i jego weryfikacji; preserved categories pozostają nietknięte.
 - **Historyczna reprodukcja tego zakresu:** clearers `trainingSessionRepository.ts:81`, `trainingAttemptRepository.ts:9`, `reviewQueueRepository.ts:38` i `mutationJournalRepository.ts:135-150` wyliczają cele z indeksów; `mutationVerifier.ts:6` także odczytuje indeksowane kolekcje. VERIFIED: zapisać completed `orphan-session`, usunąć session index, wykonać `clearPatternlyLocalHistory()` → success, fizyczny session key nadal istnieje. **False success UI**, pozostawione ukryte evidence. Nie udowodniono faktycznego późniejszego przywrócenia tych orphanów.
-- **Required fix / scope:** reset builder, clearers/materializer/verifier i reset tests; exact namespace/keys/expected states w immutable plan, physical absence read-back, jawne blokowanie niespójnego stanu bez zgadywania zakresu. Usunąć index-only success predicate. Zakres approved reset zachować: cele/plany/settings/identity/binding/sync/profile control nie stają się learning-history targets.
+- **Historyczny required fix, wykonany w PERSIST-03:** reset builder, clearers/materializer/verifier i reset tests; exact namespace/keys/expected states w immutable plan, physical absence read-back oraz jawne blokowanie niespójnego stanu bez zgadywania zakresu. Usunięto index-only success predicate. Zatwierdzony zakres resetu pozostał bez zmian: cele/plany/settings/identity/binding/sync/profile control nie są learning-history targets.
 - **Fault tests / idempotency AC:** wszystkie S/results/A/R/indexes/D/T/unavailable-history targets oraz granice między delete; przerwanie po każdej fazie, nowe instancje, dwukrotny replay. Orphan/corrupt index nie daje success; znany kompletny plan kończy z brakiem wszystkich targets i identycznymi preserved bytes. Account resetGuard bez uploadu tombstones. Native: jeden restart podczas resetu po 13; screenshot nie dowodzi braku rekordów.
 - **Dependencies:** 02, 05/06 dla odbioru replay. **Out of scope:** sign-out, zdalne account deletion, content cache eviction, rozszerzenie zakresu resetu.
 
@@ -51,34 +55,40 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## PERSIST-05 — P1 — Replay guards i identyczne canonical revisions
 
-**Potwierdzenie w bieżącym kodzie:** Materializer replay nadal zapisuje przez mutowalne repository saves bez sprawdzenia captured prior/already-applied state każdej fizycznej operacji. Zachować immutable attempts i obecne profile fences.
+**Bieżący status:** PERSIST-05 został odebrany jako source/logical/local/exact CI PASS; pełna native macierz przerwań pozostaje w PERSIST-13. [Dowody odbioru PERSIST-05/06/07](../../reports/persist05-07-acceptance-2026-10-11.md). Kontrakt poniżej pozostaje kryterium zaakceptowanego zakresu.
+
+**Historyczna diagnoza:** W baseline przed PERSIST-05 materializer replay nie sprawdzał captured prior/already-applied state każdej fizycznej operacji przed użyciem mutowalnych zapisów repository.
 
 - **Operacje i granica:** journal recovery po durability/przed dowolnym materialized write; mutable target ma inny/stary stan lub część writes już istnieje.
 - **Invariant / expected:** akceptowane wyłącznie exact captured prior state albo exact intended already-applied state; konflikt blokuje bez nadpisania. Retry nie zwiększa ponownie revisions ani nie cofa nowszych R/S.
 - **Historyczna reprodukcja tego zakresu:** `mutationJournalRepository.ts:315-318` sprawdza expected revisions tylko przy nowym J; `mutationMaterializer.ts:26-72` nie stosuje ich podczas recovery. Mutable session/review repo zapisują ponownie przez codec zwiększający envelope revision. Stan planu jest fingerprinted, lecz to nie jest kontrola bieżących targets. VERIFIED probe: seed review → persist J z dueAt 2026-07-16 → zapisać ten sam review identity z dueAt 2026-07-20 → recover: dueAt zostaje po cichu cofnięty do 2026-07-16. To reprodukcja conflicting/stale storage state, nie dowód osiągalnego legalnego concurrent writer poza journalem. Immutable attempts mają osobne collision checks. Ryzyko: **wrong review state**.
-- **Required fix / scope:** istniejący journal precondition model/materializer i targeted repository writes; rozpoznawanie prior/after state dla każdej fizycznej operacji, w tym index/pointer/review deletion. Usunąć blind replay overwrite i powtórne writes exact final value. Nie wymagać pierwotnej rewizji dla już poprawnie zastosowanego prefixu.
+- **Historyczny required fix, wykonany w PERSIST-05:** istniejący journal precondition model/materializer i targeted repository writes; rozpoznawanie prior/after state dla każdej fizycznej operacji, w tym index/pointer/review deletion. Usunięto blind replay overwrite i powtórne writes exact final value. Nie wymaga się pierwotnej rewizji dla już poprawnie zastosowanego prefixu.
 - **Fault tests / idempotency AC:** partial prefix, same-ID/different-payload, stale/newer revision, obcy track/session, unexpected preexisting record, identyczny payload z nieoczekiwaną rewizją; snapshot całych envelopes przed/po dwóch recovery. Albo dokładnie jeden canonical final state, albo jawny conflict z zachowaniem J i bytes; bez silent rebase. Native dopiero 13, logika sprawdzalna w memory store.
 - **Dependencies:** 07 usuwa undeclared writes; współpraca z 06. **Out of scope:** naprawa arbitrary corrupt data, nowe sync/version authority, migratory.
 
 ## PERSIST-06 — P1 — Ponowna weryfikacja przed journal clear po restarcie
 
-**Potwierdzenie w bieżącym kodzie:** Recovery gałęzi verified_pending_clear usuwa journal po account-sync marking bez ponownej weryfikacji postconditions. Dodać restart-time check przed clear.
+**Bieżący status:** PERSIST-06 został odebrany jako source/logical/local/exact CI PASS; native przerwania są częścią otwartej macierzy PERSIST-13. [Dowody odbioru PERSIST-05/06/07](../../reports/persist05-07-acceptance-2026-10-11.md).
+
+**Historyczna diagnoza:** Przed poprawką recovery `verified_pending_clear` mogło oznaczyć account sync i usunąć journal bez ponownej weryfikacji postconditions po restarcie.
 
 - **Operacje i granica:** crash/clear failure w `verified_pending_clear`, następnie missing/mismatched canonical target albo stary zapis storage.
 - **Invariant / expected:** marker dawnej weryfikacji nie dowodzi aktualnych postconditions; clear tylko po ponownym potwierdzeniu exact final state albo jawny integrity block.
 - **Historyczna reprodukcja tego zakresu:** `recoverPendingMutation.ts:28-35` wykonuje mark sync + clear bez verify. VERIFIED: zatrzymać commit failure na `remove(ACTIVE_JOURNAL)`, potwierdzić `verified_pending_clear`, usunąć fizyczny attempt key, recovery → `{journalCleared:true,attemptMissing:true}`. **Silent utrata recovery planu**, brakująca próba; inne indeksy mogą później ujawnić błąd, lecz nie ma już J.
-- **Required fix / scope:** recovery/clear boundary i mutationVerifier; ponownie zweryfikować wszystkie payloads, indeksy, required absence (w tym T po terminal operation), ownership i final revisions. Usunąć skrót uznający phase marker za dowód stanu po restarcie.
+- **Historyczny required fix, wykonany w PERSIST-06:** recovery/clear boundary i `mutationVerifier` ponownie weryfikują payloads, indeksy, required absence (w tym T po terminal operation), ownership i final revisions. Usunięto skrót uznający phase marker za dowód stanu po restarcie.
 - **Fault tests / idempotency AC:** verified marker + missing/changed A/R/result/S/index/pointer/D/T, read failure podczas reverify, clear failure po reverify, repeated restart. Conflict zachowuje J, nie rekonstruuje wyniku z contentu; exact final state pozwala na pojedynczy clear bez rewrites. Native według 13.
 - **Dependencies:** 05/07 dla exact envelope invariants. **Out of scope:** nieautoryzowany automatyczny repair, ponowne scoring/result generation.
 
 ## PERSIST-07 — P2 — Review materialization zmienia tylko zadeklarowane targets
 
-**Potwierdzenie w bieżącym kodzie:** ReviewQueueRepository nadal zapisuje kolekcję przez collection-level owner. Zakres poprawki musi dowieść braku zmian unrelated envelopes; nie zmieniać polityki BIZQ-04.
+**Bieżący status:** PERSIST-07 został odebrany jako source/logical/local/exact CI PASS; pełna native macierz pozostaje w PERSIST-13. [Dowody odbioru PERSIST-05/06/07](../../reports/persist05-07-acceptance-2026-10-11.md). Polityka BIZQ-04 nie była zmieniana.
+
+**Historyczna diagnoza:** W baseline przed PERSIST-07 `ReviewQueueRepository` zapisywało kolekcję przez collection-level owner; kontrakt wymagał wykazania braku zmian unrelated envelopes.
 
 - **Operacje i granica:** put/update R w submit/finalize/set-review; przerwanie podczas zapisu niepowiązanego review.
 - **Invariant / expected:** write plan jest kompletny, a unrelated reviews i ich revisions nie zmieniają się.
 - **Historyczna reprodukcja tego zakresu:** `reviewQueueRepository.ts:17-33` buduje całą kolejkę i zapisuje każdy element; journal targets `mutationJournalRepository.ts:100-106` obejmują tylko wskazane R i index. CODE: każda próba/replay może podnieść rewizje niezwiązanych R i zawieść na key spoza planu. Payload corruption nie została wykazana; kompletność planu i revision idempotence są naruszone.
-- **Required fix / scope:** canonical review repository i journal tests; zapis wyłącznie dostarczonych zmienionych R oraz koniecznej zmiany index. Usunąć full-queue rewrite loop; zachować jeden owner i identity collision guards.
+- **Historyczny required fix, wykonany w PERSIST-07:** canonical review repository i journal tests; zapis wyłącznie dostarczonych zmienionych R oraz koniecznej zmiany index. Usunięto full-queue rewrite loop; zachowano jednego ownera i identity collision guards.
 - **Fault tests / idempotency AC:** minimum trzy R, update środkowego, replay po każdej granicy; storage operation trace nie zawiera write na pozostałe R, ich pełne envelopes identyczne. Put/update/delete i finalization consolidating repeated content zachowują wynik. Native niewymagany do zakresu.
 - **Dependencies:** brak; przed pełnym 05. **Out of scope:** BIZQ-04 review scheduling policy, nowa kolejka.
 
@@ -95,29 +105,33 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## PERSIST-09 — P1 — Freeze finalizacji ma przetrwać restart
 
-**Potwierdzenie w bieżącym kodzie:** Freeze finalizacji nie ma ustalonego minimalnego durable boundary/exact draft revision. Pierwszym wynikiem jest konkretny projekt tego boundary i review; marker/schema/store nie są przesądzone.
+**Bieżący status:** PERSIST-09 został odebrany dla source/local/exact CI; pozostałe native interruptions oraz frozen/error UI należą do PERSIST-13. [Dowody odbioru PERSIST-09/10](../../reports/persist09-10-acceptance-2026-10-11.md). Przyjęty kontrakt freeze pozostaje bez zmian.
+
+**Historyczna diagnoza:** Przed PERSIST-09 nie było trwałej granicy freeze ani dokładnej rewizji szkicu; konkretne testy odtworzyły utratę RAM-only freeze przy rekonstrukcji lifecycle.
 
 - **Operacje i granica:** manual/timeout finalization, po ustawieniu `frozen`, przed persist J; runtime/draft/evidence read lub build plan rzuca błąd, potem force-close.
 - **Invariant / expected:** docs17 §12: po freeze nie wraca editable, zamrożona jest jedna dokładna verified revision. Canonical contract wygrywa z aktualnym kodem; audit nie uznaje cichego cofnięcia freeze za zaakceptowaną decyzję produktową.
 - **Historyczna reprodukcja tego zakresu:** `TrainingLifecycleUseCases.ts:400-425` przechowuje freeze w `operationStates`; runtime/draft/evidence/outcome preparation jest przed try obsługującym failure commit. `getSimulationOperationState` przy braku state/J odtwarza editable. Trwałe S pozostaje active, D nie ma freeze marker. CODE: restart w tej luce pozwala ponownie edytować wcześniej frozen D. Lifecycle-recreation test tej granicy nie istnieje; nie deklarujemy native reprodukcji. Ryzyko zmiany odpowiedzi/unanswered/score po deklarowanym finish; nie dowiedziono dwóch completed results po durable J.
-- **Required fix / scope:** najpierw deterministyczny lifecycle restart test, potem minimalne domknięcie trwałego freeze w istniejącym ownerze finalizacji/journalu. Wykonawca ma zaprojektować jednoznaczną granicę przyjęcia finish, exact draft revision i recovery; nie zakładać z góry nowego store/marker/schema ani nie zastępować implementacji etykietą. Nowe persistence semantics wymagają review konkretnego projektu; nie ma zgody na poluzowanie canonical contract.
+- **Historyczny required fix, wykonany w PERSIST-09:** deterministyczny lifecycle restart test i trwałe freeze w istniejącym ownerze finalizacji/journalu, z jednoznaczną granicą przyjęcia finish, exact draft revision i recovery. Implementacja nie dodała z góry założonego store/markera/schema ani nie poluzowała canonical contract.
 - **Fault tests / idempotency AC:** każdy await po freeze, plan build, journal pre/post write, powtórny manual/timer zero i nowa instancja po każdym etapie. Przyjęty freeze nigdy nie wraca editable; jedna revision, answered set i result; preparation nie może po restarcie po cichu zmienić przyjętej komendy. Native przez 13 po zatwierdzeniu minimalnego mechanizmu.
 - **Dependencies:** 04/08; review planu implementacji przed schema change. **Out of scope:** nowa rodzina runtime, zmiana scoringu/profilu, automatyczne porzucenie sesji.
 
 ## PERSIST-10 — P2 — Deterministyczna macierz save/manual/timeout, szczególnie Design
 
-**Potwierdzenie w bieżącym kodzie:** Nie ma potwierdzonego regresyjnego wyniku wyścigu Design save/timeout. Zadanie zaczyna się od deferred-save lifecycle testu; implementować tylko błąd wykazany tym testem. Jeżeli aktualny owner spełnia AC, zakończyć bez refaktoru.
+**Bieżący status:** PERSIST-10 został odebrany dla source/local/exact CI; native Design overlap/dirty UI i przerwania pozostają w PERSIST-13. [Dowody odbioru PERSIST-09/10](../../reports/persist09-10-acceptance-2026-10-11.md). Raport nie potwierdza regresji Design save/timeout ponad sprawdzone scenariusze.
+
+**Historyczna diagnoza:** Audyt nie potwierdził wtedy regresyjnego wyniku Design save/timeout; przyjętym zakresem były bounded deferred-save probes oraz rozszerzenie testów tylko zgodnie z ich wynikiem.
 
 - **Operacje i granica:** Design debounce save in flight podczas absolute-deadline projection refresh; podwójny Finish, manual/timeout overlap, repeated expiry wszystkich rodzin.
 - **Invariant / expected:** manual czeka na save; timeout bierze dokładną verified durable revision, bez unsaved transient edit; jeden terminal result i jedna mutacja review per planned transition.
 - **Historyczna reprodukcja tego zakresu:** `DesignInterviewSimulationScreens.tsx` interval/projection oraz `designInterviewSimulationFacade.ts:71-84` mogą uruchomić expiry poza `DesignSimulationDraftDrain`; manual Finish robi `drain.flush()`. `TrainingLifecycleUseCases.ts:320-350,400-425,622-629` ma osobne save lane i finalizations map. Exact draft equality przed J chroni przed stale commit, ale nie dowodzi poprawnego recovery/UI w tym interleavingu. **UNVERIFIED race**, nie potwierdzona duplicate A/score. Coding timer lane i Exam action lane mają węższe dowody.
-- **Required fix / scope:** bounded tests lifecycle + existing drain/facades z deferred save; dopiero wynik wyznacza minimalną korektę kolejności. Nie scalać bez analizy wszystkich kolejek (ryzyko deadlocku timer→lifecycle→timer). Usunąć obejście wspólnego finalization ownera tylko jeśli test potwierdzi jego skutek; żadnego drugiego finalizera.
+- **Historyczny zakres wymaganej weryfikacji, wykonany w PERSIST-10:** bounded lifecycle tests oraz istniejący drain/facades z deferred save; korekta tylko przy wyniku potwierdzającym potrzebę. Nie dodano drugiego finalizera ani szerokiego refaktoru kolejek.
 - **Fault tests / idempotency AC:** save przed/po deadline, zmiana/usunięcie odpowiedzi i pozycji, błąd save, freeze podczas save, dwa Finish, manual+expiry, repeated zero, restart po każdym materialized write; jedyne dopuszczalne wyniki to exact verified terminal state lub jawny retained recovery state. Porównać A IDs, R transitions, result/score/unanswered, D absence i revisions po dwóch recovery. Native: Design timer/save overlap oraz manual z dirty UI po 13.
 - **Dependencies:** 08/09 do pełnego odbioru; testy można zacząć od razu. **Out of scope:** szerokie refaktory kolejek, zmiana profili/polityki czasu.
 
 ## PERSIST-11 — P2 — Jawna granica utraty czasu i clock-discontinuity tests
 
-**Potwierdzenie w bieżącym kodzie:** obecny zapis czasu aktywności nie potwierdza granicy jednej sekundy, a test przerwania przed zapisem pokazuje utratę niemal 14 sekund.
+**Bieżący status:** zatwierdzony limit właściciela wynosi maksymalnie **5 sekund** utraty aktywnego czasu po nagłym zamknięciu i wznowieniu. Mechanizm nie spełnia jeszcze wykazanego limitu: [kod](../../../src/domain/learning/foregroundTimerState.ts#L21) nadal ustawia checkpoint interval 15 s, a [timer](../../../src/application/runtime/ForegroundSessionTimer.ts#L47) uznaje checkpoint za należny po około 14 s. [Audyt stanu](../../reports/project-state-audit-2026-10-12.md) i [probe PERSIST-11](../../reports/persist11-probe-2026-10-12.md) potwierdzają lukę; probe mierzył opóźniony callback, nie końcowy checkpoint→kill→resume.
 
 **Decyzja właściciela z 07.10.2026:** po nagłym zamknięciu procesu i wznowieniu sesji dopuszczalna utrata aktywnego czasu wynosi maksymalnie 5 sekund. Dotyczy czasomierzy liczących aktywność, zarówno narastających, jak i odliczających. Nie zmienia absolutnego terminu zakończenia egzaminu. To wymaganie do wdrożenia i zweryfikowania, nie potwierdzenie zgodności obecnego mechanizmu. Opóźnienie wykonania nie może zostać pominięte jako wygodny wyjątek; jeżeli mały rzeczywisty test wykaże ograniczenie uniemożliwiające limit, przed zmianą zakresu przedstawić konkretny wynik właścicielowi.
 
@@ -130,18 +144,20 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## PERSIST-12 — P2 — Corrupt installed-package state nie jest pustym katalogiem
 
-**Potwierdzenie w bieżącym kodzie:** NodePackageStorage/loader nadal potrzebuje rozróżnienia absent/corrupt/unsupported state zamiast pustego katalogu. Exact pins i fail-closed pozostają wymagane; file-move durability ma oddzielny native dowód.
+**Bieżący status:** PERSIST-12 został odebrany jako source/local/exact CI PASS z ograniczeniami dowodu. Rozróżnienie absent/corrupt/unsupported oraz exact pins są zaimplementowane; native file-move durability i pełna macierz pozostają PERSIST-13. [Odbiór PERSIST-12](../../reports/persist12-acceptance-2026-10-12.md).
+
+**Historyczna diagnoza:** W baseline przed PERSIST-12 `NodePackageStorage`/loader mogły ukrywać korupcję jako brak pakietu. Nie wykazano błędnego scoringu; zadanie dotyczyło diagnostyki integralności i bezpiecznego resume.
 
 - **Operacje i granica:** bootstrap installed content, resume/review exact pins po corrupt pointer/manifest/bytes albo partial file activation.
 - **Invariant / expected:** odróżnić nieobecny pakiet od uszkodzonego zapisanego stanu; jawny unavailable/integrity state, bez silent fallback lub podmiany exact content.
 - **Historyczna reprodukcja tego zakresu:** `src/content/runtime/nodePackageStorage.ts:19-28,80-100,124-134` zwraca null po błędzie parse/checksum, pomija zły pointer/record w `listActive`; parser akceptuje też starszy bare identity format. VERIFIED na malformed zapisanym pointerze: `{active:null,installed:[],corruptPointerPreserved:true}`. `loadActiveProfileNodePackages` konsumuje tę listę. Exact session resolver może później zablokować konkretną sesję, więc **nie wykazano złego score**; utracona jest diagnostyka storage vs brak contentu, możliwe impossible resume.
-- **Required fix / scope:** package storage/loader/bootstrap error contract; typowany absent/corrupt/unsupported/identity-mismatch, zachowanie ostatnich bytes bez niejawnej naprawy. Usunąć catch/continue maskujące uszkodzenie oraz bare-identity compatibility branch, jeżeli brak jawnej uzasadnionej zależności; sprawdzić producer/consumer przed usunięciem.
+- **Historyczny required fix, wykonany w PERSIST-12:** package storage/loader/bootstrap error contract rozróżnia typed absent/corrupt/unsupported/identity-mismatch i zachowuje zapisane bytes bez niejawnej naprawy. Usunięto catch/continue maskujące uszkodzenie oraz bare-identity compatibility reader; sprawdzono producentów i konsumentów.
 - **Fault tests / idempotency AC:** bad JSON/schema/hash, key↔track/node mismatch, missing artifact vs manifest, oba moves, write-then-throw pointer/read-back, restart z retained pins. Retry nie aktywuje innej wersji i nie kasuje evidence; active package pozostaje poprzedni verified albo jawnie unavailable. Native file-move durability przez 13, bez pobierania realnych Premium packages na potrzeby jednostkowego dowodu.
 - **Dependencies:** 01 dla kolejności bootstrap. **Out of scope:** nowy package bank, silent redownload/repair, content authoring, compatibility migration.
 
 ## PERSIST-13 — P2 — Brakujące fault hooks i produkcyjna macierz recovery
 
-**Potwierdzenie w bieżącym kodzie:** To narzędzia weryfikacji konkretnych granic zapisu, nie kolejny defekt produktu. Memory faults nie dowodzą native kill/no-op/torn-write. Zacząć najmniejszym safe real probe przed rozszerzeniem tooling.
+**Bieżący status:** macierz native PERSIST-13 pozostaje niekompletna; audyt nie potwierdził powtarzalnego native kill hooka dla granic journal durability/clear. Pamięciowe fault tests nie są dowodem native kill/no-op/torn-write. Aktualne luki i ograniczenia: [audyt stanu](../../reports/project-state-audit-2026-10-12.md). To otwarty zakres już zapisany w planie, nie nowa bramka.
 
 - **Operacje i granica:** C1–C11, start/advance/ordinary completion/review commands, finalization i reset; before/after każdego fizycznego write/delete/read-back, journal phase update/clear i nawigacja.
 - **Invariant / expected:** dowód dotyczy produkcyjnej drogi bootstrap/retry, nie tylko bezpośredniego materializera i nie tylko happy path. Test musi umieć zatrzymać się po skutku, zanim ACK/verify dotrze do wywołującego.
@@ -151,16 +167,18 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 - **Manual/native:** jeden istniejący iPhone17, exact build/SHA; kill po journal durability, mid-materialization, po verification/przed clear, po clear/przed Next, draft-save uncertainty, przed/po timer checkpoint i w reset. Nie instalować snapshotu obok obecnej aplikacji. Brak identycznego native buildu/hooka raportować jako konkretną lukę, nie zastępować screenshotem czy restartem po ACK.
 - **Dependencies:** przygotowanie hooków niezależne; końcowy odbiór po 01–12 i 14. **Out of scope:** nowe urządzenia, VoiceOver, pełny performance/security audit, wdrożenie/release, powtarzanie niezmienionych AUD-08 provider tests.
 
-**Dodatkowy finding P3 przypisany do PERSIST-05 (cross-session plan validation):** `mutationJournalRepository.ts:263` nie porównuje `sourceSessionId` z journal session dla standalone `remove_review_entry`. VERIFIED validator przyjął plan `different-session` usuwający review z `session-1`. Bieżący wrapper przekazuje poprawny ID, więc nie wykazano reachable błędnego UI usunięcia. Dodać scope guard i malformed-plan test dla standalone removal; nie przenosić tej reguły na outcome update historycznego review, gdzie inny source session jest prawidłowy. Required fix pozostaje w istniejącym validatorze; bez nowego tasku/owner.
+**Dodatkowy finding P3 historycznie przypisany do PERSIST-05 (cross-session plan validation):** weryfikator przyjmował standalone `remove_review_entry` z obcym `sourceSessionId`; bieżący wrapper przekazywał poprawny ID, więc reachable błędnego UI usunięcia nie wykazano. Scope guard i malformed-plan test zostały uwzględnione w odebranym PERSIST-05, bez przenoszenia reguły na prawidłowy outcome update historycznego review. Szczegóły: [raport PERSIST-05/06/07](../../reports/persist05-07-acceptance-2026-10-11.md).
 
 ## PERSIST-14 — P1 — Początkowy timer w tym samym journalu co start sesji
 
-**Potwierdzenie w bieżącym kodzie:** Coding/Certification/Design facades inicjują foreground timer po startTrainingSession; start journal nie obejmuje pierwszego timera, a facade nie wznawia brakującego. Zakres wyłącznie foreground-timed sessions, bez zmiany absolute-deadline.
+**Bieżący status:** PERSIST-14 został odebrany dla source/local/exact CI; native kill po journal clear/przed item pozostaje w PERSIST-13. [Dowody odbioru PERSIST-01/14](../../reports/persist01-14-acceptance-2026-10-11.md). Zakres nadal dotyczy wyłącznie foreground-timed sessions, bez zmiany absolute-deadline.
+
+**Historyczna diagnoza:** Przed PERSIST-14 Coding/Certification/Design facades inicjowały foreground timer po `startTrainingSession`; start journal nie obejmował initial timer.
 
 - **Operacje i granica:** Coding practice/simulation, Certification practice i Design practice; kill po start journal clear, przed `ForegroundSessionTimerFacade.initialize` (także błąd pierwszego zapisu T).
 - **Invariant / expected:** trwały start sesji foreground-timed zawiera komplet wymaganych rekordów S/D/T/pointer; restart odtwarza dokładny initial timer z J, nigdy nie zgaduje zera dla nieznanego brakującego T.
 - **Historyczna reprodukcja tego zakresu:** `codingInterviewSessionFacade.ts:127-135`, `certificationSessionFacade.ts:86-90`, `designInterviewSessionFacade.ts:55-59` wywołują timer initialize dopiero po `startTrainingSession`. `commitTrainingSessionStart.ts:17-26` nie zapisuje T. `ContentPreparationGate.tsx:108-114` wywołuje restoreForResume, a `ForegroundSessionTimerFacade.ts:125-130,265-284` wymaga istniejącego T. CODE: crash window pozostawia S bez J i T; VERIFIED istniejący test `missing persisted timer on resume` (1/1 PASS) modeluje dokładnie ten stan i otrzymuje `timer_recovery_failure`. Nie wykonano native kill samego start wrappera. **Impossible resume** poprawnie rozpoczętej sesji, bez recovery planu umożliwiającego utworzenie T.
-- **Required fix / scope:** initial T jako write w istniejącym start journal dla `elapsedForeground`/`countdownForeground`: journal type/guards/expected targets, start builder, materializer/verifier i wrappers. Po starcie facade przejmuje już trwały timer idempotentnie. Usunąć oddzielny post-commit write jako jedyne źródło initial T. Absolute-deadline Exam/Design Simulation pozostają bez foreground T.
+- **Historyczny required fix, wykonany w PERSIST-14:** initial T stał się zapisem w istniejącym start journal dla `elapsedForeground`/`countdownForeground`: journal type/guards/expected targets, start builder, materializer/verifier i wrappers. Po starcie facade przejmuje trwały timer idempotentnie. Usunięto oddzielny post-commit write jako jedyne źródło initial T. Absolute-deadline Exam/Design Simulation pozostały bez foreground T.
 - **Fault tests / idempotency AC:** przerwanie przed/po S/index/pointer/D/T oraz phase update/clear; nowe instancje i produkcyjny bootstrap. Dwa recovery dają jeden exact initial timer i tę samą S/D; nie ma stanu po verified start, w którym wymagany T jest nieobecny. Existing missing-T corruption test nadal blokuje, gdy brak nie jest objęty start J. Native kill po start clear/przed pokazaniem itemu przez 13.
 - **Dependencies:** 01 i 05/06 dla odbioru; rozszerzyć istniejący start J, bez drugiego journalu. **Out of scope:** heurystyczne odtwarzanie czasu, zmiana timer duration/cadence, zmiana absolute-deadline sessions.
 
