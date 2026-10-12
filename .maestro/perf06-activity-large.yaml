@@ -1,0 +1,45 @@
+appId: com.lkurczab.patternly
+name: PERF-06 Activity 1000 - middle selection and full traversal
+---
+# Configure isolated activity/1000 first; no launch, reset or persisted mutations.
+# Slow short checkpoints locate the middle row; bounded flicks traverse the full list.
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-10" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-20" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-30" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-40" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-50" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- assertVisible: { id: "patternly:activity:unavailable-row:perf06-session-50" }
+- tapOn: { id: "patternly:activity:unavailable-row:perf06-session-50" }
+- repeat:
+    times: 200
+    while:
+      notVisible: { id: "patternly:activity:unavailable-details:perf06-session-50" }
+    commands:
+      - swipe: { start: "50%, 80%", end: "50%, 20%", duration: 100 }
+- assertVisible: { id: "patternly:activity:unavailable-details:perf06-session-50" }
+- assertVisible: "Preserved result: 6/20"
+- takeScreenshot: activity1000-middle-selection-at-end
+- scrollUntilVisible: { element: { id: "patternly:activity:row:perf06-session-999" }, direction: UP, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- assertVisible: { id: "patternly:activity:row:perf06-session-999" }
+- takeScreenshot: activity1000-last-row
+- repeat:
+    times: 200
+    while:
+      notVisible: { id: "patternly:activity:unavailable-row:perf06-session-0" }
+    commands:
+      - swipe: { start: "50%, 20%", end: "50%, 80%", duration: 100 }
+- assertVisible: { id: "patternly:activity:unavailable-row:perf06-session-0" }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-10" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-20" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-30" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-40" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-50" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- assertVisible: { id: "patternly:activity:unavailable-row:perf06-session-50" }
+- takeScreenshot: activity1000-return-to-selected-middle-row
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-40" }, direction: UP, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-30" }, direction: UP, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-20" }, direction: UP, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-10" }, direction: UP, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { id: "patternly:activity:unavailable-row:perf06-session-0" }, direction: UP, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- assertVisible: { id: "patternly:activity:filter" }
+- takeScreenshot: activity1000-return-to-start

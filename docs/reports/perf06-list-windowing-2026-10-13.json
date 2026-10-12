@@ -302,5 +302,35 @@
       "HTTP storage SQLite WAL/shared memory"
     ],
     "scope": "Physical comparison only; reuses previous logical census, not a new profile census."
+  },
+  "nativeFunctionalAcceptance": {
+    "activity50": {
+      "kind": "complete final versioned flow",
+      "exitCode": 0,
+      "scope": "end49/details0/result6of20/return25/filter/row0/sheet"
+    },
+    "activity1000": {
+      "kind": "composite slow-probe plus continuation",
+      "exitCode": 0,
+      "scope": "select50/details50/result6of20/end999/return0/revisit50/returnFilter",
+      "directIdentifiedCellRemountObserved": false,
+      "completeFinalVersionedFlowRun": false
+    },
+    "review100": {
+      "kind": "historical composite start plus continuation",
+      "exitCode": 0,
+      "scope": "selection/details/unavailable/requestremove/cancel; no removal"
+    },
+    "review1000": {
+      "kind": "prepared flow, unrun"
+    }
+  },
+  "hostedSourceCi": {
+    "sha": "7c882cad49faf69191c0753f590f34105f8f6a75",
+    "runId": 38320399759,
+    "conclusion": "success",
+    "pass": 2532,
+    "fail": 0,
+    "skip": 5
   }
 }

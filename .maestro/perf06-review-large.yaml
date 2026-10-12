@@ -1,0 +1,37 @@
+appId: com.lkurczab.patternly
+name: PERF-06 Review 1000 - middle selection and full traversal
+---
+# Configure isolated review-due/1000 or review-upcoming/1000 first.
+# No launch, reset, removal or persisted mutation.
+- scrollUntilVisible: { element: { text: "Review item 12:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { text: "Review item 22:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { text: "Review item 32:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { text: "Review item 42:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { text: "Review item 52:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- assertVisible: "Review item 52:.*"
+- tapOn: "Review item 52:.*"
+- repeat:
+    times: 200
+    while:
+      notVisible: "Synthetic review item 52:.*"
+    commands:
+      - swipe: { start: "50%, 80%", end: "50%, 20%", duration: 100 }
+- assertVisible: "Synthetic review item 52:.*"
+- takeScreenshot: review1000-middle-selection-at-end
+- scrollUntilVisible: { element: { id: "patternly:review:unavailable-row:perf06-review-995" }, direction: UP, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- assertVisible: { id: "patternly:review:unavailable-row:perf06-review-995" }
+- takeScreenshot: review1000-last-unavailable-row
+- repeat:
+    times: 200
+    while:
+      notVisible: "Review item 2:.*"
+    commands:
+      - swipe: { start: "50%, 20%", end: "50%, 80%", duration: 100 }
+- assertVisible: "Review item 2:.*"
+- scrollUntilVisible: { element: { text: "Review item 12:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { text: "Review item 22:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { text: "Review item 32:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { text: "Review item 42:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- scrollUntilVisible: { element: { text: "Review item 52:.*" }, direction: DOWN, timeout: 20000, speed: 40, visibilityPercentage: 50, centerElement: true }
+- assertVisible: "Review item 52:.*"
+- takeScreenshot: review1000-return-to-selected-middle-row
