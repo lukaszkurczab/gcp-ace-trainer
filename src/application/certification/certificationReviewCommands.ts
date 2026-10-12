@@ -29,7 +29,7 @@ export async function setQuestionNeedsReview(
   }
   const exactQuestion = await contentPackageRuntimeOwner.resolveItem(sourceItem);
   assertCurrentProfile();
-  if (exactQuestion.questionId !== sourceItem.questionId) {
+  if (exactQuestion.question.questionId !== sourceItem.questionId) {
     throw new Error("Certification review question does not match its exact content artifact.");
   }
 
@@ -78,13 +78,13 @@ export async function setQuestionNeedsReview(
 
     const nonce = createIdentityNonce();
     const manualRequestId = `manual:${await createIdentityFingerprint({ action: "manual-review-request", trackId: sourceItem.trackId, sourceItem,
-      sourceAttemptId: input.sourceAttemptId ?? `manual-mark:${sourceSessionId}:${exactQuestion.questionId}:${now}`, sourceSessionId, requestedAt: now, nonce })}`;
+      sourceAttemptId: input.sourceAttemptId ?? `manual-mark:${sourceSessionId}:${exactQuestion.question.questionId}:${now}`, sourceSessionId, requestedAt: now, nonce })}`;
     const transitionId = `manual-review:${nonce}`;
     const id = `review:manual:${nonce}`;
     const record: ReviewQueueEntry = {
       id,
       trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
-      sourceAttemptId: input.sourceAttemptId ?? `manual-mark:${sourceSessionId}:${exactQuestion.questionId}:${now}`,
+      sourceAttemptId: input.sourceAttemptId ?? `manual-mark:${sourceSessionId}:${exactQuestion.question.questionId}:${now}`,
       sourceSessionId,
       reasons: ["manual_mark"],
       dueAt: now,
@@ -93,7 +93,7 @@ export async function setQuestionNeedsReview(
       persistent: true,
       manualRequestId,
       sourceItem,
-      taxonomyOrSkillRefs: [{ axisId: "node", nodeId: exactQuestion.nodeId, role: "primary" }],
+      taxonomyOrSkillRefs: [{ axisId: "node", nodeId: exactQuestion.question.nodeId, role: "primary" }],
       policyVersion: "bizq04-v1",
       stage: "manual_requested",
       status: "active",

@@ -3,6 +3,7 @@ import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
+import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { createDefaultGoal, type TrackId } from "../../domain";
 import { homePlanSnapshotReader } from "../homePlanSnapshotReader";
 import { learningPlanEditorCoordinator, learningPlanProposalCoordinator } from "./";
@@ -101,7 +102,8 @@ test("one lifecycle clock drives a real answer due time and proposal, editor, an
   });
   const first = prepared.session.itemOrder[0];
   assert.ok(first, "the real legal diagnosis must contain its first canonical item");
-  const question = await contentPackageRuntimeOwner.resolveItem(first.item);
+  const question = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK).getQuestion(first.item.questionId);
+  assert.ok(question, "The exact shipped fixture resolves its authored response for this test setup.");
   const expectedDueAt = new Date(Date.parse(getApplicationCurrentTime()) + DAY_MS).toISOString();
   await lifecycle.submitPracticeResponse(incorrectResponse(question));
 

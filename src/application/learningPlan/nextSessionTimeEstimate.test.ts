@@ -29,7 +29,7 @@ test("incomplete V3 next-session estimates stay unavailable without an exact acc
   assert.equal(completion.kind, "in_progress");
 
   const baseRecommendation = recommendLearningPlanMode({
-    familyId: "certification",
+    binding: resolved.runtime.getPlanningModeBinding(),
     trackId: track.trackId,
     modes: track.modes,
     sessions: [],
@@ -56,7 +56,7 @@ test("incomplete V3 next-session estimates stay unavailable without an exact acc
     { kind: "unavailable", reason: "missing_scope_estimate", scopeRefs: [] }, "unknown completion evidence cannot authorize a generic D01 estimate");
 
   const dueReviewRecommendation = recommendLearningPlanMode({
-    familyId: "certification",
+    binding: resolved.runtime.getPlanningModeBinding(),
     trackId: track.trackId,
     modes: track.modes,
     sessions: [],

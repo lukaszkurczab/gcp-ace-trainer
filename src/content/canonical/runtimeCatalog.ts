@@ -16,6 +16,7 @@ import { createCanonicalQuestionCatalog, type CanonicalQuestionCatalog } from ".
 import type { CanonicalContentLockRecord, CanonicalProductSimulationProfile, Question } from "./questionTypes";
 import { validateLearningPlanningPolicy, type LearningPlanningPolicy } from "./planningPolicy";
 import { assertValidContentSuccessorLedger, contentSuccessorLedgerEntry, type ContentPlanningPolicyIdentity, type ContentTrackIdentity, type ContentSuccessorLedger } from "./contentSuccessorLedger";
+import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from "./interactions/registry";
 
 const artifacts: readonly unknown[] = Object.freeze([aws, backend, claude, coding, frontend, gcp, az104, ai901, objectDesign]);
 const locks = new Map((lockFile.tracks as CanonicalContentLockRecord[]).map((entry) => [entry.trackId, entry]));
@@ -26,6 +27,7 @@ export type CanonicalTrackRuntime = Readonly<{
   artifactSha256: string;
   contentReleaseId: string;
   questions: readonly Question[];
+  interactions: CanonicalInteractionRegistry;
   completionRule?: PackageCompletionRule;
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   planningPolicy?: LearningPlanningPolicy;
@@ -48,7 +50,7 @@ export type CanonicalRuntimeCatalog = Readonly<{
   getMode(trackId: string, modeId: string): ProductModeConfig;
   getPool(trackId: string, modeId: string): readonly Question[];
 }>;
-export type CanonicalRuntimeBuildDependencies = Readonly<{ artifacts?: readonly unknown[]; locks?: readonly CanonicalContentLockRecord[]; sha256Utf8?: (value: string) => Promise<string>; successorLedger?: unknown }>;
+export type CanonicalRuntimeBuildDependencies = Readonly<{ artifacts?: readonly unknown[]; locks?: readonly CanonicalContentLockRecord[]; sha256Utf8?: (value: string) => Promise<string>; successorLedger?: unknown; interactionRegistry?: CanonicalInteractionRegistry }>;
 
 let activeCatalog: Promise<CanonicalRuntimeCatalog> | undefined;
 
@@ -83,6 +85,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
   const sourceArtifacts = dependencies.artifacts ?? artifacts;
   const sourceLocks = new Map((dependencies.locks ?? [...locks.values()]).map((entry) => [entry.trackId, entry]));
   const sha256 = dependencies.sha256Utf8 ?? contentHasher.sha256;
+  const interactionRegistry = dependencies.interactionRegistry ?? canonicalInteractionRegistry;
   const successorLedger = dependencies.successorLedger ?? (dependencies.artifacts === undefined ? successorLedgerFile : undefined);
   if (successorLedger !== undefined) assertValidContentSuccessorLedger(successorLedger);
   const catalogs: CanonicalQuestionCatalog[] = [];
@@ -91,7 +94,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
     const trackId = (artifact as Record<string, unknown>).trackId as string;
     const lock = sourceLocks.get(trackId);
     if (!lock) throw new Error(`Canonical content lock is missing for ${trackId}.`);
-    catalogs.push(await createCanonicalQuestionCatalog(artifact, lock, trackId, sha256));
+    catalogs.push(await createCanonicalQuestionCatalog(artifact, lock, trackId, sha256, interactionRegistry));
     if (successorLedger !== undefined) {
       const entry = contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, trackId);
       const source = artifact as Record<string, unknown>;
@@ -109,7 +112,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
   const projections = catalogs.map((catalog) => ({ schemaVersion: "patternly-content-artifact-v1", trackId: catalog.trackId, contentVersion: catalog.contentVersion, questions: catalog.questions.map((question) => ({ trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, questionId: question.questionId, interaction: { type: question.interaction.type } })) }));
   const modeConfigs = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, projections);
   const byTrack = new Map(catalogs.map((catalog) => [catalog.trackId, createTrackRuntime(catalog, modeConfigs,
-    successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId))]));
+    successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId), interactionRegistry)]));
   return Object.freeze({
     tracks: Object.freeze(catalogs.map((catalog) => catalog.trackId)),
     getTrack(trackId: string) { const result = byTrack.get(trackId); if (!result) throw new Error(`Canonical track ${trackId} is unavailable; restart to load canonical content.`); return result; },
@@ -121,7 +124,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
   });
 }
 
-function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number]): CanonicalTrackRuntime {
+function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): CanonicalTrackRuntime {
   const modes = Object.freeze(configs.filter((config) => config.trackId === catalog.trackId));
   const planningPolicy = catalog.planningPolicy === undefined ? undefined : validateLearningPlanningPolicy(catalog.planningPolicy, catalog.questions, modes, catalog.completionRule);
   const pools = new Map(modes.map((mode) => [mode.modeId, resolvePool(catalog, mode)]));
@@ -131,6 +134,7 @@ function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly
     artifactSha256: catalog.artifactSha256,
     contentReleaseId: catalog.artifactMetadata.contentReleaseId,
     questions: catalog.questions,
+    interactions,
     ...(catalog.completionRule ? { completionRule: catalog.completionRule } : {}),
     ...(catalog.simulationProfiles ? { simulationProfiles: catalog.simulationProfiles } : {}),
     ...(planningPolicy ? { planningPolicy } : {}),

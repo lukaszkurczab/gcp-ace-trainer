@@ -193,7 +193,8 @@ for (const unit of UNITS) {
       assert.deepEqual(preAnswer.constraints, question.constraints ?? []);
       assert.equal("answer" in preAnswer, false);
       assert.equal("feedback" in preAnswer, false);
-      assert.deepEqual(preAnswer.interaction, {
+      assert.equal(preAnswer.interaction.interactionType, "choice_single");
+      assert.deepEqual((preAnswer.interaction.model as { renderer: { kind: string; options: readonly { id: string; selected: boolean; text: string }[] } }).renderer, {
         kind: "choice",
         options: question.interaction.options.map((option) => ({ id: option.optionId, selected: false, text: option.text })),
       });
@@ -212,11 +213,12 @@ for (const unit of UNITS) {
 
       const displayOrder = [...optionIds].reverse();
       const controls = buildCanonicalInteractionViewModel(question, null, displayOrder);
-      assert.equal(controls.renderer.kind, "choice");
-      assert.deepEqual(controls.renderer.kind === "choice" ? controls.renderer.options.map((option) => option.id) : [], displayOrder);
-      assert.equal(controls.accessibility.label, question.prompt);
-      assert.deepEqual(controls.accessibility.controls.map((control) => control.id), displayOrder);
-      for (const control of controls.accessibility.controls) {
+      const model = controls.model as { renderer: { kind: string; options: readonly { id: string }[] }; accessibility: { label: string; controls: readonly { id: string; role: string; checked: boolean; label: string }[] } };
+      assert.equal(model.renderer.kind, "choice");
+      assert.deepEqual(model.renderer.options.map((option) => option.id), displayOrder);
+      assert.equal(model.accessibility.label, question.prompt);
+      assert.deepEqual(model.accessibility.controls.map((control) => control.id), displayOrder);
+      for (const control of model.accessibility.controls) {
         assert.equal(control.role, "radio");
         assert.equal(control.checked, false);
         assert.equal(control.label, question.interaction.options.find((option) => option.optionId === control.id)?.text);
@@ -233,7 +235,7 @@ for (const unit of UNITS) {
         assert.equal(score.kind, correct ? "correct" : "incorrect", `${reviewed.questionId}/${optionId}`);
         assert.equal(score.earnedPoints, correct ? 1 : 0);
         assert.deepEqual(scoreCanonicalQuestion(reversed, response), score, "score follows option identity regardless of order");
-        const feedback = composeCanonicalFeedback(question, response);
+        const feedback = composeCanonicalFeedback(question, response, scoreCanonicalQuestion(question, response));
         assert.equal(feedback.correctness, correct ? "correct" : "incorrect");
         assert.equal(feedback.reason, question.feedback.reason);
         assert.deepEqual(feedback.details, question.feedback.details);

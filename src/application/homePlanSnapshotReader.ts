@@ -34,9 +34,7 @@ import {
 } from "./learningPlan/targetDateGuidance";
 import { recommendLearningPlanMode } from "./learningPlan/learningPlanModeRecommendation";
 import { ActiveSessionPlanningError } from "./learningPlan/learningPlanModeRecommendation";
-import { CanonicalTrainingRuntime } from "./canonical/CanonicalTrainingRuntime";
 import { getTrainingSessionProgress } from "./trainingSessions/sessionDurability";
-import { getTrackRegistration } from "../domain/tracks/trackRegistry";
 import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
 
 /** Explicit Home failure categories. The Home surface must not invent a fallback. */
@@ -285,7 +283,7 @@ export class HomePlanSnapshotReader {
     let nextSessionLength = 0;
     if (plan.schemaVersion === 2 && activeSession) {
       try {
-        await new CanonicalTrainingRuntime(resolved.track, getTrackRegistration(trackId).familyId).validateResume({ session: activeSession, draft: null });
+        await resolved.runtime.validateResume({ session: activeSession, draft: null });
         const activeAttempts = attempts.filter((attempt) => attempt.sessionId === activeSession.id);
         if (activeAttempts.some((attempt) => attempt.committedAt === undefined)) throw new Error("Active session contains an uncommitted attempt.");
         getTrainingSessionProgress(activeSession, activeAttempts);
@@ -299,7 +297,7 @@ export class HomePlanSnapshotReader {
       dueReviews = evidence.dueReviews;
       if (plan.schemaVersion === 2) {
         const recommendation = recommendLearningPlanMode({
-          familyId: getTrackRegistration(trackId).familyId,
+          binding: resolved.runtime.getPlanningModeBinding(),
           trackId,
           modes: resolved.track.modes,
           sessions,

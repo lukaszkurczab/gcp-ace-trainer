@@ -13,6 +13,7 @@ import { SessionShell } from "../coding-interview/session/SessionShell";
 import { radius, spacing, typography } from "../../theme";
 import { PracticeFeedbackBlock } from "./PracticeFeedbackBlock";
 import { PracticeResponseControls } from "./PracticeResponseControls";
+import type { PracticeResponseRenderer } from "./practiceResponseRendererRegistry";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
@@ -68,6 +69,9 @@ export type PracticeSessionSurfaceProps = Readonly<{
   onConfirmLeave: () => void;
   onDismissExit: () => void;
   onOrderingMove: (elementId: string, direction: "up" | "down") => void;
+  onInteractionResponseChange?: (response: unknown) => void;
+  interactionResponse?: unknown;
+  responseRendererBindings?: ReadonlyMap<string, PracticeResponseRenderer>;
   onPrimaryAction?: () => void;
   onRequestLeave: () => void;
   onRetry?: () => void;
@@ -121,6 +125,9 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
         onChoicePress={props.onChoicePress}
         onComplexityValuePress={props.onComplexityValuePress}
         onOrderingMove={props.onOrderingMove}
+        onInteractionResponseChange={props.onInteractionResponseChange}
+        interactionResponse={props.interactionResponse}
+        rendererBindings={props.responseRendererBindings}
       />
     </>
   ) : null;

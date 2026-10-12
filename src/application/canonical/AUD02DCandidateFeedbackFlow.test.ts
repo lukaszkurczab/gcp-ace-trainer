@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { parseAllDocuments } from "yaml";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import { selectPracticeQuestions } from "./practiceQuestionSelector";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 
@@ -44,10 +44,12 @@ test("AUD-02D feedback flows match canonical selected answers and conditional re
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack(TRACK_ID);
   const pool = track.getPool(MODE_ID);
-  const selected = selectPracticeQuestions(pool, [], track, 10);
+  const selected = selectPracticeQuestions(pool, [], track, 10)
+    .map((question) => track.getQuestion(question.questionId)!)
+    .filter((question): question is NonNullable<typeof question> => Boolean(question));
   assert.deepEqual(selected.map(({ questionId }) => questionId), EXPECTED_IDS);
 
-  const prepared = await new CanonicalTrainingRuntime(track).prepare({
+  const prepared = await createCanonicalTrainingFamilyRuntime(track).prepare({
     trackId: TRACK_ID,
     modeId: MODE_ID,
     request: { sessionId: "aud02d-contract", requestedLength: 10, feedbackTiming: "after_each_durable_submit" },

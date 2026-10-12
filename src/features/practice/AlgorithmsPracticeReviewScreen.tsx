@@ -120,12 +120,13 @@ export function AlgorithmsPracticeReviewScreen({ navigation, route }: Props) {
       <Text maxFontSizeMultiplier={2} style={[styles.result, styles[item.correctness]]}>{t(item.correctness === "unanswered" ? "Unanswered" : item.correctness === "correct" ? "Correct" : item.correctness === "partial" ? "Partial" : "Incorrect")}</Text>
       <PracticeResponseControls
         control={buildPracticeResponseControl({
-          choiceSelectionMode: item.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single",
+          choiceSelectionMode: item.interaction.interactionType === "choice_multiple" ? "multiple" : "single",
           feedbackControls: item.controls,
           localResponse: null,
-          renderer: item.interaction.renderer,
+          renderer: item.interaction,
         })}
         editable={false}
+        interactionResponse={undefined}
         itemId={questionId}
         onChoicePress={noop}
         onComplexityValuePress={noop}

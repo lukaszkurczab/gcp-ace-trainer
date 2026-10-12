@@ -7,7 +7,7 @@ import test from "node:test";
 import { loadCanonicalRuntimeCatalog, scoreCanonicalQuestion, type Question } from "./canonical";
 import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
 import { detailLines } from "../features/practice/feedbackDetails";
-import { CanonicalTrainingRuntime } from "../application/canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../application/canonicalTrainingFamilyComposition";
 import { composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages } from "../application/canonical/canonicalInteractionPresentation";
 import type { ReviewQueueEntry } from "../domain";
 
@@ -113,9 +113,9 @@ test("BESD B02-B09 cohort of 134 questions scores and presents feedback by stabl
       assert.deepEqual(Object.keys(view).sort(), ["constraints", "interaction", "itemId", "prompt"]);
       assert.equal(view.prompt, question.prompt);
       assert.deepEqual(view.constraints, question.constraints ?? []);
-      assert.equal(view.interaction.kind, "choice");
-      if (view.interaction.kind !== "choice") throw new Error(`Expected choice interaction projection for ${question.questionId}`);
-      assert.deepEqual(view.interaction.options, question.interaction.options.map((option) => ({ id: option.optionId, selected: false, text: option.text })));
+      assert.equal(view.interaction.interactionType, question.interaction.type);
+      const presentation = view.interaction.model as { renderer: { options: readonly { id: string; selected: boolean; text: string }[] } };
+      assert.deepEqual(presentation.renderer.options, question.interaction.options.map((option) => ({ id: option.optionId, selected: false, text: option.text })));
       assert.ok(view.constraints.every((constraint) => !/the primary decision is|the correct answer is|select the correct option/iu.test(constraint)), `${question.questionId} pre-submit constraints do not disclose the answer`);
 
       const reordered = {
@@ -137,7 +137,7 @@ test("BESD B02-B09 cohort of 134 questions scores and presents feedback by stabl
         const expectedMessages = optionId === correctId ? [] : wrongMessages.filter((message) => message.targetId === optionId);
         if (optionId !== correctId) assert.equal(expectedMessages.length, 1, `${question.questionId}/${optionId} has a matching stable-ID explanation`);
         assert.deepEqual(delivered, expectedMessages, `${question.questionId}/${optionId} presents only feedback for the selected wrong option`);
-        assert.deepEqual(composeCanonicalFeedback(reordered, response).messages, expectedMessages, `${question.questionId}/${optionId} composed feedback preserves the authored target`);
+        assert.deepEqual(composeCanonicalFeedback(reordered, response, scoreCanonicalQuestion(reordered, response)).messages, expectedMessages, `${question.questionId}/${optionId} composed feedback preserves the authored target`);
       }
     }
   }
@@ -153,6 +153,6 @@ test("BIZQ-01 replaced identities from an old package do not enter current due r
     sourceItem: { trackId, questionId: item.replacedId, contentVersion: "backend-system-design-interview-candidate-v2026.08.15", artifactSha256: "0".repeat(64) },
     taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], dueAt: now, createdAt: now, consecutiveAfterDueSuccesses: 0, persistent: false,
   }));
-  const projection = await new CanonicalTrainingRuntime(track).queryReview({ trackId, reviews, now });
+  const projection = await createCanonicalTrainingFamilyRuntime(track).queryReview({ trackId, reviews, now });
   assert.equal((projection as { due: readonly ReviewQueueEntry[] }).due.length, 0);
 });

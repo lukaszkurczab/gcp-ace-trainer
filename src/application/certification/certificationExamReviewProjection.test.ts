@@ -59,13 +59,7 @@ test("completed exam review projects authored diagnostics only for stored answer
   const { messages: _messages, ...feedbackWithoutMessages } = noMessageQuestion.feedback;
   questionsById.set(withoutAuthored, { ...noMessageQuestion, feedback: feedbackWithoutMessages } as Question);
 
-  const projection = await projectCertificationExamReview({
-    attempts: fixture.attempts,
-    profile: fixture.profile,
-    questionsById,
-    result: fixture.result,
-    session: fixture.session,
-  });
+  const projection = await fixture.projectWithQuestions(questionsById);
   assert.deepEqual(projection.items[0]?.messages, []);
   const wrong = projection.items[1]!;
   assert.equal(wrong.answerState, "answered");
@@ -106,11 +100,5 @@ test("exam review rejects a committed plan whose domain counts do not match the 
       },
     },
   } as CanonicalSimulationProfile;
-  await assert.rejects(projectCertificationExamReview({
-    attempts: fixture.attempts,
-    profile,
-    questionsById: fixture.questionsById,
-    result: fixture.result,
-    session: fixture.session,
-  }), /weighted profile quotas/);
+  await assert.rejects(fixture.project(fixture.result, fixture.attempts, fixture.session, profile), /weighted profile quotas/);
 });

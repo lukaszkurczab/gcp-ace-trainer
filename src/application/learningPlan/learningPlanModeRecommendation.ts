@@ -1,11 +1,8 @@
 import type { ProductModeConfig } from "../../content/canonical/productModeConfig";
 import type { LearningPlanExecutionPolicy } from "../../domain/learning/learningPlan";
 import type { TrainingSession } from "../../domain/learning/trainingSession";
-import type { TrackFamilyId } from "../../domain/learning/trackIdentity";
+import type { FamilyPlanningModeBinding } from "../trainingLifecycle/contracts";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
-import { ALGORITHM_MODE_IDS } from "../../tracks/coding-interview/domain/algorithmModes";
-import { CERTIFICATION_PRACTICE_MODE_IDS } from "../../tracks/certification";
-import { DESIGN_INTERVIEW_MODE_IDS } from "../../tracks/design-interview/designModes";
 
 export type LearningPlanModeRecommendation = Readonly<{
   mode: ProductModeConfig;
@@ -30,15 +27,17 @@ export class ActiveSessionPlanningError extends Error {
  * cannot silently schedule the one-off diagnosis again.
  */
 export function recommendLearningPlanMode(input: Readonly<{
-  familyId: TrackFamilyId;
+  binding: FamilyPlanningModeBinding;
   trackId: string;
   modes: readonly ProductModeConfig[];
   sessions: readonly TrainingSession[];
   activeSession?: TrainingSession | null;
   dueReviewCount: number;
 }>): LearningPlanModeRecommendation {
+  assertPlanningModeBinding(input.binding, input.trackId);
   if (input.modes.length === 0 || !Number.isSafeInteger(input.dueReviewCount) || input.dueReviewCount < 0 || input.modes.some((mode) => mode.trackId !== input.trackId)) throw new RangeError("Canonical planning modes are invalid.");
   const byId = new Map(input.modes.map((mode) => [mode.modeId, mode]));
+  if (byId.size !== input.modes.length) throw new RangeError("Canonical planning modes contain duplicate identities.");
   const indexedActive = input.sessions.filter((session) => session.status === "active");
   const active = input.activeSession ?? null;
   if (indexedActive.length > 1 || ((input.activeSession === undefined || active === null) && indexedActive.length > 0)) {
@@ -49,12 +48,16 @@ export function recommendLearningPlanMode(input: Readonly<{
     const indexed = indexedActive.find((session) => session.id === active.id);
     if (!indexed || canonicalSerialize(indexed) !== canonicalSerialize(active)) throw new ActiveSessionPlanningError("active_session_not_indexed");
   }
-  const diagnostic = input.modes.find((mode) => mode.availability === "immediate" && mode.selection.kind === "exact_ordered_questions");
-  const practiceId = input.familyId === "certification" ? CERTIFICATION_PRACTICE_MODE_IDS[1]
-    : input.familyId === "coding_interview" ? ALGORITHM_MODE_IDS.guidedPractice
-      : DESIGN_INTERVIEW_MODE_IDS[1];
-  const practice = byId.get(practiceId);
-  if (!practice || practice.availability !== "immediate" || practice.selection.kind !== "node" || !practice.requestedLengths.includes(practice.defaultRequestedLength)) throw new Error("This canonical track has no legal recurring practice request.");
+  const diagnostic = input.binding.diagnosticModeId === null ? null : byId.get(input.binding.diagnosticModeId) ?? null;
+  if (input.binding.diagnosticModeId !== null && (!diagnostic || diagnostic.trackId !== input.trackId || diagnostic.availability !== "immediate" || diagnostic.selection.kind !== "exact_ordered_questions" || !diagnostic.requestedLengths.includes(diagnostic.defaultRequestedLength))) {
+    throw new Error("The family planning binding has no legal diagnostic mode for this canonical track.");
+  }
+  const practice = byId.get(input.binding.practiceModeId);
+  if (!practice || practice.trackId !== input.trackId || practice.availability !== "immediate" || practice.selection.kind !== "node" || !practice.requestedLengths.includes(practice.defaultRequestedLength)) throw new Error("The family planning binding has no legal recurring practice request for this canonical track.");
+  const reviewMode = input.binding.dueReviewModeId === null ? null : byId.get(input.binding.dueReviewModeId) ?? null;
+  if (input.binding.dueReviewModeId !== null && (!reviewMode || reviewMode.trackId !== input.trackId || reviewMode.availability !== "evidence_conditioned" || reviewMode.selection.kind !== "evidence_conditioned" || !reviewMode.selection.evidenceSources.includes("due_queue") || !reviewMode.requestedLengths.includes(reviewMode.defaultRequestedLength))) {
+    throw new Error("The family planning binding has no legal due-review mode for this canonical track.");
+  }
 
   const diagnosticSessions = diagnostic ? input.sessions.filter((session) => session.trackId === input.trackId && session.modeId === diagnostic.modeId) : [];
   const diagnosis = !diagnostic ? "not_available" as const
@@ -62,8 +65,7 @@ export function recommendLearningPlanMode(input: Readonly<{
       : diagnosticSessions.some((session) => session.status === "completed") ? "completed" as const
         : diagnosticSessions.some((session) => session.status === "abandoned") ? "abandoned" as const
           : "scheduled" as const;
-  const reviewMode = input.modes.find((mode) => mode.availability === "evidence_conditioned" && mode.selection.kind === "evidence_conditioned" && mode.selection.evidenceSources.includes("due_queue")) ?? null;
-  const selectedReview = input.dueReviewCount > 0 ? reviewMode : undefined;
+  const selectedReview = input.dueReviewCount > 0 ? reviewMode ?? undefined : undefined;
   const activeMode = active ? byId.get(active.modeId) : undefined;
   if (active && (!activeMode || activeMode.availability !== "immediate" && activeMode.availability !== "evidence_conditioned" || activeMode.timer.kind !== "elapsed_foreground")) {
     throw new ActiveSessionPlanningError("active_session_mode_unavailable");
@@ -89,4 +91,17 @@ export function recommendLearningPlanMode(input: Readonly<{
     phase: mode === diagnostic ? "diagnosis" : mode.selection.kind === "evidence_conditioned" ? "review" : "practice",
     diagnosis,
   });
+}
+
+function assertPlanningModeBinding(value: FamilyPlanningModeBinding, trackId: string): void {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new RangeError("A family planning-mode binding is required.");
+  const keys = Object.keys(value).sort();
+  if (keys.join("|") !== "diagnosticModeId|dueReviewModeId|practiceModeId|trackId" || value.trackId !== trackId ||
+    typeof value.practiceModeId !== "string" || value.practiceModeId.trim().length === 0 ||
+    !(value.diagnosticModeId === null || typeof value.diagnosticModeId === "string" && value.diagnosticModeId.trim().length > 0) ||
+    !(value.dueReviewModeId === null || typeof value.dueReviewModeId === "string" && value.dueReviewModeId.trim().length > 0)) {
+    throw new RangeError("The family planning-mode binding is malformed or belongs to a different track.");
+  }
+  const roles = [value.diagnosticModeId, value.practiceModeId, value.dueReviewModeId].filter((modeId): modeId is string => modeId !== null);
+  if (new Set(roles).size !== roles.length) throw new RangeError("The family planning-mode binding reuses a mode across roles.");
 }

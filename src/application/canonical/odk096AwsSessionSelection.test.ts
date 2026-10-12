@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 import test from "node:test";
 
 import { buildCanonicalRuntimeCatalog, type CanonicalContentLockRecord } from "../../content/canonical";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import type { ReviewQueueEntry } from "../../domain";
 
 type CurrentProducerBuilder = Readonly<{
@@ -37,7 +37,7 @@ test("ODK-096 AWS Free focus selects unique 10/20/40 question plans from the cur
     const locks = lock.tracks.map((entry) => entry.trackId === AWS_TRACK_ID ? current.lockEntry : entry);
     const catalog = await buildCanonicalRuntimeCatalog({ artifacts, locks });
     const track = catalog.getTrack(AWS_TRACK_ID);
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     const focus = track.getMode("certification-focus-practice");
     assert.deepEqual(focus.requestedLengths, [10, 20, 40]);
     assert.equal(focus.selection.kind, "node");
@@ -79,7 +79,7 @@ test("ODK-096 AWS evidence-conditioned review truthfully shortens to due evidenc
     const locks = lock.tracks.map((entry) => entry.trackId === AWS_TRACK_ID ? current.lockEntry : entry);
     const catalog = await buildCanonicalRuntimeCatalog({ artifacts, locks });
     const track = catalog.getTrack(AWS_TRACK_ID);
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     const reviewMode = track.getMode("certification-weak-area-review");
     assert.equal(reviewMode.selection.kind, "evidence_conditioned");
     if (reviewMode.selection.kind !== "evidence_conditioned") throw new Error("AWS weak review must be evidence-conditioned.");

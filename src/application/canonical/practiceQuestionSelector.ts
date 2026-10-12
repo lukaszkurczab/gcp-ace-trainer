@@ -1,5 +1,12 @@
 import type { TrainingAttempt } from "../../domain";
-import type { Question } from "../../content/canonical/questionTypes";
+
+type Question = Readonly<{
+  questionId: string;
+  trackId: string;
+  nodeId: string;
+  mentalUnitId: string;
+  questionRelation?: Readonly<{ counterpartQuestionId: string; kind: "near_variant" | "condition_contrast" }>;
+}>;
 
 type ContentPin = Readonly<{ trackId: string; contentVersion: string; artifactSha256: string }>;
 

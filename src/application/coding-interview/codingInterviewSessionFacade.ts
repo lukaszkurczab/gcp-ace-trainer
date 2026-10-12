@@ -1,9 +1,11 @@
 import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts } from "../learningReadModels";
 import {
   getForegroundSessionTimerFacade,
-  getTrainingLifecycleUseCases,
   PracticeCompletionCheckpointError,
+  getTrainingLifecycleUseCases,
   startTrainingSession,
+  type TrainingLifecycleUseCases,
+  type ForegroundSessionTimerFacade,
   type ForegroundSessionTimerEvent,
   type ForegroundTimeProjection,
   type PreparedSession,
@@ -11,18 +13,19 @@ import {
   type PracticeFinalization,
   type SimulationCommandAuthorization,
 } from "../trainingLifecycle";
-import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
+import { contentPackageRuntimeOwner, type ContentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { resolvedContentRefsEqual, type ResolvedContentRef, type TrainingAttempt, type TrainingSession, type TrainingSessionResult } from "../../domain";
-import { buildCanonicalInteractionViewModel, composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls } from "../canonical/canonicalInteractionPresentation";
+import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/coding-interview/domain";
 import type { AlgorithmsLifecyclePreparationRequest } from "./codingInterviewContracts";
 import { simulationHasReviewConflict, type PracticeDurableOperationState, type SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
-import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalQuestionResponse, type Question } from "../../content/canonical";
+import type { CanonicalQuestionResponse, JsonValue } from "../../content/canonical";
+import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { isCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
 import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
-import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
+import { projectCanonicalSourceEvidence, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { overallScoreCredit } from "../canonical/overallScoreCredit";
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
@@ -33,21 +36,22 @@ export type AlgorithmsPracticeProjection = Readonly<{
   operation: PracticeDurableOperationState;
   session: TrainingSession;
   position: AlgorithmsSessionPosition;
+  occurrenceId: string;
   item: ResolvedContentRef;
   roadmapNodeId: string;
   prompt: string;
   constraints: readonly string[];
   elapsedForegroundMs: number;
-  interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
+  interaction: Readonly<{ interactionType: string; model: unknown }>;
   feedback: Readonly<{
     correctness: "correct" | "partial" | "incorrect";
     reason: string;
-    details: Question["feedback"]["details"];
+    details: JsonValue;
     sources?: readonly CanonicalSourceLink[];
     messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[];
     controls: readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }> [];
   }> | null;
-  response: Readonly<{ source: "local" | "committed" | "materialized"; value: CanonicalQuestionResponse }> | null;
+  response: Readonly<{ source: "local" | "committed" | "materialized"; value: unknown }> | null;
 }>;
 
 export type AlgorithmsSimulationProjection = Readonly<{
@@ -58,7 +62,7 @@ export type AlgorithmsSimulationProjection = Readonly<{
   navigator: readonly Readonly<{ index: number; occurrenceId: string; answered: boolean; current: boolean; flagged: boolean }>[];
   item: ResolvedContentRef;
   prompt: string;
-  interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
+  interaction: Readonly<{ interactionType: string; model: unknown }>;
   durableDraftRevision: number;
   elapsedForegroundMs: number;
   remainingForegroundMs: number;
@@ -86,10 +90,10 @@ export type AlgorithmsSessionResultProjection = Readonly<{
   feedbackItems: readonly Readonly<{
     constraints: readonly string[];
     correctness: "correct" | "partial" | "incorrect" | "unanswered";
-    details: Question["feedback"]["details"];
-    messages?: Question["feedback"]["messages"];
+    details: JsonValue;
+    messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[];
     sources?: readonly CanonicalSourceLink[];
-    interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
+    interaction: Readonly<{ interactionType: string; model: unknown }>;
     item: ResolvedContentRef;
     questionId: string;
     occurrenceId: string;
@@ -109,8 +113,17 @@ export type AlgorithmsInterviewSimulationEntry = Readonly<{
   requestedLength: 40;
 }>;
 
-type StartAlgorithmsSessionInput = Omit<AlgorithmsLifecyclePreparationRequest, "sessionId"> & Readonly<{
+/** A Coding practice facade bound to one exact package owner and its lifecycle/timer composition. */
+export type AlgorithmsPracticeFacade = Readonly<{
+  getProjection(): Promise<AlgorithmsPracticeProjection>;
+  submitResponse(response: AlgorithmResponse): Promise<void>;
+  submitInteractionResponse(response: unknown): Promise<void>;
+  isInteractionResponseComplete(response: unknown): Promise<boolean>;
+}>;
+
+export type StartAlgorithmsSessionInput = Omit<AlgorithmsLifecyclePreparationRequest, "sessionId"> & Readonly<{
   modeId: AlgorithmModeId;
+  nodeId?: string;
   source?: string;
 }>;
 
@@ -128,7 +141,42 @@ function toCanonicalAlgorithmsStartRequest(input: StartAlgorithmsSessionInput): 
   return { ...request, ...(feedbackTiming ? { feedbackTiming } : {}) };
 }
 
-/** UI-facing canonical entry points. No storage, runtime, selection or timer ownership leaks into presentation. */
+/** One canonical implementation for Coding practice; the exact content owner is a required dependency. */
+export function createAlgorithmsPracticeFacade(owner: ContentPackageRuntimeOwner): AlgorithmsPracticeFacade {
+  return Object.freeze({
+    getProjection: () => projectAlgorithmsPractice(owner, getTrainingLifecycleUseCases(), getForegroundSessionTimerFacade()),
+    async submitResponse(response) {
+      const session = await requireAlgorithmsSession();
+      const occurrence = session.itemOrder[session.currentItemIndex];
+      if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
+      const exactItem = await owner.resolveItem(occurrence.item);
+      await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
+      await getTrainingLifecycleUseCases().submitPracticeResponse(toCanonicalPracticeResponse(exactItem.question.interactionType, response));
+    },
+    async submitInteractionResponse(response) {
+      const session = await requireAlgorithmsSession();
+      const occurrence = session.itemOrder[session.currentItemIndex];
+      if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
+      const exactItem = await owner.resolveItem(occurrence.item);
+      if (!exactItem.interactions.isComplete(exactItem.question.questionId, response)) throw new TrainingApplicationFailure("invalid_response", "The exact interaction response is incomplete or invalid.");
+      await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
+      await getTrainingLifecycleUseCases().submitPracticeResponse(response);
+    },
+    async isInteractionResponseComplete(response) {
+      const session = await requireAlgorithmsSession();
+      const occurrence = session.itemOrder[session.currentItemIndex];
+      if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
+      const exactItem = await owner.resolveItem(occurrence.item);
+      return exactItem.interactions.isComplete(exactItem.question.questionId, response);
+    },
+  });
+}
+
+function defaultAlgorithmsPracticeFacade(): AlgorithmsPracticeFacade {
+  return createAlgorithmsPracticeFacade(contentPackageRuntimeOwner);
+}
+
+/** UI-facing canonical entry points delegate to the exact-owner-bound practice facade. */
 export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput): Promise<PreparedSession> {
   const prepared = await startTrainingSession({
     trackId: "coding-interview-dsa-problem-solving",
@@ -151,70 +199,82 @@ export function getAlgorithmsInterviewSimulationEntry(): AlgorithmsInterviewSimu
 }
 
 export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPracticeProjection> {
+  return defaultAlgorithmsPracticeFacade().getProjection();
+}
+
+async function projectAlgorithmsPractice(
+  owner: ContentPackageRuntimeOwner,
+  lifecycle: TrainingLifecycleUseCases,
+  timer: ForegroundSessionTimerFacade,
+): Promise<AlgorithmsPracticeProjection> {
   const [session, attempts] = await Promise.all([requireAlgorithmsSession(), loadTrainingAttempts()]);
   if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("The active Algorithms session is an Interview Simulation.");
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
-  const question: Question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
-  const lifecycle = getTrainingLifecycleUseCases();
+  const exactItem = await owner.resolveItem(occurrence.item);
+  const question = exactItem.question;
   const pending = await lifecycle.getPendingMutationProjection(session.id);
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId);
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const attempt = materializedAttempt ?? committedAttempt;
-  const response = (attempt?.response ?? null) as CanonicalQuestionResponse | null;
-  const feedback = attempt && feedbackIsAvailableDuringPractice(session)
-    ? { ...composeCanonicalFeedback(question, response!), sources: projectCanonicalSourceLinks(question), controls: projectCanonicalChoiceFeedbackControls(question, response!) }
+  const response = attempt?.response ?? null;
+  const feedbackProjection = response ? exactItem.interactions.projectFeedback(question.questionId, response) : null;
+  const feedback = attempt && feedbackIsAvailableDuringPractice(session) && feedbackProjection
+    ? { correctness: attempt.result.kind, reason: feedbackProjection.reason, details: feedbackProjection.details, ...(feedbackProjection.messages === undefined ? {} : { messages: feedbackProjection.messages }), sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback: feedbackProjection }), controls: projectInteractionControls(exactItem.interactions.projectDiagnostics(question.questionId, response)) }
     : null;
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
-    getForegroundSessionTimerFacade().projection(session),
+    timer.projection(session),
   ]);
   return Object.freeze({
     kind: "practice",
     operation,
     session,
     position: position(session),
+    occurrenceId: occurrence.occurrenceId,
     item: occurrence.item,
     roadmapNodeId: question.nodeId,
     prompt: question.prompt,
     constraints: Object.freeze([...(question.constraints ?? [])]),
     elapsedForegroundMs: time.elapsedForegroundMs,
-    interaction: buildCanonicalInteractionViewModel(question, response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
+    interaction: exactItem.interactions.present(question.questionId, response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
     feedback,
     response: response ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: response }) : null,
   });
 }
 
 export async function submitAlgorithmsPracticeResponse(response: AlgorithmResponse): Promise<void> {
-  const session = await requireAlgorithmsSession();
-  const occurrence = session.itemOrder[session.currentItemIndex];
-  if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
-  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
-  await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
-  await getTrainingLifecycleUseCases().submitPracticeResponse(toCanonicalPracticeResponse(question, response));
+  return defaultAlgorithmsPracticeFacade().submitResponse(response);
+}
+/** Extension responses stay opaque through the feature facade and exact family runtime. */
+export async function submitAlgorithmsPracticeInteractionResponse(response: unknown): Promise<void> {
+  return defaultAlgorithmsPracticeFacade().submitInteractionResponse(response);
+}
+export async function isAlgorithmsPracticeInteractionResponseComplete(response: unknown): Promise<boolean> {
+  return defaultAlgorithmsPracticeFacade().isInteractionResponseComplete(response);
 }
 export async function retryAlgorithmsPracticeResponse(): Promise<void> { await getTrainingLifecycleUseCases().retryPracticeSubmission(); }
 
-export function toCanonicalPracticeResponse(question: Question, response: AlgorithmResponse): CanonicalQuestionResponse {
+export function toCanonicalPracticeResponse(interactionType: string, response: AlgorithmResponse): CanonicalQuestionResponse {
   if (response.kind === "choice") {
-    if (question.interaction.type === "choice_single") {
+    if (interactionType === "choice_single") {
       if (response.selectedOptionIds.length !== 1) throw new Error("A canonical single-choice response requires exactly one option.");
       return Object.freeze({ type: "choice_single", optionId: response.selectedOptionIds[0]! });
     }
-    if (question.interaction.type === "choice_multiple") {
+    if (interactionType === "choice_multiple") {
       return Object.freeze({ type: "choice_multiple", optionIds: Object.freeze([...response.selectedOptionIds]) });
     }
   }
-  if (response.kind === "ordering" && question.interaction.type === "ordering") {
+  if (response.kind === "ordering" && interactionType === "ordering") {
     return Object.freeze({ type: "ordering", orderedElementIds: Object.freeze([...response.orderedSubgoalIds]) });
   }
-  if (response.kind === "complexity" && (question.interaction.type === "complexity" || question.interaction.type === "decision_matrix")) {
+  if (response.kind === "complexity" && (interactionType === "complexity" || interactionType === "decision_matrix")) {
     const selectedValueIdsByDimension = Object.freeze(Object.fromEntries(
-      Object.entries(response.selectedValuesByDimension).map(([dimensionId, valueId]) => [dimensionId, Object.freeze([valueId])]),
+      Object.entries(response.selectedValuesByDimension).map(([dimensionId, valueIds]) => [dimensionId, Object.freeze([...valueIds])]),
     ));
-    return Object.freeze({ type: question.interaction.type, selectedValueIdsByDimension });
+    return Object.freeze({ type: interactionType, selectedValueIdsByDimension }) as CanonicalQuestionResponse;
   }
-  throw new Error(`Response kind ${response.kind} does not match canonical interaction ${question.interaction.type}.`);
+  throw new Error(`Response kind ${response.kind} does not match canonical interaction ${interactionType}.`);
 }
 
 /** Replays the single durable practice operation that is already journaled. */
@@ -297,7 +357,8 @@ async function getAlgorithmsSimulationProjectionForSession(
   const index = session.currentItemIndex;
   if (!Number.isInteger(index) || index < 0 || index >= session.itemOrder.length) throw new Error("Interview Simulation navigator position is outside the immutable session.");
   const occurrence = session.itemOrder[index]!;
-  const question: Question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+  const exactItem = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+  const question = exactItem.question;
   const time = await getForegroundSessionTimerFacade().projection(session, authorization);
   if (time.remainingForegroundMs === undefined) throw new Error("Interview Simulation countdown projection is unavailable.");
   const operation = await lifecycle.getSimulationOperationState(session);
@@ -315,7 +376,7 @@ async function getAlgorithmsSimulationProjectionForSession(
     }))),
     item: occurrence.item,
     prompt: question.prompt,
-    interaction: buildCanonicalInteractionViewModel(question, (draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null) as CanonicalQuestionResponse | null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
+    interaction: exactItem.interactions.present(question.questionId, draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
     durableDraftRevision: draft.revision,
     elapsedForegroundMs: time.elapsedForegroundMs,
     remainingForegroundMs: time.remainingForegroundMs!,
@@ -375,7 +436,7 @@ async function saveAlgorithmsSimulationResponseForSession(session: TrainingSessi
   const occurrence = session.itemOrder.find((item) => item.occurrenceId === input.occurrenceId);
   if (!occurrence) throw new Error(`Algorithms Interview Simulation occurrence ${input.occurrenceId} is unknown.`);
   const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
-  const response = input.response === null ? null : toCanonicalPracticeResponse(question, input.response);
+  const response = input.response === null ? null : toCanonicalPracticeResponse(question.question.interactionType, input.response);
   const responses = { ...draft.responsesByOccurrenceId };
   if (input.response === null) delete responses[input.occurrenceId];
   else responses[input.occurrenceId] = response!;
@@ -596,7 +657,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
       feedbackTiming,
       requestedLength: session.requestedLength,
     }),
-    feedbackItems: completedFeedbackItems(session, integrity.questions, integrity.attemptsByOccurrenceId),
+    feedbackItems: completedFeedbackItems(session, integrity.items, integrity.attemptsByOccurrenceId),
     score: resultScore(result.evidence.details),
     overallPointsEarned: [...integrity.attemptsByOccurrenceId.values()].reduce((sum, attempt) => sum + overallScoreCredit(attempt.result), 0),
   });
@@ -692,7 +753,7 @@ function feedbackTimingFromSession(session: TrainingSession): "afterEachAnswer" 
 }
 
 type ValidatedCompletedResult = Readonly<{
-  questions: readonly Question[];
+  items: readonly ResolvedInteractionItem[];
   attemptsByOccurrenceId: ReadonlyMap<string, TrainingAttempt<unknown>>;
 }>;
 
@@ -733,23 +794,25 @@ async function validateCompletedCodingResult(
 
   const exact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 });
   if (exact.track.trackId !== trackId || exact.track.contentVersion !== session.contentVersion || exact.track.artifactSha256 !== session.artifactSha256) throw completedResultUnavailable();
-  const questions = session.itemOrder.map((occurrence) => {
+  const items: ResolvedInteractionItem[] = [];
+  for (const occurrence of session.itemOrder) {
     if (occurrence.item.trackId !== trackId || occurrence.item.contentVersion !== session.contentVersion || occurrence.item.artifactSha256 !== session.artifactSha256) throw completedResultUnavailable();
-    const question = exact.track.getQuestion(occurrence.item.questionId);
-    if (!question || question.trackId !== occurrence.item.trackId || question.questionId !== occurrence.item.questionId ||
-      !isCanonicalOptionOrder(question, session.optionOrderByOccurrence[occurrence.occurrenceId])) throw completedResultUnavailable();
-    return question;
-  });
+    const item = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+    if (item.question.trackId !== occurrence.item.trackId || item.question.questionId !== occurrence.item.questionId ||
+      !isCanonicalOptionOrder(item.question, session.optionOrderByOccurrence[occurrence.occurrenceId], item.interactions)) throw completedResultUnavailable();
+    items.push(item);
+  }
 
   const attemptsByOccurrenceId = new Map<string, TrainingAttempt<unknown>>();
   for (const attempt of allAttempts) {
     if (attempt.sessionId !== session.id) continue;
     const index = occurrenceIds.indexOf(attempt.occurrenceId);
-    const question = index >= 0 ? questions[index] : undefined;
+    const item = index >= 0 ? items[index] : undefined;
     const occurrence = index >= 0 ? session.itemOrder[index] : undefined;
-    if (!question || !occurrence || attemptsByOccurrenceId.has(attempt.occurrenceId) || attempt.trackId !== trackId || attempt.modeId !== session.modeId ||
-      !resolvedContentRefsEqual(attempt.item, occurrence.item) || !isCanonicalResponseComplete(question, attempt.response)) throw completedResultUnavailable();
-    const scored = scoreCanonicalQuestion(question, attempt.response);
+    if (!item || !occurrence || attemptsByOccurrenceId.has(attempt.occurrenceId) || attempt.trackId !== trackId || attempt.modeId !== session.modeId ||
+      !resolvedContentRefsEqual(attempt.item, occurrence.item) || !item.interactions.isComplete(item.question.questionId, attempt.response)) throw completedResultUnavailable();
+    const scored = item.interactions.evaluate(item.question.questionId, attempt.response).result;
+    if (!scored) throw completedResultUnavailable();
     const scoredComponents = scored.components ?? [];
     const storedComponents = attempt.result.components ?? [];
     if (scored.kind !== attempt.result.kind || scored.earnedPoints !== attempt.result.earnedPoints || scored.maxPoints !== attempt.result.maxPoints ||
@@ -781,37 +844,35 @@ async function validateCompletedCodingResult(
   try { feedbackTimingFromSession(session); }
   catch { throw completedResultUnavailable(); }
 
-  return Object.freeze({ questions: Object.freeze(questions), attemptsByOccurrenceId });
+  return Object.freeze({ items: Object.freeze(items), attemptsByOccurrenceId });
 }
 
 function completedFeedbackItems(
   session: TrainingSession,
-  questions: readonly Question[],
+  items: readonly ResolvedInteractionItem[],
   attemptsByOccurrenceId: ReadonlyMap<string, TrainingAttempt<unknown>>,
 ): AlgorithmsSessionResultProjection["feedbackItems"] {
   return Object.freeze(session.itemOrder.map((occurrence, index) => {
     const attempt = attemptsByOccurrenceId.get(occurrence.occurrenceId);
-    const question = questions[index]!;
-    const response = (attempt?.response ?? question.answer) as CanonicalQuestionResponse;
-    const feedback = attempt ? composeCanonicalFeedback(question, response) : null;
+    const item = items[index]!;
+    const question = item.question;
+    const review = item.interactions.presentReview(question.questionId, attempt?.response ?? null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
+    const feedback = review.feedback;
+    if (!feedback) throw completedResultUnavailable();
     return Object.freeze({
       constraints: Object.freeze([...(question.constraints ?? [])]),
       correctness: attempt?.result.kind ?? "unanswered",
-      details: feedback?.details ?? question.feedback.details,
-      ...(feedback?.messages === undefined ? {} : { messages: feedback.messages }),
-      sources: projectCanonicalSourceLinks(question),
-      interaction: buildCanonicalInteractionViewModel(
-        question,
-        response,
-        session.optionOrderByOccurrence[occurrence.occurrenceId] ?? [],
-      ),
+      details: feedback.details,
+      ...(feedback.messages === undefined ? {} : { messages: feedback.messages }),
+      sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback }),
+      interaction: Object.freeze({ interactionType: review.interactionType, model: review.model }),
       item: occurrence.item,
       questionId: occurrence.item.questionId,
       occurrenceId: occurrence.occurrenceId,
       ordinal: index + 1,
       prompt: question.prompt,
-      reason: feedback?.reason ?? question.feedback.reason,
-      controls: projectCanonicalChoiceFeedbackControls(question, response),
+      reason: feedback.reason,
+      controls: projectInteractionControls(review.diagnostics),
     });
   }));
 }
@@ -834,6 +895,17 @@ async function validateCodingSimulationResult(session: TrainingSession, result: 
     details.profileId !== profile.profileId || details.profileVersion !== profile.profileVersion) {
     throw new TrainingApplicationFailure("summary_unavailable", "Coding Mock result does not match its completed session and exact 40-question profile.");
   }
+}
+
+function projectInteractionControls(value: unknown): readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }>[] {
+  if (!Array.isArray(value)) return Object.freeze([]);
+  const controls = value.flatMap((entry) => {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
+    const candidate = entry as Record<string, unknown>;
+    if (typeof candidate.id !== "string" || !["selected", "correct", "incorrect", "omitted_correct", "neutral"].includes(String(candidate.state))) return [];
+    return [Object.freeze({ id: candidate.id, state: candidate.state as "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" })];
+  });
+  return Object.freeze(controls);
 }
 
 function resultScore(value: unknown): AlgorithmsSessionResultProjection["score"] {

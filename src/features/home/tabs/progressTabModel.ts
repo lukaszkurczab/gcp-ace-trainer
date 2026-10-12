@@ -11,7 +11,7 @@ import {
   ALGORITHM_MODE_IDS,
   type AlgorithmModeId,
 } from "../../../tracks/coding-interview";
-import type { Question } from "../../../content/canonical";
+import type { TrainingQuestionSummary } from "../../../application/trainingLifecycle/contracts";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
 import { getDomainLabel } from "../../../utils";
@@ -428,7 +428,7 @@ type CanonicalProgressFacts = {
 };
 
 function buildCanonicalProgressFacts(
-  questions: readonly Question[],
+  questions: readonly TrainingQuestionSummary[],
   attempts: readonly TrainingAttempt[],
   reviews: readonly ReviewQueueEntry[],
   now: string,
@@ -439,7 +439,7 @@ function buildCanonicalProgressFacts(
   const current = attempts.filter((attempt) => attempt.trackId === CODING_INTERVIEW_TRACK_ID && attempt.item.contentVersion === contentVersion && attempt.item.artifactSha256 === artifactSha256 && questionIds.has(attempt.item.questionId));
   const latest = new Map<string, TrainingAttempt>();
   for (const attempt of current.sort((a, b) => a.answeredAt.localeCompare(b.answeredAt) || a.id.localeCompare(b.id))) latest.set(attempt.item.questionId, attempt);
-  const byNode = new Map<string, Question[]>();
+  const byNode = new Map<string, TrainingQuestionSummary[]>();
   for (const question of questions) (byNode.get(question.nodeId) ?? (byNode.set(question.nodeId, []), byNode.get(question.nodeId)!)).push(question);
   const nodeProgress = [...byNode].map(([nodeId, nodeQuestions]) => {
     const practiced = nodeQuestions.filter((question) => latest.has(question.questionId)).length;
@@ -499,7 +499,7 @@ function getAlgorithmsRemediationState(input: {
 function buildAlgorithmsProgressScreenModel(input: {
   dueReviewItems: readonly ReviewQueueEntry[];
   facts: CanonicalProgressFacts;
-  packageItems: readonly Question[];
+  packageItems: readonly TrainingQuestionSummary[];
   trainingAttempts: readonly TrainingAttempt[];
 }): AlgorithmsProgressScreenModel {
   const activeIndex = input.facts.nodeProgress.findIndex(
@@ -589,7 +589,7 @@ const ALGORITHM_TREND_POINT_COUNT = 4;
 function buildAlgorithmEvidenceModel(input: {
   facts: CanonicalProgressFacts;
   focusNode: CanonicalProgressFacts["nodeProgress"][number];
-  packageItems: readonly Question[];
+  packageItems: readonly TrainingQuestionSummary[];
   trainingAttempts: readonly TrainingAttempt[];
 }): Pick<AlgorithmsProgressScreenModel, "effectivenessTrend" | "evidenceSummary" | "trackNodes"> {
   const attemptsByNode = groupScoredAlgorithmAttemptsByNode(input.trainingAttempts, input.packageItems);
@@ -651,7 +651,7 @@ function buildAlgorithmEvidenceModel(input: {
 
 function groupScoredAlgorithmAttemptsByNode(
   attempts: readonly TrainingAttempt[],
-  packageItems: readonly Question[],
+  packageItems: readonly TrainingQuestionSummary[],
 ): Map<string, TrainingAttempt[]> {
   const itemById = new Map(packageItems.map((item) => [item.questionId, item]));
   const attemptsByNode = new Map<string, TrainingAttempt[]>();

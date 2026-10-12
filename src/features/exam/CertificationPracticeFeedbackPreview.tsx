@@ -38,7 +38,7 @@ export function CertificationPracticeFeedbackPreview({
     choiceSelectionMode: preview.question.interaction.type === "choice_multiple" ? "multiple" : "single",
     feedbackControls: preview.feedbackControls,
     localResponse: null,
-    renderer: { kind: "choice", options: preview.question.interaction.options.map((option) => ({ id: option.optionId, selected: false, text: option.text })) },
+    renderer: { interactionType: preview.question.interaction.type, model: { kind: "choice", options: preview.question.interaction.options.map((option) => ({ id: option.optionId, selected: false, text: option.text })) } },
   });
   const headerAction = <View style={styles.headerAction} testID="patternly:aud15:practice-preview:notice">
     <Text maxFontSizeMultiplier={2} style={styles.noticeText}>Local read-only preview · first five of ten completed answers · no saved result</Text>

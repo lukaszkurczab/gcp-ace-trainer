@@ -3,6 +3,9 @@ import { loadCanonicalRuntimeCatalog, scoreCanonicalQuestion, type CanonicalQues
 import { createFamilyEnvelope, createTrainingAttempt, createTrainingSession, createTrainingSessionResult, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../domain";
 import { projectCertificationExamReview, type CertificationExamReviewProjection } from "../application/certification/certificationExamReviewProjection";
 import { CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID } from "../features/exam/certificationExamReviewFixtureCommand";
+import { canonicalInteractionRegistry } from "../content/canonical/interactions/registry";
+import type { ResolvedInteractionItem } from "../application/contentPackageRuntimeOwner";
+import type { TrainingQuestionSummary } from "../application/trainingLifecycle/contracts";
 
 export const CERTIFICATION_EXAM_REVIEW_FIXTURE_PROFILE_ID = "google-cloud-associate-cloud-engineer-certification-exam-v1";
 export const CERTIFICATION_EXAM_REVIEW_FIXTURE_TRACK_ID = "google-cloud-associate-cloud-engineer";
@@ -14,10 +17,11 @@ export type CertificationExamReviewFixture = Readonly<{
   itemOrder: CompletedTrainingSession["itemOrder"];
   profile: CanonicalSimulationProfile;
   questionsById: ReadonlyMap<string, Question>;
+  projectWithQuestions: (questions: ReadonlyMap<string, Question>) => Promise<CertificationExamReviewProjection>;
   result: TrainingSessionResult;
   session: CompletedTrainingSession;
   projection: CertificationExamReviewProjection;
-  project: (result?: TrainingSessionResult, attempts?: readonly TrainingAttempt<unknown>[], session?: CompletedTrainingSession) => Promise<CertificationExamReviewProjection>;
+  project: (result?: TrainingSessionResult, attempts?: readonly TrainingAttempt<unknown>[], session?: CompletedTrainingSession, profile?: CanonicalSimulationProfile) => Promise<CertificationExamReviewProjection>;
   sourceQuestionId: string;
   sourceUrl: string;
 }>;
@@ -137,12 +141,37 @@ export async function createCertificationExamReviewFixture(input: Readonly<{
     } }),
   });
   const questionsById = new Map(track.questions.map((question) => [question.questionId, question]));
-  const project = (nextResult: TrainingSessionResult = result, nextAttempts: readonly TrainingAttempt<unknown>[] = attempts, nextSession: CompletedTrainingSession = session) => projectCertificationExamReview({ attempts: nextAttempts, profile, questionsById, result: nextResult, session: nextSession });
+  const projectWithQuestions = (questions: ReadonlyMap<string, Question>) => projectCertificationExamReview({
+    attempts, profile,
+    questionsById: new Map([...questions].map(([id, question]) => [id, toSummary(question)])),
+    resolveItem: async (item) => { const question = questions.get(item.questionId); if (!question) throw new Error("Fixture exact question is unavailable."); return toResolved(question); },
+    result, session,
+  });
+  const project = (nextResult: TrainingSessionResult = result, nextAttempts: readonly TrainingAttempt<unknown>[] = attempts, nextSession: CompletedTrainingSession = session, nextProfile: CanonicalSimulationProfile = profile) => projectCertificationExamReview({
+    attempts: nextAttempts, profile: nextProfile, questionsById: new Map([...questionsById].map(([id, question]) => [id, toSummary(question)])),
+    resolveItem: async (item) => { const question = questionsById.get(item.questionId); if (!question) throw new Error("Fixture exact question is unavailable."); return toResolved(question); },
+    result: nextResult, session: nextSession,
+  });
   const projection = await project();
   const sourceItem = projection.items.find((item) => item.answerState === "unanswered" && item.sources.length > 0);
   if (!sourceItem?.sources[0]) throw new Error("The canonical Certification Exam fixture has no unanswered source link.");
 
-  return Object.freeze({ attempts, itemOrder: session.itemOrder, profile, questionsById, result, session, projection, project, sourceQuestionId: sourceItem.questionId, sourceUrl: sourceItem.sources[0].url });
+  return Object.freeze({ attempts, itemOrder: session.itemOrder, profile, questionsById, projectWithQuestions, result, session, projection, project, sourceQuestionId: sourceItem.questionId, sourceUrl: sourceItem.sources[0].url });
+}
+
+function toSummary(question: Question): TrainingQuestionSummary { return Object.freeze({ questionId: question.questionId, trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, prompt: question.prompt, interactionType: question.interaction.type, difficulty: question.difficulty, ...(question.constraints ? { constraints: question.constraints } : {}), ...(question.sourceRefs ? { sourceRefs: question.sourceRefs } : {}), ...(question.contentDomainId ? { contentDomainId: question.contentDomainId } : {}) }); }
+function toResolved(question: Question): ResolvedInteractionItem {
+  const call = <T>(fn: (question: Question) => T) => fn(question);
+  return Object.freeze({ question: toSummary(question), interactions: Object.freeze({
+    isComplete: (_id: string, response: unknown) => call((q) => canonicalInteractionRegistry.isComplete(q, response)),
+    evaluate: (_id: string, response: unknown) => call((q) => canonicalInteractionRegistry.evaluate(q, response)),
+    presentReview: (_id: string, response: unknown, order: readonly string[] = []) => call((q) => canonicalInteractionRegistry.presentReview(q, response, order)),
+    present: (_id: string, response: unknown, order: readonly string[] = []) => call((q) => canonicalInteractionRegistry.present(q, response, order)),
+    projectFeedback: (_id: string, response: unknown) => call((q) => canonicalInteractionRegistry.projectFeedback(q, response)),
+    projectDiagnostics: (_id: string, response: unknown) => call((q) => canonicalInteractionRegistry.projectDiagnostics(q, response)),
+    controlIds: (_id: string) => call((q) => canonicalInteractionRegistry.controlIds(q)),
+    randomizeControlOrder: (_id: string) => call((q) => canonicalInteractionRegistry.randomizeControlOrder(q)),
+  }) as ResolvedInteractionItem["interactions"] });
 }
 
 function wrongSingleChoiceResponse(question: Question): CanonicalQuestionResponse {

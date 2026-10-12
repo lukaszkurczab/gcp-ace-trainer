@@ -2,6 +2,7 @@ import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { MAX_ARTIFACT_BYTES, MAX_PACKAGE_BYTES, NodePackageError, NodePackageStorageIntegrityError, NodePackageStorageUnavailableError, validateNodePayload, type NodePackageIdentity, type NodePackageManifest, type NodePackageStore, type VerifiedNodePackage } from "./nodeContentPackage";
 import { isCanonicalSafeIdentity } from "../../domain/identity/canonicalIdentity";
+import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from "../canonical/interactions/registry";
 
 export interface NodePackageFilePort {
   write(path: string, bytes: Uint8Array, overwrite?: boolean): Promise<void>;
@@ -33,6 +34,7 @@ export type Q13PackagePointerSource = Readonly<{
 export async function inspectExpoNodePackageInventory(
   sources: readonly Q13PackagePointerSource[],
   fileSystem?: typeof import("expo-file-system"),
+  interactionRegistry: CanonicalInteractionRegistry = canonicalInteractionRegistry,
 ): Promise<Q13NodePackageInventory> {
   try {
     const fs = fileSystem ?? require("expo-file-system") as typeof import("expo-file-system");
@@ -81,7 +83,7 @@ export async function inspectExpoNodePackageInventory(
       const artifactBytes = files.find((file) => file.path === artifact)?.bytes;
       const manifestBytes = files.find((file) => file.path === manifest)?.bytes;
       if (!artifactBytes || !manifestBytes) return Object.freeze({ kind: "unavailable", reason: "pointer_file_mismatch", pointerCount: pointerKeys.size, retainedIdentityCount: pointers.length, pointerInventorySha256, physicalFileCount: files.length, physicalFileInventorySha256: fileInventorySha256 });
-      try { await verifyStoredPackageContents(identity, artifactBytes, manifestBytes); }
+      try { await verifyStoredPackageContents(identity, artifactBytes, manifestBytes, interactionRegistry); }
       catch {
         return Object.freeze({ kind: "unavailable", reason: "pointer_file_mismatch", pointerCount: pointerKeys.size, retainedIdentityCount: pointers.length, pointerInventorySha256, physicalFileCount: files.length, physicalFileInventorySha256: fileInventorySha256 });
       }
@@ -115,7 +117,8 @@ export interface NodePackagePointerPort { getString(key: string): string | undef
 export interface NodePackageStorageIds { createId(): string; }
 type ActivePointer = Readonly<{ schemaVersion: 1; current: NodePackageIdentity; retained: readonly NodePackageIdentity[] }>;
 
-export function createNodePackageStore(input: Readonly<{ files: NodePackageFilePort; pointers: NodePackagePointerPort; ids: NodePackageStorageIds }>): NodePackageStore {
+export function createNodePackageStore(input: Readonly<{ files: NodePackageFilePort; pointers: NodePackagePointerPort; ids: NodePackageStorageIds; interactionRegistry?: CanonicalInteractionRegistry }>): NodePackageStore {
+  const interactionRegistry = input.interactionRegistry ?? canonicalInteractionRegistry;
   const artifactPath = (identity: NodePackageIdentity) => `artifacts/${recordKey(identity)}.bin`;
   const manifestPath = (identity: NodePackageIdentity) => `manifests/${recordKey(identity)}.json`;
   const pointerKey = (trackId: string, nodeId: string) => `patternly.content-node.active.v1.${sha256Utf8(`${trackId}\u0000${nodeId}`)}`;
@@ -125,7 +128,7 @@ export function createNodePackageStore(input: Readonly<{ files: NodePackageFileP
     catch { throw new NodePackageStorageUnavailableError("package_read"); }
     if (!bytes && !manifestBytes) return null;
     if (!bytes || !manifestBytes) throw new NodePackageStorageIntegrityError("corrupt", "package_read");
-    return verifyStoredPackageContents(identity, bytes, manifestBytes);
+    return verifyStoredPackageContents(identity, bytes, manifestBytes, interactionRegistry);
   }
   async function read(identity: NodePackageIdentity): Promise<VerifiedNodePackage | null> {
     const record = await readPair(identity);
@@ -272,7 +275,7 @@ export function createExpoNodePackageFilePort(fileSystem?: typeof import("expo-f
 function recordKey(identity: NodePackageIdentity): string { return sha256Utf8(`${identity.trackId}\u0000${identity.nodeId}\u0000${identity.contentVersion}\u0000${identity.artifactSha256}`); }
 function artifactPath(identity: NodePackageIdentity): string { return `artifacts/${recordKey(identity)}.bin`; }
 function manifestPath(identity: NodePackageIdentity): string { return `manifests/${recordKey(identity)}.json`; }
-async function verifyStoredPackageContents(identity: NodePackageIdentity, bytes: Uint8Array, manifestBytes: Uint8Array): Promise<VerifiedNodePackage> {
+async function verifyStoredPackageContents(identity: NodePackageIdentity, bytes: Uint8Array, manifestBytes: Uint8Array, interactionRegistry: CanonicalInteractionRegistry = canonicalInteractionRegistry): Promise<VerifiedNodePackage> {
   let manifest: unknown;
   try { manifest = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(manifestBytes)); }
   catch { throw new NodePackageStorageIntegrityError("corrupt", "manifest_decode"); }
@@ -289,7 +292,7 @@ async function verifyStoredPackageContents(identity: NodePackageIdentity, bytes:
   catch { throw new NodePackageStorageIntegrityError("corrupt", "artifact_verify"); }
   if (plain(decoded) && Object.hasOwn(decoded, "schemaVersion") && decoded.schemaVersion !== "patternly-content-node-payload-v1") throw new NodePackageStorageIntegrityError("unsupported", "artifact_verify");
   let payload;
-  try { payload = validateNodePayload(decoded, { trackId: identity.trackId, nodeId: identity.nodeId, contentVersion: identity.contentVersion, contentReleaseId: manifest.contentReleaseId }); }
+  try { payload = validateNodePayload(decoded, { trackId: identity.trackId, nodeId: identity.nodeId, contentVersion: identity.contentVersion, contentReleaseId: manifest.contentReleaseId }, interactionRegistry); }
   catch (error) {
     if (error instanceof NodePackageError && error.code === "package_identity_mismatch") throw new NodePackageStorageIntegrityError("identity_mismatch", "artifact_verify");
     throw new NodePackageStorageIntegrityError("corrupt", "artifact_verify");

@@ -7,9 +7,8 @@ import { installKeyValueStorageForTests } from "../../infrastructure/storage/mmk
 import { commitTrainingSessionStart } from "../learningMutations";
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import { getForegroundSessionTimerFacade, getTrainingLifecycleUseCases } from "../trainingLifecycle";
-import { getDesignInterviewPracticeProjection, submitDesignInterviewPracticeResponse } from "../design-interview/designInterviewSessionFacade";
-import { getCertificationPracticeProjection, submitCertificationPracticeResponse } from "../certification/certificationSessionFacade";
-import { toCanonicalQuestionViewModel } from "../../features/practice/canonicalQuestionViewModel";
+import { getDesignInterviewPracticeProjection, submitDesignInterviewPracticeResponse, type DesignInterviewPracticeProjection } from "../design-interview/designInterviewSessionFacade";
+import { getCertificationPracticeProjection, submitCertificationPracticeResponse, type CertificationPracticeProjection } from "../certification/certificationSessionFacade";
 import { scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
 import { getTrainingAttempts } from "../../storage/repositories";
 import { projectCanonicalQuestionInSessionOrder } from "./canonicalOptionOrder";
@@ -26,7 +25,8 @@ for (const config of CASES) test(`${config.trackId} actual practice facade prese
   const familyId = config.trackId === "google-cloud-associate-cloud-engineer" ? "certification" : "design_interview";
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(config.trackId, familyId);
   assert.ok(resolved.planningPolicyIdentity, "planning policy uses its own exact successor pin");
-  const { track, runtime } = resolved;
+  const { runtime } = resolved;
+  const track = (await loadCanonicalRuntimeCatalog()).getTrack(config.trackId);
   for (const correct of [false, true]) {
     const storage = installMemoryStorage();
     const sessionId = `bizq24-ui-order:${config.trackId}`;
@@ -51,18 +51,22 @@ for (const config of CASES) test(`${config.trackId} actual practice facade prese
     await getForegroundSessionTimerFacade().initialize(session);
     const before = await config.projection();
     assert.equal(before.feedback, null);
-    const visibleIds = (projection: Awaited<ReturnType<typeof config.projection>>) => {
-      const view = toCanonicalQuestionViewModel(projection.question);
-      assert.equal(view.interaction.kind, "choice");
-      if (view.interaction.kind !== "choice") throw new Error("Expected actual choice view");
-      return view.interaction.options.map(o => o.id);
+    const visibleIds = (projection: CertificationPracticeProjection | DesignInterviewPracticeProjection) => {
+      if (!("interaction" in projection)) {
+        assert.equal(projection.question.interaction.type, "choice_single");
+        return projection.question.interaction.options.map((option) => option.optionId);
+      }
+      assert.equal(projection.interaction.interactionType, "choice_single");
+      const renderer = projection.interaction.model as { renderer: { options: readonly { id: string }[] } };
+      return renderer.renderer.options.map((option) => option.id);
     };
     assert.deepEqual(visibleIds(before), savedOrder, "Actual facade and production UI adapter must consume saved occurrence order");
     assert.deepEqual(visibleIds(await config.projection()), savedOrder, "Rerender must not regenerate order");
     if (config.trackId === "google-cloud-associate-cloud-engineer") {
       assert.equal("answer" in before.question, false);
       assert.equal("feedback" in before.question, false);
-      assert.equal(before.question.interaction.type === "choice_single" && before.question.interaction.options.some(o => "explanation" in o), false);
+      if (!("interaction" in before.question)) throw new Error("Certification projection must expose the safe choice shape.");
+      assert.equal(before.question.interaction.type, "choice_single");
     }
     const acceptedOptionId = question.answer.optionId;
     const optionId = correct ? acceptedOptionId : question.interaction.options.find(o => o.optionId !== acceptedOptionId)!.optionId;

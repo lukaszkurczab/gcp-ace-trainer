@@ -14,6 +14,7 @@ export * from "./journalContracts";
 export * from "./repositoryContracts";
 export * from "./reviewEvidence";
 export * from "./reviewQueueEntry";
+export * from "./reviewCycleTransition";
 export * from "./reviewMutation";
 export * from "./sessionResult";
 export * from "./trackIdentity";

@@ -145,7 +145,7 @@ export async function runActualResultScreen({ projectionFails = false, projectio
   let effectStarted = false;
   const overview = createOverview();
   const Routes = { PRACTICE_HUB: "practice-hub", EXAM_REVIEW: "exam-review", DESIGN_INTERVIEW_SIMULATION_RESULT: "design-simulation-result" };
-  const Result = compileFunction("./ResultScreen.tsx", ["ResultScreen", "formatMode", "CloudDiagnosticReportCard"], {
+  const Result = compileFunction("./ResultScreen.tsx", ["ResultScreen", "formatMode", "CloudDiagnosticReportCard", "getCertificationMaximumPoints"], {
     useState: (initial) => [state ?? (state = initial), (next) => { state = next; }],
     useEffect: (callback) => { if (!effectStarted) { effectStarted = true; callback(); } },
     useTranslation: () => ({ t: (key, parameters) => key.replace(/{{(\w+)}}/g, (_match, name) => String(parameters?.[name] ?? "")) }),
@@ -172,6 +172,17 @@ export async function runActualResultScreen({ projectionFails = false, projectio
         assert.equal(contentVersion, track.contentVersion);
         assert.equal(artifactSha256, track.artifactSha256);
         return { track };
+      },
+      resolveItem: async ({ trackId, contentVersion, artifactSha256, questionId }) => {
+        assert.equal(trackId, track.trackId);
+        assert.equal(contentVersion, track.contentVersion);
+        assert.equal(artifactSha256, track.artifactSha256);
+        const question = track.getQuestion(questionId);
+        assert.ok(question, `Expected exact canonical item ${questionId}`);
+        return {
+          question: { interactionType: question.interaction.type, questionId: question.questionId },
+          interactions: { controlIds: (exactQuestionId) => track.interactions.controlIds(track.getQuestion(exactQuestionId)) },
+        };
       },
     },
     getDesignModeTitle: (key) => key,

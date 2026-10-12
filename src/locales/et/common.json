@@ -135,6 +135,8 @@
   "Answer Review": "Vastuste ülevaade",
   "Practice Session": "Harjutussessioon",
   "Practice session unavailable": "Harjutussessioon pole saadaval",
+  "Practice interaction unavailable": "Harjutuse interaktsioon pole saadaval",
+  "This practice interaction is not available in this version.": "See harjutuse interaktsioon pole selles versioonis saadaval.",
   "Certification Practice unavailable": "Sertifikaadieksamiks harjutamine pole saadaval",
   "Interview Simulation unavailable": "Tööintervjuu simulatsioon pole saadaval",
   "Finish or leave the active session first": "Lõpeta aktiivne sessioon või lahku sellest enne",

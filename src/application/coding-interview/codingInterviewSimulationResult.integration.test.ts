@@ -3,25 +3,28 @@ import test from "node:test";
 
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import { getAlgorithmsPracticeProjection, getAlgorithmsPracticeResultProjection, getAlgorithmsPracticeReviewProjection, getAlgorithmsSimulationProjection, startAlgorithmsSession, submitAlgorithmsPracticeResponse, saveAlgorithmsSimulationResponseAndContinue, finalizeAlgorithmsSimulation, toggleAlgorithmsSimulationFlag } from "./codingInterviewSessionFacade";
+import { getAlgorithmsPracticeProjection, getAlgorithmsPracticeResultProjection, getAlgorithmsPracticeReviewProjection, getAlgorithmsSimulationProjection, startAlgorithmsSession, submitAlgorithmsPracticeResponse, toCanonicalPracticeResponse, saveAlgorithmsSimulationResponseAndContinue, finalizeAlgorithmsSimulation, toggleAlgorithmsSimulationFlag } from "./codingInterviewSessionFacade";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
-import type { Question } from "../../content/canonical/questionTypes";
+import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
 import type { AlgorithmResponse } from "../../tracks/coding-interview/domain";
 
 const PROFILE_ID = "algorithms-interview-simulation-v1";
 
-function correctResponse(question: Question): AlgorithmResponse {
-  switch (question.answer.type) {
-    case "choice_single": return { kind: "choice", selectedOptionIds: [question.answer.optionId] };
-    case "choice_multiple": return { kind: "choice", selectedOptionIds: question.answer.optionIds };
-    case "ordering": return { kind: "ordering", orderedSubgoalIds: question.answer.orderedElementIds };
-    case "complexity":
-    case "decision_matrix":
-      return {
-        kind: "complexity",
-        selectedValuesByDimension: Object.fromEntries(Object.entries(question.answer.selectedValueIdsByDimension).map(([dimensionId, values]) => [dimensionId, values[0]!])),
-      };
+function correctResponse(item: ResolvedInteractionItem): AlgorithmResponse {
+  const review = item.interactions.presentReview(item.question.questionId, null);
+  const model = review.model as { renderer: { kind: string; options?: readonly { id: string; selected: boolean }[]; elements?: readonly { id: string }[]; dimensions?: readonly { id: string; selectedValues: readonly string[] }[] } };
+  if (model.renderer.kind === "choice") return { kind: "choice", selectedOptionIds: model.renderer.options!.filter((option) => option.selected).map((option) => option.id) };
+  if (model.renderer.kind === "ordering") return { kind: "ordering", orderedSubgoalIds: model.renderer.elements!.map((element) => element.id) };
+  if (model.renderer.kind === "complexity") return { kind: "complexity", selectedValuesByDimension: Object.fromEntries(model.renderer.dimensions!.map((dimension) => [dimension.id, [...dimension.selectedValues]])) };
+  throw new Error("The exact interaction has no review response fixture.");
+}
+
+function incorrectChoiceResponse(item: ResolvedInteractionItem) {
+  for (const id of item.interactions.controlIds(item.question.questionId)) {
+    const diagnostics = item.interactions.projectDiagnostics(item.question.questionId, { type: "choice_single", optionId: id }) as readonly { id: string; state: string }[];
+    if (diagnostics.some((entry) => entry.id === id && entry.state === "incorrect")) return { kind: "choice" as const, selectedOptionIds: [id] };
   }
+  throw new Error("The exact single-choice interaction has no incorrect option for this fixture.");
 }
 
 test("Coding Mock flags persist in the active draft and reappear after lifecycle resume", async () => {
@@ -106,7 +109,10 @@ test("Coding Mock persists a response, finalizes, and reads all 40 completed rev
   assert.equal(result.feedbackItems.slice(1).every((item) => item.correctness === "unanswered"), true);
   assert.equal(result.feedbackItems.slice(1).every((item) => !("messages" in item)), true, "unanswered rows must not derive diagnostics from the answer-key control fallback");
   const answeredQuestion = await contentPackageRuntimeOwner.resolveItem(first.item);
-  if (answeredQuestion.feedback.messages) assert.deepEqual(result.feedbackItems[0]?.messages, []);
+  const correct = correctResponse(answeredQuestion);
+  const canonicalCorrect = toCanonicalPracticeResponse(answeredQuestion.question.interactionType, correct);
+  const projectedFeedback = answeredQuestion.interactions.projectFeedback(answeredQuestion.question.questionId, canonicalCorrect);
+  if (projectedFeedback?.messages !== undefined) assert.deepEqual(result.feedbackItems[0]?.messages, []);
   else assert.equal("messages" in result.feedbackItems[0]!, false);
   assert.deepEqual(result.feedbackItems.map((item) => item.questionId), prepared.session.itemOrder.map((occurrence) => occurrence.item.questionId));
 
@@ -129,15 +135,14 @@ test("Coding immediate practice feedback survives durable submit and lifecycle r
   const before = await getAlgorithmsPracticeProjection();
   assert.equal(before.feedback, null);
   const question = await contentPackageRuntimeOwner.resolveItem(before.item);
-  if (question.interaction.type !== "choice_single" || question.answer.type !== "choice_single") throw new Error("Expected the actual Coding practice item to be single choice.");
-  const correctOptionId = question.answer.optionId;
-  const wrongOption = question.interaction.options.find((option) => option.optionId !== correctOptionId);
-  if (!wrongOption) throw new Error("Expected an authored incorrect Coding option.");
-  await submitAlgorithmsPracticeResponse({ kind: "choice", selectedOptionIds: [wrongOption.optionId] });
+  if (question.question.interactionType !== "choice_single") throw new Error("Expected the actual Coding practice item to be single choice.");
+  const wrongResponse = incorrectChoiceResponse(question);
+  await submitAlgorithmsPracticeResponse(wrongResponse);
 
   const committed = await getAlgorithmsPracticeProjection();
-  assert.equal(committed.response?.value.type, "choice_single");
-  const expectedMessages = question.feedback.messages?.filter((message) => message.kind === "wrong_option" && message.targetId === wrongOption.optionId);
+  const canonicalWrong = toCanonicalPracticeResponse(question.question.interactionType, wrongResponse);
+  assert.deepEqual(committed.response?.value, canonicalWrong);
+  const expectedMessages = question.interactions.projectFeedback(question.question.questionId, canonicalWrong)?.messages;
   assert.ok(expectedMessages?.length);
   assert.deepEqual(committed.feedback?.messages, expectedMessages);
   assert.equal(committed.feedback?.correctness, "incorrect");

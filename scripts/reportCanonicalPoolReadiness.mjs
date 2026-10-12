@@ -13,7 +13,7 @@ const {
 } = require("../src/domain/tracks/trackRegistry.ts");
 const { loadCanonicalRuntimeCatalog } = require("../src/content/canonical/runtimeCatalog.ts");
 const { getProductSimulationModeConfig } = require("../src/content/canonical/productModeConfig.ts");
-const { CanonicalTrainingRuntime } = require("../src/application/canonical/CanonicalTrainingRuntime.ts");
+const { createCanonicalTrainingFamilyRuntime } = require("../src/application/canonicalTrainingFamilyComposition.ts");
 
 const REPORT_SCHEMA = "patternly-canonical-pool-readiness-v1";
 const EXPECTED_TRACK_COUNT = 9;
@@ -29,7 +29,7 @@ const CONFIGURED_SIMULATION_TRACK_IDS = new Set([
 export async function buildCanonicalPoolReadinessReport(options = {}) {
   const registrations = options.registrations ?? getTracks();
   const catalog = options.catalog ?? await loadCanonicalRuntimeCatalog();
-  const createRuntime = options.createRuntime ?? ((track) => new CanonicalTrainingRuntime(track));
+  const createRuntime = options.createRuntime ?? createCanonicalTrainingFamilyRuntime;
   const simulationConfigResolver = options.simulationConfigResolver ?? getProductSimulationModeConfig;
 
   const registryIds = uniqueIds(registrations, (registration) => registration?.id, "track registry");

@@ -95,7 +95,7 @@ test("install keeps old exact package resolvable after new activation and rolls 
   const oldRef = { trackId: TRACK, contentVersion: first.identity.contentVersion, artifactSha256: first.identity.artifactSha256, questionId: first.payload.items[0]!.questionId } as const;
   const second = await install("2.0.0");
   assert.deepEqual(await store.getActive(TRACK, NODE), second.identity);
-  assert.equal((await runtimeOwner.resolveItem(oldRef)).questionId, oldRef.questionId);
+assert.equal((await runtimeOwner.resolveItem(oldRef)).question.questionId, oldRef.questionId);
   assert.equal(Object.hasOwn((await runtimeOwner.resolveExactArtifact(oldRef)).track, "completionRule"), false);
   const newRef = { trackId: TRACK, contentVersion: second.identity.contentVersion, artifactSha256: second.identity.artifactSha256, questionId: second.payload.items[0]!.questionId } as const;
   assert.equal((await store.listActive()).length, 2);
@@ -109,8 +109,8 @@ test("install keeps old exact package resolvable after new activation and rolls 
   await assert.rejects(installNodePackage({ trackId: TRACK, nodeId: NODE, appVersion: "0.1.0", transport: { getNodePackage: async () => failedActivationResponse }, hash, store: refusingStore, activateRuntime }));
   assert.equal((await store.listActive()).length, 2);
   const restartedOwner = new ContentPackageRuntimeOwner(() => "profile-test", () => store.listActive());
-  assert.equal((await restartedOwner.resolveItem(oldRef)).questionId, oldRef.questionId);
-  assert.equal((await restartedOwner.resolveItem(newRef)).questionId, newRef.questionId);
+  assert.equal((await restartedOwner.resolveItem(oldRef)).question.questionId, oldRef.questionId);
+  assert.equal((await restartedOwner.resolveItem(newRef)).question.questionId, newRef.questionId);
   await assert.rejects(restartedOwner.resolveItem({ ...newRef, contentVersion: orphan.identity.contentVersion, artifactSha256: orphan.identity.artifactSha256, questionId: orphan.payload.items[0]!.questionId }));
   await assert.rejects(restartedOwner.resolveItem({ ...newRef, contentVersion: failedActivation.identity.contentVersion, artifactSha256: failedActivation.identity.artifactSha256, questionId: failedActivation.payload.items[0]!.questionId }));
   const before = await store.getActive(TRACK, NODE);
@@ -159,7 +159,7 @@ test("fresh installed inventory replaces cached records and fences a late hydrat
   const owner = new ContentPackageRuntimeOwner(() => scope, async () => inventory);
   await owner.verifyBundledPackages();
   await owner.verifyInstalledPackages();
-  assert.equal((await owner.resolveItem(ref)).questionId, ref.questionId);
+  assert.equal((await owner.resolveItem(ref)).question.questionId, ref.questionId);
   inventory = [];
   await owner.verifyInstalledPackages();
   await assert.rejects(owner.resolveItem(ref), ExactContentArtifactUnavailableError, "fresh proven inventory absence must replace stale cache entries");
@@ -205,15 +205,15 @@ test("installed exact cache is isolated across profile changes and lazily rehydr
     return { ...installed, ref: { trackId: TRACK, contentVersion: installed.identity.contentVersion, artifactSha256: installed.identity.artifactSha256, questionId: installed.payload.items[0]!.questionId } as const };
   };
   const installedA = await installFor("profile-a-1.0.0", "profile-a");
-  assert.equal((await owner.resolveItem(installedA.ref)).questionId, installedA.ref.questionId);
+  assert.equal((await owner.resolveItem(installedA.ref)).question.questionId, installedA.ref.questionId);
   transitionActive = true;
   await assert.rejects(owner.resolveItem(installedA.ref));
   scope = "profile-b";
   transitionActive = false;
   const installedB = await installFor("profile-b-1.0.0", "profile-b");
-  assert.equal((await owner.resolveItem(installedB.ref)).questionId, installedB.ref.questionId);
+  assert.equal((await owner.resolveItem(installedB.ref)).question.questionId, installedB.ref.questionId);
   scope = "profile-a";
-  assert.equal((await owner.resolveItem(installedA.ref)).questionId, installedA.ref.questionId);
+  assert.equal((await owner.resolveItem(installedA.ref)).question.questionId, installedA.ref.questionId);
   await assert.rejects(owner.resolveItem(installedB.ref));
 });
 
@@ -239,7 +239,7 @@ test("stale profile hydration cannot register records after an in-flight profile
   finishFirstLoad([installed]);
   await assert.rejects(firstResolution);
   scope = "profile-a";
-  assert.equal((await owner.resolveItem(ref)).questionId, ref.questionId);
+  assert.equal((await owner.resolveItem(ref)).question.questionId, ref.questionId);
   assert.equal(loadCount, 2);
 });
 

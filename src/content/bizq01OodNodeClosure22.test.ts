@@ -207,7 +207,8 @@ test("OOD22 scoring, option-order reversal, feedback targets and pre-answer view
     assert.equal(beforeAnswer.itemId, entry.questionId);
     assert.equal("answer" in beforeAnswer, false);
     assert.equal("feedback" in beforeAnswer, false);
-    assert.deepEqual(beforeAnswer.interaction, {
+    assert.equal(beforeAnswer.interaction.interactionType, "choice_single");
+    assert.deepEqual((beforeAnswer.interaction.model as { renderer: { kind: string; options: readonly { id: string; selected: boolean; text: string }[] } }).renderer, {
       kind: "choice",
       options: expected.interaction.options.map((option) => ({ id: option.optionId, selected: false, text: option.text })),
     });
@@ -224,7 +225,7 @@ test("OOD22 scoring, option-order reversal, feedback targets and pre-answer view
       assert.equal(score.earnedPoints, correct ? 1 : 0);
       assert.deepEqual(scoreCanonicalQuestion(reversed, response), score, "score follows option ID when presentation order changes");
 
-      const feedback = composeCanonicalFeedback(question, response);
+      const feedback = composeCanonicalFeedback(question, response, scoreCanonicalQuestion(question, response));
       assert.equal(feedback.correctness, correct ? "correct" : "incorrect");
       assert.equal(feedback.reason, expected.feedback.reason);
       assert.deepEqual(feedback.details, expected.feedback.details);

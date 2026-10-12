@@ -218,12 +218,14 @@ export async function createLocalAdmittedPublicDemoCatalog() {
   const generatedContentLockSha = sha256(generatedLockText);
   const historicalReleaseLockSha = sha256(releaseLockText);
   const projections = [];
+  const currentCanonicalCatalog = await loadCanonicalRuntimeCatalog();
 
   for (const selection of demos) {
     const historicalTrack = historicalCatalog.getTrack(selection.trackId);
     const historicalQuestion = historicalTrack.getQuestion(selection.questionId);
-    const { track: currentTrack, runtime: currentRuntime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
-    assertHistoricalDemoMatchesCurrentRuntime({ selection, historicalQuestion, currentTrack, currentFamilyId: currentRuntime.familyId });
+    const { runtime: currentRuntime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
+    const currentCanonicalTrack = currentCanonicalCatalog.getTrack(selection.trackId);
+    assertHistoricalDemoMatchesCurrentRuntime({ selection, historicalQuestion, currentTrack: currentCanonicalTrack, currentFamilyId: currentRuntime.familyId });
 
     const sourceFile = readHistoricalJson(contentRoot, localAdmittedSource.contentCommit, selection.sourcePath, "canonical question source");
     const sourceQuestion = Array.isArray(sourceFile) ? sourceFile.find((question) => question.questionId === selection.questionId) : undefined;

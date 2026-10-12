@@ -1,10 +1,11 @@
 import { getTrackRegistration, resolvedContentRefsEqual, type AttemptResultKind, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
-import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalFeedbackMessage, type JsonValue, type Question } from "../../content/canonical";
+import type { CanonicalFeedbackMessage, JsonValue } from "../../content/canonical";
 import { isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../tracks/certification";
-import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
-import { projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
+import { projectCanonicalSourceEvidence, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { overallScoreCredit } from "../canonical/overallScoreCredit";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
+import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
+import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 
 export type CertificationPracticeReviewItem = Readonly<{
   contentDomainId?: string;
@@ -73,8 +74,8 @@ export type CertificationPracticeReviewProjection = Readonly<{
 /** Projects verified completed practice evidence using its exact immutable occurrence references. */
 export async function projectCertificationPracticeReview(input: Readonly<{
   attempts: readonly TrainingAttempt<unknown>[];
-  diagnosticContext?: Readonly<{ focusPool: readonly Question[]; focusMinimumActualLength: number; diagnosticQuestionIds: readonly string[]; exposureHistoryAvailable: boolean }>;
-  resolveQuestion: (item: CompletedTrainingSession["itemOrder"][number]["item"]) => Promise<Question>;
+  diagnosticContext?: Readonly<{ focusPool: readonly TrainingQuestionSummary[]; focusMinimumActualLength: number; diagnosticQuestionIds: readonly string[]; exposureHistoryAvailable: boolean }>;
+  resolveQuestion: (item: CompletedTrainingSession["itemOrder"][number]["item"]) => Promise<ResolvedInteractionItem>;
   result: TrainingSessionResult;
   session: CompletedTrainingSession;
 }>): Promise<CertificationPracticeReviewProjection> {
@@ -104,41 +105,46 @@ export async function projectCertificationPracticeReview(input: Readonly<{
     }
     return { attempt, occurrence, index };
   });
-  const questionById = new Map<string, Question>();
+  const questionById = new Map<string, TrainingQuestionSummary>();
   const items = await Promise.all(reviewInputs.map(async ({ attempt, occurrence, index }): Promise<CertificationPracticeReviewItem> => {
-    const question = await resolveQuestion(occurrence.item);
+    const exact = await resolveQuestion(occurrence.item);
+    const question = exact.question;
     const response = attempt.response;
-    if (question.questionId !== occurrence.item.questionId || !isCanonicalResponseComplete(question, response)) return fail("Certification Practice answer evidence does not match its immutable session plan.");
+    if (question.questionId !== occurrence.item.questionId || !exact.interactions.isComplete(question.questionId, response)) return fail("Certification Practice answer evidence does not match its immutable session plan.");
     questionById.set(question.questionId, question);
-    const scored = scoreCanonicalQuestion(question, response);
-    if (JSON.stringify(scored) !== JSON.stringify(attempt.result)) return fail("Certification Practice answer evidence has an invalid result.");
-    if ((question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") || (question.answer.type !== "choice_single" && question.answer.type !== "choice_multiple")) {
+    const scored = exact.interactions.evaluate(question.questionId, response).result;
+    if (!scored || JSON.stringify(scored) !== JSON.stringify(attempt.result)) return fail("Certification Practice answer evidence has an invalid result.");
+    if (question.interactionType !== "choice_single" && question.interactionType !== "choice_multiple") {
       return fail("Certification Practice review supports only declared choice interactions.");
     }
-    const selectedOptionIds = response.type === "choice_single" ? [response.optionId] : response.type === "choice_multiple" ? response.optionIds : [];
-    const correctOptionIds = question.answer.type === "choice_single" ? [question.answer.optionId] : question.answer.type === "choice_multiple" ? question.answer.optionIds : [];
+    const review = exact.interactions.presentReview(question.questionId, response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
+    const feedback = review.feedback;
+    const renderer = review.model as { renderer?: { kind?: string; options?: readonly Readonly<{ id: string; text: string; selected: boolean }>[] } };
+    if (!feedback || renderer.renderer?.kind !== "choice" || !Array.isArray(renderer.renderer.options)) return fail("Certification Practice review evidence is unavailable.");
+    const selectedOptionIds = renderer.renderer.options.filter((option) => option.selected).map((option) => option.id);
+    const correctOptionIds = (Array.isArray(review.diagnostics) ? review.diagnostics as readonly Readonly<{ id: string; state: string }>[] : [])
+      .filter((entry) => entry.state === "correct" || entry.state === "omitted_correct").map((entry) => entry.id);
     if (selectedOptionIds.length === 0 || correctOptionIds.length === 0) return fail("Certification Practice review evidence is incomplete.");
-    const messages = projectCanonicalChoiceFeedbackMessages(question, response);
     return Object.freeze({
       ...(question.contentDomainId === undefined ? {} : { contentDomainId: question.contentDomainId }),
       constraints: Object.freeze([...(question.constraints ?? [])]),
       correctOptionIds: Object.freeze([...correctOptionIds]),
-      details: question.feedback.details,
-      ...(messages === undefined ? {} : { messages }),
-      sources: projectCanonicalSourceLinks(question),
+      details: feedback.details,
+      ...(feedback.messages === undefined ? {} : { messages: feedback.messages }),
+      sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback }),
       item: occurrence.item,
       mentalUnitId: question.mentalUnitId,
       nodeId: question.nodeId,
       occurrenceId: occurrence.occurrenceId,
-      options: Object.freeze(question.interaction.options.map((option) => Object.freeze({ optionId: option.optionId, text: option.text }))),
+      options: Object.freeze(renderer.renderer.options.map((option) => Object.freeze({ optionId: option.id, text: option.text }))),
       ordinal: index + 1,
       prompt: question.prompt,
       questionId: question.questionId,
-      reason: question.feedback.reason,
+      reason: feedback.reason,
       result: attempt.result.kind,
       selectedOptionIds: Object.freeze([...selectedOptionIds]),
       sourceAttemptId: attempt.id,
-      selectionMode: question.interaction.type === "choice_multiple" ? "multiple" : "single",
+      selectionMode: question.interactionType === "choice_multiple" ? "multiple" : "single",
     });
   }));
   if (!certificationReviewEvidenceMatches(result.evidence.details, sessionAttempts)) {
@@ -157,7 +163,7 @@ export async function projectCertificationPracticeReview(input: Readonly<{
 function hasRecordedRelatedQuestionPair(input: Readonly<{
   attempts: readonly TrainingAttempt<unknown>[];
   items: readonly CertificationPracticeReviewItem[];
-  questionById: ReadonlyMap<string, Question>;
+  questionById: ReadonlyMap<string, TrainingQuestionSummary>;
   session: CompletedTrainingSession;
   attemptByOccurrenceId: ReadonlyMap<string, TrainingAttempt<unknown>>;
 }>): boolean {
@@ -193,7 +199,7 @@ function projectDiagnosticReport(input: Readonly<{
   items: readonly CertificationPracticeReviewItem[];
   attempts: readonly TrainingAttempt<unknown>[];
   session: CompletedTrainingSession;
-  context?: Readonly<{ focusPool: readonly Question[]; focusMinimumActualLength: number; diagnosticQuestionIds: readonly string[]; exposureHistoryAvailable: boolean }>;
+  context?: Readonly<{ focusPool: readonly TrainingQuestionSummary[]; focusMinimumActualLength: number; diagnosticQuestionIds: readonly string[]; exposureHistoryAvailable: boolean }>;
 }>): CertificationDiagnosticReport | undefined {
   const { items, attempts, session, context } = input;
   if (session.trackId !== "google-cloud-associate-cloud-engineer" || !context ||

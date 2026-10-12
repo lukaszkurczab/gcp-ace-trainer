@@ -1,4 +1,4 @@
-import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
+import { contentPackageRuntimePort } from "../contentPackageRuntimeOwner";
 import { OperationProjectionStore } from "../trainingLifecycle/operationProjectionStore";
 import {
   commitLearningStateReset,
@@ -149,7 +149,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     clock: wallClock,
     sessionIds,
     tracks: { getTrackRegistration },
-    packages: dependencies.packages ?? contentPackageRuntimeOwner,
+    packages: dependencies.packages ?? contentPackageRuntimePort,
     premiumSessionAdmission: dependencies.premiumSessionAdmission,
     repositories: {
       async getActiveSession() { return getActiveTrainingSession(productionTrackAdmissionContext); },

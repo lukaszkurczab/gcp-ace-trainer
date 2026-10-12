@@ -145,7 +145,7 @@ try {
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "coding_interview");
   assert.ok(resolved.track.trainingIdentity && resolved.planningPolicyIdentity);
   stage = "mode_recommendation";
-  const recommendation = recommendLearningPlanMode({ familyId: "coding_interview", trackId, modes: resolved.track.modes, sessions: [], dueReviewCount: 0 });
+  const recommendation = recommendLearningPlanMode({ binding: resolved.runtime.getPlanningModeBinding(), trackId, modes: resolved.track.modes, sessions: [], dueReviewCount: 0 });
   assert.ok(recommendation.mode.requestedLengths.includes(recommendation.mode.defaultRequestedLength));
   const beforeTargetDate = beforeGoal.record.targetDate ?? null;
   const afterTargetDate = beforeTargetDate === null

@@ -6,10 +6,33 @@ import type { CanonicalQuestionResponse, Question } from "../../content/canonica
 import { createTrainingSession, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createCertificationPracticeAnswerFixture } from "../../testing/certificationPracticeAnswerFixture";
-import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import { projectCertificationPracticeReview } from "./certificationPracticeReviewProjection";
+import { canonicalInteractionRegistry } from "../../content/canonical/interactions/registry";
+import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
+import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 
 const fixturePromise = createCertificationPracticeAnswerFixture();
+
+function summary(question: Question): TrainingQuestionSummary {
+  return Object.freeze({ questionId: question.questionId, trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId,
+    prompt: question.prompt, interactionType: question.interaction.type, difficulty: question.difficulty,
+    ...(question.constraints ? { constraints: question.constraints } : {}), ...(question.sourceRefs ? { sourceRefs: question.sourceRefs } : {}),
+    ...(question.contentDomainId ? { contentDomainId: question.contentDomainId } : {}), ...(question.questionRelation ? { questionRelation: question.questionRelation } : {}) });
+}
+function exact(question: Question): ResolvedInteractionItem {
+  const call = <T>(operation: (value: Question) => T) => operation(question);
+  return Object.freeze({ question: summary(question), interactions: Object.freeze({
+    isComplete: (_id: string, response: unknown) => call((value) => canonicalInteractionRegistry.isComplete(value, response)),
+    evaluate: (_id: string, response: unknown) => call((value) => canonicalInteractionRegistry.evaluate(value, response)),
+    presentReview: (_id: string, response: unknown, order: readonly string[] = []) => call((value) => canonicalInteractionRegistry.presentReview(value, response, order)),
+    present: (_id: string, response: unknown, order: readonly string[] = []) => call((value) => canonicalInteractionRegistry.present(value, response, order)),
+    projectFeedback: (_id: string, response: unknown) => call((value) => canonicalInteractionRegistry.projectFeedback(value, response)),
+    projectDiagnostics: (_id: string, response: unknown) => call((value) => canonicalInteractionRegistry.projectDiagnostics(value, response)),
+    controlIds: (_id: string) => call((value) => canonicalInteractionRegistry.controlIds(value)),
+    randomizeControlOrder: (_id: string) => call((value) => canonicalInteractionRegistry.randomizeControlOrder(value)),
+  }) as ResolvedInteractionItem["interactions"] });
+}
 
 test("completed practice projector preserves the canonical five-state answer matrix", async () => {
   const fixture = await fixturePromise;
@@ -37,7 +60,7 @@ test("related-practice limitation requires a current near-variant peer or a stri
   questions.set(second.questionId, { ...second, questionRelation: { counterpartQuestionId: first.questionId, ...rationale } } as Question);
   const project = (attempts: readonly TrainingAttempt<unknown>[], sourceQuestions: ReadonlyMap<string, Question> = questions) => projectCertificationPracticeReview({
     attempts,
-    resolveQuestion: async (item) => sourceQuestions.get(item.questionId)!,
+    resolveQuestion: async (item) => exact(sourceQuestions.get(item.questionId)!),
     result: fixture.result,
     session: fixture.session,
   });
@@ -101,7 +124,7 @@ test("completed practice review projects authored wrong and omitted-correct mess
   }
   const projection = await projectCertificationPracticeReview({
     attempts: fixture.attempts,
-    resolveQuestion: async (item) => authoredMessagesByQuestion.get(item.questionId)!,
+    resolveQuestion: async (item) => exact(authoredMessagesByQuestion.get(item.questionId)!),
     result: fixture.result,
     session: fixture.session,
   });
@@ -125,7 +148,7 @@ test("completed practice review projects authored wrong and omitted-correct mess
   authoredMessagesByQuestion.set(noAuthoredMessagesId, { ...noAuthored, feedback: feedbackWithoutMessages } as Question);
   const withoutAuthored = await projectCertificationPracticeReview({
     attempts: fixture.attempts,
-    resolveQuestion: async (item) => authoredMessagesByQuestion.get(item.questionId)!,
+    resolveQuestion: async (item) => exact(authoredMessagesByQuestion.get(item.questionId)!),
     result: fixture.result,
     session: fixture.session,
   });
@@ -140,7 +163,7 @@ test("practice review rejects altered identity, coverage, attempts, score, and r
     assert.equal(item.trackId, track.trackId);
     assert.equal(item.contentVersion, track.contentVersion);
     assert.equal(item.artifactSha256, track.artifactSha256);
-    return track.getQuestion(item.questionId)!;
+    return exact(track.getQuestion(item.questionId)!);
   };
   const project = (result = fixture.result, attempts: readonly TrainingAttempt<unknown>[] = fixture.attempts, session = fixture.session) => projectCertificationPracticeReview({ attempts, resolveQuestion, result, session });
   await assert.rejects(project({ ...fixture.result, unansweredOccurrenceIds: ["invented"] } as TrainingSessionResult), /completion evidence/i);
@@ -149,7 +172,7 @@ test("practice review rejects altered identity, coverage, attempts, score, and r
     let resolverCalls = 0;
     await assert.rejects(projectCertificationPracticeReview({
       attempts,
-      resolveQuestion: async (item) => { resolverCalls += 1; return track.getQuestion(item.questionId)!; },
+      resolveQuestion: async (item) => { resolverCalls += 1; return exact(track.getQuestion(item.questionId)!); },
       result: fixture.result,
       session: fixture.session,
     }), /immutable session plan/i);
@@ -168,7 +191,7 @@ test("practice review rejects altered identity, coverage, attempts, score, and r
   await assert.rejects(project(fixture.result, fixture.attempts, { ...fixture.session, itemOrder: [{ ...fixture.session.itemOrder[0]!, item: wrongQuestion }, ...fixture.session.itemOrder.slice(1)] } as CompletedTrainingSession), /immutable session plan/i);
   await assert.rejects(projectCertificationPracticeReview({
     attempts: fixture.attempts,
-    resolveQuestion: async (item) => track.getQuestion(item.questionId === "CCARP-D01-O01-boundary" ? "CCARP-D01-O01-diagnosis" : item.questionId)!,
+    resolveQuestion: async (item) => exact(track.getQuestion(item.questionId === "CCARP-D01-O01-boundary" ? "CCARP-D01-O01-diagnosis" : item.questionId)!),
     result: fixture.result,
     session: fixture.session,
   }), /immutable session plan/i);
@@ -187,7 +210,7 @@ test("verified GCP diagnostics preserve readable counts for an undersized future
   const eligibleUnits = [...new Set(focusPool.filter((question) => question.nodeId === nodeId && questionIds.some((id) => track.getQuestion(id)?.mentalUnitId === question.mentalUnitId)).map((question) => question.mentalUnitId))]
     .filter((unitId) => focusPool.filter((question) => question.nodeId === nodeId && question.mentalUnitId === unitId).length >= focus.minimumActualLength);
   assert.ok(eligibleUnits.length >= 2);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const run = async (sessionId: string, weakUnitId?: string, hour = 0, priorAttempts: readonly TrainingAttempt<unknown>[] = [], reviewFocusPool = focusPool) => {
     const hourText = String(hour).padStart(2, "0");
     const prepared = await runtime.prepare({ trackId: track.trackId, modeId: diagnostic.modeId, request: { sessionId, requestedLength: questionIds.length }, attempts: priorAttempts, reviews: [], now: "2026-02-01T" + hourText + ":00:00.000Z" });
@@ -214,11 +237,11 @@ test("verified GCP diagnostics preserve readable counts for an undersized future
     assert.equal(finalized.session.status, "completed");
     const projection = await projectCertificationPracticeReview({
       attempts: [...priorAttempts, ...attempts],
-      diagnosticContext: { focusPool: reviewFocusPool, focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: questionIds, exposureHistoryAvailable: true },
+      diagnosticContext: { focusPool: reviewFocusPool.map(summary), focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: questionIds, exposureHistoryAvailable: true },
       resolveQuestion: async (item) => {
         assert.equal(item.contentVersion, track.contentVersion);
         assert.equal(item.artifactSha256, track.artifactSha256);
-        return track.getQuestion(item.questionId)!;
+        return exact(track.getQuestion(item.questionId)!);
       },
       result: finalized.result,
       session: finalized.session as CompletedTrainingSession,
@@ -263,8 +286,8 @@ test("verified GCP diagnostics preserve readable counts for an undersized future
   const tieAttempt = { ...first.attempts[0]!, id: "prior-tied-diagnostic-attempt", sessionId: "prior-tied-diagnostic-session", answeredAt: repeated.attempts[0]!.answeredAt };
   const tied = await projectCertificationPracticeReview({
     attempts: [...first.attempts, ...repeated.attempts, tieAttempt],
-    diagnosticContext: { focusPool, focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: questionIds, exposureHistoryAvailable: true },
-    resolveQuestion: async (item) => track.getQuestion(item.questionId)!,
+    diagnosticContext: { focusPool: focusPool.map(summary), focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: questionIds, exposureHistoryAvailable: true },
+    resolveQuestion: async (item) => exact(track.getQuestion(item.questionId)!),
     result: repeated.result,
     session: repeated.session,
   });
@@ -288,7 +311,7 @@ test("diagnostic report is unavailable when a sampled item is foreign to the exa
   const diagnostic = track.getMode("certification-diagnostic-baseline");
   const focus = track.getMode("certification-focus-practice");
   const sample = await (async () => {
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     const prepared = await runtime.prepare({ trackId: track.trackId, modeId: diagnostic.modeId, request: { sessionId: "gcp-diagnostic-foreign-focus-membership", requestedLength: diagnostic.requestedLengths[0]! }, attempts: [], reviews: [], now: "2026-02-02T00:00:00.000Z" });
     let session = prepared.session;
     const attempts: TrainingAttempt<unknown>[] = [];
@@ -315,8 +338,8 @@ test("diagnostic report is unavailable when a sampled item is foreign to the exa
     : question);
   const projection = await projectCertificationPracticeReview({
     attempts: sample.attempts,
-    diagnosticContext: { focusPool, focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: diagnostic.selection.kind === "exact_ordered_questions" ? diagnostic.selection.questionIds : [], exposureHistoryAvailable: true },
-    resolveQuestion: async (item) => track.getQuestion(item.questionId)!,
+    diagnosticContext: { focusPool: focusPool.map(summary), focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: diagnostic.selection.kind === "exact_ordered_questions" ? diagnostic.selection.questionIds : [], exposureHistoryAvailable: true },
+    resolveQuestion: async (item) => exact(track.getQuestion(item.questionId)!),
     result: sample.result,
     session: sample.session,
   });

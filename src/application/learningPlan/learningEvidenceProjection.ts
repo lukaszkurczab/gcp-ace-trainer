@@ -1,4 +1,4 @@
-import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
+import type { TrainingCatalog } from "../trainingLifecycle/contracts";
 import { isActiveReviewQueueEntry, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { createArtifactSha256 } from "../../domain/learning/contentItemRef";
 import {
@@ -18,7 +18,7 @@ export type LearningEvidenceProjection = Readonly<{
 
 /** One interpretation of verified, durable current-profile evidence for Home and proposals. */
 export function projectLearningEvidence(input: Readonly<{
-  profile: VerifiedPackageCompletionProfile & Pick<CanonicalTrackRuntime, "getQuestion">;
+  profile: VerifiedPackageCompletionProfile & Pick<TrainingCatalog, "getQuestion">;
   attempts: readonly TrainingAttempt<unknown>[];
   reviews: readonly ReviewQueueEntry[];
   now: string;

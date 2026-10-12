@@ -260,10 +260,12 @@ async function fixture() {
   await mkdir(path.join(producerRoot, "scripts"), { recursive: true });
   await writeFile(path.join(producerRoot, "scripts", "build.mjs"), "// fixture\n");
   await mkdir(path.join(producerRoot, "scripts", "content"), { recursive: true });
-  await Promise.all(["question-contract.mjs", "planning-policy.mjs"].map((name) => cp(
+  await mkdir(path.join(producerRoot, "config"), { recursive: true });
+  await Promise.all(["question-contract.mjs", "planning-policy.mjs", "track-runtime-bindings.mjs"].map((name) => cp(
     path.join(contractRoot, "scripts", "content", name),
     path.join(producerRoot, "scripts", "content", name),
   )));
+  await cp(path.join(contractRoot, "config/track-runtime-bindings.json"), path.join(producerRoot, "config/track-runtime-bindings.json"));
   await createBuiltSet(producerOutput);
   await createPredecessorFromBuiltSet(producerOutput, predecessorOutput);
   const runBuild = async ({ outputRoot }) => {

@@ -418,10 +418,10 @@ test("BESD14 real pre-answer view models expose authored facts and controls with
     assert.equal(view.constraints.some(text => /the\s+primary\s+decision\s+is/iu.test(text)), false);
     const order = [...binding.optionIds].reverse();
     const presentation = buildCanonicalInteractionViewModel(question, null, order);
-    assert.equal(presentation.renderer.kind, "choice");
-    if (presentation.renderer.kind !== "choice") throw new Error("Expected reviewed choice renderer");
-    assert.deepEqual(presentation.renderer.options.map(option => option.id), order);
-    for (const control of presentation.accessibility.controls) {
+    const model = presentation.model as { renderer: { kind: string; options: readonly { id: string; selected: boolean; text: string }[] }; accessibility: { controls: readonly { role: string; checked: boolean; id: string; label: string }[] } };
+    assert.equal(model.renderer.kind, "choice");
+    assert.deepEqual(model.renderer.options.map(option => option.id), order);
+    for (const control of model.accessibility.controls) {
       assert.equal(control.role, "radio");
       assert.equal(control.checked, false);
       assert.equal(control.label, question.interaction.options.find(option => option.optionId === control.id)?.text);
@@ -450,7 +450,7 @@ test("BESD14 fixed-ID scoring and authored Reason, Details and diagnostics survi
       assert.equal(score.kind, correct ? "correct" : "incorrect");
       assert.equal(score.earnedPoints, correct ? 1 : 0);
       assert.deepEqual(scoreCanonicalQuestion(reversed, response), score);
-      const feedback = composeCanonicalFeedback(question, response);
+      const feedback = composeCanonicalFeedback(question, response, scoreCanonicalQuestion(question, response));
       assert.equal(feedback.reason, question.feedback.reason);
       assert.deepEqual(feedback.details, question.feedback.details);
       if (correct) assert.deepEqual(feedback.messages, []);

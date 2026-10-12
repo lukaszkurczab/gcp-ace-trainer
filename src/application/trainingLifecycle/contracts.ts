@@ -1,4 +1,5 @@
 import type {
+  AttemptResult,
   ReviewMutationCommand,
   ReviewQueueEntry,
   ResolvedContentRef,
@@ -11,12 +12,65 @@ import type {
   TrainingSessionResult,
   JournalOperation,
 } from "../../domain";
-import type { CanonicalTrackRuntime } from "../../content/canonical";
+import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
+import type { CanonicalProductSimulationProfile } from "../../content/canonical/questionTypes";
+import type { ProductModeConfig } from "../../content/canonical/productModeConfig";
+import type { LearningPlanningPolicy } from "../../content/canonical/planningPolicy";
+import type { CanonicalFeedbackProjection, InteractionEvaluation, ReviewInteractionPresentation } from "../../content/canonical/interactions/shared";
 import type { RetryMutationCommandHandle, RetryableMutationOperation } from "../mutationBoundary";
 
 /** Opaque application handles. The canonical repository adapter validates each handle by identity. */
 export type DraftStorageLeaseHandle = Readonly<{ kind: "draft_storage_lease" }>;
 export type DraftWriteReceipt = Readonly<{ kind: "draft_write_receipt" }>;
+
+/** Family-owned metadata only. Interaction/answer payloads remain behind the exact interaction port. */
+export type TrainingQuestionSummary = Readonly<{
+  questionId: string;
+  trackId: string;
+  nodeId: string;
+  mentalUnitId: string;
+  prompt: string;
+  interactionType: string;
+  difficulty: string | null;
+  constraints?: readonly string[];
+  sourceRefs?: readonly string[];
+  contentDomainId?: string;
+  questionRelation?: Readonly<{ counterpartQuestionId: string; kind: "near_variant" | "condition_contrast"; changedCondition: string; decisionBoundary: string }>;
+}>;
+
+/** Bound to one verified exact package; family code addresses only stable question identity. */
+export interface TrainingInteractionPort {
+  evaluate(questionId: string, response: unknown): InteractionEvaluation;
+  isComplete(questionId: string, response: unknown): boolean;
+  controlIds(questionId: string): readonly string[];
+  randomizeControlOrder(questionId: string): boolean;
+}
+/** Exact-package presentation operations; lifecycle families need only the narrower scoring port. */
+export interface TrainingPresentationPort extends TrainingInteractionPort {
+  present(questionId: string, response: unknown, displayOrder?: readonly string[]): Readonly<{ interactionType: string; model: unknown }>;
+  projectDiagnostics(questionId: string, response: unknown): unknown;
+  projectFeedback(questionId: string, response: unknown): CanonicalFeedbackProjection;
+  presentReview(questionId: string, response: unknown | null, displayOrder?: readonly string[]): ReviewInteractionPresentation;
+}
+
+/** Neutral package projection passed across the lifecycle/family boundary. */
+export interface TrainingCatalog {
+  readonly trackId: TrackId;
+  readonly contentVersion: string;
+  readonly artifactSha256: string;
+  readonly trainingIdentity?: Readonly<{ contentVersion: string; artifactSha256: string }>;
+  readonly contentReleaseId: string;
+  readonly questions: readonly TrainingQuestionSummary[];
+  readonly completionRule?: PackageCompletionRule;
+  readonly simulationProfiles?: readonly CanonicalProductSimulationProfile[];
+  readonly planningPolicy?: LearningPlanningPolicy;
+  readonly modes: readonly ProductModeConfig[];
+  getQuestion(questionId: string): TrainingQuestionSummary | undefined;
+  getQuestionsForNode(nodeId: string): readonly TrainingQuestionSummary[];
+  getQuestionsForMentalUnit(mentalUnitId: string): readonly TrainingQuestionSummary[];
+  getMode(modeId: string): ProductModeConfig;
+  getPool(modeId: string): readonly TrainingQuestionSummary[];
+}
 
 export const APPLICATION_FAILURE_CODES = [
   "unknown_track",
@@ -91,9 +145,20 @@ export type PracticeFinalization = Readonly<{
   result: TrainingSessionResult;
 }>;
 
+/** Family-owned roles used only when Home/proposal requests a new plan. */
+export type FamilyPlanningModeBinding = Readonly<{
+  trackId: TrackId;
+  diagnosticModeId: string | null;
+  practiceModeId: string;
+  dueReviewModeId: string | null;
+}>;
+
 /** Family-owned deterministic semantics. It cannot read or write repositories. */
 export interface TrainingFamilyRuntime {
   readonly familyId: TrackFamilyId;
+  readonly interactions: TrainingInteractionPort;
+  /** Lazily requested by planning flows; pure session resume does not need planning roles. */
+  getPlanningModeBinding(): FamilyPlanningModeBinding;
   prepare(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PreparedSession>;
   validateResume(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft | null }>): Promise<void>;
   submitPractice(input: Readonly<{ session: TrainingSession; response: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PracticeSubmission>;
@@ -106,7 +171,7 @@ export interface TrainingFamilyRuntime {
 }
 
 export type ContentPackageRuntimeResolution = Readonly<{
-  track: CanonicalTrackRuntime;
+  track: TrainingCatalog;
   runtime: TrainingFamilyRuntime;
 }>;
 

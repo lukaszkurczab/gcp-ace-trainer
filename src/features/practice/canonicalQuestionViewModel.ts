@@ -1,6 +1,7 @@
-import type { Question, CanonicalQuestionResponse, JsonValue } from "../../content/canonical";
-import type { PracticeInteractionRenderer, PracticeResponseControl } from "./practiceSessionPresentation";
+import type { Question, JsonValue } from "../../content/canonical";
+import type { PracticeInteractionRenderer } from "./practiceSessionPresentation";
 import type { PracticeLocalResponse } from "./practiceSessionPresentation";
+import { buildCanonicalInteractionViewModel } from "../../application/canonical/canonicalInteractionPresentation";
 
 export type CanonicalQuestionViewModel = Readonly<{
   itemId: string;
@@ -9,51 +10,15 @@ export type CanonicalQuestionViewModel = Readonly<{
   interaction: PracticeInteractionRenderer;
 }>;
 
-/** Projects the canonical union into the one renderer contract owned by practice UI. */
+/** Preserves the selected handler's presentation as an opaque feature binding input. */
 export function toCanonicalQuestionViewModel(question: Pick<Question, "constraints" | "interaction" | "prompt" | "questionId">): CanonicalQuestionViewModel {
-  const interaction = question.interaction;
-  if (interaction.type === "choice_single" || interaction.type === "choice_multiple") {
-    return Object.freeze({
-      itemId: question.questionId,
-      prompt: question.prompt,
-      constraints: Object.freeze([...(question.constraints ?? [])]),
-      interaction: Object.freeze({ kind: "choice", options: Object.freeze(interaction.options.map((option) => Object.freeze({ id: option.optionId, selected: false, text: option.text }))) }),
-    });
-  }
-  if (interaction.type === "ordering") {
-    return Object.freeze({
-      itemId: question.questionId,
-      prompt: question.prompt,
-      constraints: Object.freeze([...(question.constraints ?? [])]),
-      interaction: Object.freeze({ kind: "ordering", elements: Object.freeze(interaction.elements.map((element) => Object.freeze({ id: element.elementId, text: element.text }))) }),
-    });
-  }
+  const projected = buildCanonicalInteractionViewModel(question as Question, null);
   return Object.freeze({
     itemId: question.questionId,
     prompt: question.prompt,
     constraints: Object.freeze([...(question.constraints ?? [])]),
-    interaction: Object.freeze({
-      kind: "complexity",
-      dimensions: Object.freeze(interaction.dimensions.map((dimension) => Object.freeze({
-        id: dimension.dimensionId,
-        label: dimension.label,
-        values: Object.freeze(dimension.values.map((value) => value.text)),
-      }))),
-    }),
+    interaction: projected satisfies PracticeInteractionRenderer,
   });
-}
-
-export function responseToCanonicalQuestionResponse(question: Question, response: PracticeResponseControl): CanonicalQuestionResponse | null {
-  if (response.kind === "choice") {
-    const ids = response.options.filter((option) => option.state === "selected").map((option) => option.id);
-    return response.selectionMode === "multiple" ? { type: "choice_multiple", optionIds: ids } : ids.length ? { type: "choice_single", optionId: ids[0]! } : null;
-  }
-  if (response.kind === "ordering") return { type: "ordering", orderedElementIds: response.elements.map((element) => element.id) };
-  const selected = Object.fromEntries(response.dimensions.flatMap((dimension) => dimension.selectedValue ? [[dimension.id, [dimension.selectedValue]]] : []));
-  if (!response.dimensions.every((dimension) => Boolean(dimension.selectedValue))) return null;
-  return question.interaction.type === "decision_matrix"
-    ? { type: "decision_matrix", selectedValueIdsByDimension: selected }
-    : { type: "complexity", selectedValueIdsByDimension: selected };
 }
 
 /** Details are intentionally rendered only when they are already textual. */
@@ -63,10 +28,19 @@ export function canonicalJsonValueText(value: JsonValue): string | null {
   return null;
 }
 
-export function canonicalResponseToPracticeLocalResponse(response: CanonicalQuestionResponse | null): PracticeLocalResponse {
-  if (!response) return null;
-  if (response.type === "choice_single") return { kind: "choice", selectedOptionIds: [response.optionId] };
-  if (response.type === "choice_multiple") return { kind: "choice", selectedOptionIds: response.optionIds };
-  if (response.type === "ordering") return { kind: "ordering", orderedSubgoalIds: response.orderedElementIds };
-  return { kind: "complexity", selectedValuesByDimension: Object.fromEntries(Object.entries(response.selectedValueIdsByDimension).map(([key, values]) => [key, values[0] ?? ""])) };
+export function canonicalResponseToPracticeLocalResponse(value: unknown): PracticeLocalResponse {
+  if (!isRecord(value) || typeof value.type !== "string") return null;
+  if (value.type === "choice_single" && typeof value.optionId === "string") return { kind: "choice", selectedOptionIds: [value.optionId] };
+  if (value.type === "choice_multiple" && isStringArray(value.optionIds)) return { kind: "choice", selectedOptionIds: value.optionIds };
+  if (value.type === "ordering" && isStringArray(value.orderedElementIds)) return { kind: "ordering", orderedSubgoalIds: value.orderedElementIds };
+  if (value.type === "complexity" || value.type === "decision_matrix") {
+    if (!isRecord(value.selectedValueIdsByDimension)) return null;
+    const entries = Object.entries(value.selectedValueIdsByDimension);
+    if (entries.some(([, values]) => !isStringArray(values))) return null;
+    return { kind: "complexity", selectedValuesByDimension: Object.fromEntries(entries.map(([key, values]) => [key, [...values as string[]]])) };
+  }
+  return null;
 }
+
+function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
+function isStringArray(value: unknown): value is string[] { return Array.isArray(value) && value.every((entry) => typeof entry === "string"); }

@@ -36,8 +36,8 @@ import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { getDesignModeTitle, isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";
 import type { DesignResponse } from "../../tracks/design-interview";
-import { toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
 import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./PracticeSessionSurface";
+import { canonicalResponseToPracticeLocalResponse } from "./canonicalQuestionViewModel";
 import {
   allowsPracticeResponseEditing,
   buildPracticeResponseControl,
@@ -47,6 +47,7 @@ import {
   noticeForPracticeOperation,
   reconcilePracticeLocalResponse,
   resolvePracticeLocalResponse,
+  toggleDimensionSelection,
   type PracticeInteractionRenderer,
   type PracticeLocalResponse,
   type PracticeLocalResponseState,
@@ -89,7 +90,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     setProjection(next);
     setLocalResponse((current) => reconcilePracticeLocalResponse({
       current,
-      durableResponse: designResponseToLocal(next.response?.value ?? null),
+      durableResponse: canonicalResponseToPracticeLocalResponse(next.response?.value ?? null),
       editable: allowsPracticeResponseEditing(next.operation.kind),
       occurrenceId: next.occurrenceId,
       sessionId: next.session.id,
@@ -184,7 +185,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     ? localResponse.response
     : null;
   const responseControl = buildPracticeResponseControl({
-    choiceSelectionMode: projection.question.interaction.type === "choice_multiple" ? "multiple" : "single",
+    choiceSelectionMode: projection.interaction.interactionType === "choice_multiple" ? "multiple" : "single",
     feedbackControls: projection.feedback?.controls,
     localResponse: responseForProjection,
     renderer,
@@ -435,40 +436,34 @@ function Unavailable({ navigation, title, description }: Readonly<{ navigation: 
 }
 
 function designRenderer(projection: DesignInterviewPracticeProjection): PracticeInteractionRenderer {
-  return toCanonicalQuestionViewModel(projection.question).interaction;
-}
-
-function designResponseToLocal(response: import("../../content/canonical").CanonicalQuestionResponse | null): PracticeLocalResponse {
-  if (!response) return null;
-  if (response.type === "choice_single") return { kind: "choice", selectedOptionIds: [response.optionId] };
-  if (response.type === "choice_multiple") return { kind: "choice", selectedOptionIds: response.optionIds };
-  if (response.type === "ordering") return { kind: "ordering", orderedSubgoalIds: response.orderedElementIds };
-  return { kind: "complexity", selectedValuesByDimension: Object.fromEntries(Object.entries(response.selectedValueIdsByDimension).map(([key, values]) => [key, values[0] ?? ""])) };
+  return projection.interaction;
 }
 
 function toDesignResponse(response: Exclude<PracticeLocalResponse, null>): import("../../content/canonical").CanonicalQuestionResponse {
   if (response.kind === "choice") return response.selectedOptionIds.length > 1 ? { type: "choice_multiple", optionIds: response.selectedOptionIds } : { type: "choice_single", optionId: response.selectedOptionIds[0]! };
   if (response.kind === "ordering") return { type: "ordering", orderedElementIds: response.orderedSubgoalIds };
-  return { type: "decision_matrix", selectedValueIdsByDimension: Object.fromEntries(Object.entries(response.selectedValuesByDimension).map(([key, value]) => [key, [value]])) };
+  return { type: "decision_matrix", selectedValueIdsByDimension: Object.fromEntries(Object.entries(response.selectedValuesByDimension).map(([key, values]) => [key, [...values]])) };
 }
 
 function hasCompleteDesignResponse(projection: DesignInterviewPracticeProjection, response: PracticeLocalResponse): response is Exclude<PracticeLocalResponse, null> {
   if (!response) return false;
-  if (projection.question.interaction.type === "choice_single" || projection.question.interaction.type === "choice_multiple") return response.kind === "choice" && response.selectedOptionIds.length > 0;
-  if (projection.question.interaction.type === "ordering") return response.kind === "ordering" && response.orderedSubgoalIds.length === projection.question.interaction.elements.length;
-  return response.kind === "complexity" && projection.question.interaction.dimensions.every((dimension) => typeof response.selectedValuesByDimension[dimension.dimensionId] === "string");
+  const model = designControlModel(projection);
+  if (model.kind === "choice") return response.kind === "choice" && response.selectedOptionIds.length > 0;
+  if (model.kind === "ordering") return response.kind === "ordering" && response.orderedSubgoalIds.length === model.elements.length;
+  return response.kind === "complexity" && model.dimensions.every((dimension) => (response.selectedValuesByDimension[dimension.id]?.length ?? 0) > 0);
 }
 
 function toggleChoice(projection: DesignInterviewPracticeProjection, current: PracticeLocalResponse, optionId: string): Exclude<PracticeLocalResponse, null> {
   const ids = current?.kind === "choice" ? current.selectedOptionIds : [];
-  const next = projection.question.interaction.type === "choice_multiple"
+  const next = projection.interaction.interactionType === "choice_multiple"
     ? ids.includes(optionId) ? ids.filter((id) => id !== optionId) : [...ids, optionId]
     : [optionId];
   return { kind: "choice", selectedOptionIds: Object.freeze(next) };
 }
 
 function moveOrdering(projection: DesignInterviewPracticeProjection, current: PracticeLocalResponse, elementId: string, direction: "up" | "down"): Exclude<PracticeLocalResponse, null> {
-  const source = current?.kind === "ordering" ? [...current.orderedSubgoalIds] : projection.question.interaction.type === "ordering" ? projection.question.interaction.elements.map((element) => element.elementId) : [];
+  const control = designControlModel(projection);
+  const source = current?.kind === "ordering" ? [...current.orderedSubgoalIds] : control.kind === "ordering" ? control.elements.map((element) => element.id) : [];
   const index = source.indexOf(elementId);
   const target = direction === "up" ? index - 1 : index + 1;
   if (index < 0 || target < 0 || target >= source.length) return { kind: "ordering", orderedSubgoalIds: Object.freeze(source) };
@@ -476,8 +471,77 @@ function moveOrdering(projection: DesignInterviewPracticeProjection, current: Pr
   return { kind: "ordering", orderedSubgoalIds: Object.freeze(source) };
 }
 
+type DesignControlModel =
+  | Readonly<{ kind: "choice"; options: readonly Readonly<{ id: string; text: string; selected: boolean }>[] }>
+  | Readonly<{ kind: "ordering"; elements: readonly Readonly<{ id: string; text: string }>[] }>
+  | Readonly<{ kind: "complexity"; dimensions: readonly Readonly<{ id: string; label?: string; selectedValues?: readonly string[]; values: readonly Readonly<{ id: string; text: string }>[] }>[] }>;
+
+function designControlModel(projection: DesignInterviewPracticeProjection): DesignControlModel {
+  const model = projection.interaction.model;
+  if (!isRecord(model) || !isRecord(model.renderer)) throw new Error("Design interaction controls are unavailable.");
+  const value = model.renderer;
+  if ((projection.interaction.interactionType === "choice_single" || projection.interaction.interactionType === "choice_multiple") && value.kind === "choice") {
+    const options = readDesignChoiceOptions(value.options);
+    if (options) return Object.freeze({ kind: "choice", options });
+  }
+  if (projection.interaction.interactionType === "ordering" && value.kind === "ordering") {
+    const elements = readDesignOrderingElements(value.elements);
+    if (elements) return Object.freeze({ kind: "ordering", elements });
+  }
+  if ((projection.interaction.interactionType === "complexity" || projection.interaction.interactionType === "decision_matrix") && value.kind === "complexity") {
+    const dimensions = readDesignDimensions(value.dimensions);
+    if (dimensions) return Object.freeze({ kind: "complexity", dimensions });
+  }
+  throw new Error("Design interaction controls do not match their exact owner type.");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function readDesignChoiceOptions(value: unknown): readonly Readonly<{ id: string; text: string; selected: boolean }>[] | null {
+  if (!Array.isArray(value)) return null;
+  const options: Readonly<{ id: string; text: string; selected: boolean }>[] = [];
+  for (const entry of value) {
+    if (!isRecord(entry) || typeof entry.id !== "string" || typeof entry.text !== "string" || typeof entry.selected !== "boolean") return null;
+    options.push(Object.freeze({ id: entry.id, text: entry.text, selected: entry.selected }));
+  }
+  return Object.freeze(options);
+}
+
+function readDesignOrderingElements(value: unknown): readonly Readonly<{ id: string; text: string }>[] | null {
+  if (!Array.isArray(value)) return null;
+  const elements: Readonly<{ id: string; text: string }>[] = [];
+  for (const entry of value) {
+    if (!isRecord(entry) || typeof entry.id !== "string" || typeof entry.text !== "string") return null;
+    elements.push(Object.freeze({ id: entry.id, text: entry.text }));
+  }
+  return Object.freeze(elements);
+}
+
+function readDesignDimensions(value: unknown): readonly Readonly<{ id: string; label?: string; selectedValues?: readonly string[]; values: readonly Readonly<{ id: string; text: string }>[] }>[] | null {
+  if (!Array.isArray(value)) return null;
+  const dimensions: Readonly<{ id: string; label?: string; selectedValues?: readonly string[]; values: readonly Readonly<{ id: string; text: string }>[] }>[] = [];
+  for (const entry of value) {
+    if (!isRecord(entry) || typeof entry.id !== "string") return null;
+    if (entry.label !== undefined && typeof entry.label !== "string") return null;
+    const selectedValues = entry.selectedValues;
+    if (selectedValues !== undefined && (!Array.isArray(selectedValues) || selectedValues.some((selected) => typeof selected !== "string"))) return null;
+    const values = readDesignOrderingElements(entry.values);
+    if (!values) return null;
+    dimensions.push(Object.freeze({
+      id: entry.id,
+      ...(typeof entry.label === "string" ? { label: entry.label } : {}),
+      ...(Array.isArray(selectedValues) ? { selectedValues: Object.freeze([...selectedValues]) } : {}),
+      values,
+    }));
+  }
+  return Object.freeze(dimensions);
+}
+
 function updateMatrix(current: PracticeLocalResponse, dimensionId: string, value: string): Exclude<PracticeLocalResponse, null> {
-  return { kind: "complexity", selectedValuesByDimension: Object.freeze({ ...(current?.kind === "complexity" ? current.selectedValuesByDimension : {}), [dimensionId]: value }) };
+  const selected = current?.kind === "complexity" ? current.selectedValuesByDimension : {};
+  return { kind: "complexity", selectedValuesByDimension: toggleDimensionSelection(selected, dimensionId, value) };
 }
 
 function getDesignMode(value: string): DesignInterviewModeId | null { return isDesignInterviewModeId(value) ? value : null; }

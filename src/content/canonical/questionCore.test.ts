@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import { pathToFileURL } from "node:url";
 import { createCanonicalQuestionCatalog, isCanonicalResponseComplete, scoreCanonicalQuestion, validateCanonicalArtifact, validateQuestion, type CanonicalContentLockRecord, type Question } from ".";
+import { canonicalInteractionRegistry } from "./interactions/registry";
 
 const generated = path.resolve("src/content/generated/canonical-content");
 const contentRoot = path.resolve("../patternly-content");
@@ -78,8 +79,10 @@ test("canonical scoring matches the producer oracle exhaustively", async () => {
 test("all interactions expose completeness and immutable AttemptResult semantics", () => {
   const byType = new Map<string, Question>(); for (const { artifact } of inputs) for (const question of (artifact as { questions: Question[] }).questions) if (!byType.has(question.interaction.type)) byType.set(question.interaction.type, question);
   assert.deepEqual([...byType.keys()].sort(), ["choice_multiple", "choice_single", "complexity", "decision_matrix", "ordering"]);
-  for (const question of byType.values()) { const response = answerResponse(question); assert.equal(isCanonicalResponseComplete(question, response), true); const score = scoreCanonicalQuestion(question, response); assert.deepEqual([score.kind, score.earnedPoints, score.maxPoints], ["correct", score.maxPoints, score.maxPoints]); assert.equal(Object.isFrozen(score), true); assert.equal(isCanonicalResponseComplete(question, { ...response as object, extra: true }), false); }
+  for (const question of byType.values()) { const response = answerResponse(question); assert.equal(isCanonicalResponseComplete(question, response), true); const score = scoreCanonicalQuestion(question, response); assert.deepEqual([score.kind, score.earnedPoints, score.maxPoints], ["correct", score.maxPoints, score.maxPoints]); assert.equal(Object.isFrozen(score), true); assert.equal(isCanonicalResponseComplete(question, { ...response as object, extra: true }), false); const evaluation = canonicalInteractionRegistry.evaluate(question, response); const projectedFeedback = canonicalInteractionRegistry.projectFeedback(question, response); assert.deepEqual(projectedFeedback, evaluation.feedback, `${question.interaction.type} feedback projection matches its one-pass evaluation`); const presentation = canonicalInteractionRegistry.present(question, response); assert.equal(presentation.interactionType, question.interaction.type); assert.deepEqual(Object.keys(presentation.model as object).sort(), ["accessibility", "renderer"]); assert.equal("answer" in (presentation.model as object), false); }
   const multiple = byType.get("choice_multiple")!; assert.equal(isCanonicalResponseComplete(multiple, { type: "choice_multiple", optionIds: [] }), false);
+  const sparseOptionIds = new Array(1) as string[];
+  assert.equal(isCanonicalResponseComplete(multiple, { type: "choice_multiple", optionIds: sparseOptionIds }), false);
   for (const type of ["complexity", "decision_matrix"] as const) { const question = byType.get(type)!; const dimension = (question as Extract<Question, { interaction: { dimensions: unknown } }>).interaction.dimensions[0]!; assert.equal(isCanonicalResponseComplete(question, { type, selectedValueIdsByDimension: { [dimension.dimensionId]: [] } }), false); }
 });
 
@@ -103,6 +106,14 @@ test("dimension responses reject sparse arrays and alias-normalization collision
   const collidingResponse = answerResponse(complexityQuestion) as { type: "complexity"; selectedValueIdsByDimension: Record<string, readonly string[]> };
   collidingResponse.selectedValueIdsByDimension[dimension.dimensionId] = [alias, canonical];
   assert.equal(isCanonicalResponseComplete(complexityQuestion, collidingResponse), false);
+
+  const matrixQuestion = inputs.flatMap(({ artifact }) => (artifact as { questions: Question[] }).questions).find((question) => question.interaction.type === "decision_matrix");
+  assert.ok(matrixQuestion && matrixQuestion.interaction.type === "decision_matrix");
+  const matrixDimension = matrixQuestion.interaction.dimensions[0]!;
+  const matrixResponse = answerResponse(matrixQuestion) as { type: "decision_matrix"; selectedValueIdsByDimension: Record<string, readonly string[]> };
+  const matrixSparseValues = new Array(matrixResponse.selectedValueIdsByDimension[matrixDimension.dimensionId]!.length) as string[];
+  matrixResponse.selectedValueIdsByDimension[matrixDimension.dimensionId] = matrixSparseValues;
+  assert.equal(isCanonicalResponseComplete(matrixQuestion, matrixResponse), false);
 });
 
 test("ordering response completeness rejects sparse own slots and inherited holes", () => {

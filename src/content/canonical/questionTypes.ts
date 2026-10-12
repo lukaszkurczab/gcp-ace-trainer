@@ -1,75 +1,19 @@
 import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
-export type JsonValue = string | number | boolean | null | readonly JsonValue[] | Readonly<{ [key: string]: JsonValue }>;
+import type { CanonicalDimension, CanonicalQuestionRelation, JsonValue, CanonicalFeedback, CanonicalFeedbackMessage, CanonicalCourseSource, CanonicalOption, CanonicalElement, CanonicalValue, CanonicalComplexityDimension } from "./interactions/shared";
+import type { ChoiceSingleQuestion } from "./interactions/choiceSingle";
+import type { ChoiceMultipleQuestion } from "./interactions/choiceMultiple";
+import type { OrderingQuestion } from "./interactions/ordering";
+import type { ComplexityQuestion } from "./interactions/complexity";
+import type { DecisionMatrixQuestion } from "./interactions/decisionMatrix";
+export type { CanonicalDimension, CanonicalQuestionRelation, JsonValue, CanonicalFeedback, CanonicalFeedbackMessage, CanonicalCourseSource, CanonicalOption, CanonicalElement, CanonicalValue, CanonicalComplexityDimension } from "./interactions/shared";
+export type { ChoiceSingleQuestion, ChoiceSingleResponse } from "./interactions/choiceSingle";
+export type { ChoiceMultipleQuestion, ChoiceMultipleResponse } from "./interactions/choiceMultiple";
+export type { OrderingQuestion, OrderingResponse } from "./interactions/ordering";
+export type { ComplexityQuestion, ComplexityResponse } from "./interactions/complexity";
+export type { DecisionMatrixQuestion, DecisionMatrixResponse } from "./interactions/decisionMatrix";
 
-export type CanonicalOption = Readonly<{ optionId: string; text: string; explanation?: string }>;
-export type CanonicalElement = Readonly<{ elementId: string; text: string }>;
-export type CanonicalValue = Readonly<{ valueId: string; text: string }>;
-export type CanonicalDimension = Readonly<{
-  dimensionId: string;
-  label: string;
-  values: readonly CanonicalValue[];
-  acceptedValueIds: readonly string[];
-}>;
-export type CanonicalComplexityDimension = CanonicalDimension & Readonly<{ aliases?: Readonly<Record<string, string>> }>;
-
-export type CanonicalFeedbackMessage = Readonly<{ kind: string; targetId: string; text: string }>;
-export type CanonicalCourseSource = Readonly<{
-  title: string;
-  url: string;
-  section?: string;
-  requiresAccount: boolean;
-}>;
-export type CanonicalFeedback<T extends QuestionInteractionType> = Readonly<{
-  type: T;
-  reason: string;
-  details: JsonValue;
-  course?: CanonicalCourseSource;
-  messages?: readonly CanonicalFeedbackMessage[];
-}>;
-
-export type CanonicalQuestionRelation = Readonly<{
-  counterpartQuestionId: string;
-  kind: "near_variant" | "condition_contrast";
-  changedCondition: string;
-  decisionBoundary: string;
-}>;
-
-type QuestionBase<T extends QuestionInteractionType> = Readonly<{
-  questionId: string;
-  trackId: string;
-  nodeId: string;
-  mentalUnitId: string;
-  prompt: string;
-  constraints?: readonly string[];
-  difficulty: string | null;
-  sourceRefs?: readonly string[];
-  contentDomainId?: string;
-  questionRelation?: CanonicalQuestionRelation;
-  feedback: CanonicalFeedback<T>;
-}>;
-
-export type ChoiceSingleQuestion = QuestionBase<"choice_single"> & Readonly<{
-  interaction: Readonly<{ type: "choice_single"; scoringMethod: "exact_selected_set"; options: readonly CanonicalOption[] }>;
-  answer: Readonly<{ type: "choice_single"; optionId: string }>;
-}>;
-export type ChoiceMultipleQuestion = QuestionBase<"choice_multiple"> & Readonly<{
-  interaction: Readonly<{ type: "choice_multiple"; scoringMethod: "exact_selected_set"; options: readonly CanonicalOption[] }>;
-  answer: Readonly<{ type: "choice_multiple"; optionIds: readonly string[] }>;
-}>;
-export type OrderingQuestion = QuestionBase<"ordering"> & Readonly<{
-  interaction: Readonly<{ type: "ordering"; scoringMethod: "adjacent_relations"; elements: readonly CanonicalElement[] }>;
-  answer: Readonly<{ type: "ordering"; orderedElementIds: readonly string[] }>;
-}>;
-export type ComplexityQuestion = QuestionBase<"complexity"> & Readonly<{
-  interaction: Readonly<{ type: "complexity"; scoringMethod: "dimension_exact"; dimensions: readonly CanonicalComplexityDimension[] }>;
-  answer: Readonly<{ type: "complexity"; selectedValueIdsByDimension: Readonly<Record<string, readonly string[]>> }>;
-}>;
-export type DecisionMatrixQuestion = QuestionBase<"decision_matrix"> & Readonly<{
-  interaction: Readonly<{ type: "decision_matrix"; scoringMethod: "dimension_exact"; dimensions: readonly CanonicalDimension[] }>;
-  answer: Readonly<{ type: "decision_matrix"; selectedValueIdsByDimension: Readonly<Record<string, readonly string[]>> }>;
-}>;
-
-export type QuestionInteractionType = "choice_single" | "choice_multiple" | "ordering" | "complexity" | "decision_matrix";
+/** Compatibility view only. Runtime behavior is owned by the registered vertical interaction modules. */
+export type QuestionInteractionType = string;
 export type Question = ChoiceSingleQuestion | ChoiceMultipleQuestion | OrderingQuestion | ComplexityQuestion | DecisionMatrixQuestion;
 
 export type CanonicalCertificationSimulationConfig = Readonly<{

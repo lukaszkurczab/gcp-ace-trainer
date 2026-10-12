@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
+import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { bootstrapApplication } from "../bootstrap/applicationBootstrap";
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import { openProfileStorageRouter, type ProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
@@ -318,6 +319,8 @@ async function seedJournalOrDraftScenario(
     const firstOccurrence = prepared.session.itemOrder[0];
     if (!firstOccurrence) throw Object.assign(new Error("persist13_free_practice_occurrence_missing"), { stage: "seed", category: "seed_failed" });
     const question = await contentPackageRuntimeOwner.resolveItem(firstOccurrence.item);
+    const sourceQuestion = (await loadCanonicalRuntimeCatalog()).getQuestion(firstOccurrence.item.trackId, firstOccurrence.item.questionId);
+    if (!sourceQuestion) throw Object.assign(new Error("persist13_fixture_source_question_missing"), { stage: "seed", category: "seed_failed" });
     const before = hashPersist13PhysicalSnapshot(capturePhysicalSnapshot(requireBase(stores)), sha256Utf8);
     if (await getActiveMutationJournal(productionLearningDataAdmissionContext) !== null) throw Object.assign(new Error("persist13_unexpected_pending_journal"), { stage: "seed", category: "seed_failed" });
     const attempts = await getTrainingAttempts(productionTrackAdmissionContext);
@@ -325,12 +328,12 @@ async function seedJournalOrDraftScenario(
     baselineAttemptCount = attempts.value.length;
     baselineSessionIndex = prepared.session.currentItemIndex;
     occurrenceIdSha256 = sha256Utf8(firstOccurrence.occurrenceId);
-    responseSha256 = hashJsonForAssertion(question.answer);
+    responseSha256 = hashJsonForAssertion(sourceQuestion.answer);
     faultLogicalKey = STORAGE_KEYS.ACTIVE_JOURNAL;
     const faultPhysicalKey = persist13FixturePhysicalKey(entry.runId, faultLogicalKey);
     requireFault(stores).arm(faultPhysicalKey);
     let attemptedJournal: MutationJournalRecord | null = null;
-    try { await lifecycle.submitPracticeResponse(question.answer); }
+    try { await lifecycle.submitPracticeResponse(sourceQuestion.answer); }
     catch (error) {
       if (error instanceof TrainingApplicationFailure && error.cause instanceof MutationCommitFailure) {
         const attempt = error.cause.commandProof?.attempt;
@@ -377,6 +380,8 @@ async function seedJournalOrDraftScenario(
       throw Object.assign(new Error("persist13_registered_draft_fixture_unavailable"), { stage: "seed", category: "seed_failed" });
     }
     const question = await contentPackageRuntimeOwner.resolveItem(active.itemOrder[0].item);
+    const sourceQuestion = (await loadCanonicalRuntimeCatalog()).getQuestion(active.itemOrder[0].item.trackId, active.itemOrder[0].item.questionId);
+    if (!sourceQuestion) throw Object.assign(new Error("persist13_fixture_source_question_missing"), { stage: "seed", category: "seed_failed" });
     const occurrenceId = active.itemOrder[0].occurrenceId;
     const baseline = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: new Date().toISOString() });
     const savedBaseline = await saveTrainingSessionDraft(baseline, draft.revision, productionTrackAdmissionContext);
@@ -388,7 +393,7 @@ async function seedJournalOrDraftScenario(
     baselineSessionIndex = active.currentItemIndex;
     faultLogicalKey = STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT;
     const faultPhysicalKey = persist13FixturePhysicalKey(entry.runId, faultLogicalKey);
-    const attempted = createTrainingSessionDraft({ ...savedBaseline, revision: savedBaseline.revision + 1, responsesByOccurrenceId: { [occurrenceId]: question.answer }, flaggedOccurrenceIds: [occurrenceId], updatedAt: new Date().toISOString() });
+    const attempted = createTrainingSessionDraft({ ...savedBaseline, revision: savedBaseline.revision + 1, responsesByOccurrenceId: { [occurrenceId]: sourceQuestion.answer }, flaggedOccurrenceIds: [occurrenceId], updatedAt: new Date().toISOString() });
     expectedDraftPayloadSha256 = hashJsonForAssertion(createTrainingSessionDraft(attempted));
     requireFault(stores).arm(faultPhysicalKey);
     let attemptedReceipt: CanonicalWriteAttempt<typeof attempted> | null = null;

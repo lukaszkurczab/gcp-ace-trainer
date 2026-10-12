@@ -4,7 +4,7 @@ import test, { before } from "node:test";
 import { getTrackDisplay, getTrackRegistration, type TrackId, type TrainingSession } from "../../domain";
 import { buildCertificationPracticeResumeRoute, buildCodingInterviewSimulationResumeRoute, buildDesignInterviewPracticeResumeRoute, buildPracticeSessionConfig, resolvePracticeSessionLength } from "./sessionConfig";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
-import { CanonicalTrainingRuntime } from "../../application/canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../../application/canonicalTrainingFamilyComposition";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { buildHomeTabModel } from "../home/tabs/homeTabModel";
 import type { AnalyticsData } from "../analytics/analyticsService";
@@ -32,7 +32,7 @@ test("actual canonical practice producer resumes through routes and Home without
         ? mode.feedbackTiming.options
         : [undefined];
       for (const feedbackTiming of feedbackTimings) {
-        const runtime = new CanonicalTrainingRuntime(track);
+        const runtime = createCanonicalTrainingFamilyRuntime(track);
         const { session } = await runtime.prepare({ trackId, modeId: mode.modeId,
           request: { sessionId: `resume-regression:${trackId}:${mode.modeId}:${feedbackTiming ?? "fixed"}`, requestedLength: mode.defaultRequestedLength, ...(feedbackTiming ? { feedbackTiming } : {}) },
           attempts: [], reviews: [], now: "2026-10-05T12:00:00.000Z" });
@@ -69,7 +69,7 @@ test("verified diagnostic Focus target survives prepare and exact resume with th
   const mentalUnitId = [...new Set(track.getPool(mode.modeId).map((question) => question.mentalUnitId))]
     .find((unitId) => track.getPool(mode.modeId).filter((question) => question.mentalUnitId === unitId).length >= mode.requestedLengths[0]!);
   assert.ok(mentalUnitId);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepared = await runtime.prepare({
     trackId: track.trackId,
     modeId: mode.modeId,

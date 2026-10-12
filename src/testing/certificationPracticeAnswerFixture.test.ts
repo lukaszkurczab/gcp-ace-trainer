@@ -44,11 +44,11 @@ test("practice answer fixture completes ten canonical submissions with the exact
 
 test("fixture construction uses canonical runtime methods and has no persistence path", () => {
   const source = readFileSync("src/testing/certificationPracticeAnswerFixture.ts", "utf8");
-  assert.match(source, /new CanonicalTrainingRuntime/);
+  assert.match(source, /createCanonicalTrainingFamilyRuntime\(track\)/);
   assert.match(source, /runtime\.validateResume/);
   assert.match(source, /runtime\.submitPractice/);
   assert.match(source, /runtime\.finalizePractice/);
-  assert.match(source, /projectCertificationPracticeFeedback\("afterEachAnswer", submission\.attempt, previewQuestion\)/);
+  assert.match(source, /projectCertificationPracticeFeedback\("afterEachAnswer", submission\.attempt, exact\)/);
   assert.match(source, /source projector[\s\S]*in-memory course-backed question/);
   assert.doesNotMatch(source, /content\/generated\/canonical-content\/claude-certified-architect-professional-certification\.json/);
   assert.doesNotMatch(source, /storage\/repositories|TrainingMutationCoordinator|installTrainingLifecycleUseCases|MMKV|SecureStore|Firebase/);

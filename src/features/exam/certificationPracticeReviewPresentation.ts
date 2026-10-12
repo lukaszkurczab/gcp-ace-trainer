@@ -1,6 +1,6 @@
 import type { CertificationPracticeReviewItem } from "../../application/certification";
 import type { CertificationExamReviewItem } from "../../application/certification/certificationExamReviewProjection";
-import type { PracticeChoiceControl, PracticeOptionState } from "../practice/practiceSessionPresentation";
+import type { PracticeChoiceControl, PracticeOptionState, PracticeResponseControl } from "../practice/practiceSessionPresentation";
 
 export type ManualReviewReadbackOutcome<T> =
   | Readonly<{ kind: "commit_failed" }>
@@ -35,11 +35,11 @@ export async function commitManualReviewAndReadback<T>(input: Readonly<{
 }
 
 /** Projects immutable completed evidence into explicit user/correct/omitted option states. */
-export function buildCertificationPracticeReviewControl(item: CertificationPracticeReviewItem): PracticeChoiceControl {
+export function buildCertificationPracticeReviewControl(item: CertificationPracticeReviewItem): PracticeResponseControl {
   return buildChoiceReviewControl(item);
 }
 
-export function buildCertificationReviewControl(item: CertificationPracticeReviewItem | CertificationExamReviewItem): PracticeChoiceControl {
+export function buildCertificationReviewControl(item: CertificationPracticeReviewItem | CertificationExamReviewItem): PracticeResponseControl {
   return buildChoiceReviewControl(item);
 }
 
@@ -48,11 +48,13 @@ function buildChoiceReviewControl(item: Readonly<{
   options: readonly Readonly<{ optionId: string; text: string }>[];
   selectedOptionIds: readonly string[];
   selectionMode: "single" | "multiple";
-}>): PracticeChoiceControl {
+}>): PracticeResponseControl {
   const selected = new Set(item.selectedOptionIds);
   const correct = new Set(item.correctOptionIds);
-  return Object.freeze({
+  const interactionType = item.selectionMode === "multiple" ? "choice_multiple" : "choice_single";
+  const model: PracticeChoiceControl = Object.freeze({
     kind: "choice",
+    interactionType,
     selectionMode: item.selectionMode,
     options: Object.freeze(item.options.map((option) => Object.freeze({
       id: option.optionId,
@@ -60,6 +62,7 @@ function buildChoiceReviewControl(item: Readonly<{
       text: option.text,
     }))),
   });
+  return Object.freeze({ interactionType, model });
 }
 
 export function certificationPracticeReviewOptionState(selected: boolean, correct: boolean): PracticeOptionState {

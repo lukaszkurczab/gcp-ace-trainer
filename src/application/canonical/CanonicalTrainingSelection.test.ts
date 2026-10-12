@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import { selectPracticeQuestions } from "./practiceQuestionSelector";
 import { loadCanonicalRuntimeCatalog, type CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
 import type { TrainingAttempt } from "../../domain";
@@ -18,7 +18,7 @@ function attemptFor(track: CanonicalTrackRuntime, questionId: string, id: string
   } as TrainingAttempt<unknown>;
 }
 
-function questionIds(track: CanonicalTrackRuntime, session: Awaited<ReturnType<CanonicalTrainingRuntime["prepare"]>>["session"]): string[] {
+function questionIds(track: CanonicalTrackRuntime, session: Awaited<ReturnType<ReturnType<typeof createCanonicalTrainingFamilyRuntime>["prepare"]>>["session"]): string[] {
   return session.itemOrder.map((entry) => entry.item.questionId);
 }
 
@@ -32,7 +32,7 @@ test("ordinary sessions expand practiced coverage across coding, design and cert
   for (const [trackId, modeId] of families) {
     const track = catalog.getTrack(trackId);
     const pool = track.getPool(modeId);
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     let priorAttempts: TrainingAttempt<unknown>[] = [];
     const allSelected = new Set<string>();
     let previousCoverage = 0;

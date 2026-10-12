@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 import { renderProgressPlanSection } from '../../features/home/tabs/progressPlanSectionTestHarness.mjs';
 const require = createRequire(import.meta.url);
 const { contentPackageRuntimeOwner } = require('../contentPackageRuntimeOwner.ts');
+const { loadCanonicalRuntimeCatalog } = require('../../content/canonical/runtimeCatalog.ts');
 const { HomePlanSnapshotReader } = require('../homePlanSnapshotReader.ts');
 const { createDefaultGoal, acceptedTargetFromGoal, normalizeLearningPlan } = require('../../domain/index.ts');
 const { createLearningPlanSlotId } = require('../../domain/learning/slotIdentity.ts');
@@ -55,7 +56,7 @@ async function sourceWorkspace(t) {
 
 function executionPolicyFor(resolved, sessions = [], dueReviewCount = 0) {
   return recommendLearningPlanMode({
-    familyId: getTrackRegistration(resolved.track.trackId).familyId,
+    binding: resolved.runtime.getPlanningModeBinding(),
     trackId: resolved.track.trackId,
     modes: resolved.track.modes,
     sessions,
@@ -96,7 +97,6 @@ test('Home rejects a goal change during exact package resolution instead of publ
   assert.deepEqual(await reader.read({ trackId: TRACK, now: '2026-10-02T12:00:00.000Z' }), { kind: 'unavailable', trackId: TRACK, reason: 'concurrent_change' });
 });
 
-const { loadCanonicalRuntimeCatalog } = require('../../content/canonical/runtimeCatalog.ts');
 const { LearningPlanProposalCoordinator } = require('./LearningPlanProposalCoordinator.ts');
 const { projectLearningEvidence } = require('./learningEvidenceProjection.ts');
 const { createHash } = await import('node:crypto');
@@ -676,8 +676,10 @@ test('P13: production lifecycle submit materializes one exact attempt into fresh
   assert.equal(item.trackId, trackId);
   assert.equal(item.contentVersion, resolved.track.contentVersion);
   assert.equal(item.artifactSha256, resolved.track.artifactSha256);
-  const question = await contentPackageRuntimeOwner.resolveItem(item);
-  assert.equal(question.nodeId, descriptor.freeNodeId);
+  const resolvedItem = await contentPackageRuntimeOwner.resolveItem(item);
+  assert.equal(resolvedItem.question.nodeId, descriptor.freeNodeId);
+  const question = (await loadCanonicalRuntimeCatalog()).getTrack(trackId).getQuestion(item.questionId);
+  assert.ok(question, "the canonical catalog supplies the answer fixture without exposing answer data through the package owner");
 
   await lifecycle.submitPracticeResponse(question.answer);
 

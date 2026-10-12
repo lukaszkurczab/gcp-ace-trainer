@@ -37,7 +37,7 @@ import type { PracticeSessionRouteParams } from "./sessionConfig";
 import type { TrainingSession } from "../../domain";
 import { getTrackRegistration } from "../../domain";
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
-import { allowsPracticeResponseEditing, describeSessionPreparationFailure, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeOptionState, type PracticeSurfacePhase } from "./practiceSessionPresentation";
+import { allowsPracticeResponseEditing, buildPracticeResponseControl, describeSessionPreparationFailure, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeSurfacePhase } from "./practiceSessionPresentation";
 import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./PracticeSessionSurface";
 import { getCertificationMode } from "../../tracks/certification";
 import { toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
@@ -420,10 +420,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}
     primaryAction={primaryAction}
     progress={projection.ordinal / projection.total}
-    question={{ itemId: questionView.itemId, prompt: questionView.prompt, constraints: questionView.constraints, responseControl: questionView.interaction.kind === "choice" ? { ...questionView.interaction, options: questionView.interaction.options.map((option) => {
-      const feedbackState = feedbackStateById.get(option.id);
-      return { ...option, state: (feedbackState === "neutral" ? "not_selected" : feedbackState ?? (selected.includes(option.id) ? "selected" : "neutral")) as PracticeOptionState };
-    }) , selectionMode: multiple ? "multiple" : "single" } : { kind: "choice", options: [], selectionMode: "single" } }}
+    question={{ itemId: questionView.itemId, prompt: questionView.prompt, constraints: questionView.constraints, responseControl: buildPracticeResponseControl({ choiceSelectionMode: multiple ? "multiple" : "single", feedbackControls: feedback?.controls, localResponse: selected.length ? { kind: "choice", selectedOptionIds: selected } : null, renderer: questionView.interaction }) }}
     responseEditable={editable}
     retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : exitFailure === "reconcile_abandon" ? "Check session status" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : uncertainResponse ? "Check saved response" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}

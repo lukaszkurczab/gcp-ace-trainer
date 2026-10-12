@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
+import type { TrainingFamilyRuntime } from "../trainingLifecycle";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { abandonTrainingSession, createTrainingSession, type ReviewQueueEntry, type TrainingSession } from "../../domain";
 import { createResolvedContentRef } from "../../domain";
@@ -23,7 +24,7 @@ const TRACK_ID = "coding-interview-dsa-problem-solving";
 const STARTED_AT = "2026-10-01T12:00:00.000Z";
 const catalogPromise = loadCanonicalRuntimeCatalog();
 
-async function submit(runtime: CanonicalTrainingRuntime, input: Readonly<{ sessionId: string; at: string; commitAt?: string; review?: ReviewQueueEntry; reviewSource?: "due_queue" | "manual_request"; incorrect?: boolean; response?: unknown; interrupt?: boolean }>) {
+async function submit(runtime: TrainingFamilyRuntime, input: Readonly<{ sessionId: string; at: string; commitAt?: string; review?: ReviewQueueEntry; reviewSource?: "due_queue" | "manual_request"; incorrect?: boolean; response?: unknown; interrupt?: boolean }>) {
   const commitAt = input.commitAt ?? input.at;
   const catalog = await catalogPromise;
   const track = catalog.getTrack(TRACK_ID);
@@ -103,7 +104,7 @@ test("canonical repair and retention cycles use due snapshots, canonical answer 
   const storage = installMemoryStorage();
   setFailure = (plan) => storage.setFailurePlan(plan);
   const catalog = await catalogPromise;
-  const runtime = new CanonicalTrainingRuntime(catalog.getTrack(TRACK_ID));
+  const runtime = createCanonicalTrainingFamilyRuntime(catalog.getTrack(TRACK_ID));
 
   const initial = await submit(runtime, { sessionId: "cycle-error", at: STARTED_AT, incorrect: true });
   assert.equal(initial.outcome.attempt.answeredAt, STARTED_AT);
@@ -166,7 +167,7 @@ test("twenty ordinary correct submissions leave an unrelated active error cycle 
   installMemoryStorage();
   const catalog = await catalogPromise;
   const track = catalog.getTrack(TRACK_ID);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   await submit(runtime, { sessionId: "ordinary-matrix-error", at: STARTED_AT, incorrect: true });
   const [errorCycle] = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.ok(errorCycle);
@@ -222,7 +223,7 @@ test("incorrect or partial due answers at every retention stage restart the same
   for (const stage of ["retention7", "retention14", "retention28"] as const) {
     for (const outcomeKind of ["incorrect", "partial"] as const) {
       installMemoryStorage();
-      const runtime = new CanonicalTrainingRuntime(track);
+      const runtime = createCanonicalTrainingFamilyRuntime(track);
       const sourceItem = createResolvedContentRef({ trackId: track.trackId, questionId: partialQuestion.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 });
       const prior: ReviewQueueEntry = {
         id: `cycle:${stage}:${outcomeKind}`, trackId: track.trackId, sourceAttemptId: `source:${stage}:${outcomeKind}`, sourceSessionId: "source-session",
@@ -257,7 +258,7 @@ test("answers to a future manual request cannot earn early due credit when journ
 
   for (const stage of ["retention7", "retention14", "retention28"] as const) {
     installMemoryStorage();
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     const prior: ReviewQueueEntry = {
       id: `manual-late-materialization:${stage}`, trackId: track.trackId, sourceAttemptId: `source:${stage}`, sourceSessionId: "source-session",
       sourceItem, taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval", "manual_mark"], dueAt, createdAt: STARTED_AT,
@@ -280,7 +281,7 @@ test("real completed and new repair cycles survive account snapshot materializat
   installMemoryStorage();
   await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
   const track = (await catalogPromise).getTrack(TRACK_ID);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("coding-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const sourceItem = createResolvedContentRef({ trackId: track.trackId, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 });
@@ -316,7 +317,7 @@ test("real completed and new repair cycles survive account snapshot materializat
 test("a persisted legacy due session keeps its pre-snapshot fingerprint but cannot earn due credit", async () => {
   installMemoryStorage();
   const track = (await catalogPromise).getTrack(TRACK_ID);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const question = track.getPool("coding-interview-weak-area-review")[0]!;
   const prior: ReviewQueueEntry = {
     id: "review:legacy-paused-source",
@@ -369,7 +370,7 @@ test("a persisted legacy due session keeps its pre-snapshot fingerprint but cann
 test("a completed retention28 transition consumes its manual overlay through the real journal and repository", async () => {
   installMemoryStorage();
   const track = (await catalogPromise).getTrack(TRACK_ID);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("coding-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const sourceItem = createResolvedContentRef({ trackId: track.trackId, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 });

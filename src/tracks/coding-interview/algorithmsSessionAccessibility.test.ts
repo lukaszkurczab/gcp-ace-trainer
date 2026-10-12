@@ -88,7 +88,8 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.match(practice, /accessibilityState=\{\{ checked: selected, disabled: !editable \}\}/);
   assert.match(practice, /accessibilityValue=\{correctness \? \{ text: t\(correctness\) \} : undefined\}/);
   assert.match(simulation, /accessibilityLabel=\{option\.label\} accessibilityRole=\{role\} accessibilityState=\{\{ checked: option\.selected \}\}/);
-  assert.match(simulation, /accessibilityRole="radio" accessibilityState=\{\{ checked: selected \}\}/);
+  assert.match(simulation, /control\.selectionMode === "single" \? "radio" : "checkbox"/);
+  assert.match(simulation, /accessibilityRole=\{role\} accessibilityState=\{\{ checked: option\.selected \}\}/);
   assert.match(practiceSurface, /const message = t\(notice\.message\);[\s\S]*accessible accessibilityLabel=\{message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
   assert.match(practiceSurface, /name="alert-triangle"/);
   assert.match(practiceSurface, /noticeError:\s*\{[\s\S]*?backgroundColor:\s*palette\.elevatedSurface[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
@@ -135,7 +136,7 @@ test("standalone practice conflict and unavailable states respect both safe-area
   const screen = source("src/features/practice/PracticeSessionScreen.tsx");
   const standaloneScreens = [...screen.matchAll(/<Screen\b([^>]*)>/g)].map((match) => match[1] ?? "");
 
-  assert.equal(standaloneScreens.length, 4);
+  assert.equal(standaloneScreens.length, 5);
   for (const attributes of standaloneScreens) {
     assert.match(attributes, /edges=\{\["top", "bottom"\]\}/);
   }
@@ -246,7 +247,7 @@ test("practice runtime selectors are derived from the canonical session projecti
   assert.match(surface, /runtimeSelectors\.session\.continue\(props\.runtimeIdentity\.itemId\)/);
   assert.match(surface, /runtimeSelectors\.session\.leaveAndResume\(sessionId\)/);
   assert.match(controls, /runtimeSelectors\.session\.option\(itemId, option\.id\)/);
-  assert.match(controls, /runtimeSelectors\.session\.complexityValue\(itemId, dimension\.id, value\)/);
+  assert.match(controls, /runtimeSelectors\.session\.complexityValue\(itemId, dimension\.id, value\.id\)/);
   assert.match(feedback, /runtimeSelectors\.session\.result\(itemId, feedback\.result\)/);
   assert.match(feedback, /accessibilityLabel=\{`\$\{t\("Answer explanation\."\)\} \$\{feedback\.reason\}`\}/);
   assert.match(feedback, /reasonLabel:\s*\{[^}]*fontSize:\s*12[^}]*lineHeight:\s*16/);

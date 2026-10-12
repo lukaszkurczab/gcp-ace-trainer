@@ -135,6 +135,8 @@
   "Answer Review": "Correction des réponses",
   "Practice Session": "Session d’entraînement",
   "Practice session unavailable": "Session d’entraînement indisponible",
+  "Practice interaction unavailable": "Interaction d’entraînement indisponible",
+  "This practice interaction is not available in this version.": "Cette interaction d’entraînement n’est pas disponible dans cette version.",
   "Certification Practice unavailable": "Entraînement à la certification indisponible",
   "Interview Simulation unavailable": "Simulation d’entretien indisponible",
   "Finish or leave the active session first": "Terminez ou quittez d’abord la session en cours",

@@ -91,7 +91,7 @@ export type SimulationOrderingControl = Readonly<{
 }>;
 
 export type SimulationComplexityControl = Readonly<{
-  dimensions: readonly Readonly<{ id: string; label: string; selectedValue?: string; values: readonly string[] }>[];
+  dimensions: readonly Readonly<{ id: string; label: string; selectedValues?: readonly string[]; values: readonly Readonly<{ id: string; label: string }>[] }>[];
   kind: "complexity";
 }>;
 

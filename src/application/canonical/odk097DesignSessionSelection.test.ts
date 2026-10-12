@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { loadCanonicalRuntimeCatalog, type CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const DESIGN_TRACKS = [
@@ -42,7 +42,7 @@ test("ODK-097 Design Tradeoff sessions use the exact free node and unique 10/20/
 
   for (const expected of DESIGN_TRACKS) {
     const track = catalog.getTrack(expected.trackId);
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     const mode = track.getMode(TRADEOFF_MODE);
     assert.deepEqual(mode.requestedLengths, [10, 20, 40]);
     assert.equal(mode.minimumActualLength, 10);
@@ -73,7 +73,7 @@ test("ODK-097 Design Review is due-only, truthfully shortens, and fails closed w
 
   for (const expected of DESIGN_TRACKS) {
     const track = catalog.getTrack(expected.trackId);
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     const mode = track.getMode(REVIEW_MODE);
     const pool = track.getPool(REVIEW_MODE);
     const dueReviews = pool.slice(0, 20).map((question, index) => reviewFor(itemRef(track, question.questionId), `${track.trackId}:due:${index}`));
@@ -129,7 +129,7 @@ test("ODK-097 Design Review is due-only, truthfully shortens, and fails closed w
 test("ODK-097 Review evidence rejects stale, wrong-artifact, and cross-track entries", async () => {
   const catalog = await catalogPromise;
   const track = catalog.getTrack(DESIGN_TRACKS[0]!.trackId);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const question = track.getPool(REVIEW_MODE)[0]!;
   const current = itemRef(track, question.questionId);
   const stale = { ...current, contentVersion: "backend-system-design-interview-stale-v0" };
@@ -157,7 +157,7 @@ test("ODK-097 Coding due entries remain identity-scoped without consuming histor
   const catalog = await catalogPromise;
   const track = catalog.getTrack("coding-interview-dsa-problem-solving");
   const modeId = "coding-interview-weak-area-review";
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const question = track.getPool(modeId)[0]!;
   const current = itemRef(track, question.questionId);
   const validReview = reviewFor(current, "valid");
