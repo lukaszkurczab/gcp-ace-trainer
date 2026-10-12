@@ -321,8 +321,18 @@
       "exitCode": 0,
       "scope": "selection/details/unavailable/requestremove/cancel; no removal"
     },
-    "review1000": {
-      "kind": "prepared flow, unrun"
+    "review1000Due": {
+      "kind": "complete final versioned flow",
+      "sessionId": 43262,
+      "stage": "selection52/details52/endUnavailable995/return2/revisit52 PASS",
+      "exitCode": 0,
+      "directIdentifiedCellRemountObserved": false
+    },
+    "review1000Upcoming": {
+      "kind": "final versioned flow running",
+      "sessionId": 71656,
+      "stage": "started after due terminal success",
+      "exitCode": null
     }
   },
   "hostedSourceCi": {
@@ -332,5 +342,14 @@
     "pass": 2532,
     "fail": 0,
     "skip": 5
+  },
+  "hostedFlowCi": {
+    "sha": "4cc68591b890d446ca7304e232791b51c0798d07",
+    "runId": 38322219917,
+    "conclusion": "success",
+    "pass": 2532,
+    "fail": 0,
+    "skip": 5,
+    "contentContractsPass": 3
   }
 }
