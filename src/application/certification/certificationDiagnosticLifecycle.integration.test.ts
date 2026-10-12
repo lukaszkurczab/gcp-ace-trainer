@@ -23,7 +23,13 @@ test("abandoned GCP diagnostic preserves its one durable answer and cannot produ
   if (opened.kind !== "ready") throw new Error("Expected the GCP diagnostic session to start.");
   assert.equal(opened.projection.total, 40);
   const firstQuestion = await contentPackageRuntimeOwner.resolveItem(opened.projection.session.itemOrder[0]!.item);
-  await submitCertificationPracticeResponse(firstQuestion.answer as import("../../content/canonical").CanonicalQuestionResponse);
+  const review = firstQuestion.interactions.presentReview(firstQuestion.question.questionId, null);
+  const options = (review.model as { renderer?: { options?: readonly Readonly<{ id: string; selected: boolean }>[] } }).renderer?.options ?? [];
+  const selected = options.find((option) => option.selected)?.id;
+  if (!selected) throw new Error("The exact practice owner did not project a complete choice answer for the fixture.");
+  await submitCertificationPracticeResponse(firstQuestion.question.interactionType === "choice_multiple"
+    ? { type: "choice_multiple", optionIds: [selected] }
+    : { type: "choice_single", optionId: selected });
 
   const abandoned = await abandonCertificationSession(opened.projection.session.id);
   assert.equal(abandoned.kind, "abandoned");

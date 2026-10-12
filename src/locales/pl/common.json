@@ -135,6 +135,8 @@
   "Answer Review": "Przegląd odpowiedzi",
   "Practice Session": "Sesja ćwiczeń",
   "Practice session unavailable": "Sesja ćwiczeń jest niedostępna",
+  "Practice interaction unavailable": "Interakcja ćwiczenia jest niedostępna",
+  "This practice interaction is not available in this version.": "Ta interakcja ćwiczenia nie jest dostępna w tej wersji.",
   "Certification Practice unavailable": "Ćwiczenia certyfikacyjne są niedostępne",
   "Interview Simulation unavailable": "Symulacja rozmowy jest niedostępna",
   "Finish or leave the active session first": "Najpierw dokończ lub opuść aktywną sesję",

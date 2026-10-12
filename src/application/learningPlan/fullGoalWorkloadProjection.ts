@@ -1,4 +1,5 @@
-import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
+import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
+import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 import type { LearningPlanningPolicy } from "../../content/canonical/planningPolicy";
 import type { ContentPlanningPolicyIdentity } from "../../content/canonical/contentSuccessorLedger";
 import {
@@ -75,12 +76,23 @@ export type FullGoalWorkloadProjection = Readonly<{
   observationCount: number;
 }>;
 
+type PlanningTrackProjection = Readonly<{
+  trackId: string;
+  contentVersion: string;
+  artifactSha256: string;
+  questions: readonly Pick<TrainingQuestionSummary, "questionId" | "trackId" | "nodeId" | "mentalUnitId" | "questionRelation">[];
+  completionRule?: PackageCompletionRule;
+  getPool(modeId: string): readonly Pick<TrainingQuestionSummary, "questionId" | "trackId" | "nodeId" | "mentalUnitId" | "questionRelation">[];
+  getQuestion(questionId: string): Pick<TrainingQuestionSummary, "questionId" | "trackId" | "nodeId" | "mentalUnitId" | "questionRelation"> | undefined;
+  getMode(modeId: string): ProductModeConfig;
+}>;
+
 /**
  * Projects exact C3 chapter deficits against existing canonical request pools.
  * It never retargets a mode or treats package question counts as planned work.
  */
 export function projectFullGoalWorkload(input: Readonly<{
-  track: CanonicalTrackRuntime;
+  track: PlanningTrackProjection;
   policy?: LearningPlanningPolicy;
   planningPolicyIdentity?: ContentPlanningPolicyIdentity;
   completion: PackageCompletionState;

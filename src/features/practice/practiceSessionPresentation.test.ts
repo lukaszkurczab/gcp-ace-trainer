@@ -6,6 +6,7 @@ import { TrainingApplicationFailure } from "../../application/trainingLifecycle"
 import {
   allowsPracticeFeedback,
   allowsPracticeResponseEditing,
+  isPracticeResponseOwnerCurrent,
   acceptPracticePrimaryActionActivation,
   buildPracticePrimaryActionIdentity,
   buildPracticeResponseControl,
@@ -17,6 +18,7 @@ import {
   reconcilePracticeLocalResponse,
   reconcilePracticeChoiceSelection,
   resolvePracticeLocalResponse,
+  toggleDimensionSelection,
 } from "./practiceSessionPresentation";
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
 
@@ -35,6 +37,15 @@ test("Practice presentation permits response edits before a journal exists", () 
   for (const phase of ["preparing", "submitting_before_journal", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "recovery_required", "feedback", "advancing", "advance_failed", "completed", "abandoning"] as const) {
     assert.equal(allowsPracticeResponseEditing(phase), false, phase);
   }
+});
+
+test("a response event queued for the previous item is rejected before the next render", () => {
+  const owner = { current: "session-a\u0000occurrence-a\u0000question-a" as string | null };
+  const capturedByOldHandler = owner.current!;
+  // refresh() synchronously advances the owner ref before scheduling state/render.
+  owner.current = "session-b\u0000occurrence-b\u0000question-b";
+  assert.equal(isPracticeResponseOwnerCurrent(capturedByOldHandler, owner.current), false);
+  assert.equal(isPracticeResponseOwnerCurrent(owner.current, owner.current), true);
 });
 
 test("Practice action model separates final feedback from the durable Finish command", () => {
@@ -162,7 +173,7 @@ test("Scoped local response preserves all authored control types for the same ed
   const responses = [
     { kind: "choice", selectedOptionIds: ["A"] },
     { kind: "ordering", orderedSubgoalIds: ["first", "second"] },
-    { kind: "complexity", selectedValuesByDimension: { latency: "low" } },
+    { kind: "complexity", selectedValuesByDimension: { latency: ["low", "medium"] } },
   ] as const;
   for (const response of responses) {
     const current = Object.freeze({ occurrenceId: "occurrence-1", response, sessionId: "session-1" });
@@ -170,6 +181,15 @@ test("Scoped local response preserves all authored control types for the same ed
     assert.equal(reconciled, current);
     assert.deepEqual(reconciled?.response, response);
   }
+});
+
+test("dimension checkboxes toggle independently and keep empty selection incomplete", () => {
+  const initial = Object.freeze({ time: Object.freeze(["O(1)"]), space: Object.freeze(["O(n)"]) });
+  const added = toggleDimensionSelection(initial, "time", "O(log n)");
+  assert.deepEqual(added, { time: ["O(1)", "O(log n)"], space: ["O(n)"] });
+  assert.deepEqual(toggleDimensionSelection(added, "time", "O(1)"), { time: ["O(log n)"], space: ["O(n)"] });
+  assert.deepEqual(toggleDimensionSelection(added, "time", "O(log n)"), { time: ["O(1)"], space: ["O(n)"] });
+  assert.deepEqual(toggleDimensionSelection({ time: ["O(1)"] }, "time", "O(1)"), { time: [] });
 });
 
 test("Scoped local response resets when the session or occurrence identity changes", () => {
@@ -207,23 +227,30 @@ test("Practice response renderer consumes application feedback states without sc
     ],
     localResponse: { kind: "choice", selectedOptionIds: ["a", "c"] },
     renderer: {
-      kind: "choice",
-      options: [
+      interactionType: "choice_multiple",
+      model: { renderer: { kind: "choice", options: [
         { id: "a", selected: true, text: "A" },
         { id: "b", selected: false, text: "B" },
         { id: "c", selected: true, text: "C" },
-      ],
+      ] } },
     },
   });
   assert.deepEqual(control, {
-    kind: "choice",
-    selectionMode: "multiple",
-    options: [
+    interactionType: "choice_multiple",
+    model: { kind: "choice", interactionType: "choice_multiple", selectionMode: "multiple", options: [
       { id: "a", state: "incorrect", text: "A" },
       { id: "b", state: "omitted_correct", text: "B" },
       { id: "c", state: "correct", text: "C" },
-    ],
+    ] },
   });
+});
+
+test("dimension response controls preserve each selected stable value ID", () => {
+  const control = buildPracticeResponseControl({
+    localResponse: { kind: "complexity", selectedValuesByDimension: { time: ["linear", "quadratic"] } },
+    renderer: { interactionType: "complexity", model: { renderer: { kind: "complexity", dimensions: [{ id: "time", label: "Time", values: [{ id: "linear", text: "O(n)" }, { id: "quadratic", text: "O(n²)" }] }] } } },
+  });
+  assert.deepEqual(control, { interactionType: "complexity", model: { kind: "complexity", interactionType: "complexity", dimensions: [{ id: "time", label: "Time", values: [{ id: "linear", text: "O(n)" }, { id: "quadratic", text: "O(n²)" }], selectedValues: ["linear", "quadratic"] }] } });
 });
 
 test("Single-select feedback projects selected-correct and every remaining disabled state", () => {
@@ -236,22 +263,21 @@ test("Single-select feedback projects selected-correct and every remaining disab
     ],
     localResponse: { kind: "choice", selectedOptionIds: ["a"] },
     renderer: {
-      kind: "choice",
-      options: [
+      interactionType: "choice_single",
+      model: { renderer: { kind: "choice", options: [
         { id: "a", selected: true, text: "A" },
         { id: "b", selected: false, text: "B" },
         { id: "c", selected: false, text: "C" },
-      ],
+      ] } },
     },
   });
   assert.deepEqual(control, {
-    kind: "choice",
-    selectionMode: "single",
-    options: [
+    interactionType: "choice_single",
+    model: { kind: "choice", interactionType: "choice_single", selectionMode: "single", options: [
       { id: "a", state: "correct", text: "A" },
       { id: "b", state: "not_selected", text: "B" },
       { id: "c", state: "not_selected", text: "C" },
-    ],
+    ] },
   });
 });
 
@@ -259,11 +285,11 @@ test("The visible ordering is a complete response before the learner moves an el
   const control = buildPracticeResponseControl({
     localResponse: null,
     renderer: {
-      kind: "ordering",
-      elements: [
+      interactionType: "ordering",
+      model: { renderer: { kind: "ordering", elements: [
         { id: "first", text: "First" },
         { id: "second", text: "Second" },
-      ],
+      ] } },
     },
   });
 

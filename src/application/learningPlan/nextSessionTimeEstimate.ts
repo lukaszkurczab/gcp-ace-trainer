@@ -1,7 +1,7 @@
 import type { TrainingAttempt, TrainingSession } from "../../domain";
 import { isActiveReviewQueueEntry } from "../../domain";
 import { estimatePlanningWork, calibrateObservedPlanningTime, type PlanningWorkEstimateResult } from "../../domain";
-import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
+import type { TrainingCatalog } from "../trainingLifecycle/contracts";
 import type { LearningPlanModeRecommendation } from "./learningPlanModeRecommendation";
 import type { LearningPlanningPolicy } from "../../content/canonical/planningPolicy";
 import type { ContentPlanningPolicyIdentity } from "../../content/canonical/contentSuccessorLedger";
@@ -13,7 +13,7 @@ import { matchesReviewSourceSnapshot } from "../../domain/learning/reviewQueueEn
 
 /** Estimates only the next legal request; it does not claim to forecast the full curriculum. */
 export function estimateNextSessionTime(input: Readonly<{
-  track: CanonicalTrackRuntime;
+  track: TrainingCatalog;
   planningPolicy?: LearningPlanningPolicy;
   planningPolicyIdentity?: ContentPlanningPolicyIdentity;
   recommendation: LearningPlanModeRecommendation;
@@ -108,10 +108,12 @@ export function estimateNextSessionTime(input: Readonly<{
   if (!recommendation.mode.requestedLengths.includes(requestedLength)) return unavailable("invalid_response_count", []);
   const count = Math.min(requestedLength, selected.length);
   if (mode.selection.kind === "node") {
-    selected = selectPracticeQuestions(selected, input.attempts, track, count);
+    selected = selectPracticeQuestions(selected, input.attempts, track, count)
+      .map((question) => track.getQuestion(question.questionId)!)
+      .filter((question): question is NonNullable<typeof question> => Boolean(question));
   } else {
     // Exact-order and evidence-conditioned modes retain the same canonical ordering
-    // used by CanonicalTrainingRuntime when it prepares their session.
+    // used by the registered family runtime when it prepares their session.
     selected = selected.slice(0, count);
   }
   if (selected.length < mode.minimumActualLength && mode.selection.kind !== "evidence_conditioned") return unavailable("empty_pool", []);
@@ -153,7 +155,7 @@ export type FullGoalScopeAvailability = Readonly<{
 
 /** Reports exact per-unit cost gaps without treating a bank or a single free mode as the full curriculum. */
 export function projectFullGoalScopeAvailability(input: Readonly<{
-  track: CanonicalTrackRuntime;
+  track: TrainingCatalog;
   planningPolicy?: LearningPlanningPolicy;
   completion: import("../../domain").PackageCompletionState;
 }>): FullGoalScopeAvailability {

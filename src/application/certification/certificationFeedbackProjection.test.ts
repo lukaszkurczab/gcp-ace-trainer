@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import type { Question } from "../../content/canonical";
+import { canonicalInteractionRegistry } from "../../content/canonical/interactions/registry";
+import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
+import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 import { certificationReviewEvidenceMatches, projectCertificationPracticeFeedback, projectCertificationPracticeQuestion } from "./certificationSessionFacade";
 
 const question = Object.freeze({
@@ -24,8 +27,24 @@ const question = Object.freeze({
   tags: Object.freeze([]),
 } as unknown as Question);
 
+function exact(value: Question): ResolvedInteractionItem {
+  const question: TrainingQuestionSummary = { questionId: value.questionId, trackId: value.trackId, nodeId: value.nodeId, mentalUnitId: value.mentalUnitId, prompt: value.prompt, interactionType: value.interaction.type, difficulty: value.difficulty ?? null, constraints: value.constraints };
+  const call = <T>(fn: (question: Question) => T) => fn(value);
+  return { question, interactions: {
+    isComplete: (_id, response) => call((q) => canonicalInteractionRegistry.isComplete(q, response)),
+    evaluate: (_id, response) => call((q) => canonicalInteractionRegistry.evaluate(q, response)),
+    presentReview: (_id, response, order) => call((q) => canonicalInteractionRegistry.presentReview(q, response, order)),
+    present: (_id, response, order) => call((q) => canonicalInteractionRegistry.present(q, response, order)),
+    projectFeedback: (_id, response) => call((q) => canonicalInteractionRegistry.projectFeedback(q, response)),
+    projectDiagnostics: (_id, response) => call((q) => canonicalInteractionRegistry.projectDiagnostics(q, response)),
+    controlIds: () => call((q) => canonicalInteractionRegistry.controlIds(q)),
+    randomizeControlOrder: () => call((q) => canonicalInteractionRegistry.randomizeControlOrder(q)),
+  } };
+}
+
 test("active Certification projection strips answers, explanations and feedback structurally", () => {
-  const projected = projectCertificationPracticeQuestion(question);
+  const exactQuestion = exact(question);
+  const projected = projectCertificationPracticeQuestion(exactQuestion.question, exactQuestion.interactions.present(question.questionId, null).model);
   assert.deepEqual(projected, {
     constraints: ["Select one answer."],
     interaction: {
@@ -47,9 +66,10 @@ test("active Certification projection strips answers, explanations and feedback 
 
 test("deferred feedback remains absent after durable submit while immediate feedback is unchanged", () => {
   const attempt = Object.freeze({ response: Object.freeze({ optionId: "wrong", type: "choice_single" as const }), result: Object.freeze({ kind: "incorrect" as const }) });
-  assert.equal(projectCertificationPracticeFeedback("atSessionEnd", attempt, question), null);
-  assert.equal(projectCertificationPracticeFeedback("atSessionEnd", null, question), null);
-  assert.deepEqual(projectCertificationPracticeFeedback("afterEachAnswer", attempt, question), {
+  const exactQuestion = exact(question);
+  assert.equal(projectCertificationPracticeFeedback("atSessionEnd", attempt, exactQuestion), null);
+  assert.equal(projectCertificationPracticeFeedback("atSessionEnd", null, exactQuestion), null);
+  assert.deepEqual(projectCertificationPracticeFeedback("afterEachAnswer", attempt, exactQuestion), {
     controls: [
       { id: "correct", state: "omitted_correct" },
       { id: "wrong", state: "incorrect" },
@@ -74,7 +94,7 @@ test("immediate Certification feedback returns only authored messages for select
     },
   } as unknown as Question;
   const attempt = Object.freeze({ response: Object.freeze({ optionId: "wrong", type: "choice_single" as const }), result: Object.freeze({ kind: "incorrect" as const }) });
-  assert.deepEqual(projectCertificationPracticeFeedback("afterEachAnswer", attempt, withMessages)?.messages, [withMessages.feedback.messages?.[0]]);
+  assert.deepEqual(projectCertificationPracticeFeedback("afterEachAnswer", attempt, exact(withMessages))?.messages, [withMessages.feedback.messages?.[0]]);
 });
 
 test("completed review evidence fails closed when durable outcome aggregates are missing or inconsistent", () => {

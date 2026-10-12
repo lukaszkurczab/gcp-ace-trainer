@@ -1,5 +1,7 @@
 import type { ResolvedContentRef } from "../../domain";
-import type { Question } from "../../content/canonical";
+
+/** Safe question metadata for product summaries; authored answers stay behind the exact interaction owner. */
+export type CertificationQuestionSnapshot = Readonly<{ questionId: string; nodeId: string }>;
 
 export type CertificationAnswerViewModel = Readonly<{
   questionId: string;
@@ -13,7 +15,7 @@ export type CertificationAnswerViewModel = Readonly<{
   attemptId?: string;
   elapsedSeconds?: number;
   item: ResolvedContentRef;
-  questionSnapshot: Question;
+  questionSnapshot: CertificationQuestionSnapshot;
 }>;
 
 export type CertificationExamSummaryViewModel = Readonly<{
@@ -36,7 +38,7 @@ export type CertificationExamSummaryViewModel = Readonly<{
 export type CertificationPracticeAnswerViewModel = Readonly<{
   id: string;
   questionId: string;
-  questionSnapshot: Question;
+  questionSnapshot: CertificationQuestionSnapshot;
   selectedOptionIds: readonly string[];
   correctOptionIds: readonly string[];
   isCorrect: boolean;

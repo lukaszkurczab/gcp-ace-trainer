@@ -3,6 +3,7 @@ import type { ContentArtifactMetadata } from "../contracts";
 import type { CanonicalArtifact, CanonicalContentLockRecord, CanonicalProductSimulationProfile, Question } from "./questionTypes";
 import type { LearningPlanningPolicy } from "./planningPolicy";
 import { validateCanonicalArtifact } from "./questionValidation";
+import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from "./interactions/registry";
 
 export type CanonicalQuestionCatalog = Readonly<{
   trackId: string;
@@ -20,9 +21,9 @@ export type CanonicalQuestionCatalog = Readonly<{
 
 export type Sha256Utf8 = (canonicalUtf8: string) => Promise<string>;
 
-export async function createCanonicalQuestionCatalog(value: unknown, lock: CanonicalContentLockRecord, expectedTrackId: string, sha256Utf8: Sha256Utf8): Promise<CanonicalQuestionCatalog> {
+export async function createCanonicalQuestionCatalog(value: unknown, lock: CanonicalContentLockRecord, expectedTrackId: string, sha256Utf8: Sha256Utf8, interactionRegistry: CanonicalInteractionRegistry = canonicalInteractionRegistry): Promise<CanonicalQuestionCatalog> {
   // Structural validation intentionally precedes the sole integrity boundary below.
-  const artifact: CanonicalArtifact = validateCanonicalArtifact(value, lock, expectedTrackId);
+  const artifact: CanonicalArtifact = validateCanonicalArtifact(value, lock, expectedTrackId, interactionRegistry);
   const actualSha256 = await sha256Utf8(JSON.stringify(artifact));
   if (actualSha256 !== lock.sha256) throw new Error(`Canonical artifact ${expectedTrackId} SHA-256 does not match its lock record.`);
   const byQuestion = new Map(artifact.questions.map((question) => [question.questionId, question]));

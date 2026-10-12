@@ -114,17 +114,20 @@ test("Design screen response adapter delivers keyed feedback and multiple-select
   visit(file);
   assert.ok(input);
   const adapter = new Function("projection", "responseForProjection", "renderer", `return (${input.getText(file)});`);
-  const renderer = { kind: "choice" as const, options: [{ id: "omitted", text: "Omitted" }, { id: "wrong", text: "Wrong" }, { id: "right", text: "Right" }].map((option) => ({ ...option, selected: false })) };
   for (const type of ["choice_single", "choice_multiple"]) {
+    const renderer = { interactionType: type, model: { renderer: { kind: "choice" as const, options: [{ id: "omitted", text: "Omitted" }, { id: "wrong", text: "Wrong" }, { id: "right", text: "Right" }].map((option) => ({ ...option, selected: false })) } } };
     const feedback = { controls: [{ id: "right", state: "correct" }, { id: "wrong", state: "incorrect" }, { id: "omitted", state: "omitted_correct" }] };
-    const control = buildPracticeResponseControl(adapter({ question: { interaction: { type } }, feedback }, null, renderer));
-    assert.equal(control.kind, "choice");
-    if (control.kind !== "choice") throw new Error("Expected choices");
-    assert.equal(control.selectionMode, type === "choice_multiple" ? "multiple" : "single");
-    assert.deepEqual(control.options.map(({ id, state }) => ({ id, state })), [{ id: "omitted", state: "omitted_correct" }, { id: "wrong", state: "incorrect" }, { id: "right", state: "correct" }]);
-    assert.deepEqual(control.options.map(({ state }) => practiceOptionCorrectnessValue(state)), ["Correct answer, not selected", "Selected, incorrect", "Selected, correct"]);
-    const pending = buildPracticeResponseControl(adapter({ question: { interaction: { type } }, feedback: null }, { kind: "choice", selectedOptionIds: ["wrong"] }, renderer));
-    assert.equal(pending.kind, "choice");
-    if (pending.kind === "choice") assert.deepEqual(pending.options.map(({ state }) => state), ["neutral", "selected", "neutral"]);
+    const control = buildPracticeResponseControl(adapter({ interaction: { interactionType: type }, feedback }, null, renderer));
+    assert.equal(control.interactionType, type);
+    const model = control.model as { kind: string; selectionMode: string; options: readonly { id: string; state: import("./practiceSessionPresentation").PracticeOptionState }[] };
+    assert.equal(model.kind, "choice");
+    assert.equal(model.selectionMode, type === "choice_multiple" ? "multiple" : "single");
+    assert.deepEqual(model.options.map(({ id, state }) => ({ id, state })), [{ id: "omitted", state: "omitted_correct" }, { id: "wrong", state: "incorrect" }, { id: "right", state: "correct" }]);
+    assert.deepEqual(model.options.map(({ state }) => practiceOptionCorrectnessValue(state)), ["Correct answer, not selected", "Selected, incorrect", "Selected, correct"]);
+    const pending = buildPracticeResponseControl(adapter({ interaction: { interactionType: type }, feedback: null }, { kind: "choice", selectedOptionIds: ["wrong"] }, renderer));
+    assert.equal(pending.interactionType, type);
+    const pendingModel = pending.model as { kind: string; options: readonly { state: import("./practiceSessionPresentation").PracticeOptionState }[] };
+    assert.equal(pendingModel.kind, "choice");
+    assert.deepEqual(pendingModel.options.map(({ state }) => state), ["neutral", "selected", "neutral"]);
   }
 });

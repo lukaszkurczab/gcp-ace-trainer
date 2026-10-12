@@ -615,7 +615,7 @@ import { getGoalSnapshot, readGoalSnapshot, saveGoal, saveGoalSnapshot } from ".
 import { getLearningPlanSnapshot, saveLearningPlanAtomically } from "../../storage/repositories/learningPlanRepository";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 import { attempt as journalAttempt, journal as makeJournal, session as journalSession } from "../../testing/journalTestSupport";
-import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import type { Question } from "../../content/canonical/questionTypes";
 import { commitSessionAbandonment, commitTrainingOutcome } from "../learningMutations";
@@ -1574,7 +1574,7 @@ test("a stale sync GET preserves a terminal review cycle and a new repair, then 
   await prepareBoundSyncedAccount();
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack(guestTrack);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
 
   function wrongResponse(question: Question) {
     const { answer, interaction } = question;

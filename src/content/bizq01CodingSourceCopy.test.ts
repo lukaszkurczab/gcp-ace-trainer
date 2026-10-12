@@ -5,7 +5,7 @@ import { loadCanonicalRuntimeCatalog, scoreCanonicalQuestion, type Question } fr
 import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
 import { detailLines } from "../features/practice/feedbackDetails";
 import { buildCanonicalInteractionViewModel, composeCanonicalFeedback, projectCanonicalChoiceFeedbackMessages } from "../application/canonical/canonicalInteractionPresentation";
-import { CanonicalTrainingRuntime } from "../application/canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../application/canonicalTrainingFamilyComposition";
 
 const trackId = "coding-interview-dsa-problem-solving";
 const questionId = "alg-contrast-binary-scan-correctness-006";
@@ -45,20 +45,20 @@ test("all24 saved legal permutations preserve every selected stable ID, score an
   for (const order of orders) for (const option of question.interaction.options) {
     const response = { type: "choice_single" as const, optionId: option.optionId };
     const vm = buildCanonicalInteractionViewModel(question, response, order);
-    assert.equal(vm.renderer.kind, "choice");
-    if (vm.renderer.kind !== "choice") throw new Error("Expected real choice VM.");
-    assert.deepEqual(vm.renderer.options.map((option) => option.id), order);
-    assert.deepEqual(vm.renderer.options.filter((option) => option.selected).map((option) => option.id), [option.optionId]);
-    assert.deepEqual(vm.accessibility.controls.filter((control) => control.checked).map((control) => control.id), [option.optionId]);
+    const model = vm.model as { renderer: { kind: string; options: readonly { id: string; selected: boolean }[] }; accessibility: { controls: readonly { id: string; checked?: boolean }[] } };
+    assert.equal(model.renderer.kind, "choice");
+    assert.deepEqual(model.renderer.options.map((option) => option.id), order);
+    assert.deepEqual(model.renderer.options.filter((option) => option.selected).map((option) => option.id), [option.optionId]);
+    assert.deepEqual(model.accessibility.controls.filter((control) => control.checked).map((control) => control.id), [option.optionId]);
     const score = scoreCanonicalQuestion(question, response);
     assert.equal(score.kind, option.optionId === "scan" ? "correct" : "incorrect");
-    assert.deepEqual(composeCanonicalFeedback(question, response), { correctness: score.kind, reason: question.feedback.reason, details: question.feedback.details, messages: projectCanonicalChoiceFeedbackMessages(question, response) });
+    assert.deepEqual(composeCanonicalFeedback(question, response, scoreCanonicalQuestion(question, response)), { correctness: score.kind, reason: question.feedback.reason, details: question.feedback.details, messages: projectCanonicalChoiceFeedbackMessages(question, response) });
     if (option.optionId !== "scan") assert.equal(question.feedback.messages?.filter((message) => message.targetId === option.optionId).length, 1);
   }
 });
 
 test("real current Coding practice rejects an old-package active session instead of substituting new content", async () => {
-  const track = await trackPromise, runtime = new CanonicalTrainingRuntime(track);
+  const track = await trackPromise, runtime = createCanonicalTrainingFamilyRuntime(track);
   const { session, draft } = await runtime.prepare({ trackId, modeId: "coding-interview-learn-approach", request: { sessionId: "bizq04-current-pin", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-10-02T12:00:00.000Z" });
   await runtime.validateResume({ session, draft });
   await assert.rejects(runtime.validateResume({ session: { ...session, contentVersion: "coding-interview-dsa-problem-solving-0004" }, draft }));

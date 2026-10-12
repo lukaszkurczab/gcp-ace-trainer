@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical/questionTypes";
 import { createTrainingAttempt, type ReviewQueueEntry, type TrackId } from "../../domain";
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
+import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { addReviewQueueItems, addTrainingAttempt, getActiveTrainingSession, getReviewQueueItems, getTrainingAttempts, getTrainingSessions } from "../../storage/repositories";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { STORAGE_KEYS } from "../../storage/keys";
@@ -17,10 +18,7 @@ import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const NOW = "2026-10-03T12:00:00.000Z";
-const trackPromise = contentPackageRuntimeOwner.resolveForDiscovery(TRACK_ID, "coding_interview").then((resolved) => {
-  assert.ok(resolved.planningPolicyIdentity, "planning policy remains separately pinned from training identity");
-  return resolved.track;
-});
+const trackPromise = loadCanonicalRuntimeCatalog().then((catalog) => catalog.getTrack(TRACK_ID));
 
 function wrongResponse(question: Question): CanonicalQuestionResponse {
   if (question.interaction.type === "choice_single") {
@@ -100,7 +98,7 @@ test("Coding weak-area review with explicit due_queue does not use a historical 
     committedAt: "2026-10-01T12:00:00.000Z",
   });
 
-  const outcome = await new CanonicalTrainingRuntime(track).prepare({
+  const outcome = await createCanonicalTrainingFamilyRuntime(track).prepare({
     trackId: TRACK_ID,
     modeId: mode.modeId,
     source: "practiceHub",
@@ -122,16 +120,18 @@ test("Coding weak-area review with explicit due_queue does not use a historical 
 test("actual lifecycle persists only due current refs, shortens to available due content, and does not append miss fallback", async () => {
   const storage = installMemoryStorage();
   const track = await trackPromise;
+  const resolvedTrack = (await contentPackageRuntimeOwner.resolveForDiscovery(TRACK_ID, "coding_interview")).track;
+  const currentIdentityTrack = { ...track, contentVersion: resolvedTrack.contentVersion, artifactSha256: resolvedTrack.artifactSha256 };
   const mode = track.getMode("coding-interview-weak-area-review");
   const pool = track.getPool(mode.modeId);
   assert.ok(pool.length >= 4, "fixture needs distinct due and historical-miss questions");
   const due = pool.slice(0, 3);
-  const miss = historicalMiss(track, pool[3]!, "lifecycle-mixed");
+  const miss = historicalMiss(currentIdentityTrack, pool[3]!, "lifecycle-mixed");
   await addTrainingAttempt(miss, productionTrackAdmissionContext);
   for (const [index, question] of due.entries()) {
-    await addTrainingAttempt(historicalMiss(track, question, `lifecycle-due-${index}`, `review-attempt:lifecycle-${index}`), productionTrackAdmissionContext);
+    await addTrainingAttempt(historicalMiss(currentIdentityTrack, question, `lifecycle-due-${index}`, `review-attempt:lifecycle-${index}`), productionTrackAdmissionContext);
   }
-  const reviews = due.map((question, index) => dueReview(track, question, `lifecycle-${index}`));
+  const reviews = due.map((question, index) => dueReview(currentIdentityTrack, question, `lifecycle-${index}`));
   await addReviewQueueItems(reviews, productionTrackAdmissionContext);
 
   const lifecycle = await actualLifecycle("coding-due-review-start");
@@ -156,10 +156,12 @@ test("actual lifecycle persists only due current refs, shortens to available due
 test("actual lifecycle prepares and consumes one future manual request without changing its automatic cycle", async () => {
   installMemoryStorage();
   const track = await trackPromise;
+  const resolvedTrack = (await contentPackageRuntimeOwner.resolveForDiscovery(TRACK_ID, "coding_interview")).track;
+  const currentIdentityTrack = { ...track, contentVersion: resolvedTrack.contentVersion, artifactSha256: resolvedTrack.artifactSha256 };
   const mode = track.getMode("coding-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const original = {
-    ...dueReview(track, question, "manual-overlay", "2026-10-12T12:00:00.000Z"),
+    ...dueReview(currentIdentityTrack, question, "manual-overlay", "2026-10-12T12:00:00.000Z"),
     reasons: ["scheduled_retrieval", "manual_mark"] as const,
     manualRequestId: `manual:${"e".repeat(64)}`,
     persistent: false,
@@ -232,7 +234,7 @@ test("explicit session_misses is unavailable before lifecycle persistence", asyn
 
   await assert.rejects(
     lifecycle.startSession({ trackId: TRACK_ID, modeId: mode.modeId, source: "practiceHub", request: { requestedLength: 10, reviewSource: "session_misses", reviewItemRefs: [] } }),
-    (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "unknown_mode" && /session_misses is unavailable without verified completed-session evidence/u.test(String(error.cause)),
+    (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "unknown_mode" && /session_misses requires verified completed-session evidence/u.test(String(error.cause)),
   );
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false);
   assert.equal(storage.contains(STORAGE_KEYS.TRAINING_SESSION_INDEX), false);
@@ -240,10 +242,10 @@ test("explicit session_misses is unavailable before lifecycle persistence", asyn
 });
 
 test("a single-source Design weak-area review keeps its existing due-only default without reviewSource", async () => {
-  const track = (await contentPackageRuntimeOwner.resolveForDiscovery("backend-system-design-interview", "design_interview")).track;
+  const track = (await loadCanonicalRuntimeCatalog()).getTrack("backend-system-design-interview");
   const mode = track.getMode("design-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
-  const prepared = await new CanonicalTrainingRuntime(track).prepare({
+  const prepared = await createCanonicalTrainingFamilyRuntime(track).prepare({
     trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "design-review-default", requestedLength: 10 },
     attempts: [], reviews: [dueReview(track, question, "design-default")], now: NOW,
   });
@@ -252,10 +254,10 @@ test("a single-source Design weak-area review keeps its existing due-only defaul
 });
 
 test("single-source Certification weak-area review also keeps its due-only default without reviewSource", async () => {
-  const track = (await contentPackageRuntimeOwner.resolveForDiscovery("google-cloud-associate-cloud-engineer", "certification")).track;
+  const track = (await loadCanonicalRuntimeCatalog()).getTrack("google-cloud-associate-cloud-engineer");
   const mode = track.getMode("certification-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
-  const prepared = await new CanonicalTrainingRuntime(track).prepare({
+  const prepared = await createCanonicalTrainingFamilyRuntime(track).prepare({
     trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "certification-review-default", requestedLength: mode.defaultRequestedLength },
     attempts: [], reviews: [dueReview(track, question, "certification-default")], now: NOW,
   });
@@ -276,12 +278,12 @@ test("due review selection rejects future and stale artifact/version/track refer
     { ...current, id: "review:foreign", sourceAttemptId: "attempt:foreign", trackId: "backend-system-design-interview" as TrackId, sourceItem: { ...current.sourceItem, trackId: "backend-system-design-interview" as TrackId } },
   ];
   for (const evidence of stale) {
-    await assert.rejects(new CanonicalTrainingRuntime(track).prepare({
+    await assert.rejects(createCanonicalTrainingFamilyRuntime(track).prepare({
       trackId: TRACK_ID, modeId: mode.modeId, request: { sessionId: evidence.id, requestedLength: 10, reviewSource: "due_queue" },
       attempts: [miss], reviews: [evidence], now: NOW,
     }), /insufficient eligible content/u, `${evidence.id} must not authorize content`);
   }
-  const prepared = await new CanonicalTrainingRuntime(track).prepare({
+  const prepared = await createCanonicalTrainingFamilyRuntime(track).prepare({
     trackId: TRACK_ID, modeId: mode.modeId, request: { sessionId: "dedupe-current", requestedLength: 10, reviewSource: "due_queue" },
     attempts: [], reviews: [current, { ...current, id: "review:duplicate", sourceAttemptId: "attempt:duplicate" }], now: NOW,
   });
@@ -290,17 +292,17 @@ test("due review selection rejects future and stale artifact/version/track refer
 
 test("invalid review sources and refs are rejected on practice and simulation before selection", async () => {
   const track = await trackPromise;
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const modeId = "coding-interview-weak-area-review";
   const question = track.getPool(modeId)[0]!;
   const currentDue = dueReview(track, question, "invalid-request-proof");
   const prepare = (request: unknown, selectedMode = modeId, reviews: readonly ReviewQueueEntry[] = []) => runtime.prepare({ trackId: TRACK_ID, modeId: selectedMode, request: { sessionId: "invalid-source", requestedLength: 10, ...request as object }, attempts: [], reviews, now: NOW });
   await assert.rejects(prepare({ reviewSource: "invented" }), /reviewSource is invalid/u);
-  await assert.rejects(prepare({ reviewSource: "due_queue", reviewItemRefs: [] }, modeId, [currentDue]), /require session_misses source/u);
+  await assert.rejects(prepare({ reviewSource: "due_queue", reviewItemRefs: [] }, modeId, [currentDue]), /review item refs require session_misses/u);
   await assert.rejects(prepare({ reviewSource: "due_queue" }, "coding-interview-learn-approach", [currentDue]), /requires an evidence-conditioned mode/u);
-  await assert.rejects(prepare({}), /requires an explicit reviewSource/u);
-  await assert.rejects(prepare({ reviewItemRefs: [] }, "coding-interview-simulation"), /requires an evidence-conditioned mode/u);
-  await assert.rejects(prepare({ reviewSource: "due_queue" }, "coding-interview-simulation"), /requires an evidence-conditioned mode/u);
+  await assert.rejects(prepare({}), /requires an explicit source/u);
+  await assert.rejects(prepare({ reviewItemRefs: [] }, "coding-interview-simulation"), /simulation does not accept review sources/u);
+  await assert.rejects(prepare({ reviewSource: "due_queue" }, "coding-interview-simulation"), /simulation does not accept review sources/u);
 });
 
 test("actual lifecycle rejects review source on a simulation before any durable session write", async () => {
@@ -314,7 +316,7 @@ test("actual lifecycle rejects review source on a simulation before any durable 
     modeId: "coding-interview-simulation",
     source: "practiceHub",
     request: { scope: { simulationProfileId: "algorithms-interview-simulation-v1" }, reviewSource: "due_queue" },
-  }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "unknown_mode" && /reviewSource requires an evidence-conditioned mode/u.test(String(error.cause)));
+  }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "unknown_mode" && /simulation does not accept review sources/u.test(String(error.cause)));
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false);
   assert.equal(storage.contains(STORAGE_KEYS.TRAINING_SESSION_INDEX), false);
   assert.equal(storage.operations.some((operation) => operation.kind !== "read"), false);

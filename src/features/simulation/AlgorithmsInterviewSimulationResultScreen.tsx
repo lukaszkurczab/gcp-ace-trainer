@@ -98,12 +98,13 @@ export function AlgorithmsInterviewSimulationReviewScreen({ navigation, route }:
       <Text maxFontSizeMultiplier={2} style={[styles.result, styles[outcome]]}>{t(outcome === "unanswered" ? "Unanswered" : outcome === "correct" ? "Correct" : outcome === "partial" ? "Partial" : "Incorrect")}</Text>
       <PracticeResponseControls
         control={buildPracticeResponseControl({
-          choiceSelectionMode: item.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single",
+          choiceSelectionMode: item.interaction.interactionType === "choice_multiple" ? "multiple" : "single",
           feedbackControls: item.controls,
           localResponse: null,
-          renderer: item.interaction.renderer,
+          renderer: item.interaction,
         })}
         editable={false}
+        interactionResponse={undefined}
         itemId={item.questionId}
         onChoicePress={noop}
         onComplexityValuePress={noop}

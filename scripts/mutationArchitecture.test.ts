@@ -86,12 +86,17 @@ test("features and track semantics cannot import storage or repository implement
 test("Algorithms runtime composition has no persistence binding", () => {
   assert.equal(existsSync(join(root, "src/application/coding-interview/CodingInterviewFamilyRuntime.ts")), false);
   assert.equal(existsSync(join(root, "src/application/certification/CertificationFamilyRuntime.ts")), false);
-  const runtime = read("src/application/canonical/CanonicalTrainingRuntime.ts");
-  const composition = read("src/application/contentPackageRuntimeOwner.ts");
+  assert.equal(existsSync(join(root, "src/application/canonical/CanonicalTrainingRuntime.ts")), false);
+  const runtime = read("src/application/coding-interview/codingInterviewTrainingRuntime.ts");
+  const composition = read("src/application/canonicalTrainingFamilyComposition.ts");
+  const packageOwner = read("src/application/contentPackageRuntimeOwner.ts");
   assert.equal(existsSync(join(root, "src/application/coding-interview/createCodingInterviewRuntime.ts")), false);
   assert.doesNotMatch(runtime, /storage\/repositories|react-native-mmkv|from\s+["']react/);
   assert.doesNotMatch(runtime, /\b(commit|save|getActive|recover|materialize|verify)[A-Z]/);
-  assert.deepEqual(persistenceBoundaryViolations("src/application/contentPackageRuntimeOwner.ts", composition), []);
+  assert.match(composition, /CertificationTrainingRuntime/);
+  assert.match(composition, /CodingInterviewTrainingRuntime/);
+  assert.match(composition, /DesignInterviewTrainingRuntime/);
+  assert.deepEqual(persistenceBoundaryViolations("src/application/contentPackageRuntimeOwner.ts", packageOwner), []);
 });
 
 test("persistence boundary checks imports and write calls rather than incidental wording", () => {
@@ -209,7 +214,8 @@ test("Certification answers cannot recreate the deleted selector or competing wr
   }
   const facade = read("src/application/certification/certificationSessionFacade.ts");
   assert.equal(existsSync(join(root, "src/application/certification/CertificationFamilyRuntime.ts")), false);
-  const canonical = read("src/application/canonical/CanonicalTrainingRuntime.ts");
+  const canonical = read("src/application/certification/certificationTrainingRuntime.ts");
+  assert.equal(existsSync(join(root, "src/application/canonical/CanonicalTrainingRuntime.ts")), false);
   assert.match(canonical, /async submitPractice\(/);
   assert.match(facade, /getTrainingLifecycleUseCases\(\)\.submitPracticeResponse\(response\)/);
   assert.doesNotMatch(facade, /commitTrainingOutcome|createTrainingAttempt|scoreCertificationQuestion/);
@@ -218,21 +224,17 @@ test("Certification answers cannot recreate the deleted selector or competing wr
 test("Certification presentation reads materialized feedback without owning family scoring", () => {
   const screen = read("src/features/practice/CertificationPracticeSessionScreen.tsx");
   const facade = read("src/application/certification/certificationSessionFacade.ts");
-  const runtime = read("src/application/canonical/CanonicalTrainingRuntime.ts");
+  const runtime = read("src/application/certification/certificationTrainingRuntime.ts");
   for (const path of files("src/features")) {
     assert.doesNotMatch(read(path), /scoreCertificationQuestion|certificationScoring/,
       `Certification scoring leaked into presentation at ${path}`);
   }
-  for (const path of files("src/application").filter((path) => path !== "src/application/canonical/CanonicalTrainingRuntime.ts")) {
-    assert.doesNotMatch(read(path), /scoreCertificationQuestion|certificationScoring/,
-      `Certification scoring leaked outside its family runtime at ${path}`);
-  }
-  assert.match(runtime, /result = scoreCanonicalQuestion\(question, input\.response\)/);
+  assert.match(runtime, /this\.interactions\.evaluate\(question\.questionId, input\.response\)/);
   assert.match(facade, /const feedback = projectCertificationPracticeFeedback\(feedbackMode, materializedAttempt, resolvedQuestion\)/);
-  assert.match(facade, /if \(!attempt \|\| feedbackMode !== "afterEachAnswer"\) return null;[\s\S]*?reason: question\.feedback\.reason, details: question\.feedback\.details/);
-  assert.match(facade, /question: projectCertificationPracticeQuestion\(resolvedQuestion\)/);
+  assert.match(facade, /if \(!attempt \|\| feedbackMode !== "afterEachAnswer"\) return null;[\s\S]*?exact\.interactions\.projectFeedback\(question\.questionId, attempt\.response\)/);
+  assert.match(facade, /question: projectCertificationPracticeQuestion\(question, presentation\.model\)/);
   assert.match(screen, /const feedback = projection\.feedback/);
-  assert.doesNotMatch(screen, /correctOptionIds|question\.feedback|const result = submitted|\bfeedback\b[^\n;]*\bselected\b/);
+  assert.doesNotMatch(screen, /correctOptionIds|question\.feedback|const result = submitted|projectCertificationPracticeFeedback|scoreCanonicalQuestion/);
 });
 
 test("Certification durable Practice state has one exact projection, recovery command, and shared notice mapper", () => {

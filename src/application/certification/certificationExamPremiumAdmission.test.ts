@@ -3,14 +3,14 @@ import test from "node:test";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { getTrackRegistration, type TrainingSession } from "../../domain";
 import { TrainingApplicationFailure, TrainingLifecycleUseCases, type TrainingLifecyclePorts } from "../trainingLifecycle";
-import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 
 const TRACK_ID = "google-cloud-associate-cloud-engineer";
 const MODE_ID = "certification-exam-simulation";
 
 test("Certification Exam Simulation authorizes before preparation resolution and starts durably only when allowed", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK_ID);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const events: string[] = [];
   let decision: "allowed" | "denied" | "unavailable" = "denied";
   let activeSession: TrainingSession | null = null;

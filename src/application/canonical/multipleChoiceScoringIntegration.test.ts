@@ -11,7 +11,7 @@ import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { getTrainingAttempts, getReviewQueueItems } from "../../storage";
 import { commitTrainingOutcome, commitTrainingSessionStart } from "../learningMutations";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import { composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls } from "./canonicalInteractionPresentation";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
@@ -62,7 +62,7 @@ function producerQuestionWithoutDomain(question: ChoiceMultipleQuestion) {
 test("actual practice runtime writes zero-point incorrect attempt/review, survives repository rebind and preserves authored feedback", async () => {
   const storage = installMemoryStorage();
   const track = (await catalogPromise).getTrack("claude-certified-architect-professional-certification");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("certification-focus-practice");
   const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "bizq01-scoring", requestedLength: Math.max(...mode.requestedLengths) }, attempts: [], reviews: [], now: NOW });
   const question = track.getPool(mode.modeId).find(multiple);
@@ -96,7 +96,7 @@ test("actual practice runtime writes zero-point incorrect attempt/review, surviv
   assert.deepEqual(storedReviews[0]!.reasons, ["incorrect"]);
   assert.equal(storedReviews[0]!.persistent, true);
   const partialWrong = { type: "choice_multiple" as const, optionIds: [question.answer.optionIds[0]!, wrong] };
-  const feedback = composeCanonicalFeedback(question, partialWrong);
+  const feedback = composeCanonicalFeedback(question, partialWrong, scoreCanonicalQuestion(question, partialWrong));
   assert.equal(feedback.correctness, "incorrect");
   assert.equal(feedback.reason, question.feedback.reason);
   assert.equal(feedback.details, question.feedback.details);
@@ -113,7 +113,7 @@ test("actual practice runtime writes zero-point incorrect attempt/review, surviv
 
 test("actual Coding Mock simulation finalization records wrong-containing response as incorrect zero, preserving other answers", async () => {
   const track = (await catalogPromise).getTrack("coding-interview-dsa-problem-solving");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepared = await runtime.prepare({ trackId: track.trackId, modeId: "coding-interview-simulation", request: { sessionId: "bizq01-simulation", scope: { simulationProfileId: track.simulationProfiles![0]!.profileId } }, attempts: [], reviews: [], now: NOW });
   assert.ok(prepared.draft);
   const occurrence = prepared.session.itemOrder.find((entry) => multiple(track.getQuestion(entry.item.questionId)));

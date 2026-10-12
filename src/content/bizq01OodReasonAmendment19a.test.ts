@@ -116,8 +116,8 @@ test("OOD19a applies exactly 25 Reason-only changes over immutable v19 payloads"
         scoreCanonicalQuestion(before, response),
         `${amendment.questionId}/${optionId} answer and scoring are unchanged`,
       );
-      const currentFeedback = composeCanonicalFeedback(runtime, response);
-      const baselineFeedback = composeCanonicalFeedback(before, response);
+      const currentFeedback = composeCanonicalFeedback(runtime, response, scoreCanonicalQuestion(runtime, response));
+      const baselineFeedback = composeCanonicalFeedback(before, response, scoreCanonicalQuestion(before, response));
       assert.equal(currentFeedback.correctness, baselineFeedback.correctness);
       assert.equal(currentFeedback.reason, amendment.reason);
       assert.deepEqual(currentFeedback.details, baselineFeedback.details);

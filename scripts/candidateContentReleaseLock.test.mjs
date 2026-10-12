@@ -84,14 +84,19 @@ test("candidate bootstrap loads validation modules from the explicitly supplied 
   await cp(path.join(appRoot, "src/content/generated/canonical-content"), path.join(appFixture, "src/content/generated/canonical-content"), { recursive: true });
   await cp(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), path.join(appFixture, "integration/contracts/content-release/release.lock.json"));
   await mkdir(path.join(producerRoot, "scripts/content"), { recursive: true });
-  for (const name of ["question-contract.mjs", "planning-policy.mjs"]) {
+  const signatures = {
+    "question-contract.mjs": "export function validatePackageCompletionRule(rule, pathName = \"completionRule\", questions) {",
+    "planning-policy.mjs": "export function validatePlanningPolicy(policy, questions) {",
+    "track-runtime-bindings.mjs": "export function loadTrackRuntimeBindings({ rootDirectory = DEFAULT_ROOT } = {}) {",
+  };
+  for (const name of ["question-contract.mjs", "planning-policy.mjs", "track-runtime-bindings.mjs"]) {
     const source = await readFile(path.join(contentRoot, "scripts/content", name), "utf8");
-    const signature = name === "question-contract.mjs"
-      ? "export function validatePackageCompletionRule(rule, pathName = \"completionRule\", questions) {"
-      : "export function validatePlanningPolicy(policy, questions) {";
+    const signature = signatures[name];
     assert.ok(source.includes(signature), `producer validation fixture includes ${name}'s exported entry point`);
     await writeFile(path.join(producerRoot, "scripts/content", name), source.replace(signature, `${signature}\n  throw new Error("explicit candidate producer root used");`));
   }
+  await mkdir(path.join(producerRoot, "config"), { recursive: true });
+  await cp(path.join(contentRoot, "config/track-runtime-bindings.json"), path.join(producerRoot, "config/track-runtime-bindings.json"));
   await assert.rejects(readCandidateContentProducerPin({ appRoot: appFixture, contentRoot: producerRoot }), /explicit candidate producer root used/u);
 });
 

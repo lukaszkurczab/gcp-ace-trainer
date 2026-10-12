@@ -9,7 +9,7 @@ import test from "node:test";
 import { assertHistoricalDemoMatchesCurrentRuntime, assertSnapshotCurrent, buildPublicDemoProjection, createLocalAdmittedPublicDemoCatalog, createPublicDemoCatalog } from "./exportPublicDemo.mjs";
 
 const require = createRequire(import.meta.url);
-const { buildCanonicalRuntimeCatalog } = require("../src/content/canonical/runtimeCatalog.ts");
+const { buildCanonicalRuntimeCatalog, loadCanonicalRuntimeCatalog } = require("../src/content/canonical/runtimeCatalog.ts");
 const { contentPackageRuntimeOwner } = require("../src/application/contentPackageRuntimeOwner.ts");
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const contentRoot = resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? resolve(root, "../patternly-content"));
@@ -138,7 +138,8 @@ test("explicit local admitted-source projection preserves the admitted questions
 test("local admitted-source parity requires the same exact sample and current Free pool", async () => {
   const selection = contentSelections[0];
   const base = await historicalFixture(selection);
-  const { track: currentTrack, runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
+  const { runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
+  const currentTrack = (await loadCanonicalRuntimeCatalog()).getTrack(selection.trackId);
   const valid = { selection, historicalQuestion: base.question, currentTrack, currentFamilyId: runtime.familyId };
   assert.equal(assertHistoricalDemoMatchesCurrentRuntime(valid), undefined);
   assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, currentFamilyId: "certification" }), /canonical track family/u);

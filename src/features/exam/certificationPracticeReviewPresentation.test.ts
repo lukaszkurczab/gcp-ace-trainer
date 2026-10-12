@@ -29,7 +29,9 @@ function item(input: Readonly<{ correctOptionIds: readonly string[]; selectedOpt
 }
 
 test("completed single-select review distinguishes the learner answer from the omitted correct answer", () => {
-  assert.deepEqual(buildCertificationPracticeReviewControl(item({ correctOptionIds: ["a"], selectedOptionIds: ["b"], selectionMode: "single" })).options.map(({ id, state }) => ({ id, state })), [
+  const control = buildCertificationPracticeReviewControl(item({ correctOptionIds: ["a"], selectedOptionIds: ["b"], selectionMode: "single" }));
+  assert.equal(control.interactionType, "choice_single");
+  assert.deepEqual((control.model as { options: readonly { id: string; state: string }[] }).options.map(({ id, state }) => ({ id, state })), [
     { id: "a", state: "omitted_correct" },
     { id: "b", state: "incorrect" },
     { id: "c", state: "not_selected" },
@@ -38,7 +40,9 @@ test("completed single-select review distinguishes the learner answer from the o
 });
 
 test("completed multi-select review preserves every selected, correct and omitted state", () => {
-  assert.deepEqual(buildCertificationPracticeReviewControl(item({ correctOptionIds: ["a", "c"], selectedOptionIds: ["a", "b"], selectionMode: "multiple" })).options.map(({ id, state }) => ({ id, state })), [
+  const control = buildCertificationPracticeReviewControl(item({ correctOptionIds: ["a", "c"], selectedOptionIds: ["a", "b"], selectionMode: "multiple" }));
+  assert.equal(control.interactionType, "choice_multiple");
+  assert.deepEqual((control.model as { options: readonly { id: string; state: string }[] }).options.map(({ id, state }) => ({ id, state })), [
     { id: "a", state: "correct" },
     { id: "b", state: "incorrect" },
     { id: "c", state: "omitted_correct" },

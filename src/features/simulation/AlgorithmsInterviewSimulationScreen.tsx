@@ -16,6 +16,7 @@ import type { RootStackParamList } from "../../navigation";
 import { simulationPrimaryAction, simulationTimer, type SimulationAction, type SimulationOperationPresentation, type SimulationQuestionProjection, type SimulationResponseChange, type SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
 import { resolveLocalResponseDraft, runLocalResponseTransition, type LocalResponseDraft } from "./localResponseDraft";
+import { toggleDimensionSelection } from "../practice/practiceSessionPresentation";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION>;
 type SimulationResponse = Parameters<typeof saveAlgorithmsSimulationResponse>[0]["response"];
@@ -201,9 +202,61 @@ function confirmationSurface(projection: AlgorithmsSimulationProjection, cancel:
 function pauseEndConfirmationSurface(projection: AlgorithmsSimulationProjection, keepWorking: () => void, leave: () => void, abandon: () => void): SimulationSurfaceProjection { return { ...base(projection), state: "pause_end_confirmation", question: question(projection, responseFromProjection(projection)), confirmation: { title: "Action required", description: "Review this action before continuing.", dismiss: { id: "keep-working", label: "Keep working", onPress: keepWorking }, primary: { id: "keep-working", label: "Keep working", onPress: keepWorking }, secondary: { id: "leave-and-resume", label: "Leave and resume later", onPress: leave, variant: "secondary" }, destructive: { id: "end-simulation", label: "End simulation", onPress: abandon, variant: "destructive" } } }; }
 function navigator(projection: AlgorithmsSimulationProjection) { return projection.navigator.map((item) => ({ occurrenceId: item.occurrenceId, answered: item.answered, flagged: item.flagged, state: item.current ? "current" as const : item.answered ? "answered" as const : "unanswered" as const })); }
 function frozenNavigator(projection: AlgorithmsSimulationProjection) { return projection.navigator.map((item) => ({ occurrenceId: item.occurrenceId, answered: item.answered, state: "frozen" as const })); }
-function question(projection: AlgorithmsSimulationProjection, response: SimulationResponse | null): SimulationQuestionProjection { const renderer = projection.interaction.renderer; if (renderer.kind === "choice") { const selected = response?.kind === "choice" ? new Set(response.selectedOptionIds) : new Set<string>(); return { prompt: projection.prompt, control: { kind: "choice", selectionMode: projection.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single", options: renderer.options.map((option) => ({ id: option.id, label: option.text, selected: selected.has(option.id) })) } }; } if (renderer.kind === "ordering") return { prompt: projection.prompt, control: { kind: "ordering", elements: renderer.elements.map((item) => ({ id: item.id, label: item.text })) } }; const selected = response?.kind === "complexity" ? response.selectedValuesByDimension : {}; return { prompt: projection.prompt, control: { kind: "complexity", dimensions: renderer.dimensions.map((item) => ({ id: item.id, label: item.id, selectedValue: selected[item.id], values: item.values })) } }; }
-function responseFromProjection(projection: AlgorithmsSimulationProjection): SimulationResponse | null { const renderer = projection.interaction.renderer; if (renderer.kind === "choice") return renderer.options.some((item) => item.selected) ? { kind: "choice", selectedOptionIds: renderer.options.filter((item) => item.selected).map((item) => item.id) } : null; if (renderer.kind === "ordering") return { kind: "ordering", orderedSubgoalIds: renderer.elements.map((item) => item.id) }; const selected = Object.fromEntries(renderer.dimensions.flatMap((item) => item.selectedValue ? [[item.id, item.selectedValue]] : [])); return Object.keys(selected).length ? { kind: "complexity", selectedValuesByDimension: selected } : null; }
-function applyResponseChange(current: SimulationResponse | null, projection: AlgorithmsSimulationProjection, change: SimulationResponseChange): SimulationResponse { const fallback = responseFromProjection(projection); if (change.kind === "choice") { const selected = new Set((current?.kind === "choice" ? current : fallback?.kind === "choice" ? fallback : { selectedOptionIds: [] }).selectedOptionIds); if (projection.interaction.accessibility.controls[0]?.role === "checkbox") change.selected ? selected.add(change.optionId) : selected.delete(change.optionId); else { selected.clear(); if (change.selected) selected.add(change.optionId); } return { kind: "choice", selectedOptionIds: [...selected] }; } if (change.kind === "ordering") { const values = [...(current?.kind === "ordering" ? current.orderedSubgoalIds : fallback?.kind === "ordering" ? fallback.orderedSubgoalIds : [])]; const index = values.indexOf(change.elementId); const target = index + (change.movement === "up" ? -1 : 1); if (index >= 0 && target >= 0 && target < values.length) [values[index], values[target]] = [values[target]!, values[index]!]; return { kind: "ordering", orderedSubgoalIds: values }; } const values = current?.kind === "complexity" ? current.selectedValuesByDimension : fallback?.kind === "complexity" ? fallback.selectedValuesByDimension : {}; return { kind: "complexity", selectedValuesByDimension: { ...values, [change.dimensionId]: change.value } }; }
-function isComplete(response: SimulationResponse | null, projection: AlgorithmsSimulationProjection): boolean { if (!response) return false; if (response.kind === "choice") return response.selectedOptionIds.length > 0; if (response.kind === "ordering") return projection.interaction.renderer.kind === "ordering" && response.orderedSubgoalIds.length === projection.interaction.renderer.elements.length; return projection.interaction.renderer.kind === "complexity" && projection.interaction.renderer.dimensions.every((item) => Boolean(response.selectedValuesByDimension[item.id])); }
+function question(projection: AlgorithmsSimulationProjection, response: SimulationResponse | null): SimulationQuestionProjection {
+  const renderer = codingRenderer(projection);
+  if (renderer.kind === "choice") {
+    const selected = response?.kind === "choice" ? new Set(response.selectedOptionIds) : new Set<string>();
+    return { prompt: projection.prompt, control: { kind: "choice", selectionMode: projection.interaction.interactionType === "choice_multiple" ? "multiple" : "single", options: renderer.options.map((option) => ({ id: option.id, label: option.text, selected: selected.has(option.id) })) } };
+  }
+  if (renderer.kind === "ordering") return { prompt: projection.prompt, control: { kind: "ordering", elements: renderer.elements.map((item) => ({ id: item.id, label: item.text })) } };
+  const selected = response?.kind === "complexity" ? response.selectedValuesByDimension : {};
+  return { prompt: projection.prompt, control: { kind: "complexity", dimensions: renderer.dimensions.map((item) => ({ id: item.id, label: item.id, selectedValues: selected[item.id], values: item.values.map((value) => ({ id: value.id, label: value.text })) })) } };
+}
+
+function responseFromProjection(projection: AlgorithmsSimulationProjection): SimulationResponse | null {
+  const renderer = codingRenderer(projection);
+  if (renderer.kind === "choice") return renderer.options.some((item) => item.selected) ? { kind: "choice", selectedOptionIds: renderer.options.filter((item) => item.selected).map((item) => item.id) } : null;
+  if (renderer.kind === "ordering") return { kind: "ordering", orderedSubgoalIds: renderer.elements.map((item) => item.id) };
+  const selected = Object.fromEntries(renderer.dimensions.flatMap((item) => item.selectedValues?.length ? [[item.id, [...item.selectedValues]]] : []));
+  return Object.keys(selected).length ? { kind: "complexity", selectedValuesByDimension: selected } : null;
+}
+
+function applyResponseChange(current: SimulationResponse | null, projection: AlgorithmsSimulationProjection, change: SimulationResponseChange): SimulationResponse {
+  const fallback = responseFromProjection(projection);
+  if (change.kind === "choice") {
+    const selected = new Set((current?.kind === "choice" ? current : fallback?.kind === "choice" ? fallback : { selectedOptionIds: [] }).selectedOptionIds);
+    if (projection.interaction.interactionType === "choice_multiple") change.selected ? selected.add(change.optionId) : selected.delete(change.optionId);
+    else { selected.clear(); if (change.selected) selected.add(change.optionId); }
+    return { kind: "choice", selectedOptionIds: [...selected] };
+  }
+  if (change.kind === "ordering") {
+    const values = [...(current?.kind === "ordering" ? current.orderedSubgoalIds : fallback?.kind === "ordering" ? fallback.orderedSubgoalIds : [])];
+    const index = values.indexOf(change.elementId), target = index + (change.movement === "up" ? -1 : 1);
+    if (index >= 0 && target >= 0 && target < values.length) [values[index], values[target]] = [values[target]!, values[index]!];
+    return { kind: "ordering", orderedSubgoalIds: values };
+  }
+  const selectedValues = current?.kind === "complexity" ? current.selectedValuesByDimension : fallback?.kind === "complexity" ? fallback.selectedValuesByDimension : {};
+  return { kind: "complexity", selectedValuesByDimension: toggleDimensionSelection(selectedValues, change.dimensionId, change.value) };
+}
+
+function isComplete(response: SimulationResponse | null, projection: AlgorithmsSimulationProjection): boolean {
+  if (!response) return false;
+  if (response.kind === "choice") return response.selectedOptionIds.length > 0;
+  const renderer = codingRenderer(projection);
+  if (response.kind === "ordering") return renderer.kind === "ordering" && response.orderedSubgoalIds.length === renderer.elements.length;
+  return renderer.kind === "complexity" && renderer.dimensions.every((item) => (response.selectedValuesByDimension[item.id]?.length ?? 0) > 0);
+}
+type CodingRendererModel =
+  | Readonly<{ kind: "choice"; options: readonly Readonly<{ id: string; text: string; selected: boolean }>[] }>
+  | Readonly<{ kind: "ordering"; elements: readonly Readonly<{ id: string; text: string }>[] }>
+  | Readonly<{ kind: "complexity"; dimensions: readonly Readonly<{ id: string; selectedValues?: readonly string[]; values: readonly Readonly<{ id: string; text: string }>[] }>[] }>;
+
+function codingRenderer(projection: AlgorithmsSimulationProjection): CodingRendererModel {
+  const model = projection.interaction.model;
+  if (!model || typeof model !== "object" || !("renderer" in model)) throw new Error("Coding simulation interaction presentation is invalid.");
+  const renderer = (model as { renderer?: unknown }).renderer;
+  if (!renderer || typeof renderer !== "object" || !("kind" in renderer)) throw new Error("Coding simulation interaction presentation is invalid.");
+  return renderer as CodingRendererModel;
+}
 function sameResponse(left: SimulationResponse | null, right: SimulationResponse | null) { return JSON.stringify(left) === JSON.stringify(right); }
 function simulationPosition(projection: AlgorithmsSimulationProjection) { const label = `${projection.position.current} of ${projection.position.total}`; return { accessibilityLabel: `Question ${label}`, label }; }

@@ -12,7 +12,7 @@ const appDomain = await import(pathToFileURL(join(appRoot, "src/domain/index.ts"
 const appGuards = await import(pathToFileURL(join(appRoot, "src/storage/repositories/trainingModelGuards.ts")).href);
 const appAdmission = await import(pathToFileURL(join(appRoot, "src/application/tracks/trackAdmissionContext.ts")).href);
 const runtimeCatalogModule = await import(pathToFileURL(join(appRoot, "src/content/canonical/runtimeCatalog.ts")).href);
-const runtimeModule = await import(pathToFileURL(join(appRoot, "src/application/canonical/CanonicalTrainingRuntime.ts")).href);
+const runtimeComposition = await import(pathToFileURL(join(appRoot, "src/application/canonicalTrainingFamilyComposition.ts")).href);
 const { createTrainingSession, createTrainingSessionResult, createResolvedContentRef } = appDomain;
 const { isReviewQueueEntry, isTrainingSession, isTrainingSessionResult } = appGuards;
 const { progressMutationSchema } = backendContracts;
@@ -73,7 +73,7 @@ assert.ok(isReviewQueueEntry(activeReview, appAdmission.productionTrackAdmission
 assert.ok(isReviewQueueEntry(completedReview, appAdmission.productionTrackAdmissionContext));
 assert.ok(isReviewQueueEntry(legacyActiveReview, appAdmission.productionTrackAdmissionContext));
 
-const runtime = new runtimeModule.CanonicalTrainingRuntime(track);
+const runtime = runtimeComposition.createCanonicalTrainingFamilyRuntime(track);
 const prepared = await runtime.prepare({
   trackId,
   modeId: mode.modeId,

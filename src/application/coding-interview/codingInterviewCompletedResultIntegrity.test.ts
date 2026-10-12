@@ -15,27 +15,33 @@ import {
   saveAlgorithmsSimulationResponseAndContinue,
   startAlgorithmsSession,
   submitAlgorithmsPracticeResponse,
+  toCanonicalPracticeResponse,
 } from "./codingInterviewSessionFacade";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { STORAGE_KEYS } from "../../storage/keys";
-import type { Question } from "../../content/canonical/questionTypes";
+import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
 import type { TrainingAttempt } from "../../domain";
 import type { MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 
 const dependencies = { premiumSessionAdmission: { authorize: async () => "allowed" as const } };
 const sessionId = "completed-result-integrity-practice";
 
-function correctResponse(question: Question) {
-  switch (question.answer.type) {
-    case "choice_single": return { kind: "choice" as const, selectedOptionIds: [question.answer.optionId] };
-    case "choice_multiple": return { kind: "choice" as const, selectedOptionIds: question.answer.optionIds };
-    case "ordering": return { kind: "ordering" as const, orderedSubgoalIds: question.answer.orderedElementIds };
-    case "complexity":
-    case "decision_matrix": return {
-      kind: "complexity" as const,
-      selectedValuesByDimension: Object.fromEntries(Object.entries(question.answer.selectedValueIdsByDimension).map(([id, values]) => [id, values[0]!])),
-    };
+function correctResponse(item: ResolvedInteractionItem) {
+  const review = item.interactions.presentReview(item.question.questionId, null);
+  const model = review.model as { renderer: { kind: string; options?: readonly { id: string; selected: boolean }[]; elements?: readonly { id: string }[]; dimensions?: readonly { id: string; selectedValues: readonly string[] }[] } };
+  if (model.renderer.kind === "choice") return { kind: "choice" as const, selectedOptionIds: model.renderer.options!.filter((option) => option.selected).map((option) => option.id) };
+  if (model.renderer.kind === "ordering") return { kind: "ordering" as const, orderedSubgoalIds: model.renderer.elements!.map((element) => element.id) };
+  if (model.renderer.kind === "complexity") return { kind: "complexity" as const, selectedValuesByDimension: Object.fromEntries(model.renderer.dimensions!.map((dimension) => [dimension.id, [...dimension.selectedValues]])) };
+  throw new Error("The exact interaction has no review response fixture.");
+}
+
+function incorrectChoiceResponse(item: ResolvedInteractionItem) {
+  for (const id of item.interactions.controlIds(item.question.questionId)) {
+    const response = { type: "choice_single", optionId: id };
+    const diagnostics = item.interactions.projectDiagnostics(item.question.questionId, response) as readonly { id: string; state: string }[];
+    if (diagnostics.some((entry) => entry.id === id && entry.state === "incorrect")) return { kind: "choice" as const, selectedOptionIds: [id] };
   }
+  throw new Error("The exact single-choice interaction has no incorrect option for this fixture.");
 }
 
 async function completedPractice(reinsert = false) {
@@ -46,14 +52,11 @@ async function completedPractice(reinsert = false) {
   let finalSession = prepared.session;
   for (let index = 0; index < prepared.session.actualLength; index += 1) {
     const current = await getAlgorithmsPracticeProjection();
-    const question = await contentPackageRuntimeOwner.resolveItem(current.item);
-    let response = correctResponse(question);
+    const item = await contentPackageRuntimeOwner.resolveItem(current.item);
+    let response = correctResponse(item);
     if (reinsert && index === 0) {
-      if (question.interaction.type !== "choice_single" || question.answer.type !== "choice_single") throw new Error("Expected the authored first guided-practice question to be single choice.");
-      const correctOptionId = question.answer.optionId;
-      const wrong = question.interaction.options.find((option) => option.optionId !== correctOptionId);
-      if (!wrong) throw new Error("Expected an authored incorrect option.");
-      response = { kind: "choice", selectedOptionIds: [wrong.optionId] };
+      if (item.question.interactionType !== "choice_single") throw new Error("Expected the authored first guided-practice question to be single choice.");
+      response = incorrectChoiceResponse(item);
     }
     await submitAlgorithmsPracticeResponse(response);
     if (index < prepared.session.actualLength - 1) finalSession = await advanceAlgorithmsPracticeSession();
@@ -116,9 +119,11 @@ test("completed Coding practice carries canonical diagnostics for the committed 
   const { result } = await completedPractice(true);
   const item = result.feedbackItems[0]!;
   assert.equal(item.correctness, "incorrect");
-  const question = await contentPackageRuntimeOwner.resolveItem(item.item);
+  const exactItem = await contentPackageRuntimeOwner.resolveItem(item.item);
+  const response = incorrectChoiceResponse(exactItem);
+  const projected = exactItem.interactions.projectFeedback(exactItem.question.questionId, toCanonicalPracticeResponse(exactItem.question.interactionType, response));
   const selectedIncorrectIds = item.controls.filter((control) => control.state === "incorrect").map((control) => control.id);
-  const expected = question.feedback.messages?.filter((message) => message.kind === "wrong_option" && selectedIncorrectIds.includes(message.targetId));
+  const expected = projected?.messages?.filter((message) => message.kind === "wrong_option" && selectedIncorrectIds.includes(message.targetId));
   assert.ok(expected?.length, "the deterministic Coding fixture should include an authored wrong-option message");
   assert.deepEqual(item.messages, expected);
 });
@@ -129,8 +134,8 @@ test("abandoned Coding summary keeps its separate existing projection and perfor
   composeTrainingLifecycleUseCases({ ...dependencies, sessionIds: { create: async () => "abandoned-summary-integrity" } });
   const prepared = await startAlgorithmsSession({ modeId: "coding-interview-learn-approach", requestedLength: 10, source: "abandoned-summary-integrity-test" });
   const before = await getAlgorithmsPracticeProjection();
-  const question = await contentPackageRuntimeOwner.resolveItem(before.item);
-  await submitAlgorithmsPracticeResponse(correctResponse(question));
+  const exactItem = await contentPackageRuntimeOwner.resolveItem(before.item);
+  await submitAlgorithmsPracticeResponse(correctResponse(exactItem));
   const abandoned = await abandonAlgorithmsSession();
   assert.equal(abandoned.status, "abandoned");
   const stableSnapshot = storage.snapshot();
@@ -159,8 +164,8 @@ test("completed Mock result stays pending until exact saved content validation f
     source: "completed-result-integrity-pending-test",
   });
   const first = prepared.session.itemOrder[0]!;
-  const question = await contentPackageRuntimeOwner.resolveItem(first.item);
-  await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: first.occurrenceId, response: correctResponse(question) });
+  const exactItem = await contentPackageRuntimeOwner.resolveItem(first.item);
+  await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: first.occurrenceId, response: correctResponse(exactItem) });
   await finalizeAlgorithmsSimulation();
   const stableSnapshot = storage.snapshot();
 

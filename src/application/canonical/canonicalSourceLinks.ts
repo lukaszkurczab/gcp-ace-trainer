@@ -1,4 +1,7 @@
 import type { Question } from "../../content/canonical";
+import type { CanonicalFeedback } from "../../content/canonical/interactions/shared";
+
+export type CanonicalSourceEvidence = Readonly<{ sourceRefs?: readonly string[]; feedback?: CanonicalFeedback | null }>;
 
 export type CanonicalSourceLink = Readonly<{
   host: string;
@@ -24,11 +27,17 @@ export async function openCanonicalSourceLink(
 }
 
 export function projectCanonicalSourceLinks(question: Question): readonly CanonicalSourceLink[] {
-  const details = question.feedback.details;
+  return projectCanonicalSourceEvidence(question);
+}
+
+/** Projects only explicitly supplied source evidence, including opaque-owner feedback. */
+export function projectCanonicalSourceEvidence(evidence: CanonicalSourceEvidence): readonly CanonicalSourceLink[] {
+  const feedback = evidence.feedback;
+  const details = feedback?.details;
   const documentationUrl = details && typeof details === "object" && !Array.isArray(details)
     ? (details as Readonly<Record<string, unknown>>).url
     : undefined;
-  const course = question.feedback.course;
+  const course = feedback?.course;
   // A course-backed question presents one documentation link and one course
   // lesson link. Other tracks keep the historical sourceRefs-first behavior.
   const candidates: readonly Readonly<{ url: unknown; role: "documentation" | "course"; title?: string; section?: string; requiresAccount?: boolean }>[] = course
@@ -36,7 +45,7 @@ export function projectCanonicalSourceLinks(question: Question): readonly Canoni
         ...(typeof documentationUrl === "string" ? [{ url: documentationUrl, role: "documentation" as const }] : []),
         { url: course.url, role: "course", title: course.title, ...(course.section ? { section: course.section } : {}), requiresAccount: course.requiresAccount },
       ]
-    : [...(question.sourceRefs ?? []).map((url) => ({ url, role: "documentation" as const })), ...(typeof documentationUrl === "string" ? [{ url: documentationUrl, role: "documentation" as const }] : [])];
+    : [...(evidence.sourceRefs ?? []).map((url) => ({ url, role: "documentation" as const })), ...(typeof documentationUrl === "string" ? [{ url: documentationUrl, role: "documentation" as const }] : [])];
   const seen = new Set<string>();
   const links: CanonicalSourceLink[] = [];
   for (const candidate of candidates) {

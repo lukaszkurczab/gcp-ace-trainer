@@ -190,7 +190,7 @@ export function ExamScreen({ navigation, route }: Props) {
     const token = currentToken();
     if (!token || readState.kind !== "ready" || isExamResolutionRequired(readState.projection)) return;
     const projection = readState.projection;
-    if (projection.question.interaction.type !== "choice_single") return;
+    if (projection.interaction.interactionType !== "choice_single") return;
     const attempted: PendingExamWrite = { kind: "response", occurrenceId: projection.occurrenceId, response: { type: "choice_single", optionId } };
     setPendingExamWrite(attempted);
     await performAction(async () => {
@@ -397,11 +397,12 @@ export function ExamScreen({ navigation, route }: Props) {
     label: `${t("Time remaining")}: ${remainingLabel}`,
   };
   const pendingResponse = pendingExamWrite?.kind === "response" && pendingExamWrite.occurrenceId === projection.occurrenceId ? pendingExamWrite.response : null;
-  const selectedOptionId = pendingResponse?.type === "choice_single" ? pendingResponse.optionId : projection.response?.type === "choice_single" ? projection.response.optionId : null;
+  const savedResponse = projection.response as { type?: unknown; optionId?: unknown } | null;
+  const selectedOptionId = pendingResponse?.type === "choice_single" ? pendingResponse.optionId : savedResponse?.type === "choice_single" && typeof savedResponse.optionId === "string" ? savedResponse.optionId : null;
   const answered = new Set(Object.keys(projection.draft.responsesByOccurrenceId));
   const unansweredCount = projection.session.itemOrder.filter((item) => !answered.has(item.occurrenceId)).length;
-  const interaction = projection.question.interaction;
-  if (interaction.type !== "choice_single") {
+  const renderer = (projection.interaction.model as { renderer?: { kind?: string; options?: readonly Readonly<{ id: string; text: string; selected: boolean }>[] } }).renderer;
+  if (projection.interaction.interactionType !== "choice_single" || renderer?.kind !== "choice" || !Array.isArray(renderer.options)) {
     return <Screen edges={["top", "bottom"]}><EmptyState title={t("Exam unavailable")} description={t("This exam question type is unavailable.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
 
@@ -436,18 +437,18 @@ export function ExamScreen({ navigation, route }: Props) {
         {operationError && !saveUnconfirmed ? <View accessible accessibilityLabel={operationError} accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{operationError}</Text></View> : null}
         <PracticeQuestionCard question={{ constraints: projection.question.constraints, itemId: projection.question.questionId, prompt: projection.question.prompt }} />
         <View style={styles.options}>
-          {interaction.options.map((option, index) => {
-            const selected = selectedOptionId === option.optionId;
+          {renderer.options.map((option, index) => {
+            const selected = selectedOptionId === option.id;
             return <AnswerOption
               accessibilityLabel={option.text}
               accessibilityRole="radio"
               accessibilityState={{ checked: selected, disabled: actionPending || resolutionRequired }}
               disabled={actionPending || resolutionRequired}
-              key={option.optionId}
+              key={option.id}
               letter={String.fromCharCode(65 + index)}
-              onPress={() => void selectOption(option.optionId)}
+              onPress={() => void selectOption(option.id)}
               state={selected ? "selected" : "default"}
-              testID={runtimeSelectors.simulation.option(projection.question.questionId, option.optionId)}
+              testID={runtimeSelectors.simulation.option(projection.question.questionId, option.id)}
               text={option.text}
             />;
           })}

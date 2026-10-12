@@ -22,7 +22,6 @@ import { getDomainLabel } from "../../utils";
 import type { AnalyticsData } from "../analytics/analyticsService";
 import type { CanonicalPracticeModeId } from "../../application/practice/practiceModeContract";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
-import type { Question } from "../../content/canonical";
 import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
 import { getTrackRoadmapCatalog } from "./trackRoadmapCatalog";
 
@@ -493,7 +492,7 @@ export function buildTopicRoadmapNodes(input: {
       const mode = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).track.modes[0];
       const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
       return getTrackRoadmapCatalog(input.activeTrackId).map((node) => {
-        const itemCount = content.items.filter((question: Question) => question.nodeId === node.id).length;
+        const itemCount = content.items.filter((question) => question.nodeId === node.id).length;
         const nodeProgress = progress.nodeProgress.find((item) => item.nodeId === node.id);
         const isFreeNode = node.id === freeNodeId;
         const status = isFreeNode ? "current" : "locked" as const;

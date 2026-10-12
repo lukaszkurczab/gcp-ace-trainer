@@ -1,42 +1,20 @@
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
-import { isCanonicalResponseComplete, scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
+import type { AttemptResult } from "../../domain/learning/attemptResult";
+import { canonicalInteractionRegistry } from "../../content/canonical/interactions/registry";
 
 export type CanonicalInteractionViewModel = Readonly<{
-  accessibility: Readonly<{
-    controls: readonly Readonly<{ checked?: boolean; id: string; label: string; role: "checkbox" | "radio" | "option" | "select" }>[];
-    interactionKind: "choice" | "ordering" | "complexity";
-    label: string;
-  }>;
-  renderer:
-    | Readonly<{ kind: "choice"; options: readonly Readonly<{ id: string; selected: boolean; text: string }>[] }>
-    | Readonly<{ kind: "ordering"; elements: readonly Readonly<{ id: string; text: string }>[] }>
-    | Readonly<{ kind: "complexity"; dimensions: readonly Readonly<{ id: string; selectedValue?: string; values: readonly string[] }>[] }>;
+  interactionType: string;
+  model: unknown;
 }>;
 
 export function buildCanonicalInteractionViewModel(question: Question, response: CanonicalQuestionResponse | null, displayOrder: readonly string[] = []): CanonicalInteractionViewModel {
-  const interaction = question.interaction;
-  if (interaction.type === "choice_single" || interaction.type === "choice_multiple") {
-    const ids = interaction.options.map((option) => option.optionId);
-    const order = displayOrder.length ? displayOrder : ids;
-    if (order.length !== ids.length || new Set(order).size !== ids.length || order.some((id) => !ids.includes(id))) throw new Error(`Canonical display order is invalid for ${question.questionId}.`);
-    const selected = response?.type === "choice_single" && interaction.type === "choice_single" ? new Set([response.optionId]) : response?.type === "choice_multiple" && interaction.type === "choice_multiple" ? new Set(response.optionIds) : new Set<string>();
-    const options = Object.freeze(order.map((id) => { const option = interaction.options.find((candidate) => candidate.optionId === id)!; return Object.freeze({ id, selected: selected.has(id), text: option.text }); }));
-    const role = interaction.type === "choice_multiple" ? "checkbox" as const : "radio" as const;
-    return Object.freeze({ accessibility: Object.freeze({ controls: Object.freeze(options.map((option) => Object.freeze({ checked: option.selected, id: option.id, label: option.text, role }))), interactionKind: "choice", label: question.prompt }), renderer: Object.freeze({ kind: "choice", options }) });
-  }
-  if (interaction.type === "ordering") {
-    const order = response?.type === "ordering" ? response.orderedElementIds : (displayOrder.length ? displayOrder : interaction.elements.map((element) => element.elementId));
-    const elements = Object.freeze(order.map((id) => { const element = interaction.elements.find((candidate) => candidate.elementId === id); if (!element) throw new Error(`Canonical ordering element is invalid for ${question.questionId}.`); return Object.freeze({ id, text: element.text }); }));
-    return Object.freeze({ accessibility: Object.freeze({ controls: Object.freeze(elements.map((entry) => Object.freeze({ id: entry.id, label: entry.text, role: "option" as const }))), interactionKind: "ordering", label: question.prompt }), renderer: Object.freeze({ kind: "ordering", elements }) });
-  }
-  const selected = response?.type === interaction.type ? response.selectedValueIdsByDimension : {};
-  const dimensions = Object.freeze(interaction.dimensions.map((dimension) => Object.freeze({ id: dimension.dimensionId, ...(selected[dimension.dimensionId]?.[0] ? { selectedValue: selected[dimension.dimensionId]![0] } : {}), values: Object.freeze(dimension.values.map((value) => value.valueId)) })));
-  return Object.freeze({ accessibility: Object.freeze({ controls: Object.freeze(dimensions.map((entry) => Object.freeze({ id: entry.id, label: entry.id, role: "select" as const }))), interactionKind: "complexity", label: question.prompt }), renderer: Object.freeze({ kind: "complexity", dimensions }) });
+  return canonicalInteractionRegistry.present(question, response, displayOrder);
 }
 
-export function composeCanonicalFeedback(question: Question, response: CanonicalQuestionResponse) {
-  const messages = projectCanonicalChoiceFeedbackMessages(question, response);
-  return Object.freeze({ correctness: scoreCanonicalQuestion(question, response).kind, reason: question.feedback.reason, details: question.feedback.details, ...(messages === undefined ? {} : { messages }) });
+export function composeCanonicalFeedback(question: Question, response: CanonicalQuestionResponse, result: AttemptResult) {
+  const feedback = canonicalInteractionRegistry.projectFeedback(question, response);
+  if (!feedback) throw new Error("Canonical response is incomplete or invalid.");
+  return Object.freeze({ correctness: result.kind, reason: feedback.reason, details: feedback.details, ...(feedback.messages === undefined ? {} : { messages: feedback.messages }) });
 }
 
 export type CanonicalChoiceFeedbackState = "correct" | "incorrect" | "omitted_correct" | "neutral";
@@ -62,18 +40,15 @@ export function projectCanonicalChoiceFeedbackControls(question: Question, respo
 /** Selects authored ordering relation messages only when the submitted adjacency is absent. */
 export function projectCanonicalOrderingFeedbackMessages(question: Question, response: unknown): readonly Readonly<{ kind: string; targetId: string; text: string }>[] | undefined {
   if (question.interaction.type !== "ordering" || !question.feedback.messages) return undefined;
-  if (!isCanonicalResponseComplete(question, response)) throw new Error("Canonical response is incomplete or invalid.");
-  const orderedElementIds = (response as Extract<CanonicalQuestionResponse, { type: "ordering" }>).orderedElementIds;
-  const submittedRelations = new Set(orderedElementIds.slice(0, -1).map((elementId, index) => `${elementId}->${orderedElementIds[index + 1]}`));
-  return Object.freeze(question.feedback.messages.filter((message) => message.kind === "broken_relation" && !submittedRelations.has(message.targetId)));
+  const feedback = canonicalInteractionRegistry.projectFeedback(question, response);
+  if (!feedback) throw new Error("Canonical response is incomplete or invalid.");
+  return feedback.messages;
 }
 
 /** Selects authored choice messages using the same stable-ID states exposed to answer controls. */
 export function projectCanonicalChoiceFeedbackMessages(question: Question, response: CanonicalQuestionResponse): readonly Readonly<{ kind: string; targetId: string; text: string }>[] | undefined {
   if ((question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") || !question.feedback.messages) return undefined;
-  const states = new Map(projectCanonicalChoiceFeedbackControls(question, response).map((control) => [control.id, control.state]));
-  return Object.freeze(question.feedback.messages.filter((message) =>
-    (message.kind === "wrong_option" && states.get(message.targetId) === "incorrect") ||
-    (message.kind === "omitted_option" && states.get(message.targetId) === "omitted_correct"),
-  ));
+  const feedback = canonicalInteractionRegistry.projectFeedback(question, response);
+  if (!feedback) throw new Error("Canonical response is incomplete or invalid.");
+  return feedback.messages;
 }

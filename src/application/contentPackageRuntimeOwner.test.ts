@@ -47,6 +47,37 @@ test("resolves an exact canonical artifact by track, content version, and SHA", 
   );
 });
 
+test("family admission and runtime catalog pins cannot be substituted independently", async () => {
+  await assert.rejects(
+    contentPackageRuntimeOwner.resolveForPreparation({
+      trackId: TRACK_ID,
+      familyId: "certification",
+      modeId: "coding-interview-guided-practice",
+    }),
+    /does not own coding-interview-dsa-problem-solving/u,
+  );
+
+  const prepared = contentPackageRuntimeOwner.getPreparedDiscovery(TRACK_ID);
+  await assert.rejects(
+    contentPackageRuntimeOwner.resolveExactArtifact({
+      trackId: TRACK_ID,
+      contentVersion: prepared.track.contentVersion,
+      artifactSha256: "f".repeat(64),
+    }),
+    (error: unknown) => error instanceof ExactContentArtifactUnavailableError,
+  );
+
+  const runtime = prepared.runtime;
+  await assert.rejects(runtime.prepare({
+    trackId: "google-cloud-associate-cloud-engineer",
+    modeId: "coding-interview-guided-practice",
+    request: { sessionId: "wrong-runtime-track", requestedLength: 10 },
+    attempts: [],
+    reviews: [],
+    now: "2026-09-27T00:00:00.000Z",
+  }), /track mismatch/u);
+});
+
 test("verified current OOD v24 does not resolve an absent exact OOD v23 pin when retained packages are empty", async () => {
   let retainedPackageLoads = 0;
   const owner = new ContentPackageRuntimeOwner(
@@ -146,7 +177,7 @@ test("retained inventory failures and profile-scope changes remain blocking, nev
   }), (error: unknown) => !(error instanceof ExactContentArtifactUnavailableError));
 });
 
-test("resolves only the question identified by a canonical ResolvedContentRef", async () => {
+test("resolves only an opaque interaction item bound to the exact canonical package ref", async () => {
   const prepared = contentPackageRuntimeOwner.getPreparedDiscovery(TRACK_ID);
   const question = prepared.track.questions[0]!;
   const ref = {
@@ -156,7 +187,9 @@ test("resolves only the question identified by a canonical ResolvedContentRef", 
     artifactSha256: prepared.track.artifactSha256,
   } as const;
   const resolved = await contentPackageRuntimeOwner.resolveItem(ref);
-  assert.equal(resolved.questionId, question.questionId);
+  assert.equal(resolved.question.questionId, question.questionId);
+  assert.equal(resolved.question.interactionType, prepared.track.getQuestion(question.questionId)?.interactionType);
+  assert.equal(resolved.interactions.present(question.questionId, null).interactionType, question.interactionType);
   await assert.rejects(
     contentPackageRuntimeOwner.resolveItem({ ...ref, artifactSha256: "f".repeat(64) }),
     (error: unknown) => error instanceof ExactContentArtifactUnavailableError,

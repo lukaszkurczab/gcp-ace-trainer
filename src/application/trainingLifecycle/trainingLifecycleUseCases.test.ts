@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
-import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import { TrainingLifecycleUseCases } from "./TrainingLifecycleUseCases";
 import { createTrainingSession, createTrainingSessionDraft, getTrackRegistration, StaleDraftRevisionError, type TrackId, type TrainingSessionDraft } from "../../domain";
 import type { TrainingLifecyclePorts } from "./contracts";
@@ -18,7 +18,7 @@ test("training lifecycle resolves every canonical track runtime", async () => {
 test("lifecycle preserves an explicit review conflict through the practice operation projection", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack("coding-interview-dsa-problem-solving");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("coding-interview-learn-approach");
   const prepared = await runtime.prepare({
     trackId: track.trackId,
@@ -73,7 +73,7 @@ test("lifecycle preserves an explicit review conflict through the practice opera
 test("a prewrite journal read failure retains and retries the exact frozen practice command", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack("coding-interview-dsa-problem-solving");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("coding-interview-learn-approach");
   const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "frozen-journal-retry", requestedLength: mode.requestedLengths[0] }, attempts: [], reviews: [], now: "2026-10-01T12:00:00.000Z" });
   const question = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!;
@@ -113,7 +113,7 @@ test("a prewrite journal read failure retains and retries the exact frozen pract
 test("a journal preflight conflict without a write attempt blocks submit, Next, and finish", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack("coding-interview-dsa-problem-solving");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("coding-interview-learn-approach");
   const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "blocked-journal-preflight", requestedLength: mode.requestedLengths[0] }, attempts: [], reviews: [], now: "2026-10-01T12:00:00.000Z" });
   const question = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!;

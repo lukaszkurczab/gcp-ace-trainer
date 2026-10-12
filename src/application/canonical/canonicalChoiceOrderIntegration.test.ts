@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { advanceTrainingSession, createTrainingSession, type TrainingSession } from "../../domain";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
@@ -20,7 +20,7 @@ const catalogPromise = loadCanonicalRuntimeCatalog();
 test("actual GCP practice choice orders vary between session identities and survive durable resume unchanged", async () => {
   const storage = installMemoryStorage();
   const track = (await catalogPromise).getTrack("google-cloud-associate-cloud-engineer");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepare = (sessionId: string) => runtime.prepare({ trackId: track.trackId, modeId: "certification-focus-practice", request: { sessionId, requestedLength: 10 }, attempts: [], reviews: [], now: NOW });
   const first = await prepare("bizq01-choice-order:first");
   const second = await prepare("bizq01-choice-order:second");
@@ -37,13 +37,14 @@ test("actual GCP practice choice orders vary between session identities and surv
   const occurrence = resumed.itemOrder[0]!;
   const question = track.getQuestion(occurrence.item.questionId)!;
   const vm = buildCanonicalInteractionViewModel(question, null, resumed.optionOrderByOccurrence[occurrence.occurrenceId]);
-  assert.equal(vm.renderer.kind, "choice");
-  if (vm.renderer.kind === "choice") assert.deepEqual(vm.renderer.options.map((option) => option.id), resumed.optionOrderByOccurrence[occurrence.occurrenceId]);
+  const model = vm.model as { renderer: { kind: string; options: readonly { id: string }[] } };
+  assert.equal(model.renderer.kind, "choice");
+  assert.deepEqual(model.renderer.options.map((option) => option.id), resumed.optionOrderByOccurrence[occurrence.occurrenceId]);
 });
 
 test("resume accepts a fingerprint-bound legal choice permutation without requiring regeneration", async () => {
   const track = (await catalogPromise).getTrack("google-cloud-associate-cloud-engineer");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const { session } = await runtime.prepare({ trackId: track.trackId, modeId: "certification-focus-practice", request: { sessionId: "bizq01-choice-permutation", requestedLength: 10 }, attempts: [], reviews: [], now: NOW });
   const occurrence = session.itemOrder[0]!;
   const order = [...session.optionOrderByOccurrence[occurrence.occurrenceId]!].reverse();
@@ -87,13 +88,13 @@ test("all current actual items preserve control membership, ID answers and non-c
       assert.equal(isCanonicalOptionOrder(question, order.map((id, index) => index === 0 ? order[1]! : id)), false);
       assert.deepEqual(prepareCanonicalOptionOrder({ ...question, interaction: { ...question.interaction, options: [...question.interaction.options].reverse() }, answer: null } as unknown as typeof question, seed, track), order);
       const vm = buildCanonicalInteractionViewModel(question, question.answer, order);
-      assert.equal(vm.renderer.kind, "choice");
-      if (vm.renderer.kind !== "choice") continue;
-      assert.deepEqual(vm.renderer.options.map((option) => option.id), order);
-      const selected = vm.renderer.options.filter((option) => option.selected).map((option) => option.id);
+      const model = vm.model as { renderer: { kind: string; options: readonly { id: string; selected: boolean }[] }; accessibility: { controls: readonly { id: string }[] } };
+      assert.equal(model.renderer.kind, "choice");
+      assert.deepEqual(model.renderer.options.map((option) => option.id), order);
+      const selected = model.renderer.options.filter((option) => option.selected).map((option) => option.id);
       const response = question.interaction.type === "choice_single" ? { type: "choice_single", optionId: selected[0] } : { type: "choice_multiple", optionIds: selected };
       assert.equal(scoreCanonicalQuestion(question, response).kind, "correct");
-      assert.deepEqual(vm.accessibility.controls.map((control) => control.id), order);
+      assert.deepEqual(model.accessibility.controls.map((control) => control.id), order);
     }
   }
   assert.deepEqual({ choiceCount, nonChoiceCount }, { choiceCount: 15036, nonChoiceCount: 1659 });
@@ -103,7 +104,7 @@ test("all real 29 practice modes and canonical simulation profiles prepare valid
   const catalog = await catalogPromise;
   let modes = 0, simulations = 0;
   for (const trackId of catalog.tracks) {
-    const track = catalog.getTrack(trackId), runtime = new CanonicalTrainingRuntime(track);
+    const track = catalog.getTrack(trackId), runtime = createCanonicalTrainingFamilyRuntime(track);
     for (const mode of track.modes) {
       const question = track.getPool(mode.modeId)[0]!;
       const sourceItem = { trackId, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
@@ -127,32 +128,32 @@ test("all real 29 practice modes and canonical simulation profiles prepare valid
 });
 
 test("legacy source orders remain valid; malformed orders, stale pins and unstored permutation changes fail resume", async () => {
-  const track = (await catalogPromise).getTrack("google-cloud-associate-cloud-engineer"), runtime = new CanonicalTrainingRuntime(track);
+  const track = (await catalogPromise).getTrack("google-cloud-associate-cloud-engineer"), runtime = createCanonicalTrainingFamilyRuntime(track);
   const { session } = await runtime.prepare({ trackId: track.trackId, modeId: "certification-focus-practice", request: { sessionId: "choice-guards", requestedLength: 10 }, attempts: [], reviews: [], now: NOW });
   const legacyOrders = Object.fromEntries(session.itemOrder.map((entry) => [entry.occurrenceId, (track.getQuestion(entry.item.questionId)!.interaction as { options: readonly { optionId: string }[] }).options.map((option) => option.optionId)]));
   await runtime.validateResume({ session: await refingerprint({ ...session, optionOrderByOccurrence: legacyOrders }), draft: null });
   const occurrence = session.itemOrder[0]!, original = session.optionOrderByOccurrence[occurrence.occurrenceId]!;
   await assert.rejects(runtime.validateResume({ session: { ...session, optionOrderByOccurrence: { ...session.optionOrderByOccurrence, [occurrence.occurrenceId]: [...original].reverse() } }, draft: null }), /fingerprint/);
   for (const order of [original.slice(1), original.map((id, index) => index === 0 ? "foreign" : id)]) {
-    await assert.rejects(runtime.validateResume({ session: await refingerprint({ ...session, optionOrderByOccurrence: { ...session.optionOrderByOccurrence, [occurrence.occurrenceId]: order } }), draft: null }), /option order/);
+    await assert.rejects(runtime.validateResume({ session: await refingerprint({ ...session, optionOrderByOccurrence: { ...session.optionOrderByOccurrence, [occurrence.occurrenceId]: order } }), draft: null }), /option-order|option order/);
   }
   const missing = { ...session.optionOrderByOccurrence }; delete missing[occurrence.occurrenceId];
-  for (const orders of [missing, { ...session.optionOrderByOccurrence, foreign: original }]) await assert.rejects(runtime.validateResume({ session: { ...session, optionOrderByOccurrence: orders }, draft: null }), /option order/);
+  for (const orders of [missing, { ...session.optionOrderByOccurrence, foreign: original }]) await assert.rejects(runtime.validateResume({ session: { ...session, optionOrderByOccurrence: orders }, draft: null }), /option-order|option order/);
   await assert.rejects(runtime.validateResume({ session: { ...session, artifactSha256: "f".repeat(64) }, draft: null }));
 });
 
 test("actual Coding conditional repeat retains the source prepared order after three durable intervening answers and rebind", async () => {
   const storage = installMemoryStorage();
-  const track = (await catalogPromise).getTrack("coding-interview-dsa-problem-solving"), runtime = new CanonicalTrainingRuntime(track);
+  const track = (await catalogPromise).getTrack("coding-interview-dsa-problem-solving"), runtime = createCanonicalTrainingFamilyRuntime(track);
   let { session } = await runtime.prepare({ trackId: track.trackId, modeId: "coding-interview-custom-practice", request: { sessionId: "choice-repeat", requestedLength: 10 }, attempts: [], reviews: [], now: NOW });
   const slot = session.conditionalReinsertSlots![0]!, source = session.itemOrder[0]!;
   const sourceOrder = session.optionOrderByOccurrence[source.occurrenceId]!;
   assert.ok(slot.exactSourceBranch);
   assert.deepEqual(slot.exactSourceBranch.optionOrder, sourceOrder);
   const branchBad = { ...slot, exactSourceBranch: { ...slot.exactSourceBranch, optionOrder: slot.exactSourceBranch.optionOrder.map((id, index) => index === 0 ? "foreign" : id) } };
-  await assert.rejects(runtime.validateResume({ session: await refingerprint({ ...session, conditionalReinsertSlots: [branchBad, ...session.conditionalReinsertSlots!.slice(1)] }), draft: null }), /option order/);
+  await assert.rejects(runtime.validateResume({ session: await refingerprint({ ...session, conditionalReinsertSlots: [branchBad, ...session.conditionalReinsertSlots!.slice(1)] }), draft: null }), /option-order|reinsertion branch/);
   const ordinaryBad = { ...slot, ordinaryBranch: { ...slot.ordinaryBranch, optionOrder: [...slot.ordinaryBranch.optionOrder].reverse() } };
-  await assert.rejects(async () => runtime.validateResume({ session: await refingerprint({ ...session, conditionalReinsertSlots: [ordinaryBad, ...session.conditionalReinsertSlots!.slice(1)] }), draft: null }), /option order/);
+  await assert.rejects(async () => runtime.validateResume({ session: await refingerprint({ ...session, conditionalReinsertSlots: [ordinaryBad, ...session.conditionalReinsertSlots!.slice(1)] }), draft: null }), /option-order|option order|exactly match/);
   await commitTrainingSessionStart({ session, draft: null, createdAt: NOW });
   for (let index = 0; index < 4; index += 1) {
     const question = track.getQuestion(session.itemOrder[index]!.item.questionId)!;
@@ -177,7 +178,7 @@ test("MC becomes reachable through completed canonical sessions and real persist
   const catalog = await catalogPromise;
   for (const [trackId, modeId] of [["coding-interview-dsa-problem-solving", "coding-interview-learn-approach"], ["claude-certified-architect-professional-certification", "certification-focus-practice"]]) {
     const storage = installMemoryStorage();
-    const track = catalog.getTrack(trackId!), runtime = new CanonicalTrainingRuntime(track), mode = track.getMode(modeId!);
+    const track = catalog.getTrack(trackId!), runtime = createCanonicalTrainingFamilyRuntime(track), mode = track.getMode(modeId!);
     let encountered = false;
     const bound = Math.ceil(track.getPool(mode.modeId).length / mode.defaultRequestedLength);
     for (let round = 1; round <= bound && !encountered; round += 1) {

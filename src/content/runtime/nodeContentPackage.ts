@@ -2,6 +2,7 @@ import { gunzipSync } from "fflate";
 import { assertValidQuestion, validateQuestionRelations, type Question } from "../canonical";
 import { isCanonicalSafeIdentity } from "../../domain/identity/canonicalIdentity";
 import { isRegisteredTrackId } from "../../domain/tracks/trackRegistry";
+import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from "../canonical/interactions/registry";
 
 export const NODE_PACKAGE_SCHEMA = "patternly-content-node-payload-v1" as const;
 export const MAX_PACKAGE_BYTES = 2 * 1024 * 1024;
@@ -72,7 +73,7 @@ export type NodePackageTransport = Readonly<{ getNodePackage(trackId: string, no
 const SHA256 = /^[a-f0-9]{64}$/u;
 const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u;
 
-export async function verifyNodePackage(input: Readonly<{ trackId: string; nodeId: string; packageBytes: Uint8Array; headers: Headers; appVersion: string; hash: NodePackageHash }>): Promise<VerifiedNodePackage> {
+export async function verifyNodePackage(input: Readonly<{ trackId: string; nodeId: string; packageBytes: Uint8Array; headers: Headers; appVersion: string; hash: NodePackageHash; interactionRegistry?: CanonicalInteractionRegistry }>): Promise<VerifiedNodePackage> {
   try {
     const { trackId, nodeId, packageBytes, headers, hash } = input;
     if (!isRegisteredTrackId(trackId) || !isCanonicalSafeIdentity(nodeId) || packageBytes.length < 1 || packageBytes.length > MAX_PACKAGE_BYTES) throw new NodePackageError("invalid_response");
@@ -91,7 +92,7 @@ export async function verifyNodePackage(input: Readonly<{ trackId: string; nodeI
     if (artifactBytes.length !== declaredArtifactSize || await hash.sha256Bytes(artifactBytes) !== artifactSha256) throw new NodePackageError("package_corrupt");
     const decoded = new TextDecoder("utf-8", { fatal: true }).decode(artifactBytes);
     const parsed = JSON.parse(decoded) as unknown;
-    const payload = validateNodePayload(parsed, { trackId, nodeId, contentVersion, contentReleaseId });
+    const payload = validateNodePayload(parsed, { trackId, nodeId, contentVersion, contentReleaseId }, input.interactionRegistry);
     const identity = Object.freeze({ trackId, nodeId, contentVersion, artifactSha256 });
     const manifest = Object.freeze({ ...identity, packageSha256, contentReleaseId, minimumAppVersion, packageSize, artifactSize: artifactBytes.length });
     return Object.freeze({ identity, payload, manifest, artifactBytes: new Uint8Array(artifactBytes) });
@@ -101,12 +102,12 @@ export async function verifyNodePackage(input: Readonly<{ trackId: string; nodeI
   }
 }
 
-export function validateNodePayload(value: unknown, expected?: Readonly<{ trackId: string; nodeId: string; contentVersion: string; contentReleaseId: string }>): NodeContentPayload {
+export function validateNodePayload(value: unknown, expected?: Readonly<{ trackId: string; nodeId: string; contentVersion: string; contentReleaseId: string }>, interactionRegistry: CanonicalInteractionRegistry = canonicalInteractionRegistry): NodeContentPayload {
   if (!plain(value) || !exactKeys(value, ["schemaVersion", "trackId", "nodeId", "contentVersion", "contentReleaseId", "items"]) || value.schemaVersion !== NODE_PACKAGE_SCHEMA || !isRegisteredTrackId(value.trackId) || !isCanonicalSafeIdentity(value.nodeId) || !isCanonicalSafeIdentity(value.contentVersion) || !isCanonicalSafeIdentity(value.contentReleaseId) || !Array.isArray(value.items) || value.items.length === 0) throw new NodePackageError("invalid_response");
   if (expected && (value.trackId !== expected.trackId || value.nodeId !== expected.nodeId || value.contentVersion !== expected.contentVersion || value.contentReleaseId !== expected.contentReleaseId)) throw new NodePackageError("package_identity_mismatch");
   const ids = new Set<string>();
   for (const item of value.items) {
-    try { assertValidQuestion(item); } catch { throw new NodePackageError("invalid_response"); }
+    try { assertValidQuestion(item, interactionRegistry); } catch { throw new NodePackageError("invalid_response"); }
     if (item.trackId !== value.trackId || item.nodeId !== value.nodeId || ids.has(item.questionId)) throw new NodePackageError("package_identity_mismatch");
     ids.add(item.questionId);
   }
@@ -133,7 +134,7 @@ export function createMemoryNodePackageStore(): NodePackageStore {
   });
 }
 
-export async function installNodePackage(input: Readonly<{ trackId: string; nodeId: string; appVersion: string; expectedContentVersion?: string; expectedArtifactSha256?: string; transport: NodePackageTransport; hash: NodePackageHash; store: NodePackageStore; assertActivationAllowed?: () => void; activateRuntime: (record: VerifiedNodePackage) => void }>): Promise<VerifiedNodePackage> {
+export async function installNodePackage(input: Readonly<{ trackId: string; nodeId: string; appVersion: string; expectedContentVersion?: string; expectedArtifactSha256?: string; transport: NodePackageTransport; hash: NodePackageHash; store: NodePackageStore; assertActivationAllowed?: () => void; activateRuntime: (record: VerifiedNodePackage) => void; interactionRegistry?: CanonicalInteractionRegistry }>): Promise<VerifiedNodePackage> {
   // A malformed retained index is a local integrity failure, not a reason to
   // attempt another download or substitute a package version.
   await input.store.listActive();
@@ -143,7 +144,7 @@ export async function installNodePackage(input: Readonly<{ trackId: string; node
   let response: BinaryPackageResponse;
   try { response = await input.transport.getNodePackage(input.trackId, input.nodeId); } catch (error) { throw mapTransportFailure(error); }
   if (response.status !== 200) throw mapPackageResponseFailure(response.status, response.serverCode);
-  const verified = await verifyNodePackage({ trackId: input.trackId, nodeId: input.nodeId, packageBytes: response.bytes, headers: response.headers, appVersion: input.appVersion, hash: input.hash });
+  const verified = await verifyNodePackage({ trackId: input.trackId, nodeId: input.nodeId, packageBytes: response.bytes, headers: response.headers, appVersion: input.appVersion, hash: input.hash, interactionRegistry: input.interactionRegistry });
   if ((input.expectedContentVersion !== undefined && verified.identity.contentVersion !== input.expectedContentVersion) || (input.expectedArtifactSha256 !== undefined && verified.identity.artifactSha256 !== input.expectedArtifactSha256)) throw new NodePackageError("package_identity_mismatch");
   try {
     await input.store.writeImmutable(verified);

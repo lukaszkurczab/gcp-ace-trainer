@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { realpathSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -27,8 +28,10 @@ async function sha256(path) {
   return createHash("sha256").update(await readFile(path)).digest("hex");
 }
 
-if (resolve(git(appRoot, "rev-parse", "--show-toplevel")) !== appRoot
-  || resolve(git(backendRoot, "rev-parse", "--show-toplevel")) !== backendRoot) {
+const canonicalAppRoot = realpathSync(appRoot);
+const canonicalBackendRoot = realpathSync(backendRoot);
+if (resolve(git(appRoot, "rev-parse", "--show-toplevel")) !== canonicalAppRoot
+  || resolve(git(backendRoot, "rev-parse", "--show-toplevel")) !== canonicalBackendRoot) {
   throw new Error("recovery_integration_repository_root_mismatch");
 }
 if (git(appRoot, "rev-parse", "HEAD") !== expectedAppHead) throw new Error("recovery_integration_app_head_mismatch");

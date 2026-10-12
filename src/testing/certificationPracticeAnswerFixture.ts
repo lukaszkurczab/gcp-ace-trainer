@@ -1,4 +1,4 @@
-import { CanonicalTrainingRuntime } from "../application/canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../application/canonicalTrainingFamilyComposition";
 import { projectCertificationPracticeFeedback, projectCertificationPracticeQuestion } from "../application/certification/certificationSessionFacade";
 import { projectCertificationPracticeReview, type CertificationPracticeReviewProjection } from "../application/certification/certificationPracticeReviewProjection";
 import { createContentSessionPlanFingerprint } from "../content/application/contentSessionIdentity";
@@ -7,6 +7,9 @@ import { createTrainingSession, type CompletedTrainingSession, type TrainingAtte
 import type { CertificationPracticeQuestion } from "../application/certification/certificationSessionFacade";
 import type { PracticeFeedback } from "../features/practice/practiceSessionPresentation";
 import { CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID } from "../features/exam/certificationExamReviewFixtureCommand";
+import { canonicalInteractionRegistry } from "../content/canonical/interactions/registry";
+import type { ResolvedInteractionItem } from "../application/contentPackageRuntimeOwner";
+import type { TrainingQuestionSummary } from "../application/trainingLifecycle/contracts";
 
 const TRACK_ID = "claude-certified-architect-professional-certification";
 const MODE_ID = "certification-focus-practice";
@@ -48,7 +51,7 @@ export type CertificationPracticeAnswerFixture = Readonly<{
 export async function createCertificationPracticeAnswerFixture(): Promise<CertificationPracticeAnswerFixture> {
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack(TRACK_ID);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepared = await runtime.prepare({ trackId: TRACK_ID, modeId: MODE_ID, request: { sessionId: CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID, requestedLength: 10, feedbackTiming: "after_each_durable_submit" }, attempts: [], reviews: [], now: NOW });
   const replacements = ["CCARP-D01-O01-boundary", "CCARP-D01-O01-diagnosis", "CCARP-D01-O01-transfer", "CCARP-D01-O02-transfer", "CCARP-D01-O03-transfer"];
   const replacementSet = new Set(replacements);
@@ -84,8 +87,10 @@ export async function createCertificationPracticeAnswerFixture(): Promise<Certif
       // with one in-memory course-backed question without changing canonical
       // artifacts, attempt evidence, or the runtime content release.
       const previewQuestion = addCoursePreview(question);
-      const projected = projectCertificationPracticeQuestion(previewQuestion);
-      const feedback = projectCertificationPracticeFeedback("afterEachAnswer", submission.attempt, previewQuestion);
+      const exact = resolved(previewQuestion);
+      const review = exact.interactions.presentReview(previewQuestion.questionId, submission.attempt.response, optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
+      const projected = projectCertificationPracticeQuestion(exact.question, review.model);
+      const feedback = projectCertificationPracticeFeedback("afterEachAnswer", submission.attempt, exact);
       if (!feedback) throw new Error("Canonical practice fixture did not produce immediate answer feedback.");
       previews.push(Object.freeze({
         feedback: Object.freeze({ details: feedback.details, reason: feedback.reason, result: feedback.result, sources: feedback.sources }),
@@ -109,12 +114,27 @@ export async function createCertificationPracticeAnswerFixture(): Promise<Certif
       if (item.trackId !== TRACK_ID || item.contentVersion !== track.contentVersion || item.artifactSha256 !== track.artifactSha256) throw new Error("Canonical practice fixture received a foreign immutable content reference.");
       const question = track.getQuestion(item.questionId);
       if (!question || question.questionId !== item.questionId) throw new Error("Canonical practice fixture could not resolve the exact question reference.");
-      return addCoursePreview(question);
+      return resolved(addCoursePreview(question));
     },
     result: finalized.result,
     session: finalized.session as CompletedTrainingSession,
   });
   return Object.freeze({ attempts: Object.freeze(attempts), previews: Object.freeze(previews), projection, result: finalized.result, session: finalized.session as CompletedTrainingSession });
+}
+
+function resolved(question: Question): ResolvedInteractionItem {
+  const summary: TrainingQuestionSummary = Object.freeze({ questionId: question.questionId, trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, prompt: question.prompt, interactionType: question.interaction.type, difficulty: question.difficulty, ...(question.constraints ? { constraints: question.constraints } : {}), ...(question.sourceRefs ? { sourceRefs: question.sourceRefs } : {}), ...(question.contentDomainId ? { contentDomainId: question.contentDomainId } : {}), ...(question.questionRelation ? { questionRelation: question.questionRelation } : {}) });
+  const call = <T>(fn: (value: Question) => T) => fn(question);
+  return Object.freeze({ question: summary, interactions: Object.freeze({
+    isComplete: (_id: string, response: unknown) => call((value) => canonicalInteractionRegistry.isComplete(value, response)),
+    evaluate: (_id: string, response: unknown) => call((value) => canonicalInteractionRegistry.evaluate(value, response)),
+    presentReview: (_id: string, response: unknown, order: readonly string[] = []) => call((value) => canonicalInteractionRegistry.presentReview(value, response, order)),
+    present: (_id: string, response: unknown, order: readonly string[] = []) => call((value) => canonicalInteractionRegistry.present(value, response, order)),
+    projectFeedback: (_id: string, response: unknown) => call((value) => canonicalInteractionRegistry.projectFeedback(value, response)),
+    projectDiagnostics: (_id: string, response: unknown) => call((value) => canonicalInteractionRegistry.projectDiagnostics(value, response)),
+    controlIds: (_id: string) => call((value) => canonicalInteractionRegistry.controlIds(value)),
+    randomizeControlOrder: (_id: string) => call((value) => canonicalInteractionRegistry.randomizeControlOrder(value)),
+  }) as ResolvedInteractionItem["interactions"] });
 }
 
 function addCoursePreview(question: Question): Question {

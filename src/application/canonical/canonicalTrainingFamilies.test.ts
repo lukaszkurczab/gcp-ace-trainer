@@ -1,16 +1,32 @@
 import assert from "node:assert/strict";
-import test from "node:test";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import test, { afterEach } from "node:test";
+import { canonicalTrainingFamilyResolver, createCanonicalTrainingFamilyRuntime, createTrainingCatalog, createTrainingInteractionPort } from "../canonicalTrainingFamilyComposition";
+import { composeCanonicalFeedback } from "./canonicalInteractionPresentation";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import type { CanonicalCodingInterviewSimulationProfile, CanonicalQuestionResponse, CanonicalSimulationProfile, Question } from "../../content/canonical/questionTypes";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
-import { createTrainingSession, createTrainingSessionDraft } from "../../domain";
+import { createTrainingSession, createTrainingSessionDraft, getTrackRegistration } from "../../domain";
+import type { TrainingFamilyRuntime, TrainingLifecyclePorts, TrainingCatalog, TrainingInteractionPort } from "../trainingLifecycle/contracts";
+import { TrainingLifecycleUseCases } from "../trainingLifecycle/TrainingLifecycleUseCases";
+import { createTrainingFamilyRuntimeResolver } from "../trainingFamilyRuntimeResolver";
+import { installMemoryStorage } from "../../testing/journalTestSupport";
+import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { STORAGE_KEYS } from "../../storage/keys";
+import { getActiveMutationJournal, getActiveTrainingSession, getReviewQueueItems, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions } from "../../storage/repositories";
+import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { commitTrainingOutcome } from "../learningMutations/commitTrainingOutcome";
+import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
+import { recoverPendingMutation } from "../learningMutations/recoverPendingMutation";
+import { createAttemptId } from "../learningMutations/identity";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
+import { createCanonicalAttempt, exactCanonicalQuestionRef } from "./canonicalFamilyMechanics";
+import { buildCanonicalSessionPlan, prepareCanonicalPlanOccurrences, validateCanonicalSessionPlan } from "./canonicalSessionPlanMechanics";
 import { prepareCanonicalOptionOrder } from "./canonicalOptionOrder";
 import { qualifyPackageAttempts } from "../../domain/learning/packageCompletionRule";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const catalogPromise = loadCanonicalRuntimeCatalog();
+afterEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 const responseFor = (question: Question): CanonicalQuestionResponse => question.answer;
 const wrongResponse = (question: Question): CanonicalQuestionResponse => {
   if (question.interaction.type === "choice_single") { const q = question as Extract<Question, { interaction: { type: "choice_single" } }>; return { type: "choice_single", optionId: q.interaction.options.find((x) => x.optionId !== q.answer.optionId)!.optionId }; }
@@ -26,8 +42,8 @@ test("real loader prepares all 29 modes across nine tracks", async () => {
   for (const trackId of catalog.tracks) for (const mode of catalog.getTrack(trackId).modes) {
     const track = catalog.getTrack(trackId); const question = track.getPool(mode.modeId)[0]!;
     const reviews = mode.selection.kind === "evidence_conditioned" ? [reviewFor(itemRef(track, question.questionId), NOW)] : [];
-    const prepared = await new CanonicalTrainingRuntime(track).prepare({ trackId, modeId: mode.modeId, request: { sessionId: `${trackId}:${mode.modeId}`, requestedLength: mode.defaultRequestedLength, ...(mode.selection.kind === "evidence_conditioned" ? { reviewSource: "due_queue" } : {}) }, attempts: [], reviews, now: NOW });
-    assert.ok(prepared.session.actualLength > 0); await new CanonicalTrainingRuntime(track).validateResume({ session: prepared.session, draft: null }); modes += 1;
+    const prepared = await createCanonicalTrainingFamilyRuntime(track).prepare({ trackId, modeId: mode.modeId, request: { sessionId: `${trackId}:${mode.modeId}`, requestedLength: mode.defaultRequestedLength, ...(mode.selection.kind === "evidence_conditioned" ? { reviewSource: "due_queue" } : {}) }, attempts: [], reviews, now: NOW });
+    assert.ok(prepared.session.actualLength > 0); await createCanonicalTrainingFamilyRuntime(track).validateResume({ session: prepared.session, draft: null }); modes += 1;
   }
   assert.equal(modes, 29);
 });
@@ -37,7 +53,7 @@ test("short evidence-conditioned sessions remain resumable below the node-mode m
   const track = catalog.getTrack("claude-certified-architect-professional-certification");
   const mode = track.modes.find((candidate) => candidate.selection.kind === "evidence_conditioned")!;
   const question = track.getPool(mode.modeId)[0]!;
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId,
     request: { sessionId: "short-review-resume", requestedLength: mode.requestedLengths[0]!, reviewSource: "due_queue" },
     attempts: [], reviews: [reviewFor(itemRef(track, question.questionId), NOW)], now: NOW });
@@ -55,7 +71,7 @@ test("diagnostic recommendation prepares a pinned single-unit Focus pool and ref
   const eligibleUnits = [...new Set(track.getPool(mode.modeId).filter((question) => question.nodeId === nodeId).map((question) => question.mentalUnitId))]
     .filter((mentalUnitId) => track.getPool(mode.modeId).filter((question) => question.nodeId === nodeId && question.mentalUnitId === mentalUnitId).length >= mode.requestedLengths[0]!);
   assert.ok(eligibleUnits.length >= 2, "the verified Focus pool must have at least two independently selectable units");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepare = (mentalUnitId: string) => runtime.prepare({
     trackId: track.trackId,
     modeId: mode.modeId,
@@ -93,7 +109,7 @@ test("diagnostic recommendation prepares a pinned single-unit Focus pool and ref
   const tamperedBase = createTrainingSession({ ...original, itemOrder: changedOrder, optionOrderByOccurrence: changedOptions, planFingerprint: undefined, taxonomyVersion: undefined });
   const fingerprint = await createContentSessionPlanFingerprint({ ...tamperedBase, taxonomyVersion: "canonical-content-v1" });
   const tampered = createTrainingSession({ ...tamperedBase, taxonomyVersion: "canonical-content-v1", planFingerprint: fingerprint });
-  await assert.rejects(runtime.validateResume({ session: tampered, draft: null }), /session item reference is unavailable/i);
+  await assert.rejects(runtime.validateResume({ session: tampered, draft: null }), /session scope or minimum length is invalid/i);
 });
 
 test("V3 unit target resolves a Premium chapter, selects a latest-noncorrect question and resumes under the exact pin", async () => {
@@ -112,7 +128,7 @@ test("V3 unit target resolves a Premium chapter, selects a latest-noncorrect que
       units: [{ mentalUnitId: targetQuestion.mentalUnitId, requiredCorrectQuestionCount: 4 as const }] }],
   };
   const track = { ...sourceTrack, completionRule: rule } as typeof sourceTrack;
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const attempts = [
     ...selectedUnitQuestions.map((question, index) => ({
       id: `v3-correct-${index}`, sessionId: `v3-correct-${index}`, trackId: track.trackId, modeId: "prior", occurrenceId: `v3-correct-${index}:occurrence`,
@@ -164,7 +180,7 @@ test("canonical dashboard independently counts due and future manual review entr
     manualRequestId: `manual:${"c".repeat(64)}`,
     status: "active",
   };
-  const dashboard = await new CanonicalTrainingRuntime(track).queryDashboard({
+  const dashboard = await createCanonicalTrainingFamilyRuntime(track).queryDashboard({
     activeSession: null,
     trackId: track.trackId,
     attempts: [],
@@ -177,24 +193,187 @@ test("canonical dashboard independently counts due and future manual review entr
   );
 });
 
-test("real canonical questions submit and score all five interaction types", async () => {
-  const catalog = await catalogPromise; const seen = new Set<string>();
-  for (const trackId of catalog.tracks) { const track = catalog.getTrack(trackId);
-    for (const question of track.questions) { if (seen.has(question.interaction.type)) continue;
-      const mode = track.modes.find((x) => track.getPool(x.modeId).some((q) => q.questionId === question.questionId)); if (!mode) continue;
-      const runtime = new CanonicalTrainingRuntime(track); const requestedLength = mode.requestedLengths[0]!; const prepared = await runtime.prepare({ trackId, modeId: mode.modeId, request: { sessionId: `types:${question.questionId}`, requestedLength }, attempts: [], reviews: [], now: NOW });
-      const current = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!; const submission = await runtime.submitPractice({ session: prepared.session, response: responseFor(current), attempts: [], reviews: [], now: NOW });
-      assert.equal(submission.attempt.result.kind, "correct"); seen.add(question.interaction.type);
-    }
+test("each production family scores its submitted answer once and reuses that result for feedback", async () => {
+  const catalog = await catalogPromise; const seenFamilies = new Set<string>();
+  for (const trackId of catalog.tracks) {
+    const track = catalog.getTrack(trackId);
+    const familyId = getTrackRegistration(track.trackId).familyId;
+    if (seenFamilies.has(familyId)) continue;
+    const interactions = createTrainingInteractionPort(track); let evaluationCount = 0;
+    const countedInteractions = Object.freeze({ ...interactions, evaluate(questionId: string, response: unknown) { evaluationCount += 1; return interactions.evaluate(questionId, response); } });
+    const runtime = canonicalTrainingFamilyResolver.resolve(createTrainingCatalog(track), familyId, countedInteractions);
+    const modeId = runtime.getPlanningModeBinding().practiceModeId;
+    assert.ok(modeId, `${familyId} declares a practice planning mode`);
+    const mode = track.getMode(modeId);
+    const prepared = await runtime.prepare({ trackId, modeId, request: { sessionId: `family-submit:${trackId}`, requestedLength: mode.requestedLengths[0]! }, attempts: [], reviews: [], now: NOW });
+    const current = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!;
+    const response = responseFor(current);
+    const submission = await runtime.submitPractice({ session: prepared.session, response, attempts: [], reviews: [], now: NOW });
+    assert.equal(submission.attempt.result.kind, "correct");
+    assert.equal(evaluationCount, 1, `${familyId} submission evaluates once`);
+    assert.equal(composeCanonicalFeedback(current, response, submission.attempt.result).correctness, submission.attempt.result.kind);
+    assert.equal(evaluationCount, 1, `${familyId} feedback reuses the submitted result without reevaluation`);
+    seenFamilies.add(familyId);
   }
-  assert.deepEqual([...seen].sort(), ["choice_multiple", "choice_single", "complexity", "decision_matrix", "ordering"]);
+  assert.deepEqual([...seenFamilies].sort(), ["certification", "coding_interview", "design_interview"]);
 });
+
+test("a separately registered family submits an exact pinned answer through the production journal and fresh recovery", async () => {
+  const storage = installMemoryStorage();
+  const track = (await catalogPromise).getTrack("coding-interview-dsa-problem-solving");
+  const familyId = "registered_fixture_family";
+  const resolver = createTrainingFamilyRuntimeResolver([{ familyId, create: (catalog, interactions) => registeredFixtureFamily(catalog, interactions) }]);
+  const trainingCatalog = createTrainingCatalog(track);
+  const resolveFixture = () => resolver.resolve(trainingCatalog, familyId, createTrainingInteractionPort(track));
+  const sessionId = "arch04-registered-family-journal";
+  const ports = (): TrainingLifecyclePorts => ({
+    clock: { now: () => NOW },
+    sessionIds: { async create() { return sessionId; } },
+    tracks: { getTrackRegistration(trackId) { assert.equal(trackId, track.trackId); return { id: trackId, familyId }; } },
+    packages: {
+      async resolveForPreparation(input) { assert.equal(input.familyId, familyId); return { track: trainingCatalog, runtime: resolveFixture() }; },
+      async resolveExactArtifact(input) { assert.equal(input.artifactSha256, track.artifactSha256); assert.equal(input.contentVersion, track.contentVersion); return { track: trainingCatalog, runtime: resolveFixture() }; },
+      async resolveForDiscovery(trackId, requestedFamilyId) { assert.equal(trackId, track.trackId); assert.equal(requestedFamilyId, familyId); return { track: trainingCatalog, runtime: resolveFixture() }; },
+    },
+    repositories: {
+      async getActiveSession() { return getActiveTrainingSession(productionTrackAdmissionContext); },
+      async getSession(id) { return (await getTrainingSessions(productionTrackAdmissionContext)).value.find((entry) => entry.id === id) ?? null; },
+      async getHistory() { return (await getTrainingSessions(productionTrackAdmissionContext)).value; },
+      async getAttempts() { return (await getTrainingAttempts(productionTrackAdmissionContext)).value; },
+      async getReviews() { return (await getReviewQueueItems(productionTrackAdmissionContext)).value; },
+      async getDraft() { return null; },
+      async getResult(id) { return getTrainingSessionResult(id, productionTrackAdmissionContext); },
+      async getPendingMutation() {
+        const journal = await getActiveMutationJournal(productionLearningDataAdmissionContext);
+        if (!journal || journal.operation === "accept_goal_plan" || journal.operation === "resolve_account_sync_conflict") return null;
+        return Object.freeze({ operation: journal.operation, status: journal.status, sessionId: journal.sessionId, trackId: journal.trackId, commandFingerprint: journal.commandIdentity.fingerprint, planFingerprint: journal.planFingerprint });
+      },
+      captureDraftStorageLease() { return null; },
+      async saveDraft() {},
+    },
+    mutations: {
+      async start(prepared) { await commitTrainingSessionStart({ session: prepared.session, draft: prepared.draft, createdAt: prepared.session.startedAt }); },
+      async submitPractice(outcome) {
+        return commitTrainingOutcome({ attempt: outcome.attempt, session: outcome.session,
+          reviews: outcome.reviewMutations.filter((entry) => entry.kind === "upsert").map((entry) => entry.entry),
+          resolvedReviews: outcome.reviewMutations.filter((entry) => entry.kind === "remove").map((entry) => entry.entry),
+          reviewBaseline: outcome.reviewBaseline, reviewSnapshotConflict: outcome.reviewSnapshotConflict, createdAt: outcome.attempt.committedAt });
+      },
+      async retryMutationCommand() { throw new Error("This acceptance path must recover the original journal, not create a retry command."); },
+      async advance() { throw new Error("Unexpected advance in the single-answer acceptance path."); },
+      async completeWithResult() { throw new Error("Unexpected completion in the single-answer acceptance path."); },
+      async finalize() { throw new Error("Unexpected simulation finalization in the practice acceptance path."); },
+      async abandon() { throw new Error("Unexpected abandonment in the practice acceptance path."); },
+      async recover() { await recoverPendingMutation(); },
+      async reset() { throw new Error("Unexpected reset in the single-answer acceptance path."); },
+    },
+    premiumSessionAdmission: { async authorize() { return "allowed"; } },
+  });
+
+  const productionFamily = getTrackRegistration(track.trackId).familyId;
+  const lifecycle = new TrainingLifecycleUseCases(ports());
+  const mode = track.getMode("coding-interview-guided-practice");
+  const prepared = await lifecycle.startSession({ trackId: track.trackId, modeId: mode.modeId, request: { requestedLength: mode.requestedLengths[0] } });
+  assert.equal(mode.minimumActualLength, 10, "the exact accepted Coding mode requires a real ten-item session for this extension proof");
+  assert.equal(prepared.session.requestedLength, 10);
+  assert.equal(prepared.session.actualLength, 10, "the fixture family may not collapse this accepted mode into a one-item recovery proof");
+  assert.equal(prepared.session.itemOrder.length, 10);
+  const question = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!;
+  const response = responseFor(question);
+  const occurrence = prepared.session.itemOrder[prepared.session.currentItemIndex]!;
+  const expectedAttemptId = await createAttemptId(prepared.session.id, occurrence.occurrenceId, response);
+  storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.trainingAttempt(expectedAttemptId) });
+  await assert.rejects(lifecycle.submitPracticeResponse(response), /did not reach a verified canonical outcome/u);
+  const retained = await getActiveMutationJournal(productionLearningDataAdmissionContext);
+  assert.equal(retained?.operation, "submit_training_outcome", "a failed physical write leaves the exact production journal for recovery");
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.some((attempt) => attempt.sessionId === sessionId), false);
+  storage.setFailurePlan(null);
+  await lifecycle.recoverActiveTrainingOperation();
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+  const attempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value.filter((attempt) => attempt.sessionId === sessionId);
+  assert.equal(attempts.length, 1);
+  assert.equal(attempts[0]!.id, expectedAttemptId);
+  assert.equal(attempts[0]!.trackId, track.trackId);
+
+  const freshTrack = (await loadCanonicalRuntimeCatalog()).getTrack(track.trackId);
+  const freshLifecycle = new TrainingLifecycleUseCases(portsForFresh());
+  const resumed = await freshLifecycle.resumeActiveSession();
+  assert.equal(resumed.id, sessionId);
+  assert.equal(resumed.contentVersion, freshTrack.contentVersion);
+  assert.equal(resumed.artifactSha256, freshTrack.artifactSha256);
+  const freshAttempt = (await getTrainingAttempts(productionTrackAdmissionContext)).value.find((attempt) => attempt.sessionId === sessionId)!;
+  const freshQuestion = freshTrack.getQuestion(freshAttempt.item.questionId)!;
+  assert.equal(composeCanonicalFeedback(freshQuestion, freshAttempt.response as CanonicalQuestionResponse, freshAttempt.result).correctness, freshAttempt.result.kind);
+  assert.equal(getTrackRegistration(track.trackId).familyId, productionFamily, "test resolver registration does not change production track-family admission");
+
+  function portsForFresh() {
+    const freshCatalog = createTrainingCatalog(freshTrack);
+    const freshRuntime = () => resolver.resolve(freshCatalog, familyId, createTrainingInteractionPort(freshTrack));
+    return { ...ports(), packages: {
+      async resolveForPreparation(input: Parameters<TrainingLifecyclePorts["packages"]["resolveForPreparation"]>[0]) { assert.equal(input.familyId, familyId); return { track: freshCatalog, runtime: freshRuntime() }; },
+      async resolveExactArtifact(input: Parameters<TrainingLifecyclePorts["packages"]["resolveExactArtifact"]>[0]) { assert.equal(input.artifactSha256, freshTrack.artifactSha256); return { track: freshCatalog, runtime: freshRuntime() }; },
+      async resolveForDiscovery() { return { track: freshCatalog, runtime: freshRuntime() }; },
+    } } satisfies TrainingLifecyclePorts;
+  }
+});
+
+function registeredFixtureFamily(catalog: TrainingCatalog, interactions: TrainingInteractionPort): TrainingFamilyRuntime {
+  const modeId = "coding-interview-guided-practice";
+  const buildPracticePlan = async (sessionId: string, requestedLength: number, now: string) => {
+    const mode = catalog.getMode(modeId);
+    if (!mode.requestedLengths.includes(requestedLength)) throw new Error("The fixture family received an unsupported requested length.");
+    const questions = catalog.getPool(modeId).slice(0, requestedLength);
+    if (questions.length < mode.minimumActualLength) throw new Error("The fixture's exact Coding package pool is too small.");
+    const prepared = prepareCanonicalPlanOccurrences(catalog, interactions, sessionId, questions.map((question) => ({ item: exactCanonicalQuestionRef(catalog, question.questionId) })));
+    return buildCanonicalSessionPlan(catalog, { sessionId, modeId,
+      configurationSnapshot: { kind: "practice", timer: "elapsedForeground", feedbackMode: "afterEachAnswer", answerChanges: "none", submission: "perItem", reinsertEnabled: false },
+      requestedLength, preparedOccurrences: prepared, conditionalReinsertSlots: [], startedAt: now });
+  };
+  return Object.freeze({
+    familyId: "registered_fixture_family",
+    interactions,
+    getPlanningModeBinding: () => Object.freeze({ trackId: catalog.trackId, diagnosticModeId: null, practiceModeId: modeId, dueReviewModeId: null }),
+    async prepare(input: Parameters<TrainingFamilyRuntime["prepare"]>[0]) {
+      if (input.trackId !== catalog.trackId || input.modeId !== modeId) throw new Error("The registered fixture family received a foreign track or mode.");
+      const request = input.request as { sessionId?: unknown; requestedLength?: unknown };
+      if (typeof request?.sessionId !== "string" || !request.sessionId.trim() || typeof request.requestedLength !== "number") throw new Error("The registered fixture family requires a session identity and length.");
+      const session = await buildPracticePlan(request.sessionId, request.requestedLength, input.now);
+      return Object.freeze({ session, firstOccurrence: session.itemOrder[0]!.item, draft: null });
+    },
+    async validateResume({ session, draft }: Parameters<TrainingFamilyRuntime["validateResume"]>[0]) {
+      if (draft || session.trackId !== catalog.trackId || session.modeId !== modeId
+        || JSON.stringify(session.configurationSnapshot) !== JSON.stringify({ kind: "practice", timer: "elapsedForeground", feedbackMode: "afterEachAnswer", answerChanges: "none", submission: "perItem", reinsertEnabled: false })) {
+        throw new Error("The registered fixture family cannot resume this session shape.");
+      }
+      const mode = catalog.getMode(modeId);
+      if (!mode.requestedLengths.includes(session.requestedLength) || session.actualLength < mode.minimumActualLength) throw new Error("The registered fixture family cannot resume an undersized session.");
+      await validateCanonicalSessionPlan(catalog, interactions, session);
+    },
+    async submitPractice(input: Parameters<TrainingFamilyRuntime["submitPractice"]>[0]) {
+      await this.validateResume({ session: input.session, draft: null });
+      const occurrence = input.session.itemOrder[input.session.currentItemIndex]!;
+      const question = catalog.getQuestion(occurrence.item.questionId);
+      if (!question) throw new Error("The exact fixture question is unavailable.");
+      const evaluation = interactions.evaluate(question.questionId, input.response);
+      if (!evaluation.complete || !evaluation.result) throw new Error("The fixture response is incomplete or invalid.");
+      const attempt = await createCanonicalAttempt({ session: input.session, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response: input.response, result: evaluation.result,
+        reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [{ axisId: "node", nodeId: question.nodeId, role: "primary" }, { axisId: "mental_unit", nodeId: question.mentalUnitId, role: "primary" }] }, answeredAt: input.now, committedAt: input.now });
+      return Object.freeze({ attempt, session: input.session, reviewMutations: Object.freeze([]), reviewBaseline: input.reviews });
+    },
+    async finalizePractice() { throw new Error("The acceptance fixture does not finalize sessions."); },
+    async finalizeSimulation() { throw new Error("The acceptance fixture does not run simulations."); },
+    async validateDraftCommand() { throw new Error("The acceptance fixture does not write drafts."); },
+    async queryDashboard() { throw new Error("The acceptance fixture does not serve dashboard queries."); },
+    async queryProgress() { throw new Error("The acceptance fixture does not serve progress queries."); },
+    async queryReview() { throw new Error("The acceptance fixture does not serve review queries."); },
+  });
+}
 
 test("actual Design runtime rejects a sparse ordering response before creating an outcome", async () => {
   const track = (await catalogPromise).getTrack("frontend-system-design-interview");
   const question = track.getQuestion("fesd-n01-b01-i003")!;
   assert.ok(question && question.interaction.type === "ordering");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepared = await runtime.prepare({
     trackId: track.trackId,
     modeId: "design-interview-learn-framework",
@@ -221,14 +400,14 @@ test("actual Design runtime rejects a sparse ordering response before creating a
 
 test("evidence permits one item and multi-source Coding review requires an explicit source", async () => {
   const catalog = await catalogPromise; const gcp = catalog.getTrack("google-cloud-associate-cloud-engineer"); const mode = gcp.modes.find((x) => x.selection.kind === "evidence_conditioned")!; const question = gcp.getPool(mode.modeId)[0]!;
-  const prepared = await new CanonicalTrainingRuntime(gcp).prepare({ trackId: gcp.trackId, modeId: mode.modeId, request: { sessionId: "evidence", requestedLength: 20 }, attempts: [], reviews: [reviewFor(itemRef(gcp, question.questionId), NOW)], now: NOW }); assert.equal(prepared.session.actualLength, 1);
+  const prepared = await createCanonicalTrainingFamilyRuntime(gcp).prepare({ trackId: gcp.trackId, modeId: mode.modeId, request: { sessionId: "evidence", requestedLength: 20 }, attempts: [], reviews: [reviewFor(itemRef(gcp, question.questionId), NOW)], now: NOW }); assert.equal(prepared.session.actualLength, 1);
   const coding = catalog.getTrack("coding-interview-dsa-problem-solving"); const codingMode = coding.getMode("coding-interview-weak-area-review"); const codingQuestion = coding.getPool(codingMode.modeId)[0]!;
   const miss = { id: "miss", sessionId: "old", occurrenceId: "old:0", trackId: coding.trackId, modeId: "old", item: itemRef(coding, codingQuestion.questionId), response: {}, result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 }, reviewEvidence: { sourceItem: itemRef(coding, codingQuestion.questionId), taxonomyOrSkillRefs: [] }, answeredAt: NOW, committedAt: NOW } as TrainingAttempt<unknown>;
-  await assert.rejects(new CanonicalTrainingRuntime(coding).prepare({ trackId: coding.trackId, modeId: codingMode.modeId, request: { sessionId: "coding-evidence", requestedLength: 20 }, attempts: [miss], reviews: [], now: NOW }), /explicit reviewSource/);
+  await assert.rejects(createCanonicalTrainingFamilyRuntime(coding).prepare({ trackId: coding.trackId, modeId: codingMode.modeId, request: { sessionId: "coding-evidence", requestedLength: 20 }, attempts: [miss], reviews: [], now: NOW }), /explicit source/);
 });
 
 test("coding due review binds the exact cycle snapshot and advances one policy interval per qualified answer", async () => {
-  const catalog = await catalogPromise; const track = catalog.getTrack("coding-interview-dsa-problem-solving"); const runtime = new CanonicalTrainingRuntime(track); const mode = track.getMode("coding-interview-learn-approach"); const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "review", requestedLength: 10 }, attempts: [], reviews: [], now: NOW }); const question = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!;
+  const catalog = await catalogPromise; const track = catalog.getTrack("coding-interview-dsa-problem-solving"); const runtime = createCanonicalTrainingFamilyRuntime(track); const mode = track.getMode("coding-interview-learn-approach"); const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "review", requestedLength: 10 }, attempts: [], reviews: [], now: NOW }); const question = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!;
   const bad = await runtime.submitPractice({ session: prepared.session, response: wrongResponse(question), attempts: [], reviews: [], now: NOW }); assert.notEqual(bad.attempt.result.kind, "correct"); assert.equal(bad.reviewMutations[0]?.kind, "upsert"); if (bad.reviewMutations[0]?.kind !== "upsert") return; assert.equal(bad.reviewMutations[0].entry.stage, "repair24"); assert.equal(bad.reviewMutations[0].entry.dueAt, "2026-01-02T00:00:00.000Z");
   const priorDue = bad.reviewMutations[0].entry;
   const dueMode = track.getMode("coding-interview-weak-area-review");
@@ -246,7 +425,7 @@ test("coding due review binds the exact cycle snapshot and advances one policy i
 
 test("a standalone manual request starts retention at seven days and an incorrect result starts repair at 24 hours", async () => {
   const track = (await catalogPromise).getTrack("frontend-system-design-interview");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("design-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const item = itemRef(track, question.questionId);
@@ -289,7 +468,7 @@ test("due-queue snapshots bind the identity of a manual request overlay", async 
     ...reviewFor(item, NOW), reasons: ["manual_mark"], persistent: true, manualRequestId: `manual:${"b".repeat(64)}`,
     policyVersion: "bizq04-v1", stage: "manual_requested", status: "active",
   };
-  const prepared = await new CanonicalTrainingRuntime(track).prepare({
+  const prepared = await createCanonicalTrainingFamilyRuntime(track).prepare({
     trackId: track.trackId,
     modeId: mode.modeId,
     request: { sessionId: "manual-review-source-snapshot", requestedLength: 1, reviewSource: "due_queue" },
@@ -306,13 +485,13 @@ test("due-queue snapshots bind the identity of a manual request overlay", async 
     policyVersion: "bizq04-v1",
     stage: "manual_requested",
   });
-  await new CanonicalTrainingRuntime(track).validateResume({ session: prepared.session, draft: null });
+  await createCanonicalTrainingFamilyRuntime(track).validateResume({ session: prepared.session, draft: null });
 });
 
 test("ordinary wrong and partial work preserve an unrelated manual overlay", async () => {
   const catalog = await catalogPromise;
   const track = catalog.getTrack("coding-interview-dsa-problem-solving");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const reviewMode = track.getMode("coding-interview-weak-area-review");
   const question = track.getPool(reviewMode.modeId).find((entry) => entry.interaction.type === "choice_multiple" && entry.answer.type === "choice_multiple" && entry.answer.optionIds.length > 1)!;
   if (question.interaction.type !== "choice_multiple" || question.answer.type !== "choice_multiple") throw new Error("Expected a multi-select question for a partial-scoring practice fixture.");
@@ -350,7 +529,7 @@ test("ordinary wrong and partial work preserve an unrelated manual overlay", asy
 
 test("a wrong answer from the exact due snapshot consumes only its captured manual overlay", async () => {
   const track = (await catalogPromise).getTrack("frontend-system-design-interview");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("design-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const overlay: ReviewQueueEntry = {
@@ -375,7 +554,7 @@ test("a wrong answer from the exact due snapshot consumes only its captured manu
 
 test("qualified due success promotes a manual-overlaid repair without carrying a ghost marker", async () => {
   const track = (await catalogPromise).getTrack("coding-interview-dsa-problem-solving");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("coding-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const overlay: ReviewQueueEntry = {
@@ -416,7 +595,7 @@ test("qualified due success promotes a manual-overlaid repair without carrying a
 
 test("future manual request is selectable now and a correct answer consumes only the overlay", async () => {
   const track = (await catalogPromise).getTrack("frontend-system-design-interview");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("design-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const item = itemRef(track, question.questionId);
@@ -454,7 +633,7 @@ test("future manual request is selectable now and a correct answer consumes only
 
 test("due queue wins after its date and stale off→on manual identity gets no credit", async () => {
   const track = (await catalogPromise).getTrack("frontend-system-design-interview");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("design-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const item = itemRef(track, question.questionId);
@@ -485,7 +664,7 @@ test("new correct per-item work seeds seven-day retention for every declared non
   let checked = 0;
   for (const trackId of catalog.tracks) {
     const track = catalog.getTrack(trackId);
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     const perItemModes = track.modes.filter((mode) => mode.selection.kind !== "evidence_conditioned" && !mode.modeId.endsWith("-simulation"));
     for (const mode of perItemModes) {
       const prepared = await runtime.prepare({
@@ -525,7 +704,7 @@ test("only declared due-queue modes can advance a scheduled cycle across all fam
   for (const [trackId, modeId] of cases) {
     const track = catalog.getTrack(trackId);
     const mode = track.getMode(modeId);
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     const question = track.getPool(modeId)[0]!;
     const sourceItem = itemRef(track, question.questionId);
     const existing: ReviewQueueEntry = {
@@ -554,7 +733,7 @@ test("only declared due-queue modes can advance a scheduled cycle across all fam
 });
 
 test("resume and query boundaries reject tampering, foreign attempts and old pins", async () => {
-  const catalog = await catalogPromise; const track = catalog.getTrack("google-cloud-associate-cloud-engineer"); const runtime = new CanonicalTrainingRuntime(track); const prepared = await runtime.prepare({ trackId: track.trackId, modeId: "certification-diagnostic-baseline", request: { sessionId: "guard", requestedLength: 40 }, attempts: [], reviews: [], now: NOW });
+  const catalog = await catalogPromise; const track = catalog.getTrack("google-cloud-associate-cloud-engineer"); const runtime = createCanonicalTrainingFamilyRuntime(track); const prepared = await runtime.prepare({ trackId: track.trackId, modeId: "certification-diagnostic-baseline", request: { sessionId: "guard", requestedLength: 40 }, attempts: [], reviews: [], now: NOW });
   const tampered = { ...prepared.session, configurationSnapshot: { ...prepared.session.configurationSnapshot, feedbackMode: "atSessionEnd" } }; await assert.rejects(runtime.validateResume({ session: tampered, draft: null }));
   await assert.rejects(runtime.finalizePractice({ session: prepared.session, attempts: [], now: NOW })); await assert.rejects(runtime.queryReview({ trackId: "foreign", reviews: [], now: NOW }));
   const old = reviewFor(prepared.session.itemOrder[0]!.item, NOW); const view = await runtime.queryReview({ trackId: track.trackId, reviews: [old, { ...old, id: "old-artifact", sourceItem: { ...old.sourceItem, artifactSha256: "f".repeat(64) } }], now: NOW }); assert.equal((view as { due: readonly ReviewQueueEntry[] }).due.length, 1);
@@ -563,7 +742,7 @@ test("resume and query boundaries reject tampering, foreign attempts and old pin
 test("Claude Focus persists selectable feedback, scores single and multi-select, and finalizes complete evidence", async () => {
   const catalog = await catalogPromise;
   const track = catalog.getTrack("claude-certified-architect-professional-certification");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepare = (sessionId: string, feedbackTiming?: "after_each_durable_submit" | "after_session_completion") => runtime.prepare({
     trackId: track.trackId,
     modeId: "certification-focus-practice",
@@ -624,7 +803,7 @@ test("Claude Focus persists selectable feedback, scores single and multi-select,
   assert.equal(attempts.filter((attempt) => attempt.result.kind !== "correct").length, 1);
 
   const fixedTrack = catalog.getTrack("google-cloud-associate-cloud-engineer");
-  await assert.rejects(new CanonicalTrainingRuntime(fixedTrack).prepare({
+  await assert.rejects(createCanonicalTrainingFamilyRuntime(fixedTrack).prepare({
     trackId: fixedTrack.trackId,
     modeId: "certification-focus-practice",
     request: { sessionId: "gcp-focus-deferred", requestedLength: 10, feedbackTiming: "after_session_completion" },
@@ -635,7 +814,7 @@ test("Claude Focus persists selectable feedback, scores single and multi-select,
 });
 
 test("reinsert resolves exact branch after three durable intervening submissions and preserves ordinary branch on correct", async () => {
-  const catalog = await catalogPromise; const track = catalog.getTrack("coding-interview-dsa-problem-solving"); const runtime = new CanonicalTrainingRuntime(track); const mode = track.getMode("coding-interview-guided-practice");
+  const catalog = await catalogPromise; const track = catalog.getTrack("coding-interview-dsa-problem-solving"); const runtime = createCanonicalTrainingFamilyRuntime(track); const mode = track.getMode("coding-interview-guided-practice");
   const prepare = (id: string) => runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: id, requestedLength: 10 }, attempts: [], reviews: [], now: NOW });
   const advance = async (session: TrainingAttempt<unknown>["item"] extends never ? never : Awaited<ReturnType<typeof prepare>>["session"], index: number) => { const base = createTrainingSession({ ...session, currentItemIndex: index, planFingerprint: undefined, taxonomyVersion: undefined }); const fingerprint = await createContentSessionPlanFingerprint({ ...base, taxonomyVersion: "canonical-content-v1" }); return createTrainingSession({ ...base, taxonomyVersion: "canonical-content-v1", planFingerprint: fingerprint }); };
   const run = async (sourceResponse: CanonicalQuestionResponse, id: string) => { let prepared = await prepare(id); const initialFingerprint = prepared.session.planFingerprint; const originalOrder = prepared.session.itemOrder; const attempts: TrainingAttempt<unknown>[] = []; const source = track.getQuestion(originalOrder[0]!.item.questionId)!; let submitted = await runtime.submitPractice({ session: prepared.session, response: sourceResponse, attempts, reviews: [], now: NOW }); attempts.push(submitted.attempt); prepared = { ...prepared, session: await advance(submitted.session, 1) };
@@ -649,7 +828,7 @@ test("reinsert resolves exact branch after three durable intervening submissions
 test("GCP simulation prepares the profile-weighted immutable 50-item plan and exact snapshot", async () => {
   const catalog = await catalogPromise;
   const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const input = { trackId: track.trackId, modeId: "certification-exam-simulation", request: { sessionId: "gcp-simulation-stable" }, attempts: [], reviews: [], now: NOW };
   const prepared = await runtime.prepare(input);
   const repeated = await runtime.prepare(input);
@@ -686,14 +865,14 @@ test("GCP simulation prepares the profile-weighted immutable 50-item plan and ex
 
   const badSnapshot = { ...prepared.session, configurationSnapshot: { ...prepared.session.configurationSnapshot, timerDeadlineAt: "2026-01-01T02:00:01.000Z" } };
   await assert.rejects(runtime.validateResume({ session: badSnapshot, draft: prepared.draft }), /snapshot or deadline/);
-  await assert.rejects(new CanonicalTrainingRuntime({ ...track, simulationProfiles: [] }).prepare(input), /unavailable/);
+  await assert.rejects(createCanonicalTrainingFamilyRuntime({ ...track, simulationProfiles: [] }).prepare(input), /unavailable/);
 });
 
 test("GCP simulation fails explicitly for an undersized required domain instead of reallocating items", async () => {
   const catalog = await catalogPromise;
   const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
   const undersizedTrack = { ...track, questions: track.questions.filter((question) => question.contentDomainId !== "gcp-ace-standard-domain-1") };
-  const runtime = new CanonicalTrainingRuntime(undersizedTrack);
+  const runtime = createCanonicalTrainingFamilyRuntime(undersizedTrack);
   await assert.rejects(runtime.prepare({
     trackId: track.trackId,
     modeId: "certification-exam-simulation",
@@ -701,13 +880,13 @@ test("GCP simulation fails explicitly for an undersized required domain instead 
     attempts: [],
     reviews: [],
     now: NOW,
-  }), /Canonical simulation source pool gcp-ace-standard-domain-1 requires 10 unique items but has 0\./);
+  }), /Certification simulation source pool gcp-ace-standard-domain-1 requires 10 unique items but has 0\./);
 });
 
 test("GCP simulation validates draft occurrence keys, completeness, flags, revision, and deadline", async () => {
   const catalog = await catalogPromise;
   const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepared = await runtime.prepare({ trackId: track.trackId, modeId: "certification-exam-simulation", request: { sessionId: "gcp-simulation-draft" }, attempts: [], reviews: [], now: NOW });
   const occurrence = prepared.session.itemOrder[0]!;
   const question = track.getQuestion(occurrence.item.questionId)!;
@@ -716,12 +895,12 @@ test("GCP simulation validates draft occurrence keys, completeness, flags, revis
     responsesByOccurrenceId: { [occurrence.occurrenceId]: responseFor(question) }, flaggedOccurrenceIds: [occurrence.occurrenceId], updatedAt: "2026-01-01T00:30:00.000Z",
   });
   await runtime.validateDraftCommand({ session: prepared.session, draft, expectedPreviousRevision: 1 });
-  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft, expectedPreviousRevision: 0 }), /revision/);
-  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft: prepared.draft!, expectedPreviousRevision: 0 }), /previous draft revision/);
+  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft, expectedPreviousRevision: 0 }), /revision|identity or state/);
+  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft: prepared.draft!, expectedPreviousRevision: 0 }), /previous draft revision|identity or state/);
   const foreignOccurrence = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: { foreign: responseFor(question) }, flaggedOccurrenceIds: ["foreign"] });
-  await assert.rejects(runtime.validateResume({ session: prepared.session, draft: foreignOccurrence }), /outside its immutable plan/);
+  await assert.rejects(runtime.validateResume({ session: prepared.session, draft: foreignOccurrence }), /unknown occurrence/);
   const atDeadline = createTrainingSessionDraft({ ...draft, revision: 3, updatedAt: "2026-01-01T02:00:00.000Z" });
-  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft: atDeadline, expectedPreviousRevision: 2 }), /at or after its immutable deadline/);
+  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft: atDeadline, expectedPreviousRevision: 2 }), /immutable deadline/);
   const afterDeadline = createTrainingSessionDraft({ ...draft, revision: 3, updatedAt: "2026-01-01T02:00:00.001Z" });
   await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft: afterDeadline, expectedPreviousRevision: 2 }), /deadline/);
 });
@@ -729,7 +908,7 @@ test("GCP simulation validates draft occurrence keys, completeness, flags, revis
 test("GCP simulation finalization scores only complete responses and partitions all 50 occurrences", async () => {
   const catalog = await catalogPromise;
   const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepared = await runtime.prepare({ trackId: track.trackId, modeId: "certification-exam-simulation", request: { sessionId: "gcp-simulation-finalize" }, attempts: [], reviews: [], now: NOW });
   const answeredOccurrences = prepared.session.itemOrder.slice(0, 2);
   const answeredQuestions = answeredOccurrences.map((occurrence) => track.getQuestion(occurrence.item.questionId)!);
@@ -739,7 +918,7 @@ test("GCP simulation finalization scores only complete responses and partitions 
   };
   const draft = createTrainingSessionDraft({ sessionId: prepared.session.id, trackId: track.trackId, familyId: "certification", revision: 2, responsesByOccurrenceId: responses, flaggedOccurrenceIds: [prepared.session.itemOrder[2]!.occurrenceId], updatedAt: "2026-01-01T01:00:00.000Z" });
   const malformedDraft = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: { ...responses, [answeredOccurrences[0]!.occurrenceId]: {} } });
-  await assert.rejects(runtime.finalizeSimulation({ session: prepared.session, draft: malformedDraft, attempts: [], reviews: [], now: "2026-01-01T01:30:00.000Z" }), /incomplete or noncanonical response/);
+  await assert.rejects(runtime.finalizeSimulation({ session: prepared.session, draft: malformedDraft, attempts: [], reviews: [], now: "2026-01-01T01:30:00.000Z" }), /response is incomplete/);
   const priorReview = reviewFor(answeredOccurrences[0]!.item, NOW);
   const finalized = await runtime.finalizeSimulation({ session: prepared.session, draft, attempts: [], reviews: [priorReview], now: "2026-01-01T01:30:00.000Z" });
   assert.equal(finalized.session.status, "completed");
@@ -761,8 +940,8 @@ test("GCP simulation finalization scores only complete responses and partitions 
   assert.equal(finalized.result.evidence.familyId, "certification");
   assert.equal((finalized.result.evidence.details as { profileId: string }).profileId, "google-cloud-associate-cloud-engineer-certification-exam-v1");
   assert.equal(finalized.frozenDraft, draft);
-  await assert.rejects(runtime.finalizeSimulation({ session: finalized.session, draft, attempts: finalized.attempts, reviews: [], now: "2026-01-01T01:31:00.000Z" }), /Only an active canonical simulation/);
-  await assert.rejects(runtime.validateDraftCommand({ session: finalized.session, draft, expectedPreviousRevision: 1 }), /active session/);
+  await assert.rejects(runtime.finalizeSimulation({ session: finalized.session, draft, attempts: finalized.attempts, reviews: [], now: "2026-01-01T01:31:00.000Z" }), /Only an active Certification simulation/);
+  await assert.rejects(runtime.validateDraftCommand({ session: finalized.session, draft, expectedPreviousRevision: 1 }), /identity or state/);
 });
 
 test("Coding Mock consumes its exact ordered 40-question profile with foreground timer and shared draft runtime", async () => {
@@ -801,7 +980,7 @@ test("Coding Mock consumes its exact ordered 40-question profile with foreground
     },
   };
   const track = { ...baseTrack, simulationProfiles: [profile] };
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepared = await runtime.prepare({
     trackId: track.trackId,
     modeId: "coding-interview-simulation",
@@ -821,11 +1000,11 @@ test("Coding Mock consumes its exact ordered 40-question profile with foreground
     trackId: track.trackId, modeId: "coding-interview-simulation",
     request: { sessionId: "coding-mock-wrong-profile", scope: { simulationProfileId: "other-profile" } },
     attempts: [], reviews: [], now: NOW,
-  }), /exact canonical profile identity/);
+  }), /exact profile identity/);
   await assert.rejects(runtime.validateResume({
     session: { ...prepared.session, configurationSnapshot: { ...prepared.session.configurationSnapshot, simulationProfileId: "other-profile" } },
     draft: prepared.draft,
-  }), /snapshot or deadline/);
+  }), /plan fingerprint/);
 
   const firstOccurrence = prepared.session.itemOrder[0]!;
   const firstQuestion = track.getQuestion(firstOccurrence.item.questionId)!;
@@ -853,7 +1032,7 @@ test("Design Interview Simulation uses each exact track profile, resumes durable
     const track = catalog.getTrack(trackId);
     const profile = track.simulationProfiles?.[0];
     assert.ok(profile && profile.familyId === "design_interview" && profile.modeId === "design-interview-simulation");
-    const runtime = new CanonicalTrainingRuntime(track);
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
     await assert.rejects(runtime.prepare({ trackId, modeId: profile.modeId, request: { sessionId: `${trackId}:wrong`, scope: { simulationProfileId: "foreign-profile" } }, attempts: [], reviews: [], now: NOW }));
     const prepared = await runtime.prepare({ trackId, modeId: profile.modeId, request: { sessionId: `${trackId}:design-sim`, scope: { simulationProfileId: profile.profileId } }, attempts: [], reviews: [], now: NOW });
     assert.equal(prepared.session.actualLength, 1);
@@ -880,7 +1059,7 @@ test("Design Interview Simulation timeout can finalize a partial draft without a
   const designTrack = (await catalogPromise).getTrack("backend-system-design-interview");
   const profile = designTrack.simulationProfiles?.[0];
   assert.ok(profile && profile.familyId === "design_interview");
-  const runtime = new CanonicalTrainingRuntime(designTrack);
+  const runtime = createCanonicalTrainingFamilyRuntime(designTrack);
   const prepared = await runtime.prepare({ trackId: designTrack.trackId, modeId: "design-interview-simulation", request: { sessionId: "design-partial", scope: { simulationProfileId: profile.profileId } }, attempts: [], reviews: [], now: NOW });
   const occurrenceId = prepared.session.itemOrder[0]!.occurrenceId;
   const partial = { requirements: "Clarify latency.", architecture: "", tradeoffs: "", final_answer: "" };

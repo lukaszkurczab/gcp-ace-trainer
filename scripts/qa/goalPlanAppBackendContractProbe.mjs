@@ -77,7 +77,7 @@ async function main() {
   assert.ok(resolved.planningPolicyIdentity);
   assert.ok(resolved.planningPolicy);
   const recommendation = recommendLearningPlanMode({
-    familyId: "coding_interview",
+    binding: resolved.runtime.getPlanningModeBinding(),
     trackId,
     modes: resolved.track.modes,
     sessions: [],

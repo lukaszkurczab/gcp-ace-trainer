@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import { prepareCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
-import { projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
+import { loadCanonicalRuntimeCatalog } from "../../content/canonical";
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import {
   retryDesignInterviewAbandonmentCommand,
@@ -31,12 +31,18 @@ const TRACK_IDS = Object.freeze([
   "object-oriented-design-interview",
 ] as const);
 
+async function loadExactSourceTrack(trackId: typeof TRACK_IDS[number]): Promise<CanonicalTrackRuntime> {
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "design_interview");
+  const source = (await loadCanonicalRuntimeCatalog()).getTrack(trackId);
+  return Object.freeze({ ...source, contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256, trainingIdentity: resolved.track.trainingIdentity });
+}
+
 function choiceQuestion(question: Question): question is Extract<Question, { interaction: { type: "choice_single" } }> {
   return question.interaction.type === "choice_single" && question.answer.type === "choice_single";
 }
 
 async function startPinnedSession(track: CanonicalTrackRuntime, question: Extract<Question, { interaction: { type: "choice_single" } }>, sessionId: string) {
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const prepared = await runtime.prepare({
     trackId: track.trackId,
     modeId: MODE_ID,
@@ -86,7 +92,7 @@ test("all three actual Design pools deliver exact authored wrong-option feedback
   for (const trackId of TRACK_IDS) {
     const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "design_interview");
     assert.ok(resolved.planningPolicyIdentity, "policy successor stays separate from the session training pin");
-    const track = resolved.track;
+    const track = await loadExactSourceTrack(trackId);
     const question = track.getPool(MODE_ID).find((candidate) => choiceQuestion(candidate) && candidate.feedback.messages?.some((message) => message.kind === "wrong_option"));
     assert.ok(question && choiceQuestion(question), `eligible authored choice question exists in ${trackId}`);
 
@@ -97,7 +103,8 @@ test("all three actual Design pools deliver exact authored wrong-option feedback
       const before = await getDesignInterviewPracticeProjection();
       assert.equal(before.feedback, null, "no answer feedback is exposed before durable submission");
       const response = responseFor(question, correct);
-      const expected: readonly Readonly<{ kind: string; targetId: string; text: string }>[] = projectCanonicalChoiceFeedbackMessages(question, response) ?? Object.freeze([]);
+      const exact = await contentPackageRuntimeOwner.resolveItem(session.itemOrder[0]!.item);
+      const expected: readonly Readonly<{ kind: string; targetId: string; text: string }>[] = exact.interactions.projectFeedback(question.questionId, response)?.messages ?? Object.freeze([]);
       if (correct) assert.deepEqual(expected, [], "the correct response has no wrong-option explanation");
       else {
         assert.equal(expected.length, 1);
@@ -119,8 +126,8 @@ test("all three actual Design pools deliver exact authored wrong-option feedback
       assert.deepEqual(after.feedback.messages, expected);
       assert.equal(Object.isFrozen(after.feedback.messages), true);
       assert.equal(after.feedback.result, correct ? "correct" : "incorrect");
-      assert.deepEqual(after.feedback.controls, projectCanonicalChoiceFeedbackControls(after.question, response));
-      assert.deepEqual(after.feedback.controls.map(({ id }) => id), after.question.interaction.type === "choice_single" ? after.question.interaction.options.map(({ optionId }) => optionId) : []);
+      assert.deepEqual(after.feedback.controls, exact.interactions.projectDiagnostics(question.questionId, response));
+      assert.deepEqual(after.feedback.controls.map(({ id }) => id), exact.interactions.controlIds(question.questionId));
       assert.equal(after.feedback.controls.find(({ id }) => id === (response as { optionId: string }).optionId)?.state, correct ? "correct" : "incorrect");
       assert.equal(Object.isFrozen(after.feedback.controls), true);
     }
@@ -130,7 +137,7 @@ test("all three actual Design pools deliver exact authored wrong-option feedback
 test("Design choice diagnostics stay hidden for a failed journal write and committed-only response", async () => {
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK_IDS[0], "design_interview");
   assert.ok(resolved.planningPolicyIdentity, "policy successor stays separate from the session training pin");
-  const track = resolved.track;
+  const track = await loadExactSourceTrack(TRACK_IDS[0]);
   const question = track.getPool(MODE_ID).find((candidate) => choiceQuestion(candidate) && candidate.feedback.messages?.some((message) => message.kind === "wrong_option"));
   assert.ok(question && choiceQuestion(question));
   const response = responseFor(question, false);
@@ -155,7 +162,8 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
     await getTrainingLifecycleUseCases().retryPracticeSubmission();
     const retried = await getDesignInterviewPracticeProjection();
     assert.deepEqual(retried.response, { source: "materialized", value: response });
-    assert.deepEqual(retried.feedback?.messages, projectCanonicalChoiceFeedbackMessages(question, response) ?? []);
+    const exact = await contentPackageRuntimeOwner.resolveItem(session.itemOrder[0]!.item);
+    assert.deepEqual(retried.feedback?.messages, exact.interactions.projectFeedback(question.questionId, response)?.messages ?? []);
     assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
   }
 
@@ -177,9 +185,10 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
 
     await getTrainingLifecycleUseCases().recoverActiveTrainingOperation();
     const recovered = await getDesignInterviewPracticeProjection();
-    const expected = projectCanonicalChoiceFeedbackMessages(question, response) ?? Object.freeze([]);
+    const exact = await contentPackageRuntimeOwner.resolveItem(session.itemOrder[0]!.item);
+    const expected = exact.interactions.projectFeedback(question.questionId, response)?.messages ?? Object.freeze([]);
     assert.deepEqual(recovered.feedback?.messages, expected);
-    assert.deepEqual(recovered.feedback?.controls, projectCanonicalChoiceFeedbackControls(recovered.question, response));
+    assert.deepEqual(recovered.feedback?.controls, exact.interactions.projectDiagnostics(question.questionId, response));
     assert.equal(Object.isFrozen(recovered.feedback?.messages), true);
     assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
     assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
@@ -188,8 +197,7 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
 
 test("Design exact abandonment retry routes a later durable phase failure to recovery", async () => {
   const storage = installMemoryStorage();
-  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK_IDS[0], "design_interview");
-  const track = resolved.track;
+  const track = await loadExactSourceTrack(TRACK_IDS[0]);
   const question = track.getPool(MODE_ID).find(choiceQuestion);
   assert.ok(question && choiceQuestion(question));
   const { session } = await startPinnedSession(track, question, "bizq01-design-abandonment-later-phase");

@@ -1,5 +1,5 @@
-import { CanonicalTrainingRuntime } from "./canonical/CanonicalTrainingRuntime";
-import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime, type Question } from "../content/canonical";
+import { createCanonicalTrainingFamilyComposition } from "./canonicalTrainingFamilyComposition";
+import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime } from "../content/canonical";
 import { isCanonicalSafeIdentity } from "../domain/identity/canonicalIdentity";
 import { createResolvedContentRef, isArtifactSha256, type ResolvedContentRef, type TrackFamilyId, type TrackId } from "../domain";
 import type { VerifiedNodePackage } from "../content/runtime/nodeContentPackage";
@@ -7,29 +7,37 @@ import { getProductSimulationModeConfig } from "../content/canonical/productMode
 import { getActiveNodePackageScopeKey, loadActiveProfileNodePackages } from "../content/application/nodePackageStoreComposition";
 import { findPremiumNodeOfferForIdentity } from "../content/application/premiumNodeOffers";
 import { getAvailablePremiumNodeOfferForMode } from "../content/application/premiumNodeOfferAccess";
-import { ExactContentArtifactUnavailableError } from "./trainingLifecycle/contracts";
-import { isRegisteredTrackId } from "../domain/tracks/trackRegistry";
+import { ExactContentArtifactUnavailableError, type ContentPackageRuntimePort, type ContentPackageRuntimeResolution, type TrainingCatalog, type TrainingFamilyRuntime, type TrainingPresentationPort, type TrainingQuestionSummary } from "./trainingLifecycle/contracts";
+import { getTrackRegistration, isRegisteredTrackId } from "../domain/tracks/trackRegistry";
 import type { LearningPlanningPolicy } from "../content/canonical/planningPolicy";
 import type { ContentPlanningPolicyIdentity } from "../content/canonical/contentSuccessorLedger";
 import { NodePackageStorageUnavailableError } from "../content/runtime/nodeContentPackage";
+import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from "../content/canonical/interactions/registry";
 
-export type ResolvedPackageRuntime = Readonly<{ track: CanonicalTrackRuntime; runtime: CanonicalTrainingRuntime; planningPolicy?: LearningPlanningPolicy; planningPolicyIdentity?: ContentPlanningPolicyIdentity }>;
+export type ResolvedPackageRuntime = Readonly<{ track: TrainingCatalog; runtime: TrainingFamilyRuntime; presentation: TrainingPresentationPort; planningPolicy?: LearningPlanningPolicy; planningPolicyIdentity?: ContentPlanningPolicyIdentity }>;
+export type ResolvedInteractionItem = Readonly<{ question: TrainingQuestionSummary; interactions: TrainingPresentationPort }>;
 type PackageOffer = ReturnType<typeof findPremiumNodeOfferForIdentity>;
 export class ContentPackageRuntimeOwner {
   private hydration: Readonly<{ scopeKey: string; epoch: number; promise: Promise<void> }> | null = null;
   private hydrationEpoch = 0;
   private installedScopeKey: string | null = null;
   private scopeInitialized = false;
+  private readonly catalogOwner: ReturnType<typeof createCanonicalRuntimeCatalogOwner>;
+  private readonly loadActiveInstalledPackages: (scopeKey: string) => Promise<readonly VerifiedNodePackage[]>;
   constructor(
     private readonly getInstalledScopeKey: () => string | null = getActiveNodePackageScopeKey,
-    private readonly loadActiveInstalledPackages: (scopeKey: string) => Promise<readonly VerifiedNodePackage[]> = loadActiveProfileNodePackages,
+    loadActiveInstalledPackages?: (scopeKey: string) => Promise<readonly VerifiedNodePackage[]>,
     private readonly offerForIdentity: (identity: VerifiedNodePackage["identity"]) => PackageOffer = findPremiumNodeOfferForIdentity,
     private readonly availableOfferForMode: typeof getAvailablePremiumNodeOfferForMode = getAvailablePremiumNodeOfferForMode,
-  ) {}
-  private readonly catalogOwner = createCanonicalRuntimeCatalogOwner();
+    private readonly interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry,
+  ) {
+    this.loadActiveInstalledPackages = loadActiveInstalledPackages ?? ((scopeKey) => loadActiveProfileNodePackages(scopeKey, this.interactions));
+    this.catalogOwner = createCanonicalRuntimeCatalogOwner({ interactionRegistry: this.interactions });
+  }
   private readonly exact = new Map<string, ResolvedPackageRuntime>();
   private readonly installedExact = new Map<string, ResolvedPackageRuntime>();
   private readonly discovered = new Map<string, ResolvedPackageRuntime>();
+  private readonly sourceTracks = new Map<string, CanonicalTrackRuntime>();
   async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string }>): Promise<ResolvedPackageRuntime> {
     const track = (await this.catalogOwner.load()).getTrack(input.trackId);
     assertFamily(track, input.familyId);
@@ -113,6 +121,7 @@ export class ContentPackageRuntimeOwner {
       artifactSha256: identity.artifactSha256,
       contentReleaseId: payload.contentReleaseId,
       questions,
+      interactions: this.interactions,
       modes: Object.freeze(premiumOffer ? [premiumOffer.mode] : []),
       getQuestion: (questionId) => byId.get(questionId),
       getQuestionsForNode: (nodeId) => nodeId === identity.nodeId ? questions : Object.freeze([]),
@@ -121,7 +130,11 @@ export class ContentPackageRuntimeOwner {
       getPool: (modeId) => { const mode = getMode(modeId); const selection = mode.selection; if (selection.kind !== "node" || selection.nodeId !== identity.nodeId) throw new Error(`Product mode ${identity.trackId}/${modeId} does not own this installed node.`); return questions; },
     });
     const key = runtimeKey(identity.trackId, identity.contentVersion, identity.artifactSha256);
-    if (!target.has(key)) target.set(key, Object.freeze({ track, runtime: new CanonicalTrainingRuntime(track) }));
+    if (!target.has(key)) {
+      const family = createCanonicalTrainingFamilyComposition(track);
+      this.sourceTracks.set(key, track);
+      target.set(key, Object.freeze({ track: family.catalog, runtime: family.runtime, presentation: family.presentation }));
+    }
   }
   async resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ResolvedPackageRuntime> { const track = (await this.catalogOwner.load()).getTrack(trackId); assertFamily(track, familyId); const r = this.materialize(track); this.discovered.set(trackId, r); return r; }
   getPreparedDiscovery(trackId: TrackId): ResolvedPackageRuntime { const prepared = this.discovered.get(trackId); if (prepared) return prepared; for (const candidate of this.exact.values()) { if (candidate.track.trackId === trackId) { this.discovered.set(trackId, candidate); return candidate; } } throw new Error(`Canonical discovery is not prepared for ${trackId}.`); }
@@ -144,14 +157,16 @@ export class ContentPackageRuntimeOwner {
     for (const [key, runtime] of replacement) this.installedExact.set(key, runtime);
     this.hydration = Object.freeze({ scopeKey, epoch, promise: Promise.resolve() });
   }
-  async resolveItem(ref: ResolvedContentRef): Promise<Question> {
+  async resolveItem(ref: ResolvedContentRef): Promise<ResolvedInteractionItem> {
     const exactRef = createResolvedContentRef(ref);
     const r = await this.resolveExactArtifact(exactRef);
-    const q = r.track.getQuestion(exactRef.questionId);
-    if (!q || q.trackId !== exactRef.trackId || r.track.trackId !== exactRef.trackId || r.track.contentVersion !== exactRef.contentVersion || r.track.artifactSha256 !== exactRef.artifactSha256) {
+    const source = this.sourceTracks.get(runtimeKey(exactRef.trackId, exactRef.contentVersion, exactRef.artifactSha256));
+    const sourceQuestion = source?.getQuestion(exactRef.questionId);
+    const question = r.track.getQuestion(exactRef.questionId);
+    if (!sourceQuestion || !question || sourceQuestion.trackId !== exactRef.trackId || r.track.trackId !== exactRef.trackId || r.track.contentVersion !== exactRef.contentVersion || r.track.artifactSha256 !== exactRef.artifactSha256) {
       throw new Error("Resolved content reference does not match its exact canonical question.");
     }
-    return q;
+    return Object.freeze({ question, interactions: r.presentation });
   }
   resolveTextAsset(_ref: ResolvedContentRef, _assetId: string): never { throw new Error("Canonical content does not provide text assets."); }
   private async hydrateInstalledPackages(scopeKey: string): Promise<void> {
@@ -191,16 +206,28 @@ export class ContentPackageRuntimeOwner {
       artifactSha256: identity.artifactSha256,
       trainingIdentity: identity,
     });
+    const family = createCanonicalTrainingFamilyComposition(track);
     const resolved = Object.freeze({
-      track,
-      runtime: new CanonicalTrainingRuntime(track),
+      track: family.catalog,
+      runtime: family.runtime,
+      presentation: family.presentation,
       ...(sourceTrack.planningPolicy ? { planningPolicy: sourceTrack.planningPolicy } : {}),
       ...(sourceTrack.planningPolicyIdentity ? { planningPolicyIdentity: sourceTrack.planningPolicyIdentity } : {}),
     });
+    this.sourceTracks.set(key, track);
     this.exact.set(key, resolved);
     return resolved;
   }
 }
 function runtimeKey(trackId: string, contentVersion: string, artifactSha256: string): string { return JSON.stringify([trackId, contentVersion, artifactSha256]); }
-function assertFamily(track: CanonicalTrackRuntime, familyId: TrackFamilyId): void { if (new CanonicalTrainingRuntime(track).familyId !== familyId) throw new Error(`Canonical family routing does not own ${track.trackId}.`); }
+function assertFamily(track: CanonicalTrackRuntime, familyId: TrackFamilyId): void { if (getTrackRegistration(track.trackId).familyId !== familyId) throw new Error(`Canonical family routing does not own ${track.trackId}.`); }
 export const contentPackageRuntimeOwner = new ContentPackageRuntimeOwner();
+function lifecycleResolution(resolved: ResolvedPackageRuntime): ContentPackageRuntimeResolution {
+  return Object.freeze({ track: resolved.track, runtime: resolved.runtime });
+}
+/** Lifecycle receives only the verified metadata catalog and its bound family runtime. */
+export const contentPackageRuntimePort: ContentPackageRuntimePort = Object.freeze({
+  async resolveForPreparation(input: Parameters<ContentPackageRuntimePort["resolveForPreparation"]>[0]) { return lifecycleResolution(await contentPackageRuntimeOwner.resolveForPreparation(input)); },
+  async resolveExactArtifact(input: Parameters<ContentPackageRuntimePort["resolveExactArtifact"]>[0]) { return lifecycleResolution(await contentPackageRuntimeOwner.resolveExactArtifact(input)); },
+  async resolveForDiscovery(trackId: Parameters<ContentPackageRuntimePort["resolveForDiscovery"]>[0], familyId: Parameters<ContentPackageRuntimePort["resolveForDiscovery"]>[1]) { return lifecycleResolution(await contentPackageRuntimeOwner.resolveForDiscovery(trackId, familyId)); },
+});

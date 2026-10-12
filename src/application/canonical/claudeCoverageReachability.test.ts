@@ -9,7 +9,7 @@ import { CanonicalQuestionValidationError } from "../../content/canonical/questi
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { createTrainingAttempt, type TrainingAttempt } from "../../domain/learning/trainingAttempt";
 import type { TrackId } from "../../domain/learning/trackIdentity";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import coverageData from "../../testing/claudeCoverageFixtureData.json";
 
 const TRACK_ID = "claude-certified-architect-professional-certification";
@@ -115,7 +115,7 @@ test("CC04 v3 artifact reaches every required Claude unit through a truthfully s
   assert.equal(requiredUnits.length, 53);
   const focus = track.getMode("certification-focus-practice");
   assert.equal(focus.minimumActualLength, 10);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   assert.ok(requiredUnits.some((unit) => questionIdsForUnit(track.questions, unit.nodeId, unit.mentalUnitId).length === 4), "fixture must exercise a unit whose capacity is below the nominal mode minimum");
 
   for (const [index, unit] of requiredUnits.entries()) {
@@ -164,7 +164,7 @@ test("CC04 v3 artifact reaches every required Claude unit through a truthfully s
     ...shortened.session,
     itemOrder: shortened.session.itemOrder.map((entry, index) => index === 0 ? { ...entry, item: { ...entry.item, questionId: foreignQuestion.questionId } } : entry),
   };
-  await assert.rejects(() => runtime.validateResume({ session: forged, draft: null }), /item reference is unavailable/u);
+  await assert.rejects(() => runtime.validateResume({ session: forged, draft: null }), /session scope or minimum length is invalid/u);
 
   await assert.rejects(() => runtime.prepare({
     trackId: TRACK_ID,
@@ -200,7 +200,7 @@ test("CC04 final source candidate probes all 53 units when the local candidate a
   assert.equal(track.questions.length, 918);
   assert.equal(track.completionRule?.ruleVersion, 3);
   if (track.completionRule?.ruleVersion !== 3) throw new Error("CC04 candidate does not expose v3 unit coverage.");
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   const requiredUnits = track.completionRule.chapters.flatMap((chapter) => chapter.units.map((unit) => ({ nodeId: chapter.nodeId, mentalUnitId: unit.mentalUnitId })));
   assert.equal(requiredUnits.length, 53);
   for (const [index, unit] of requiredUnits.entries()) {

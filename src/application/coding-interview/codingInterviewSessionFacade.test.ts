@@ -28,11 +28,13 @@ test("startAlgorithmsSession adapts feedback timing on the actual lifecycle requ
   await startAlgorithmsSession({ ...common, feedbackMode: "afterEachAnswer" });
   await startAlgorithmsSession({ ...common, feedbackMode: "atSessionEnd" });
   await startAlgorithmsSession(common);
+  await startAlgorithmsSession({ ...common, nodeId: "complexity_and_constraints" });
 
   assert.deepEqual(commands.map(({ request }) => request), [
     { modeId: common.modeId, requestedLength: 10, source: common.source, feedbackTiming: "after_each_durable_submit" },
     { modeId: common.modeId, requestedLength: 10, source: common.source, feedbackTiming: "after_session_completion" },
     { modeId: common.modeId, requestedLength: 10, source: common.source },
+    { modeId: common.modeId, requestedLength: 10, source: common.source, nodeId: "complexity_and_constraints" },
   ]);
-  assert.equal(timerSessions.length, 3);
+  assert.equal(timerSessions.length, 4);
 });

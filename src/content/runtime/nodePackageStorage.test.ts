@@ -165,8 +165,8 @@ test("filesystem adapter leaves the old MMKV pointer on move or pointer-write fa
   const restartedOwner = new ContentPackageRuntimeOwner(() => "persisted-profile", async () => restartedStore.listActive());
   const oldRef = { trackId: TRACK, contentVersion: first.identity.contentVersion, artifactSha256: first.identity.artifactSha256, questionId: first.payload.items[0]!.questionId } as const;
   const currentRef = { trackId: TRACK, contentVersion: second.identity.contentVersion, artifactSha256: second.identity.artifactSha256, questionId: second.payload.items[0]!.questionId } as const;
-  assert.equal((await restartedOwner.resolveItem(oldRef)).questionId, oldRef.questionId);
-  assert.equal((await restartedOwner.resolveItem(currentRef)).questionId, currentRef.questionId);
+  assert.equal((await restartedOwner.resolveItem(oldRef)).question.questionId, oldRef.questionId);
+  assert.equal((await restartedOwner.resolveItem(currentRef)).question.questionId, currentRef.questionId);
   const third = await record("3.0.0");
   await usable.store.writeImmutable(third);
   rejectPointerWrite = true;
@@ -174,8 +174,8 @@ test("filesystem adapter leaves the old MMKV pointer on move or pointer-write fa
   assert.deepEqual(await usable.store.getActive(TRACK, NODE), second.identity);
   assert.equal((await usable.store.listActive()).length, 2);
   const afterFailureOwner = new ContentPackageRuntimeOwner(() => "persisted-profile", async () => usable.createStore().listActive());
-  assert.equal((await afterFailureOwner.resolveItem(oldRef)).questionId, oldRef.questionId);
-  assert.equal((await afterFailureOwner.resolveItem(currentRef)).questionId, currentRef.questionId);
+  assert.equal((await afterFailureOwner.resolveItem(oldRef)).question.questionId, oldRef.questionId);
+  assert.equal((await afterFailureOwner.resolveItem(currentRef)).question.questionId, currentRef.questionId);
   await assert.rejects(afterFailureOwner.resolveItem({ ...currentRef, contentVersion: third.identity.contentVersion, artifactSha256: third.identity.artifactSha256, questionId: third.payload.items[0]!.questionId }));
 });
 

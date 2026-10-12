@@ -49,10 +49,11 @@ test("authored choice messages follow selected incorrect and omitted correct sta
     { kind: "wrong_option", targetId: "a", text: "A explanation" },
   ] as const;
   const withMessages = { ...single, feedback: { reason: "reason", details: "details", messages: authored } } as unknown as Question;
-  const projected = projectCanonicalChoiceFeedbackMessages(withMessages, { optionId: "b", type: "choice_single" });
+  const response = { optionId: "b", type: "choice_single" } as const;
+  const projected = projectCanonicalChoiceFeedbackMessages(withMessages, response);
   assert.deepEqual(projected, [authored[1]]);
   assert.equal(Object.isFrozen(projected), true);
-  assert.deepEqual(composeCanonicalFeedback(withMessages, { optionId: "b", type: "choice_single" }).messages, [authored[1]]);
+  assert.deepEqual(composeCanonicalFeedback(withMessages, response, scoreCanonicalQuestion(withMessages, response)).messages, [authored[1]]);
 });
 
 test("multiple choice messages include only selected wrong and omitted correct targets regardless of response order", () => {
@@ -93,7 +94,7 @@ test("real GCP and Coding artifacts deliver exact selected-wrong authored messag
     const expected = question.feedback.messages!.filter((message) => message.kind === "wrong_option" && message.targetId === entry.selectedId);
     assert.ok(expected.length > 0, `${entry.questionId} must have reviewed authored feedback for ${entry.selectedId}`);
     assert.deepEqual(projectCanonicalChoiceFeedbackMessages(question, response), expected);
-    assert.deepEqual(composeCanonicalFeedback(question, response).messages, expected);
+    assert.deepEqual(composeCanonicalFeedback(question, response, scoreCanonicalQuestion(question, response)).messages, expected);
   }
 });
 
@@ -123,11 +124,11 @@ test("the 28 repaired AWS SAA items retain scoring and authored feedback after d
       assert.deepEqual(order, prepareCanonicalOptionOrder(question, `saa-fixes-${suffix}-${seed}`, track));
       const displayed = projectCanonicalQuestionInSessionOrder(question, order);
       const beforeAnswer = buildCanonicalInteractionViewModel(displayed, null);
-      assert.equal(beforeAnswer.renderer.kind, "choice");
-      if (beforeAnswer.renderer.kind !== "choice") throw new Error(`Unexpected renderer: ${suffix}`);
-      assert.deepEqual(beforeAnswer.renderer.options.map(option => option.id), order);
-      assert.ok(beforeAnswer.renderer.options.every(option => !option.selected));
-      assert.deepEqual(Object.keys(beforeAnswer).sort(), ["accessibility", "renderer"], "pre-answer model contains no answer or feedback");
+      const model = beforeAnswer.model as { accessibility: unknown; renderer: { kind: string; options: readonly { id: string; selected: boolean }[] } };
+      assert.equal(model.renderer.kind, "choice");
+      assert.deepEqual(model.renderer.options.map(option => option.id), order);
+      assert.ok(model.renderer.options.every(option => !option.selected));
+      assert.deepEqual(Object.keys(model).sort(), ["accessibility", "renderer"], "pre-answer model contains no answer or feedback");
       assert.ok("options" in displayed.interaction);
       if (!("options" in displayed.interaction)) throw new Error(`Unexpected interaction: ${suffix}`);
       for (const option of displayed.interaction.options) {
@@ -137,7 +138,7 @@ test("the 28 repaired AWS SAA items retain scoring and authored feedback after d
         const expected = question.feedback.messages!.filter(message => message.kind === "wrong_option" && message.targetId === option.optionId);
         if (option.optionId !== "A") assert.equal(expected.length, 1, `${suffix}/${option.optionId} authored feedback`);
         assert.deepEqual(projectCanonicalChoiceFeedbackMessages(displayed, response), expected);
-        const feedback = composeCanonicalFeedback(displayed, response);
+        const feedback = composeCanonicalFeedback(displayed, response, scoreCanonicalQuestion(displayed, response));
         assert.equal(feedback.reason, question.feedback.reason);
         assert.deepEqual(feedback.details, question.feedback.details);
         assert.deepEqual(feedback.messages, expected);

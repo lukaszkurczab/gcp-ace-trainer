@@ -18,6 +18,11 @@ export type PracticeSurfacePhase = "preparing" | "submit_outcome_unknown" | Prac
 
 export const PRACTICE_ACTION_GESTURE_CARRY_OVER_MS = 400;
 
+/** A queued UI event may mutate a response only while its captured item owner is current. */
+export function isPracticeResponseOwnerCurrent(capturedOwner: string, currentOwner: string | null): boolean {
+  return currentOwner !== null && capturedOwner === currentOwner;
+}
+
 export type PracticePrimaryActionActivation = Readonly<{
   identity: string;
   at: number;
@@ -48,12 +53,14 @@ export type PracticeOptionState = "neutral" | "selected" | "correct" | "incorrec
 
 export type PracticeChoiceControl = Readonly<{
   kind: "choice";
+  interactionType: "choice_single" | "choice_multiple";
   options: readonly Readonly<{ id: string; state: PracticeOptionState; text: string }> [];
   selectionMode: "single" | "multiple";
 }>;
 
 export type PracticeOrderingControl = Readonly<{
   elements: readonly Readonly<{ id: string; text: string }> [];
+  interactionType: "ordering";
   kind: "ordering";
 }>;
 
@@ -61,16 +68,15 @@ export type PracticeComplexityControl = Readonly<{
   dimensions: readonly Readonly<{
     id: string;
     label?: string;
-    selectedValue?: string;
-    values: readonly string[];
+    selectedValues?: readonly string[];
+    values: readonly Readonly<{ id: string; text: string }>[];
   }> [];
+  interactionType: "complexity" | "decision_matrix";
   kind: "complexity";
 }>;
 
-export type PracticeResponseControl =
-  | PracticeChoiceControl
-  | PracticeOrderingControl
-  | PracticeComplexityControl;
+/** Opaque UI-facing response model. A feature binding owns its payload shape. */
+export type PracticeResponseControl = Readonly<{ interactionType: string; model: unknown }>;
 
 export type PracticeFeedback = Readonly<{
   details: JsonValue;
@@ -80,15 +86,22 @@ export type PracticeFeedback = Readonly<{
   messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[];
 }>;
 
-export type PracticeInteractionRenderer =
-  | Readonly<{ kind: "choice"; options: readonly Readonly<{ id: string; selected: boolean; text: string }> [] }>
-  | Readonly<{ kind: "ordering"; elements: readonly Readonly<{ id: string; text: string }> [] }>
-  | Readonly<{ kind: "complexity"; dimensions: readonly Readonly<{ id: string; label?: string; selectedValue?: string; values: readonly string[] }> [] }>;
+/** Neutral handler output crosses into feature UI without a shared renderer union. */
+export type PracticeInteractionRenderer = Readonly<{ interactionType: string; model: unknown }>;
+
+type PracticeChoiceControlModel = PracticeChoiceControl;
+type PracticeOrderingControlModel = PracticeOrderingControl;
+type PracticeComplexityControlModel = PracticeComplexityControl;
+type BuiltinPracticeControlModel = PracticeChoiceControlModel | PracticeOrderingControlModel | PracticeComplexityControlModel;
+type BuiltinPracticeRendererModel =
+  | Readonly<{ kind: "choice"; options: readonly Readonly<{ id: string; selected: boolean; text: string }>[] }>
+  | Readonly<{ kind: "ordering"; elements: readonly Readonly<{ id: string; text: string }>[] }>
+  | Readonly<{ kind: "complexity"; dimensions: readonly Readonly<{ id: string; label?: string; selectedValues?: readonly string[]; values: readonly Readonly<{ id: string; text: string }>[] }>[] }>;
 
 export type PracticeLocalResponse =
   | Readonly<{ kind: "choice"; selectedOptionIds: readonly string[] }>
   | Readonly<{ kind: "ordering"; orderedSubgoalIds: readonly string[] }>
-  | Readonly<{ kind: "complexity"; selectedValuesByDimension: Readonly<Record<string, string>> }>
+  | Readonly<{ kind: "complexity"; selectedValuesByDimension: Readonly<Record<string, readonly string[]>> }>
   | null;
 
 export type PracticeLocalResponseState = Readonly<{
@@ -96,6 +109,12 @@ export type PracticeLocalResponseState = Readonly<{
   response: Exclude<PracticeLocalResponse, null>;
   sessionId: string;
 }>;
+
+export function toggleDimensionSelection(current: Readonly<Record<string, readonly string[]>>, dimensionId: string, valueId: string): Readonly<Record<string, readonly string[]>> {
+  const selected = current[dimensionId] ?? [];
+  const next = selected.includes(valueId) ? selected.filter((candidate) => candidate !== valueId) : [...selected, valueId];
+  return Object.freeze({ ...current, [dimensionId]: Object.freeze(next) });
+}
 
 export function reconcilePracticeLocalResponse(input: Readonly<{
   current: PracticeLocalResponseState | null;
@@ -195,45 +214,87 @@ export function practiceOptionIsSelected(state: PracticeOptionState): boolean {
  * Applies only UI-ephemeral selection or application-provided feedback states
  * to a renderer projection. It never reads accepted answers or scores.
  */
-export function buildPracticeResponseControl(input: Readonly<{
+export type PracticeControlProjectionInput = Readonly<{
   choiceSelectionMode?: "single" | "multiple";
   feedbackControls?: readonly Readonly<{ id: string; state: PracticeOptionState }> [];
   localResponse: PracticeLocalResponse;
   renderer: PracticeInteractionRenderer;
+}>;
+
+export function buildPracticeResponseControl(input: PracticeControlProjectionInput & Readonly<{
+  controlProjectors?: ReadonlyMap<string, PracticeControlProjector>;
 }>): PracticeResponseControl {
-  if (input.renderer.kind === "choice") {
-    const feedbackById = new Map(input.feedbackControls?.map((control) => [control.id, control.state]));
-    const selected = input.localResponse?.kind === "choice" ? new Set(input.localResponse.selectedOptionIds) : new Set<string>();
-    return Object.freeze({
-      kind: "choice",
-      selectionMode: input.choiceSelectionMode ?? "single",
-      options: Object.freeze(input.renderer.options.map((option) => Object.freeze({
-        id: option.id,
-        text: option.text,
-        state: feedbackById.has(option.id)
-          ? feedbackById.get(option.id) === "neutral" ? "not_selected" : feedbackById.get(option.id)!
-          : selected.has(option.id) ? "selected" : "neutral",
-      }))),
-    });
-  }
-  if (input.renderer.kind === "ordering") {
-    const ordered = input.localResponse?.kind === "ordering" ? input.localResponse.orderedSubgoalIds : input.renderer.elements.map((element) => element.id);
-    const textById = new Map(input.renderer.elements.map((element) => [element.id, element.text]));
-    return Object.freeze({
-      kind: "ordering",
-      elements: Object.freeze(ordered.map((id) => Object.freeze({ id, text: textById.get(id) ?? id }))),
-    });
-  }
+  const project = (input.controlProjectors ?? PRACTICE_CONTROL_PROJECTORS).get(input.renderer.interactionType);
+  if (!project) throw new Error(`Practice control binding is unavailable for ${input.renderer.interactionType}.`);
+  return Object.freeze({ interactionType: input.renderer.interactionType, model: project(input) });
+}
+
+export type PracticeControlProjector = (input: PracticeControlProjectionInput) => unknown;
+type ControlProjector = (input: PracticeControlProjectionInput) => BuiltinPracticeControlModel;
+const PRACTICE_CONTROL_PROJECTORS: ReadonlyMap<string, ControlProjector> = new Map<string, ControlProjector>([
+  ["choice_single", projectChoiceControl],
+  ["choice_multiple", projectChoiceControl],
+  ["ordering", projectOrderingControl],
+  ["complexity", projectComplexityControl],
+  ["decision_matrix", projectComplexityControl],
+]);
+
+export function hasBuiltinPracticeControlProjector(interactionType: string): boolean {
+  return PRACTICE_CONTROL_PROJECTORS.has(interactionType);
+}
+
+function projectChoiceControl(input: PracticeControlProjectionInput): PracticeChoiceControl {
+  const renderer = builtinRendererModel(input.renderer.model);
+  if (!renderer || typeof renderer !== "object" || !("kind" in renderer) || renderer.kind !== "choice") throw new Error("Choice interaction presentation is invalid.");
+  const feedbackById = new Map(input.feedbackControls?.map((control) => [control.id, control.state]));
+  const selected = input.localResponse?.kind === "choice" ? new Set(input.localResponse.selectedOptionIds) : new Set<string>();
+  return Object.freeze({
+    kind: "choice",
+    interactionType: input.renderer.interactionType as PracticeChoiceControl["interactionType"],
+    selectionMode: input.choiceSelectionMode ?? "single",
+    options: Object.freeze(renderer.options.map((option) => Object.freeze({
+      id: option.id,
+      text: option.text,
+      state: feedbackById.has(option.id)
+        ? feedbackById.get(option.id) === "neutral" ? "not_selected" : feedbackById.get(option.id)!
+        : selected.has(option.id) ? "selected" : "neutral",
+    }))),
+  });
+}
+
+function projectOrderingControl(input: PracticeControlProjectionInput): PracticeOrderingControl {
+  const renderer = builtinRendererModel(input.renderer.model);
+  if (!renderer || typeof renderer !== "object" || !("kind" in renderer) || renderer.kind !== "ordering") throw new Error("Ordering interaction presentation is invalid.");
+  const ordered = input.localResponse?.kind === "ordering" ? input.localResponse.orderedSubgoalIds : renderer.elements.map((element) => element.id);
+  const textById = new Map(renderer.elements.map((element) => [element.id, element.text]));
+  return Object.freeze({
+    kind: "ordering",
+    interactionType: input.renderer.interactionType as PracticeOrderingControl["interactionType"],
+    elements: Object.freeze(ordered.map((id) => Object.freeze({ id, text: textById.get(id) ?? id }))),
+  });
+}
+
+function projectComplexityControl(input: PracticeControlProjectionInput): PracticeComplexityControl {
+  const renderer = builtinRendererModel(input.renderer.model);
+  if (!renderer || typeof renderer !== "object" || !("kind" in renderer) || renderer.kind !== "complexity") throw new Error("Value interaction presentation is invalid.");
   const selectedValues = input.localResponse?.kind === "complexity" ? input.localResponse.selectedValuesByDimension : {};
   return Object.freeze({
     kind: "complexity",
-    dimensions: Object.freeze(input.renderer.dimensions.map((dimension) => Object.freeze({
+    interactionType: input.renderer.interactionType as PracticeComplexityControl["interactionType"],
+    dimensions: Object.freeze(renderer.dimensions.map((dimension) => Object.freeze({
       id: dimension.id,
       ...(dimension.label ? { label: dimension.label } : {}),
       values: dimension.values,
-      ...(selectedValues[dimension.id] ? { selectedValue: selectedValues[dimension.id] } : dimension.selectedValue ? { selectedValue: dimension.selectedValue } : {}),
+      ...(selectedValues[dimension.id]?.length ? { selectedValues: selectedValues[dimension.id] } : dimension.selectedValues?.length ? { selectedValues: dimension.selectedValues } : {}),
     }))),
   });
+}
+
+function builtinRendererModel(model: unknown): BuiltinPracticeRendererModel {
+  if (!model || typeof model !== "object" || !("renderer" in model)) throw new Error("Builtin interaction presentation is invalid.");
+  const renderer = (model as { renderer?: unknown }).renderer;
+  if (!renderer || typeof renderer !== "object" || !("kind" in renderer)) throw new Error("Builtin interaction presentation is invalid.");
+  return renderer as BuiltinPracticeRendererModel;
 }
 
 /** The visible ordering is itself a complete response, even before a move. */
@@ -242,11 +303,27 @@ export function resolvePracticeLocalResponse(
   control: PracticeResponseControl,
 ): PracticeLocalResponse {
   if (localResponse) return localResponse;
-  if (control.kind !== "ordering") return null;
+  if (control.interactionType !== "ordering") return null;
+  const model = control.model as BuiltinPracticeControlModel;
+  if (!model || typeof model !== "object" || !("kind" in model) || model.kind !== "ordering") return null;
   return Object.freeze({
     kind: "ordering",
-    orderedSubgoalIds: Object.freeze(control.elements.map((element) => element.id)),
+    orderedSubgoalIds: Object.freeze(model.elements.map((element) => element.id)),
   });
+}
+
+export function practiceChoiceSelectionMode(control: PracticeResponseControl): "single" | "multiple" | null {
+  if (control.interactionType !== "choice_single" && control.interactionType !== "choice_multiple") return null;
+  const model = control.model as BuiltinPracticeControlModel;
+  return model && typeof model === "object" && "kind" in model && model.kind === "choice" ? model.selectionMode : null;
+}
+
+export function practiceOrderingElementIds(control: PracticeResponseControl): readonly string[] | null {
+  if (control.interactionType !== "ordering") return null;
+  const model = control.model as BuiltinPracticeControlModel;
+  return model && typeof model === "object" && "kind" in model && model.kind === "ordering"
+    ? Object.freeze(model.elements.map((element) => element.id))
+    : null;
 }
 
 export function getPracticePrimaryAction(input: Readonly<{

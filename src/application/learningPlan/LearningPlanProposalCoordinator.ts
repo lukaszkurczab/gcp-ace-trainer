@@ -33,7 +33,6 @@ import { projectGoalTargetDate } from "../../domain/goals/goalTargetDateSemantic
 import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import { readActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { getApplicationCurrentTime } from "../trainingLifecycle/applicationLifecycle";
-import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
 import { getTrainingSessionProgress } from "../trainingSessions/sessionDurability";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
@@ -431,7 +430,7 @@ function buildProposalContext(snapshot: LearningPlanInputSnapshot, resolved: Res
   const localToday = localDateFor(now, timezone);
   if (!resolved.planningPolicy || !resolved.planningPolicyIdentity) throw new Error("The exact content successor has no planning policy identity.");
   const evidence = projectLearningEvidence({ profile: resolved.track, attempts: snapshot.attempts, reviews: snapshot.reviews, now });
-  const recommendation = recommendLearningPlanMode({ familyId, trackId: resolved.track.trackId, modes: resolved.track.modes, sessions: snapshot.sessions ?? [], activeSession: snapshot.activeSession ?? null, dueReviewCount: evidence.dueReviews.length });
+  const recommendation = recommendLearningPlanMode({ binding: resolved.runtime.getPlanningModeBinding(), trackId: resolved.track.trackId, modes: resolved.track.modes, sessions: snapshot.sessions ?? [], activeSession: snapshot.activeSession ?? null, dueReviewCount: evidence.dueReviews.length });
   const primary = resolved.track.getMode(recommendation.executionPolicy.practice.modeId);
   const pool = resolved.track.getPool(primary.modeId);
   const packageIdentity = {
@@ -638,7 +637,7 @@ async function validateActiveSession(snapshot: LearningPlanInputSnapshot, resolv
   const matchingAttempts = snapshot.attempts.filter((attempt) => attempt.sessionId === active.id);
   if (matchingAttempts.some((attempt) => attempt.committedAt === undefined)) throw new ActiveSessionPlanningError("active_session_not_indexed");
   try {
-    await new CanonicalTrainingRuntime(resolved.track, familyId).validateResume({ session: active, draft: null });
+    await resolved.runtime.validateResume({ session: active, draft: null });
     getTrainingSessionProgress(active, matchingAttempts);
   } catch {
     throw new ActiveSessionPlanningError("active_session_mode_unavailable");

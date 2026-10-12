@@ -7,7 +7,7 @@ import { getTrainingLifecycleUseCases, simulationHasReviewConflict } from "../..
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { Button, Card, EmptyState, Screen, SessionResultOverview, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
-import { getTrackDisplay } from "../../domain";
+import { getTrackDisplay, type ResolvedContentRef } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { useThemedStyles } from "../../preferences";
@@ -16,7 +16,6 @@ import { formatSessionTopic, normalizeSessionResultDetails } from "./sessionResu
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { getDesignModeTitle, isDesignInterviewModeId } from "../../tracks/design-interview";
 import { isCertificationPracticeModeId } from "../../tracks/certification";
-import { scoreCanonicalQuestion } from "../../content/canonical";
 import { getCertificationExamReviewProjection, getCertificationPracticeReviewProjection } from "../../application/certification";
 import { ReviewCycleConflictNotice } from "../practice/ReviewCycleConflictNotice";
 import { ProfileReadFenceChangedError } from "../../application/profileReadFence";
@@ -82,11 +81,8 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       const certificationTopicId = certificationMode?.selection.kind === "node"
         ? certificationMode.selection.nodeId
         : session.modeId === "certification-diagnostic-baseline" && exact ? exact.track.questions[0]?.nodeId ?? null : null;
-      const certificationQuestions = result.evidence.familyId === "certification" && exact
-        ? session.itemOrder.map((occurrence) => exact.track.getQuestion(occurrence.item.questionId))
-        : [];
-      const certificationMaxPoints = certificationExam?.maxPoints ?? (certificationQuestions.length === session.actualLength && certificationQuestions.every((question) => question !== undefined)
-        ? certificationQuestions.reduce((sum, question) => sum + scoreCanonicalQuestion(question, question.answer).maxPoints, 0)
+      const certificationMaxPoints = certificationExam?.maxPoints ?? (result.evidence.familyId === "certification" && exact
+        ? await getCertificationMaximumPoints(session.itemOrder.map((occurrence) => occurrence.item))
         : null);
       return { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam, ...(reviewConflict ? { reviewConflict: true as const } : {}), certificationPracticeOverallPoints, certificationPracticeReview };
     })()
@@ -180,6 +176,17 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
         : null}
     </Screen>
   );
+}
+
+async function getCertificationMaximumPoints(items: readonly ResolvedContentRef[]): Promise<number | null> {
+  const resolved = await Promise.all(items.map((item) => contentPackageRuntimeOwner.resolveItem(item)));
+  let maximum = 0;
+  for (const item of resolved) {
+    if (item.question.interactionType === "choice_single") maximum += 1;
+    else if (item.question.interactionType === "choice_multiple") maximum += item.interactions.controlIds(item.question.questionId).length;
+    else return null;
+  }
+  return maximum > 0 ? maximum : null;
 }
 
 function CloudDiagnosticReportCard({ report, onRecommend }: Readonly<{

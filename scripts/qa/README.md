@@ -13,6 +13,25 @@ the backend's real parsers and merge-preview functions. It does not contact a
 server, emulator, or production account; this is source-contract evidence, not
 an HTTP or deployed-sync check.
 
+# Content producer candidate → APP runtime consumer
+
+After building a candidate artifact directory with the content repository's
+`scripts/build.mjs build-all`, pass that directory to the APP's real canonical
+runtime-catalog builder:
+
+```sh
+node --import tsx scripts/qa/contentCandidateRuntimeConsume.mjs \
+  --candidate-dir /path/to/private/content-candidate-output
+```
+
+The check requires exactly the nine artifacts and lock, then validates their
+identities, pins, and planning-policy predecessor relationships through the
+same runtime-catalog implementation used by the APP. It prints only aggregate
+track and question counts. It reads the candidate and the APP's generated
+successor ledger; it does not write either repository, start the app, or contact
+external services. This is source consumer evidence, not a bundle or device
+launch check.
+
 # Native Goal/Plan recovery readback
 
 This read-only probe compares a private snapshot captured at the controlled

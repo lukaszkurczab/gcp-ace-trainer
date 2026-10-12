@@ -155,11 +155,12 @@ test("the headerless practice route owns every Algorithms and Certification rend
     return file.slice(startIndex, endIndex);
   };
 
-  assert.equal(algorithms.match(/<AppShellHeader\b/g)?.length, 4);
+  assert.equal(algorithms.match(/<AppShellHeader\b/g)?.length, 5);
   assert.match(branch(algorithms, "if (!algorithmsMode)", "if (algorithmsMode ==="), sharedBackHeader, "Algorithms unsupported/misroute");
   assert.match(branch(algorithms, "if (algorithmsMode ===", "if (!state)"), sharedBackHeader, "Interview Simulation misroute");
   assert.match(branch(algorithms, 'if (state.kind === "active_session_conflict")', 'if (state.kind === "unavailable")'), sharedBackHeader, "active-session conflict");
   assert.match(branch(algorithms, 'if (state.kind === "unavailable")', "const sessionState"), sharedBackHeader, "Algorithms unavailable");
+  assert.match(branch(algorithms, "if (!activeRendererBindings.has", "const effectiveLocalResponse"), /title=\{t\("Practice interaction unavailable"\)\}/, "unknown interaction fails closed");
   assert.match(algorithms, /if \(!state\) return <PracticeSessionSurface[\s\S]*?phase="preparing" \/>/);
   assert.match(algorithms, /return \(\s*<PracticeSessionSurface[\s\S]*?phase=\{phase\}/);
   assert.match(practiceSurface, /return \(\s*<SessionShell/);

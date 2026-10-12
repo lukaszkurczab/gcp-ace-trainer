@@ -15,22 +15,23 @@ import {
   type PreparedSession,
 } from "../trainingLifecycle";
 import { DESIGN_INTERVIEW_MODE_IDS, type DesignInterviewModeId } from "../../tracks/design-interview/designModes";
-import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
-import { projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages, projectCanonicalOrderingFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
-import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
-import { projectCanonicalQuestionInSessionOrder } from "../canonical/canonicalOptionOrder";
+import type { JsonValue } from "../../content/canonical";
+import type { CanonicalChoiceFeedbackState } from "../canonical/canonicalInteractionPresentation";
+import { projectCanonicalSourceEvidence, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
+import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 
 type DesignOpenInput = Readonly<{ modeId: DesignInterviewModeId; requestedLength?: number; source?: string; expectedSessionId?: string; trackId: TrackId }>;
 export type DesignInterviewPracticeProjection = Readonly<{
   session: TrainingSession;
-  question: Question;
+  question: TrainingQuestionSummary;
+  interaction: Readonly<{ interactionType: string; model: unknown }>;
   occurrenceId: string;
   ordinal: number;
   total: number;
   elapsedForegroundMs: number;
   operation: PracticeDurableOperationState;
-  response: Readonly<{ source: "committed" | "materialized"; value: CanonicalQuestionResponse }> | null;
-  feedback: Readonly<{ controls: ReturnType<typeof projectCanonicalChoiceFeedbackControls>; result: AttemptResultKind; reason: string; details: Question["feedback"]["details"]; sources: readonly CanonicalSourceLink[]; messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[] }> | null;
+  response: Readonly<{ source: "committed" | "materialized"; value: unknown }> | null;
+  feedback: Readonly<{ controls: readonly Readonly<{ id: string; state: CanonicalChoiceFeedbackState }>[]; result: AttemptResultKind; reason: string; details: JsonValue; sources: readonly CanonicalSourceLink[]; messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[] }> | null;
 }>;
 export type DesignInterviewOpenResult = Readonly<{ kind: "ready"; projection: DesignInterviewPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type DesignInterviewAbandonmentResult = Readonly<{ kind: "abandoned"; session: TrainingSession }> | Readonly<{ kind: "retry_same_command"; retry: "abandonment" | "foreground_checkpoint"; session: TrainingSession }> | Readonly<{ kind: "reconcile_required"; expectedSessionId: string }> | Readonly<{ kind: "recovery_required"; recovery: "abandonment" | "active_operation"; expectedSessionId: string }>;
@@ -75,24 +76,33 @@ export async function getDesignInterviewPracticeProjection(): Promise<DesignInte
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId) ?? null;
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const responseAttempt = materializedAttempt ?? committedAttempt;
-  const question = projectCanonicalQuestionInSessionOrder(
-    await contentPackageRuntimeOwner.resolveItem(occurrence.item),
-    session.optionOrderByOccurrence[occurrence.occurrenceId],
-  );
-  const messages = materializedAttempt
-    ? question.interaction.type === "choice_single" || question.interaction.type === "choice_multiple"
-      ? projectCanonicalChoiceFeedbackMessages(question, materializedAttempt.response as CanonicalQuestionResponse)
-      : projectCanonicalOrderingFeedbackMessages(question, materializedAttempt.response)
-    : undefined;
-  const feedback = materializedAttempt ? Object.freeze({ controls: projectCanonicalChoiceFeedbackControls(question, materializedAttempt.response as CanonicalQuestionResponse), result: materializedAttempt.result.kind, reason: question.feedback.reason, details: question.feedback.details, sources: projectCanonicalSourceLinks(question), ...(messages === undefined ? {} : { messages }) }) : null;
+  const exact = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+  const question = exact.question;
+  const interaction = exact.interactions.present(question.questionId, responseAttempt?.response ?? null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
+  let feedback: DesignInterviewPracticeProjection["feedback"] = null;
+  if (materializedAttempt) {
+    const projected = exact.interactions.projectFeedback(question.questionId, materializedAttempt.response);
+    if (!projected) throw new TrainingApplicationFailure("verification_failure", "The exact Design interaction feedback is unavailable.");
+    feedback = Object.freeze({ controls: projectInteractionControls(exact.interactions.projectDiagnostics(question.questionId, materializedAttempt.response)), result: materializedAttempt.result.kind, reason: projected.reason, details: projected.details, sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback: projected }), ...(projected.messages === undefined ? {} : { messages: projected.messages }) });
+  }
   const [operation, time] = await Promise.all([lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)), getForegroundSessionTimerFacade().projection(session)]);
-  const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response as CanonicalQuestionResponse }) : null;
-  return Object.freeze({ session, question, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, elapsedForegroundMs: time.elapsedForegroundMs, operation, response, feedback });
+  const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response }) : null;
+  return Object.freeze({ session, question, interaction, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, elapsedForegroundMs: time.elapsedForegroundMs, operation, response, feedback });
 }
 
-export async function submitDesignInterviewPracticeResponse(response: CanonicalQuestionResponse): Promise<void> {
-  await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireActiveDesignSession());
+export async function submitDesignInterviewPracticeResponse(response: unknown): Promise<void> {
+  const session = await requireActiveDesignSession();
+  const occurrence = session.itemOrder[session.currentItemIndex];
+  if (!occurrence) throw new TrainingApplicationFailure("missing_content", "Design Interview question is unavailable.");
+  const exact = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+  if (!exact.interactions.isComplete(exact.question.questionId, response)) throw new TrainingApplicationFailure("invalid_response", "The exact Design interaction response is incomplete or invalid.");
+  await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
   await getTrainingLifecycleUseCases().submitPracticeResponse(response);
+}
+
+function projectInteractionControls(value: unknown): readonly Readonly<{ id: string; state: CanonicalChoiceFeedbackState }>[] {
+  if (!Array.isArray(value) || value.some((entry) => !entry || typeof entry !== "object" || typeof (entry as { id?: unknown }).id !== "string" || !["correct", "incorrect", "omitted_correct", "neutral"].includes(String((entry as { state?: unknown }).state)))) throw new TrainingApplicationFailure("verification_failure", "Design interaction diagnostics are unavailable.");
+  return Object.freeze(value.map((entry) => Object.freeze({ id: (entry as { id: string }).id, state: (entry as { state: CanonicalChoiceFeedbackState }).state })));
 }
 export async function retryDesignInterviewPracticeResponse(): Promise<void> { await getTrainingLifecycleUseCases().retryPracticeSubmission(); }
 

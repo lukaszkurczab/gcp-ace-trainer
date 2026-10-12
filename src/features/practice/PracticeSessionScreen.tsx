@@ -11,6 +11,7 @@ import {
   completeAlgorithmsPracticeSession,
   enterAlgorithmsPracticeForeground,
   getAlgorithmsPracticeProjection,
+  isAlgorithmsPracticeInteractionResponseComplete,
   leaveAlgorithmsPracticeForeground,
   recoverAlgorithmsPracticeOperation,
   recoverAlgorithmsPracticeCompletion,
@@ -22,6 +23,7 @@ import {
   subscribeAlgorithmsPracticeProjectionRefresh,
   type AlgorithmsPracticeProjection,
   submitAlgorithmsPracticeResponse,
+  submitAlgorithmsPracticeInteractionResponse,
 } from "../../application/coding-interview";
 import { TrainingApplicationFailure, type PracticeDurableOperationState } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
@@ -35,12 +37,20 @@ import { getAlgorithmMode, isAlgorithmModeId, type AlgorithmResponse } from "../
 import { ALGORITHM_MODE_IDS } from "../../tracks/coding-interview/domain";
 import { spacing } from "../../theme";
 import { PracticeSessionSurface } from "./PracticeSessionSurface";
+import { builtinPracticeResponseRenderers } from "./PracticeResponseControls";
+import { createPracticeResponseRendererRegistry, type PracticeResponseRenderer } from "./practiceResponseRendererRegistry";
 import {
   buildPracticeResponseControl,
   getPracticePrimaryAction,
+  allowsPracticeResponseEditing,
   noticeForPracticeCompletionCheckpoint,
   noticeForPracticeOperation,
+  practiceChoiceSelectionMode,
+  isPracticeResponseOwnerCurrent,
+  practiceOrderingElementIds,
   resolvePracticeLocalResponse,
+  toggleDimensionSelection,
+  hasBuiltinPracticeControlProjector,
   describeSessionPreparationFailure,
   type PracticeLocalResponse,
   type PracticeSurfacePhase,
@@ -53,7 +63,7 @@ import { DesignInterviewPracticeScreen } from "./DesignInterviewPracticeScreen";
 import { canonicalResponseToPracticeLocalResponse } from "./canonicalQuestionViewModel";
 
 
-type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
+type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION> & Readonly<{ additionalResponseRendererBindings?: ReadonlyMap<string, PracticeResponseRenderer> }>;
 type ViewState =
   | Readonly<{ kind: "session"; projection: AlgorithmsPracticeProjection }>
   | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>
@@ -61,7 +71,7 @@ type ViewState =
 type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeAlgorithmsPracticeSession>>, { kind: "verified" }>;
 
 /** Canonical Algorithms Practice runner. It renders application projections and sends only facade commands. */
-export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
+export function PracticeSessionScreen({ navigation, route, additionalResponseRendererBindings }: PracticeSessionScreenProps) {
   if (getTrackRegistration(route.params.trackId).familyId === "certification" && (route.params.mode === "certification-diagnostic-baseline" || route.params.mode === "certification-focus-practice" || route.params.mode === "certification-scenario-practice" || route.params.mode === "certification-weak-area-review" || route.params.mode === "certification-mixed-practice" || route.params.mode === "certification-quick-review")) {
     return <CertificationPracticeSessionScreen navigation={navigation} route={route} />;
   }
@@ -72,6 +82,8 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const { t } = useTranslation("common");
   const [state, setState] = useState<ViewState | null>(null);
   const [localResponse, setLocalResponse] = useState<PracticeLocalResponse>(null);
+  const [interactionResponse, setInteractionResponse] = useState<unknown>(null);
+  const [interactionResponseComplete, setInteractionResponseComplete] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [completionFailure, setCompletionFailure] = useState<CompletionFailure | null>(null);
   const [completionOperation, setCompletionOperation] = useState<Extract<PracticeDurableOperationState, { kind: "completing" | "completion_failed" | "completed" }> | null>(null);
@@ -79,6 +91,8 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const permitRouteExit = useRef(false);
   const pendingRouteAction = useRef<NavigationAction | null>(null);
   const actionPending = useRef(false);
+  const interactionResponseValidation = useRef(0);
+  const interactionResponseOwner = useRef<string | null>(null);
   const [pendingPhase, setPendingPhase] = useState<PracticeSurfacePhase | null>(null);
 
   usePreventRemove(!permitRouteExit.current && state?.kind === "session", ({ data }) => {
@@ -101,6 +115,10 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     let live = true;
     setState(null);
     setLocalResponse(null);
+    setInteractionResponse(null);
+    interactionResponseOwner.current = null;
+    interactionResponseValidation.current += 1;
+    setInteractionResponseComplete(false);
     setSubmissionError(null);
     setCompletionFailure(null);
     setCompletionOperation(null);
@@ -188,6 +206,8 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   if (state.kind === "unavailable") return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Practice session unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   const sessionState = state;
   const projection = sessionState.projection;
+  const currentResponseOwner = practiceResponseEventOwner(projection);
+  if (interactionResponseOwner.current === null) interactionResponseOwner.current = currentResponseOwner;
   const retryFrozenResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction === "retry_same_command";
   const frozenPracticeResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction !== "submit_again";
   const renderedCompletionOperation = completionFailure?.kind === "retry_completion" || completionFailure?.kind === "recover_completion" ? completionFailure.operation : completionOperation;
@@ -199,32 +219,50 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       : completionFailure?.kind === "recover_final_checkpoint"
         ? noticeForPracticeCompletionCheckpoint("recover")
         : noticeForPracticeOperation(renderedCompletionOperation ?? projection.operation);
-  const responseControl = buildPracticeResponseControl({
-    choiceSelectionMode: projection.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single",
-    feedbackControls: projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" ? projection.feedback?.controls : undefined,
-    localResponse: localResponse ?? canonicalResponseToPracticeLocalResponse(projection.response?.value ?? null),
-    renderer: projection.interaction.renderer,
-  });
+  const builtinControl = hasBuiltinPracticeControlProjector(projection.interaction.interactionType);
+  const activeRendererBindings = additionalResponseRendererBindings
+    ? createPracticeResponseRendererRegistry([...builtinPracticeResponseRenderers, ...additionalResponseRendererBindings])
+    : builtinPracticeResponseRenderers;
+  const responseControl = builtinControl ? buildPracticeResponseControl({
+      choiceSelectionMode: projection.interaction.interactionType === "choice_multiple" ? "multiple" : "single",
+      feedbackControls: projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" ? projection.feedback?.controls : undefined,
+      localResponse: localResponse ?? canonicalResponseToPracticeLocalResponse(projection.response?.value ?? null),
+      renderer: projection.interaction,
+    }) : projection.interaction;
+  if (!activeRendererBindings.has(responseControl.interactionType)) {
+    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Practice interaction unavailable")} description={t("This practice interaction is not available in this version.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  }
   const effectiveLocalResponse = resolvePracticeLocalResponse(localResponse, responseControl);
-  const primaryAction = completionFailure ? null : getPracticePrimaryAction({ feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode), hasLocalResponse: effectiveLocalResponse !== null && (!frozenPracticeResponse || retryFrozenResponse), isFinalPosition: projection.position.current === projection.position.total, phase });
+  const primaryAction = completionFailure ? null : getPracticePrimaryAction({ feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode), hasLocalResponse: (builtinControl ? effectiveLocalResponse !== null : interactionResponseComplete) && (!frozenPracticeResponse || retryFrozenResponse), isFinalPosition: projection.position.current === projection.position.total, phase });
 
   async function refresh() {
+    if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current)) return;
     const next = await getAlgorithmsPracticeProjection();
-    if (next.operation.kind === "unanswered" || next.operation.kind === "submit_journal_failed") {
+    if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current)) return;
+    const sameResponseOwner = practiceResponseOwner(next) === practiceResponseOwner(projection);
+    // Fence queued handlers before React schedules the projection render.
+    interactionResponseOwner.current = practiceResponseEventOwner(next);
+    if (sameResponseOwner && (next.operation.kind === "unanswered" || next.operation.kind === "submit_journal_failed")) {
       // A pre-journal retry preserves the user-owned editable response. Every
       // committed response is supplied by the projection, never guessed here.
-    } else setLocalResponse(null);
+    } else {
+      setLocalResponse(null);
+      setInteractionResponse(null);
+      interactionResponseValidation.current += 1;
+      setInteractionResponseComplete(false);
+    }
     setState({ kind: "session", projection: next });
   }
 
   async function submit() {
-    if (actionPending.current || !effectiveLocalResponse || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
+    if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || (builtinControl ? !effectiveLocalResponse : !interactionResponseComplete) || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
     actionPending.current = true;
     setPendingPhase("submitting_before_journal");
     setSubmissionError(null);
     try {
       if (retryFrozenResponse) await retryAlgorithmsPracticeResponse();
-      else await submitAlgorithmsPracticeResponse(effectiveLocalResponse);
+      else if (builtinControl && effectiveLocalResponse) await submitAlgorithmsPracticeResponse(effectiveLocalResponse);
+      else await submitAlgorithmsPracticeInteractionResponse(interactionResponse);
       await refresh();
     } catch (error) {
       setSubmissionError(describePracticeSubmissionFailure(error, t));
@@ -236,7 +274,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }
 
   async function advanceOrFinish() {
-    if (actionPending.current || (projection.operation.kind !== "feedback" && projection.operation.kind !== "advance_failed")) return;
+    if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || (projection.operation.kind !== "feedback" && projection.operation.kind !== "advance_failed")) return;
     actionPending.current = true;
     setSubmissionError(null);
     setPendingPhase(projection.position.current === projection.position.total ? "completing" : "advancing");
@@ -275,12 +313,14 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       if (completionFailure.kind === "retry_final_checkpoint") {
         const next = await retryAlgorithmsPracticeCompletionCheckpoint(completionFailure.expectedSessionId);
         setCompletionFailure(null);
+        interactionResponseOwner.current = practiceResponseEventOwner(next);
         setState({ kind: "session", projection: next });
         return;
       }
       if (completionFailure.kind === "recover_final_checkpoint") {
         const next = await recoverAlgorithmsPracticeCompletionCheckpoint(completionFailure.expectedSessionId);
         setCompletionFailure(null);
+        interactionResponseOwner.current = practiceResponseEventOwner(next);
         setState({ kind: "session", projection: next });
         return;
       }
@@ -307,6 +347,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     try {
       await abandonAlgorithmsSession();
       const projection = await loadOrStartAlgorithmsPractice(route.params, requestedMode);
+      interactionResponseOwner.current = practiceResponseEventOwner(projection);
       setState({ kind: "session", projection });
     } catch (error) {
       setState(error instanceof ActiveAlgorithmsSessionConflict
@@ -363,11 +404,11 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       modeLabel={t(getAlgorithmMode(algorithmsMode).title)}
       notice={notice}
       onAbandon={() => void abandon()}
-      onChoicePress={(optionId) => { setSubmissionError(null); setLocalResponse((current) => toggleChoice(current, optionId, responseControl.kind === "choice" ? responseControl.selectionMode : "single")); }}
-      onComplexityValuePress={(dimensionId, value) => { setSubmissionError(null); setLocalResponse((current) => setComplexityValue(current, dimensionId, value)); }}
+      onChoicePress={(optionId) => { if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || !allowsPracticeResponseEditing(phase) || frozenPracticeResponse) return; setSubmissionError(null); setLocalResponse((current) => toggleChoice(current, optionId, practiceChoiceSelectionMode(responseControl) ?? "single")); }}
+      onComplexityValuePress={(dimensionId, value) => { if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || !allowsPracticeResponseEditing(phase) || frozenPracticeResponse) return; setSubmissionError(null); setLocalResponse((current) => setComplexityValue(current, dimensionId, value)); }}
       onConfirmLeave={leave}
       onDismissExit={() => { pendingRouteAction.current = null; setExit("none"); }}
-      onOrderingMove={(elementId, direction) => { setSubmissionError(null); setLocalResponse((current) => moveOrderingElement(current, elementId, direction, responseControl)); }}
+      onOrderingMove={(elementId, direction) => { if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || !allowsPracticeResponseEditing(phase) || frozenPracticeResponse) return; setSubmissionError(null); setLocalResponse((current) => moveOrderingElement(current, elementId, direction, responseControl)); }}
       onPrimaryAction={() => void (retryFrozenResponse ? submit() : frozenPracticeResponse ? undefined : (phase === "unanswered" || phase === "submit_journal_failed") ? submit() : advanceOrFinish())}
       onRequestLeave={() => { pendingRouteAction.current = null; setExit("leave"); }}
       onRetry={completionFailure ? () => void retryOrRecoverCompletion() : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? () => void recover() : undefined}
@@ -376,7 +417,21 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
       question={{ constraints: projection.constraints, itemId: projection.item.questionId, prompt: projection.prompt, responseControl }}
-      responseEditable={!frozenPracticeResponse}
+      responseRendererBindings={activeRendererBindings}
+      interactionResponse={interactionResponse ?? projection.response?.value ?? null}
+      onInteractionResponseChange={async (response) => {
+        if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || !allowsPracticeResponseEditing(phase) || frozenPracticeResponse) return;
+        const validation = ++interactionResponseValidation.current;
+        setInteractionResponse(response);
+        setInteractionResponseComplete(false);
+        try {
+          const complete = await isAlgorithmsPracticeInteractionResponseComplete(response);
+          if (interactionResponseValidation.current === validation && isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current)) setInteractionResponseComplete(complete);
+        } catch {
+          if (interactionResponseValidation.current === validation && isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current)) setInteractionResponseComplete(false);
+        }
+      }}
+      responseEditable={allowsPracticeResponseEditing(phase) && !frozenPracticeResponse}
       retryLabel={completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Restore session" : undefined}
       retryVariant={completionFailure || ("error" in projection.operation && projection.operation.error.allowedAction === "recover") ? "primary" : "secondary"}
       runtimeIdentity={{
@@ -392,6 +447,14 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.elapsedForegroundMs)}`, label: formatElapsed(projection.elapsedForegroundMs) }}
     />
   );
+}
+
+function practiceResponseOwner(projection: AlgorithmsPracticeProjection): string {
+  return [projection.session.id, projection.occurrenceId, projection.item.trackId, projection.item.contentVersion, projection.item.artifactSha256, projection.item.questionId].join("\0");
+}
+
+function practiceResponseEventOwner(projection: AlgorithmsPracticeProjection): string {
+  return `${practiceResponseOwner(projection)}\0${projection.operation.kind}`;
 }
 
 async function loadOrStartAlgorithmsPractice(params: PracticeSessionRouteParams, modeId: Exclude<typeof ALGORITHM_MODE_IDS[keyof typeof ALGORITHM_MODE_IDS], typeof ALGORITHM_MODE_IDS.interviewSimulation>) {
@@ -442,12 +505,13 @@ function toggleChoice(current: PracticeLocalResponse, optionId: string, selectio
 
 function setComplexityValue(current: PracticeLocalResponse, dimensionId: string, value: string): PracticeLocalResponse {
   const selected = current?.kind === "complexity" ? current.selectedValuesByDimension : {};
-  return { kind: "complexity", selectedValuesByDimension: { ...selected, [dimensionId]: value } };
+  return { kind: "complexity", selectedValuesByDimension: toggleDimensionSelection(selected, dimensionId, value) };
 }
 
 function moveOrderingElement(current: PracticeLocalResponse, elementId: string, direction: "up" | "down", control: ReturnType<typeof buildPracticeResponseControl>): PracticeLocalResponse {
-  if (control.kind !== "ordering") return current;
-  const order = current?.kind === "ordering" ? [...current.orderedSubgoalIds] : control.elements.map((element) => element.id);
+  const currentOrder = practiceOrderingElementIds(control);
+  if (!currentOrder) return current;
+  const order = current?.kind === "ordering" ? [...current.orderedSubgoalIds] : [...currentOrder];
   const index = order.indexOf(elementId);
   const target = direction === "up" ? index - 1 : index + 1;
   if (index < 0 || target < 0 || target >= order.length) return { kind: "ordering", orderedSubgoalIds: order };

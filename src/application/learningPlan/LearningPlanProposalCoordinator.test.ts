@@ -17,7 +17,6 @@ import { STORAGE_KEYS } from "../../storage/keys";
 import { saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { journal } from "../../testing/journalTestSupport";
-import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
 import { homePlanSnapshotReader } from "../homePlanSnapshotReader";
 import { estimatePlanningWork } from "../../domain/learning/planningWorkEstimate";
 import { estimateNextSessionTime } from "./nextSessionTimeEstimate";
@@ -242,7 +241,7 @@ test("an active diagnostic resumes its persisted legal 40-question session with 
   const f = await fixture();
   const diagnostic = f.resolved.track.getMode("certification-diagnostic-baseline");
   if (diagnostic.selection.kind !== "exact_ordered_questions") throw new Error("Expected the canonical exact diagnostic pool.");
-  const prepared = await new CanonicalTrainingRuntime(f.resolved.track).prepare({ trackId: TRACK, modeId: diagnostic.modeId,
+  const prepared = await f.resolved.runtime.prepare({ trackId: TRACK, modeId: diagnostic.modeId,
     request: { sessionId: "active-gcp-diagnostic", requestedLength: 40 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z" });
   const activeSession = createTrainingSession({ ...prepared.session, currentItemIndex: 4, activeForegroundMs: 10 * 60_000 });
   const ordered = activeSession.itemOrder;
@@ -319,7 +318,7 @@ test("an active Coding session resumes its exact 10-question pin and does not co
   await saveGoalSnapshot(createDefaultGoal(requireGoalPolicy(trackId)), null, requireGoalPolicy(trackId));
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "coding_interview");
   const mode = resolved.track.getMode("coding-interview-guided-practice");
-  const prepared = await new CanonicalTrainingRuntime(resolved.track, "coding_interview").prepare({
+  const prepared = await resolved.runtime.prepare({
     trackId, modeId: mode.modeId, request: { sessionId: "active-coding-session", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z",
   });
   const activeSession = prepared.session;
@@ -384,9 +383,9 @@ test("an active Coding session resumes its exact 10-question pin and does not co
 test("an indexed active session without the canonical continuation decision is unavailable", async () => {
   const f = await fixture();
   const diagnostic = f.resolved.track.getMode("certification-diagnostic-baseline");
-  const prepared = await new CanonicalTrainingRuntime(f.resolved.track, "certification").prepare({ trackId: TRACK, modeId: diagnostic.modeId,
+  const prepared = await f.resolved.runtime.prepare({ trackId: TRACK, modeId: diagnostic.modeId,
     request: { sessionId: "unresolved-active-diagnostic", requestedLength: 40 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z" });
-  const recommendation = recommendLearningPlanMode({ familyId: "certification", trackId: TRACK, modes: f.resolved.track.modes, sessions: [], dueReviewCount: 0 });
+  const recommendation = recommendLearningPlanMode({ binding: f.resolved.runtime.getPlanningModeBinding(), trackId: TRACK, modes: f.resolved.track.modes, sessions: [], dueReviewCount: 0 });
   const estimate = estimateNextSessionTime({ track: f.resolved.track, planningPolicy: f.resolved.planningPolicy,
     planningPolicyIdentity: f.resolved.planningPolicyIdentity, recommendation, sessions: [prepared.session], attempts: [], reviews: [], now: "2026-10-02T12:00:00.000Z" });
   assert.deepEqual(estimate, { kind: "unavailable", reason: "invalid_response_count", scopeRefs: [] });
@@ -395,7 +394,7 @@ test("an indexed active session without the canonical continuation decision is u
 test("a session active on another track blocks a new recommendation without changing that session", async () => {
   const f = await fixture();
   const diagnostic = f.resolved.track.getMode("certification-diagnostic-baseline");
-  const prepared = await new CanonicalTrainingRuntime(f.resolved.track).prepare({ trackId: TRACK, modeId: diagnostic.modeId,
+  const prepared = await f.resolved.runtime.prepare({ trackId: TRACK, modeId: diagnostic.modeId,
     request: { sessionId: "active-gcp-other-track", requestedLength: 40 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z" });
   await saveTrainingSession(prepared.session, productionTrackAdmissionContext);
   const codingTrack = "coding-interview-dsa-problem-solving" as const;
@@ -419,7 +418,7 @@ test("a session active on another track blocks a new recommendation without chan
 test("an active session with a stale exact artifact pin is explicitly unavailable and never falls back to a new session", async () => {
   const f = await fixture();
   const diagnostic = f.resolved.track.getMode("certification-diagnostic-baseline");
-  const prepared = await new CanonicalTrainingRuntime(f.resolved.track).prepare({ trackId: TRACK, modeId: diagnostic.modeId,
+  const prepared = await f.resolved.runtime.prepare({ trackId: TRACK, modeId: diagnostic.modeId,
     request: { sessionId: "active-gcp-stale-pin", requestedLength: 40 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z" });
   const staleSession = createTrainingSession({ ...prepared.session, contentVersion: "stale-training-version",
     itemOrder: prepared.session.itemOrder.map((occurrence) => ({ ...occurrence, item: createResolvedContentRef({ ...occurrence.item, contentVersion: "stale-training-version" }) })) });
@@ -441,7 +440,7 @@ test("an active due-review continuation coalesces its queue entry and preserves 
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   await saveGoalSnapshot(createDefaultGoal(requireGoalPolicy(trackId)), null, requireGoalPolicy(trackId));
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "coding_interview");
-  const runtime = new CanonicalTrainingRuntime(resolved.track, "coding_interview");
+  const runtime = resolved.runtime;
   const practiceMode = resolved.track.getMode("coding-interview-guided-practice");
   const reviewMode = resolved.track.getMode("coding-interview-weak-area-review");
   const sourcePrepared = await runtime.prepare({ trackId, modeId: practiceMode.modeId,
@@ -491,7 +490,7 @@ test("Home keeps the exact active training pin after an accepted plan revision",
   const goalSnapshot = await saveGoalSnapshot(createDefaultGoal(requireGoalPolicy(trackId)), null, requireGoalPolicy(trackId));
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "coding_interview");
   if (!resolved.planningPolicyIdentity) throw new Error("Expected the current planning policy identity.");
-  const executionPolicy = recommendLearningPlanMode({ familyId: "coding_interview", trackId, modes: resolved.track.modes, sessions: [], dueReviewCount: 0 }).executionPolicy;
+  const executionPolicy = recommendLearningPlanMode({ binding: resolved.runtime.getPlanningModeBinding(), trackId, modes: resolved.track.modes, sessions: [], dueReviewCount: 0 }).executionPolicy;
   const createdAt = "2026-10-01T12:00:00.000Z";
   const firstPlan = normalizeLearningPlan({ schemaVersion: 2, planId: "active-session-replan", trackId, goalRevision: goalSnapshot.revision, status: "accepted",
     timezone: "Europe/Warsaw", contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256, minutesPerStudyDay: 60,
@@ -499,7 +498,7 @@ test("Home keeps the exact active training pin after an accepted plan revision",
     planRevision: 1, commandId: "active-session-replan:first", slots: [{ slotId: createLearningPlanSlotId("active-session-replan:first-slot"), day: "fri", localTime: "18:00", sessionLength: 10 }] });
   const firstPlanSnapshot = saveLearningPlanAtomically({ policy: requireGoalPolicy(firstPlan.trackId), plan: firstPlan, expectedGoalRevision: goalSnapshot.revision, expectedPlanStorageRevision: null });
   const mode = resolved.track.getMode("coding-interview-guided-practice");
-  const prepared = await new CanonicalTrainingRuntime(resolved.track, "coding_interview").prepare({ trackId, modeId: mode.modeId,
+  const prepared = await resolved.runtime.prepare({ trackId, modeId: mode.modeId,
     request: { sessionId: "pinned-across-plan-revisions", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z" });
   await saveTrainingSession(prepared.session, productionTrackAdmissionContext);
   const firstOccurrence = prepared.session.itemOrder[0]!;

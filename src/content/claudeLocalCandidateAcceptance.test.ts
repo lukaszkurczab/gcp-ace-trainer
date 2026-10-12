@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { projectCanonicalSourceLinks } from "../application/canonical/canonicalSourceLinks";
-import { CanonicalTrainingRuntime } from "../application/canonical/CanonicalTrainingRuntime";
+import { createCanonicalTrainingFamilyRuntime } from "../application/canonicalTrainingFamilyComposition";
 import { evaluatePackageCompletion } from "../domain/learning/packageCompletionRule";
 import { createTrainingAttempt } from "../domain/learning/trainingAttempt";
 import type { TrackId } from "../domain/learning/trackIdentity";
@@ -39,7 +39,7 @@ test("CC05 formal bundled Claude exposes both learning resources and all 53 requ
     assert.equal(new URL(links[1]!.url).hostname, "anthropic-partners.skilljar.com");
     assert.ok(links[1]?.section);
   }
-  const runtime = new CanonicalTrainingRuntime(track);
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
   for (const [index, unit] of units.entries()) {
     const session = await runtime.prepare({ trackId: TRACK, modeId: "certification-focus-practice", request: { sessionId: `cc05-${index}`, requestedLength: 10, mentalUnitId: unit.mentalUnitId }, attempts: [], reviews: [], now: NOW });
     assert.ok(session.session.actualLength >= 4, unit.mentalUnitId);

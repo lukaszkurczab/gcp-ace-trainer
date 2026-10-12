@@ -46,7 +46,7 @@ async function buildReviewViewItem(entry: ReviewQueueEntry, now: string): Promis
 }
 async function resolvePrompt(entry: ReviewQueueEntry): Promise<string> {
   const item = await contentPackageRuntimeOwner.resolveItem(entry.sourceItem);
-  return item.prompt;
+  return item.question.prompt;
 }
 function dedupeRefs(refs: readonly EvidenceRef[]): EvidenceRef[] { return [...new Map(refs.map((ref) => [`${ref.axisId}:${ref.nodeId}:${ref.role ?? ""}`, ref])).values()]; }
 

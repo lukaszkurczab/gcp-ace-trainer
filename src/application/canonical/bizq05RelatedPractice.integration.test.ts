@@ -67,7 +67,12 @@ test("BIZQ-05 GCP candidate relation metadata reaches actual Focus selection, im
     const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(GCP_TRACK_ID, "certification");
     assert.deepEqual(resolved.track.trainingIdentity, candidateTrack.trainingIdentity);
     assert.deepEqual(resolved.planningPolicyIdentity, candidateTrack.planningPolicyIdentity);
-    const { track, runtime } = resolved;
+    const { runtime } = resolved;
+    // This integration assertion uses the exact candidate artifact built above
+    // for authored-answer fixtures; application callers still receive only the
+    // neutral summary and exact interaction port from the owner.
+    const track = candidateTrack;
+    const trainingIdentity = track.trainingIdentity ?? Object.freeze({ contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 });
     const focus = track.getMode(GCP_FOCUS_MODE_ID);
     assert.equal(focus.selection.kind, "node");
     if (focus.selection.kind !== "node") throw new Error("GCP Focus must use the existing node selection.");
@@ -103,8 +108,8 @@ test("BIZQ-05 GCP candidate relation metadata reaches actual Focus selection, im
       sessionId,
       requestedLength,
       mentalUnitId,
-      expectedContentVersion: track.contentVersion,
-      expectedArtifactSha256: track.artifactSha256,
+      expectedContentVersion: trainingIdentity.contentVersion,
+      expectedArtifactSha256: trainingIdentity.artifactSha256,
     });
 
     const historyPlan = await runtime.prepare({
@@ -126,8 +131,8 @@ test("BIZQ-05 GCP candidate relation metadata reaches actual Focus selection, im
     const samePinHistory = [historySubmission.attempt];
     const samePinSelected = selectPracticeQuestions(focusPool, samePinHistory, {
       trackId: track.trackId,
-      contentVersion: track.contentVersion,
-      artifactSha256: track.artifactSha256,
+      contentVersion: trainingIdentity.contentVersion,
+      artifactSha256: trainingIdentity.artifactSha256,
     }, 20);
     assert.equal(samePinSelected.length, 20);
     assert.equal(samePinSelected.some((question) => question.questionId === nearVariantPair.rightId), false, "an exact-pin peer history must defer the near variant from a full 22-item pool");
@@ -152,12 +157,12 @@ test("BIZQ-05 GCP candidate relation metadata reaches actual Focus selection, im
     }] as readonly TrainingAttempt<unknown>[];
     const foreignPinSelected = selectPracticeQuestions(focusPool, foreignPinHistory, {
       trackId: track.trackId,
-      contentVersion: track.contentVersion,
-      artifactSha256: track.artifactSha256,
+      contentVersion: trainingIdentity.contentVersion,
+      artifactSha256: trainingIdentity.artifactSha256,
     }, 20);
     assert.deepEqual(
       foreignPinSelected.map((question) => question.questionId),
-      selectPracticeQuestions(focusPool, [], { trackId: track.trackId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 }, 20).map((question) => question.questionId),
+      selectPracticeQuestions(focusPool, [], { trackId: track.trackId, ...trainingIdentity }, 20).map((question) => question.questionId),
       "history from a previous artifact pin must not affect candidate selection",
     );
 
@@ -192,9 +197,9 @@ test("BIZQ-05 GCP candidate relation metadata reaches actual Focus selection, im
       attempts,
       resolveQuestion: async (item) => {
         assert.equal(item.trackId, track.trackId);
-        assert.equal(item.contentVersion, track.contentVersion);
-        assert.equal(item.artifactSha256, track.artifactSha256);
-        return track.getQuestion(item.questionId)!;
+        assert.equal(item.contentVersion, trainingIdentity.contentVersion);
+        assert.equal(item.artifactSha256, trainingIdentity.artifactSha256);
+        return contentPackageRuntimeOwner.resolveItem(item);
       },
       result: completed.result,
       session: completed.session as CompletedTrainingSession,
