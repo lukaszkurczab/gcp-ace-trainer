@@ -20,10 +20,17 @@ function chapterCompletion(qualifyingAttemptCount: number, quality: number | nul
   const requiredAttemptCount = 20;
   const completed = qualifyingAttemptCount >= requiredAttemptCount && quality !== null && quality >= 0.8;
   const reason = completed ? null : qualifyingAttemptCount < requiredAttemptCount ? "minimum_attempts_unmet" : "quality_unmet";
-  const chapter = Object.freeze({ nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount, requiredAttemptCount, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality, status: completed ? "completed" as const : "in_progress" as const, reason });
   const remainingAttemptCount = Math.max(0, requiredAttemptCount - qualifyingAttemptCount);
-  const common = { chapters: Object.freeze([chapter]), completedChapterCount: completed ? 1 : 0, requiredChapterCount: 1, qualifyingAttemptCount, requiredAttemptCount, remainingAttemptCount };
-  return completed ? Object.freeze({ kind: "completed", ...common, remainingAttemptCount: 0 }) : Object.freeze({ kind: "in_progress", ...common });
+  const coverageDeficit = 0;
+  const minimumAdditionalAttemptCount = remainingAttemptCount;
+  const chapter = Object.freeze({ nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount, requiredAttemptCount, remainingAttemptCount,
+    coverageDeficit, minimumAdditionalAttemptCount, coverage: Object.freeze([]), rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality,
+    qualityRequirementUnmet: quality === null ? null : quality < 0.8, status: completed ? "completed" as const : "in_progress" as const, reason });
+  const common = { chapters: Object.freeze([chapter]), completedChapterCount: completed ? 1 : 0, requiredChapterCount: 1, qualifyingAttemptCount, requiredAttemptCount,
+    coverageDeficit, minimumAdditionalAttemptCount, remainingAttemptCount };
+  return completed
+    ? Object.freeze({ kind: "completed" as const, ...common, completedChapterCount: 1, remainingAttemptCount: 0 }) as PackageCompletionState
+    : Object.freeze({ kind: "in_progress" as const, ...common, completedChapterCount: 0 }) as PackageCompletionState;
 }
 
 function input(overrides: Partial<GeneratorInput> = {}): GeneratorInput {

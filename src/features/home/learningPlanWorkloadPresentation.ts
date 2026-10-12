@@ -21,7 +21,7 @@ export type LearningPlanWorkloadPresentation = Readonly<{
     nodeId: string;
     title: string | null;
     premiumRequired: boolean | null;
-    status: "complete" | "minimum_incomplete" | "quality_unmet";
+    status: "complete" | "minimum_incomplete" | "coverage_incomplete" | "quality_unmet" | "quality_unknown";
     requiredResponses: number;
     dueReviewResponses: number;
     newResponses: number;

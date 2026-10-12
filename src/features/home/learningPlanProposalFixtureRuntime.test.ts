@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { createLearningPlanProposalFixtureRuntime as createSmokeRuntime } from "./learningPlanProposalFixtureRuntime.smoke";
 import { createLearningPlanProposalFixtureRuntime as createDisabledRuntime } from "./learningPlanProposalFixtureRuntime.disabled";
-import { LEARNING_PLAN_PROPOSAL_FIXTURE_CASES } from "./learningPlanProposalFixtureCommand";
+import { LEARNING_PLAN_PROPOSAL_FIXTURE_CASES, learningPlanProposalFixtureTrackId } from "./learningPlanProposalFixtureCommand";
 
 const proposalId = "ui11-fixture-proposal";
 const trackId = "coding-interview-dsa-problem-solving";
@@ -11,7 +11,7 @@ const trackId = "coding-interview-dsa-problem-solving";
 test("named proposal fixture cases produce domain-generated screen states with the declared schedule shape", async () => {
   for (const scenario of LEARNING_PLAN_PROPOSAL_FIXTURE_CASES) {
     const runtime = createSmokeRuntime(scenario);
-    const result = await runtime.resolve(proposalId, trackId);
+    const result = await runtime.resolve(proposalId, learningPlanProposalFixtureTrackId(scenario));
     if (scenario === "stale") { assert.equal(result.kind, "stale"); continue; }
     if (scenario === "unavailable") { assert.equal(result.kind, "package_unavailable"); continue; }
     assert.ok("proposal" in result, scenario);

@@ -59,7 +59,16 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, i
           physicalScale={windowScale}
           style={styles.detailText}
           text={line}
-        />)}<View style={styles.sources}><FeedbackText contextKey={textMeasurementKey(t("Source"), windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceLabel} text={t("Source")} />{feedback.sources?.length ? feedback.sources.map((source, index) => <Pressable accessibilityLabel={`${t("Open source")} ${source.host}`} accessibilityRole="link" key={source.url} onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, openSource).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}><FeedbackText contextKey={textMeasurementKey(source.host, windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceLink} text={source.host} /></Pressable>) : <FeedbackText contextKey={textMeasurementKey(t("Source unavailable"), windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceUnavailable} text={t("Source unavailable")} />}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View>{showReport ? <ContentReportSheet item={item} surface={reportSurface} /> : null}</View> : null}
+        />)}<View style={styles.sources}><FeedbackText contextKey={textMeasurementKey(t("Source"), windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceLabel} text={t("Source")} />{feedback.sources?.length ? feedback.sources.map((source, index) => {
+          return <View key={`${source.role}:${source.url}`} style={styles.sourceItem} testID={`question-source-item-${itemId}-${index}`}>
+            <Text maxFontSizeMultiplier={2} style={styles.sourceItemLabel}>{source.role === "course" ? t("Course module") : t("Documentation")}</Text>
+            <Pressable accessibilityLabel={[t("Open source"), source.role === "course" ? t("Course module") : t("Documentation"), source.title ?? source.host, source.section, source.requiresAccount ? t("Requires an Anthropic Partner Academy account") : undefined].filter(Boolean).join(" ")} accessibilityRole="link" onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, openSource).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}>
+              <FeedbackText contextKey={textMeasurementKey(source.title ?? source.host, windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceLink} text={source.title ?? source.host} />
+            </Pressable>
+            {source.section ? <FeedbackText contextKey={textMeasurementKey(source.section, windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceMetadata} text={source.section} /> : null}
+            {source.requiresAccount ? <Text maxFontSizeMultiplier={2} style={styles.sourceMetadata}>{t("Requires an Anthropic Partner Academy account")}</Text> : null}
+          </View>;
+        }) : <FeedbackText contextKey={textMeasurementKey(t("Source unavailable"), windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceUnavailable} text={t("Source unavailable")} />}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View>{showReport ? <ContentReportSheet item={item} surface={reportSurface} /> : null}</View> : null}
       </View>
     </View>
   );
@@ -76,7 +85,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   reasonPanel: { gap: spacing.sm },
   sourceError: { ...typography.caption, color: palette.danger },
   sourceLabel: { ...typography.bodyStrong, color: palette.textPrimary },
+  sourceItemLabel: { ...typography.caption, color: palette.textSecondary },
+  sourceMetadata: { ...typography.caption, color: palette.textSecondary },
   sourceLink: { ...typography.bodyStrong, color: palette.primary, textDecorationLine: "underline" },
-  sources: { gap: spacing.sm },
+  sourceItem: { gap: spacing.xxs },
+  sources: { gap: spacing.md },
   sourceUnavailable: { ...typography.body, color: palette.textMuted },
 });

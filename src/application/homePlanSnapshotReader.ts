@@ -28,6 +28,7 @@ import { canonicalSerialize } from "../infrastructure/identity/canonicalSerializ
 import { contentPackageRuntimeOwner, type ResolvedPackageRuntime } from "./contentPackageRuntimeOwner";
 import {
   projectTargetDateGuidance,
+  requirePremiumForRemainingCoverage,
   type TargetDateGuidance,
 } from "./learningPlan/targetDateGuidance";
 import { recommendLearningPlanMode } from "./learningPlan/learningPlanModeRecommendation";
@@ -91,6 +92,8 @@ export type HomePlanReady = Readonly<{
     modeId: string;
     /** Present only when the canonical next mode selects a concrete node. */
     topicId?: string;
+    /** Present when the next required-completion practice is focused on a unit. */
+    mentalUnitId?: string;
     sessionLength: number;
     areaLabel: string;
     reviewSource?: "due_queue";
@@ -309,6 +312,11 @@ export class HomePlanSnapshotReader {
       }
       paceForecast = calculatePaceForecast({
         acceptedPlan: plan, c3Result, remainingAttemptCount: completion.kind === "completed" ? 0 : completion.kind === "in_progress" ? completion.remainingAttemptCount : 0,
+        ...(completion.kind !== "unknown" ? {
+          minimumAdditionalAttemptCount: completion.kind === "completed" ? 0 : completion.minimumAdditionalAttemptCount,
+          qualityRequirementUnmet: completion.kind === "completed" ? false : completion.chapters.some((chapter) => chapter.qualityRequirementUnmet === true) ? true
+            : completion.chapters.some((chapter) => chapter.qualityRequirementUnmet === null) ? null : false,
+        } : {}),
         today, timezone: plan.timezone, completedFacts,
       });
     } catch (error) {
@@ -337,6 +345,12 @@ export class HomePlanSnapshotReader {
       nodeId: chapter.nodeId,
       access: chapter.nodeId === freeNodeId ? "free" as const : premiumAccess === "allowed" ? "available" as const : premiumAccess === "denied" ? "locked" as const : "unavailable" as const,
     })));
+    const coverageAction = selectRequiredCoverageAction(completion, chapterAccess, activeSession !== null);
+    const nextCoverageTarget = coverageAction.target;
+    if (coverageAction.kind === "premium_access_required") {
+      guidance = requirePremiumForRemainingCoverage(guidance);
+    }
+    const focusMode = nextCoverageTarget ? resolved.track.getMode("certification-focus-practice") : null;
 
     let day: HomePlanDay;
     try { day = buildHomeDay(plan, today, matchingSessions); }
@@ -360,10 +374,10 @@ export class HomePlanSnapshotReader {
       completion,
       chapterAccess,
       session: Object.freeze({
-        modeId: nextMode.modeId,
-        ...(nextMode.selection.kind === "node" ? { topicId: nextMode.selection.nodeId } : {}),
-        sessionLength: nextSessionLength,
-        areaLabel: humanizeScope(nextMode.selection.kind === "node" ? nextMode.selection.nodeId : "track"),
+        modeId: focusMode?.modeId ?? nextMode.modeId,
+        ...(nextCoverageTarget ? { topicId: nextCoverageTarget.nodeId, mentalUnitId: nextCoverageTarget.mentalUnitId } : nextMode.selection.kind === "node" ? { topicId: nextMode.selection.nodeId } : {}),
+        sessionLength: focusMode?.defaultRequestedLength ?? nextSessionLength,
+        areaLabel: humanizeScope(nextCoverageTarget?.nodeId ?? (nextMode.selection.kind === "node" ? nextMode.selection.nodeId : "track")),
         ...(nextMode.selection.kind === "evidence_conditioned" && nextMode.selection.evidenceSources.includes("due_queue") ? { reviewSource: "due_queue" as const } : {}),
       }),
       paceForecast,
@@ -373,6 +387,30 @@ export class HomePlanSnapshotReader {
 }
 
 export const homePlanSnapshotReader = new HomePlanSnapshotReader();
+
+export function selectRequiredCoverageAction(
+  completion: PackageCompletionState,
+  chapterAccess: readonly Readonly<{ nodeId: string; access: "free" | "available" | "locked" | "unavailable" }>[],
+  hasActiveSession: boolean,
+): Readonly<{ kind: "no_required_target" | "premium_access_required"; target?: never }> |
+  Readonly<{ kind: "practice_required_unit"; target: Readonly<{ nodeId: string; mentalUnitId: string }> }> {
+  if (completion.kind !== "in_progress" || hasActiveSession) return Object.freeze({ kind: "no_required_target" });
+  const accessByNode = new Map(chapterAccess.map(({ nodeId, access }) => [nodeId, access]));
+  for (const chapter of completion.chapters) {
+    const needsRequiredPractice = chapter.coverageDeficit > 0 || chapter.qualityRequirementUnmet === true ||
+      (chapter.coverage.length > 0 && chapter.remainingAttemptCount > 0);
+    if (!needsRequiredPractice) continue;
+    const access = accessByNode.get(chapter.nodeId);
+    if (access !== "free" && access !== "available") continue;
+    const unit = chapter.coverage.find((entry) => entry.deficit > 0) ?? chapter.coverage[0];
+    if (unit) return Object.freeze({ kind: "practice_required_unit", target: Object.freeze({ nodeId: chapter.nodeId, mentalUnitId: unit.mentalUnitId }) });
+  }
+  return completion.chapters.some((chapter) => (chapter.coverageDeficit > 0 || chapter.qualityRequirementUnmet === true ||
+    (chapter.coverage.length > 0 && chapter.remainingAttemptCount > 0)) &&
+    (accessByNode.get(chapter.nodeId) === "locked" || accessByNode.get(chapter.nodeId) === "unavailable"))
+    ? Object.freeze({ kind: "premium_access_required" })
+    : Object.freeze({ kind: "no_required_target" });
+}
 
 export async function readHomePlanSnapshot(input: HomePlanReadInput, dependencies?: HomePlanSnapshotReaderDependencies): Promise<HomePlanSnapshot> {
   return new HomePlanSnapshotReader(dependencies).read(input);
@@ -438,7 +476,8 @@ function isSupportedHomeAction(action: TargetDateGuidance["home"]["primary"]): b
     action.destination === "LearningPlanProposal" ||
     action.destination === "LearningPlanEditor" ||
     action.destination === "Progress" ||
-    action.destination === "Practice";
+    action.destination === "Practice" ||
+    action.destination === "PremiumPurchase";
 }
 
 function selectActiveSession(

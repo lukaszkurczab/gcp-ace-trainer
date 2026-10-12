@@ -12,16 +12,18 @@ import {
   type TrainingSession,
 } from "../../domain";
 import type { ProductModeConfig } from "../../content/canonical/productModeConfig";
+import { resolveRequiredUnitFocusMode } from "../../content/canonical/productModeConfig";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { matchesReviewSourceSnapshot } from "../../domain/learning/reviewQueueEntry";
+import { qualifyPackageAttempts } from "../../domain/learning/packageCompletionRule";
 import type { ObservedPlanningCalibration } from "../../domain/learning/planningWorkEstimate";
 import type { PlanningSessionDemand, LegalSessionOption } from "../../domain/learning/planningCalendar";
 import { getTrainingSessionProgress } from "../trainingSessions/sessionDurability";
 
 export type ChapterWorkloadProjection = Readonly<{
   nodeId: string;
-  completion: "complete" | "minimum_incomplete" | "quality_unmet";
+  completion: "complete" | "minimum_incomplete" | "coverage_incomplete" | "quality_unmet" | "quality_unknown";
   requiredResponses: number;
   dueReviewResponses: number;
   newResponses: number;
@@ -171,28 +173,72 @@ export function projectFullGoalWorkload(input: Readonly<{
   let dueReviewResponses = 0;
   let hasUnknownChapter = false;
   let hasQualityUncertainty = false;
+  const latestCorrectQuestionIds = input.track.completionRule?.ruleVersion === 3 ? latestCorrectQuestionIdSet(input) : null;
 
   for (const chapter of input.completion.chapters) {
-    const completion = chapter.status === "completed" ? "complete" as const : chapter.reason === "quality_unmet" ? "quality_unmet" as const : "minimum_incomplete" as const;
-    const missing = chapter.status === "completed" ? 0 : Math.max(0, chapter.requiredAttemptCount - chapter.qualifyingAttemptCount);
-    const modeOwnsChapter = input.practiceMode.selection.kind === "node" && input.practiceMode.selection.nodeId === chapter.nodeId;
-    const practiceScopes = modeOwnsChapter ? [...(practiceScopesByNode.get(chapter.nodeId)?.values() ?? [])].sort(scopeOrder) : [];
+    const volumeMissing = chapter.status === "completed" ? 0 : Math.max(0, chapter.requiredAttemptCount - chapter.qualifyingAttemptCount);
+    const coverageMissing = chapter.status === "completed" ? 0 : chapter.coverageDeficit;
+    const completion = chapter.status === "completed" ? "complete" as const : volumeMissing > 0 ? "minimum_incomplete" as const
+      : coverageMissing > 0 ? "coverage_incomplete" as const : chapter.qualityRequirementUnmet === true ? "quality_unmet" as const : "quality_unknown" as const;
+    const missing = chapter.status === "completed" ? 0 : chapter.minimumAdditionalAttemptCount;
+    const v3Rule = input.track.completionRule?.ruleVersion === 3 ? input.track.completionRule : undefined;
+    const requiredUnitScopes = v3Rule && chapter.status !== "completed"
+      ? chapter.coverage.filter((unit) => unit.deficit > 0).map((unit) => Object.freeze({ nodeId: chapter.nodeId, mentalUnitId: unit.mentalUnitId }))
+      : [];
+    const firstRequiredUnitScope = v3Rule?.chapters.find((entry) => entry.nodeId === chapter.nodeId)?.units[0]
+      ? Object.freeze({ nodeId: chapter.nodeId, mentalUnitId: v3Rule.chapters.find((entry) => entry.nodeId === chapter.nodeId)!.units[0]!.mentalUnitId }) : undefined;
+    const modeOwnsChapter = input.practiceMode.selection.kind === "node" &&
+      (input.practiceMode.selection.nodeId === chapter.nodeId || requiredUnitScopes.length > 0 || (v3Rule !== undefined && (volumeMissing > 0 || chapter.qualityRequirementUnmet === true)));
+    const practiceScopes = modeOwnsChapter
+      ? [...new Map([...(requiredUnitScopes.length > 0 ? requiredUnitScopes : v3Rule && chapter.status !== "completed" && firstRequiredUnitScope ? [firstRequiredUnitScope] : [...(practiceScopesByNode.get(chapter.nodeId)?.values() ?? [])]),
+        ...(volumeMissing > 0 && firstRequiredUnitScope ? [firstRequiredUnitScope] : [])]
+        .map((scope) => [scopeKey(scope), scope])).values()].sort(scopeOrder)
+      : [];
+    if (v3Rule && input.practiceMode.modeId === "certification-focus-practice") {
+      for (const scope of practiceScopes) resolveRequiredUnitFocusMode(input.practiceMode, v3Rule, scope.nodeId, scope.mentalUnitId);
+    }
     const costByScope = new Map(practiceScopes.map((scope) => [scopeKey(scope), rateFor(input.practiceMode.modeId, scope, true)]));
     const missingCostScopes = practiceScopes.filter((scope) => costByScope.get(scopeKey(scope)) === null);
     const reviewEntries = dueByChapter.get(chapter.nodeId) ?? [];
     const legalPoolDue = dueReviewMode?.selection.kind === "evidence_conditioned" && dueReviewMode.selection.nodeId === chapter.nodeId
       ? reviewEntries.filter(({ entry }) => reviewPoolIds.has(entry.sourceItem.questionId)) : [];
-    const dueCredit = Math.min(missing, legalPoolDue.length);
-    const diagnosticResponses = Math.min(Math.max(0, missing - dueCredit), diagnosticCounts.get(chapter.nodeId) ?? 0);
-    const remainingNew = Math.max(0, missing - dueCredit - diagnosticResponses);
+    const dueCredit = Math.min(volumeMissing, legalPoolDue.length);
+    const diagnosticResponses = Math.min(Math.max(0, volumeMissing - dueCredit), diagnosticCounts.get(chapter.nodeId) ?? 0);
     const activePracticeQuestions = activePracticeQuestionsByChapter.get(chapter.nodeId) ?? [];
     const activePracticeCost = activePracticeQuestions.length > 0 && activeContinuationWork?.kind === "continue_existing"
       ? estimateQuestionsCost(input, activeContinuationWork.demand.modeId, activePracticeQuestions, calibrations, true) : null;
-    const activeResponsesForChapter = Math.min(remainingNew, activePracticeQuestions.length);
-    const remainingNewSessions = remainingNew - activeResponsesForChapter;
+    const coverageSessionDemands: PlanningSessionDemand[] = [];
+    let coveragePracticeResponses = 0;
+    let coverageDemandUnavailableReason: ChapterWorkloadProjection["unavailableReason"] = null;
+    if (v3Rule && coverageMissing > 0) {
+      for (const unit of chapter.coverage.filter((entry) => entry.deficit > 0)) {
+        const scope = Object.freeze({ nodeId: chapter.nodeId, mentalUnitId: unit.mentalUnitId });
+        const activeTargetIds = latestCorrectQuestionIds ? new Set(activePracticeQuestions
+          .filter((question) => question.mentalUnitId === unit.mentalUnitId && !latestCorrectQuestionIds.has(question.questionId))
+          .map((question) => question.questionId)) : new Set<string>();
+        const activeTargetCredit = Math.min(unit.deficit, activeTargetIds.size);
+        if (unit.deficit <= activeTargetCredit) continue;
+        const sourceLength = input.track.questions.filter((question) => question.nodeId === scope.nodeId && question.mentalUnitId === scope.mentalUnitId).length;
+        const actualLength = Math.min(input.practiceMode.defaultRequestedLength, sourceLength);
+        const option = estimateLegalPoolOptions(input, input.practiceMode, [scope], calibrations).find((candidate) => candidate.sessionLength === actualLength);
+        if (!option || actualLength < 4) {
+          coverageDemandUnavailableReason = sourceLength < 4 ? "no_canonical_request" : "missing_scope_cost";
+          continue;
+        }
+        coveragePracticeResponses += actualLength;
+        coverageSessionDemands.push(Object.freeze({ id: `coverage:${scope.nodeId}:${scope.mentalUnitId}`, modeId: input.practiceMode.modeId, phase: "practice",
+          responseCount: actualLength, legalOptions: Object.freeze([option]), scopeRefs: Object.freeze([scope]), canResumeAcrossWindows: input.practiceMode.timer.kind === "elapsed_foreground" }));
+      }
+    }
+    // Coverage work is planned once per exact deficient unit. Its actual
+    // question count can exceed C because the legal scoped session is padded.
+    // That real work also contributes to V; any remaining volume is planned
+    // separately after due, diagnostic, active and coverage responses.
+    const remainingNew = Math.max(0, volumeMissing - dueCredit - diagnosticResponses - activePracticeQuestions.length - coveragePracticeResponses);
+    const remainingNewSessions = remainingNew;
+    let scheduledNewResponses = coveragePracticeResponses + remainingNew;
     requiredResponses += missing;
     dueReviewResponses += dueCredit;
-    newResponses += remainingNew;
 
     for (const row of reviewEntries) {
       const qualified = legalPoolDue.some(({ entry }) => entry.id === row.entry.id);
@@ -211,9 +257,17 @@ export function projectFullGoalWorkload(input: Readonly<{
     let minMinutes = 0;
     let typicalMinutes = 0;
     let maxMinutes: number | null = 0;
-    let unavailableReason: ChapterWorkloadProjection["unavailableReason"] = null;
+    let unavailableReason: ChapterWorkloadProjection["unavailableReason"] = coverageDemandUnavailableReason;
     const chapterSources = new Map<string, PerResponseCost["sources"][number]>();
     for (const source of dueSourcesByChapter.get(chapter.nodeId) ?? []) chapterSources.set(source.estimateId, source);
+    for (const demand of coverageSessionDemands) {
+      const option = demand.legalOptions[0]!;
+      minMinutes += option.minMinutes;
+      typicalMinutes += option.typicalMinutes;
+      maxMinutes = maxMinutes === null ? null : maxMinutes + option.maxMinutes;
+      const scopedCost = costByScope.get(scopeKey(demand.scopeRefs![0]!));
+      for (const source of scopedCost?.sources ?? []) chapterSources.set(source.estimateId, source);
+    }
     if (activePracticeQuestions.length > 0) {
       if (!activePracticeCost) unavailableReason = "missing_scope_cost";
       else {
@@ -241,11 +295,12 @@ export function projectFullGoalWorkload(input: Readonly<{
       qualityUncertainChapterIds.push(chapter.nodeId);
       const activeQualityBlock = activePracticeQuestions.length > 0 && activePracticeCost
         ? Object.freeze({ responses: activePracticeQuestions.length, cost: activePracticeCost }) : null;
-      const nextBlock = activeQualityBlock ?? (practiceScopes.length > 0 ? estimateNextLegalPracticeBlock(input, calibrations) : null);
+      const nextBlock = activeQualityBlock ?? (practiceScopes.length > 0 ? estimateNextLegalPracticeBlock(input, calibrations, practiceScopes) : null);
       qualityRepair = Object.freeze({ nextLegalBlockResponses: nextBlock?.responses ?? null, minMinutes: nextBlock?.cost.min ?? null,
         typicalMinutes: nextBlock?.cost.typical ?? null, maxMinutes: nextBlock?.cost.max ?? null, futureResponses: null, futureMaxMinutes: null });
       if (nextBlock && !activeQualityBlock) qualityRepairDemand = Object.freeze({ id: `quality-repair:${chapter.nodeId}`, modeId: input.practiceMode.modeId, phase: "quality_repair", responseCount: nextBlock.responses,
         legalOptions: Object.freeze([Object.freeze({ sessionLength: nextBlock.responses, minMinutes: nextBlock.cost.min, typicalMinutes: nextBlock.cost.typical, maxMinutes: nextBlock.cost.max })]),
+        ...(v3Rule && practiceScopes[0] ? { scopeRefs: Object.freeze([practiceScopes[0]]) } : {}),
         canResumeAcrossWindows: input.practiceMode.timer.kind === "elapsed_foreground" });
       if (!nextBlock) unavailableReason = practiceScopes.length === 0 ? "no_canonical_request" : "missing_scope_cost";
       else if (!activeQualityBlock) {
@@ -264,7 +319,8 @@ export function projectFullGoalWorkload(input: Readonly<{
       if (practiceScopes.length === 0) unavailableReason ??= "no_canonical_request";
       else if (missingCostScopes.length > 0) unavailableReason ??= "missing_scope_cost";
       else {
-        const costs = [...costByScope.values()].filter((value): value is PerResponseCost => value !== null);
+        const volumeScopes = v3Rule && firstRequiredUnitScope ? [firstRequiredUnitScope] : practiceScopes;
+        const costs = volumeScopes.map((scope) => costByScope.get(scopeKey(scope))).filter((value): value is PerResponseCost => value !== null);
         for (const source of costs.flatMap((cost) => cost.sources)) chapterSources.set(source.estimateId, source);
         const central = median(costs.map((cost) => cost.typical));
         minMinutes += remainingNewSessions * Math.min(...costs.map((cost) => cost.min));
@@ -272,8 +328,38 @@ export function projectFullGoalWorkload(input: Readonly<{
         maxMinutes = maxMinutes === null ? null : maxMinutes + remainingNewSessions * Math.max(...costs.map((cost) => cost.max));
       }
     }
+    sessionDemands.push(...coverageSessionDemands);
+    const remainingForNewSessions = remainingNewSessions;
+    if (remainingForNewSessions > 0 && practiceScopes.length > 0 && missingCostScopes.length === 0) {
+      const volumeScopes = v3Rule && firstRequiredUnitScope ? [firstRequiredUnitScope] : practiceScopes;
+      const options = estimateLegalPoolOptions(input, input.practiceMode, volumeScopes, calibrations);
+      const singleSessionOption = options.filter((option) => option.sessionLength >= remainingForNewSessions)
+        .sort((left, right) => left.sessionLength - right.sessionLength)[0];
+      const shortestOption = options.slice().sort((left, right) => left.sessionLength - right.sessionLength)[0];
+      const chosenOption = singleSessionOption ?? shortestOption;
+      if (chosenOption) {
+        const scheduledResponses = singleSessionOption?.sessionLength ??
+          Math.ceil(remainingForNewSessions / chosenOption.sessionLength) * chosenOption.sessionLength;
+        scheduledNewResponses = coveragePracticeResponses + scheduledResponses;
+        const paddedOptions = Object.freeze([chosenOption]);
+        const additionalResponses = Math.max(0, scheduledResponses - remainingForNewSessions);
+        if (additionalResponses > 0) {
+          if (chosenOption.sessionLength > 0) {
+            const padMin = additionalResponses * chosenOption.minMinutes / chosenOption.sessionLength;
+            const padTypical = additionalResponses * chosenOption.typicalMinutes / chosenOption.sessionLength;
+            const padMax = additionalResponses * chosenOption.maxMinutes / chosenOption.sessionLength;
+            minMinutes += padMin;
+            typicalMinutes += padTypical;
+            maxMinutes = maxMinutes === null ? null : maxMinutes + padMax;
+          }
+        }
+        sessionDemands.push(Object.freeze({ id: `practice:${chapter.nodeId}`, modeId: input.practiceMode.modeId, phase: "practice", responseCount: scheduledResponses, legalOptions: paddedOptions,
+        ...(v3Rule && volumeScopes.length === 1 ? { scopeRefs: Object.freeze(volumeScopes) } : {}), canResumeAcrossWindows: input.practiceMode.timer.kind === "elapsed_foreground" }));
+      }
+    }
+    if (qualityRepairDemand) sessionDemands.push(qualityRepairDemand);
     const chapterScopeRefs = [...new Map([...practiceScopes, ...reviewEntries.map(({ scope }) => scope), ...diagnosticItems.map(({ nodeId, mentalUnitId }) => ({ nodeId, mentalUnitId }))].map((scope) => [scopeKey(scope), scope])).values()].sort(scopeOrder);
-    if ((remainingNew > 0 || completion === "quality_unmet") && unavailableReason && unavailableReason !== "quality_outcome_unbounded") {
+    if ((remainingNew > 0 || coverageDemandUnavailableReason !== null || completion === "quality_unmet") && unavailableReason && unavailableReason !== "quality_outcome_unbounded") {
       hasUnknownChapter = true;
       unknownChapterIds.push(chapter.nodeId);
     }
@@ -283,19 +369,12 @@ export function projectFullGoalWorkload(input: Readonly<{
     knownMinMinutes += minMinutes;
     knownTypicalMinutes += typicalMinutes;
     knownMaxMinutes = knownMaxMinutes === null || maxMinutes === null ? null : knownMaxMinutes + maxMinutes;
-    chapters.push(Object.freeze({ nodeId: chapter.nodeId, completion, requiredResponses: missing, dueReviewResponses: dueCredit, newResponses: remainingNew,
+    chapters.push(Object.freeze({ nodeId: chapter.nodeId, completion, requiredResponses: missing, dueReviewResponses: dueCredit, newResponses: scheduledNewResponses,
       qualityRepair, minMinutes: unavailableReason && unavailableReason !== "quality_outcome_unbounded" ? null : minMinutes,
       typicalMinutes: unavailableReason && unavailableReason !== "quality_outcome_unbounded" ? null : typicalMinutes,
       maxMinutes: unavailableReason && unavailableReason !== "quality_outcome_unbounded" ? null : maxMinutes,
       provenance: rowProvenance, observationCount: rowObservationCount, scopeRefs: Object.freeze(chapterScopeRefs), diagnosticResponses, unavailableReason }));
-
-    const remainingForNewSessions = remainingNewSessions;
-    if (remainingForNewSessions > 0 && practiceScopes.length > 0 && missingCostScopes.length === 0) {
-      const options = estimateLegalPoolOptions(input, input.practiceMode, practiceScopes, calibrations);
-      if (options.length > 0) sessionDemands.push(Object.freeze({ id: `practice:${chapter.nodeId}`, modeId: input.practiceMode.modeId, phase: "practice", responseCount: remainingForNewSessions, legalOptions: options,
-        canResumeAcrossWindows: input.practiceMode.timer.kind === "elapsed_foreground" }));
-    }
-    if (qualityRepairDemand) sessionDemands.push(qualityRepairDemand);
+    newResponses += scheduledNewResponses;
   }
 
   let nextPractice: NextPracticeStage | null = null;
@@ -360,8 +439,21 @@ function observedCalibrations(input: Parameters<typeof projectFullGoalWorkload>[
 function estimateNextLegalPracticeBlock(
   input: Parameters<typeof projectFullGoalWorkload>[0],
   calibrations: readonly ObservedPlanningCalibration[],
+  scopes: readonly PlanningScopeRef[],
 ): Readonly<{ responses: number; cost: PerResponseCost }> | null {
   const mode = input.track.getMode(input.practiceMode.modeId);
+  if (mode.modeId === "certification-focus-practice" && input.track.completionRule?.ruleVersion === 3) {
+    const options = estimateLegalPoolOptions(input, mode, scopes, calibrations);
+    const option = options.slice().sort((left, right) => left.sessionLength - right.sessionLength)[0];
+    if (!option) return null;
+    const sources = new Map<string, PerResponseCost["sources"][number]>();
+    for (const scope of scopes) {
+      const cost = rateForScope(input, mode.modeId, scope, calibrations);
+      if (!cost) return null;
+      for (const source of cost.sources) sources.set(source.estimateId, source);
+    }
+    return Object.freeze({ responses: option.sessionLength, cost: Object.freeze({ min: option.minMinutes, typical: option.typicalMinutes, max: option.maxMinutes, sources: Object.freeze([...sources.values()]) }) });
+  }
   const requestedLength = mode.defaultRequestedLength;
   if (!mode.requestedLengths.includes(requestedLength)) return null;
   const pool = input.track.getPool(mode.modeId);
@@ -454,6 +546,17 @@ function projectActiveContinuation(input: Parameters<typeof projectFullGoalWorkl
   let mode: ProductModeConfig;
   try { mode = input.track.getMode(session.modeId); }
   catch { return Object.freeze({ kind: "unavailable", reason: "unsupported_mode" }); }
+  const rawMentalUnitId = session.configurationSnapshot.mentalUnitId;
+  const v3Rule = input.track.completionRule?.ruleVersion === 3 ? input.track.completionRule : undefined;
+  let scopedUnit: PlanningScopeRef | undefined;
+  if (rawMentalUnitId !== undefined && typeof rawMentalUnitId !== "string") return Object.freeze({ kind: "unavailable", reason: "invalid_session" });
+  if (typeof rawMentalUnitId === "string" && v3Rule && mode.modeId === "certification-focus-practice") {
+    const matches = v3Rule.chapters.filter((chapter) => chapter.units.some((unit) => unit.mentalUnitId === rawMentalUnitId));
+    if (matches.length !== 1) return Object.freeze({ kind: "unavailable", reason: "invalid_session" });
+    try { resolveRequiredUnitFocusMode(mode, v3Rule, matches[0]!.nodeId, rawMentalUnitId); }
+    catch { return Object.freeze({ kind: "unavailable", reason: "invalid_session" }); }
+    scopedUnit = Object.freeze({ nodeId: matches[0]!.nodeId, mentalUnitId: rawMentalUnitId });
+  }
   if (mode.trackId !== input.track.trackId || !mode.requestedLengths.includes(session.requestedLength) || session.actualLength !== session.itemOrder.length ||
     session.actualLength < 1 || session.actualLength > session.requestedLength || mode.timer.kind !== "elapsed_foreground") {
     return Object.freeze({ kind: "unavailable", reason: "unsupported_mode" });
@@ -466,11 +569,15 @@ function projectActiveContinuation(input: Parameters<typeof projectFullGoalWorkl
   const answered = new Set(progress.attempts.map((attempt) => attempt.occurrenceId));
   const remaining = session.itemOrder.filter((occurrence) => !answered.has(occurrence.occurrenceId));
   if (remaining.length === 0) return Object.freeze({ kind: "unavailable", reason: "invalid_session" });
-  const poolIds = new Set(input.track.getPool(mode.modeId).map((question) => question.questionId));
+  const sourcePool = scopedUnit
+    ? input.track.questions.filter((question) => question.trackId === input.track.trackId && question.nodeId === scopedUnit!.nodeId && question.mentalUnitId === scopedUnit!.mentalUnitId)
+    : input.track.getPool(mode.modeId);
+  const poolIds = new Set(sourcePool.map((question) => question.questionId));
   const questions = remaining.map((occurrence) => {
     const question = input.track.getQuestion(occurrence.item.questionId);
     if (!question || !poolIds.has(question.questionId) || occurrence.item.trackId !== input.track.trackId || occurrence.item.contentVersion !== input.track.contentVersion || occurrence.item.artifactSha256 !== input.track.artifactSha256) return undefined;
-    if (mode.selection.kind === "node" && (question.nodeId !== mode.selection.nodeId || (mode.selection.mentalUnitId && question.mentalUnitId !== mode.selection.mentalUnitId))) return undefined;
+    if (scopedUnit && (question.nodeId !== scopedUnit.nodeId || question.mentalUnitId !== scopedUnit.mentalUnitId)) return undefined;
+    if (!scopedUnit && mode.selection.kind === "node" && (question.nodeId !== mode.selection.nodeId || (mode.selection.mentalUnitId && question.mentalUnitId !== mode.selection.mentalUnitId))) return undefined;
     return question;
   });
   if (questions.some((question) => question === undefined)) return Object.freeze({ kind: "unavailable", reason: "invalid_session" });
@@ -497,6 +604,7 @@ function projectActiveContinuation(input: Parameters<typeof projectFullGoalWorkl
     id: `continue-existing:${session.id}`, kind: "continue_existing", sessionId: session.id, modeId: mode.modeId, phase,
     responseCount: exactQuestions.length,
     legalOptions: Object.freeze([Object.freeze({ sessionLength: session.requestedLength, minMinutes: cost.min, typicalMinutes: cost.typical, maxMinutes: cost.max })]),
+    ...(scopedUnit ? { scopeRefs: Object.freeze([scopedUnit]) } : {}),
     canResumeAcrossWindows: true, isExistingSession: true, reviewEntryIds: Object.freeze(reviewEntryIds),
   });
   return Object.freeze({ kind: "continue_existing", demand, questions: Object.freeze(exactQuestions), reviewEntryIds: Object.freeze(reviewEntryIds) });
@@ -512,6 +620,31 @@ function estimateQuestionsCost(input: Parameters<typeof projectFullGoalWorkload>
 function estimateLegalPoolOptions(input: Parameters<typeof projectFullGoalWorkload>[0], mode: ProductModeConfig, scopes: readonly PlanningScopeRef[], calibrations: readonly ObservedPlanningCalibration[]): readonly LegalSessionOption[] {
   const all = input.track.getPool(mode.modeId);
   if (scopes.length === 0) return Object.freeze([]);
+  if (mode.modeId === "certification-focus-practice" && input.track.completionRule?.ruleVersion === 3) {
+    const ratesByScope = new Map<string, PerResponseCost>();
+    const maxLengthByScope = new Map<string, number>();
+    for (const scope of scopes) {
+      const scopedMode = resolveRequiredUnitFocusMode(mode, input.track.completionRule, scope.nodeId, scope.mentalUnitId);
+      const source = input.track.questions.filter((question) => question.nodeId === scope.nodeId && question.mentalUnitId === scope.mentalUnitId);
+      if (source.length < scopedMode.minimumActualLength) return Object.freeze([]);
+      const cost = rateForScope(input, mode.modeId, scope, calibrations);
+      if (!cost) return Object.freeze([]);
+      ratesByScope.set(scopeKey(scope), cost);
+      maxLengthByScope.set(scopeKey(scope), source.length);
+    }
+    const lengths = new Set<number>();
+    for (const requested of mode.requestedLengths) {
+      for (const scope of scopes) {
+        const actual = Math.min(requested, maxLengthByScope.get(scopeKey(scope))!);
+        if (actual >= 4) lengths.add(actual);
+      }
+    }
+    return Object.freeze([...lengths].sort((left, right) => left - right).map((length) => {
+      const eligibleRates = scopes.filter((scope) => maxLengthByScope.get(scopeKey(scope))! >= length).map((scope) => ratesByScope.get(scopeKey(scope))!);
+      return Object.freeze({ sessionLength: length, minMinutes: length * Math.min(...eligibleRates.map((cost) => cost.min)),
+        typicalMinutes: length * median(eligibleRates.map((cost) => cost.typical)), maxMinutes: length * Math.max(...eligibleRates.map((cost) => cost.max)) });
+    }));
+  }
   const costedScopes = new Set(scopes.map(scopeKey));
   if (all.some((question) => !costedScopes.has(scopeKey({ nodeId: question.nodeId, mentalUnitId: question.mentalUnitId })))) return Object.freeze([]);
   const perResponse: PerResponseCost[] = [];
@@ -542,6 +675,23 @@ function deduplicateReviews(reviews: readonly ReviewQueueEntry[]): readonly Revi
 }
 function scopeKey(scope: PlanningScopeRef): string { return `${scope.nodeId}\0${scope.mentalUnitId}`; }
 function scopeOrder(left: PlanningScopeRef, right: PlanningScopeRef): number { return left.nodeId.localeCompare(right.nodeId) || left.mentalUnitId.localeCompare(right.mentalUnitId); }
+function latestCorrectQuestionIdSet(input: Parameters<typeof projectFullGoalWorkload>[0]): ReadonlySet<string> | null {
+  const rule = input.track.completionRule;
+  if (!rule || rule.ruleVersion !== 3) return null;
+  try {
+    const latest = new Map<string, boolean>();
+    for (const attempt of qualifyPackageAttempts({ trackId: input.track.trackId, contentVersion: input.track.contentVersion,
+      artifactSha256: input.track.artifactSha256, completionRule: rule }, input.attempts)) {
+      if (!input.track.getQuestion(attempt.item.questionId)) continue;
+      latest.set(attempt.item.questionId, attempt.result.kind === "correct");
+    }
+    return new Set([...latest].filter(([, correct]) => correct).map(([questionId]) => questionId));
+  } catch {
+    // If durable package evidence cannot be reconciled, don't credit pending
+    // active-session items against the remaining unit-coverage forecast.
+    return null;
+  }
+}
 function median(values: readonly number[]): number { const sorted = [...values].sort((a, b) => a - b); const mid = Math.floor(sorted.length / 2); return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2; }
 function provenance(sources: readonly Readonly<{ provenance: "authored" | "observed" }>[]): "authored" | "observed" | "mixed" | "unavailable" {
   if (sources.length === 0) return "unavailable";

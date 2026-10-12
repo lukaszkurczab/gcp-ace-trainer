@@ -17,7 +17,7 @@ import { buildProgressPlanPresentationModel } from "./progressPlanPresentationMo
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
 const ARTIFACT_SHA256 = "a".repeat(64);
-const sampleChapter = { nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount: 8, requiredAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: null, status: "in_progress" as const, reason: "minimum_attempts_unmet" as const };
+const sampleChapter = { nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount: 8, requiredAttemptCount: 20, remainingAttemptCount: 12, coverageDeficit: 0, minimumAdditionalAttemptCount: 12, coverage: [], qualityRequirementUnmet: null, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: null, status: "in_progress" as const, reason: "minimum_attempts_unmet" as const };
 
 function plan(): LearningPlan {
   return normalizeLearningPlan({
@@ -55,13 +55,15 @@ function guidanceFor(currentGoal: GoalSnapshot | null, acceptedPlan: LearningPla
 }
 
 function completionInProgress(qualifyingAttemptCount = 8, reason: "minimum_attempts_unmet" | "quality_unmet" = "minimum_attempts_unmet"): PackageCompletionState {
-  const chapter = { ...sampleChapter, qualifyingAttemptCount, quality: reason === "quality_unmet" ? 0.75 : null, reason };
-  return { kind: "in_progress", chapters: [chapter], completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount, requiredAttemptCount: 20, remainingAttemptCount: Math.max(0, 20 - qualifyingAttemptCount) };
+  const remainingAttemptCount = Math.max(0, 20 - qualifyingAttemptCount);
+  const quality = reason === "quality_unmet" ? 0.75 : null;
+  const chapter = { ...sampleChapter, qualifyingAttemptCount, remainingAttemptCount, minimumAdditionalAttemptCount: remainingAttemptCount, quality, qualityRequirementUnmet: quality === null ? null : quality < 0.8, reason };
+  return { kind: "in_progress", chapters: [chapter], completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount, requiredAttemptCount: 20, coverageDeficit: 0, minimumAdditionalAttemptCount: remainingAttemptCount, remainingAttemptCount };
 }
 
 function completionCompleted(): PackageCompletionState {
-  const chapter = { nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: 1, status: "completed" as const, reason: null };
-  return { kind: "completed", chapters: [chapter], completedChapterCount: 1, requiredChapterCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, remainingAttemptCount: 0 };
+  const chapter = { ...sampleChapter, qualifyingAttemptCount: 20, remainingAttemptCount: 0, coverageDeficit: 0, minimumAdditionalAttemptCount: 0, qualityRequirementUnmet: false, quality: 1, status: "completed" as const, reason: null };
+  return { kind: "completed", chapters: [chapter], completedChapterCount: 1, requiredChapterCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, coverageDeficit: 0, minimumAdditionalAttemptCount: 0, remainingAttemptCount: 0 };
 }
 
 function ready(completion: HomePlanReady["completion"] = completionInProgress()): HomePlanReady {
@@ -242,8 +244,8 @@ test("Progress rejects invalid count, minimum, window and quality rather than pr
     { ...completionInProgress(), chapters: [{ ...sampleChapter, rollingWindowSize: 10 }] },
     { ...completionCompleted(), qualifyingAttemptCount: Number.NaN },
     { ...completionCompleted(), completedChapterCount: 0 },
-    { ...completionCompleted(), chapters: [{ nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: Number.NaN, status: "completed" as const, reason: null }] },
-    { ...completionCompleted(), chapters: [{ nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: 1.1, status: "completed" as const, reason: null }] },
+    { ...completionCompleted(), chapters: [{ ...sampleChapter, qualifyingAttemptCount: 20, remainingAttemptCount: 0, minimumAdditionalAttemptCount: 0, qualityRequirementUnmet: false, quality: Number.NaN, status: "completed" as const, reason: null }] },
+    { ...completionCompleted(), chapters: [{ ...sampleChapter, qualifyingAttemptCount: 20, remainingAttemptCount: 0, minimumAdditionalAttemptCount: 0, qualityRequirementUnmet: false, quality: 1.1, status: "completed" as const, reason: null }] },
   ] as const;
   for (const completion of invalid) assert.deepEqual(buildProgressPlanPresentationModel({ snapshot: ready(completion as unknown as PackageCompletionState), activeTrackId: TRACK_ID, locale: "en" }), { kind: "unavailable", trackId: TRACK_ID, reason: "calculation_error" });
 });

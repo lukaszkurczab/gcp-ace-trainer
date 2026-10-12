@@ -1,5 +1,6 @@
 import { isCanonicalSafeIdentity } from "./questionValidation";
 import type { CanonicalProductSimulationProfile } from "./questionTypes";
+import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 
 export type ProductModeAvailability = "immediate" | "evidence_conditioned";
 export type ProductFeedbackTiming =
@@ -33,6 +34,21 @@ export type ProductModeConfig = Readonly<{
   reinsertPolicy: ProductReinsertPolicy;
   selection: ProductModeSelection;
 }>;
+
+/** Claude's V3 required unit pools may contain four questions; preserve ordinary/V2 mode capacity. */
+export function resolveRequiredUnitFocusMode(
+  mode: ProductModeConfig,
+  completionRule: PackageCompletionRule | undefined,
+  nodeId: string,
+  mentalUnitId: string,
+): ProductModeConfig {
+  if (mode.modeId !== "certification-focus-practice" || completionRule?.ruleVersion !== 3 || !nodeId.trim() || !mentalUnitId.trim()) {
+    throw new Error("A required-unit capacity profile needs a V3 Certification Focus Practice target.");
+  }
+  const matches = completionRule.chapters.filter((chapter) => chapter.units.some((unit) => unit.mentalUnitId === mentalUnitId));
+  if (matches.length !== 1 || matches[0]!.nodeId !== nodeId) throw new Error("Required-unit focus target is unavailable or ambiguous.");
+  return Object.freeze({ ...mode, minimumActualLength: 4 });
+}
 
 export type ProductSimulationModeConfig = Readonly<{
   kind: "certification_exam_simulation";

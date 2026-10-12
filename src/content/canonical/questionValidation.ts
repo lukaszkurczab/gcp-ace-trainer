@@ -1,4 +1,4 @@
-import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRuleV2 } from "../../domain/learning/packageCompletionRule";
+import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 import type { CanonicalArtifact, CanonicalContentLockRecord, Question, QuestionInteractionType } from "./questionTypes";
 
 const WHITESPACE = "\\u0009-\\u000D\\u001C-\\u001F\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF";
@@ -95,11 +95,24 @@ export function validateQuestion(value: unknown): readonly string[] {
 }
 
 function validateFeedback(value: unknown, type: QuestionInteractionType, refs: readonly string[], dimensions: readonly { id: string; values: string[] }[], answer: unknown, errors: string[]): void {
-  if (!exact(value, ["type", "reason", "details", "messages"], ["type", "reason", "details"], "question.feedback", errors)) return;
+  if (!exact(value, ["type", "reason", "details", "course", "messages"], ["type", "reason", "details"], "question.feedback", errors)) return;
   if (value.type !== type) errors.push("question.feedback.type: mismatched type"); text(value.reason, "question.feedback.reason", errors); json(value.details, "question.feedback.details", errors);
+  if (Object.hasOwn(value, "course")) validateCourseSource(value.course, "question.feedback.course", errors);
   if (!Object.hasOwn(value, "messages")) return; if (!Array.isArray(value.messages)) { errors.push("question.feedback.messages: must be an array"); return; }
   const seen = new Set<string>(); const dimensionIds = new Set(dimensions.map((x) => x.id)); const targets = new Set(dimensions.flatMap((d) => d.values.map((v) => `${d.id}|${v}`))); const ordered = record(answer) && Array.isArray(answer.orderedElementIds) ? answer.orderedElementIds : []; const relations = new Set(ordered.slice(0, -1).map((x, i) => `${x}->${ordered[i + 1]}`));
   for (const [i, message] of value.messages.entries()) if (exact(message, ["kind", "targetId", "text"], ["kind", "targetId", "text"], `question.feedback.messages[${i}]`, errors)) { id(message.kind, `question.feedback.messages[${i}].kind`, errors); id(message.targetId, `question.feedback.messages[${i}].targetId`, errors); text(message.text, `question.feedback.messages[${i}].text`, errors); const key = `${message.kind}|${message.targetId}`; if (seen.has(key)) errors.push("question.feedback.messages: duplicate kind/target pair"); seen.add(key); if (!FEEDBACK_KINDS[type].includes(message.kind as string)) errors.push(`question.feedback.messages[${i}].kind: invalid kind`); const valid = message.kind === "wrong_option" || message.kind === "omitted_option" || message.kind === "wrong_element" ? refs.includes(message.targetId as string) : message.kind === "broken_relation" ? relations.has(message.targetId as string) : message.kind === "omitted_dimension" ? dimensionIds.has(message.targetId as string) : targets.has(message.targetId as string); if (!valid) errors.push(`question.feedback.messages[${i}].targetId: foreign target`); }
+}
+
+function validateCourseSource(value: unknown, path: string, errors: string[]): void {
+  if (!exact(value, ["title", "url", "section", "requiresAccount"], ["title", "url", "requiresAccount"], path, errors)) return;
+  text(value.title, `${path}.title`, errors);
+  if (text(value.url, `${path}.url`, errors)) {
+    if (!/^https:\/\/[^\s/?#]+(?:[/?#][^\s]*)?$/u.test(value.url)) errors.push(`${path}.url: must be an absolute HTTPS URL without whitespace`);
+    else try { if (new URL(value.url).protocol !== "https:") errors.push(`${path}.url: must use HTTPS`); }
+    catch { errors.push(`${path}.url: must be an absolute HTTPS URL`); }
+  }
+  if (Object.hasOwn(value, "section")) text(value.section, `${path}.section`, errors);
+  if (typeof value.requiresAccount !== "boolean") errors.push(`${path}.requiresAccount: must be a boolean`);
 }
 
 export function assertValidQuestion(value: unknown): asserts value is Question { const errors = validateQuestion(value); if (errors.length) throw new CanonicalQuestionValidationError("Question does not satisfy the canonical contract.", errors); }
@@ -174,8 +187,8 @@ export function validateCanonicalArtifact(value: unknown, lock: CanonicalContent
   }
   if (Object.hasOwn(value, "completionRule")) {
     try {
-      const rule = createPackageCompletionRuleV2(value.completionRule);
-      assertPackageCompletionRuleMatchesQuestions(rule, value.questions as readonly { nodeId: string; mentalUnitId: string }[]);
+      const rule = createPackageCompletionRule(value.completionRule);
+      assertPackageCompletionRuleMatchesQuestions(rule, value.questions as readonly { questionId: string; nodeId: string; mentalUnitId: string }[]);
     }
     catch { errors.push("artifact.completionRule: invalid versioned completion rule"); }
   }

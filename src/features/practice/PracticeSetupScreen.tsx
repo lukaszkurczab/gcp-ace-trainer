@@ -43,6 +43,7 @@ import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import type { ProductModeConfig } from "../../content/canonical";
+import { resolveRequiredUnitFocusMode } from "../../content/canonical";
 
 type PracticeSetupScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -195,7 +196,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const [reviewBehaviorEnabled, setReviewBehaviorEnabled] = useState(
     route.params?.reviewBehaviorEnabled ?? false,
   );
-  const [focusTopicId, setFocusTopicId] = useState<string | null>(() => isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
+  const [focusTopicId, setFocusTopicId] = useState<string | null>(() => route.params?.topicId ?? null);
   const [focusMentalUnitId, setFocusMentalUnitId] = useState<string | null>(() => route.params?.mentalUnitId ?? null);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [premiumOfferError, setPremiumOfferError] = useState<string | null>(null);
@@ -208,7 +209,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     setSessionLength(route.params?.sessionLength ?? null);
     setFeedbackMode(route.params?.feedbackMode ?? DEFAULT_FEEDBACK_MODE);
     setReviewBehaviorEnabled(route.params?.reviewBehaviorEnabled ?? false);
-    setFocusTopicId(isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
+    setFocusTopicId(route.params?.topicId ?? null);
     setFocusMentalUnitId(route.params?.mentalUnitId ?? null);
     setSetupError(null);
   }, [activeFormIdentity]);
@@ -271,8 +272,19 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const canonicalNodeId = canonicalNodeMode?.selection.kind === "node"
     ? canonicalNodeMode.selection.nodeId
     : "";
-  if (route.params?.topicId !== undefined && route.params.topicId !== canonicalNodeId) {
+  const routedUnitChapter = route.params?.mentalUnitId && canonicalTrack.completionRule?.ruleVersion === 3
+    ? canonicalTrack.completionRule!.chapters.find((chapter) => chapter.units.some((unit) => unit.mentalUnitId === route.params!.mentalUnitId))
+    : undefined;
+  const v3UnitRoute = routedUnitChapter?.nodeId === route.params?.topicId;
+  const premiumUnitRoute = v3UnitRoute && route.params?.topicId !== canonicalNodeId;
+  if (route.params?.topicId !== undefined && route.params.topicId !== canonicalNodeId && !v3UnitRoute) {
     return renderUnavailable(t("This topic is not included in your free content."));
+  }
+  const premiumAccess = premiumUnitRoute ? account.readCurrentPremiumAccess() : "allowed";
+  if (premiumUnitRoute && premiumAccess !== "allowed") {
+    return renderUnavailable(premiumAccess === "denied"
+      ? t("This required exam topic needs Premium access.")
+      : t("Premium access is currently unavailable. Check your account and try again."));
   }
   const requestedMode = route.params?.mode ?? canonicalTrack.modes[0]?.modeId;
   if (typeof requestedMode !== "string") return renderUnavailable(t("This practice mode is unavailable."));
@@ -291,19 +303,27 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const diagnosticBaseline = certificationTrack && selectedMode === "certification-diagnostic-baseline";
   const focusPractice = certificationTrack && selectedMode === "certification-focus-practice";
   let recommendedFocusUnitNumber: number | null = null;
+  let recommendedFocusQuestionCount: number | null = null;
   if (route.params?.mentalUnitId !== undefined) {
     const focusMode = canonicalTrack.getMode("certification-focus-practice");
-    const exactFocusPool = focusMode.selection.kind === "node"
-      ? canonicalTrack.getPool(focusMode.modeId).filter((question) => question.nodeId === canonicalNodeId)
-      : [];
+    const targetNodeId = v3UnitRoute ? routedUnitChapter!.nodeId : canonicalNodeId;
+    const scopedMode = v3UnitRoute
+      ? resolveRequiredUnitFocusMode(focusMode, canonicalTrack.completionRule, targetNodeId, route.params.mentalUnitId)
+      : focusMode;
+    const exactFocusPool = v3UnitRoute
+      ? canonicalTrack.questions.filter((question) => question.nodeId === targetNodeId)
+      : focusMode.selection.kind === "node"
+        ? canonicalTrack.getPool(focusMode.modeId).filter((question) => question.nodeId === canonicalNodeId)
+        : [];
     const scopedPool = exactFocusPool.filter((question) => question.mentalUnitId === route.params!.mentalUnitId);
     const orderedUnits = [...new Set(exactFocusPool.map((question) => question.mentalUnitId))];
     const unitIndex = orderedUnits.indexOf(route.params.mentalUnitId);
-    if (!focusPractice || focusMode.selection.kind !== "node" || scopedPool.length < focusMode.minimumActualLength) {
+    if (!focusPractice || focusMode.selection.kind !== "node" || scopedPool.length < scopedMode.minimumActualLength) {
       return renderUnavailable(t("This recommended practice scope does not have enough available questions."));
     }
     if (unitIndex < 0) return renderUnavailable(t("This recommended learning unit is unavailable in the current content package."));
     recommendedFocusUnitNumber = unitIndex + 1;
+    recommendedFocusQuestionCount = scopedPool.length;
   }
   const weakAreaReview = certificationTrack && selectedMode === "certification-weak-area-review";
   const quickReview = certificationTrack && selectedMode === "certification-quick-review";
@@ -329,12 +349,13 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
   }
   const selectedFocusTopicId = focusPractice
-    ? focusTopicId ?? canonicalNodeId
+    ? focusTopicId ?? (v3UnitRoute ? routedUnitChapter!.nodeId : canonicalNodeId)
     : null;
+  const requiredFocusTopicId = focusMentalUnitId && v3UnitRoute ? routedUnitChapter!.nodeId : canonicalNodeId;
 
   function startSession() {
     const mode = selectedMode;
-    if (focusPractice && selectedFocusTopicId !== canonicalNodeId) {
+    if (focusPractice && selectedFocusTopicId !== requiredFocusTopicId) {
       setSetupError("Choose an available topic to start practicing.");
       return;
     }
@@ -422,7 +443,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </Text>
         </View> : null}
 
-        {focusPractice && focusMentalUnitId && recommendedFocusUnitNumber !== null ? <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-focused-unit-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Recommended learning unit")}</Text><Text key={`practice-setup-focused-unit-detail-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("This session is limited to learning unit {{number}} in this chapter.", { number: recommendedFocusUnitNumber })}</Text></View></Card> : null}
+        {focusPractice && focusMentalUnitId && recommendedFocusUnitNumber !== null ? <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-focused-unit-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Recommended learning unit")}</Text><Text key={`practice-setup-focused-unit-detail-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("This session is limited to learning unit {{number}} in this chapter.", { number: recommendedFocusUnitNumber })}</Text>{v3UnitRoute && recommendedFocusQuestionCount !== null && recommendedFocusQuestionCount < configuredSessionLength ? <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t("This required exam topic has {{count}} questions, so this session will use all {{count}}.", { count: recommendedFocusQuestionCount })}</Text> : null}</View></Card> : null}
 
         {premiumOffers.map((offer) => <Card key={offer.offerId} style={[styles.reviewCard, styles.premiumOfferCard]}>
           <View style={styles.reviewCopy}>

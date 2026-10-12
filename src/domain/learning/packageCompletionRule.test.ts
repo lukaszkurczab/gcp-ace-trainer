@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createPackageCompletionRuleV2, evaluatePackageCompletion, minimumAttemptsForMentalUnits, type TrainingAttempt } from "..";
+import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRuleV2, createPackageCompletionRuleV3, evaluatePackageCompletion, minimumAttemptsForMentalUnits, type TrainingAttempt } from "..";
 
 const artifactSha256 = "a".repeat(64);
 const rule = createPackageCompletionRuleV2({ ruleVersion: 2, chapters: [
@@ -82,4 +82,82 @@ test("exact package identity, retry deduplication, conflict detection, and unres
   assert.throws(() => evaluate([valid, { ...valid, result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 } }]), /Conflicting/);
   assert.throws(() => evaluate([attempt("unresolved", "not-in-artifact", 2)]), /absent from its verified package/);
   assert.throws(() => evaluate([attempt("bad-time", "question-a", 0, "correct", { answeredAt: "not-a-date" })]), /invalid/);
+});
+
+const v3Rule = createPackageCompletionRuleV3({ ruleVersion: 3, chapters: [
+  { nodeId: "chapter-a", mentalUnitCount: 1, minimumAttemptCount: 20, rollingWindowSize: 20, qualityThreshold: 0.8, units: [{ mentalUnitId: "unit-a", requiredCorrectQuestionCount: 4 }] },
+] });
+const v3QuestionById = new Map(Array.from({ length: 5 }, (_, index) => [`unit-a-q${index + 1}`, { nodeId: "chapter-a", mentalUnitId: "unit-a" }]));
+function evaluateV3(attempts: readonly TrainingAttempt<unknown>[]) {
+  return evaluatePackageCompletion({ ...profile, completionRule: v3Rule }, attempts, (questionId) => v3QuestionById.get(questionId));
+}
+
+test("v3 validates exact unit inventory and the required four distinct questions", () => {
+  for (const invalid of [
+    null,
+    { ...v3Rule, extra: true },
+    { ruleVersion: 3, chapters: [{ ...v3Rule.chapters[0], mentalUnitCount: 2 }] },
+    { ruleVersion: 3, chapters: [{ ...v3Rule.chapters[0], units: [{ mentalUnitId: "unit-a", requiredCorrectQuestionCount: 3 }] }] },
+    { ruleVersion: 3, chapters: [{ ...v3Rule.chapters[0], units: [{ mentalUnitId: "unit-a", requiredCorrectQuestionCount: 4 }, { mentalUnitId: "unit-a", requiredCorrectQuestionCount: 4 }] }] },
+    { ruleVersion: 3, chapters: [v3Rule.chapters[0], { ...v3Rule.chapters[0], nodeId: "chapter-b" }] },
+  ]) assert.throws(() => createPackageCompletionRuleV3(invalid));
+
+  const inventory = [...v3QuestionById].map(([questionId, identity]) => ({ questionId, ...identity }));
+  assert.doesNotThrow(() => assertPackageCompletionRuleMatchesQuestions(v3Rule, inventory));
+  assert.throws(() => assertPackageCompletionRuleMatchesQuestions(v3Rule, inventory.slice(0, 3)), /fewer distinct questions/);
+  assert.throws(() => assertPackageCompletionRuleMatchesQuestions(v3Rule, [...inventory.slice(0, 3), { questionId: "foreign", nodeId: "chapter-a", mentalUnitId: "other-unit" }]), /chapter differs|unit inventory/);
+  assert.throws(() => assertPackageCompletionRuleMatchesQuestions(v3Rule, [...inventory.slice(0, 3), { ...inventory[0]! }]), /duplicated/);
+});
+
+test("v3 blocks a green volume and quality result until four distinct latest-correct questions cover the unit", () => {
+  const repeated = Array.from({ length: 20 }, (_, index) => attempt(`repeat-${index}`, "unit-a-q1", index));
+  const partialCoverage = evaluateV3(repeated);
+  assert.equal(partialCoverage.kind, "in_progress");
+  if (partialCoverage.kind !== "in_progress") return;
+  assert.equal(partialCoverage.remainingAttemptCount, 0);
+  assert.equal(partialCoverage.coverageDeficit, 3);
+  assert.equal(partialCoverage.minimumAdditionalAttemptCount, 3);
+  assert.equal(partialCoverage.chapters[0]?.coverage[0]?.latestCorrectQuestionCount, 1);
+  assert.equal(partialCoverage.chapters[0]?.reason, "coverage_unmet");
+  assert.equal(partialCoverage.chapters[0]?.quality, 1);
+
+  const covered = evaluateV3([...repeated, ...[2, 3, 4].map((questionNumber, offset) => attempt(`new-${questionNumber}`, `unit-a-q${questionNumber}`, 20 + offset))]);
+  assert.equal(covered.kind, "completed");
+  if (covered.kind === "completed") {
+    assert.equal(covered.coverageDeficit, 0);
+    assert.equal(covered.minimumAdditionalAttemptCount, 0);
+    assert.equal(covered.chapters[0]?.coverage[0]?.latestCorrectQuestionCount, 4);
+  }
+});
+
+test("v3 uses only each question's latest exact-package result and the attempt id tie-break", () => {
+  const firstTwenty = Array.from({ length: 20 }, (_, index) => attempt(`base-${index}`, `unit-a-q${(index % 4) + 1}`, index));
+  const regression = attempt("regression", "unit-a-q4", 30, "incorrect");
+  const afterRegression = evaluateV3([...firstTwenty, regression]);
+  assert.equal(afterRegression.kind, "in_progress");
+  if (afterRegression.kind !== "in_progress") return;
+  assert.equal(afterRegression.chapters[0]?.coverage[0]?.latestCorrectQuestionCount, 3);
+  assert.equal(afterRegression.coverageDeficit, 1);
+  assert.equal(afterRegression.chapters[0]?.quality, 0.95);
+
+  const tieCorrect = attempt("q4-a", "unit-a-q4", 40);
+  const tieIncorrect = attempt("q4-z", "unit-a-q4", 40, "partial", { answeredAt: tieCorrect.answeredAt });
+  const tied = evaluateV3([...firstTwenty, tieCorrect, tieIncorrect]);
+  assert.equal(tied.kind, "in_progress");
+  if (tied.kind === "in_progress") assert.equal(tied.chapters[0]?.coverage[0]?.latestCorrectQuestionCount, 3);
+});
+
+test("v3 exposes actual rolling quality even while attempt volume remains unmet", () => {
+  const sixUnits = Array.from({ length: 6 }, (_, index) => ({ mentalUnitId: `unit-${index + 1}`, requiredCorrectQuestionCount: 4 }));
+  const largeRule = createPackageCompletionRuleV3({ ruleVersion: 3, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 6, minimumAttemptCount: 40, rollingWindowSize: 20, qualityThreshold: 0.8, units: sixUnits }] });
+  const largeQuestions = new Map<string, { nodeId: string; mentalUnitId: string }>();
+  for (const unit of sixUnits) for (let index = 1; index <= 4; index += 1) largeQuestions.set(`${unit.mentalUnitId}-q${index}`, { nodeId: "chapter-a", mentalUnitId: unit.mentalUnitId });
+  const attempts = Array.from({ length: 20 }, (_, index) => attempt(`quality-${index}`, `${sixUnits[index % sixUnits.length]!.mentalUnitId}-q${(index % 4) + 1}`, index, index < 5 ? "incorrect" : "correct"));
+  const result = evaluatePackageCompletion({ ...profile, completionRule: largeRule }, attempts, (questionId) => largeQuestions.get(questionId));
+  assert.equal(result.kind, "in_progress");
+  if (result.kind !== "in_progress") return;
+  assert.equal(result.remainingAttemptCount, 20);
+  assert.equal(result.chapters[0]?.quality, 0.75);
+  assert.equal(result.chapters[0]?.qualityRequirementUnmet, true);
+  assert.equal(result.chapters[0]?.reason, "minimum_attempts_unmet");
 });

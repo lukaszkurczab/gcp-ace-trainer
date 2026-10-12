@@ -1010,3 +1010,28 @@ Wymagane korekty: Make each item test one actual fan-out/history/read-model requ
 
 Fakty do sprawdzenia: Derive the relevant mechanism, invariant, state and boundary or cost model; use official technical documentation when a framework/protocol fact determines the answer.
 Źródła: https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs
+
+## Celowany preflight promptu BESD — 11.10.2026
+
+Status: **odroczone po pierwszym wydaniu iOS** zgodnie z planem głównym (§ Plan po pierwszym wydaniu iOS, FCA-EDIT) i WORKING_STATE. Prompt wykonawczy z 09.10 nie otwiera tego gate. Nie rozpoczęto napraw, candidate/review/admission ani nowego audytu semantycznego. Poniższy dowód uzupełnia istniejące zadania, nie tworzy drugiej kolejki.
+
+Read-only Git: producer lokalny i zdalny default `master` nadal `0f4e6912d7d0cdb1a1c41b9d7885d7e867f80f34`, czyste drzewo; consumer lokalny i zdalny default `main` to obecnie `8a591248c576b0d63f2df6331bd5ce8d83359bd5`. Consumer ma cudze lokalne zmiany PERSIST, w tym WORKING_STATE; pozostawiono je nietknięte. Sprawdzono status, branches/upstream, remotes i stashe obu repo; niczego nie przełączano ani nie usuwano.
+
+Porównanie bajtów każdego B02–B09 przez `git show <snapshot>:<path>` z bieżącym plikiem: identyczne. Parsowanie dziewięciu N02 units potwierdza we wszystkich 134 wskazanych rekordach jednocześnie constraint `The primary decision is ...`, `answer.optionId=primary_decision` oraz prefix `feedback.details.errorCorrection=The distractors either...`. B01: 16 zastępstw, zero tych trzech sygnałów; bez zmiany i ponownego odbioru semantycznego.
+
+| Istniejące zadanie | Source w `api_contracts_service_boundaries_and_request_flows` | Exact IDs (zakres ciągły) | Liczba |
+|---|---|---|---|
+| FCA-EDIT-9915a7705c | `BESD-N02-B02.json` | `besd-n02-b02-i001`–`besd-n02-b02-i016` | 16 |
+| FCA-EDIT-210cc734ad | `BESD-N02-B03.json` | `besd-n02-b03-i001`–`besd-n02-b03-i017` | 17 |
+| FCA-EDIT-bd2347e5ad | `BESD-N02-B04.json` | `besd-n02-b04-i001`–`besd-n02-b04-i017` | 17 |
+| FCA-EDIT-b02635c917 | `BESD-N02-B05.json` | `besd-n02-b05-i001`–`besd-n02-b05-i017` | 17 |
+| FCA-EDIT-9dcb04dd7c | `BESD-N02-B06.json` | `besd-n02-b06-i001`–`besd-n02-b06-i016` | 16 |
+| FCA-EDIT-5f9bbd418a | `BESD-N02-B07.json` | `besd-n02-b07-i001`–`besd-n02-b07-i017` | 17 |
+| FCA-EDIT-662e8800a7 | `BESD-N02-B08.json` | `besd-n02-b08-i001`–`besd-n02-b08-i016` | 16 |
+| FCA-EDIT-00722d450f | `BESD-N02-B09.json` | `besd-n02-b09-i001`–`besd-n02-b09-i018` | 18 |
+
+Consumer: `src/features/practice/PracticeQuestionCard.tsx:18–25` renderuje prompt i constraints bez warunku submit; `src/application/canonical/canonicalInteractionPresentation.ts` mapuje opcje po stable optionId; `src/content/canonical/questionScoring.ts:44` porównuje response.optionId z authored answer.optionId. To dowód źródłowy ścieżki ujawnienia, bez uruchomienia UI/native ani twierdzenia o runtime PASS.
+
+Aktualizacja snapshotu: source catalog i generated app content-lock wskazują `backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2-bizq03-planning-v2`; app lock: 1569, SHA-256 `89a428ea797e246d287b620a825d9cb78a12ea42beb2e8e0c749cb7bb1f1b47c`. Release lock nadal wskazuje `...-bizq02-v2`, artifact `d7f2762e8cc71e41addb775a5221cf1b79cd5ef2e885a7cef8fce914069d1481`, producer `8222f9f4c742b339f12c0f141594342972b43b45`. Historyczne twierdzenie promptu o app lock nie opisuje już current source; różnica suffixu nie dowodzi naprawy pytań ani nie upoważnia do admission.
+
+Nie uruchamiano content validate/test/build, app tests ani niezależnego QA napraw: brak zmiany contentu i zamknięty gate. Metryki 150/1569 semanticReviewed oraz 1535/1569 static-family pochodzą z dostarczonego audytu 09.10; ten preflight ich nie rozszerza ani nie potwierdza ponownie całej rodziny. Po otwarciu gate: recheck exact source/owner → B02–B09 według istniejących zadań i macierzy promptu → identity/version → item-level positive/negative evidence → normalny authorized QA/admission.

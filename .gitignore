@@ -15,7 +15,10 @@ web-build/
 !.maestro/q13-readonly-scroll.yaml
 !.maestro/bizq04-manual-review-native.yaml
 !.maestro/bizq05-scoped-focus-native.yaml
+!.maestro/cc03-course-details.yaml
+!.maestro/cc04-unit-coverage.yaml
 docs/qa/
+/.temp/
 
 npm-debug.log*
 yarn-debug.log*

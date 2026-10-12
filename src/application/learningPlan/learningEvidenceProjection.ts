@@ -2,7 +2,7 @@ import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatal
 import { isActiveReviewQueueEntry, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { createArtifactSha256 } from "../../domain/learning/contentItemRef";
 import {
-  createPackageCompletionRuleV2, evaluatePackageCompletion, qualifyPackageAttempts,
+  createPackageCompletionRule, evaluatePackageCompletion, qualifyPackageAttempts,
   type VerifiedPackageCompletionProfile, type PackageCompletionState,
 } from "../../domain/learning/packageCompletionRule";
 import type { ImmutableCompletedFacts } from "../../domain/learning/paceForecast";
@@ -26,7 +26,7 @@ export function projectLearningEvidence(input: Readonly<{
   const { profile } = input;
   if (!profile.trackId.trim() || !profile.contentVersion.trim()) throw new Error("Learning evidence package identity is invalid.");
   createArtifactSha256(profile.artifactSha256);
-  if (Object.hasOwn(profile, "completionRule")) createPackageCompletionRuleV2(profile.completionRule);
+  if (Object.hasOwn(profile, "completionRule")) createPackageCompletionRule(profile.completionRule);
   const nowMs = Date.parse(input.now);
   if (!Number.isFinite(nowMs)) throw new Error("Learning evidence clock is invalid.");
   const uniqueAttempts = uniqueRecords(input.attempts);

@@ -41,6 +41,7 @@ export type TargetAssessment =
   | Readonly<{ kind: "open_ended" }>
   | Readonly<{ kind: "unknown_completion_rule" }>
   | Readonly<{ kind: "quality_requirement_unmet" }>
+  | Readonly<{ kind: "quality_outcome_unknown" }>
   | Readonly<{
       kind: "minimum_volume_fits" | "minimum_volume_exceeds_capacity";
       occurrences: number;
@@ -280,24 +281,84 @@ function validateCompletionState(value: unknown): PackageCompletionState {
     return Object.freeze({ kind: "unknown" });
   }
   if (completion.kind === "in_progress") {
+    if (hasOnlyKeys(completion, ["kind", "chapters", "completedChapterCount", "requiredChapterCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount"])) {
+      return normalizeLegacyCompletionState(completion, false);
+    }
     const chapters = validateChapterStatuses(completion.chapters);
-    if (!hasOnlyKeys(completion, ["kind", "chapters", "completedChapterCount", "requiredChapterCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount"]) ||
+    const coverageDeficit = chapters.reduce((sum, chapter) => sum + chapter.coverageDeficit, 0);
+    const minimumAdditionalAttemptCount = chapters.reduce((sum, chapter) => sum + chapter.minimumAdditionalAttemptCount, 0);
+    if (!hasOnlyKeys(completion, ["kind", "chapters", "completedChapterCount", "requiredChapterCount", "qualifyingAttemptCount", "requiredAttemptCount", "coverageDeficit", "minimumAdditionalAttemptCount", "remainingAttemptCount"]) ||
       !nonNegativeInteger(completion.completedChapterCount) || !positiveInteger(completion.requiredChapterCount) ||
       completion.requiredChapterCount !== chapters.length || completion.completedChapterCount !== chapters.filter(chapter => chapter.status === "completed").length ||
       completion.completedChapterCount >= completion.requiredChapterCount || completion.qualifyingAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.qualifyingAttemptCount, 0) ||
       completion.requiredAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.requiredAttemptCount, 0) ||
-      completion.remainingAttemptCount !== chapters.reduce((sum, chapter) => sum + Math.max(0, chapter.requiredAttemptCount - chapter.qualifyingAttemptCount), 0)) fail("invalid_completion_state");
-    return Object.freeze({ kind: "in_progress", chapters, completedChapterCount: completion.completedChapterCount, requiredChapterCount: completion.requiredChapterCount, qualifyingAttemptCount: completion.qualifyingAttemptCount, requiredAttemptCount: completion.requiredAttemptCount, remainingAttemptCount: completion.remainingAttemptCount });
+      completion.coverageDeficit !== coverageDeficit || completion.minimumAdditionalAttemptCount !== minimumAdditionalAttemptCount ||
+      completion.remainingAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.remainingAttemptCount, 0)) fail("invalid_completion_state");
+    return Object.freeze({ kind: "in_progress", chapters, completedChapterCount: completion.completedChapterCount, requiredChapterCount: completion.requiredChapterCount, qualifyingAttemptCount: completion.qualifyingAttemptCount, requiredAttemptCount: completion.requiredAttemptCount, coverageDeficit, minimumAdditionalAttemptCount, remainingAttemptCount: completion.remainingAttemptCount });
   }
   if (completion.kind === "completed") {
+    if (hasOnlyKeys(completion, ["kind", "chapters", "completedChapterCount", "requiredChapterCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount"])) {
+      return normalizeLegacyCompletionState(completion, true);
+    }
     const chapters = validateChapterStatuses(completion.chapters);
-    if (!hasOnlyKeys(completion, ["kind", "chapters", "completedChapterCount", "requiredChapterCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount"]) ||
+    if (!hasOnlyKeys(completion, ["kind", "chapters", "completedChapterCount", "requiredChapterCount", "qualifyingAttemptCount", "requiredAttemptCount", "coverageDeficit", "minimumAdditionalAttemptCount", "remainingAttemptCount"]) ||
       !positiveInteger(completion.requiredChapterCount) || completion.requiredChapterCount !== chapters.length || completion.completedChapterCount !== chapters.length ||
-      chapters.some(chapter => chapter.status !== "completed") || completion.qualifyingAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.qualifyingAttemptCount, 0) ||
-      completion.requiredAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.requiredAttemptCount, 0) || completion.remainingAttemptCount !== 0) fail("invalid_completion_state");
-    return Object.freeze({ kind: "completed", chapters, completedChapterCount: completion.completedChapterCount, requiredChapterCount: completion.requiredChapterCount, qualifyingAttemptCount: completion.qualifyingAttemptCount, requiredAttemptCount: completion.requiredAttemptCount, remainingAttemptCount: 0 });
+      chapters.some(chapter => chapter.status !== "completed" || chapter.coverageDeficit !== 0 || chapter.minimumAdditionalAttemptCount !== 0 || chapter.remainingAttemptCount !== 0 || chapter.qualityRequirementUnmet !== false) ||
+      completion.qualifyingAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.qualifyingAttemptCount, 0) ||
+      completion.requiredAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.requiredAttemptCount, 0) || completion.coverageDeficit !== 0 || completion.minimumAdditionalAttemptCount !== 0 || completion.remainingAttemptCount !== 0) fail("invalid_completion_state");
+    return Object.freeze({ kind: "completed", chapters, completedChapterCount: completion.completedChapterCount, requiredChapterCount: completion.requiredChapterCount, qualifyingAttemptCount: completion.qualifyingAttemptCount, requiredAttemptCount: completion.requiredAttemptCount, coverageDeficit: 0, minimumAdditionalAttemptCount: 0, remainingAttemptCount: 0 });
   }
   fail("invalid_completion_state");
+}
+
+function normalizeLegacyCompletionState(completion: Record<string, unknown>, completed: boolean): PackageCompletionState {
+  if (!hasOnlyKeys(completion, ["kind", "chapters", "completedChapterCount", "requiredChapterCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount"])) fail("invalid_completion_state");
+  const chapters = validateLegacyChapterStatuses(completion.chapters);
+  if (!positiveInteger(completion.requiredChapterCount) || completion.requiredChapterCount !== chapters.length ||
+    completion.completedChapterCount !== chapters.filter((chapter) => chapter.status === "completed").length ||
+    completion.qualifyingAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.qualifyingAttemptCount, 0) ||
+    completion.requiredAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.requiredAttemptCount, 0) ||
+    completion.remainingAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.remainingAttemptCount, 0) ||
+    (completed ? completion.kind !== "completed" || chapters.some((chapter) => chapter.status !== "completed") || completion.remainingAttemptCount !== 0
+      : completion.kind !== "in_progress" || completion.completedChapterCount === chapters.length)) fail("invalid_completion_state");
+  const normalized = chapters.map((chapter) => Object.freeze({
+    ...chapter,
+    coverage: Object.freeze([]),
+    coverageDeficit: 0,
+    minimumAdditionalAttemptCount: chapter.remainingAttemptCount,
+    qualityRequirementUnmet: chapter.quality === null ? null : chapter.quality < chapter.qualityThreshold,
+  }));
+  const common = { chapters: Object.freeze(normalized), completedChapterCount: completion.completedChapterCount as number,
+    requiredChapterCount: completion.requiredChapterCount as number, qualifyingAttemptCount: completion.qualifyingAttemptCount as number,
+    requiredAttemptCount: completion.requiredAttemptCount as number, coverageDeficit: 0 as const,
+    minimumAdditionalAttemptCount: completion.remainingAttemptCount as number };
+  return completed
+    ? Object.freeze({ kind: "completed", ...common, coverageDeficit: 0, minimumAdditionalAttemptCount: 0, remainingAttemptCount: 0 })
+    : Object.freeze({ kind: "in_progress", ...common, remainingAttemptCount: completion.remainingAttemptCount as number });
+}
+
+function validateLegacyChapterStatuses(value: unknown): readonly ChapterCompletionStatus[] {
+  if (!Array.isArray(value) || value.length === 0) fail("invalid_completion_state");
+  const seen = new Set<string>();
+  return Object.freeze(value.map((candidate) => {
+    const chapter = asRecord(candidate, "invalid_completion_state");
+    if (!hasOnlyKeys(chapter, ["nodeId", "mentalUnitCount", "qualifyingAttemptCount", "requiredAttemptCount", "rollingWindowSize", "qualityThreshold", "quality", "status", "reason"]) ||
+      typeof chapter.nodeId !== "string" || !chapter.nodeId.trim() || seen.has(chapter.nodeId) || !positiveInteger(chapter.mentalUnitCount) ||
+      !nonNegativeInteger(chapter.qualifyingAttemptCount) || !positiveInteger(chapter.requiredAttemptCount) || chapter.requiredAttemptCount !== minimumAttemptsForMentalUnits(chapter.mentalUnitCount) ||
+      chapter.rollingWindowSize !== 20 || chapter.qualityThreshold !== 0.8 || !["in_progress", "completed"].includes(String(chapter.status)) ||
+      ![null, "minimum_attempts_unmet", "quality_unmet"].includes(chapter.reason as null | string) ||
+      (chapter.quality !== null && (typeof chapter.quality !== "number" || !Number.isFinite(chapter.quality) || chapter.quality < 0 || chapter.quality > 1)) ||
+      (chapter.status === "completed" && (chapter.reason !== null || chapter.quality === null || chapter.qualifyingAttemptCount < chapter.requiredAttemptCount || chapter.quality < 0.8)) ||
+      (chapter.status === "in_progress" && chapter.reason === "minimum_attempts_unmet" && chapter.qualifyingAttemptCount >= chapter.requiredAttemptCount) ||
+      (chapter.status === "in_progress" && chapter.reason === "quality_unmet" && (chapter.qualifyingAttemptCount < chapter.requiredAttemptCount || chapter.quality === null || chapter.quality >= 0.8))) fail("invalid_completion_state");
+    seen.add(chapter.nodeId);
+    const remainingAttemptCount = Math.max(0, chapter.requiredAttemptCount - chapter.qualifyingAttemptCount);
+    return Object.freeze({ nodeId: chapter.nodeId, mentalUnitCount: chapter.mentalUnitCount, qualifyingAttemptCount: chapter.qualifyingAttemptCount,
+      requiredAttemptCount: chapter.requiredAttemptCount, remainingAttemptCount, coverageDeficit: 0, minimumAdditionalAttemptCount: remainingAttemptCount,
+      coverage: Object.freeze([]), rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: chapter.quality,
+      qualityRequirementUnmet: chapter.quality === null ? null : chapter.quality < 0.8,
+      status: chapter.status as "in_progress" | "completed", reason: chapter.reason as ChapterCompletionStatus["reason"] });
+  }));
 }
 
 function validateChapterStatuses(value: unknown): readonly ChapterCompletionStatus[] {
@@ -305,16 +366,36 @@ function validateChapterStatuses(value: unknown): readonly ChapterCompletionStat
   const seen = new Set<string>();
   return Object.freeze(value.map((candidate) => {
     const chapter = asRecord(candidate, "invalid_completion_state");
-    if (!hasOnlyKeys(chapter, ["nodeId", "mentalUnitCount", "qualifyingAttemptCount", "requiredAttemptCount", "rollingWindowSize", "qualityThreshold", "quality", "status", "reason"]) ||
+    if (!hasOnlyKeys(chapter, ["nodeId", "mentalUnitCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount", "coverageDeficit", "minimumAdditionalAttemptCount", "coverage", "rollingWindowSize", "qualityThreshold", "quality", "qualityRequirementUnmet", "status", "reason"]) ||
       typeof chapter.nodeId !== "string" || !chapter.nodeId.trim() || seen.has(chapter.nodeId) || !positiveInteger(chapter.mentalUnitCount) ||
-      !nonNegativeInteger(chapter.qualifyingAttemptCount) || !positiveInteger(chapter.requiredAttemptCount) || chapter.requiredAttemptCount !== minimumAttemptsForMentalUnits(chapter.mentalUnitCount) || chapter.rollingWindowSize !== 20 || chapter.qualityThreshold !== 0.8 ||
-      !["in_progress", "completed"].includes(String(chapter.status)) || ![null, "minimum_attempts_unmet", "quality_unmet"].includes(chapter.reason as null | string) ||
+      !nonNegativeInteger(chapter.qualifyingAttemptCount) || !positiveInteger(chapter.requiredAttemptCount) || chapter.requiredAttemptCount !== minimumAttemptsForMentalUnits(chapter.mentalUnitCount) ||
+      chapter.rollingWindowSize !== 20 || chapter.qualityThreshold !== 0.8 ||
+      !nonNegativeInteger(chapter.remainingAttemptCount) || chapter.remainingAttemptCount !== Math.max(0, chapter.requiredAttemptCount - chapter.qualifyingAttemptCount) ||
+      !Array.isArray(chapter.coverage) || chapter.coverage.length !== 0 && chapter.coverage.length !== chapter.mentalUnitCount ||
+      !["in_progress", "completed"].includes(String(chapter.status)) || ![null, "minimum_attempts_unmet", "coverage_unmet", "quality_unmet"].includes(chapter.reason as null | string) ||
+      chapter.coverage.some((unit) => {
+        if (!unit || typeof unit !== "object" || Array.isArray(unit)) return true;
+        const record = unit as Record<string, unknown>;
+        return !hasOnlyKeys(record, ["mentalUnitId", "requiredCorrectQuestionCount", "latestCorrectQuestionCount", "deficit"]) ||
+          typeof record.mentalUnitId !== "string" || !record.mentalUnitId.trim() || !positiveInteger(record.requiredCorrectQuestionCount) ||
+          !nonNegativeInteger(record.latestCorrectQuestionCount) || record.deficit !== Math.max(0, Number(record.requiredCorrectQuestionCount) - Number(record.latestCorrectQuestionCount));
+      }) ||
+      new Set((chapter.coverage as Array<{ mentalUnitId: string }>).map((unit) => unit.mentalUnitId)).size !== chapter.coverage.length ||
+      !nonNegativeInteger(chapter.coverageDeficit) || chapter.coverageDeficit !== (chapter.coverage as Array<{ deficit: number }>).reduce((sum, unit) => sum + unit.deficit, 0) ||
+      !nonNegativeInteger(chapter.minimumAdditionalAttemptCount) || chapter.minimumAdditionalAttemptCount !== Math.max(chapter.remainingAttemptCount, chapter.coverageDeficit) ||
+      ![true, false, null].includes(chapter.qualityRequirementUnmet as boolean | null) ||
       (chapter.quality !== null && (typeof chapter.quality !== "number" || !Number.isFinite(chapter.quality) || chapter.quality < 0 || chapter.quality > 1)) ||
-      (chapter.status === "completed" && (chapter.reason !== null || chapter.quality === null || chapter.qualifyingAttemptCount < chapter.requiredAttemptCount || chapter.quality < chapter.qualityThreshold)) ||
-      (chapter.status === "in_progress" && chapter.reason === "minimum_attempts_unmet" && chapter.qualifyingAttemptCount >= chapter.requiredAttemptCount) ||
-      (chapter.status === "in_progress" && chapter.reason === "quality_unmet" && (chapter.qualifyingAttemptCount < chapter.requiredAttemptCount || chapter.quality === null || chapter.quality >= chapter.qualityThreshold))) fail("invalid_completion_state");
+      (chapter.quality === null ? chapter.qualityRequirementUnmet !== null : chapter.qualityRequirementUnmet !== (chapter.quality < chapter.qualityThreshold)) ||
+      (chapter.status === "completed" && (chapter.reason !== null || chapter.qualityRequirementUnmet !== false || chapter.coverageDeficit !== 0 || chapter.remainingAttemptCount !== 0)) ||
+      (chapter.status === "in_progress" && chapter.reason === "minimum_attempts_unmet" && chapter.remainingAttemptCount === 0) ||
+      (chapter.status === "in_progress" && chapter.reason === "coverage_unmet" && (chapter.remainingAttemptCount !== 0 || chapter.coverageDeficit === 0)) ||
+      (chapter.status === "in_progress" && chapter.reason === "quality_unmet" && (chapter.remainingAttemptCount !== 0 || chapter.coverageDeficit !== 0 || chapter.qualityRequirementUnmet !== true))) fail("invalid_completion_state");
     seen.add(chapter.nodeId);
-    return Object.freeze({ nodeId: chapter.nodeId, mentalUnitCount: chapter.mentalUnitCount, qualifyingAttemptCount: chapter.qualifyingAttemptCount, requiredAttemptCount: chapter.requiredAttemptCount, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: chapter.quality, status: chapter.status as "in_progress" | "completed", reason: chapter.reason as "minimum_attempts_unmet" | "quality_unmet" | null });
+    return Object.freeze({ nodeId: chapter.nodeId, mentalUnitCount: chapter.mentalUnitCount, qualifyingAttemptCount: chapter.qualifyingAttemptCount, requiredAttemptCount: chapter.requiredAttemptCount,
+      remainingAttemptCount: chapter.remainingAttemptCount, coverageDeficit: chapter.coverageDeficit, minimumAdditionalAttemptCount: chapter.minimumAdditionalAttemptCount,
+      coverage: Object.freeze((chapter.coverage as ChapterCompletionStatus["coverage"]).map((unit) => Object.freeze({ ...unit }))),
+      rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: chapter.quality, qualityRequirementUnmet: chapter.qualityRequirementUnmet as boolean | null,
+      status: chapter.status as "in_progress" | "completed", reason: chapter.reason as ChapterCompletionStatus["reason"] });
   }));
 }
 
@@ -326,13 +407,14 @@ function buildTargetAssessment(record: GoalRecord, completion: PackageCompletion
   if (target.targetDate === undefined || target.meaning === "none") return Object.freeze({ kind: "open_ended" });
   if (completion.kind === "unknown") return Object.freeze({ kind: "unknown_completion_rule" });
 
-  if (completion.kind === "in_progress" && completion.remainingAttemptCount === 0) {
-    return Object.freeze({ kind: "quality_requirement_unmet" });
+  if (completion.kind === "in_progress" && completion.minimumAdditionalAttemptCount === 0) {
+    if (completion.chapters.some((chapter) => chapter.qualityRequirementUnmet === true)) return Object.freeze({ kind: "quality_requirement_unmet" });
+    return Object.freeze({ kind: "quality_outcome_unknown" });
   }
 
   const remainingAttempts = completion.kind === "completed"
     ? 0
-    : completion.remainingAttemptCount;
+    : completion.minimumAdditionalAttemptCount;
   const boundary = target.sessionBoundary === "strictly_before"
     ? addCalendarDays(target.targetDate, -1)
     : target.targetDate;

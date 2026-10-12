@@ -1,0 +1,22 @@
+appId: com.lkurczab.patternly
+name: CC04 required exam unit coverage completion states
+---
+- stopApp
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=cc04-missing-unit"
+- scrollUntilVisible:
+    element: "Required exam topics still needing practice: 1.*"
+    direction: DOWN
+    timeout: 60000
+    speed: 80
+    centerElement: true
+- assertVisible: "Required exam topics still needing practice: 1.*"
+- takeScreenshot: cc04-missing-unit
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=cc04-completed"
+- scrollUntilVisible:
+    element: "The package completion rule is currently met."
+    direction: DOWN
+    timeout: 60000
+    speed: 80
+    centerElement: true
+- assertVisible: "The package completion rule is currently met."
+- takeScreenshot: cc04-completed

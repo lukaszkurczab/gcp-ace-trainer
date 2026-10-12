@@ -388,6 +388,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   }
 
   async function handleHomePlanAction(action: GuidanceAction, homePlan: HomePlanSnapshot, returnTo: "home" | "progress" = "home"): Promise<void> {
+    if (action.kind === "access_premium") {
+      navigation.navigate(ROUTES.PREMIUM_PURCHASE);
+      return;
+    }
     if (action.kind === "try_again") {
       setShellReload((reload) => reload + 1);
       return;

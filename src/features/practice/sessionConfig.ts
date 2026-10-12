@@ -9,7 +9,7 @@ import {
 import type { AlgorithmSelectionScope } from "../../application/coding-interview/codingInterviewPreparationRequest";
 import { CERTIFICATION_PRACTICE_MODE_IDS, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
-import type { ProductModeConfig } from "../../content/canonical";
+import { resolveRequiredUnitFocusMode, type ProductModeConfig } from "../../content/canonical";
 import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";
 import type { PremiumNodeOffer } from "../../content/application/premiumNodeOffers";
 import { ROUTES } from "../../constants/routes";
@@ -170,7 +170,14 @@ export function buildPracticeSessionConfig(
     if (input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined || input.competencyId !== undefined) throw new Error("Certification Focus Practice does not render or accept undeclared setup controls.");
     if (input.mentalUnitId !== undefined) {
       const focusMode = packageProfile.getMode(mode);
-      if (focusMode.selection.kind !== "node" || !input.mentalUnitId.trim() || !packageProfile.getPool(mode).some((question) => question.nodeId === input.topicId && question.mentalUnitId === input.mentalUnitId)) throw new Error("Certification Focus Practice target mental unit is unavailable for this topic.");
+      if (focusMode.selection.kind !== "node" || !input.mentalUnitId.trim()) throw new Error("Certification Focus Practice target mental unit is unavailable for this topic.");
+      const isV3 = packageProfile.completionRule?.ruleVersion === 3;
+      const scopedMode = isV3
+        ? resolveRequiredUnitFocusMode(focusMode, packageProfile.completionRule, input.topicId, input.mentalUnitId)
+        : focusMode;
+      const targetPool = (isV3 ? packageProfile.questions : packageProfile.getPool(mode))
+        .filter((question) => question.nodeId === input.topicId && question.mentalUnitId === input.mentalUnitId);
+      if (!targetPool.length || (isV3 && targetPool.length < scopedMode.minimumActualLength) || (!isV3 && !targetPool.length)) throw new Error("Certification Focus Practice target mental unit is unavailable for this topic.");
       if ((input.expectedContentVersion === undefined) !== (input.expectedArtifactSha256 === undefined)) throw new Error("Certification Focus Practice target requires a complete content pin.");
       if (input.expectedContentVersion !== undefined && (input.expectedContentVersion !== packageProfile.contentVersion || input.expectedArtifactSha256 !== packageProfile.artifactSha256)) throw new Error("Certification Focus Practice target uses a different content package.");
     } else if (input.expectedContentVersion !== undefined || input.expectedArtifactSha256 !== undefined) throw new Error("Certification Focus Practice content pins require a mental unit target.");

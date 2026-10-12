@@ -194,6 +194,7 @@ export class LearningPlanProposalCoordinator {
         sessions: (after.sessions ?? []).filter((session) => session.trackId === trackId),
         attempts: after.attempts,
         reviews: after.reviews,
+        completion: context.completion,
         now: requestedAt,
         requestedLength: context.recommendation.requestedLength,
       } as const;

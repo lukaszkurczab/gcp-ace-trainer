@@ -200,6 +200,17 @@ test("returns each honest unavailable business reason", () => {
   assert.deepEqual(calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-01-28T10:00:00.000Z" }), today: "2026-02-01", completedFacts: facts([]) })), { kind: "unavailable", reason: "insufficient_elapsed_evidence" });
 });
 
+test("V3 lower-bound work includes coverage without relabeling volume or unknown quality", () => {
+  const coveredByQuality = calculatePaceForecast(input({ remainingAttemptCount: 0, minimumAdditionalAttemptCount: 0, qualityRequirementUnmet: null }));
+  assert.deepEqual(coveredByQuality, { kind: "unavailable", reason: "quality_outcome_unknown" });
+  const qualityMeasuredLow = calculatePaceForecast(input({ remainingAttemptCount: 0, minimumAdditionalAttemptCount: 0, qualityRequirementUnmet: true }));
+  assert.deepEqual(qualityMeasuredLow, { kind: "unavailable", reason: "quality_requirement_unmet" });
+
+  const coverageOnly = calculatePaceForecast(input({ remainingAttemptCount: 0, minimumAdditionalAttemptCount: 3, qualityRequirementUnmet: null }));
+  assert.equal(coverageOnly.kind, "available");
+  if (coverageOnly.kind === "available") assert.equal(coverageOnly.remainingRequiredAttempts, 3);
+});
+
 test("requires a concrete non-negative completion requirement", () => {
   const missing = { ...input() } as Record<string, unknown>;
   delete missing.remainingAttemptCount;

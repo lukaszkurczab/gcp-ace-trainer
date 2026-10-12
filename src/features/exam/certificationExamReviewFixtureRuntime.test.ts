@@ -114,6 +114,28 @@ test("practice answer matrix exposes actual completed summary, five feedback pre
   await assert.rejects(runtime.readPracticePreviews(CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID), /does not match/);
 });
 
+test("practice answer matrix opens both source-mapped in-memory course modules from the shared projection", async () => {
+  const opened: string[] = [];
+  const runtime = createSmokeRuntime("practice-answer-matrix", { openUrl: async (url) => { opened.push(url); } });
+  const previews = await runtime.readPracticePreviews(CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID);
+  const review = await runtime.readReview(CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID);
+  assert.deepEqual(previews.slice(0, 2).map((preview) => preview.question.questionId), ["CCARP-D01-O01-boundary", "CCARP-D01-O01-diagnosis"]);
+  const courses = previews.slice(0, 2).map((preview) => preview.feedback.sources?.find((source) => source.role === "course"));
+  assert.ok(courses[0]);
+  assert.ok(courses[1]);
+  const mappedCourses = [courses[0]!, courses[1]!];
+  assert.deepEqual(mappedCourses.map((source) => source.url), [
+    "https://anthropic-partners.skilljar.com/path/claude-certified-architect-professional/claude-platform-solution-design",
+    "https://anthropic-partners.skilljar.com/path/claude-certified-architect-professional/enterprise-integration-production",
+  ]);
+  const reviewCourses = review.items.slice(0, 2).map((item) => item.sources?.find((source) => source.role === "course"));
+  assert.deepEqual(review.items.slice(0, 2).map((item) => item.questionId), previews.slice(0, 2).map((preview) => preview.question.questionId));
+  assert.deepEqual(reviewCourses.map((source) => source?.url), mappedCourses.map((source) => source.url));
+  for (const course of mappedCourses) await runtime.openSource(course.url);
+  assert.deepEqual(opened, mappedCourses.map((source) => source.url));
+  assert.deepEqual(runtime.getSourceTrace(), { count: 2, url: mappedCourses[1]!.url });
+});
+
 test("Metro disabled runtime is explicitly unavailable outside smoke", () => {
   assert.throws(() => createDisabledRuntime("exam-ready", { openUrl: async () => undefined }), /unavailable in this runtime/);
 });

@@ -17,6 +17,7 @@ import {
   ProductModeUnavailableError,
   getProductModeConfig,
   getProductSimulationModeConfig,
+  resolveRequiredUnitFocusMode,
   validateProductModeConfigs,
   validateProductModeConfigsAgainstArtifacts,
   type ProductModeArtifact,
@@ -160,6 +161,19 @@ test("mode policies preserve feedback, elapsed timer, reinsert and evidence beha
     assert.equal(entry.selection.kind, "evidence_conditioned");
     if (entry.selection.kind === "evidence_conditioned") assert.deepEqual(entry.selection.evidenceSources, ["due_queue"]);
   }
+});
+
+test("only a verified V3 Claude unit scope lowers Focus actual minimum to four source questions", () => {
+  const focus = getProductModeConfig("claude-certified-architect-professional-certification", "certification-focus-practice");
+  assert.equal(focus.minimumActualLength, 10, "ordinary Claude Focus and V2 behavior retain the existing minimum");
+  const v3 = { ruleVersion: 3 as const, chapters: [{ nodeId: "premium-chapter", mentalUnitCount: 1, minimumAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const,
+    units: [{ mentalUnitId: "CCARP-D02-O01", requiredCorrectQuestionCount: 4 as const }] }] };
+  const scoped = resolveRequiredUnitFocusMode(focus, v3, "premium-chapter", "CCARP-D02-O01");
+  assert.equal(scoped.minimumActualLength, 4);
+  assert.deepEqual(scoped.requestedLengths, focus.requestedLengths);
+  assert.equal(scoped.defaultRequestedLength, focus.defaultRequestedLength);
+  assert.throws(() => resolveRequiredUnitFocusMode(focus, undefined, "premium-chapter", "CCARP-D02-O01"), /V3 Certification Focus Practice target/u);
+  assert.throws(() => resolveRequiredUnitFocusMode(focus, v3, "other-chapter", "CCARP-D02-O01"), /unavailable or ambiguous/u);
 });
 
 test("selection pools are non-empty, local, and large enough for every requested length", () => {

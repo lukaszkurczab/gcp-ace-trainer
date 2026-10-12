@@ -12,6 +12,10 @@ test("source links expose exact targets and unavailable has no press handler", (
   assert.match(source, /accessibilityRole="link"/);
   assert.match(source, /openCanonicalSourceLink\(source, openSource\)/);
   assert.match(source, /openSource = \(url\) => Linking\.openURL\(url\)/);
+  assert.match(source, /source\.role === "course" \? t\("Course module"\) : t\("Documentation"\)/);
+  assert.match(source, /source\.title \?\? source\.host/);
+  assert.match(source, /source\.section \? <FeedbackText/);
+  assert.match(source, /source\.requiresAccount \? <Text[\s\S]*?t\("Requires an Anthropic Partner Academy account"\)/);
   assert.match(source, /source\.host/);
   const unavailable = source.match(/: <FeedbackText ([^>]+) \/>/)?.[1];
   assert.ok(unavailable, "unavailable source remains a non-pressable feedback text");

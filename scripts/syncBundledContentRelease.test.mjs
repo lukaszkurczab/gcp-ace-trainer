@@ -9,10 +9,13 @@ import { pathToFileURL } from "node:url";
 
 import {
   EXPECTED_TRACK_IDS,
+  CLAUDE_TRACK_ID,
+  LOCAL_CANDIDATE_SCHEMA_VERSION,
   GENERATED_DIRECTORY,
   SUCCESSOR_LEDGER_FILE_NAME,
   historicalTrainingProjection,
   parseArgs,
+  prepareLocalClaudeCandidate,
   validateReviewedCandidate,
   syncCanonicalContent,
   validateBuiltContent,
@@ -20,6 +23,7 @@ import {
 
 const SMALL_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 9, mentalUnitCount: 9, questionCount: 48 });
 const HEAD = "1".repeat(40);
+const FROZEN_APP_CONTENT_BASE = "07881c44f26ffbbe84d80d4b123e709eef884c06";
 const DESIGN_TRACK_IDS = ["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"];
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
@@ -32,6 +36,10 @@ function canonical(value) {
 test("reviewed-candidate sync is an explicit opt-in while ordinary mode keeps its default", () => {
   assert.deepEqual(parseArgs([]), { mode: "sync" });
   assert.deepEqual(parseArgs(["check", "--reviewed-candidate"]), { mode: "check", reviewedCandidate: true });
+  assert.deepEqual(parseArgs(["check", "--local-reviewed-candidate", "acceptance.json"]), { mode: "check", localReviewedCandidate: path.resolve("acceptance.json") });
+  assert.deepEqual(parseArgs(["prepare-local-candidate", "--track", CLAUDE_TRACK_ID]), { command: "prepare-local-candidate", trackId: CLAUDE_TRACK_ID });
+  assert.throws(() => parseArgs(["prepare-local-candidate", "--track", "other-track"]), /prepare-local-candidate requires/u);
+  assert.throws(() => parseArgs(["sync", "--reviewed-candidate", "--local-reviewed-candidate", "acceptance.json"]), /cannot be combined/u);
   assert.throws(() => parseArgs(["--reviewed-candidate", "--reviewed-candidate"]), /Usage:/u);
 });
 
@@ -206,7 +214,9 @@ async function fixture() {
   await writeFile(path.join(producerRoot, "scripts", "build.mjs"), "// fixture\n");
   await createBuiltSet(producerOutput);
   await createPredecessorFromBuiltSet(producerOutput, predecessorOutput);
-  const runBuild = async ({ outputRoot }) => cp(producerOutput, outputRoot, { recursive: true });
+  const runBuild = async ({ outputRoot }) => {
+    for (const name of await readdir(producerOutput)) await cp(path.join(producerOutput, name), path.join(outputRoot, name), { recursive: true });
+  };
   const getBootstrapPredecessor = async () => {
     const lock = JSON.parse(await readFile(path.join(predecessorOutput, "content-lock.json"), "utf8"));
     const artifacts = new Map(await Promise.all(EXPECTED_TRACK_IDS.map(async (trackId) => [`${trackId}.json`, await readFile(path.join(predecessorOutput, `${trackId}.json`))])));
@@ -220,6 +230,105 @@ async function snapshot(directory) {
   const names = (await readdir(directory)).sort();
   return Promise.all(names.map(async (name) => [name, sha256(await readFile(path.join(directory, name)))]));
 }
+
+test("local Claude acceptance sync is scoped, evidence-bound, and idempotent", async (t) => {
+  const root = await mkdtemp(path.join(tmpdir(), "patternly-local-claude-sync-test-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const realAppRoot = path.resolve(import.meta.dirname, "..");
+  const producerRoot = path.resolve(realAppRoot, "../patternly-content");
+  const appRoot = path.join(root, "patternly");
+  const targetDirectory = path.join(appRoot, GENERATED_DIRECTORY);
+  await mkdir(targetDirectory, { recursive: true });
+  await mkdir(appRoot, { recursive: true });
+  for (const name of [...EXPECTED_TRACK_IDS.map((trackId) => `${trackId}.json`), "content-lock.json", SUCCESSOR_LEDGER_FILE_NAME]) {
+    const bytes = execFileSync("git", ["show", `${FROZEN_APP_CONTENT_BASE}:${GENERATED_DIRECTORY}/${name}`], { cwd: realAppRoot, encoding: "buffer", maxBuffer: 32 * 1024 * 1024 });
+    await writeFile(path.join(targetDirectory, name), bytes);
+  }
+  const appEvidencePaths = [
+    "docs/reports/claude-course-alignment-acceptance-2026-10-11.md",
+    "docs/reports/claude-unit-coverage-acceptance-2026-10-11.md",
+    "integration/contracts/content-release/release.lock.json",
+  ];
+  for (const relativePath of appEvidencePaths) {
+    const destination = path.join(appRoot, relativePath);
+    await mkdir(path.dirname(destination), { recursive: true });
+    await cp(path.join(realAppRoot, relativePath), destination);
+  }
+  const contentPinPaths = [
+    "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json",
+    "evidence/readiness/current-candidate-readiness-v2.json",
+    "evidence/candidate-decisions/current-candidate-decision-v2.json",
+    "evidence/admissions/candidate-admission-v3.json",
+    "docs/evidence/content-audits/2026-10-11-claude-course-map.md",
+    "docs/evidence/content-audits/2026-10-11-claude-course-map.json",
+    "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.md",
+    "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.json",
+  ];
+  for (const relativePath of contentPinPaths) await lstat(path.join(producerRoot, relativePath));
+
+  const before = Object.fromEntries(await snapshot(targetDirectory));
+  const oldLedger = JSON.parse(await readFile(path.join(targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"));
+  const oldClaudeTraining = oldLedger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID).training;
+  const releaseLockPath = path.join(appRoot, "integration/contracts/content-release/release.lock.json");
+  const releaseLockBefore = sha256(await readFile(releaseLockPath));
+  const candidate = await prepareLocalClaudeCandidate({ appRoot, producerRoot, targetDirectory });
+  assert.equal(candidate.artifact.artifactSha256, "12e6c8637b112af9e48ca870bb80d89f9db6ad7d1949c51efceb37572a6cd0bd");
+  assert.equal(candidate.artifact.questionCount, 918);
+  assert.equal(candidate.artifact.mentalUnitCount, 53);
+  assert.equal(candidate.base.priorClaudeTraining.questionCount, 845);
+  assert.deepEqual(candidate.base.priorClaudeTraining, oldClaudeTraining);
+  const acceptancePath = path.join(root, "local-acceptance.json");
+  const acceptance = {
+    schemaVersion: LOCAL_CANDIDATE_SCHEMA_VERSION,
+    scope: "local_only",
+    decision: "accepted_for_local_runtime",
+    publication: "not_granted",
+    releaseLockUpdate: false,
+    candidate,
+  };
+  await writeFile(acceptancePath, JSON.stringify(acceptance));
+  const options = { appRoot, producerRoot, targetDirectory, localReviewedCandidate: acceptancePath };
+
+  for (const [name, mutate, message] of [
+    ["wrong-version", (value) => { value.candidate.artifact.contentVersion = "wrong-version"; }, /artifact identity/u],
+    ["wrong-count", (value) => { value.candidate.artifact.questionCount = 845; }, /artifact identity/u],
+    ["wrong-fingerprint", (value) => { value.candidate.sourceFingerprint.sha256 = "0".repeat(64); }, /fingerprint digest/u],
+    ["wrong-review-evidence", (value) => { value.candidate.reviewEvidence[0].path = "docs/other.md"; }, /approved path set/u],
+  ]) {
+    const invalid = structuredClone(acceptance);
+    mutate(invalid);
+    const invalidPath = path.join(root, `${name}.json`);
+    await writeFile(invalidPath, JSON.stringify(invalid));
+    await assert.rejects(syncCanonicalContent({ ...options, localReviewedCandidate: invalidPath }), message, name);
+    assert.deepEqual(Object.fromEntries(await snapshot(targetDirectory)), before, `${name} must fail before changing the bundle`);
+  }
+
+  await rename(targetDirectory, `${targetDirectory}.backup`);
+  const synced = await syncCanonicalContent(options);
+  assert.equal(await lstat(`${targetDirectory}.backup`).then(() => true, () => false), false, "a crash after target-to-backup move is recovered before sync");
+  assert.deepEqual(synced.inventory, { trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_695 });
+  const after = Object.fromEntries(await snapshot(targetDirectory));
+  for (const trackId of EXPECTED_TRACK_IDS.filter((id) => id !== CLAUDE_TRACK_ID)) assert.equal(after[`${trackId}.json`], before[`${trackId}.json`]);
+  assert.notEqual(after["content-lock.json"], before["content-lock.json"]);
+  assert.equal(sha256(await readFile(releaseLockPath)), releaseLockBefore);
+  const ledger = JSON.parse(await readFile(path.join(targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"));
+  assert.deepEqual(ledger.tracks.filter((entry) => entry.trackId !== CLAUDE_TRACK_ID), candidate.base.preservedLedgerEntries);
+  assert.equal(ledger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID).training.questionCount, 918);
+  assert.notDeepEqual(ledger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID).training, oldClaudeTraining);
+  assert.deepEqual((await syncCanonicalContent({ ...options, mode: "check" })).inventory, synced.inventory);
+  const afterFirstSync = await snapshot(targetDirectory);
+  await syncCanonicalContent(options);
+  assert.deepEqual(await snapshot(targetDirectory), afterFirstSync, "repeated sync is byte-idempotent");
+
+  const tampered = structuredClone(acceptance);
+  tampered.candidate.artifact.artifactSha256 = "0".repeat(64);
+  const tamperedPath = path.join(root, "tampered-acceptance.json");
+  await writeFile(tamperedPath, JSON.stringify(tampered));
+  const installedBeforeReject = await snapshot(targetDirectory);
+  await assert.rejects(syncCanonicalContent({ ...options, localReviewedCandidate: tamperedPath }), /artifact identity/u);
+  assert.deepEqual(await snapshot(targetDirectory), installedBeforeReject, "stale acceptance must not change installed files");
+});
 
 test("sync replaces the whole generated directory with an exact validated set", async (t) => {
   const state = await fixture();

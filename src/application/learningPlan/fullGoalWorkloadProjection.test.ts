@@ -3,8 +3,10 @@ import test from "node:test";
 import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
 import type { LearningPlanningPolicy } from "../../content/canonical/planningPolicy";
 import type { ProductModeConfig } from "../../content/canonical/productModeConfig";
-import { createResolvedContentRef, type ReviewQueueEntry } from "../../domain";
+import { createResolvedContentRef, createTrainingAttempt, createTrainingSession, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import type { PackageCompletionState } from "../../domain/learning/packageCompletionRule";
+import { createPackageCompletionRuleV3, evaluatePackageCompletion } from "../../domain/learning/packageCompletionRule";
+import { buildPlanningCalendar } from "../../domain/learning/planningCalendar";
 import { projectFullGoalWorkload } from "./fullGoalWorkloadProjection";
 
 const TRACK = "track-a";
@@ -73,6 +75,31 @@ test("quality-unmet chapter estimates one real legal practice block and leaves f
   assert.equal(result.kind, "incomplete");
 });
 
+test("V3 quality-only repair uses a required unit scope and preserves unbounded future outcomes", () => {
+  const focus = { ...practice, modeId: "certification-focus-practice", requestedLengths: [10, 20, 40], defaultRequestedLength: 10,
+    minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
+  const targetQuestions = ["q1", "q2", "q3", "q4"].map((id) => question(id, "chapter-a", "required-unit"));
+  const completionRule = { ruleVersion: 3 as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 1, minimumAttemptCount: 20,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, units: [{ mentalUnitId: "required-unit", requiredCorrectQuestionCount: 4 as const }] }] };
+  const v3Track = { ...track, completionRule, questions: targetQuestions, modes: [focus, review],
+    getPool: (modeId: string) => modeId === focus.modeId ? targetQuestions : [], getMode: (modeId: string) => modeId === focus.modeId ? focus : review } as unknown as CanonicalTrackRuntime;
+  const focusPolicy = { ...policy, workEstimates: [...policy.workEstimates, estimate("focus-required-unit", focus.modeId, "chapter-a", "required-unit", 2, 3, 5, 0, 0, 0)] };
+  const state = { kind: "in_progress" as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 1, qualifyingAttemptCount: 20,
+    requiredAttemptCount: 20, remainingAttemptCount: 0, coverageDeficit: 0, minimumAdditionalAttemptCount: 0,
+    coverage: [{ mentalUnitId: "required-unit", requiredCorrectQuestionCount: 4, latestCorrectQuestionCount: 4, deficit: 0 }],
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: 0.75, qualityRequirementUnmet: true,
+    status: "in_progress" as const, reason: "quality_unmet" as const }], completedChapterCount: 0, requiredChapterCount: 1,
+    qualifyingAttemptCount: 20, requiredAttemptCount: 20, coverageDeficit: 0, minimumAdditionalAttemptCount: 0, remainingAttemptCount: 0 } as PackageCompletionState;
+  const result = projectFullGoalWorkload({ track: v3Track, policy: focusPolicy, planningPolicyIdentity, completion: state,
+    sessions: [], attempts: [], reviews: [], practiceMode: focus, reviewMode: review });
+  assert.equal(result.chapters[0]?.requiredResponses, 0);
+  assert.deepEqual(result.sessionDemands.map(({ id, responseCount, scopeRefs }) => [id, responseCount, scopeRefs]), [
+    ["quality-repair:chapter-a", 4, [{ nodeId: "chapter-a", mentalUnitId: "required-unit" }]],
+  ]);
+  assert.equal(result.chapters[0]?.qualityRepair?.futureResponses, null);
+  assert.equal(result.chapters[0]?.unavailableReason, "quality_outcome_unbounded");
+});
+
 test("a legal due-pool response is costed even when it cannot credit a minimum that is already met", () => {
   const result = projectFullGoalWorkload({ track, policy, planningPolicyIdentity, completion: completion([{
     ...chapter("chapter-a", 20, 20, "quality_unmet"), quality: 0.75,
@@ -101,20 +128,233 @@ test("completed chapters add no new work or quality repair", () => {
   assert.equal(result.chapters[0]?.qualityRepair, null);
 });
 
+test("V3 coverage-only work costs the required scope and respects four-question scoped capacity", () => {
+  const focus = { ...practice, modeId: "certification-focus-practice", requestedLengths: [10, 20, 40], defaultRequestedLength: 10,
+    minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
+  const targetQuestions = ["q1", "q2", "q3", "q4"].map((id) => question(id, "chapter-a", "unit-a"));
+  const completionRule = { ruleVersion: 3 as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 1, minimumAttemptCount: 20,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, units: [{ mentalUnitId: "unit-a", requiredCorrectQuestionCount: 4 as const }] }] };
+  const v3Track = { ...track, completionRule, questions: targetQuestions, modes: [focus, review],
+    getPool: (modeId: string) => modeId === focus.modeId ? targetQuestions : [] } as unknown as CanonicalTrackRuntime;
+  const focusPolicy = { ...policy, workEstimates: [...policy.workEstimates, estimate("focus-unit-a", focus.modeId, "chapter-a", "unit-a", 2, 3, 5, 0, 0, 0)] };
+  const requiredChapter = { nodeId: "chapter-a", mentalUnitCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, remainingAttemptCount: 0,
+    coverageDeficit: 1, minimumAdditionalAttemptCount: 1, coverage: [{ mentalUnitId: "unit-a", requiredCorrectQuestionCount: 4, latestCorrectQuestionCount: 3, deficit: 1 }],
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: null, qualityRequirementUnmet: null, status: "in_progress" as const, reason: "coverage_unmet" as const };
+  const v3Completion = { kind: "in_progress" as const, chapters: [requiredChapter], completedChapterCount: 0, requiredChapterCount: 1,
+    qualifyingAttemptCount: 20, requiredAttemptCount: 20, coverageDeficit: 1, minimumAdditionalAttemptCount: 1, remainingAttemptCount: 0 } as PackageCompletionState;
+  const result = projectFullGoalWorkload({ track: v3Track, policy: focusPolicy, planningPolicyIdentity, completion: v3Completion,
+    sessions: [], attempts: [], reviews: [], practiceMode: focus, reviewMode: review });
+  assert.equal(result.requiredResponses, 1);
+  assert.equal(result.newResponses, 4, "the lower-bound deficit is one, but the only legal session has four questions");
+  assert.equal(result.chapters[0]?.completion, "coverage_incomplete");
+  assert.deepEqual(result.chapters[0]?.scopeRefs, [{ nodeId: "chapter-a", mentalUnitId: "unit-a" }]);
+  assert.ok(result.chapters[0]?.minMinutes !== null);
+  assert.equal(result.sessionDemands[0]?.responseCount, 4);
+  assert.deepEqual(result.sessionDemands[0]?.legalOptions.map((option) => option.sessionLength), [4], "requested 10 is truthfully shortened to this unit's four-question source pool");
+  const demand = result.sessionDemands[0]!;
+  const calendar = buildPlanningCalendar({ localToday: "2026-10-08", timezone: "Europe/Warsaw", preferredDays: ["thu"], weeklySessionTarget: 1,
+    dueObligations: [], sessionDemands: [demand], targetDate: "2026-10-08", targetMeaning: "deadline", availableMinutesPerStudyDay: 60,
+    todayActiveTime: { kind: "known", minutes: 0 }, sessionLocalTime: "18:00", currentLocalTime: "12:00",
+    legalSessions: demand.legalOptions });
+  assert.equal(calendar.kind, "scheduled");
+  assert.equal(calendar.availableDays[0]?.selectedWork?.responsesRemaining, 4);
+  assert.equal(calendar.availableDays[0]?.selectedSession?.sessionLength, 4);
+  assert.deepEqual(calendar.availableDays[0]?.selectedWork?.scopeRefs, [{ nodeId: "chapter-a", mentalUnitId: "unit-a" }]);
+});
+
+test("V3 volume-only estimate includes scoped session padding in its chapter and aggregate work", () => {
+  const focus = { ...practice, modeId: "certification-focus-practice", requestedLengths: [10, 20, 40], defaultRequestedLength: 10,
+    minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
+  const targetQuestions = ["q1", "q2", "q3", "q4"].map((id) => question(id, "chapter-a", "unit-a"));
+  const completionRule = { ruleVersion: 3 as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 1, minimumAttemptCount: 20,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, units: [{ mentalUnitId: "unit-a", requiredCorrectQuestionCount: 4 as const }] }] };
+  const v3Track = { ...track, completionRule, questions: targetQuestions, modes: [focus, review],
+    getPool: (modeId: string) => modeId === focus.modeId ? targetQuestions : [] } as unknown as CanonicalTrackRuntime;
+  const focusPolicy = { ...policy, workEstimates: [estimate("focus-unit-a-cheap", focus.modeId, "chapter-a", "unit-a", 2, 3, 5, 0, 0, 0)] };
+  const coverage = [{ mentalUnitId: "unit-a", requiredCorrectQuestionCount: 4, latestCorrectQuestionCount: 4, deficit: 0 }];
+  const state = { kind: "in_progress" as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 1, qualifyingAttemptCount: 19,
+    requiredAttemptCount: 20, remainingAttemptCount: 1, coverageDeficit: 0, minimumAdditionalAttemptCount: 1, coverage,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: 0.9, qualityRequirementUnmet: false,
+    status: "in_progress" as const, reason: "minimum_attempts_unmet" as const }], completedChapterCount: 0, requiredChapterCount: 1,
+    qualifyingAttemptCount: 19, requiredAttemptCount: 20, coverageDeficit: 0, minimumAdditionalAttemptCount: 1, remainingAttemptCount: 1 } as PackageCompletionState;
+  const result = projectFullGoalWorkload({ track: v3Track, policy: focusPolicy, planningPolicyIdentity, completion: state,
+    sessions: [], attempts: [], reviews: [], practiceMode: focus, reviewMode: review });
+  assert.equal(result.requiredResponses, 1);
+  assert.equal(result.newResponses, 4);
+  assert.equal(result.chapters[0]?.newResponses, 4, "the visible chapter row reports the actual padded session length");
+  assert.equal(result.sessionDemands.find((demand) => demand.id === "practice:chapter-a")?.responseCount, 4);
+  assert.equal(result.chapters[0]?.minMinutes, 8);
+  assert.equal(result.knownMinMinutes, 8, "padding cost is charged once and uses this unit's rate");
+});
+
+test("V3 coverage in two units creates two separately scoped legal sessions", () => {
+  const focus = { ...practice, modeId: "certification-focus-practice", requestedLengths: [10, 20, 40], defaultRequestedLength: 10,
+    minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
+  const unitIds = ["unit-a", "unit-b"];
+  const targetQuestions = unitIds.flatMap((unitId, unitIndex) => Array.from({ length: 4 }, (_, index) => question(`multi-${unitIndex + 1}-${index + 1}`, "chapter-a", unitId)));
+  const completionRule = { ruleVersion: 3 as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 2, minimumAttemptCount: 20,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, units: unitIds.map((mentalUnitId) => ({ mentalUnitId, requiredCorrectQuestionCount: 4 as const })) }] };
+  const v3Track = { ...track, completionRule, questions: targetQuestions, modes: [focus, review],
+    getPool: (modeId: string) => modeId === focus.modeId ? targetQuestions : [] } as unknown as CanonicalTrackRuntime;
+  const focusPolicy = { ...policy, workEstimates: [...policy.workEstimates, ...unitIds.map((unitId) => estimate(`multi-focus-${unitId}`, focus.modeId, "chapter-a", unitId, 2, 3, 5, 0, 0, 0))] };
+  const coverage = unitIds.map((mentalUnitId) => ({ mentalUnitId, requiredCorrectQuestionCount: 4, latestCorrectQuestionCount: 3, deficit: 1 }));
+  const state = { kind: "in_progress" as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 2, qualifyingAttemptCount: 20,
+    requiredAttemptCount: 20, remainingAttemptCount: 0, coverageDeficit: 2, minimumAdditionalAttemptCount: 2, coverage,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: null, qualityRequirementUnmet: null, status: "in_progress" as const, reason: "coverage_unmet" as const }],
+    completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, coverageDeficit: 2,
+    minimumAdditionalAttemptCount: 2, remainingAttemptCount: 0 } as PackageCompletionState;
+  const result = projectFullGoalWorkload({ track: v3Track, policy: focusPolicy, planningPolicyIdentity, completion: state,
+    sessions: [], attempts: [], reviews: [], practiceMode: focus, reviewMode: review });
+  assert.equal(result.requiredResponses, 2);
+  assert.equal(result.newResponses, 8, "each one-answer deficit needs its own truthful four-question scoped session");
+  assert.deepEqual(result.sessionDemands.map(({ id, responseCount, scopeRefs }) => [id, responseCount, scopeRefs]), [
+    ["coverage:chapter-a:unit-a", 4, [{ nodeId: "chapter-a", mentalUnitId: "unit-a" }]],
+    ["coverage:chapter-a:unit-b", 4, [{ nodeId: "chapter-a", mentalUnitId: "unit-b" }]],
+  ]);
+});
+
+test("active Premium V3 unit continuation is validated and costed in its exact source scope", () => {
+  const focus = { ...practice, modeId: "certification-focus-practice", requestedLengths: [10, 20, 40], defaultRequestedLength: 10,
+    minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
+  const targetQuestions = ["q1", "q2", "q3", "q4"].map((id) => question(id, "chapter-premium", "premium-unit"));
+  const completionRule = { ruleVersion: 3 as const, chapters: [{ nodeId: "chapter-premium", mentalUnitCount: 1, minimumAttemptCount: 20,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, units: [{ mentalUnitId: "premium-unit", requiredCorrectQuestionCount: 4 as const }] }] };
+  const v3Track = { ...track, completionRule, questions: targetQuestions, modes: [focus, review],
+    getPool: (modeId: string) => modeId === focus.modeId ? [] : [], getQuestion: (id: string) => targetQuestions.find((entry) => entry.questionId === id),
+    getMode: (modeId: string) => modeId === focus.modeId ? focus : review } as unknown as CanonicalTrackRuntime;
+  const focusPolicy = { ...policy, workEstimates: [...policy.workEstimates, estimate("focus-premium-unit", focus.modeId, "chapter-premium", "premium-unit", 2, 3, 5, 0, 0, 0)] };
+  const state = { kind: "in_progress" as const, chapters: [{ nodeId: "chapter-premium", mentalUnitCount: 1, qualifyingAttemptCount: 20,
+    requiredAttemptCount: 20, remainingAttemptCount: 0, coverageDeficit: 1, minimumAdditionalAttemptCount: 1,
+    coverage: [{ mentalUnitId: "premium-unit", requiredCorrectQuestionCount: 4, latestCorrectQuestionCount: 3, deficit: 1 }],
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: null, qualityRequirementUnmet: null,
+    status: "in_progress" as const, reason: "coverage_unmet" as const }], completedChapterCount: 0, requiredChapterCount: 1,
+    qualifyingAttemptCount: 20, requiredAttemptCount: 20, coverageDeficit: 1, minimumAdditionalAttemptCount: 1, remainingAttemptCount: 0 } as PackageCompletionState;
+  const activeSession = createTrainingSession({ id: "premium-unit-resume", trackId: TRACK, modeId: focus.modeId,
+    configurationSnapshot: { kind: "practice", mentalUnitId: "premium-unit" }, requestedLength: 10, actualLength: 4, currentItemIndex: 0,
+    itemOrder: targetQuestions.map((item, index) => ({ occurrenceId: `premium-occ-${index}`, item: createResolvedContentRef({ trackId: TRACK, questionId: item.questionId, contentVersion: "v2", artifactSha256: SHA }) })),
+    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v2", artifactSha256: SHA, status: "active", startedAt: "2026-10-01T00:00:00.000Z" });
+  const result = projectFullGoalWorkload({ track: v3Track, policy: focusPolicy, planningPolicyIdentity, completion: state,
+    sessions: [activeSession], activeSession, attempts: [], reviews: [], practiceMode: focus, reviewMode: review });
+  assert.deepEqual(result.activeContinuation && result.activeContinuation.kind === "continue_existing" ? result.activeContinuation : null,
+    { kind: "continue_existing", sessionId: "premium-unit-resume", modeId: focus.modeId, requestedLength: 10, responseCount: 4, phase: "practice", reviewEntryIds: [] });
+  assert.deepEqual(result.sessionDemands[0]?.scopeRefs, [{ nodeId: "chapter-premium", mentalUnitId: "premium-unit" }]);
+  assert.equal(result.sessionDemands[0]?.responseCount, 4);
+  assert.equal(result.sessionDemands.some((demand) => demand.id.startsWith("coverage:")), false, "the exact current session already targets the missing unit question pool");
+});
+
+test("a committed wrong answer is not treated as an active coverage target or completion credit", () => {
+  const focus = { ...practice, modeId: "certification-focus-practice", requestedLengths: [10, 20, 40], defaultRequestedLength: 10,
+    minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
+  const targetQuestions = ["q1", "q2", "q3", "q4"].map((id) => question(id, "chapter-premium", "premium-unit"));
+  const completionRule = createPackageCompletionRuleV3({ ruleVersion: 3, chapters: [{ nodeId: "chapter-premium", mentalUnitCount: 1, minimumAttemptCount: 20,
+    rollingWindowSize: 20, qualityThreshold: 0.8, units: [{ mentalUnitId: "premium-unit", requiredCorrectQuestionCount: 4 }] }] });
+  const v3Track = { ...track, completionRule, questions: targetQuestions, modes: [focus, review],
+    getPool: (modeId: string) => modeId === focus.modeId ? [] : [], getQuestion: (id: string) => targetQuestions.find((entry) => entry.questionId === id),
+    getMode: (modeId: string) => modeId === focus.modeId ? focus : review } as unknown as CanonicalTrackRuntime;
+  const focusPolicy = { ...policy, workEstimates: [...policy.workEstimates, estimate("focus-premium-unit", focus.modeId, "chapter-premium", "premium-unit", 2, 3, 5, 0, 0, 0)] };
+  const sessionId = "premium-wrong-answer-session";
+  const questionOrder = [targetQuestions[3]!, targetQuestions[0]!, targetQuestions[1]!, targetQuestions[2]!];
+  const activeSession = createTrainingSession({ id: sessionId, trackId: TRACK, modeId: focus.modeId,
+    configurationSnapshot: { kind: "practice", mentalUnitId: "premium-unit" }, requestedLength: 10, actualLength: 4, currentItemIndex: 0,
+    itemOrder: questionOrder.map((item, index) => ({ occurrenceId: `wrong-occ-${index}`, item: createResolvedContentRef({ trackId: TRACK, questionId: item.questionId, contentVersion: "v2", artifactSha256: SHA }) })),
+    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v2", artifactSha256: SHA, status: "active", startedAt: "2026-10-01T00:00:00.000Z" });
+  const attempts = [
+    qualifiedAttempt("q1-before", "q1", "premium-unit", 0),
+    qualifiedAttempt("q2-before", "q2", "premium-unit", 1),
+    qualifiedAttempt("q3-before", "q3", "premium-unit", 2),
+    wrongQualifiedAttempt("q4-latest-wrong", "q4", "premium-unit", 3, sessionId, "wrong-occ-0"),
+    ...Array.from({ length: 16 }, (_, index) => qualifiedAttempt(`volume-${index}`, "q1", "premium-unit", index + 4)),
+  ];
+  const completion = evaluatePackageCompletion({ trackId: TRACK, contentVersion: "v2", artifactSha256: SHA, completionRule }, attempts,
+    (questionId) => targetQuestions.find((item) => item.questionId === questionId));
+  assert.equal(completion.kind, "in_progress");
+  if (completion.kind !== "in_progress") return;
+  assert.equal(completion.chapters[0]?.coverageDeficit, 1, "the committed wrong result remains the latest answer and receives no coverage credit");
+  const result = projectFullGoalWorkload({ track: v3Track, policy: focusPolicy, planningPolicyIdentity, completion,
+    sessions: [activeSession], activeSession, attempts, reviews: [], practiceMode: focus, reviewMode: review });
+  assert.equal(result.activeContinuation?.kind, "continue_existing");
+  assert.equal(result.activeContinuation?.kind === "continue_existing" ? result.activeContinuation.responseCount : null, 3);
+  assert.deepEqual(result.sessionDemands.filter((demand) => demand.id.startsWith("coverage:")).map((demand) => [demand.id, demand.responseCount]), [
+    ["coverage:chapter-premium:premium-unit", 4],
+  ], "the committed wrong question is not counted among remaining active questions; a scoped replacement block remains forecast");
+});
+
+test("unrelated due and active work cannot reduce V3 coverage lower bound", () => {
+  const focus = { ...practice, modeId: "certification-focus-practice", requestedLengths: [10, 20, 40], defaultRequestedLength: 10,
+    minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
+  const unitIds = ["unit-1", "unit-2", "unit-3", "unit-4", "unit-5", "unit-6", "unit-7"];
+  const allQuestions = unitIds.flatMap((unitId, unitIndex) => Array.from({ length: 4 }, (_, index) => question(`q${unitIndex + 1}-${index + 1}`, "chapter-a", unitId)));
+  const completionRule = { ruleVersion: 3 as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 5, minimumAttemptCount: 100,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, units: unitIds.map((mentalUnitId) => ({ mentalUnitId, requiredCorrectQuestionCount: 4 as const })) }] };
+  const v3Track = { ...track, completionRule, questions: allQuestions, modes: [focus, review],
+    getPool: (modeId: string) => modeId === focus.modeId || modeId === review.modeId ? allQuestions : [],
+    getQuestion: (id: string) => allQuestions.find((entry) => entry.questionId === id),
+    getMode: (modeId: string) => modeId === focus.modeId ? focus : review } as unknown as CanonicalTrackRuntime;
+  const estimates = unitIds.flatMap((unitId, index) => [
+    estimate(`focus-${unitId}`, focus.modeId, "chapter-a", unitId, 2, 3, 5, 0, 0, 0),
+    estimate(`review-${unitId}`, review.modeId, "chapter-a", unitId, 2, 4, 7, 0, 0, 0),
+  ]);
+  const focusPolicy = { ...policy, workEstimates: [...policy.workEstimates, ...estimates] };
+  const coverage = unitIds.map((mentalUnitId, index) => ({ mentalUnitId, requiredCorrectQuestionCount: 4,
+    latestCorrectQuestionCount: index < 2 ? 4 : 0, deficit: index < 2 ? 0 : 4 }));
+  const completionState = { kind: "in_progress" as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 7, qualifyingAttemptCount: 120,
+    requiredAttemptCount: 140, remainingAttemptCount: 20, coverageDeficit: 20, minimumAdditionalAttemptCount: 20, coverage,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: 1, qualityRequirementUnmet: false, status: "in_progress" as const, reason: "minimum_attempts_unmet" as const }],
+    completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount: 120, requiredAttemptCount: 140, coverageDeficit: 20,
+    minimumAdditionalAttemptCount: 20, remainingAttemptCount: 20 } as PackageCompletionState;
+  const attempts = [
+    ...unitIds.slice(0, 2).flatMap((unitId, unitIndex) => Array.from({ length: 4 }, (_, index) =>
+      qualifiedAttempt(`covered-${unitIndex}-${index}`, `q${unitIndex + 1}-${index + 1}`, unitId, index))),
+    ...Array.from({ length: 112 }, (_, index) => qualifiedAttempt(`repeat-${index}`, "q1-1", "unit-1", index + 8)),
+  ];
+  const activeSession = createTrainingSession({ id: "session:covered-unit", trackId: TRACK, modeId: focus.modeId,
+    configurationSnapshot: { kind: "practice" }, requestedLength: 10, actualLength: 4, currentItemIndex: 0,
+    itemOrder: allQuestions.slice(0, 4).map((item, index) => ({ occurrenceId: `occurrence:${index}`, item: createResolvedContentRef({ trackId: TRACK, questionId: item.questionId, contentVersion: "v2", artifactSha256: SHA }) })),
+    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v2", artifactSha256: SHA, status: "active", startedAt: "2026-10-01T00:00:00.000Z" });
+  const due = allQuestions.slice(0, 5).map((item, index) => reviewEntry(`due-${index}`, item.questionId));
+  const result = projectFullGoalWorkload({ track: v3Track, policy: focusPolicy, planningPolicyIdentity, completion: completionState,
+    sessions: [activeSession], activeSession, attempts, reviews: due, practiceMode: focus, reviewMode: review });
+  assert.equal(result.requiredResponses, 20, "M remains max(V,C), never V+C");
+  assert.equal(result.dueReviewResponses, 5, "due items reduce only the volume projection");
+  assert.equal(result.chapters[0]?.requiredResponses, 20);
+  assert.equal(result.chapters[0]?.newResponses, 20, "due and active covered-unit work reduce volume only; five exact deficient-unit sessions preserve C");
+  assert.deepEqual(result.sessionDemands.filter((entry) => entry.id.startsWith("coverage:")).map((entry) => [entry.id, entry.responseCount]), [
+    ["coverage:chapter-a:unit-3", 4], ["coverage:chapter-a:unit-4", 4], ["coverage:chapter-a:unit-5", 4],
+    ["coverage:chapter-a:unit-6", 4], ["coverage:chapter-a:unit-7", 4],
+  ]);
+  assert.equal(result.sessionDemands.some((entry) => entry.id === "practice:chapter-a"), false, "scoped coverage sessions already satisfy the V lower bound without assuming correctness");
+});
+
 function question(questionId: string, nodeId: string, mentalUnitId: string) { return { questionId, nodeId, mentalUnitId, trackId: TRACK, contentVersion: "v2", artifactSha256: SHA } as const; }
+function qualifiedAttempt(id: string, questionId: string, mentalUnitId: string, index: number): TrainingAttempt<unknown> {
+  const item = createResolvedContentRef({ trackId: TRACK, questionId, contentVersion: "v2", artifactSha256: SHA });
+  const answeredAt = new Date(Date.UTC(2026, 9, 1, 0, 0, index)).toISOString();
+  return createTrainingAttempt({ id, sessionId: `session-${id}`, trackId: TRACK, modeId: "certification-focus-practice", occurrenceId: `occ-${id}`, item,
+    response: {}, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt });
+}
+function wrongQualifiedAttempt(id: string, questionId: string, mentalUnitId: string, index: number, sessionId: string, occurrenceId: string): TrainingAttempt<unknown> {
+  const item = createResolvedContentRef({ trackId: TRACK, questionId, contentVersion: "v2", artifactSha256: SHA });
+  const answeredAt = new Date(Date.UTC(2026, 9, 1, 0, 0, index)).toISOString();
+  return createTrainingAttempt({ id, sessionId, trackId: TRACK, modeId: "certification-focus-practice", occurrenceId, item,
+    response: {}, result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt });
+}
 function estimate(estimateId: string, modeId: string, nodeId: string, mentalUnitId: string, min: number, typical: number, max: number, reserveMin: number, reserveTypical: number, reserveMax: number): LearningPlanningPolicy["workEstimates"][number] {
   return { estimateId, modeId, scopeRefs: [{ nodeId, mentalUnitId }], minMinutesPerResponse: min, typicalMinutesPerResponse: typical, maxMinutesPerResponse: max, provenance: "authored", observationCount: 0,
     rationale: "Authored planning hypothesis", reviewReserve: { kind: "authored_estimate", minAdditionalResponsesPerNewResponse: reserveMin, typicalAdditionalResponsesPerNewResponse: reserveTypical, maxAdditionalResponsesPerNewResponse: reserveMax, provenance: "authored", observationCount: 0, rationale: "Scoped forecast reserve" } };
 }
 function chapter(nodeId: string, requiredAttemptCount: number, qualifyingAttemptCount: number, reason: "minimum_attempts_unmet" | "quality_unmet" | null, status: "in_progress" | "completed" = "in_progress") {
-  return { nodeId, mentalUnitCount: 1, qualifyingAttemptCount, requiredAttemptCount, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: reason === "quality_unmet" ? 0.75 : status === "completed" ? 1 : null, status, reason };
+  const quality = reason === "quality_unmet" ? 0.75 : status === "completed" ? 1 : null;
+  const remainingAttemptCount = Math.max(0, requiredAttemptCount - qualifyingAttemptCount);
+  return { nodeId, mentalUnitCount: 1, qualifyingAttemptCount, requiredAttemptCount, remainingAttemptCount, coverageDeficit: 0, minimumAdditionalAttemptCount: remainingAttemptCount, coverage: [],
+    qualityRequirementUnmet: quality === null ? null : quality < 0.8, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality, status, reason };
 }
 function completion(chapters: ReturnType<typeof chapter>[]): PackageCompletionState {
   const completedChapterCount = chapters.filter((entry) => entry.status === "completed").length;
   const requiredAttemptCount = chapters.reduce((sum, entry) => sum + entry.requiredAttemptCount, 0);
   const qualifyingAttemptCount = chapters.reduce((sum, entry) => sum + entry.qualifyingAttemptCount, 0);
   const remainingAttemptCount = chapters.reduce((sum, entry) => sum + Math.max(0, entry.requiredAttemptCount - entry.qualifyingAttemptCount), 0);
-  return { kind: completedChapterCount === chapters.length ? "completed" : "in_progress", chapters, completedChapterCount, requiredChapterCount: chapters.length, requiredAttemptCount, qualifyingAttemptCount, remainingAttemptCount } as PackageCompletionState;
+  return { kind: completedChapterCount === chapters.length ? "completed" : "in_progress", chapters, completedChapterCount, requiredChapterCount: chapters.length, requiredAttemptCount, qualifyingAttemptCount,
+    coverageDeficit: 0, minimumAdditionalAttemptCount: remainingAttemptCount, remainingAttemptCount } as PackageCompletionState;
 }
 function reviewEntry(id: string, questionId: string): ReviewQueueEntry {
   const sourceItem = createResolvedContentRef({ trackId: TRACK, questionId, contentVersion: "v2", artifactSha256: SHA });

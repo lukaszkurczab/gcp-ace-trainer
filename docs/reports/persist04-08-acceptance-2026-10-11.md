@@ -1,6 +1,6 @@
 # PERSIST-04/08 — odbiór zapisu dziennika i szkicu
 
-Stan: **Źródła i natywne scenariusze odebrane; końcowy gate i dostarczenie w toku**. Punkt odniesienia: APP `8a591248c576b0d63f2df6331bd5ce8d83359bd5`. Zakres i kryteria: [specyfikacja trwałości](../specs/engineering/persistence.md), PERSIST-04 i PERSIST-08, oraz workspace `docs/17-training-runtime-and-interaction-spec.md` §12–14 i §19. Bieżąca kolejka i następny krok pozostają w głównym planie i `.agent/WORKING_STATE.md`.
+Stan: **PERSIST-04/08 zakończone: niezależny PASS WITH ISSUES, zwykły push i hosted CI SUCCESS**. Punkt odniesienia: APP `8a591248c576b0d63f2df6331bd5ce8d83359bd5`. Zakres i kryteria: [specyfikacja trwałości](../specs/engineering/persistence.md), PERSIST-04 i PERSIST-08, oraz workspace `docs/17-training-runtime-and-interaction-spec.md` §12–14 i §19. Bieżąca kolejka i następny krok pozostają w głównym planie i `.agent/WORKING_STATE.md`.
 
 ## Wymagany wynik
 
@@ -68,3 +68,12 @@ Integracja FF do19b33ee7:9 niekolidujących commitów AWS/raporty, bez zmian Cod
 guest_qa Luna High: **PASS WITH ISSUES — bounded04/08**, bez pozostałych source blockers. Niezależny final suite composition/Certification/Design10/10; exact frozen TC exit0. Testy wykazują samelease positive J/abandonment retry, pierwotny timestamp i eligibility, operation separation/ABA block, D receipt isolation oraz późną trwałą awarię obu fasad→recovery_required z zachowanym J. Native dowody pozostają stosowalne dla codec/MMKV/cold recovery; real composition tests domykają adapter path. Pozostaje rzeczywisty hosted gate dokładnego commitu i osobna FESD source/app blokada; nie jest to globalny zielony CI ani GO.
 
 Frozen recovery/content/privacy: exit0,486sources/357tests/2239cases; oba boundary checks PASS. Cały diff check czysty.
+
+
+## Końcowe dostarczenie i odbiór CI
+
+Commit własnego spójnego pakietu67plików: `07881c44f26ffbbe84d80d4b123e709eef884c06`. Opublikowany zwykłym push na main merge: `eb49fd998075bff9cef7d51f0daa1804967ba43e` (integracja upstream AWS/BESD; wszystkie62 własne source/tool files byte-identical). Jedyny konflikt planu rozwiązano z zachowaniem obu właścicieli i kolejki. [CI38162769089](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38162769089): **SUCCESS obu jobs**, qa:static exit0;2358total/2354PASS/0FAIL/4SKIP, recovery486sources/357tests/2244cases, typecheck/generated-native-platform/content-boundary/runtime-privacy PASS; multi-track3/3,0fail/skip. Current producer3b0a3e8bb4560235fdcc9c8230e654412c95020b; backend4d8efbd6cab8f8fc31d39970fd8e6abb1a0c45eb. Prywatny pełny log: artifacts/private/persist04-08-20261011/ci-38162769089-full.log.
+
+Niezależny guest_qa Luna High potwierdził log CI i **PASS WITH ISSUES bez pozostałego blockera04/08**. Powyższe FAIL i FESD drift są historią wcześniejszych prób; nie są aktualnym globalnym CI blockerem. Granice odbioru pozostają: injected read-denial po rzeczywistym MMKV set, brak native Premium UI/finalizer, pełny PERSIST-13/usługi/fizyczne urządzenie/GO osobno.
+
+Primary main07881c44 pozostał8commitów za upstream eb49fd99: FF bezpiecznie przerwany przez cudzą lokalną specyfikację BESD, bez stash/reset/utraty zmian. Czysty retained source checkout `/Users/lukaszkurczab/Desktop/Projects/Patternly/.qa-private/persist0408-exact/patternly` ma dokładny published HEAD eb49fd99 i clean sibling producer3b0a3e8b. Końcowy odbiór i usunięcie04/08 z jedynej kolejki zapisano lokalnie po CI; bez metadata-only push. Dalsza kolejka jest przekazywana do nowego wątku, bez implementacji w tym zakresie.

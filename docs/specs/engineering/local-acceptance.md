@@ -21,9 +21,9 @@ Historyczna mapa odbioru i granic: app Git `e889b05d:docs/active/AUD-06/REPORT.m
 
 ## AUD-06-CHECK — frontend client scanner
 
-Nieusunięta luka po CH-03: `PATTERNLY_FRONTEND_ROOT=../patternly npm run frontend:client:check` w backendzie nadal zgłasza 11 `frontend_missing_consumer_operation:…:web`. Konsumenci istnieją w `patternly-web/src/components/{PrivacyRequestsPanel,LegalRequestsPanel,SecurityIncidentsPanel}.jsx` przez `lifecycle.request`/`requestAdminJson`; scanner rozpoznaje inne formy wywołań.
+Naprawa rozpoznawania literalnych `lifecycle.request`/`requestAdminJson` została dostarczona w backendzie `4d8efbd` podczas BIZQ-03. Historyczny odbiór:25/25 testów parsera i independently sprawdzone rzeczywiste callsites; świeże `node scripts/check-frontend-client.mjs`11.10 rozpoznało54 używane operacje (PASS). Szczegóły w [raporcie źródłowym BIZQ-03](../../reports/bizq03-source-acceptance-2026-10-09.md).
 
-Zakres: nauczyć istniejący scanner rozpoznawać używany wrapper i jego literalne operacje albo dostarczyć równoważny odtwarzalny proof przez obecny gate. Nie dodawać atrap wywołań ani usuwać operations z kontraktu dla GREEN. AC: 11 rzeczywistych consumer edges rozpoznane, usunięte/zmienione wywołanie daje RED w negative fixture, obowiązujący pre-promotion gate przechodzi. Zmiana produktu/endpoints dopiero dla wykazanego brakującego konsumenta.
+Pozostaje granica narzędzia: parser nie rozwiązuje import/symbol bindings, więc syntetyczny no-op o tej samej nazwie lokalnej może zostać policzony. Obecne callsites potwierdzono niezależnie; nie jest to dowód transportu dowolnego przyszłego kodu ani brakująca naprawa11 operacji. Zachować istniejące negative fixtures (unknown options/spread/computed method/staticpath bez wywołania), bez atrap konsumentów lub usuwania endpointów dla GREEN. Realny transport ma osobne odbiory usług.
 
 ## Kryteria SIM-READY
 

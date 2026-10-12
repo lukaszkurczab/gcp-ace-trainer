@@ -49,8 +49,12 @@ export function createCertificationExamReviewFixtureRuntime(
     },
     async openSource(url: string): Promise<unknown> {
       sourceTrace = Object.freeze({ count: sourceTrace.count + 1, url });
-      const projection = scenario === "practice-answer-matrix" ? (await getPracticeFixture()).projection : (await getFixture()).projection;
-      const projectedUrls = projection.items.flatMap((item) => (item.sources ?? []).map((source) => source.url));
+      const projectedUrls = scenario === "practice-answer-matrix"
+        ? await getPracticeFixture().then(({ projection, previews }) => [
+            ...projection.items.flatMap((item) => (item.sources ?? []).map((source) => source.url)),
+            ...previews.flatMap((preview) => (preview.feedback.sources ?? []).map((source) => source.url)),
+          ])
+        : (await getFixture()).projection.items.flatMap((item) => (item.sources ?? []).map((source) => source.url));
       if (!projectedUrls.includes(url)) throw new Error("The source URL does not belong to this local review fixture.");
       if (scenario === "source-failure") throw new Error("The fixture source opener rejected this request.");
       return options.openUrl(url);

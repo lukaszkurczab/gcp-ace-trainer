@@ -1,4 +1,4 @@
-import type { PackageCompletionRuleV2 } from "../../domain/learning/packageCompletionRule";
+import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 import aws from "../generated/canonical-content/aws-certified-solutions-architect-associate.json";
 import backend from "../generated/canonical-content/backend-system-design-interview.json";
 import claude from "../generated/canonical-content/claude-certified-architect-professional-certification.json";
@@ -26,7 +26,7 @@ export type CanonicalTrackRuntime = Readonly<{
   artifactSha256: string;
   contentReleaseId: string;
   questions: readonly Question[];
-  completionRule?: PackageCompletionRuleV2;
+  completionRule?: PackageCompletionRule;
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   planningPolicy?: LearningPlanningPolicy;
   trainingIdentity?: ContentTrackIdentity;
@@ -123,7 +123,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
 
 function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number]): CanonicalTrackRuntime {
   const modes = Object.freeze(configs.filter((config) => config.trackId === catalog.trackId));
-  const planningPolicy = catalog.planningPolicy === undefined ? undefined : validateLearningPlanningPolicy(catalog.planningPolicy, catalog.questions, modes);
+  const planningPolicy = catalog.planningPolicy === undefined ? undefined : validateLearningPlanningPolicy(catalog.planningPolicy, catalog.questions, modes, catalog.completionRule);
   const pools = new Map(modes.map((mode) => [mode.modeId, resolvePool(catalog, mode)]));
   return Object.freeze({
     trackId: catalog.trackId,

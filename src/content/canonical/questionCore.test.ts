@@ -32,7 +32,7 @@ test("all nine canonical artifacts validate with exact inventory and stable lear
   assert.equal(lock.schemaVersion, "patternly-content-lock-v1"); assert.equal(inputs.length, 9);
   let questions = 0; const nodes = new Set<string>(), units = new Set<string>(); let padded: Question | undefined;
   for (const { entry, artifact } of inputs) { const validated = validateCanonicalArtifact(artifact, entry, entry.trackId); questions += validated.questions.length; for (const question of validated.questions) { nodes.add(`${question.trackId}\0${question.nodeId}`); units.add(`${question.trackId}\0${question.nodeId}\0${question.mentalUnitId}`); if (question.questionId === "alg-linked-list-cycle-detection-11-entry-phase") padded = question; } }
-  assert.deepEqual({ tracks: inputs.length, nodes: nodes.size, mentalUnits: units.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 943, questions: 16_622 });
+  assert.deepEqual({ tracks: inputs.length, nodes: nodes.size, mentalUnits: units.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 958, questions: 16_695 });
   assert.equal(padded?.prompt, "After Floyd's pointers meet, what transformation finds the cycle entry? ");
 });
 
@@ -133,6 +133,26 @@ test("validator fails closed on exact keys, identities, membership and scoring c
   assert.throws(() => validateCanonicalArtifact(foreign, inputs[0]!.entry, inputs[0]!.entry.trackId));
   const duplicate = clone(inputs[0]!.artifact) as { questions: Question[] }; duplicate.questions[1] = duplicate.questions[0]!;
   assert.throws(() => validateCanonicalArtifact(duplicate, inputs[0]!.entry, inputs[0]!.entry.trackId));
+});
+
+test("optional course links require a title, absolute HTTPS URL, and explicit account requirement", () => {
+  const source = (inputs[0]!.artifact as { questions: Question[] }).questions[0]!;
+  const valid = {
+    ...source,
+    feedback: { ...source.feedback, course: { title: "Course lesson", url: "https://anthropic-partners.skilljar.com/lesson/123", requiresAccount: true } },
+  } as Question;
+  assert.deepEqual(validateQuestion(valid), []);
+
+  const invalid = [
+    { ...valid, feedback: { ...valid.feedback, course: { ...valid.feedback.course!, url: "http://anthropic-partners.skilljar.com/lesson/123" } } },
+    { ...valid, feedback: { ...valid.feedback, course: { ...valid.feedback.course!, url: " https://anthropic-partners.skilljar.com/lesson/123" } } },
+    { ...valid, feedback: { ...valid.feedback, course: { ...valid.feedback.course!, url: "https://anthropic-partners.skilljar.com/lesson/123 " } } },
+    { ...valid, feedback: { ...valid.feedback, course: { ...valid.feedback.course!, url: "https://anthropic-partners.skilljar.com/lesson 123" } } },
+    { ...valid, feedback: { ...valid.feedback, course: { ...valid.feedback.course!, requiresAccount: "yes" } } },
+    { ...valid, feedback: { ...valid.feedback, course: { ...valid.feedback.course!, section: "  " } } },
+    { ...valid, feedback: { ...valid.feedback, course: { ...valid.feedback.course!, extra: true } } },
+  ];
+  for (const candidate of invalid) assert.ok(validateQuestion(candidate).length > 0);
 });
 
 test("catalog verifies bytes before exposing frozen lookups and exact artifact metadata", async () => {

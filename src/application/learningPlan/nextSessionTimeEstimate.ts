@@ -5,6 +5,7 @@ import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatal
 import type { LearningPlanModeRecommendation } from "./learningPlanModeRecommendation";
 import type { LearningPlanningPolicy } from "../../content/canonical/planningPolicy";
 import type { ContentPlanningPolicyIdentity } from "../../content/canonical/contentSuccessorLedger";
+import type { PackageCompletionState } from "../../domain/learning/packageCompletionRule";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
 import type { LegalSessionOption } from "../../domain/learning/planningCalendar";
 import { getTrainingSessionProgress } from "../trainingSessions/sessionDurability";
@@ -19,6 +20,8 @@ export function estimateNextSessionTime(input: Readonly<{
   sessions: readonly TrainingSession[];
   attempts: readonly TrainingAttempt<unknown>[];
   reviews: readonly import("../../domain").ReviewQueueEntry[];
+  /** V3 completion may override the generic recommendation with an access-aware required-unit target. */
+  completion?: PackageCompletionState;
   now: string;
   requestedLength?: number;
 }>): PlanningWorkEstimateResult {
@@ -86,6 +89,13 @@ export function estimateNextSessionTime(input: Readonly<{
       observedCalibrations,
       includeReviewReserve: false,
     });
+  }
+  // Home can route an incomplete V3 package to the next accessible required unit.
+  // This coordinator has no chapter-entitlement input, so a generic mode pool can
+  // name and cost the wrong next session (often D01) and must remain explicitly unknown.
+  // Active continuations were estimated above from their exact persisted questions.
+  if (track.completionRule?.ruleVersion === 3 && input.completion?.kind !== "completed") {
+    return unavailable("missing_scope_estimate", []);
   }
   const currentDue = input.reviews.filter((entry) => entry.trackId === track.trackId && entry.sourceItem.trackId === track.trackId
     && entry.sourceItem.contentVersion === track.contentVersion && entry.sourceItem.artifactSha256 === track.artifactSha256
@@ -165,7 +175,7 @@ export function projectFullGoalScopeAvailability(input: Readonly<{
     if (chapterCosted) costedChapterCount += 1;
   }
   const unavailableScopeRefs = Object.freeze([...unavailable.values()].sort((left, right) => left.nodeId.localeCompare(right.nodeId) || left.mentalUnitId.localeCompare(right.mentalUnitId)));
-  const minimumRemainingResponses = input.completion.kind === "completed" ? 0 : input.completion.remainingAttemptCount;
+  const minimumRemainingResponses = input.completion.kind === "completed" ? 0 : input.completion.minimumAdditionalAttemptCount;
   const kind = input.completion.kind === "completed" ? "complete" as const
     : unavailableScopeRefs.length > 0 || unavailableChapters.length > 0 ? "scope_costs_incomplete" as const
       : "scope_costed_volume_unavailable" as const;

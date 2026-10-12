@@ -1,6 +1,6 @@
 # BIZQ-03 — odbiór źródeł i kontraktów, 09.10.2026
 
-Ten raport zapisuje ograniczony odbiór pakietu. Nie zamyka BIZQ-03. Aktualny zakres i następna akcja pozostają wyłącznie w [stanie](../../.agent/WORKING_STATE.md) i [planie](../PATTERNLY-WORKING-PLAN.md). Kryteria pochodzą z [oryginalnej specyfikacji](../specs/business-quality/03-BIZQ-03-ADAPTACYJNY-PLAN-NAUKI.md).
+Ten raport zapisuje końcowy odbiór funkcjonalny A01–A24/§11 i jego ograniczenia; nie potwierdza gotowości wydania. Aktualny zakres i następna akcja pozostają wyłącznie w [stanie](../../.agent/WORKING_STATE.md) i [planie](../PATTERNLY-WORKING-PLAN.md). Kryteria pochodzą z [oryginalnej specyfikacji](../specs/business-quality/03-BIZQ-03-ADAPTACYJNY-PLAN-NAUKI.md).
 
 ## Algorytm i granice
 
@@ -17,7 +17,7 @@ Brak legalnych requestów dla obowiązkowych Premium scopes nie jest zastępowan
 - A04 actual canonical selector po historii B05 zmienia QID/unit pool. Późniejszy aktywny-diagnostic guard: niezależny targeted2/2, legal40/remaining35, brak skracania nowej lub obcej sesji.
 - UI: CODE_ONLY42/42 + locale parity4/4; nie pełny native odbiór.
 - Atomic producer→APP snapshot→BACKEND schema/merge: actual versioned `scripts/qa/goalPlanAppBackendContractProbe.mjs` PASS; v2 exact revision/acceptedTarget, negatywne nowsza/starsza rewizja i mismatched target, v1 compatibility. APP accountDataSync15/15, backend merge8/8 i typecheck PASS. Root wykrył TS exact-optional mismatch, poprawiony i niezależnie ponowiony. To nie HTTP/Firestore sync.
-- Historical candidate:24/24; cross-repo3/3 z actual historical checkout `cc3efca88be7e01137f10ac69a0643f06b61a350` i current producer `0f4e6912d7d0cdb1a1c41b9d7885d7e867f80f34`. Oba immutable release locki bez diffu. Exact v1training projection i osobny currentv2proof zachowane. Pierwsza próba temp archive nie była Git checkoutem; druga użyła prawdziwego checkoutu. Pełne CI nieuruchomione dla outgoing APP/BACKEND.
+- Historical candidate:24/24; cross-repo3/3 z actual historical checkout `cc3efca88be7e01137f10ac69a0643f06b61a350` i current producer `0f4e6912d7d0cdb1a1c41b9d7885d7e867f80f34`. Oba immutable release locki bez diffu. Exact v1training projection i osobny currentv2proof zachowane. Pierwsza próba temp archive nie była Git checkoutem; druga użyła prawdziwego checkoutu. Końcowy wynik APP CI zapisano poniżej; backend4d8efbd został odebrany osobno.
 
 ## Wcześniejsza usterka wymaganej bramki backendu
 
@@ -27,7 +27,7 @@ Ograniczenie: parser nie rozwiązuje import/symbol bindingu. Syntetyczny no-op o
 
 ## Macierz oryginalnych kryteriów
 
-S = ograniczony odbiór źródłowy; N = faktyczna próba native/sieciowa. Macierz uaktualniona po niezależnym przeglądzie pozostałych wymagań 09.10; wcześniejsze sekcje opisują historię, nie dodatkowe bramki. Końcowy niezależny odbiór funkcjonalny A01–A24/§11: PASS WITH ISSUES (09.10,08:00UTC). Otwarte pozostają outgoing/commit/push/aktualneCI; ograniczenia dowodów poniżej nie są nowymi bramkami.
+S = ograniczony odbiór źródłowy; N = faktyczna próba native/sieciowa. Macierz uaktualniona po niezależnym przeglądzie pozostałych wymagań 09.10; wcześniejsze sekcje opisują historię, nie dodatkowe bramki. Końcowy niezależny odbiór funkcjonalny A01–A24/§11: PASS WITH ISSUES (09.10,08:00UTC). Commit/push i CI zakończono zgodnie z końcową sekcją; ograniczenia dowodów poniżej nie są nowymi bramkami.
 
 | ID | Dowód źródłowy / pozostała granica |
 | --- | --- |
@@ -56,48 +56,11 @@ S = ograniczony odbiór źródłowy; N = faktyczna próba native/sieciowa. Macie
 | A23 | S PASS25: reminders failure/pending/retry bez fake synced; N PWI: readonly actualSDK undetermined/0matches/unchangedpair. Nie delivery ani forcednativefailure; pełny tekst/scroll/accessibility native2sizes×2themes PASS po korekcie2/nativehosts. |
 | A24 | S: strict producer schemas i consumer v2, explicit unknown/missing metadata. |
 
-§11: trzy plany GCP (nowy/returning/near-date) doprowadziły do rzeczywistych legalnych sesji40/10/10; Coding legalguided10 z A19 i Designaccess/config mają bounded independentPASS. Zgodność wejściowa wszystkich9tracków potwierdzona exactloader/policy/trainingpin, nie9nativejourneys. Details/pełne wymagane zakresy/przewijanie/otwarcie rzeczywistego materiału oraz HTTP409sync odebrane. Aktualna kontynuacja §7 i jej rzeczywisty przelicz/resume/complete oraz reminder2sizes×2themes odebrane niezależnie. Outgoing/aktualneCI pozostają odrębne. VoiceOver poza zakresem. Empiryczna trafność szacunków, positivePremiumprovider/purchase i GO nie są zadeklarowane.
+§11: trzy plany GCP (nowy/returning/near-date) doprowadziły do rzeczywistych legalnych sesji40/10/10; Coding legalguided10 z A19 i Designaccess/config mają bounded independentPASS. Zgodność wejściowa wszystkich9tracków potwierdzona exactloader/policy/trainingpin, nie9nativejourneys. Details/pełne wymagane zakresy/przewijanie/otwarcie rzeczywistego materiału oraz HTTP409sync odebrane. Aktualna kontynuacja §7 i jej rzeczywisty przelicz/resume/complete oraz reminder2sizes×2themes odebrane niezależnie. Końcowy wynik CI jest zapisany poniżej. VoiceOver poza zakresem. Empiryczna trafność szacunków, positivePremiumprovider/purchase i GO nie są zadeklarowane.
 
-## Dalszy odbiór 09.10
+## Usunięta historia przejściowych prób
 
-Backend skutecznej pary w transakcji: independent12/12 PASS na izolowanym projekcie demo; bez kasowania aktywnego sandboxu. Goal-only/plan-only, tombstones, konkurencyjne pełne pary i exact replay sprawdzone. Root merge/OpenAPI33/33, build, OpenAPI76, frontend54, TTL34 oraz outgoing diff PASS. Commit4d8efbd pushed; CI37876027614 SUCCESS: główna325/315PASS/10SKIP/0FAIL, recovery17/17, operator4/4, HTTPS operator acceptance1/1. Nie jest to pełna natywna A21.
-
-Wspólny lifecycle WallClock w proposal/editor/Home: independent composition1/1 i sąsiednie55/55 PASS. Test wykonuje canonical błędną odpowiedź, repair24, advance24h i legalną rekomendację tego samego due. Izolowany Memory profile router nie stanowi dowodu iOS SDK.
-
-Korekta granicy dowodów zegara: bieżący typecheck podczas implementacji resolvera ujawnił6 błędów TS w nowym teście integracyjnym. Behavioral1/1 i55/55 pozostają wykonanymi dowodami, lecz wcześniejszy raport worker typecheckPASS nie stanowi aktualnego potwierdzenia. Naprawa i ponowienie bramki należą do tego samego APP wykonawcy.
-
-A23 independent źródłowy25/25 PASS: acceptedpair pozostaje po failure, reminders mają pending i durable retry, reconcile nie żąda permission. Actual readonly iOS capability independent PASS WITH ISSUES: undetermined/0matches dla Codingcommand, samepair/binding/lease, żadnego request/schedule/cancel. Nie delivery ani forcedSDKfailure; nie ustanawia takiej dodatkowej bramki A23.
-
-APP A21 resolver independent PASS WITH ISSUES: lifecycle58/58, identity43/43, goalplanrecovery10/10, conflictpresentation2/2, correctedclock1/1 i typecheck PASS. Zbadano durable409gate bez bootstrap/Home GET/POST, latest GET poza write lane, fullpair decisions, canonical journal pair+syncstate CAS, fault Goal/Plan/syncstate/phase/clear i dokładne recovery bez podwójnych rewizji oraz unrelated pending/ACKpreservation. Jedyna drobna UIluka: stalechoice zostawia preview bezrefresh; no writes dziękiserviceguard, worker poprawia akcję. Native offline/restart/HTTP409/whole-pair choice/cold independent PASS09.10; pełny §11 nadal OPEN.
-
-### Korekty potwierdzone przez rzeczywisty flow powracającego użytkownika
-
-Unchanged-goal acceptance: buildProposalPlan oczekiwał goalRevision+1, choć canonicalowner zachowuje rewizję identycznego celu; poprawny zapis Plan3goal2 był błędnie zgłaszany jako storage_error. Teraz builder używa canonicalhelper i precondition pary. Independent27coordinator/runtime/recovery+typecheck/diffPASS; actualfreshAcceptUIpersisted/Goal2unchangedPlan4goal2/trainingunchanged/readable/journalNULLPASS. Usunięto wyłącznie mylące savedsummary zdanie o upcomingdiag wynikające z policyinitialDiagnosis; currentproposal/Home diagnoza i powtórki nadal od kanonicznego outcome. Independent11presentation/diffPASS, workertypecheckPASS.
-
-Następna sesja w kalendarzu — projekt korekty: actualnear-date GCP10review10–40, ale nextcalendar brał wszystkielegaloptions i wybrał20request/19actual19–76 bez oznaczenia alternatywy. Najmniejszy kierunek: nextcalendar dokładnie recommended requestedLength, fullGoalcalendar zachowuje wszystkie opcje; brak kosztu tej długości oznacza explicitunavailable. Oceny fit.95/simple.94/risk.88/maint.93 minimum.88. Independentdesignreview w toku, bez implementacji na tym etapie. Cel nadalA01–A24/§11; nowe native odbiory dwóch pierwszychwariantówGCP mają scope-limitedPASS, A19/third/Coding/Design/UItail pozostająOPEN.
-
-### Domknięcie korekty kalendarza następnej sesji — 09.10
-
-Niezależny design zaakceptował minimum0.88 (fit0.95/simple0.93/risk0.88/maint0.93). Zamrożone dwa pliki koordynatora filtrują tylko next-session calendar do kanonicznego requestedLength, bez alternatywnego fallbacku; full-goal calendar zachowuje wszystkie legalne długości i due. Worker23/typecheck/diff PASS, niezależny QA27/diff PASS. Świeży native GCP z19due potwierdził rekomendację10 oraz calendar10–40, pełny nakład z20 brakującymi rozdziałami/14reviews bezokna oraz forecast760remaining/2sessions przed13Oct. Nie jest to samo w sobie pełny odbiór§11.
-
-### Aktywna praktyka w prognozie — potwierdzona luka§7, 09.10
-
-Native Coding legalguided10/1answer/index1: pause→recalcwithoutaccept→decline→Resume zachował exactid/items/options/pins/attempts/reviews/Goal2Plan2 i journalNULL; później ukończono10realanswers. Niezależny A19 PASS WITH ISSUES: końcowe3occurrences zmieniły się podczas późniejszych odpowiedzi i conditionalreinsert, nie podczas planner/recalc/resume; nieclaimować całego orderunchanged przezwykonywaniesesji. Pierwsza klasyfikacja recalcnew10/no-fit jako ograniczenie została po odczycie§7.1/§7.4 skorygowana: brak jawnego continue/finish jest materialnym gapem prognozy, choć HomeResume działa. Independentdesign approves jeden canonicaltypedactiveaction +exactremainingcost/existingdemand/dedup/calendarElapsedcontinuation/fixedabsoluteunsplit, beznielegalnego9/request/pinmutation/newowner. Scoresfit.90/simple.81/risk.82/maint.83 min.81. Worker read-onlyscopeproposal; sourcejeszczeniewdrożony. FullBIZ03OPEN.
-
-
-Root i niezależny read-only reviewer wykryli w roboczej implementacji kontynuacji materialną granicę kosztu: `includeReviewReserve=true` doliczał hipotetyczne przyszłe powtórki do nextsession oraz `existingSession.legalOptions`, z których kalendarz wyznacza czas resume. To może fałszywie zawyżyć czas i no-fit. W ramach tego samego projektu §7: exact remaining occurrences kosztować bez przyszłej rezerwy; pełny forecast zachowuje rezerwę osobno, raz, bez tworzenia dueAt/entry. Wykonawca poinformowany przed freeze; nie jest to nowa bramka poza spec§4/§7. Kontrola zastąpionej starej activeDiagnostic gałęzi również należy do cleanup jednego kanonicznego wyboru. Odbiór korekty pozostaje OPEN.
-
-
-Kontynuacja sourcefreeze: worker61/61+Node22typecheck/diffPASS. Independentreview58/58 coordinator/workload/recommendation/estimate/calendar oraz22/22Home/selectors/fixturePASS; własny dodatkowy typecheck reviewera przerwany po długim oczekiwaniu, nie independentPASS (workerexit0 zachowany). Root pełny npmtest z exactCIcurrent/history/SHA zakończył2223total/2214PASS/5FAIL/4SKIP w316.8s. Pięć błędów to HomeShellReadFence oczekujący learning-sourcechanged przy niezgodnym aktywnym wskaźniku oraz4EditorFreshness accepted/retry/A-B-A/replay. Worker ma ustalić dokładnąprzyczynę i poprawić bez osłabianiaCAS/fences; pełny gate nieodebrany. Logprivate600 `/private/tmp/patternly-bizq03-continuation-final-source-20261009.log`.
-
-
-Fixturecorrections sourcefreeze: worker37/typecheck/diffPASS; independent64/64PASS WITH ISSUES. UnchangedGoalrevision/precondition/CAS zgodne zcanonicalhelper, Home usuniętypointer+activeindex dokładnie failclosed. Pozostałe nonblockingtestquality: stage-onlycase mylnie nazwany asyncuncertainretry, nieefektywny setUncertain przedstage oraz nieaktualny tytuł editCAS; cleanup zlecony bezguardchanges. Root pełny gate **2224total/2220PASS/4SKIP/0FAIL**,277.5s, logprivate600 `/private/tmp/patternly-bizq03-final-corrected-gate-20261009.log`. Core cały z tego freeze; późniejsza mała korekta stylu reminder i testtitles wymaga narrowchecks, bezponowienia całego core bez nowegoryzyka. CI po finalcommit sprawdzi aktualny cały zakres.
-
-### Aktualizacja po świeżym wejściu (09.10, 07:25 UTC)
-
-Świeży flow73803 obalił wcześniejszy UI Reminder PASS: drugi akapit nadal ucina się po „time” przy maximum/dark. Poprzednie 4pixels nie potwierdzają tego wejścia. Materialny odbiór UI ponownie OPEN; źródła zamrożone na native Coding, worker/QA analizują realny Text layout. Wszystkie historyczne twierdzenia o pełnym UI PASS i niewdrożonej kontynuacji są zastąpione tym wpisem i aktualną macierzą.
-
-Kontrolowany audit clock po HMR przywrócono raz o24h: `coding-before-clock-resync-continuation.json` → `coding-after-clock-resync-continuation.json`, appNow09Oct07:25→10Oct07:25. Exact goal/plan/journal oraz sessions/attempts/reviews unchanged. Bez zmiany zegara urządzenia i persisted historii/deadlines.
+Podczas implementacji wykryto i naprawiono nielegalne skracanie aktywnej diagnozy, brak kontynuacji istniejącej sesji w prognozie, doliczanie hipotetycznej rezerwy do czasu resume, niezgodne fixtures CAS oraz obcięte instrukcje Reminder. Końcowe dowody i macierz powyżej zastępują przejściowe OPEN/FAIL; nie zmieniono ich w nowe PASS. Szczegółowa historia jest w Git poprzedzającym porządki11.10, a finalne native wyniki w [raporcie urządzeniowym](bizq03-account-profile-native-2026-10-09.md). Odrębne PERF-01 nadal obejmuje niezmierzoną przyczynę powolnego Home; naprawa tekstu jej nie zamyka.
 
 ## Końcowy odbiór funkcjonalny, 09.10.2026, 08:00 UTC
 

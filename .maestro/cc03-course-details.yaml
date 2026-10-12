@@ -1,0 +1,66 @@
+appId: com.lkurczab.patternly
+name: CC03 documentation and mapped course modules in Details
+---
+- openLink: "com.lkurczab.patternly://audit/exam-review?case=practice-answer-matrix"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:aud15:practice-preview:open"
+    timeout: 30000
+- tapOn:
+    id: "patternly:aud15:practice-preview:open"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:CCARP-D01-O01-boundary"
+    direction: DOWN
+    timeout: 60000
+    speed: 80
+- tapOn:
+    id: "patternly:session:details-toggle:CCARP-D01-O01-boundary"
+- scrollUntilVisible:
+    element: "Documentation"
+    direction: DOWN
+    timeout: 60000
+    speed: 80
+- assertVisible:
+    id: "question-source-link-CCARP-D01-O01-boundary-0"
+- scrollUntilVisible:
+    element: "Course module"
+    direction: DOWN
+    timeout: 60000
+    speed: 80
+- assertVisible:
+    id: "question-source-link-CCARP-D01-O01-boundary-1"
+- scrollUntilVisible:
+    element: "Requires an Anthropic Partner Academy account"
+    direction: DOWN
+    timeout: 60000
+    speed: 80
+    centerElement: true
+- assertVisible: "Requires an Anthropic Partner Academy account"
+- takeScreenshot: cc03-module1-details
+- tapOn:
+    id: "patternly:aud15:practice-preview:next"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:CCARP-D01-O01-diagnosis"
+    direction: DOWN
+    timeout: 60000
+    speed: 80
+    centerElement: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "patternly:session:details-toggle:CCARP-D01-O01-diagnosis"
+- scrollUntilVisible:
+    element:
+      id: "question-source-link-CCARP-D01-O01-diagnosis-1"
+    direction: DOWN
+    timeout: 60000
+    speed: 80
+- scrollUntilVisible:
+    element: "Requires an Anthropic Partner Academy account"
+    direction: DOWN
+    timeout: 60000
+    speed: 80
+    centerElement: true
+- assertVisible: "Requires an Anthropic Partner Academy account"
+- takeScreenshot: cc03-module2-details

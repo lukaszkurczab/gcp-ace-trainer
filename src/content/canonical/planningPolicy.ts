@@ -1,5 +1,7 @@
 import { isCanonicalSafeIdentity } from "./questionValidation";
 import type { ProductModeConfig } from "./productModeConfig";
+import { resolveRequiredUnitFocusMode } from "./productModeConfig";
+import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 
 export type PlanningScopeRef = Readonly<{ nodeId: string; mentalUnitId: string }>;
 export type PlanningReviewReserve =
@@ -35,6 +37,7 @@ export function validateLearningPlanningPolicy(
   value: unknown,
   questions: readonly ScopeQuestion[],
   modes: readonly ProductModeConfig[],
+  completionRule?: PackageCompletionRule,
 ): LearningPlanningPolicy {
   const policy = asRecord(value);
   exactKeys(policy, ["schemaVersion", "policyVersion", "workEstimates", "unavailableScopes"]);
@@ -55,7 +58,7 @@ export function validateLearningPlanningPolicy(
     const scopeRefs = estimate.scopeRefs.map(validateScopeRef);
     if (new Set(scopeRefs.map(scopeKey)).size !== scopeRefs.length) fail();
     const mode = modeById.get(estimate.modeId)!;
-    const selectableScopes = getSelectableScopes(mode, questions);
+    const selectableScopes = getSelectableScopes(mode, questions, completionRule);
     for (const scope of scopeRefs) {
       const key = planningPairKey(estimate.modeId, scope);
       if (!scopePairs.has(scopeKey(scope)) || !selectableScopes.has(scopeKey(scope)) || estimated.has(key)) fail();
@@ -102,8 +105,8 @@ export function validateLearningPlanningPolicy(
     for (const modeId of modeIds) {
       const key = planningPairKey(modeId, scopeRef);
       if (unavailable.has(key) || estimated.has(key)) fail();
-      if (reason === "unknown_runtime_scope" && getSelectableScopes(modeById.get(modeId)!, questions).has(scopeKey(scopeRef))) fail();
-      if (reason !== "unknown_runtime_scope" && !getSelectableScopes(modeById.get(modeId)!, questions).has(scopeKey(scopeRef))) fail();
+      if (reason === "unknown_runtime_scope" && getSelectableScopes(modeById.get(modeId)!, questions, completionRule).has(scopeKey(scopeRef))) fail();
+      if (reason !== "unknown_runtime_scope" && !getSelectableScopes(modeById.get(modeId)!, questions, completionRule).has(scopeKey(scopeRef))) fail();
       unavailable.set(key, Object.freeze({ scopeRef, modeIds: Object.freeze([modeId]), reason }));
     }
     return Object.freeze({ scopeRef, modeIds: Object.freeze(modeIds), reason });
@@ -114,7 +117,7 @@ export function validateLearningPlanningPolicy(
   for (const mode of modes) {
     for (const scope of scopePairs) {
       const key = `${mode.modeId}\0${scope}`;
-      const selectable = getSelectableScopes(mode, questions).has(scope);
+      const selectable = getSelectableScopes(mode, questions, completionRule).has(scope);
       const hasEstimate = estimated.has(key);
       const hasUnavailable = unavailable.has(key);
       if ((selectable && hasEstimate === hasUnavailable) || (!selectable && (hasEstimate || !hasUnavailable))) fail();
@@ -125,7 +128,21 @@ export function validateLearningPlanningPolicy(
   return deepFreeze({ schemaVersion: "patternly-learning-planning-policy-v1", policyVersion: policy.policyVersion, workEstimates, unavailableScopes });
 }
 
-function getSelectableScopes(mode: ProductModeConfig, questions: readonly ScopeQuestion[]): Set<string> {
+function getSelectableScopes(mode: ProductModeConfig, questions: readonly ScopeQuestion[], completionRule?: PackageCompletionRule): Set<string> {
+  if (mode.modeId === "certification-focus-practice" && completionRule?.ruleVersion === 3) {
+    const scopes = new Set<string>();
+    for (const chapter of completionRule.chapters) {
+      // Keep the policy's selectable inventory aligned with the same verified
+      // target contract used by setup, runtime and resume.
+      for (const unit of chapter.units) {
+        resolveRequiredUnitFocusMode(mode, completionRule, chapter.nodeId, unit.mentalUnitId);
+        if (questions.some((question) => question.nodeId === chapter.nodeId && question.mentalUnitId === unit.mentalUnitId)) {
+          scopes.add(`${chapter.nodeId}\0${unit.mentalUnitId}`);
+        }
+      }
+    }
+    return scopes;
+  }
   const selection = mode.selection;
   if (selection.kind === "exact_ordered_questions") {
     const questionIds = new Set(selection.questionIds);
