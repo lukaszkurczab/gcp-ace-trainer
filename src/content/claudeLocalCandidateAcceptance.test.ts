@@ -12,6 +12,8 @@ import { ContentPackageRuntimeOwner } from "../application/contentPackageRuntime
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
 import { initializeStorageMetadata } from "../storage/repositories/storageMetadataRepository";
 import { addTrainingAttempt, getTrainingAttempts } from "../storage/repositories";
+import { productionTrackAdmissionContext } from "../application/tracks/trackAdmissionContext";
+
 
 const TRACK = "claude-certified-architect-professional-certification";
 const NOW = "2026-10-11T12:00:00.000Z";
@@ -64,7 +66,7 @@ test("CC05 keeps historical answer identity intact and grants no current coverag
   const before = JSON.stringify(history);
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   initializeStorageMetadata();
-  await addTrainingAttempt(history[0]!);
+  await addTrainingAttempt(history[0]!, productionTrackAdmissionContext);
   const completion = evaluatePackageCompletion(track, history, (questionId) => track.getQuestion(questionId));
   assert.equal(completion.kind, "in_progress");
   assert.equal(completion.qualifyingAttemptCount, 0);
@@ -73,7 +75,7 @@ test("CC05 keeps historical answer identity intact and grants no current coverag
   assert.notEqual(track.trainingIdentity?.artifactSha256, previous.checksumSha256);
   assert.notEqual(track.artifactSha256, previousTraining.artifactSha256);
   await assert.rejects(() => owner.resolveExactArtifact({ trackId: TRACK, ...previousTraining }), /unavailable/u);
-  assert.deepEqual((await getTrainingAttempts()).value, history, "loading the new package and failing old exact resolution preserve stored historical attempts");
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, history, "loading the new package and failing old exact resolution preserve stored historical attempts");
   const prepared = await runtime.prepare({ trackId: TRACK, modeId: "certification-focus-practice", request: { sessionId: "cc05-current", requestedLength: 10 }, attempts: [], reviews: [], now: NOW });
   await assert.rejects(() => runtime.validateResume({ session: { ...prepared.session, contentVersion: previous.contentVersion, artifactSha256: previous.checksumSha256 }, draft: null }), /content identity is unavailable/u);
 });

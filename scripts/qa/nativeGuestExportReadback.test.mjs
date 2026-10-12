@@ -71,8 +71,9 @@ function makeOwnerRuntime() {
     ['runtime', { isInitialized: true, verboseName: 'src/infrastructure/runtime/runtimeMode.ts' }],
     ['storage', { isInitialized: true, verboseName: 'src/infrastructure/storage/mmkvClient.ts' }],
     ['hash', { isInitialized: true, verboseName: 'src/infrastructure/identity/sha256.ts' }],
-    ['canonical', { isInitialized: true, verboseName: 'src/infrastructure/identity/canonicalSerialization.ts' }],
+    ['canonical', { isInitialized: true, verboseName: 'src/domain/identity/canonicalSerialization.ts' }],
     ['scope', { isInitialized: true, verboseName: 'src/storage/repositories/learningPlanInputSnapshot.ts' }],
+    ['admission', { isInitialized: true, verboseName: 'src/application/tracks/trackAdmissionContext.ts' }],
   ]);
   const exports = {
     runtime: { isPatternlySmokeRuntime: () => true },
@@ -80,6 +81,7 @@ function makeOwnerRuntime() {
     hash: { sha256Utf8: () => guestProfileHash },
     canonical: { canonicalSerialize: JSON.stringify },
     scope: { readLearningPlanStorageScope: () => ({}) },
+    admission: { productionLearningDataAdmissionContext: {}, productionTrackAdmissionContext: {} },
   };
   let resolveCalls = 0;
   const resolver = (id) => { resolveCalls += 1; return exports[id]; };
@@ -162,12 +164,12 @@ test('generated expression enforces Guest hash, exact inventory identity, and ca
   assert.match(expression, /isActiveProfileStorageLeaseCurrent\(lease\)/u);
   assert.match(expression, /profileIdSha256!==expectedGuestProfileIdSha256/u);
   assert.match(expression, /readGuestInstallation\(\)/u);
-  assert.match(expression, /readTrainingSessions\(\)/u);
-  assert.match(expression, /assertTrainingEvidenceIntegrity\(\)/u);
+  assert.match(expression, /readTrainingSessions\(trackAdmission\)/u);
+  assert.match(expression, /assertTrainingEvidenceIntegrity\(trackAdmission\)/u);
   assert.match(expression, /assertContentIdentityRecordIntegrity\(\)/u);
   assert.match(expression, /retainedContentHistory/u);
   assert.match(expression, /readContentIdentityRetainedHistory\(\)/u);
-  assert.match(expression, /readActiveMutationJournal\(\)/u);
+  assert.match(expression, /getActiveMutationJournal\(learningAdmission\)/u);
   assert.match(expression, /inspectPreparedQ13StorageInventory\(\)/u);
   assert.match(expression, /inventoryGuests\.length!==1/u);
   assert.match(expression, /inventoryGuests\[0\]\?\.kind!==first\.profileKind/u);

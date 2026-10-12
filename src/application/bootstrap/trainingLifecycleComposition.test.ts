@@ -20,6 +20,9 @@ import { type ContentPackageRuntimePort } from "../trainingLifecycle/contracts";
 import { createAdjustableWallClock, composeTrainingLifecycleUseCases } from "./trainingLifecycleComposition";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { acceptSimulationFinalizationForTest, attempt as testAttempt, review as testReview } from "../../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const PROFILE_A = Object.freeze({ id: "00000000-0000-4000-8000-000000000041", kind: "guest" as const, accountId: null });
 const PROFILE_B = Object.freeze({ id: "00000000-0000-4000-8000-000000000042", kind: "guest" as const, accountId: null });
@@ -77,7 +80,7 @@ test("real composition retains its opaque D receipt for exact readback reconcili
     request: { scope: { simulationProfileId: SIMULATION_PROFILE_ID } },
   });
   await getForegroundSessionTimerFacade().initialize(prepared.session);
-  let savedDraft = await getActiveTrainingSessionDraft();
+  let savedDraft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   assert.ok(savedDraft);
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK_ID);
   const question = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId);
@@ -141,7 +144,7 @@ test("real composition retains its opaque D receipt for exact readback reconcili
   const retryable = await lifecycle.getSimulationOperationState(prepared.session);
   assert.equal("error" in retryable ? retryable.error.allowedAction : null, "retry_same_command");
   await lifecycle.retrySimulationDraftSave();
-  savedDraft = await getActiveTrainingSessionDraft();
+  savedDraft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   assert.deepEqual(savedDraft, retryDraft);
   assert.equal(captureActiveProfileStorageLease(), originalLease, "the real-composition retry keeps the exact command-entry lease");
 
@@ -168,7 +171,7 @@ test("real composition retains its opaque D receipt for exact readback reconcili
   assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), durableAfterWriteFault);
 
   assert.equal(await lifecycle.reconcileSimulationDraftSave(prepared.session.id), "verified");
-  assert.deepEqual(await getActiveTrainingSessionDraft(), attemptedDraft);
+  assert.deepEqual(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), attemptedDraft);
   assert.equal((await lifecycle.getSimulationOperationState(prepared.session)).kind, "editable");
 });
 
@@ -195,7 +198,7 @@ test("a failure before accepted finalization leaves the exact saved response edi
   await contentPackageRuntimeOwner.resolveForDiscovery(DESIGN_TRACK_ID, "design_interview");
   const projection = await openDesignInterviewSimulation({ trackId: DESIGN_TRACK_ID, profileId });
   await saveDesignInterviewSimulationStage("requirements", "Verified durable response before finalization.");
-  const draftBefore = await getActiveTrainingSessionDraft();
+  const draftBefore = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   assert.ok(draftBefore);
   const before = storage.snapshot();
   const sessionKey = STORAGE_KEYS.trainingSession(projection.session.id);
@@ -206,11 +209,11 @@ test("a failure before accepted finalization leaves the exact saved response edi
   assert.ok(pointerBytesBefore);
   assert.ok(draftBytesBefore);
   assert.equal(draftBefore.revision, 2);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 
   failNextExactResolution = true;
   await assert.rejects(lifecycle.finalizeSimulation());
-  assert.equal(await getActiveMutationJournal(), null, "the injected failure occurs before any finalization journal is durable");
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, "the injected failure occurs before any finalization journal is durable");
   assert.deepEqual({
     session: storage.snapshot().get(sessionKey),
     pointer: storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION),
@@ -235,7 +238,7 @@ test("a failure before accepted finalization leaves the exact saved response edi
     sessionBytesUnchanged: storage.snapshot().get(sessionKey) === sessionBytesBefore,
     pointerBytesUnchanged: storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION) === pointerBytesBefore,
     draftWasStillPlainEditableRecord: Boolean(draftBeforeEdit && !JSON.parse(draftBeforeEdit).payload.kind),
-    journalAbsent: await getActiveMutationJournal() === null,
+    journalAbsent: await getActiveMutationJournal(productionLearningDataAdmissionContext) === null,
   }, {
     saveAllowed: true,
     preBootstrapEditable: true,
@@ -265,7 +268,7 @@ test("a failure after accepted D finalization remains frozen and production boot
           get(target, property, receiver) {
             if (property === "validateResume") {
               return async (value: Parameters<typeof target.validateResume>[0]) => {
-                const proof = readActiveTrainingSessionDraftStateProof();
+                const proof = readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext);
                 if (failAcceptedResumeOnce && proof && "kind" in proof.state && proof.state.kind === "accepted_simulation_finalization") {
                   failAcceptedResumeOnce = false;
                   throw new Error("injected post-acceptance runtime verification failure");
@@ -288,11 +291,11 @@ test("a failure after accepted D finalization remains frozen and production boot
   const sessionKey = STORAGE_KEYS.trainingSession(projection.session.id);
   const sessionBytesBefore = storage.snapshot().get(sessionKey);
   const pointerBytesBefore = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
-  const draftBefore = await getActiveTrainingSessionDraft();
+  const draftBefore = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   assert.ok(sessionBytesBefore && pointerBytesBefore && draftBefore);
   await assert.rejects(lifecycle.finalizeSimulation());
-  assert.equal(await getActiveMutationJournal(), null, "the injected error follows D acceptance but precedes journal persistence");
-  const acceptedProof = readActiveTrainingSessionDraftStateProof();
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, "the injected error follows D acceptance but precedes journal persistence");
+  const acceptedProof = readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext);
   assert.ok(acceptedProof && "kind" in acceptedProof.state && acceptedProof.state.kind === "accepted_simulation_finalization");
   assert.equal(acceptedProof.state.acceptance.sessionId, projection.session.id);
   assert.equal(storage.snapshot().get(sessionKey), sessionBytesBefore);
@@ -308,13 +311,13 @@ test("a failure after accepted D finalization remains frozen and production boot
     async () => { restored = composeDesignLifecycle("persist09-postaccept-reconstructed", { wallClock, packages }); },
   );
   assert.deepEqual(bootstrapped, { kind: "ready", activeSessionId: null });
-  assert.equal(await getActiveMutationJournal(), null);
-  assert.equal(await getActiveTrainingSession(), null);
-  assert.equal(await getActiveTrainingSessionDraft(), null);
-  assert.equal((await getTrainingSessions()).value.find((candidate) => candidate.id === projection.session.id)?.status, "completed");
-  assert.ok(await getTrainingSessionResult(projection.session.id));
-  assert.equal((await getTrainingAttempts()).value.filter((attempt) => attempt.sessionId === projection.session.id).length, 0);
-  assert.equal((await getReviewQueueItems()).value.filter((entry) => entry.sourceSessionId === projection.session.id).length, 0);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+  assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.find((candidate) => candidate.id === projection.session.id)?.status, "completed");
+  assert.ok(await getTrainingSessionResult(projection.session.id, productionTrackAdmissionContext));
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.filter((attempt) => attempt.sessionId === projection.session.id).length, 0);
+  assert.equal((await getReviewQueueItems(productionTrackAdmissionContext)).value.filter((entry) => entry.sourceSessionId === projection.session.id).length, 0);
 });
 
 test("a profile lease generation change during accepted runtime finalization preserves all canonical bytes", async () => {
@@ -362,7 +365,7 @@ test("a profile lease generation change during accepted runtime finalization pre
   const pointerBytes = before.get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
   const draftBytes = before.get(draftKey);
   assert.ok(sessionBytes && pointerBytes && draftBytes);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 
   holdFinalize = true;
   const finalization = lifecycle.finalizeSimulation();
@@ -377,9 +380,9 @@ test("a profile lease generation change during accepted runtime finalization pre
   assert.equal(storage.snapshot().get(sessionKey), sessionBytes, "the stale original generation cannot complete the session");
   assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), pointerBytes, "the active pointer remains byte-identical");
   assert.equal(storage.snapshot().get(draftKey), acceptedBytes, "the exact accepted response remains frozen and unchanged");
-  assert.equal(await getActiveMutationJournal(), null, "lease rejection precedes the finalization journal");
-  assert.deepEqual((await getTrainingAttempts()).value.filter((attempt) => attempt.sessionId === projection.session.id), []);
-  assert.equal((await getTrainingSessions()).value.find((candidate) => candidate.id === projection.session.id)?.status, "active");
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, "lease rejection precedes the finalization journal");
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value.filter((attempt) => attempt.sessionId === projection.session.id), []);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.find((candidate) => candidate.id === projection.session.id)?.status, "active");
 });
 
 test("accepted replay blocks scoped review additions, removals, and changes while preserving unrelated A/R", async () => {
@@ -398,19 +401,19 @@ test("accepted replay blocks scoped review additions, removals, and changes whil
     const scoped = reviewForRef("persist09-scoped-review", contentRef, projection.session.id);
     const unrelatedRef = { ...contentRef, questionId: `${contentRef.questionId}-unrelated` };
     const unrelated = reviewForRef("persist09-unrelated-review", unrelatedRef, "unrelated-session");
-    if (mutation !== "add") await addReviewQueueItems([scoped]);
-    await addReviewQueueItems([unrelated]);
+    if (mutation !== "add") await addReviewQueueItems([scoped], productionTrackAdmissionContext);
+    await addReviewQueueItems([unrelated], productionTrackAdmissionContext);
     const unrelatedAttempt = testAttempt("persist09-unrelated-attempt", "unrelated-session");
-    await addTrainingAttempt(unrelatedAttempt);
-    const draft = await getActiveTrainingSessionDraft();
+    await addTrainingAttempt(unrelatedAttempt, productionTrackAdmissionContext);
+    const draft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
     assert.ok(draft);
     await acceptSimulationFinalizationForTest(projection.session, draft, PROBE_BASE_TIME);
     if (mutation === "add") {
-      await addReviewQueueItems([scoped]);
+      await addReviewQueueItems([scoped], productionTrackAdmissionContext);
     } else if (mutation === "remove") {
-      await removeReviewQueueEntry(scoped.id);
+      await removeReviewQueueEntry(scoped.id, productionTrackAdmissionContext);
     } else {
-      await addReviewQueueItems([{ ...scoped, dueAt: "2026-10-12T10:00:00.000Z" }]);
+      await addReviewQueueItems([{ ...scoped, dueAt: "2026-10-12T10:00:00.000Z" }], productionTrackAdmissionContext);
     }
     const acceptedBytes = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
     const unrelatedReviewBytes = storage.snapshot().get(STORAGE_KEYS.reviewEntry(unrelated.id));
@@ -418,7 +421,7 @@ test("accepted replay blocks scoped review additions, removals, and changes whil
     const scopedReviewBytes = storage.snapshot().get(STORAGE_KEYS.reviewEntry(scoped.id));
 
     await assert.rejects(lifecycle.recoverActiveTrainingOperation(), /Review evidence changed after finalization acceptance/u);
-    assert.equal(await getActiveMutationJournal(), null, `${mutation} of a scoped review blocks before journaling outcomes`);
+    assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, `${mutation} of a scoped review blocks before journaling outcomes`);
     assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), acceptedBytes, "the accepted full response wrapper is retained");
     assert.equal(storage.snapshot().get(STORAGE_KEYS.reviewEntry(unrelated.id)), unrelatedReviewBytes, "unrelated R remains byte-identical");
     assert.equal(storage.snapshot().get(STORAGE_KEYS.trainingAttempt(unrelatedAttempt.id)), unrelatedAttemptBytes, "unrelated A remains byte-identical");
@@ -473,9 +476,9 @@ test("an unknown D acceptance retains its receipt across same-process projection
     async () => { restored = composeDesignLifecycle("persist09-unknown-fresh-lease"); },
   );
   assert.deepEqual(bootstrapped, { kind: "ready", activeSessionId: null });
-  assert.equal(await getActiveMutationJournal(), null);
-  assert.equal(await getActiveTrainingSessionDraft(), null);
-  assert.equal((await getTrainingSessions()).value.find((candidate) => candidate.id === projection.session.id)?.status, "completed");
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+  assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.find((candidate) => candidate.id === projection.session.id)?.status, "completed");
 });
 
 test("Design expiry waits for a pre-deadline draft save and finalizes its verified revision", async () => {
@@ -520,14 +523,14 @@ test("Design expiry waits for a pre-deadline draft save and finalizes its verifi
   await contentPackageRuntimeOwner.resolveForDiscovery(DESIGN_TRACK_ID, "design_interview");
   const projection = await openDesignInterviewSimulation({ trackId: DESIGN_TRACK_ID, profileId });
   await saveDesignInterviewSimulationStage("requirements", "Verified before the deadline.");
-  const baselineDraft = await getActiveTrainingSessionDraft();
+  const baselineDraft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   assert.ok(baselineDraft);
   assert.equal(baselineDraft.revision, 2);
   const deadlineAt = projection.session.configurationSnapshot.timerDeadlineAt as string;
   assert.equal(typeof deadlineAt, "string");
-  const initialAttempts = (await getTrainingAttempts()).value;
-  const initialReviews = (await getReviewQueueItems()).value;
-  const initialSessions = (await getTrainingSessions()).value;
+  const initialAttempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
+  const initialReviews = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
+  const initialSessions = (await getTrainingSessions(productionTrackAdmissionContext)).value;
   let drainRefreshFailure: unknown;
 
   const drain = new DesignSimulationDraftDrain(
@@ -560,23 +563,23 @@ test("Design expiry waits for a pre-deadline draft save and finalizes its verifi
   assert.ok(drainRefreshFailure instanceof DesignInterviewSimulationExpiredError);
   assert.equal(drain.isSaved({ requirements: "Deferred verified response." }), true);
 
-  const finalDraft = await getActiveTrainingSessionDraft();
-  const result = await getTrainingSessionResult(projection.session.id);
-  const finalizedSession = (await getTrainingSessions()).value.find((candidate) => candidate.id === projection.session.id);
+  const finalDraft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
+  const result = await getTrainingSessionResult(projection.session.id, productionTrackAdmissionContext);
+  const finalizedSession = (await getTrainingSessions(productionTrackAdmissionContext)).value.find((candidate) => candidate.id === projection.session.id);
   assert.equal(finalDraft, null);
   assert.ok(result);
   assert.equal(finalizedDraftRevision, 3, "the real finalizer receives the exact post-gate D revision");
   assert.ok(finalizedSession);
   assert.equal(finalizedSession.status, "completed");
   assert.equal(finalizedSession.completedAt, wallClock.now());
-  assert.deepEqual((await getTrainingAttempts()).value, initialAttempts, "Design finalization does not create ordinary attempts");
-  assert.deepEqual((await getReviewQueueItems()).value, initialReviews, "Design finalization does not mutate the review queue");
-  assert.equal((await getTrainingSessions()).value.filter((candidate) => candidate.id === projection.session.id).length, 1);
-  assert.deepEqual((await getTrainingSessions()).value.map((candidate) => candidate.id), initialSessions.map((candidate) => candidate.id));
-  assert.equal(await getActiveTrainingSession(), null);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, initialAttempts, "Design finalization does not create ordinary attempts");
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, initialReviews, "Design finalization does not mutate the review queue");
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.filter((candidate) => candidate.id === projection.session.id).length, 1);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value.map((candidate) => candidate.id), initialSessions.map((candidate) => candidate.id));
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), undefined);
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), undefined);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   const resultProjection = await getDesignInterviewSimulationResult(projection.session.id);
   assert.equal(resultProjection.responsesByStage.requirements, "Deferred verified response.");
   assert.equal(resultProjection.stageCompleteness.requirements, true);
@@ -625,15 +628,15 @@ test("a dirty Design response is excluded when expiry wins before its save start
     assert.rejects(flush),
   ]);
   assert.deepEqual(storage.snapshot(), terminalRawState, "the post-expiry save attempt cannot change terminal canonical bytes");
-  const terminalResult = await getTrainingSessionResult(projection.session.id);
+  const terminalResult = await getTrainingSessionResult(projection.session.id, productionTrackAdmissionContext);
   assert.ok(terminalResult);
   const details = terminalResult.evidence.details as Record<string, unknown>;
   const responses = details.responsesByStage as Record<string, unknown>;
   assert.equal(responses.requirements, "Last verified before expiry.");
   assert.notEqual(responses.requirements, "Dirty and never started before expiry.");
   assert.equal(drain.hasDirty(), true, "the UI drain retains the unsaved local edit for its blocked terminal flow");
-  assert.equal(await getActiveTrainingSessionDraft(), null);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), undefined);
 });
 
@@ -657,7 +660,7 @@ test("real composition rejects the original frozen journal retry after the same-
 
   const failed = await lifecycle.getPracticeOperationState(prepared.session, false);
   assert.equal("error" in failed ? failed.error.allowedAction : null, "retry_same_command");
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.equal(storage.operations.filter((operation) => operation.kind === "write" && operation.key === STORAGE_KEYS.ACTIVE_JOURNAL).length, journalWritesBeforeSubmit);
 
   setActiveProfileLeaseForTests(PROFILE_B);
@@ -672,7 +675,7 @@ test("real composition rejects the original frozen journal retry after the same-
 
   const blocked = await lifecycle.getPracticeOperationState(prepared.session, false);
   assert.equal("error" in blocked ? blocked.error.allowedAction : null, "none");
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.deepEqual(storage.snapshot(), beforeRejectedRetry, "stale original command cannot write into the replacement lease");
 });
 
@@ -695,22 +698,22 @@ test("real composition retries the exact prewrite practice command once under th
 
   const retryable = await lifecycle.getPracticeOperationState(prepared.session, false);
   assert.equal("error" in retryable ? retryable.error.allowedAction : null, "retry_same_command");
-  assert.equal(await getActiveMutationJournal(), null, "the pre-set failure did not create a journal");
-  assert.deepEqual((await getTrainingAttempts()).value, []);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, "the pre-set failure did not create a journal");
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, []);
   const beforeWrongRetry = storage.snapshot();
   await assert.rejects(lifecycle.retryExpectedSessionAbandonment(prepared.session.id), /no exact abandonment command safe to retry/u);
   assert.deepEqual(storage.snapshot(), beforeWrongRetry, "a practice command handle cannot be used as an abandonment command");
   await lifecycle.retryPracticeSubmission();
 
-  const attempts = (await getTrainingAttempts()).value;
+  const attempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
   assert.equal(attempts.length, 1);
   assert.deepEqual(attempts[0]?.response, question.answer);
   assert.equal(attempts[0]?.sessionId, prepared.session.id);
-  assert.equal((await getActiveTrainingSession())?.currentItemIndex, prepared.session.currentItemIndex, "submission does not silently advance the occurrence");
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal((await getActiveTrainingSession(productionTrackAdmissionContext))?.currentItemIndex, prepared.session.currentItemIndex, "submission does not silently advance the occurrence");
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.equal(captureActiveProfileStorageLease(), originalLease, "the retry uses the exact lease captured before the first await");
   await assert.rejects(lifecycle.retryPracticeSubmission(), /no exact frozen command safe to retry/u);
-  assert.equal((await getTrainingAttempts()).value.length, 1, "a completed frozen command cannot materialize twice");
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1, "a completed frozen command cannot materialize twice");
   assert.ok(storage.operations.filter((operation) => operation.kind === "write" && operation.key === STORAGE_KEYS.ACTIVE_JOURNAL).length > journalWritesBefore);
 });
 
@@ -743,9 +746,9 @@ test("real composition retries the exact prewrite abandonment under its original
 
   const failed = await lifecycle.getPracticeOperationState(prepared.session, false);
   assert.equal("error" in failed ? failed.error.allowedAction : null, "retry_same_command");
-  assert.equal(await getActiveMutationJournal(), null, "the prewrite transport failure did not persist a journal");
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, "the prewrite transport failure did not persist a journal");
   assert.equal(storage.operations.filter((operation) => operation.kind === "write" && operation.key === STORAGE_KEYS.ACTIVE_JOURNAL).length, writesBefore);
-  assert.equal((await getActiveTrainingSession())?.id, prepared.session.id);
+  assert.equal((await getActiveTrainingSession(productionTrackAdmissionContext))?.id, prepared.session.id);
   const beforeWrongRetry = storage.snapshot();
   await assert.rejects(lifecycle.retryPracticeSubmission(), /no exact frozen command safe to retry/u);
   assert.deepEqual(storage.snapshot(), beforeWrongRetry, "an abandonment handle cannot be used as a practice submission");
@@ -754,8 +757,8 @@ test("real composition retries the exact prewrite abandonment under its original
   const abandoned = await lifecycle.retryExpectedSessionAbandonment(prepared.session.id);
   assert.equal(abandoned.status, "abandoned");
   assert.equal(abandoned.completedAt, "2026-10-11T10:00:00.000Z", "retry used the frozen abandonment record instead of rebuilding it with the later clock");
-  assert.equal(await getActiveTrainingSession(), null);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.ok(exactResolutions >= exactResolutionsBeforeAbandonment + 3, "retry reran exact content eligibility in the original preflight");
   assert.ok(storage.operations.filter((operation) => operation.kind === "write" && operation.key === STORAGE_KEYS.ACTIVE_JOURNAL).length > writesBefore);
 });

@@ -7,6 +7,7 @@ import {
   type PackageCompletionState,
 } from "..";
 import type { GoalRecord } from "../goals/goalContracts";
+import { getGoalPolicy, requireGoalPolicy } from "../tracks/trackGoalPolicies";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const CERTIFICATION_TRACK_ID = "google-cloud-associate-cloud-engineer";
@@ -35,6 +36,7 @@ function chapterCompletion(qualifyingAttemptCount: number, quality: number | nul
 
 function input(overrides: Partial<GeneratorInput> = {}): GeneratorInput {
   return {
+    goalPolicy: getGoalPolicy(overrides.goalRecord?.trackId ?? TRACK_ID) ?? requireGoalPolicy(TRACK_ID),
     goalRecord: snapshot("build_foundations"),
     expectedGoalRevision: 7,
     minutesPerStudyDay: 60,

@@ -11,6 +11,7 @@ import { captureProfileReadFence } from "../profileReadFence";
 import { commitReviewEntryChange } from "../learningMutations";
 import { createIdentityFingerprint } from "../learningMutations/identity";
 import { createIdentityNonce } from "../../infrastructure/identity/identityNonce";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export async function setQuestionNeedsReview(
   input: Readonly<{
@@ -33,7 +34,7 @@ export async function setQuestionNeedsReview(
   }
 
   await commitReviewEntryChange(async () => {
-    const snapshot = (await getReviewQueueSnapshot()).value;
+    const snapshot = (await getReviewQueueSnapshot(productionTrackAdmissionContext)).value;
     assertCurrentProfile();
     const existing = snapshot.entries.find((entry) => entry.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID &&
       resolvedContentRefsEqual(entry.sourceItem, sourceItem) && isActiveReviewQueueEntry(entry));

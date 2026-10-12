@@ -15,6 +15,8 @@ import { createTrainingAttempt, CODING_INTERVIEW_TRACK_ID, type TrainingAttempt 
 import { addTrainingAttempt, saveActiveTrackId } from "../storage/repositories";
 import * as storageApi from "../infrastructure/storage/mmkvClient";
 import { openProfileStorageRouter } from "../infrastructure/storage/profileStorageRouter";
+import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
+
 
 // The actual nested Home load command cannot be imported in Node with React Native.
 // Compile its AST span unchanged; bind real application reads and capture only UI setters.
@@ -77,7 +79,7 @@ test("actual Home command rejects profile changes after Activity reads and befor
     const track = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID).track;
     const item = { trackId: CODING_INTERVIEW_TRACK_ID, questionId: track.questions[0]!.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
     await addTrainingAttempt(createTrainingAttempt({ id: "a-answer", sessionId: "a-answer", trackId: CODING_INTERVIEW_TRACK_ID, modeId: track.modes[0]!.modeId, occurrenceId: "a-answer", item,
-      response: { answer: "fixture" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-10-01T10:00:00.000Z", committedAt: "2026-10-01T10:00:00.000Z" }));
+      response: { answer: "fixture" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-10-01T10:00:00.000Z", committedAt: "2026-10-01T10:00:00.000Z" }), productionTrackAdmissionContext);
     await t.test("same profile publishes actual persisted answers", async () => {
       const unchanged = await runHome(async () => {});
       assert.equal(unchanged.readError, null);
@@ -92,7 +94,7 @@ test("actual Home command rejects profile changes after Activity reads and befor
           response: { answer: "fixture" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
           reviewEvidence: { sourceItem: freshItem, taxonomyOrSkillRefs: [] },
           answeredAt: "2026-10-02T10:01:00.000Z", committedAt: "2026-10-02T10:01:00.000Z",
-        }));
+        }), productionTrackAdmissionContext);
       });
       const stored = await reads.loadTrainingAttempts();
       assert.deepEqual(stored.value.map((attempt) => attempt.id).sort(), ["a-answer", "b-answer"]);
@@ -111,7 +113,7 @@ test("actual Home command rejects profile changes after Activity reads and befor
           response: { answer: "fixture" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
           reviewEvidence: { sourceItem: sessionItem, taxonomyOrSkillRefs: [] },
           answeredAt: "2026-10-02T10:02:00.000Z", committedAt: "2026-10-02T10:02:00.000Z",
-        }));
+        }), productionTrackAdmissionContext);
       });
       const stored = await reads.loadTrainingAttempts();
       assert.deepEqual(stored.value.map((attempt) => attempt.id).sort(), ["a-answer", "b-answer", "c-answer"]);

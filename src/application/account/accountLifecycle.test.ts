@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test, { beforeEach } from "node:test";
 
 import { createPatternlyApiClient, PatternlyApiClientError, type AdoptionPreviewResponseDto, type PatternlyApiClient, type ProgressMutationDto, type ProgressRecordDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
@@ -128,7 +129,7 @@ test("account sync preserves known validation failures without persisting arbitr
   for (const [message, expected] of [["account_data_fingerprint_invalid", "account_data_fingerprint_invalid"], ["sensitive unexpected detail", "remoteFailure"]]) {
     const result = await loadAccountDataSession(api({ getProgress: async () => { throw message === "account_data_fingerprint_invalid" ? new AccountDataFailure(message) : new Error(message); } }), accountId);
     assert.equal(result.lastFailureCode, expected);
-    assert.equal((await getAccountSyncState()).lastFailureCode, expected);
+    assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).lastFailureCode, expected);
   }
   assert.equal((await loadAccountDataSession(api(), accountId)).status, "synced");
 });
@@ -141,7 +142,7 @@ test("local offline account projection is read-only and requires the exact bound
   });
   const online = await loadAccountDataSession(client, accountId);
   assert.equal(online.status, "synced");
-  const before = await getAccountSyncState();
+  const before = await getAccountSyncState(productionLearningDataAdmissionContext);
   const callsBeforeRead = apiCalls;
 
   const local = await readLocalAccountDataSession(accountId);
@@ -149,7 +150,7 @@ test("local offline account projection is read-only and requires the exact bound
   assert.equal(local?.pendingMutationCount, before.pendingMutationCount);
   assert.equal(local?.lastSuccessfulSyncAt, before.lastSuccessfulSyncAt);
   assert.equal(apiCalls, callsBeforeRead);
-  assert.deepEqual(await getAccountSyncState(), before);
+  assert.deepEqual(await getAccountSyncState(productionLearningDataAdmissionContext), before);
 
   assert.equal(await readLocalAccountDataSession("99999999-9999-4999-8999-999999999999"), null);
   await clearGuestAccountBinding();
@@ -160,11 +161,11 @@ test("local offline account projection is read-only and requires the exact bound
 test("current identity proof admits an unmaterialized profile without changing its data, then loads the account", async () => {
   await clearGuestAccountBinding();
   const installation = await getGuestInstallation();
-  const state = await getAccountSyncState();
+  const state = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(state.accountId, null);
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => true }), true);
   assert.deepEqual(await getGuestInstallation(), installation);
-  assert.deepEqual(await getAccountSyncState(), state);
+  assert.deepEqual(await getAccountSyncState(productionLearningDataAdmissionContext), state);
   let requests = 0;
   const loaded = await loadAccountDataSession(api({ getProgress: async () => {
     requests += 1;
@@ -173,20 +174,20 @@ test("current identity proof admits an unmaterialized profile without changing i
   assert.equal(loaded.status, "synced");
   assert.equal(requests, 1);
   assert.equal((await getGuestInstallation())?.accountId, accountId);
-  assert.equal((await getAccountSyncState()).accountId, accountId);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).accountId, accountId);
 });
 
 test("proof without a denial still rejects stale scope and foreign account projections", async () => {
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => false }), false);
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId: "foreign-account", firebaseUid: uid, canContinue: () => true }), false);
   await clearGuestAccountBinding();
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId: "foreign-account" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: "foreign-account" }, productionLearningDataAdmissionContext);
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => true }), false);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId: null, lastFailureCode: "identity_denial:401:authentication_required" });
-  const denied = await getAccountSyncState();
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: null, lastFailureCode: "identity_denial:401:authentication_required" }, productionLearningDataAdmissionContext);
+  const denied = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => true }), false);
-  assert.deepEqual(await getAccountSyncState(), denied, "a denial in an unbound projection is never cleared");
-  saveAccountSyncState({ ...denied, lastFailureCode: null });
+  assert.deepEqual(await getAccountSyncState(productionLearningDataAdmissionContext), denied, "a denial in an unbound projection is never cleared");
+  saveAccountSyncState({ ...denied, lastFailureCode: null }, productionLearningDataAdmissionContext);
   let checks = 0;
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => ++checks === 1 }), false);
 });
@@ -197,7 +198,7 @@ test("a persisted authoritative identity denial is not converted to offline succ
   }), accountId);
   assert.equal(deleted.status, "failed");
   assert.equal(deleted.lastFailureCode, "identity_denial:404:account_not_found");
-  assert.equal((await getAccountSyncState()).lastFailureCode, "identity_denial:404:account_not_found");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).lastFailureCode, "identity_denial:404:account_not_found");
   assert.equal(await readLocalAccountDataSession(accountId), null, "a later cold transport fallback cannot mask a known missing identity");
 
   let retryCalls = 0;
@@ -205,7 +206,7 @@ test("a persisted authoritative identity denial is not converted to offline succ
   assert.equal(retried.lastFailureCode, "identity_denial:404:account_not_found");
   assert.equal(retryCalls, 0, "a transport retry cannot clear or replace the durable identity-denial marker");
   assert.equal(await readLocalAccountDataSession(accountId), null);
-  saveAccountSyncState({ ...await getAccountSyncState(), status: "offlinePending" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), status: "offlinePending" }, productionLearningDataAdmissionContext);
   const pendingRetry = await retryPendingAccountDataSync(api({ getProgress: async () => { retryCalls += 1; throw new PatternlyApiClientError("transport_failed"); } }), accountId);
   assert.equal(pendingRetry?.lastFailureCode, "identity_denial:404:account_not_found");
   assert.equal(retryCalls, 0, "Home's pending retry also checks the marker before entering the network path");
@@ -218,12 +219,12 @@ test("a persisted authoritative identity denial is not converted to offline succ
 
   let currentProof = false;
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => currentProof }), false);
-  assert.equal((await getAccountSyncState()).lastFailureCode, "identity_denial:404:account_not_found");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).lastFailureCode, "identity_denial:404:account_not_found");
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId: "different-account", firebaseUid: uid, canContinue: () => true }), false);
-  assert.equal((await getAccountSyncState()).lastFailureCode, "identity_denial:404:account_not_found");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).lastFailureCode, "identity_denial:404:account_not_found");
   currentProof = true;
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => currentProof }), true);
-  assert.equal((await getAccountSyncState()).lastFailureCode, null, "only an explicit current proof callback clears the marker");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).lastFailureCode, null, "only an explicit current proof callback clears the marker");
 
   const appCheck = await loadAccountDataSession(api({
     getProgress: async () => { throw new PatternlyApiClientError("server_error", 401, "app_check_invalid"); },
@@ -241,7 +242,7 @@ test("a persisted authoritative identity denial is not converted to offline succ
     getProgress: async () => { throw new PatternlyApiClientError("authentication_required"); },
   }), accountId);
   assert.equal(clientAuthenticationRequired.lastFailureCode, "authentication_required");
-  assert.equal((await getAccountSyncState()).lastFailureCode, "authentication_required", "client-only auth absence is not mislabeled as an authoritative server denial");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).lastFailureCode, "authentication_required", "client-only auth absence is not mislabeled as an authoritative server denial");
   assert.equal((await readLocalAccountDataSession(accountId))?.status, "offlinePending");
 
   const serverAuthenticationRequired = await loadAccountDataSession(api({
@@ -263,17 +264,17 @@ test("a persisted authoritative identity denial is not converted to offline succ
   assert.equal(wrongDeletionStatus.lastFailureCode, "account_deleted");
   assert.equal((await readLocalAccountDataSession(accountId))?.status, "offlinePending", "only the authoritative account_deleted status revokes the local projection");
 
-  saveAccountSyncState({ ...await getAccountSyncState(), status: "offlinePending", lastFailureCode: "revokedSession" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), status: "offlinePending", lastFailureCode: "revokedSession" }, productionLearningDataAdmissionContext);
   assert.equal(await readLocalAccountDataSession(accountId), null, "legacy revokedSession state has no preserved issuer and remains fail-closed");
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => false }), false);
-  assert.equal((await getAccountSyncState()).lastFailureCode, "revokedSession", "a stale proof cannot clear the legacy fail-closed marker");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).lastFailureCode, "revokedSession", "a stale proof cannot clear the legacy fail-closed marker");
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => true }), true);
-  assert.equal((await getAccountSyncState()).lastFailureCode, null, "a current exact proof owner may clear the legacy marker");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).lastFailureCode, null, "a current exact proof owner may clear the legacy marker");
 });
 
 test("identity denial retries preserve pending local mutations and an exact proof clear changes no sync facts", async () => {
   const { state: seeded } = await prepareBoundLearningDatasetWithOutbox();
-  const denied = saveAccountSyncState({ ...seeded, status: "offlinePending", lastFailureCode: "identity_denial:401:authentication_required" });
+  const denied = saveAccountSyncState({ ...seeded, status: "offlinePending", lastFailureCode: "identity_denial:401:authentication_required" }, productionLearningDataAdmissionContext);
   assert.ok(denied.outbox.length > 0);
   let requests = 0;
   const client = api({
@@ -286,10 +287,10 @@ test("identity denial retries preserve pending local mutations and an exact proo
   const homeRetry = await retryPendingAccountDataSync(client, accountId);
   assert.equal(homeRetry?.lastFailureCode, "identity_denial:401:authentication_required");
   assert.equal(requests, 0, "neither cold sync nor Home retry can send or overwrite denied mutations");
-  assert.deepEqual((await getAccountSyncState()).outbox, denied.outbox);
+  assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox, denied.outbox);
 
   assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => true }), true);
-  const afterProof = await getAccountSyncState();
+  const afterProof = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(afterProof.lastFailureCode, null);
   assert.deepEqual(afterProof.outbox, denied.outbox);
   assert.equal(afterProof.localDatasetVersion, denied.localDatasetVersion);
@@ -324,7 +325,7 @@ test("deletion retries after a revoked or stale session and leaves a verified lo
   assert.equal(getAccountDeletionState()?.accountUidHash, sha256Utf8(uid));
   assert.match(getAccountDeletionState()?.operationSecret ?? "", /^[0-9a-f]{64}$/iu);
   assert.equal((await getGuestInstallation())?.accountId, null);
-  assert.equal((await getAccountSyncState()).accountId, null);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).accountId, null);
 
   // A later app start can identify this UID as deleted without relying on a stale bearer token.
   assert.equal(getAccountDeletionState()?.status, "complete");
@@ -383,7 +384,7 @@ test("a preflight journal failure does not create a deletion operation and pendi
   await persistMutationJournal(makeJournal([
     { kind: "put_attempt", record: journalAttempt() },
     { kind: "put_session", record: journalSession() },
-  ]));
+  ]), productionLearningDataAdmissionContext);
   let deleteCalls = 0;
   const client = api({ deleteAccount: async (operationId) => { deleteCalls++; return { status: "deleted", operationId, proofId: "proof_fixture_12345678901234567890" }; } });
 
@@ -531,8 +532,8 @@ test("an invalid deletion acknowledgement keeps the same operation pending until
         deletionRequests.push(body);
         if (deletionRequests.length === 1) {
           assert.equal(getAccountDeletionState()?.status, "remotePending");
-          await saveTrainingSession(learningSession);
-          assert.ok((await getTrainingSessions()).value.some((session) => session.id === learningSession.id));
+          await saveTrainingSession(learningSession, productionTrackAdmissionContext);
+          assert.ok((await getTrainingSessions(productionTrackAdmissionContext)).value.some((session) => session.id === learningSession.id));
         }
         const response = deletionRequests.length === 1
           ? { status: "pending", operationId: body.operationId, proofId: 17 }
@@ -560,7 +561,7 @@ test("an invalid deletion acknowledgement keeps the same operation pending until
   const unresolved = getAccountDeletionState();
   assert.equal(unresolved?.status, "remotePending");
   assert.equal(unresolved?.lastFailureCode, "invalid_response");
-  assert.ok((await getTrainingSessions()).value.some((session) => session.id === learningSession.id), "learning progress stays available until proof is verified");
+  assert.ok((await getTrainingSessions(productionTrackAdmissionContext)).value.some((session) => session.id === learningSession.id), "learning progress stays available until proof is verified");
   assert.equal((await getGuestInstallation())?.accountId, accountId);
   assert.equal(deletionStatusCalls, 0, "a malformed success is not silently reconciled or retried");
   assert.equal(proofCalls, 0, "an unvalidated acknowledgement cannot authorize proof or cleanup");
@@ -571,7 +572,7 @@ test("an invalid deletion acknowledgement keeps the same operation pending until
   assert.deepEqual(deletionRequests[1], deletionRequests[0], "the retry reuses the exact operation ID and secret");
   assert.equal(deletionStatusCalls, 0);
   assert.equal(proofCalls, 1);
-  assert.ok(!(await getTrainingSessions()).value.some((session) => session.id === learningSession.id), "verified deletion removes canonical learning progress");
+  assert.ok(!(await getTrainingSessions(productionTrackAdmissionContext)).value.some((session) => session.id === learningSession.id), "verified deletion removes canonical learning progress");
   assert.equal(getAccountDeletionState()?.status, "complete");
 });
 
@@ -620,6 +621,9 @@ import type { Question } from "../../content/canonical/questionTypes";
 import { commitSessionAbandonment, commitTrainingOutcome } from "../learningMutations";
 import { recoverPendingMutation } from "../learningMutations/recoverPendingMutation";
 import { getReviewQueueItems } from "../../storage/repositories/reviewQueueRepository";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const guestTrack = "coding-interview-dsa-problem-solving" as const;
 async function persistDeletionFixtureSession(id: string) {
@@ -630,7 +634,7 @@ async function persistDeletionFixtureSession(id: string) {
     optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256,
     status: "abandoned", startedAt: "2026-01-01T00:00:00.000Z",
   });
-  await saveTrainingSession(session);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
   return session;
 }
 
@@ -684,7 +688,7 @@ async function persistResumableAnswer(session: ReturnType<typeof resumableSessio
     sessionId: session.id, trackId: session.trackId,
     responsesByOccurrenceId: { "resumable-occurrence": { selectedOptionIds: ["option-a"] } },
     flaggedOccurrenceIds: [], updatedAt: "2026-01-01T00:01:00.000Z",
-  }), null);
+  }), null, productionTrackAdmissionContext);
 }
 
 function remoteRecords(snapshot: Awaited<ReturnType<typeof buildAccountDataSnapshot>>) {
@@ -730,7 +734,7 @@ function apiWithAppliedUpload(readRemote: () => Promise<{ accountRevision: numbe
 function realPlanEditorForTest(content: Awaited<ReturnType<typeof contentPackageRuntimeOwner.resolveForDiscovery>>): LearningPlanEditorCoordinator {
   let editorSequence = 0;
   const contentContext = (trackId: typeof guestTrack) => {
-    const snapshot = getLearningPlanSnapshot(trackId);
+    const snapshot = getLearningPlanSnapshot(trackId, requireGoalPolicy(trackId));
     if (!snapshot) throw new Error("P18 plan fixture is missing.");
     if (!content.planningPolicyIdentity) throw new Error("P18 planning policy is unavailable.");
     return Object.freeze({
@@ -743,10 +747,10 @@ function realPlanEditorForTest(content: Awaited<ReturnType<typeof contentPackage
   return new LearningPlanEditorCoordinator({
     proposalCoordinator: {} as unknown as LearningPlanProposalCoordinator,
     readStorageScope: readLearningPlanStorageScope,
-    readGoalSnapshot,
+    readGoalSnapshot: (trackId) => readGoalSnapshot(trackId, requireGoalPolicy(trackId)),
     peekContentContext: contentContext,
-    loadGoalSnapshot: getGoalSnapshot,
-    loadLearningPlanSnapshot: getLearningPlanSnapshot,
+    loadGoalSnapshot: (trackId) => getGoalSnapshot(trackId, requireGoalPolicy(trackId)),
+    loadLearningPlanSnapshot: (trackId) => getLearningPlanSnapshot(trackId, requireGoalPolicy(trackId)),
     loadContentContext: async (trackId) => contentContext(trackId as typeof guestTrack),
     saveLearningPlan: saveLearningPlanAtomically,
     acceptGoalPlan: async () => { throw new Error("Proposal acceptance is not used by the accepted-plan account fixture."); },
@@ -795,7 +799,7 @@ function adoptionPreview(
 async function prepareBoundSyncedAccount(): Promise<void> {
   await prepareGuest();
   await bindGuestInstallationToAccount(accountId);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
 }
 
 async function activateFreshAccountStorage(account: string): Promise<Readonly<{ base: MemoryKeyValueStorage; profileId: string; restore(): void }>> {
@@ -847,7 +851,7 @@ test("queued account load rechecks its captured owner before entering the unlock
     const selectedA = await selectPreparedAccountProfile(accountA);
     activatePreparedProfile(selectedA.profile.id, selectedA.profile.kind);
     await bindGuestInstallationToAccount(accountA);
-    saveAccountSyncState({ ...await getAccountSyncState(), accountId: accountA, status: "synced" });
+    saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: accountA, status: "synced" }, productionLearningDataAdmissionContext);
 
     let releaseA!: (value: { accountRevision: number; records: never[] }) => void;
     let enteredA!: () => void;
@@ -868,8 +872,8 @@ test("queued account load rechecks its captured owner before entering the unlock
     const selectedB = await selectPreparedAccountProfile(accountB);
     activatePreparedProfile(selectedB.profile.id, selectedB.profile.kind);
     await bindGuestInstallationToAccount(accountB);
-    saveAccountSyncState({ ...await getAccountSyncState(), accountId: accountB, status: "synced" });
-    const before = readAccountSyncStateEnvelope();
+    saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: accountB, status: "synced" }, productionLearningDataAdmissionContext);
+    const before = readAccountSyncStateEnvelope(productionLearningDataAdmissionContext);
     assert.ok(before);
     const beforeRaw = [...base.snapshot()].filter(([key]) => key.startsWith(`patternly:profile:v1:${selectedB.profile.id}:`));
 
@@ -885,7 +889,7 @@ test("queued account load rechecks its captured owner before entering the unlock
     assert.equal(legacyCallerResult.lastFailureCode, "account_binding_mismatch");
 
     assert.equal(accountBReads, 0, "a queued request for A never starts the unlocked network loader against B");
-    assert.deepEqual(readAccountSyncStateEnvelope(), before, "the current B sync envelope remains exact");
+    assert.deepEqual(readAccountSyncStateEnvelope(productionLearningDataAdmissionContext), before, "the current B sync envelope remains exact");
     assert.deepEqual([...base.snapshot()].filter(([key]) => key.startsWith(`patternly:profile:v1:${selectedB.profile.id}:`)), beforeRaw,
       "all raw bytes in B's scoped profile remain unchanged");
   } finally {
@@ -924,8 +928,8 @@ test("a rejected guest-adoption preview cannot persist an old owner's failure in
       activatePreparedProfile(selectedA.profile.id, selectedA.profile.kind);
       await bindGuestInstallationToAccount(accountA);
       await clearGuestAccountBinding();
-      const initialA = await getAccountSyncState();
-      saveAccountSyncState({ ...initialA, accountId: null, status: "initialSyncRequired", lastFailureCode: null });
+      const initialA = await getAccountSyncState(productionLearningDataAdmissionContext);
+      saveAccountSyncState({ ...initialA, accountId: null, status: "initialSyncRequired", lastFailureCode: null }, productionLearningDataAdmissionContext);
 
       let enteredPreview!: () => void;
       const previewEntered = new Promise<void>((resolve) => { enteredPreview = resolve; });
@@ -947,8 +951,8 @@ test("a rejected guest-adoption preview cannot persist an old owner's failure in
         bProfileId = selectedB.profile.id;
         activatePreparedProfile(selectedB.profile.id, selectedB.profile.kind);
         await bindGuestInstallationToAccount(accountB);
-        saveAccountSyncState({ ...await getAccountSyncState(), accountId: accountB, status: "synced", lastFailureCode: null });
-        beforeB = readAccountSyncStateEnvelope();
+        saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: accountB, status: "synced", lastFailureCode: null }, productionLearningDataAdmissionContext);
+        beforeB = readAccountSyncStateEnvelope(productionLearningDataAdmissionContext);
         assert.equal(beforeB?.payload.accountId, accountB);
         rawBeforeB = [...base.snapshot()]
           .filter(([key]) => key.startsWith(`patternly:profile:v1:${bProfileId}:`))
@@ -963,7 +967,7 @@ test("a rejected guest-adoption preview cannot persist an old owner's failure in
         const result = await pending;
         assert.equal(result.status, "failed");
         if (mode === "current-owner") {
-          const afterA = readAccountSyncStateEnvelope();
+          const afterA = readAccountSyncStateEnvelope(productionLearningDataAdmissionContext);
           assert.equal(afterA?.payload.accountId, null);
           assert.equal(afterA?.payload.status, "failed", "the current owner's own preview failure remains durable");
           assert.equal(afterA?.payload.lastFailureCode, "remoteFailure");
@@ -972,7 +976,7 @@ test("a rejected guest-adoption preview cannot persist an old owner's failure in
         }
       }
       if (mode !== "current-owner") {
-        assert.deepEqual(readAccountSyncStateEnvelope(), beforeB, "the rejected A operation does not rewrite B sync state");
+        assert.deepEqual(readAccountSyncStateEnvelope(productionLearningDataAdmissionContext), beforeB, "the rejected A operation does not rewrite B sync state");
         const rawAfterB = [...base.snapshot()]
           .filter(([key]) => key.startsWith(`patternly:profile:v1:${bProfileId}:`))
           .sort(([left], [right]) => left.localeCompare(right));
@@ -996,9 +1000,9 @@ async function prepareBoundLearningDatasetWithOutbox() {
     occurrenceId: completed.itemOrder[0]!.occurrenceId,
     item,
     reviewEvidence: Object.freeze({ ...attempt.reviewEvidence, sourceItem: item }),
-  }));
-  const goal = createDefaultGoal(guestTrack);
-  const goalSnapshot = await saveGoalSnapshot(goal, null);
+  }), productionTrackAdmissionContext);
+  const goal = createDefaultGoal(requireGoalPolicy(guestTrack));
+  const goalSnapshot = await saveGoalSnapshot(goal, null, requireGoalPolicy(goal.trackId));
   const plan = createLearningPlan({
     schemaVersion: 1,
     planId: "plan:p18-ack-coverage",
@@ -1015,21 +1019,21 @@ async function prepareBoundLearningDatasetWithOutbox() {
     commandId: "command:p18-ack-coverage",
     slots: [{ slotId: createLearningPlanSlotId("p18-ack-coverage-slot"), day: "mon", localTime: "18:00", sessionLength: 10 }],
   });
-  saveLearningPlanAtomically({ plan, expectedGoalRevision: goalSnapshot.revision, expectedPlanStorageRevision: null });
-  await ensureAccountOutboxFromLocalDataset();
-  const snapshot = await buildAccountDataSnapshot();
+  saveLearningPlanAtomically({ policy: requireGoalPolicy(plan.trackId), plan, expectedGoalRevision: goalSnapshot.revision, expectedPlanStorageRevision: null });
+  await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   assert.ok(snapshot.records.some((record) => record.recordType === "training_attempt"));
   assert.ok(snapshot.records.some((record) => record.recordType === "goal"));
   assert.ok(snapshot.records.some((record) => record.recordType === "learning_plan"));
   assert.ok(snapshot.records.some((record) => record.recordType === "training_session_result"));
-  const state = await getAccountSyncState();
+  const state = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.ok(state.outbox.length > 1, "the fixture must have multiple upload mutations to check complete ACK coverage");
   return { snapshot, state };
 }
 
 async function commitTerminalLearningOutcome() {
   const active = resumableSession();
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   const completed = completeTrainingSession(active, "2026-01-01T00:03:00.000Z");
   const result = createTrainingSessionResult({
     id: `${completed.id}:result`,
@@ -1048,11 +1052,11 @@ async function commitTerminalLearningOutcome() {
 test("a durable terminal learning commit uploads once when Home retries pending data", async () => {
   await prepareBoundSyncedAccount();
   const { completed } = await commitTerminalLearningOutcome();
-  const durable = await buildAccountDataSnapshot();
+  const durable = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   assert.equal(durable.activeSession, false);
   assert.ok(durable.records.some((record) => record.recordType === "training_session_result" && record.recordId === `${completed.id}:result`));
-  assert.equal((await getAccountSyncState()).status, "offlinePending");
-  const remoteSnapshot = await buildAccountDataSnapshot();
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).status, "offlinePending");
+  const remoteSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
 
   let uploads = 0;
   let reads = 0;
@@ -1081,9 +1085,9 @@ test("a durable terminal learning commit uploads once when Home retries pending 
   assert.equal(second, null);
   assert.equal(uploads, 1);
   assert.equal(reads, 1);
-  assert.equal((await getAccountSyncState()).status, "synced");
-  assert.equal((await getAccountSyncState()).outbox.length, 0);
-  assert.ok(Object.values((await getAccountSyncState()).acknowledged).some((record) => record.remoteVersion === 7), "a duplicate is acknowledged only from its exact server record/version");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).status, "synced");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox.length, 0);
+  assert.ok(Object.values((await getAccountSyncState(productionLearningDataAdmissionContext)).acknowledged).some((record) => record.remoteVersion === 7), "a duplicate is acknowledged only from its exact server record/version");
 });
 
 test("an ambiguous account-sync timeout retries the exact persisted batch request", async () => {
@@ -1135,15 +1139,15 @@ test("concurrent Home retries share one offline attempt and preserve durable pen
   const [first, second] = await Promise.all([firstAttempt, secondAttempt]);
   assert.equal(first?.status, "offlinePending");
   assert.equal(second?.status, "offlinePending");
-  assert.equal((await getAccountSyncState()).status, "offlinePending");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).status, "offlinePending");
 });
 
 test("an unconfirmed duplicate upload stays explicit and keeps its outbox", async () => {
   await prepareBoundSyncedAccount();
   await commitTerminalLearningOutcome();
-  await ensureAccountOutboxFromLocalDataset();
-  const remoteSnapshot = await buildAccountDataSnapshot();
-  const before = await getAccountSyncState();
+  await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
+  const remoteSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
+  const before = await getAccountSyncState(productionLearningDataAdmissionContext);
   const result = await retryPendingAccountDataSync(api({
     syncProgress: async (input) => ({ accountRevision: 9, applied: [], duplicates: input.mutations.map((mutation) => mutation.mutationId), conflicts: [] }),
     // The records omit the duplicate mutation IDs, so a fresh GET cannot
@@ -1153,7 +1157,7 @@ test("an unconfirmed duplicate upload stays explicit and keeps its outbox", asyn
 
   assert.equal(result?.status, "conflict");
   assert.equal(result?.lastFailureCode, "duplicate_ack_unverified");
-  const after = await getAccountSyncState();
+  const after = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.ok(after.outbox.length > 0);
   assert.deepEqual(after.outbox, before.outbox);
   assert.equal(after.lastSuccessfulSyncAt, null);
@@ -1184,17 +1188,17 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   assert.equal(result?.blockingConflictCode, "account_revision_conflict");
   assert.equal(uploads, 1);
   assert.equal(downloads, 0);
-  const afterState = await getAccountSyncState();
+  const afterState = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(afterState.status, "conflict");
   assert.equal(afterState.syncConflict?.code, "account_revision_conflict");
   assert.equal(afterState.materialization, null);
   assert.deepEqual(afterState.outbox, beforeState.outbox);
   assert.ok(afterState.outbox.length > 0);
-  assert.deepEqual((await buildAccountDataSnapshot()).records, snapshot.records);
-  assert.equal((await getTrainingAttempts()).value.length, 1);
-  assert.equal((await getTrainingSessions()).value.some((session) => session.id === "resumable-session" && session.status === "completed"), true);
-  assert.equal(getLearningPlanSnapshot(guestTrack)?.plan.planId, "plan:p18-ack-coverage");
-  assert.equal((await getGoalSnapshot(guestTrack))?.record.trackId, guestTrack);
+  assert.deepEqual((await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).records, snapshot.records);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.some((session) => session.id === "resumable-session" && session.status === "completed"), true);
+  assert.equal(getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack))?.plan.planId, "plan:p18-ack-coverage");
+  assert.equal((await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)))?.record.trackId, guestTrack);
 
   // A restarted app may load the account or run its ordinary pending-sync
   // retry, but a confirmed 409 is durable user-choice state. Neither path may
@@ -1211,38 +1215,38 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   assert.equal(automaticRetry?.syncConflict?.conflictId, afterState.syncConflict?.conflictId);
   assert.equal(restartUploads, 0);
   assert.equal(restartReads, 0);
-  assert.deepEqual((await getAccountSyncState()).outbox, afterState.outbox);
+  assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox, afterState.outbox);
 
   const latestUnchanged = api({ getProgress: async () => ({ accountRevision: 8, records: [] }) });
-  const beforeStaleChoice = await getAccountSyncState();
+  const beforeStaleChoice = await getAccountSyncState(productionLearningDataAdmissionContext);
   await assert.rejects(() => resolveAccountSyncConflict({
     api: api({ getProgress: async () => {
-      const concurrent = await getAccountSyncState();
-      saveAccountSyncState({ ...concurrent, lastFailureCode: "remote_failure" });
+      const concurrent = await getAccountSyncState(productionLearningDataAdmissionContext);
+      saveAccountSyncState({ ...concurrent, lastFailureCode: "remote_failure" }, productionLearningDataAdmissionContext);
       return { accountRevision: 8, records: [] };
     } }),
     accountId,
     conflictId: beforeStaleChoice.syncConflict!.conflictId,
     resolution: "rebase",
   }), (error: unknown) => error instanceof Error && error.message === "account_sync_conflict_stale");
-  assert.deepEqual((await getAccountSyncState()).outbox, beforeState.outbox);
-  const afterStaleAttempt = await getAccountSyncState();
-  saveAccountSyncState({ ...afterStaleAttempt, lastFailureCode: afterStaleAttempt.syncConflict!.code });
+  assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox, beforeState.outbox);
+  const afterStaleAttempt = await getAccountSyncState(productionLearningDataAdmissionContext);
+  saveAccountSyncState({ ...afterStaleAttempt, lastFailureCode: afterStaleAttempt.syncConflict!.code }, productionLearningDataAdmissionContext);
   const preview = await inspectAccountSyncConflict(latestUnchanged, accountId);
   assert.equal(preview.kind, "rebase_available");
   const rebased = await resolveAccountSyncConflict({ api: latestUnchanged, accountId, conflictId: preview.conflictId, resolution: "rebase" });
   assert.equal(rebased.syncConflict, null);
   assert.equal(rebased.status, "offlinePending");
-  assert.equal((await getAccountSyncState()).remoteAccountRevision, 8);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).remoteAccountRevision, 8);
 
   const second409 = await retryPendingAccountDataSync(api({
     syncProgress: async () => ({ accountRevision: 8, applied: [], duplicates: [], conflicts: [], accountRevisionConflict: { code: "account_revision_conflict", currentAccountRevision: 10 } }),
     getProgress: async () => { throw new Error("confirmed 409 must stop before its explicit review action"); },
   }), accountId);
   assert.equal(second409?.syncConflict?.expectedAccountRevision, 8);
-  const currentSnapshot = await buildAccountDataSnapshot();
-  const localGoal = (await getGoalSnapshot(guestTrack))!;
-  const localPlan = getLearningPlanSnapshot(guestTrack)!;
+  const currentSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
+  const localGoal = (await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)))!;
+  const localPlan = getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack))!;
   const remoteGoalRecord = Object.freeze({ ...localGoal.record, preferredDays: Object.freeze(["tue", "thu"] as const), weeklySessionTarget: 2 });
   const remoteGoalState = Object.freeze({ schemaVersion: 1 as const, revision: 2, record: remoteGoalRecord });
   const remotePlan = Object.freeze({ ...localPlan.plan, goalRevision: 2, acceptedTarget: acceptedTargetFromGoal(remoteGoalRecord) });
@@ -1255,20 +1259,20 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   const pairPreview = await inspectAccountSyncConflict(latestChangedPair, accountId);
   assert.equal(pairPreview.kind, "pair_choice_required");
   assert.equal(pairPreview.remoteAccountRevision, 10);
-  const beforePairChoice = await getAccountSyncState();
+  const beforePairChoice = await getAccountSyncState(productionLearningDataAdmissionContext);
   const unrelatedPendingIds = beforePairChoice.outbox.filter((entry) => entry.trackId !== guestTrack || (entry.recordType !== "goal" && entry.recordType !== "learning_plan")).map((entry) => entry.mutationId).sort();
   const selectedPairRecordKeys = new Set(beforePairChoice.outbox.filter((entry) => entry.trackId === guestTrack && (entry.recordType === "goal" || entry.recordType === "learning_plan")).map((entry) => JSON.stringify({ recordId: entry.recordId, recordType: entry.recordType, trackId: entry.trackId })));
   const unrelatedAcknowledged = Object.fromEntries(Object.entries(beforePairChoice.acknowledged).filter(([key]) => !selectedPairRecordKeys.has(key)));
   const previousPairMutationIds = beforePairChoice.outbox.filter((entry) => entry.trackId === guestTrack && (entry.recordType === "goal" || entry.recordType === "learning_plan")).map((entry) => entry.mutationId);
-  const originalLocalGoal = (await getGoalSnapshot(guestTrack))!.record;
+  const originalLocalGoal = (await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)))!.record;
   const keptLocal = await resolveAccountSyncConflict({ api: latestChangedPair, accountId, conflictId: pairPreview.conflictId, resolution: "keep_local", trackId: guestTrack });
   assert.equal(keptLocal.syncConflict, null);
-  assert.deepEqual((await getGoalSnapshot(guestTrack))?.record, originalLocalGoal);
-  const localPairOutbox = (await getAccountSyncState()).outbox.filter((entry) => entry.trackId === guestTrack && (entry.recordType === "goal" || entry.recordType === "learning_plan"));
+  assert.deepEqual((await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)))?.record, originalLocalGoal);
+  const localPairOutbox = (await getAccountSyncState(productionLearningDataAdmissionContext)).outbox.filter((entry) => entry.trackId === guestTrack && (entry.recordType === "goal" || entry.recordType === "learning_plan"));
   assert.equal(localPairOutbox.length, 2);
   assert.ok(localPairOutbox.every((entry) => entry.expectedVersion === 2));
   assert.ok(localPairOutbox.every((entry) => !previousPairMutationIds.includes(entry.mutationId)), "keep-local creates fresh mutations against the latest pair versions");
-  assert.deepEqual((await getAccountSyncState()).outbox.filter((entry) => entry.trackId !== guestTrack || (entry.recordType !== "goal" && entry.recordType !== "learning_plan")).map((entry) => entry.mutationId).sort(), unrelatedPendingIds);
+  assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox.filter((entry) => entry.trackId !== guestTrack || (entry.recordType !== "goal" && entry.recordType !== "learning_plan")).map((entry) => entry.mutationId).sort(), unrelatedPendingIds);
 
   const third409 = await retryPendingAccountDataSync(api({
     syncProgress: async () => ({ accountRevision: 10, applied: [], duplicates: [], conflicts: [], accountRevisionConflict: { code: "account_revision_conflict", currentAccountRevision: 11 } }),
@@ -1288,10 +1292,10 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   profileFixture.base.setFailurePlan({ kind: "fail_on_key_write", key: `patternly:profile:v1:${profileFixture.profileId}:${encodeURIComponent(STORAGE_KEYS.learningPlan(guestTrack))}` });
   await assert.rejects(() => resolveAccountSyncConflict({ api: latestPairV3, accountId, conflictId: latestPreview.conflictId, resolution: "keep_account", trackId: guestTrack }));
   profileFixture.base.setFailurePlan(null);
-  assert.equal((await getActiveMutationJournal())?.operation, "resolve_account_sync_conflict");
-  assert.throws(() => readGoalSnapshot(guestTrack));
-  assert.throws(() => getLearningPlanSnapshot(guestTrack));
-  await assert.rejects(() => buildAccountDataSnapshot());
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext))?.operation, "resolve_account_sync_conflict");
+  assert.throws(() => readGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)));
+  assert.throws(() => getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack)));
+  await assert.rejects(() => buildAccountDataSnapshot(productionLearningDataAdmissionContext));
   let fencedUploads = 0;
   await retryPendingAccountDataSync(api({ syncProgress: async () => { fencedUploads++; throw new Error("pending resolver journal must block upload"); } }), accountId);
   assert.equal(fencedUploads, 0);
@@ -1302,32 +1306,32 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   profileFixture.base.setFailurePlan({ kind: "fail_on_key_write", key: profileKey(STORAGE_KEYS.ACCOUNT_SYNC) });
   await assert.rejects(() => recoverPendingMutation());
   profileFixture.base.setFailurePlan(null);
-  assert.equal((await getActiveMutationJournal())?.operation, "resolve_account_sync_conflict");
-  assert.throws(() => readGoalSnapshot(guestTrack));
-  assert.throws(() => getLearningPlanSnapshot(guestTrack));
-  await assert.rejects(() => buildAccountDataSnapshot());
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext))?.operation, "resolve_account_sync_conflict");
+  assert.throws(() => readGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)));
+  assert.throws(() => getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack)));
+  await assert.rejects(() => buildAccountDataSnapshot(productionLearningDataAdmissionContext));
 
   // A phase-write failure leaves the fully materialized exact pair and sync
   // state hidden behind the same journal. Retrying is idempotent.
   profileFixture.base.setFailurePlan({ kind: "fail_on_key_write", key: profileKey(STORAGE_KEYS.ACTIVE_JOURNAL) });
   await assert.rejects(() => recoverPendingMutation());
   profileFixture.base.setFailurePlan(null);
-  assert.equal((await getActiveMutationJournal())?.operation, "resolve_account_sync_conflict");
-  assert.throws(() => readGoalSnapshot(guestTrack));
-  assert.throws(() => getLearningPlanSnapshot(guestTrack));
-  await assert.rejects(() => buildAccountDataSnapshot());
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext))?.operation, "resolve_account_sync_conflict");
+  assert.throws(() => readGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)));
+  assert.throws(() => getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack)));
+  await assert.rejects(() => buildAccountDataSnapshot(productionLearningDataAdmissionContext));
 
   // Failure clearing the verified journal is also recoverable without another
   // goal/plan/sync-state revision or loss of unrelated queued/acknowledged data.
   profileFixture.base.setFailurePlan({ kind: "fail_on_key_remove", key: profileKey(STORAGE_KEYS.ACTIVE_JOURNAL) });
   await assert.rejects(() => recoverPendingMutation());
   profileFixture.base.setFailurePlan(null);
-  assert.equal((await getActiveMutationJournal())?.operation, "resolve_account_sync_conflict");
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext))?.operation, "resolve_account_sync_conflict");
   await recoverPendingMutation();
-  const finalGoal = await getGoalSnapshot(guestTrack);
-  const finalPlan = getLearningPlanSnapshot(guestTrack);
-  const finalSync = await getAccountSyncState();
-  assert.equal(await getActiveMutationJournal(), null);
+  const finalGoal = await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack));
+  const finalPlan = getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack));
+  const finalSync = await getAccountSyncState(productionLearningDataAdmissionContext);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.deepEqual(finalGoal?.record, remoteGoalRecord);
   assert.equal(finalPlan?.plan.goalRevision, finalGoal?.revision);
   assert.equal(finalPlan?.plan.planRevision, remotePlan3.planRevision);
@@ -1338,10 +1342,10 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   const resolvedPlanRevision = finalPlan?.revision;
   const resolvedSync = finalSync;
   await recoverPendingMutation();
-  assert.equal(await getActiveMutationJournal(), null);
-  assert.equal((await getGoalSnapshot(guestTrack))?.revision, resolvedGoalRevision);
-  assert.equal(getLearningPlanSnapshot(guestTrack)?.revision, resolvedPlanRevision);
-  assert.deepEqual(await getAccountSyncState(), resolvedSync);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+  assert.equal((await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)))?.revision, resolvedGoalRevision);
+  assert.equal(getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack))?.revision, resolvedPlanRevision);
+  assert.deepEqual(await getAccountSyncState(productionLearningDataAdmissionContext), resolvedSync);
   assert.equal(finalSync.syncConflict, null);
   assert.deepEqual(finalGoal?.record, remoteGoalRecord);
   assert.equal(finalPlan?.plan.goalRevision, finalGoal?.revision);
@@ -1368,16 +1372,16 @@ test("bound sync rejects incomplete applied and duplicate ACK coverage before GE
   assert.equal(result?.lastFailureCode, "invalid_response");
   assert.equal(uploadedMutationCount, beforeState.outbox.length);
   assert.equal(downloads, 0);
-  const afterState = await getAccountSyncState();
+  const afterState = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(afterState.materialization, null);
   assert.deepEqual(afterState.outbox, beforeState.outbox);
   assert.ok(afterState.outbox.length > 0);
   assert.ok(afterState.syncPlan?.items.every((item) => item.status === "pending"), "partial server ACKs cannot be persisted as local acknowledgements");
-  assert.deepEqual((await buildAccountDataSnapshot()).records, snapshot.records);
-  assert.equal((await getTrainingAttempts()).value.length, 1);
-  assert.equal((await getTrainingSessions()).value.some((session) => session.id === "resumable-session" && session.status === "completed"), true);
-  assert.equal(getLearningPlanSnapshot(guestTrack)?.plan.planId, "plan:p18-ack-coverage");
-  assert.equal((await getGoalSnapshot(guestTrack))?.record.trackId, guestTrack);
+  assert.deepEqual((await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).records, snapshot.records);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.some((session) => session.id === "resumable-session" && session.status === "completed"), true);
+  assert.equal(getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack))?.plan.planId, "plan:p18-ack-coverage");
+  assert.equal((await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)))?.record.trackId, guestTrack);
 });
 
 async function assertConcurrentLocalSessionStartKeepsHomeSyncRetryable(phase: "upload" | "download"): Promise<void> {
@@ -1389,7 +1393,7 @@ async function assertConcurrentLocalSessionStartKeepsHomeSyncRetryable(phase: "u
   let networkStarted!: () => void;
   const networkReady = new Promise<void>((resolve) => { networkStarted = resolve; });
   const networkPaused = new Promise<void>((resolve) => { releaseNetwork = resolve; });
-  const remote = remoteRecords(await buildAccountDataSnapshot());
+  const remote = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext));
   const client = api({
     syncProgress: async (input) => {
       uploads++;
@@ -1418,8 +1422,8 @@ async function assertConcurrentLocalSessionStartKeepsHomeSyncRetryable(phase: "u
 
   const interrupted = await retry;
   assert.equal(interrupted?.status, "resumeRequired");
-  assert.equal((await getAccountSyncState()).status, "offlinePending");
-  assert.deepEqual(await getActiveTrainingSession(), nextSession);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).status, "offlinePending");
+  assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), nextSession);
 
   const completed = completeTrainingSession(nextSession, "2026-01-01T00:04:00.000Z");
   await commitSessionCompletion(completed, createTrainingSessionResult({
@@ -1438,12 +1442,12 @@ async function assertConcurrentLocalSessionStartKeepsHomeSyncRetryable(phase: "u
     syncProgress: async (input) => { uploads++; resumedApplied = makeAppliedRecords(input.mutations); return { accountRevision: 8, applied: resumedApplied, duplicates: [], conflicts: [] }; },
     getProgress: async () => {
       const acknowledgedByKey = new Map(resumedApplied.map((record) => [`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`, record]));
-      const records = remoteRecords(await buildAccountDataSnapshot()).map((record) => acknowledgedByKey.get(`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`) ?? record);
+      const records = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => acknowledgedByKey.get(`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`) ?? record);
       return { accountRevision: 8, records };
     },
   }), accountId);
   assert.equal(resumed?.status, "synced");
-  assert.equal((await getAccountSyncState()).status, "synced");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).status, "synced");
   assert.equal(uploads, 2);
 }
 
@@ -1459,8 +1463,8 @@ test("bound sync keeps session, goal, and plan commits made during GET and carri
   await prepareBoundSyncedAccount();
   const runtime = await contentPackageRuntimeOwner.resolveForDiscovery(guestTrack, getTrackRegistration(guestTrack).familyId);
   if (!runtime.planningPolicyIdentity) throw new Error("Canonical planning policy identity is unavailable.");
-  const initialGoal = createDefaultGoal(guestTrack);
-  const goalSnapshot = await saveGoalSnapshot(initialGoal, null);
+  const initialGoal = createDefaultGoal(requireGoalPolicy(guestTrack));
+  const goalSnapshot = await saveGoalSnapshot(initialGoal, null, requireGoalPolicy(initialGoal.trackId));
   const initialPlan = createLearningPlan({
     schemaVersion: 2,
     minutesPerStudyDay: 25,
@@ -1480,9 +1484,9 @@ test("bound sync keeps session, goal, and plan commits made during GET and carri
     commandId: "command:p18-race-initial",
     slots: [{ slotId: createLearningPlanSlotId("p18-slot"), day: "mon", localTime: "18:00", sessionLength: 10 }],
   });
-  saveLearningPlanAtomically({ plan: initialPlan, expectedGoalRevision: goalSnapshot.revision, expectedPlanStorageRevision: null });
-  saveAccountSyncState({ ...await getAccountSyncState(), status: "offlinePending" });
-  const baseline = await buildAccountDataSnapshot();
+  saveLearningPlanAtomically({ policy: requireGoalPolicy(initialPlan.trackId), plan: initialPlan, expectedGoalRevision: goalSnapshot.revision, expectedPlanStorageRevision: null });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), status: "offlinePending" }, productionLearningDataAdmissionContext);
+  const baseline = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
 
   let releaseGet!: () => void;
   let signalGet!: () => void;
@@ -1534,10 +1538,10 @@ test("bound sync keeps session, goal, and plan commits made during GET and carri
   assert.equal(planCommit.kind, "saved");
 
   const changedGoal = Object.freeze({ ...initialGoal, preferredDays: Object.freeze(["tue", "thu"] as const), weeklySessionTarget: 2 });
-  const beforeGoal = (await getGoalSnapshot(guestTrack))!;
-  const beforePlan = getLearningPlanSnapshot(guestTrack)!;
-  const changedGoalSnapshot = await saveGoalSnapshot(changedGoal, beforeGoal.revision);
-  saveLearningPlanAtomically({
+  const beforeGoal = (await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)))!;
+  const beforePlan = getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack))!;
+  const changedGoalSnapshot = await saveGoalSnapshot(changedGoal, beforeGoal.revision, requireGoalPolicy(changedGoal.trackId));
+  saveLearningPlanAtomically({ policy: requireGoalPolicy(Object.freeze({ ...beforePlan.plan, goalRevision: changedGoalSnapshot.revision, acceptedTarget: acceptedTargetFromGoal(changedGoal), updatedAt: "2026-10-08T10:02:00.000Z", commandId: "p18-goal-during-get" }).trackId),
     plan: Object.freeze({ ...beforePlan.plan, goalRevision: changedGoalSnapshot.revision, acceptedTarget: acceptedTargetFromGoal(changedGoal), updatedAt: "2026-10-08T10:02:00.000Z", commandId: "p18-goal-during-get" }),
     expectedGoalRevision: changedGoalSnapshot.revision,
     expectedPlanStorageRevision: beforePlan.revision,
@@ -1547,19 +1551,19 @@ test("bound sync keeps session, goal, and plan commits made during GET and carri
   const syncResult = await sync;
   assert.equal(syncResult?.status, "offlinePending", JSON.stringify(syncResult));
   assert.equal(syncResult?.lastFailureCode, "local_dataset_changed_during_sync");
-  assert.equal(await getActiveTrainingSession(), null);
-  assert.ok((await getTrainingSessions()).value.some((session) => session.id === completed.id && session.status === "completed"));
-  assert.deepEqual(await getTrainingSessionResult(completed.id), result);
-  assert.deepEqual((await getGoalSnapshot(guestTrack))?.record, changedGoal);
-  assert.equal(getLearningPlanSnapshot(guestTrack)?.plan.slots[0]?.localTime, "20:00");
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+  assert.ok((await getTrainingSessions(productionTrackAdmissionContext)).value.some((session) => session.id === completed.id && session.status === "completed"));
+  assert.deepEqual(await getTrainingSessionResult(completed.id, productionTrackAdmissionContext), result);
+  assert.deepEqual((await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)))?.record, changedGoal);
+  assert.equal(getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack))?.plan.slots[0]?.localTime, "20:00");
 
-  const preserved = await getAccountSyncState();
+  const preserved = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(preserved.status, "offlinePending");
   assert.ok(preserved.outbox.length > 0, "the old outbox must not be cleared by a stale GET");
   assert.ok(preserved.syncPlan, "the captured upload and its exact mutation IDs remain available for the next safe sync");
   assert.ok(Object.values(preserved.acknowledged).some((record) => record.remoteVersion === 1), "applied ACK versions survive the local edit");
 
-  const nextPlan = await ensureAccountOutboxFromLocalDataset();
+  const nextPlan = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   const goalEntry = nextPlan.outbox.find((entry) => entry.recordType === "goal" && entry.trackId === guestTrack);
   const planEntry = nextPlan.outbox.find((entry) => entry.recordType === "learning_plan" && entry.trackId === guestTrack);
   assert.equal(goalEntry?.expectedVersion, 1);
@@ -1584,8 +1588,8 @@ test("a stale sync GET preserves a terminal review cycle and a new repair, then 
   }
 
   async function answer({ id, at, review, incorrect = false }: { id: string; at: string; review?: Awaited<ReturnType<typeof getReviewQueueItems>>["value"][number]; incorrect?: boolean }) {
-    const reviews = (await getReviewQueueItems()).value;
-    const attempts = (await getTrainingAttempts()).value;
+    const reviews = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
+    const attempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
     const mode = track.getMode(review ? "coding-interview-weak-area-review" : "coding-interview-learn-approach");
     const prepared = await runtime.prepare({
       trackId: guestTrack,
@@ -1601,7 +1605,7 @@ test("a stale sync GET preserves a terminal review cycle and a new repair, then 
     const outcome = await runtime.submitPractice({
       session: prepared.session,
       response: incorrect ? wrongResponse(question) : question.answer,
-      attempts: (await getTrainingAttempts()).value,
+      attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value,
       reviews,
       now: at,
     });
@@ -1620,16 +1624,16 @@ test("a stale sync GET preserves a terminal review cycle and a new repair, then 
 
   const start = "2026-10-01T12:00:00.000Z";
   let outcome = await answer({ id: "r27-cycle-error", at: start, incorrect: true });
-  let review = (await getReviewQueueItems()).value[0]!;
+  let review = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
   for (const [index, at] of ["2026-10-02T12:00:00.000Z", "2026-10-09T12:00:00.000Z", "2026-10-23T12:00:00.000Z", "2026-11-20T12:00:00.000Z"].entries()) {
     outcome = await answer({ id: `r27-cycle-due-${index}`, at, review });
-    review = (await getReviewQueueItems()).value.find((entry) => entry.id === review.id)!;
+    review = (await getReviewQueueItems(productionTrackAdmissionContext)).value.find((entry) => entry.id === review.id)!;
   }
   assert.equal(review.status, "completed", "A is a terminal record produced by real canonical due answers and durable commits");
   const terminalA = review;
-  await ensureAccountOutboxFromLocalDataset();
-  saveAccountSyncState({ ...await getAccountSyncState(), status: "offlinePending" });
-  const baseline = await buildAccountDataSnapshot();
+  await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), status: "offlinePending" }, productionLearningDataAdmissionContext);
+  const baseline = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
 
   let releaseGet!: () => void;
   let signalGet!: () => void;
@@ -1668,9 +1672,9 @@ test("a stale sync GET preserves a terminal review cycle and a new repair, then 
   assert.equal(staleResult?.lastFailureCode, "local_dataset_changed_during_sync");
   assert.equal(uploadCount, 1);
   assert.equal(readCount, 1);
-  assert.deepEqual((await getReviewQueueItems()).value.find((entry) => entry.id === terminalA.id), terminalA);
-  assert.deepEqual((await getReviewQueueItems()).value.find((entry) => entry.id === repairB.id), repairB);
-  assert.ok((await getAccountSyncState()).outbox.length > 0, "the stale GET cannot clear the exact outbox containing B");
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value.find((entry) => entry.id === terminalA.id), terminalA);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value.find((entry) => entry.id === repairB.id), repairB);
+  assert.ok((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox.length > 0, "the stale GET cannot clear the exact outbox containing B");
 
   let retryApplied: ProgressRecordDto[] = [];
   const retryResult = await retryPendingAccountDataSync(api({
@@ -1681,7 +1685,7 @@ test("a stale sync GET preserves a terminal review cycle and a new repair, then 
     },
     getProgress: async () => {
       readCount++;
-      const local = await buildAccountDataSnapshot();
+      const local = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
       const byKey = new Map(retryApplied.map((record) => [`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`, record]));
       const records = remoteRecords(local).map((record) => byKey.get(`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`) ?? record);
       return { accountRevision: 7 + retryApplied.length, records };
@@ -1691,8 +1695,8 @@ test("a stale sync GET preserves a terminal review cycle and a new repair, then 
   assert.equal(retryResult?.status, "synced");
   assert.equal(uploadCount, 2);
   assert.equal(readCount, 2);
-  assert.equal((await getAccountSyncState()).outbox.length, 0);
-  const finalReviews = (await getReviewQueueItems()).value;
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox.length, 0);
+  const finalReviews = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.deepEqual(finalReviews.find((entry) => entry.id === terminalA.id), terminalA, "sync roundtrip cannot revive or rewrite terminal history A");
   assert.deepEqual(finalReviews.find((entry) => entry.id === repairB.id), repairB, "sync roundtrip preserves the distinct active repair B");
   assert.equal(finalReviews.filter((entry) => entry.trackId === guestTrack).length, 2);
@@ -1701,8 +1705,8 @@ test("a stale sync GET preserves a terminal review cycle and a new repair, then 
 test("bound sync does not materialize into a replacement storage profile after GET", async () => {
   await prepareBoundSyncedAccount();
   await commitTerminalLearningOutcome();
-  await ensureAccountOutboxFromLocalDataset();
-  const remoteSnapshot = await buildAccountDataSnapshot();
+  await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
+  const remoteSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   const originalStorage = getKeyValueStorage() as MemoryKeyValueStorage;
   let releaseGet!: () => void;
   let signalGet!: () => void;
@@ -1736,30 +1740,30 @@ test("Home pending retry honors binding, state, and durable recovery guards with
   await prepareBoundSyncedAccount();
   assert.equal(await retryPendingAccountDataSync(client, accountId), null);
 
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "offlinePending" }, productionLearningDataAdmissionContext);
   await clearGuestAccountBinding();
   assert.equal(await retryPendingAccountDataSync(client, accountId), null);
 
   await bindGuestInstallationToAccount(accountId);
-  await saveTrainingSession(resumableSession());
+  await saveTrainingSession(resumableSession(), productionTrackAdmissionContext);
   const active = await retryPendingAccountDataSync(client, accountId);
   assert.equal(active?.status, "resumeRequired");
-  await clearTrainingSessions();
+  await clearTrainingSessions(productionTrackAdmissionContext);
 
   const storage = getKeyValueStorage() as MemoryKeyValueStorage;
   await persistMutationJournal(makeJournal([
     { kind: "put_attempt", record: journalAttempt() },
     { kind: "put_session", record: journalSession() },
-  ]));
+  ]), productionLearningDataAdmissionContext);
   const journalBlocked = await retryPendingAccountDataSync(client, accountId);
   assert.equal(journalBlocked?.lastFailureCode, "journal_recovery_required");
   storage.remove(STORAGE_KEYS.ACTIVE_JOURNAL);
 
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending", materialization: { kind: "discardGuest", accountId } });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "offlinePending", materialization: { kind: "discardGuest", accountId } }, productionLearningDataAdmissionContext);
   const materializationBlocked = await retryPendingAccountDataSync(client, accountId);
   assert.equal(materializationBlocked?.lastFailureCode, "account_materialization_in_progress");
 
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending", materialization: null, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [], groupChoices: [] } });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "offlinePending", materialization: null, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [], groupChoices: [] } }, productionLearningDataAdmissionContext);
   const confirmationBlocked = await retryPendingAccountDataSync(client, accountId);
   assert.equal(confirmationBlocked?.lastFailureCode, "account_adoption_pending");
   assert.equal(remoteCalls, 0);
@@ -1768,11 +1772,11 @@ test("Home pending retry honors binding, state, and durable recovery guards with
 test("bound restart exposes a projection for a locally saved session without remote reads or writes", async () => {
   await prepareGuest();
   await bindGuestInstallationToAccount(accountId);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
   const active = resumableSession();
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   const draft = await persistResumableAnswer(active);
-  const beforeState = await getAccountSyncState();
+  const beforeState = await getAccountSyncState(productionLearningDataAdmissionContext);
   let reads = 0;
   let uploads = 0;
   const forbidden = async (): Promise<never> => { throw new Error("remote account data must not be touched while resuming"); };
@@ -1785,17 +1789,17 @@ test("bound restart exposes a projection for a locally saved session without rem
   assert.equal(result.activeSessionBlocked, true);
   assert.equal(reads, 0);
   assert.equal(uploads, 0);
-  assert.deepEqual(await getActiveTrainingSession(), active);
-  assert.deepEqual(await getActiveTrainingSessionDraft(), draft);
-  assert.deepEqual((await getAccountSyncState()).outbox, beforeState.outbox);
-  assert.equal((await getAccountSyncState()).status, "synced");
+  assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), active);
+  assert.deepEqual(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), draft);
+  assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox, beforeState.outbox);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).status, "synced");
 });
 
 test("resume requires matching installation and account-state bindings", async () => {
   await prepareGuest();
   await bindGuestInstallationToAccount(accountId);
   const active = resumableSession();
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   let remoteCalls = 0;
   const forbidden = async (): Promise<never> => { remoteCalls++; throw new Error("remote account data must not be touched with an unbound sync state"); };
   const result = await loadAccountDataSession(api({ getProgress: forbidden, syncProgress: forbidden }), accountId);
@@ -1804,19 +1808,19 @@ test("resume requires matching installation and account-state bindings", async (
   assert.equal(result.lastFailureCode, "account_binding_mismatch");
   assert.equal(result.activeSessionBlocked, true);
   assert.equal(remoteCalls, 0);
-  assert.deepEqual(await getActiveTrainingSession(), active);
+  assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), active);
 });
 
 test("a pending learning journal blocks bound account sync without clearing the journal", async () => {
   const storage = await prepareGuest();
   await bindGuestInstallationToAccount(accountId);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
   const active = journalSession();
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   await persistMutationJournal(makeJournal([
     { kind: "put_attempt", record: journalAttempt() },
     { kind: "put_session", record: active },
-  ]));
+  ]), productionLearningDataAdmissionContext);
   let remoteCalls = 0;
   const forbidden = async (): Promise<never> => { remoteCalls++; throw new Error("pending journal must block remote account data"); };
   const result = await loadAccountDataSession(api({ getProgress: forbidden, syncProgress: forbidden }), accountId);
@@ -1826,19 +1830,19 @@ test("a pending learning journal blocks bound account sync without clearing the 
   assert.equal(result.activeSessionBlocked, true);
   assert.equal(remoteCalls, 0);
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true);
-  assert.deepEqual(await getActiveTrainingSession(), active);
+  assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), active);
 });
 
 test("a deferred upload state resumes locally and syncs idempotently after finalization", async () => {
   await prepareGuest();
   await bindGuestInstallationToAccount(accountId);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
   const beforeSession = resumableSession();
-  const pendingOutbox = await ensureAccountOutboxFromLocalDataset();
+  const pendingOutbox = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   assert.equal(pendingOutbox.outbox.length, 1);
-  await saveTrainingSession(beforeSession);
+  await saveTrainingSession(beforeSession, productionTrackAdmissionContext);
   const draft = await persistResumableAnswer(beforeSession);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "failed", lastFailureCode: "active_session_sync_deferred", remoteAccountRevision: 4 });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "failed", lastFailureCode: "active_session_sync_deferred", remoteAccountRevision: 4 }, productionLearningDataAdmissionContext);
 
   let allowRemote = false;
   let reads = 0;
@@ -1868,33 +1872,33 @@ test("a deferred upload state resumes locally and syncs idempotently after final
   assert.equal(resumed.status, "resumeRequired");
   assert.equal(reads, 0);
   assert.equal(uploads, 0);
-  assert.deepEqual(await getActiveTrainingSession(), beforeSession);
-  assert.deepEqual(await getActiveTrainingSessionDraft(), draft);
-  assert.deepEqual((await getAccountSyncState()).outbox, pendingOutbox.outbox);
+  assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), beforeSession);
+  assert.deepEqual(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), draft);
+  assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox, pendingOutbox.outbox);
 
   allowRemote = true;
-  await saveTrainingSession(completeTrainingSession(beforeSession, "2026-01-01T00:03:00.000Z"));
-  await clearActiveTrainingSessionDraft(beforeSession.id);
-  const remoteSnapshot = await buildAccountDataSnapshot();
+  await saveTrainingSession(completeTrainingSession(beforeSession, "2026-01-01T00:03:00.000Z"), productionTrackAdmissionContext);
+  await clearActiveTrainingSessionDraft(beforeSession.id, productionTrackAdmissionContext);
+  const remoteSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   const synced = await loadAccountDataSession(client, accountId);
 
   assert.equal(synced.status, "synced", synced.lastFailureCode ?? "no failure code");
   assert.equal(uploads, 1);
   assert.equal(reads, 1);
   assert.equal(uploadedExpectedRevision, 4);
-  assert.equal(await getActiveTrainingSession(), null);
-  assert.equal(await getActiveTrainingSessionDraft(), null);
-  assert.equal((await getAccountSyncState()).remoteAccountRevision, 5);
-  assert.equal((await getAccountSyncState()).outbox.length, 0);
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+  assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).remoteAccountRevision, 5);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox.length, 0);
 });
 
 test("discard deletes guest records and goals but preserves device preferences and performs no remote writes", async () => {
   const storage = await prepareGuest();
-  await saveGoal(createDefaultGoal(guestTrack));
+  await saveGoal(createDefaultGoal(requireGoalPolicy(guestTrack)), requireGoalPolicy(guestTrack));
   const guestHistory = completedGuestSession("discard-history");
-  await saveTrainingSession(guestHistory);
+  await saveTrainingSession(guestHistory, productionTrackAdmissionContext);
   const guestResult = completedGuestResult(guestHistory);
-  await saveTrainingSessionResult(guestResult);
+  await saveTrainingSessionResult(guestResult, productionTrackAdmissionContext);
   storage.setString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, "guest reports");
   storage.setString(STORAGE_KEYS.SETTINGS, "device settings");
   storage.setString(STORAGE_KEYS.NOTIFICATION_SETTINGS, "device notifications");
@@ -1903,7 +1907,7 @@ test("discard deletes guest records and goals but preserves device preferences a
   const result = await discardGuestDataAndLoadAccount(client, accountId);
   assert.equal(result.status, "synced");
   assert.equal(await getActiveTrackId(), null);
-  assert.equal((await buildAccountDataSnapshot()).records.length, 0);
+  assert.equal((await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).records.length, 0);
   assert.equal(storage.contains(STORAGE_KEYS.goal(guestTrack)), false);
   assert.equal(storage.contains(STORAGE_KEYS.trainingSession(guestHistory.id)), false);
   assert.equal(storage.contains(STORAGE_KEYS.trainingSessionResult(guestHistory.id)), false);
@@ -1911,20 +1915,20 @@ test("discard deletes guest records and goals but preserves device preferences a
   assert.equal(storage.getString(STORAGE_KEYS.SETTINGS), "device settings");
   assert.equal(storage.getString(STORAGE_KEYS.NOTIFICATION_SETTINGS), "device notifications");
   assert.equal((await getGuestInstallation())?.accountId, accountId);
-  assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0);
+  assert.equal((await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext)).outbox.length, 0);
 });
 
 test("discard restores existing account records unchanged without uploading guest data", async () => {
   await prepareGuest();
-  const records = (await buildAccountDataSnapshot()).records.map((record) => ({ ...record, version: 3, kind: "node" as const, targetId: record.recordId, lastMutationId: "remote-mutation", updatedAt: "2026-01-01T00:00:00.000Z" }));
+  const records = (await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).records.map((record) => ({ ...record, version: 3, kind: "node" as const, targetId: record.recordId, lastMutationId: "remote-mutation", updatedAt: "2026-01-01T00:00:00.000Z" }));
   const remote = { accountRevision: 7, records };
   const before = JSON.stringify(remote);
   let writes = 0;
   const client = api({ getProgress: async () => remote, syncProgress: async () => { writes++; throw new Error("must not upload"); } });
   assert.equal((await discardGuestDataAndLoadAccount(client, accountId)).status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
-  assert.equal((await getAccountSyncState()).remoteAccountRevision, 7);
-  assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).remoteAccountRevision, 7);
+  assert.equal((await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext)).outbox.length, 0);
   assert.equal(JSON.stringify(remote), before);
   assert.equal(writes, 0);
 });
@@ -1934,7 +1938,7 @@ test("failed account fetch keeps guest data and the approved discard plan for re
   const failed = await discardGuestDataAndLoadAccount(api({ getProgress: async () => { throw new Error("offline"); } }), accountId);
   assert.notEqual(failed.status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
-  const pending = (await getAccountSyncState()).materialization;
+  const pending = (await getAccountSyncState(productionLearningDataAdmissionContext)).materialization;
   assert.equal(pending && "kind" in pending ? pending.kind : null, "discardGuest");
   assert.equal(pending && "kind" in pending ? pending.accountId : null, accountId);
   assert.equal(pending && "kind" in pending ? pending.phase : null, "prepared");
@@ -1944,7 +1948,7 @@ test("failed account fetch keeps guest data and the approved discard plan for re
 
 test("existing-account login restores remote data without offering or uploading guest adoption", async () => {
   await prepareGuest();
-  const records = (await buildAccountDataSnapshot()).records.map((record) => ({ ...record, version: 4, kind: "node" as const, targetId: record.recordId, lastMutationId: "existing-account", updatedAt: "2026-01-01T00:00:00.000Z" }));
+  const records = (await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).records.map((record) => ({ ...record, version: 4, kind: "node" as const, targetId: record.recordId, lastMutationId: "existing-account", updatedAt: "2026-01-01T00:00:00.000Z" }));
   let previews = 0;
   let confirmations = 0;
   let uploads = 0;
@@ -1956,20 +1960,20 @@ test("existing-account login restores remote data without offering or uploading 
   }), accountId, { guestAdoption: "discard" });
 
   assert.equal(result.status, "synced");
-  assert.equal((await getAccountSyncState()).remoteAccountRevision, 9);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).remoteAccountRevision, 9);
   assert.equal(previews, 0);
   assert.equal(confirmations, 0);
   assert.equal(uploads, 0);
-  assert.equal((await getAccountSyncState()).materialization, null);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).materialization, null);
 });
 
 test("one separable invalid remote plan restores Home data, quarantines its version, and resolves after replacement sync", async () => {
   await prepareGuest();
-  await saveGoal(createDefaultGoal(guestTrack));
+  await saveGoal(createDefaultGoal(requireGoalPolicy(guestTrack)), requireGoalPolicy(guestTrack));
   const { completed, result } = await commitTerminalLearningOutcome();
   await bindGuestInstallationToAccount(accountId);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
-  const homeRecords = remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: 2 }));
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
+  const homeRecords = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
   const invalidPlanState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
   const invalidPlan = {
     kind: "node" as const,
@@ -1998,23 +2002,23 @@ test("one separable invalid remote plan restores Home data, quarantines its vers
 
   assert.equal(restored.status, "synced", restored.lastFailureCode ?? "missing failure code");
   assert.equal(await getActiveTrackId(), guestTrack);
-  assert.deepEqual(await getGoalSnapshot(guestTrack), { record: createDefaultGoal(guestTrack), revision: 1 });
-  assert.ok((await getTrainingSessions()).value.some((session) => session.id === completed.id && session.status === "completed"));
-  assert.equal((await getTrainingSessionResult(completed.id))?.id, result.id);
-  assert.equal(getLearningPlanSnapshot(guestTrack), null);
+  assert.deepEqual(await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)), { record: createDefaultGoal(requireGoalPolicy(guestTrack)), revision: 1 });
+  assert.ok((await getTrainingSessions(productionTrackAdmissionContext)).value.some((session) => session.id === completed.id && session.status === "completed"));
+  assert.equal((await getTrainingSessionResult(completed.id, productionTrackAdmissionContext))?.id, result.id);
+  assert.equal(getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack)), null);
   assert.equal(restored.learningPlanRecovery?.trackId, guestTrack);
   assert.equal(restored.learningPlanRecovery?.remoteVersion, 7);
   assert.equal(restored.learningPlanRecovery?.generation, 4);
   assert.match(restored.learningPlanRecovery?.incidentId ?? "", /^[a-f0-9]{64}$/u);
-  assert.equal(isCanonicalAccountSyncState(await getAccountSyncState()), true);
-  assert.equal((await getAccountSyncState()).acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 7);
+  assert.equal(isCanonicalAccountSyncState(await getAccountSyncState(productionLearningDataAdmissionContext), productionLearningDataAdmissionContext), true);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 7);
 
   const incidentId = restored.learningPlanRecovery!.incidentId;
   dismissAccountLearningPlanRecovery(accountId, incidentId);
-  const persisted = await getAccountSyncState();
+  const persisted = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(persisted.learningPlanRecovery?.dismissed, true);
-  assert.equal(isCanonicalAccountSyncState(persisted), true);
-  assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0, "quarantined absence must not create a tombstone");
+  assert.equal(isCanonicalAccountSyncState(persisted, productionLearningDataAdmissionContext), true);
+  assert.equal((await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext)).outbox.length, 0, "quarantined absence must not create a tombstone");
   const restarted = await loadAccountDataSession(api({ getProgress: async () => brokenSnapshot }), accountId);
   assert.equal(restarted.learningPlanRecovery?.incidentId, incidentId);
   assert.equal(restarted.learningPlanRecovery?.dismissed, true, "dismissal must survive reloading the account materialization");
@@ -2035,8 +2039,8 @@ test("one separable invalid remote plan restores Home data, quarantines its vers
     commandId: "command:recovered",
     slots: [{ slotId: createLearningPlanSlotId("slot:recovered"), day: "mon", localTime: "18:00", sessionLength: 10 }],
   });
-  saveLearningPlanAtomically({ plan: replacement, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
-  const replacementOutbox = await ensureAccountOutboxFromLocalDataset();
+  saveLearningPlanAtomically({ policy: requireGoalPolicy(replacement.trackId), plan: replacement, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
+  const replacementOutbox = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   const replacementEntry = replacementOutbox.outbox.find((entry) => entry.recordType === "learning_plan");
   assert.equal(replacementEntry?.expectedVersion, 7);
   assert.equal(replacementEntry?.state.plan && (replacementEntry.state.plan as { planId?: string }).planId, "plan:recovered");
@@ -2055,21 +2059,21 @@ test("one separable invalid remote plan restores Home data, quarantines its vers
     getProgress: async () => ({
       accountRevision: 12,
       generation: 4,
-      records: remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: record.recordType === "learning_plan" ? 8 : 3 })),
+      records: remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: record.recordType === "learning_plan" ? 8 : 3 })),
     }),
   }), accountId);
   assert.equal(uploads, 1);
   assert.equal(synced.status, "synced");
-  assert.equal((await getAccountSyncState()).learningPlanRecovery, null);
-  assert.equal((await getAccountSyncState()).acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 8);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).learningPlanRecovery, null);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 8);
 });
 
 test("normal no-plan remote state creates no recovery incident", async () => {
   await prepareGuest();
-  await saveGoal(createDefaultGoal(guestTrack));
+  await saveGoal(createDefaultGoal(requireGoalPolicy(guestTrack)), requireGoalPolicy(guestTrack));
   await bindGuestInstallationToAccount(accountId);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
-  const records = remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: 2 }));
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
+  const records = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
   let acknowledgements: ProgressRecordDto[] = [];
   const restored = await loadAccountDataSession(api({
     syncProgress: async (input) => {
@@ -2083,15 +2087,15 @@ test("normal no-plan remote state creates no recovery incident", async () => {
   }), accountId);
   assert.equal(restored.status, "synced", restored.lastFailureCode ?? "missing failure code");
   assert.equal(restored.learningPlanRecovery, undefined);
-  assert.equal((await getAccountSyncState()).learningPlanRecovery, null);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).learningPlanRecovery, null);
 });
 
 test("learning plan recovery reserves before a read and commits the replacement with its ACK", async () => {
   await prepareGuest();
-  await saveGoal(createDefaultGoal(guestTrack));
+  await saveGoal(createDefaultGoal(requireGoalPolicy(guestTrack)), requireGoalPolicy(guestTrack));
   await bindGuestInstallationToAccount(accountId);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
-  const home = remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: 2 }));
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
+  const home = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
   const invalidState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
   const invalidRecord = { kind: "node" as const, recordType: "learning_plan" as const, recordId: guestTrack, targetId: guestTrack, trackId: guestTrack, version: 7, fingerprint: accountDataRecordFingerprint({ recordId: guestTrack, recordType: "learning_plan", state: invalidState, trackId: guestTrack }), state: invalidState, lastMutationId: "invalid-plan", updatedAt: "2026-01-01T00:02:00.000Z" };
   const initial = await loadAccountDataSession(apiWithAppliedUpload(async () => ({ accountRevision: 10, generation: 4, records: [...home, invalidRecord] })), accountId);
@@ -2109,7 +2113,7 @@ test("learning plan recovery reserves before a read and commits the replacement 
   let reads = 0;
   let writes = 0;
   const client = api({
-    getProgress: async () => { reads++; readStarted(); const state = await getAccountSyncState(); assert.equal(state.learningPlanRecovery?.attemptCount, 1); assert.equal(state.learningPlanRecovery?.nextRetryAt, "2026-09-26T10:00:30.000Z"); return response; },
+    getProgress: async () => { reads++; readStarted(); const state = await getAccountSyncState(productionLearningDataAdmissionContext); assert.equal(state.learningPlanRecovery?.attemptCount, 1); assert.equal(state.learningPlanRecovery?.nextRetryAt, "2026-09-26T10:00:30.000Z"); return response; },
     syncProgress: async () => { writes++; throw new Error("recovery must never call syncProgress"); },
   });
   const first = retryLearningPlanRecovery(client, accountId, now);
@@ -2120,8 +2124,8 @@ test("learning plan recovery reserves before a read and commits the replacement 
   await Promise.all([first, duplicate]);
   assert.equal(reads, 1);
   assert.equal(writes, 0);
-  assert.deepEqual(getLearningPlanSnapshot(guestTrack)?.plan, replacement);
-  const state = await getAccountSyncState();
+  assert.deepEqual(getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack))?.plan, replacement);
+  const state = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(state.learningPlanRecovery, null);
   assert.equal(state.remoteAccountRevision, 10, "single-plan recovery must not advance the account-wide revision");
   assert.equal(state.acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 8);
@@ -2129,10 +2133,10 @@ test("learning plan recovery reserves before a read and commits the replacement 
 
 test("learning plan recovery persists failed attempts and respects the durable due time", async () => {
   await prepareGuest();
-  await saveGoal(createDefaultGoal(guestTrack));
+  await saveGoal(createDefaultGoal(requireGoalPolicy(guestTrack)), requireGoalPolicy(guestTrack));
   await bindGuestInstallationToAccount(accountId);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
-  const home = remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: 2 }));
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
+  const home = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
   const invalidState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
   const invalidRecord = { kind: "node" as const, recordType: "learning_plan" as const, recordId: guestTrack, targetId: guestTrack, trackId: guestTrack, version: 7, fingerprint: accountDataRecordFingerprint({ recordId: guestTrack, recordType: "learning_plan", state: invalidState, trackId: guestTrack }), state: invalidState, lastMutationId: "invalid-plan", updatedAt: "2026-01-01T00:02:00.000Z" };
   await loadAccountDataSession(apiWithAppliedUpload(async () => ({ accountRevision: 10, generation: 4, records: [...home, invalidRecord] })), accountId);
@@ -2140,8 +2144,8 @@ test("learning plan recovery persists failed attempts and respects the durable d
   const offline = api({ getProgress: async () => { reads++; throw new Error("offline"); } });
   const now = new Date("2026-09-26T10:00:00.000Z");
   await retryLearningPlanRecovery(offline, accountId, now);
-  assert.equal((await getAccountSyncState()).learningPlanRecovery?.attemptCount, 1);
-  assert.equal((await getAccountSyncState()).learningPlanRecovery?.nextRetryAt, "2026-09-26T10:00:30.000Z");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).learningPlanRecovery?.attemptCount, 1);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).learningPlanRecovery?.nextRetryAt, "2026-09-26T10:00:30.000Z");
   await retryLearningPlanRecovery(offline, accountId, now);
   assert.equal(reads, 1, "an early foreground or reconnect signal must not bypass durable backoff");
   const previousStorage = getKeyValueStorage();
@@ -2151,11 +2155,11 @@ test("learning plan recovery persists failed attempts and respects the durable d
     if (value !== undefined) restartedStorage.setString(key, value);
   }
   installKeyValueStorageForTests(restartedStorage);
-  assert.equal((await getAccountSyncState()).learningPlanRecovery?.attemptCount, 1, "the reserved attempt survives a storage-process restart");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).learningPlanRecovery?.attemptCount, 1, "the reserved attempt survives a storage-process restart");
   await retryLearningPlanRecovery(offline, accountId, new Date("2026-09-26T10:00:30.000Z"));
   assert.equal(reads, 2, "the durable due time survives a later retry invocation");
-  assert.equal((await getAccountSyncState()).learningPlanRecovery?.attemptCount, 2);
-  assert.equal((await getAccountSyncState()).learningPlanRecovery?.nextRetryAt, "2026-09-26T10:01:30.000Z");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).learningPlanRecovery?.attemptCount, 2);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).learningPlanRecovery?.nextRetryAt, "2026-09-26T10:01:30.000Z");
 });
 
 test("learning plan recovery drops stale responses after a generation, incident, or account ownership change", async () => {
@@ -2163,10 +2167,10 @@ test("learning plan recovery drops stale responses after a generation, incident,
     installKeyValueStorageForTests(new MemoryKeyValueStorage());
     await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
     await prepareGuest();
-    await saveGoal(createDefaultGoal(guestTrack));
+    await saveGoal(createDefaultGoal(requireGoalPolicy(guestTrack)), requireGoalPolicy(guestTrack));
     await bindGuestInstallationToAccount(accountId);
-    saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
-    const home = remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: 2 }));
+    saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
+    const home = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
     const invalidState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
     const invalidRecord = { kind: "node" as const, recordType: "learning_plan" as const, recordId: guestTrack, targetId: guestTrack, trackId: guestTrack, version: 7, fingerprint: accountDataRecordFingerprint({ recordId: guestTrack, recordType: "learning_plan", state: invalidState, trackId: guestTrack }), state: invalidState, lastMutationId: "invalid-plan", updatedAt: "2026-01-01T00:02:00.000Z" };
     const initial = await loadAccountDataSession(apiWithAppliedUpload(async () => ({ accountRevision: 10, generation: 4, records: [...home, invalidRecord] })), accountId);
@@ -2176,17 +2180,17 @@ test("learning plan recovery drops stale responses after a generation, incident,
     const started = new Promise<void>((resolve) => { readStarted = resolve; });
     const request = retryLearningPlanRecovery(api({ getProgress: async () => { readStarted(); return response; }, syncProgress: async () => { throw new Error("read recovery cannot upload"); } }), accountId, new Date("2026-09-26T10:00:00.000Z"));
     await started;
-    const state = await getAccountSyncState();
+    const state = await getAccountSyncState(productionLearningDataAdmissionContext);
     if (mode === "incident") {
-      saveAccountSyncState({ ...state, learningPlanRecovery: { ...state.learningPlanRecovery!, attemptCount: 0, incidentId: "b".repeat(64), nextRetryAt: null } });
+      saveAccountSyncState({ ...state, learningPlanRecovery: { ...state.learningPlanRecovery!, attemptCount: 0, incidentId: "b".repeat(64), nextRetryAt: null } }, productionLearningDataAdmissionContext);
     } else if (mode === "ownership") {
       await clearGuestAccountBinding();
       await bindGuestInstallationToAccount("another-account");
-      saveAccountSyncState({ ...await getAccountSyncState(), accountId: "another-account", learningPlanRecovery: null });
+      saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: "another-account", learningPlanRecovery: null }, productionLearningDataAdmissionContext);
     }
     finishRead({ accountRevision: 11, generation: mode === "generation" ? 5 : 4, records: [] });
     await request;
-    const after = await getAccountSyncState();
+    const after = await getAccountSyncState(productionLearningDataAdmissionContext);
     assert.equal(after.accountId, mode === "ownership" ? "another-account" : accountId, mode);
     assert.equal(after.learningPlanRecovery?.incidentId, mode === "incident" ? "b".repeat(64) : mode === "generation" ? initial.learningPlanRecovery?.incidentId : undefined, mode);
     assert.equal(after.acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 7, mode);
@@ -2199,10 +2203,10 @@ test("invalid plan recovery fails closed on bad envelope, duplicate identity, un
     installKeyValueStorageForTests(new MemoryKeyValueStorage());
     await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
     await prepareGuest();
-    await saveGoal(createDefaultGoal(guestTrack));
+    await saveGoal(createDefaultGoal(requireGoalPolicy(guestTrack)), requireGoalPolicy(guestTrack));
     await bindGuestInstallationToAccount(accountId);
-    saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
-    const validHomeRecords = remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: 2 }));
+    saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
+    const validHomeRecords = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
     const planState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
     const invalidPlan = {
       kind: "node" as const,
@@ -2227,7 +2231,7 @@ test("invalid plan recovery fails closed on bad envelope, duplicate identity, un
     const responseRows = mode === "fingerprint" ? rows.map((record) => record.recordType === "learning_plan" ? { ...record, fingerprint: "f".repeat(64) } : record)
       : mode === "version" ? rows.map((record) => record.recordType === "learning_plan" ? { ...record, version: -1 } : record)
         : rows;
-    if (mode === "ownership") saveAccountSyncState({ ...await getAccountSyncState(), accountId: "another-account" });
+    if (mode === "ownership") saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: "another-account" }, productionLearningDataAdmissionContext);
     const restored = await loadAccountDataSession(api({
       syncProgress: async (input) => {
         const applied = makeAppliedRecords(input.mutations);
@@ -2237,14 +2241,14 @@ test("invalid plan recovery fails closed on bad envelope, duplicate identity, un
     }), accountId);
     assert.equal(restored.status, "failed", mode);
     assert.equal(await getActiveTrackId(), guestTrack, `${mode}: fail-closed validation must not clear local Home state`);
-    assert.equal((await getAccountSyncState()).learningPlanRecovery, null, mode);
+    assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).learningPlanRecovery, null, mode);
   }
 });
 
 test("transfer applies an explicit guest conflict resolution once and completes durably", async () => {
   await prepareGuest();
-  await saveGuestAdoptionChoice("transfer");
-  const guestSnapshot = await buildAccountDataSnapshot();
+  await saveGuestAdoptionChoice("transfer", productionLearningDataAdmissionContext);
+  const guestSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   const preview = adoptionPreview(guestSnapshot);
   const executedRecords = remoteRecords(guestSnapshot);
   let previews = 0;
@@ -2278,11 +2282,11 @@ test("transfer applies an explicit guest conflict resolution once and completes 
   assert.equal(confirmed.status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
   assert.equal((await getGuestInstallation())?.accountId, accountId);
-  const completed = await getAccountSyncState();
+  const completed = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(completed.guestAdoptionChoice, "transfer");
   assert.equal(completed.pendingConfirmation, null);
   assert.equal(completed.materialization, null);
-  assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0);
+  assert.equal((await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext)).outbox.length, 0);
   assert.equal((await loadAccountDataSession(client, accountId)).status, "synced");
   assert.equal(previews, 1);
   assert.equal(confirmations, 1);
@@ -2291,9 +2295,9 @@ test("transfer applies an explicit guest conflict resolution once and completes 
 
 test("guest adoption quarantines one invalid plan while materializing its goal and unambiguous active track", async () => {
   await prepareGuest();
-  await saveGuestAdoptionChoice("transfer");
-  await saveGoal(createDefaultGoal(guestTrack));
-  const guestSnapshot = await buildAccountDataSnapshot();
+  await saveGuestAdoptionChoice("transfer", productionLearningDataAdmissionContext);
+  await saveGoal(createDefaultGoal(requireGoalPolicy(guestTrack)), requireGoalPolicy(guestTrack));
+  const guestSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   const invalidPlanState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
   const guestMergeRecords = [
     ...guestSnapshot.records.map(({ fingerprint, recordId, recordType, state, trackId, version }) => ({ fingerprint, recordId, recordType, state, trackId, version })),
@@ -2318,17 +2322,17 @@ test("guest adoption quarantines one invalid plan while materializing its goal a
 
   assert.equal(confirmed.status, "synced", confirmed.lastFailureCode ?? "missing failure code");
   assert.equal(await getActiveTrackId(), guestTrack);
-  assert.deepEqual(await getGoalSnapshot(guestTrack), { record: createDefaultGoal(guestTrack), revision: 1 });
-  assert.equal(getLearningPlanSnapshot(guestTrack), null);
+  assert.deepEqual(await getGoalSnapshot(guestTrack, requireGoalPolicy(guestTrack)), { record: createDefaultGoal(requireGoalPolicy(guestTrack)), revision: 1 });
+  assert.equal(getLearningPlanSnapshot(guestTrack, requireGoalPolicy(guestTrack)), null);
   assert.equal(confirmed.learningPlanRecovery?.trackId, guestTrack);
   assert.equal(confirmed.learningPlanRecovery?.remoteVersion, 7);
-  assert.equal((await getAccountSyncState()).acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 7);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 7);
 });
 
 test("offline transfer retry reuses the durable confirmation and never uploads a duplicate guest snapshot", async () => {
   await prepareGuest();
-  await saveGuestAdoptionChoice("transfer");
-  const guestSnapshot = await buildAccountDataSnapshot();
+  await saveGuestAdoptionChoice("transfer", productionLearningDataAdmissionContext);
+  const guestSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   const preview = adoptionPreview(guestSnapshot);
   const resolution = [{ conflictId: "active-track-conflict", resolution: "keep_guest" }] as const;
   const offered = await loadAccountDataSession(api({ previewAccountAdoption: async () => preview }), accountId);
@@ -2353,7 +2357,7 @@ test("offline transfer retry reuses the durable confirmation and never uploads a
   assert.equal(first.status, "offlinePending");
   assert.equal(first.lastFailureCode, "offline");
   assert.equal(await getActiveTrackId(), guestTrack);
-  const interrupted = await getAccountSyncState();
+  const interrupted = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(interrupted.guestAdoptionChoice, "transfer");
   assert.deepEqual(interrupted.pendingConfirmation, {
     operationId: preview.preview.operationId,
@@ -2363,7 +2367,7 @@ test("offline transfer retry reuses the durable confirmation and never uploads a
   });
   assert.equal(interrupted.materialization, null);
 
-  const executedRecords = remoteRecords(await buildAccountDataSnapshot());
+  const executedRecords = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext));
   const retried = await loadAccountDataSession(api({
     confirmAccountAdoption: async (input) => {
       confirmations++;
@@ -2377,7 +2381,7 @@ test("offline transfer retry reuses the durable confirmation and never uploads a
   assert.equal(retried.status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
   assert.equal((await getGuestInstallation())?.accountId, accountId);
-  const completed = await getAccountSyncState();
+  const completed = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(completed.guestAdoptionChoice, "transfer");
   assert.equal(completed.pendingConfirmation, null);
   assert.equal(completed.materialization, null);
@@ -2388,10 +2392,10 @@ test("offline transfer retry reuses the durable confirmation and never uploads a
 for (const fault of ["partial-index", "binding", "finish"] as const) {
   test(`discard resumes after ${fault} failure without reconstructing a guest upload`, async () => {
     const storage = await prepareGuest();
-    await saveTrainingSession(guestSession("abandoned"));
+    await saveTrainingSession(guestSession("abandoned"), productionTrackAdmissionContext);
     const backupSession = completedGuestSession("backup-orphan");
-    await saveTrainingSession(backupSession);
-    await saveTrainingSessionResult(completedGuestResult(backupSession));
+    await saveTrainingSession(backupSession, productionTrackAdmissionContext);
+    await saveTrainingSessionResult(completedGuestResult(backupSession), productionTrackAdmissionContext);
     storage.setString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, "guest report outbox");
     storage.resetCounters();
     if (fault === "partial-index") storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.TRAINING_SESSION_INDEX });
@@ -2410,7 +2414,7 @@ for (const fault of ["partial-index", "binding", "finish"] as const) {
     storage.setFailurePlan(null);
     assert.notEqual(storage.getString(STORAGE_KEYS.trainingSessionResult("backup-orphan")), null);
     assert.equal(storage.getString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX), "guest report outbox");
-    const pendingMaterialization = (await getAccountSyncState()).materialization;
+    const pendingMaterialization = (await getAccountSyncState(productionLearningDataAdmissionContext)).materialization;
     assert.equal(pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.kind : null, "discardGuest");
     assert.equal(pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.accountId : null, accountId);
     assert.equal(pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.installationId : null, "66666666-6666-4666-8666-666666666666");
@@ -2419,36 +2423,36 @@ for (const fault of ["partial-index", "binding", "finish"] as const) {
     const backupKeys = pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.guestBackup?.map((entry) => entry.key) : [];
     assert.ok(backupKeys?.includes(STORAGE_KEYS.trainingSessionResult("backup-orphan")));
     assert.ok(backupKeys?.includes(STORAGE_KEYS.CONTENT_REPORT_OUTBOX));
-    assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0);
+    assert.equal((await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext)).outbox.length, 0);
     let uploads = 0;
     const retried = await loadAccountDataSession(api({ syncProgress: async () => { uploads++; throw new Error("guest upload forbidden"); } }), accountId);
     assert.equal(retried.status, "synced");
-    assert.equal((await buildAccountDataSnapshot()).records.length, 0);
-    assert.equal((await getAccountSyncState()).materialization, null);
+    assert.equal((await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).records.length, 0);
+    assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).materialization, null);
     assert.equal(uploads, 0);
   });
 }
 
 test("discard rejects another account and pending adoption without changing guest data", async () => {
   await prepareGuest();
-  const state = await getAccountSyncState();
-  saveAccountSyncState({ ...state, accountId: "other-account", materialization: { kind: "discardGuest", accountId: "other-account" } });
+  const state = await getAccountSyncState(productionLearningDataAdmissionContext);
+  saveAccountSyncState({ ...state, accountId: "other-account", materialization: { kind: "discardGuest", accountId: "other-account" } }, productionLearningDataAdmissionContext);
   assert.notEqual((await discardGuestDataAndLoadAccount(api(), accountId)).status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
-  saveAccountSyncState({ ...state, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [], groupChoices: [] } });
+  saveAccountSyncState({ ...state, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [], groupChoices: [] } }, productionLearningDataAdmissionContext);
   assert.notEqual((await discardGuestDataAndLoadAccount(api(), accountId)).status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
 });
 
 test("a stale adoption confirmation is cleared so retry can request a fresh preview", async () => {
   await prepareGuest();
-  const state = await getAccountSyncState();
-  saveAccountSyncState({ ...state, accountId, status: "syncing", pendingConfirmation: { operationId: "stale-operation", previewFingerprint: "stale-fingerprint", resolutions: [], groupChoices: [] } });
+  const state = await getAccountSyncState(productionLearningDataAdmissionContext);
+  saveAccountSyncState({ ...state, accountId, status: "syncing", pendingConfirmation: { operationId: "stale-operation", previewFingerprint: "stale-fingerprint", resolutions: [], groupChoices: [] } }, productionLearningDataAdmissionContext);
   const result = await loadAccountDataSession(api({ confirmAccountAdoption: async () => {
     throw new PatternlyApiClientError("server_error", 409, "merge_preview_mismatch");
   } }), accountId);
   assert.equal(result.lastFailureCode, "adoption_conflict");
-  const reset = await getAccountSyncState();
+  const reset = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(reset.pendingConfirmation, null);
   assert.equal(reset.accountId, null);
   assert.equal(reset.status, "initialSyncRequired");
@@ -2456,7 +2460,7 @@ test("a stale adoption confirmation is cleared so retry can request a fresh prev
 
 test("discard blocks an active guest session before fetching or deleting data", async () => {
   await prepareGuest();
-  await saveTrainingSession(guestSession("active"));
+  await saveTrainingSession(guestSession("active"), productionTrackAdmissionContext);
   let reads = 0;
   const result = await discardGuestDataAndLoadAccount(api({ getProgress: async () => { reads++; return { accountRevision: 0, records: [] }; } }), accountId);
   assert.equal(result.activeSessionBlocked, true);
@@ -2467,7 +2471,7 @@ test("discard blocks an active guest session before fetching or deleting data", 
 test("concurrent discard calls make one transition and keep the guest outbox empty before fetching", async () => {
   await prepareGuest();
   let reads = 0;
-  const client = api({ getProgress: async () => { reads++; assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0); return { accountRevision: 0, records: [] }; } });
+  const client = api({ getProgress: async () => { reads++; assert.equal((await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext)).outbox.length, 0); return { accountRevision: 0, records: [] }; } });
   const results = await Promise.all([discardGuestDataAndLoadAccount(client, accountId), discardGuestDataAndLoadAccount(client, accountId)]);
   assert.deepEqual(results.map((result) => result.status), ["synced", "synced"]);
   assert.equal(reads, 1);
@@ -2494,8 +2498,8 @@ test("a session start requested while discard fetches waits and is preserved aft
   const result = await discard;
   await start;
   assert.equal(result.status, "synced");
-  assert.deepEqual(await getActiveTrainingSession(), session);
-  assert.equal((await getAccountSyncState()).status, "offlinePending");
+  assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), session);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).status, "offlinePending");
 });
 
 test("malformed remote records keep the guest dataset and durable approved discard plan", async () => {
@@ -2503,7 +2507,7 @@ test("malformed remote records keep the guest dataset and durable approved disca
   const invalid = { accountRevision: 1, records: [{ recordType: "active_track", state: { trackId: "unknown" } }] } as unknown as Awaited<ReturnType<PatternlyApiClient["getProgress"]>>;
   assert.notEqual((await discardGuestDataAndLoadAccount(api({ getProgress: async () => invalid }), accountId)).status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
-  const pending = (await getAccountSyncState()).materialization;
+  const pending = (await getAccountSyncState(productionLearningDataAdmissionContext)).materialization;
   assert.equal(pending && "kind" in pending ? pending.kind : null, "discardGuest");
   assert.equal(pending && "kind" in pending ? pending.accountId : null, accountId);
   assert.equal(pending && "kind" in pending ? pending.phase : null, "prepared");
@@ -2512,23 +2516,23 @@ test("malformed remote records keep the guest dataset and durable approved disca
 
 test("pending materialization blocks lifecycle account deletion without losing the marker", async () => {
   await prepareGuest();
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, materialization: { kind: "discardGuest", accountId } });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, materialization: { kind: "discardGuest", accountId } }, productionLearningDataAdmissionContext);
   let calls = 0;
   const forbidden = async (): Promise<never> => { calls++; throw new Error("deletion forbidden while materializing"); };
   const client = api({ deleteAccount: forbidden });
   assert.equal((await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState)).ok, false);
   assert.equal(calls, 0);
   assert.equal(await getActiveTrackId(), guestTrack);
-  assert.deepEqual((await getAccountSyncState()).materialization, { kind: "discardGuest", accountId });
+  assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).materialization, { kind: "discardGuest", accountId });
 });
 
 test("a durable adoption confirmation blocks a new learning commit", async () => {
   await prepareGuest();
-  const state = await getAccountSyncState();
-  saveAccountSyncState({ ...state, accountId, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [], groupChoices: [] } });
+  const state = await getAccountSyncState(productionLearningDataAdmissionContext);
+  saveAccountSyncState({ ...state, accountId, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [], groupChoices: [] } }, productionLearningDataAdmissionContext);
   await assert.rejects(() => commitTrainingSessionStart({ session: guestSession("active"), draft: null, createdAt: "2026-01-01T00:00:00.000Z" }));
-  assert.equal(await getActiveTrainingSession(), null);
-  assert.notEqual((await getAccountSyncState()).pendingConfirmation, null);
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+  assert.notEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).pendingConfirmation, null);
 });
 
 test("unreadable mutation journal blocks discard before deleting guest data", async () => {

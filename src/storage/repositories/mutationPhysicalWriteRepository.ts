@@ -6,6 +6,7 @@ import { materializeTrainingSessionJournalSteps } from "./trainingSessionReposit
 import { materializeTrainingSessionResultJournalSteps } from "./trainingSessionResultRepository";
 import { materializeTrainingSessionDraftJournalStep } from "./trainingSessionDraftRepository";
 import { materializeActiveForegroundTimerJournalStep, materializeStartedForegroundTimerJournalStep } from "./foregroundTimerRepository";
+import type { TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 
 /** Checks every captured key before the first physical write of a replay. */
 export function assertMutationPhysicalWritePrefix(steps: readonly CanonicalPhysicalWrite[]): void {
@@ -22,11 +23,11 @@ export function areMutationPhysicalWritesAfter(steps: readonly CanonicalPhysical
  * The journal repository validates derivation; this module preserves family
  * batching and keeps the application layer away from the canonical codec.
  */
-export function materializeMutationPhysicalWrites(record: MutationJournalRecord): void {
+export function materializeMutationPhysicalWrites(record: MutationJournalRecord, admission: TrackAdmissionContext): void {
   const steps = record.physicalWrites;
   assertMutationPhysicalWritePrefix(steps);
   const attempts = record.writes.filter((write) => write.kind === "put_attempt").map((write) => write.record);
-  materializeTrainingAttemptBatch(attempts, select(steps, (step) => step.target.startsWith("attempt:") || step.target === "attempt_index"));
+  materializeTrainingAttemptBatch(attempts, select(steps, (step) => step.target.startsWith("attempt:") || step.target === "attempt_index"), admission);
 
   const reviewPuts = record.writes.filter((write) => write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt" || write.kind === "update_review_entry").map((write) => write.record);
   const reviewDeletes = record.writes.filter((write) => write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt").map((write) => write.record);
@@ -44,25 +45,25 @@ export function materializeMutationPhysicalWrites(record: MutationJournalRecord)
     throw new Error("The timer physical steps do not match their exact session owner.");
   }
   const reviewSteps = select(steps, (step) => step.target.startsWith("review:") || step.target === "review_index");
-  materializeReviewQueueBatch(reviewPuts, reviewDeletes, reviewSteps);
+  materializeReviewQueueBatch(reviewPuts, reviewDeletes, reviewSteps, admission);
 
   for (const step of steps) {
     if (step.target.startsWith("attempt:") || step.target === "attempt_index" || step.target.startsWith("review:") || step.target === "review_index") continue;
     if (step.target.startsWith("session:") || step.target === "session_index" || step.target === "active_session") {
-      materializeTrainingSessionJournalSteps(sessionIds, clearSessionIds, [step]);
+      materializeTrainingSessionJournalSteps(sessionIds, clearSessionIds, [step], admission);
       continue;
     }
     if (step.target.startsWith("result:")) {
-      materializeTrainingSessionResultJournalSteps(results, [step]);
+      materializeTrainingSessionResultJournalSteps(results, [step], admission);
       continue;
     }
     if (step.target === "active_session_draft") {
-      materializeTrainingSessionDraftJournalStep(hasDraftWrite, [step]);
+      materializeTrainingSessionDraftJournalStep(hasDraftWrite, [step], admission);
       continue;
     }
     if (step.target === "active_foreground_timer") {
-      if (hasStartTimer) materializeStartedForegroundTimerJournalStep(startSession, step);
-      else materializeActiveForegroundTimerJournalStep(clearSessionIds.length > 0, step);
+      if (hasStartTimer) materializeStartedForegroundTimerJournalStep(startSession, step, admission);
+      else materializeActiveForegroundTimerJournalStep(clearSessionIds.length > 0, step, admission);
       continue;
     }
     throw new Error(`No owning repository can apply physical target ${step.target}.`);

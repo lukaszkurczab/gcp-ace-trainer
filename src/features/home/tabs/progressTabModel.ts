@@ -20,9 +20,9 @@ import { contentPackageRuntimeOwner } from "../../../application/contentPackageR
 import { overallScoreCredit } from "../../../application/canonical/overallScoreCredit";
 import {
   buildPracticeSessionConfig,
-  type PracticeSessionMode,
   type PracticeSessionRouteParams,
 } from "../../practice/sessionConfig";
+import type { CanonicalPracticeModeId } from "../../../application/practice/practiceModeContract";
 import { projectWeeklySessionActivity, type WeeklySessionActivity, type ActivitySessionRecord } from "../../../application/activityReadModels";
 import { buildActivityModel, type ActivityItem } from "./activityModel";
 import { resolveCloudProgressDomainMetadata } from "./cloudProgressDomainMetadata";
@@ -84,10 +84,10 @@ export type LearningPriorityModel = {
   label: string;
   primaryAction: ProgressAction;
   primaryActionLabel: string;
-  primaryActionMode: PracticeSessionMode;
+  primaryActionMode: CanonicalPracticeModeId;
   secondaryAction?: ProgressAction;
   secondaryActionLabel?: string;
-  secondaryActionMode?: PracticeSessionMode;
+  secondaryActionMode?: CanonicalPracticeModeId;
   title: string;
   tone: LearningTone;
 };

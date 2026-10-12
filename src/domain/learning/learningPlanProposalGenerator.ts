@@ -1,5 +1,6 @@
 import type { GoalDay, GoalRecord } from "../goals/goalContracts";
-import { GOAL_DAY_IDS, isGoalDay, isGoalRecordForTrack, normalizeGoalRecord } from "../goals/goalContracts";
+import { GOAL_DAY_IDS, isGoalDay, isGoalRecordForPolicy, isGoalRecordForTrack, normalizeGoalRecord } from "../goals/goalContracts";
+import { isGoalPolicyForTrack, type GoalPolicy } from "../goals/goalPolicy";
 import { projectGoalTargetDate } from "../goals/goalTargetDateSemantics";
 import { createArtifactSha256 } from "./contentItemRef";
 import { minimumAttemptsForMentalUnits, type ChapterCompletionStatus, type PackageCompletionState } from "./packageCompletionRule";
@@ -70,6 +71,7 @@ export type ProposalOutcome = Readonly<{
 
 /** Inputs are read-only by contract; the generator defensively clones every value it returns. */
 export type GeneratorInput = Readonly<{
+  goalPolicy: GoalPolicy;
   goalRecord: GoalRecord;
   expectedGoalRevision: number | null;
   minutesPerStudyDay: number;
@@ -136,8 +138,11 @@ export function generateLearningPlanProposal(input: GeneratorInput): ProposalOut
 
 function generate(input: GeneratorInput): ProposalOutcome {
   const value = asRecord(input);
-  if (!hasOnlyKeys(value, ["goalRecord", "expectedGoalRevision", "minutesPerStudyDay", "executionPolicy", "nextSession", "diagnosisStatus", "artifactSha256", "planningPolicyIdentity", "contentVersion", "primaryModeId", "requestedLength", "sessionCapacity", "completionState", "dueReviewCount", "primaryScopeLabel", "localToday", "timezone"])) fail("invalid_input");
-  const goalRecord = validateGoalRecord(value.goalRecord);
+  if (!hasOnlyKeys(value, ["goalPolicy", "goalRecord", "expectedGoalRevision", "minutesPerStudyDay", "executionPolicy", "nextSession", "diagnosisStatus", "artifactSha256", "planningPolicyIdentity", "contentVersion", "primaryModeId", "requestedLength", "sessionCapacity", "completionState", "dueReviewCount", "primaryScopeLabel", "localToday", "timezone"])) fail("invalid_input");
+  const goalTrack = asRecord(value.goalRecord, "invalid_goal_snapshot").trackId;
+  if (typeof goalTrack !== "string" || !isGoalPolicyForTrack(value.goalPolicy, goalTrack)) fail("invalid_goal_snapshot");
+  const goalPolicy = value.goalPolicy as GoalPolicy;
+  const goalRecord = validateGoalRecord(value.goalRecord, goalPolicy);
   const expectedGoalRevision = value.expectedGoalRevision === null ? null : validatePositiveInteger(value.expectedGoalRevision, "invalid_goal_snapshot");
   const minutesPerStudyDay = validatePositiveInteger(value.minutesPerStudyDay, "invalid_input");
   if (minutesPerStudyDay > 1440) fail("invalid_input");
@@ -232,19 +237,19 @@ function validateNextSession(value: unknown): ProposalOutcome["nextSession"] {
   return Object.freeze({ kind: record.kind as "diagnosis" | "practice" | "review", modeId: record.modeId, requestedLength: record.requestedLength });
 }
 
-function validateGoalRecord(value: unknown): GoalRecord {
+function validateGoalRecord(value: unknown, policy: GoalPolicy): GoalRecord {
   const record = asRecord(value, "invalid_goal_snapshot");
   if (typeof record.trackId !== "string" || !record.trackId.trim()) fail("invalid_track_identity");
 
   let normalized: GoalRecord;
   try {
-    normalized = normalizeGoalRecord(record as GoalRecord);
+    normalized = normalizeGoalRecord(record as GoalRecord, policy);
   } catch {
     fail("invalid_goal_snapshot");
   }
   // The generator requires a usable normalized goal. In particular, a legacy
   // empty-day record cannot silently become a proposal with no slots.
-  if (!isGoalRecordForTrack(normalized, normalized.trackId) || normalized.preferredDays.length === 0 || normalized.status !== "active") fail("invalid_goal_snapshot");
+  if (!isGoalRecordForPolicy(normalized, policy) || !isGoalRecordForTrack(normalized, policy) || normalized.preferredDays.length === 0 || normalized.status !== "active") fail("invalid_goal_snapshot");
   if (normalized.preferredDays.some((day) => !isGoalDay(day))) fail("invalid_goal_snapshot");
   return normalized;
 }

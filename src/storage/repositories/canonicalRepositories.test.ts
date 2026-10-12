@@ -25,6 +25,8 @@ import { writeCanonicalJson } from "./canonicalRecordCodec";
 import { UnsupportedStoredRecordError } from "../errors";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession } from "./trainingModelGuards";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
+import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as const;
 const ARTIFACT_SHA256 = "a".repeat(64);
@@ -99,19 +101,40 @@ test("canonical repository bootstrap requires an already active storage scope", 
   setProfileStoragePreparationFactoryForTests(null);
 });
 
+test("session repository read and write fail closed when the required track admission denies the record", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  const active = session();
+  const deniedAdmission = Object.freeze({ isAdmittedTrackId: () => false });
+  const malformedAdmission = Object.freeze({});
+  const emptyBefore = storage.snapshot();
+
+  await assert.rejects(saveTrainingSession(active, deniedAdmission));
+  await assert.rejects(Reflect.apply(saveTrainingSession, undefined, [active, malformedAdmission]));
+  await assert.rejects(Reflect.apply(saveTrainingSession, undefined, [active]));
+  assert.deepEqual(storage.snapshot(), emptyBefore, "a denied write must not create a canonical record or index");
+
+  await saveTrainingSession(active, productionTrackAdmissionContext);
+  const persisted = storage.snapshot();
+  await assert.rejects(getTrainingSessions(deniedAdmission));
+  await assert.rejects(Reflect.apply(getTrainingSessions, undefined, [malformedAdmission]));
+  await assert.rejects(Reflect.apply(getTrainingSessions, undefined, []));
+  assert.deepEqual(storage.snapshot(), persisted, "a denied read must retain the exact record and index bytes");
+});
+
 test("canonical repositories use individual immutable records and one active session", async () => {
   const active = session();
   const durableAttempt = attempt({ item: active.itemOrder[0]!.item });
 
   await saveActiveTrackId(TRACK_ID);
-  await saveTrainingSession(active);
-  await addTrainingAttempt(durableAttempt);
-  await addTrainingAttempt(durableAttempt);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
+  await addTrainingAttempt(durableAttempt, productionTrackAdmissionContext);
+  await addTrainingAttempt(durableAttempt, productionTrackAdmissionContext);
 
   assert.equal(await getActiveTrackId(), TRACK_ID);
-  assert.deepEqual((await getTrainingSessions()).value.map((value) => value.id), [active.id]);
-  assert.deepEqual((await getTrainingAttempts()).value.map((value) => value.id), [durableAttempt.id]);
-  await assert.rejects(addTrainingAttempt({ ...durableAttempt, response: { changed: true } }), /immutable/);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value.map((value) => value.id), [active.id]);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value.map((value) => value.id), [durableAttempt.id]);
+  await assert.rejects(addTrainingAttempt({ ...durableAttempt, response: { changed: true } }, productionTrackAdmissionContext), /immutable/);
 });
 
 test("training sessions permit free navigation while rejecting regressing foreground time and missing active records", async () => {
@@ -125,15 +148,15 @@ test("training sessions permit free navigation while rejecting regressing foregr
     actualLength: 2,
     activeForegroundMs: 500,
   });
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
 
-  await assert.doesNotReject(() => saveTrainingSession({ ...active, currentItemIndex: 0 }));
-  await saveTrainingSession({ ...active, currentItemIndex: 0 });
-  await assert.rejects(() => saveTrainingSession({ ...active, activeForegroundMs: 499 }), /cannot decrease/);
+  await assert.doesNotReject(() => saveTrainingSession({ ...active, currentItemIndex: 0 }, productionTrackAdmissionContext));
+  await saveTrainingSession({ ...active, currentItemIndex: 0 }, productionTrackAdmissionContext);
+  await assert.rejects(() => saveTrainingSession({ ...active, activeForegroundMs: 499 }, productionTrackAdmissionContext), /cannot decrease/);
 
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, active.id);
-  await assert.rejects(() => getActiveTrainingSession(), /references missing session/);
+  await assert.rejects(() => getActiveTrainingSession(productionTrackAdmissionContext), /references missing session/);
 });
 
 test("active sessions persist only preallocated conditional reinsert resolutions", async () => {
@@ -181,21 +204,21 @@ test("active sessions persist only preallocated conditional reinsert resolutions
   const resolvedFingerprint = await createContentSessionPlanFingerprint(resolvedWithoutFingerprint as TrainingSession & { taxonomyVersion: string });
   const resolved = createTrainingSession({ ...resolvedWithoutFingerprint, planFingerprint: resolvedFingerprint });
 
-  await saveTrainingSession(prepared);
-  await assert.doesNotReject(() => saveTrainingSession(resolved));
-  assert.deepEqual((await getTrainingSessions()).value, [resolved]);
+  await saveTrainingSession(prepared, productionTrackAdmissionContext);
+  await assert.doesNotReject(() => saveTrainingSession(resolved, productionTrackAdmissionContext));
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, [resolved]);
   assert.equal(resolved.itemOrder[cascaded.targetIndex]?.occurrenceId, prepared.itemOrder[cascaded.targetIndex]?.occurrenceId);
   assert.deepEqual(resolved.conditionalReinsertSlots, remainingSlots);
-  await assert.doesNotReject(() => saveTrainingSession(resolved));
+  await assert.doesNotReject(() => saveTrainingSession(resolved, productionTrackAdmissionContext));
 
   const arbitraryOrder = [...prepared.itemOrder];
   arbitraryOrder[2] = { ...arbitraryOrder[2]!, item: ref("unreserved-change") };
-  await assert.rejects(() => saveTrainingSession({ ...prepared, itemOrder: arbitraryOrder }), /conditional reinsert plan/);
-  await assert.rejects(() => saveTrainingSession({ ...prepared, conditionalReinsertSlots: [first.slot] }), /conditional reinsert plan/);
+  await assert.rejects(() => saveTrainingSession({ ...prepared, itemOrder: arbitraryOrder }, productionTrackAdmissionContext), /conditional reinsert plan/);
+  await assert.rejects(() => saveTrainingSession({ ...prepared, conditionalReinsertSlots: [first.slot] }, productionTrackAdmissionContext), /conditional reinsert plan/);
   await assert.rejects(() => saveTrainingSession({
     ...prepared,
     optionOrderByOccurrence: { ...prepared.optionOrderByOccurrence, [itemOrder[2]!.occurrenceId]: ["b", "a"] },
-  }), /conditional reinsert plan/);
+  }, productionTrackAdmissionContext), /conditional reinsert plan/);
 });
 
 test("terminal sessions are immutable except for identical recovery replay", async () => {
@@ -206,10 +229,10 @@ test("terminal sessions are immutable except for identical recovery replay", asy
     activeForegroundMs: 500,
     completedAt: "2026-01-01T00:01:00.000Z",
   });
-  await saveTrainingSession(completed);
-  await assert.doesNotReject(() => saveTrainingSession(completed));
-  await assert.rejects(() => saveTrainingSession({ ...completed, activeForegroundMs: 501 }), /immutable/);
-  await assert.rejects(() => saveTrainingSession({ ...completed, completedAt: "2026-01-01T00:02:00.000Z" }), /immutable/);
+  await saveTrainingSession(completed, productionTrackAdmissionContext);
+  await assert.doesNotReject(() => saveTrainingSession(completed, productionTrackAdmissionContext));
+  await assert.rejects(() => saveTrainingSession({ ...completed, activeForegroundMs: 501 }, productionTrackAdmissionContext), /immutable/);
+  await assert.rejects(() => saveTrainingSession({ ...completed, completedAt: "2026-01-01T00:02:00.000Z" }, productionTrackAdmissionContext), /immutable/);
 });
 
 test("strict guards accept resolved identities and reject mismatches, tombstones, and legacy identity fields", () => {
@@ -229,12 +252,12 @@ test("strict guards accept resolved identities and reject mismatches, tombstones
     persistent: true,
   };
 
-  assert.equal(isTrainingSession(canonicalSession), true);
-  assert.equal(isTrainingSession({ ...canonicalSession, artifactSha256: ARTIFACT_SHA256.toUpperCase() }), false);
-  assert.equal(isTrainingAttempt(canonicalAttempt), true);
-  assert.equal(isTrainingAttempt({ ...canonicalAttempt, item: ref("i", { contentVersion: "other" }) }), false);
-  assert.equal(isReviewQueueEntry(canonicalReview), true);
-  assert.equal(isReviewQueueEntry({ ...canonicalReview, sourceItem: { ...canonicalReview.sourceItem, artifactSha256: "b".repeat(64) } }), true);
+  assert.equal(isTrainingSession(canonicalSession, productionTrackAdmissionContext), true);
+  assert.equal(isTrainingSession({ ...canonicalSession, artifactSha256: ARTIFACT_SHA256.toUpperCase() }, productionTrackAdmissionContext), false);
+  assert.equal(isTrainingAttempt(canonicalAttempt, productionTrackAdmissionContext), true);
+  assert.equal(isTrainingAttempt({ ...canonicalAttempt, item: ref("i", { contentVersion: "other" }) }, productionTrackAdmissionContext), false);
+  assert.equal(isReviewQueueEntry(canonicalReview, productionTrackAdmissionContext), true);
+  assert.equal(isReviewQueueEntry({ ...canonicalReview, sourceItem: { ...canonicalReview.sourceItem, artifactSha256: "b".repeat(64) } }, productionTrackAdmissionContext), true);
   assert.equal(isReviewQueueEntry({
     ...canonicalReview,
     sourceItem: {
@@ -245,7 +268,7 @@ test("strict guards accept resolved identities and reject mismatches, tombstones
       reason: "unknown_artifact_hash",
       reviewId: canonicalReview.id,
     },
-  }), false);
+  }, productionTrackAdmissionContext), false);
 
   const legacyRef = {
     trackId: TRACK_ID,
@@ -258,9 +281,9 @@ test("strict guards accept resolved identities and reject mismatches, tombstones
     artifactSha256: undefined,
     packagePin: legacyRef.packagePin,
     itemOrder: [{ occurrenceId: "occurrence-1", item: legacyRef }],
-  }), false);
-  assert.equal(isTrainingAttempt({ ...canonicalAttempt, item: legacyRef }), false);
-  assert.equal(isReviewQueueEntry({ ...canonicalReview, sourceItem: legacyRef }), false);
+  }, productionTrackAdmissionContext), false);
+  assert.equal(isTrainingAttempt({ ...canonicalAttempt, item: legacyRef }, productionTrackAdmissionContext), false);
+  assert.equal(isReviewQueueEntry({ ...canonicalReview, sourceItem: legacyRef }, productionTrackAdmissionContext), false);
 });
 
 test("strict session reads reject a legacy-shaped stored record without inference", async () => {
@@ -280,7 +303,7 @@ test("strict session reads reject a legacy-shaped stored record without inferenc
   writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [canonical.id]);
   writeCanonicalJson(STORAGE_KEYS.trainingSession(canonical.id), legacyRecord);
 
-  await assert.rejects(() => getTrainingSessions(), UnsupportedStoredRecordError);
+  await assert.rejects(() => getTrainingSessions(productionTrackAdmissionContext), UnsupportedStoredRecordError);
 });
 
 test("canonical repository bootstrap reports the exact six steps in order", async () => {

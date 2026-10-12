@@ -5,7 +5,7 @@ import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { abandonTrainingSession, createTrainingSession, type ReviewQueueEntry, type TrainingSession } from "../../domain";
 import { createResolvedContentRef } from "../../domain";
-import { canonicalFingerprintPayload } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalFingerprintPayload } from "../../domain/identity/canonicalSerialization";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { commitTrainingOutcome, commitTrainingSessionStart, commitSessionAbandonment, recoverPendingMutation } from "../learningMutations";
@@ -15,6 +15,9 @@ import { applyRemoteAccountData, buildAccountDataSnapshot } from "../../storage/
 import { provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { STORAGE_KEYS } from "../../storage/keys";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const STARTED_AT = "2026-10-01T12:00:00.000Z";
@@ -26,12 +29,12 @@ async function submit(runtime: CanonicalTrainingRuntime, input: Readonly<{ sessi
   const track = catalog.getTrack(TRACK_ID);
   const mode = input.review ? track.getMode("coding-interview-weak-area-review") : track.getMode("coding-interview-learn-approach");
   const reviews = input.review ? [input.review] : [];
-  const prepared = await runtime.prepare({ trackId: TRACK_ID, modeId: mode.modeId, request: { sessionId: input.sessionId, requestedLength: mode.requestedLengths[0]!, ...(input.review ? { reviewSource: input.reviewSource ?? "due_queue" } : {}) }, attempts: (await getTrainingAttempts()).value, reviews, now: input.at });
+  const prepared = await runtime.prepare({ trackId: TRACK_ID, modeId: mode.modeId, request: { sessionId: input.sessionId, requestedLength: mode.requestedLengths[0]!, ...(input.review ? { reviewSource: input.reviewSource ?? "due_queue" } : {}) }, attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value, reviews, now: input.at });
   const occurrence = prepared.session.itemOrder[0]!;
   const question = track.getQuestion(occurrence.item.questionId)!;
   assert.equal(input.review ? occurrence.reviewSourceSnapshot?.reviewEntryId : undefined, input.review?.id, "due work must be admitted with an exact runtime-generated source snapshot");
   await commitTrainingSessionStart({ session: prepared.session, draft: null, createdAt: input.at });
-  const outcome = await runtime.submitPractice({ session: prepared.session, response: input.response ?? (input.incorrect ? wrongResponse(question) : question.answer), attempts: (await getTrainingAttempts()).value, reviews, now: input.at });
+  const outcome = await runtime.submitPractice({ session: prepared.session, response: input.response ?? (input.incorrect ? wrongResponse(question) : question.answer), attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value, reviews, now: input.at });
   const reviewMutations = outcome.reviewMutations;
   const command = () => commitTrainingOutcome({
     attempt: outcome.attempt,
@@ -48,7 +51,7 @@ async function submit(runtime: CanonicalTrainingRuntime, input: Readonly<{ sessi
     installStorageFailure({ kind: "fail_on_key_write", key: STORAGE_KEYS.reviewEntry(reviewId) });
     await assert.rejects(command(), (error: unknown) => error instanceof MutationCommitFailure && error.phase === "materialization" && error.durableState === "journal_durable");
     installStorageFailure(null);
-    assert.notEqual(await getActiveMutationJournal(), null);
+    assert.notEqual(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
     await recoverPendingMutation();
     await recoverPendingMutation();
   } else {
@@ -104,7 +107,7 @@ test("canonical repair and retention cycles use due snapshots, canonical answer 
 
   const initial = await submit(runtime, { sessionId: "cycle-error", at: STARTED_AT, incorrect: true });
   assert.equal(initial.outcome.attempt.answeredAt, STARTED_AT);
-  let entries = (await getReviewQueueItems()).value;
+  let entries = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.equal(entries.length, 1);
   assert.deepEqual([entries[0]!.stage, entries[0]!.status, entries[0]!.dueAt], ["repair24", "active", "2026-10-02T12:00:00.000Z"]);
   const cycleId = entries[0]!.id;
@@ -123,7 +126,7 @@ test("canonical repair and retention cycles use due snapshots, canonical answer 
       source: "due_queue", reviewEntryId: previous.id, sourceAttemptId: previous.sourceAttemptId, dueAt: previous.dueAt,
       policyVersion: previous.policyVersion ?? "legacy-unqualified", stage: previous.stage ?? "legacy_active_unqualified",
     });
-    entries = (await getReviewQueueItems()).value;
+    entries = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
     assert.equal(entries.length, 1);
     previous = entries[0]!;
     assert.equal(previous.id, cycleId);
@@ -132,20 +135,20 @@ test("canonical repair and retention cycles use due snapshots, canonical answer 
 
   const pastDue = await runtime.queryReview({ trackId: TRACK_ID, reviews: entries, now: "2026-12-20T12:00:00.000Z" }) as { due: readonly ReviewQueueEntry[] };
   assert.deepEqual(pastDue.due.map((entry) => entry.id), [cycleId], "the elapsed retention28 deadline makes work due but does not complete it");
-  assert.deepEqual((await getReviewQueueItems()).value, entries, "reading after the due instant does not mutate or complete the active cycle");
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, entries, "reading after the due instant does not mutate or complete the active cycle");
 
   const terminal = await submit(runtime, { sessionId: "cycle-terminal", at: "2026-11-20T12:00:00.000Z", review: previous, interrupt: true });
   assert.equal(terminal.outcome.attempt.result.kind, "correct");
-  entries = (await getReviewQueueItems()).value;
+  entries = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.equal(entries.length, 1, "terminal cycle remains as history");
   assert.deepEqual([entries[0]!.id, entries[0]!.status, entries[0]!.stage, entries[0]!.dueAt, entries[0]!.completedAt, entries[0]!.completedByAttemptId], [cycleId, "completed", "retention28", undefined, "2026-11-20T12:00:00.000Z", terminal.outcome.attempt.id]);
-  assert.equal((await getTrainingAttempts()).value.length, 5, "journal recovery contributes each canonical answer exactly once");
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 5, "journal recovery contributes each canonical answer exactly once");
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 
-  const [completed] = (await getReviewQueueItems()).value;
+  const [completed] = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   const ordinaryCorrect = await submit(runtime, { sessionId: "cycle-after-terminal-correct", at: "2026-11-21T12:00:00.000Z" });
   assert.equal(ordinaryCorrect.outcome.attempt.result.kind, "correct");
-  assert.deepEqual((await getReviewQueueItems()).value.find((entry) => entry.id === cycleId), completed, "ordinary correct practice cannot revive or rewrite terminal history");
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value.find((entry) => entry.id === cycleId), completed, "ordinary correct practice cannot revive or rewrite terminal history");
 
   const newError = await submit(runtime, { sessionId: "cycle-after-terminal-error", at: "2026-11-22T12:00:00.000Z", incorrect: true });
   const newRepair = newError.reviewMutations.find((mutation) => mutation.kind === "upsert")?.entry;
@@ -153,7 +156,7 @@ test("canonical repair and retention cycles use due snapshots, canonical answer 
   assert.equal(newRepair.status, "active");
   assert.equal(newRepair.stage, "repair24");
   assert.notEqual(newRepair.id, cycleId);
-  const afterNewError = (await getReviewQueueItems()).value;
+  const afterNewError = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.deepEqual(afterNewError.find((entry) => entry.id === cycleId), completed, "the old terminal record remains immutable beside the new repair");
   assert.deepEqual(afterNewError.find((entry) => entry.id === newRepair.id), newRepair);
   setFailure = undefined;
@@ -165,16 +168,16 @@ test("twenty ordinary correct submissions leave an unrelated active error cycle 
   const track = catalog.getTrack(TRACK_ID);
   const runtime = new CanonicalTrainingRuntime(track);
   await submit(runtime, { sessionId: "ordinary-matrix-error", at: STARTED_AT, incorrect: true });
-  const [errorCycle] = (await getReviewQueueItems()).value;
+  const [errorCycle] = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.ok(errorCycle);
 
   const mode = track.getMode("coding-interview-learn-approach");
   assert.ok(mode.requestedLengths.includes(10), "the real normal mode supports ten-item sessions");
-  let priorAttempts = (await getTrainingAttempts()).value;
+  let priorAttempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
   let completed = 0;
   for (let batch = 0; batch < 2; batch += 1) {
     const createdAt = new Date(Date.parse("2026-10-02T12:00:00.000Z") + batch * 60_000).toISOString();
-    const currentReviews = (await getReviewQueueItems()).value;
+    const currentReviews = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
     const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: `ordinary-matrix-${batch}`, requestedLength: 10 }, attempts: priorAttempts, reviews: currentReviews, now: createdAt });
     assert.equal(prepared.session.actualLength, 10);
     await commitTrainingSessionStart({ session: prepared.session, draft: null, createdAt });
@@ -189,7 +192,7 @@ test("twenty ordinary correct submissions leave an unrelated active error cycle 
       assert.ok(occurrence);
       const question = track.getQuestion(occurrence.item.questionId)!;
       const answerAt = new Date(Date.parse(createdAt) + index * 1_000).toISOString();
-      const reviews = (await getReviewQueueItems()).value;
+      const reviews = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
       const outcome = await runtime.submitPractice({ session: indexedSession, response: question.answer, attempts: priorAttempts, reviews, now: answerAt });
       assert.equal(outcome.attempt.result.kind, "correct");
       const writes = outcome.reviewMutations.filter((mutation) => mutation.kind === "upsert").map((mutation) => mutation.entry);
@@ -198,14 +201,14 @@ test("twenty ordinary correct submissions leave an unrelated active error cycle 
       priorAttempts = [...priorAttempts, outcome.attempt];
       session = outcome.session;
       completed += 1;
-      const currentCycle: ReviewQueueEntry | undefined = (await getReviewQueueItems()).value.find((entry) => entry.id === errorCycle.id);
+      const currentCycle: ReviewQueueEntry | undefined = (await getReviewQueueItems(productionTrackAdmissionContext)).value.find((entry) => entry.id === errorCycle.id);
       assert.deepEqual(currentCycle, errorCycle, `ordinary correct #${completed} cannot change the active error deadline, reason, or count`);
     }
     const finishedAt = new Date(Date.parse(createdAt) + 20_000).toISOString();
     await commitSessionAbandonment(abandonTrainingSession(session, finishedAt), finishedAt);
   }
   assert.equal(completed, 20);
-  assert.equal((await getTrainingAttempts()).value.filter((attempt) => ["ordinary-matrix-0", "ordinary-matrix-1"].includes(attempt.sessionId)).length, 20);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.filter((attempt) => ["ordinary-matrix-0", "ordinary-matrix-1"].includes(attempt.sessionId)).length, 20);
 });
 
 test("incorrect or partial due answers at every retention stage restart the same need at repair24", async () => {
@@ -226,13 +229,13 @@ test("incorrect or partial due answers at every retention stage restart the same
         sourceItem, taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], dueAt: STARTED_AT, createdAt: STARTED_AT,
         consecutiveAfterDueSuccesses: 0, persistent: false, policyVersion: "bizq04-v1", stage, status: "active",
       };
-      await addReviewQueueItems([prior]);
+      await addReviewQueueItems([prior], productionTrackAdmissionContext);
       const result = await submit(runtime, {
         sessionId: `stage-reset:${stage}:${outcomeKind}`, at: STARTED_AT, review: prior,
         ...(outcomeKind === "incorrect" ? { incorrect: true } : { response: partial }),
       });
       assert.equal(result.outcome.attempt.result.kind, outcomeKind, `${stage}/${outcomeKind} fixture must produce the named graded result`);
-      const [updated] = (await getReviewQueueItems()).value;
+      const [updated] = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
       assert.ok(updated);
       assert.equal(updated.id, prior.id, "a new error updates this active cycle rather than creating a duplicate");
       assert.deepEqual([updated.status, updated.stage, updated.dueAt, updated.consecutiveAfterDueSuccesses, updated.persistent, ...updated.reasons], ["active", "repair24", "2026-10-02T12:00:00.000Z", 0, true, outcomeKind]);
@@ -260,12 +263,12 @@ test("answers to a future manual request cannot earn early due credit when journ
       sourceItem, taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval", "manual_mark"], dueAt, createdAt: STARTED_AT,
       consecutiveAfterDueSuccesses: 0, persistent: false, policyVersion: "bizq04-v1", stage, status: "active", manualRequestId: `manual:${"f".repeat(64)}`,
     };
-    await addReviewQueueItems([prior]);
+    await addReviewQueueItems([prior], productionTrackAdmissionContext);
     const submitted = await submit(runtime, { sessionId: `manual-before-due:${stage}`, at: answerAt, commitAt: journalAt, review: prior, reviewSource: "manual_request" });
     assert.equal(submitted.outcome.attempt.result.kind, "correct");
     assert.ok(Date.parse(submitted.outcome.attempt.answeredAt) < Date.parse(dueAt));
     assert.ok(Date.parse(journalAt) > Date.parse(dueAt));
-    const [updated] = (await getReviewQueueItems()).value;
+    const [updated] = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
     assert.ok(updated);
     assert.equal(updated.id, prior.id);
     assert.deepEqual([updated.reasons, updated.manualRequestId, updated.dueAt, updated.stage, updated.consecutiveAfterDueSuccesses, updated.status], [["scheduled_retrieval"], undefined, dueAt, stage, 0, "active"]);
@@ -286,25 +289,25 @@ test("real completed and new repair cycles survive account snapshot materializat
     sourceItem, taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], dueAt: STARTED_AT, createdAt: STARTED_AT,
     consecutiveAfterDueSuccesses: 0, persistent: false, policyVersion: "bizq04-v1", stage: "retention28", status: "active",
   };
-  await addReviewQueueItems([previous]);
+  await addReviewQueueItems([previous], productionTrackAdmissionContext);
   const terminal = await submit(runtime, { sessionId: "account-materialize-terminal", at: STARTED_AT, review: previous });
   assert.equal(terminal.outcome.reviewMutations[0]?.kind, "upsert");
-  const [completed] = (await getReviewQueueItems()).value;
+  const [completed] = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.ok(completed);
   assert.deepEqual([completed.status, completed.stage, completed.dueAt, completed.completedByAttemptId], ["completed", "retention28", undefined, terminal.outcome.attempt.id]);
 
   await submit(runtime, { sessionId: "account-materialize-new-error", at: "2026-10-02T12:00:00.000Z", incorrect: true });
-  const beforeSync = (await getReviewQueueItems()).value;
+  const beforeSync = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.equal(beforeSync.filter((entry) => entry.status === "completed").length, 1);
   assert.equal(beforeSync.filter((entry) => entry.status === "active" && entry.stage === "repair24").length, 1);
-  const snapshot = await buildAccountDataSnapshot();
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   const reviewRecords = snapshot.records.filter((record) => record.recordType === "review_queue_entry");
   assert.equal(reviewRecords.length, 2);
 
   installMemoryStorage();
   await provisionGuestInstallation({ async create() { return { installationId: "88888888-8888-4888-8888-888888888888", localDatasetId: "99999999-9999-4999-8999-999999999999" }; } });
-  await applyRemoteAccountData(reviewRecords);
-  const afterSync = (await getReviewQueueItems()).value;
+  await applyRemoteAccountData(reviewRecords, productionLearningDataAdmissionContext);
+  const afterSync = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.deepEqual(afterSync, beforeSync);
   assert.equal(afterSync.find((entry) => entry.id === completed.id)?.completedByAttemptId, terminal.outcome.attempt.id);
   assert.equal(afterSync.find((entry) => entry.status === "active")?.stage, "repair24");
@@ -328,7 +331,7 @@ test("a persisted legacy due session keeps its pre-snapshot fingerprint but cann
     consecutiveAfterDueSuccesses: 0,
     persistent: false,
   };
-  await addReviewQueueItems([prior]);
+  await addReviewQueueItems([prior], productionTrackAdmissionContext);
   const prepared = await runtime.prepare({
     trackId: track.trackId,
     modeId: "coding-interview-weak-area-review",
@@ -359,8 +362,8 @@ test("a persisted legacy due session keeps its pre-snapshot fingerprint but cann
     reviewSnapshotConflict: outcome.reviewSnapshotConflict,
     createdAt: STARTED_AT,
   });
-  assert.equal((await getTrainingAttempts()).value.length, 1);
-  assert.deepEqual((await getReviewQueueItems()).value, [prior]);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [prior]);
 });
 
 test("a completed retention28 transition consumes its manual overlay through the real journal and repository", async () => {
@@ -388,14 +391,14 @@ test("a completed retention28 transition consumes its manual overlay through the
     stage: "retention28",
     status: "active",
   };
-  await addReviewQueueItems([prior]);
+  await addReviewQueueItems([prior], productionTrackAdmissionContext);
 
   const finalized = await submit(runtime, { sessionId: "terminal-manual-overlay-due-success", at: dueAt, review: prior, response: question.answer });
   assert.equal(finalized.outcome.attempt.result.kind, "correct");
-  const [completed] = (await getReviewQueueItems()).value;
+  const [completed] = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.ok(completed);
   assert.deepEqual([completed.id, completed.status, completed.stage, completed.dueAt, completed.persistent, completed.consecutiveAfterDueSuccesses, completed.completedByAttemptId], [prior.id, "completed", "retention28", undefined, false, 0, finalized.outcome.attempt.id]);
   assert.deepEqual(completed.reasons, ["scheduled_retrieval"]);
   assert.equal(completed.manualRequestId, undefined);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 });

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../domain/tracks/trackGoalPolicies";
 import test, { beforeEach } from "node:test";
 
 import {
@@ -103,7 +104,7 @@ function fixture(options: { plan?: LearningPlan | null; timezone?: string; permi
 }> {
   let currentPlan = options.plan === undefined ? plan() : options.plan;
   let timezone = options.timezone ?? "Europe/Warsaw";
-  const goal: GoalSnapshot = { record: createDefaultGoal(TRACK_ID), revision: 1 };
+  const goal: GoalSnapshot = { record: createDefaultGoal(requireGoalPolicy(TRACK_ID)), revision: 1 };
   const platform = new PlatformSpy();
   if (options.permission) platform.permission = options.permission;
   const packageResult: LearningPlanReminderPackage = { trackId: TRACK_ID, contentVersion: "content-v1", artifactSha256: ARTIFACT_SHA256 };

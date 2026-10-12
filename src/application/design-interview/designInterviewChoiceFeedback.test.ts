@@ -20,6 +20,8 @@ import type { CanonicalQuestionResponse, Question } from "../../content/canonica
 import { getReviewQueueItems, getTrainingAttempts } from "../../storage/repositories";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const NOW = "2026-10-03T12:00:00.000Z";
 const MODE_ID = "design-interview-learn-framework";
@@ -103,7 +105,7 @@ test("all three actual Design pools deliver exact authored wrong-option feedback
       }
 
       await submitDesignInterviewPracticeResponse(response);
-      const attempts = (await getTrainingAttempts()).value;
+      const attempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
       assert.equal(attempts.length, 1);
       assert.equal(attempts[0]?.sessionId, sessionId);
       assert.deepEqual(attempts[0]?.response, response);
@@ -145,8 +147,8 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
     const projection = await getDesignInterviewPracticeProjection();
     assert.equal(projection.feedback, null);
     assert.equal(projection.response, null);
-    assert.equal((await getTrainingAttempts()).value.length, 0);
-    assert.equal((await getReviewQueueItems()).value.length, 0);
+    assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 0);
+    assert.equal((await getReviewQueueItems(productionTrackAdmissionContext)).value.length, 0);
     assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
     const failedOperation = await getTrainingLifecycleUseCases().getPracticeOperationState(session, false);
     assert.equal("error" in failedOperation ? failedOperation.error.allowedAction : null, "retry_same_command");
@@ -154,7 +156,7 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
     const retried = await getDesignInterviewPracticeProjection();
     assert.deepEqual(retried.response, { source: "materialized", value: response });
     assert.deepEqual(retried.feedback?.messages, projectCanonicalChoiceFeedbackMessages(question, response) ?? []);
-    assert.equal((await getTrainingAttempts()).value.length, 1);
+    assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
   }
 
   {
@@ -169,8 +171,8 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
     const pending = await getDesignInterviewPracticeProjection();
     assert.equal(pending.feedback, null, "durable journal response cannot reveal authored feedback before materialization");
     assert.equal(pending.response?.source, "committed");
-    assert.equal((await getTrainingAttempts()).value.length, 0);
-    assert.equal((await getReviewQueueItems()).value.length, 0);
+    assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 0);
+    assert.equal((await getReviewQueueItems(productionTrackAdmissionContext)).value.length, 0);
     assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true);
 
     await getTrainingLifecycleUseCases().recoverActiveTrainingOperation();
@@ -179,7 +181,7 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
     assert.deepEqual(recovered.feedback?.messages, expected);
     assert.deepEqual(recovered.feedback?.controls, projectCanonicalChoiceFeedbackControls(recovered.question, response));
     assert.equal(Object.isFrozen(recovered.feedback?.messages), true);
-    assert.equal((await getTrainingAttempts()).value.length, 1);
+    assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
     assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
   }
 });

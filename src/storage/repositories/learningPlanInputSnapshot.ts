@@ -1,4 +1,5 @@
 import type { GoalSnapshot, ReviewQueueEntry, TrackId, TrainingAttempt, TrainingSession } from "../../domain";
+import { isGoalPolicyForTrack, type GoalPolicy } from "../../domain/goals/goalPolicy";
 import { getKeyValueStorage, isProfileTransitionActive } from "../../infrastructure/storage/mmkvClient";
 import { readActiveTrackId } from "./activeTrackRepository";
 import { isGoalOnboardingDismissed } from "./goalOnboardingPreferenceRepository";
@@ -6,9 +7,10 @@ import { readActiveTrainingSession, readTrainingSessions } from "./trainingSessi
 import { readTrainingSessionResult } from "./trainingSessionResultRepository";
 import { readGoalSnapshot } from "./goalRepository";
 import { getLearningPlanSnapshot, type LearningPlanSnapshot } from "./learningPlanRepository";
-import { readActiveMutationJournal } from "./mutationJournalRepository";
+import { hasPendingMutationJournal } from "./mutationJournalRepository";
 import { readReviewQueueItems } from "./reviewQueueRepository";
 import { readTrainingAttempts } from "./trainingAttemptRepository";
+import type { TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 
 export type LearningPlanInputSnapshot = Readonly<{
   storageScope: object;
@@ -28,15 +30,16 @@ export function readLearningPlanStorageScope(): object {
 }
 
 /** No await between validated canonical reads; journaled materialization is not an empty history. */
-export function readLearningPlanInputSnapshot(trackId: TrackId | null): LearningPlanInputSnapshot {
+export function readLearningPlanInputSnapshot(trackId: TrackId | null, policy: GoalPolicy | null, admission: TrackAdmissionContext): LearningPlanInputSnapshot {
+  if ((trackId === null) !== (policy === null) || (trackId !== null && policy !== null && !isGoalPolicyForTrack(policy, trackId))) throw new Error("A matching goal policy is required for the selected track.");
   const storageScope = readLearningPlanStorageScope();
-  if (readActiveMutationJournal()) throw new Error("Learning plan evidence is being materialized.");
-  const goal = trackId === null ? null : readGoalSnapshot(trackId);
-  const plan = trackId === null ? null : getLearningPlanSnapshot(trackId);
-  const attempts = readTrainingAttempts();
-  const reviews = readReviewQueueItems();
-  const sessions = readTrainingSessions();
-  const activeSession = readActiveTrainingSession();
+  if (hasPendingMutationJournal()) throw new Error("Learning plan evidence is being materialized.");
+  const goal = trackId === null ? null : readGoalSnapshot(trackId, policy!);
+  const plan = trackId === null ? null : getLearningPlanSnapshot(trackId, policy!);
+  const attempts = readTrainingAttempts(admission);
+  const reviews = readReviewQueueItems(admission);
+  const sessions = readTrainingSessions(admission);
+  const activeSession = readActiveTrainingSession(admission);
   if (attempts.issues?.length || reviews.issues?.length) throw new Error("Learning plan evidence could not be read.");
   if (sessions.issues?.length) throw new Error("Learning plan session evidence could not be read.");
   const indexedActive = sessions.value.filter((session) => session.status === "active");
@@ -49,16 +52,16 @@ export function readLearningPlanInputSnapshot(trackId: TrackId | null): Learning
 }
 
 /** Validated persistent sources used by the full Home shell; no await or raw projection cache. */
-export function readHomeShellInputSnapshot(trackId: TrackId | null) {
-  const { storageScope, ...learningInputs } = readLearningPlanInputSnapshot(trackId);
+export function readHomeShellInputSnapshot(trackId: TrackId | null, policy: GoalPolicy | null, admission: TrackAdmissionContext) {
+  const { storageScope, ...learningInputs } = readLearningPlanInputSnapshot(trackId, policy, admission);
   if (readActiveTrackId() !== trackId) throw new Error("Home selected track changed.");
-  const sessions = readTrainingSessions();
+  const sessions = readTrainingSessions(admission);
   if (sessions.issues?.length) throw new Error("Home session evidence could not be read.");
-  const activeSession = readActiveTrainingSession();
+  const activeSession = readActiveTrainingSession(admission);
   // Only result facts read by Home Activity belong to this boundary.
   const results = sessions.value.filter(session => session.status !== "active" &&
     (session.status === "completed" || learningInputs.attempts.some(attempt => attempt.sessionId === session.id)))
-    .map(session => ({ sessionId: session.id, result: readTrainingSessionResult(session.id) }));
+    .map(session => ({ sessionId: session.id, result: readTrainingSessionResult(session.id, admission) }));
   let goalOnboardingDismissed = true;
   if (trackId !== null) {
     try { goalOnboardingDismissed = isGoalOnboardingDismissed(trackId); }

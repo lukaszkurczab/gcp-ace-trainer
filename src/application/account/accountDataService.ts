@@ -11,36 +11,36 @@ import type {
 } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import {
   accountDataRecordKey,
-  applyRemoteAccountData,
-  assertValidAccountDataRecords,
-  buildAccountDataSnapshot,
+  applyRemoteAccountData as applyRemoteAccountDataWithPolicy,
+  assertValidAccountDataRecords as assertValidAccountDataRecordsWithPolicy,
+  buildAccountDataSnapshot as buildAccountDataSnapshotWithPolicy,
   buildGuestOwnedLocalDataBackup,
   clearAccountDeletionOwnedLocalData,
   clearGuestOwnedLocalData,
   createConflictResolutionOutboxEntry,
-  rebuildConflictResolutionSyncPlan,
-  ensureAccountOutboxFromLocalDataset,
-  completeLearningPlanRecovery,
-  finishAccountMaterialization,
-  getAccountSyncState,
-  readAccountSyncStateEnvelope,
-  parseGoalCloudState,
+  rebuildConflictResolutionSyncPlan as rebuildConflictResolutionSyncPlanWithPolicy,
+  ensureAccountOutboxFromLocalDataset as ensureAccountOutboxFromLocalDatasetWithPolicy,
+  completeLearningPlanRecovery as completeLearningPlanRecoveryWithPolicy,
+  finishAccountMaterialization as finishAccountMaterializationWithPolicy,
+  getAccountSyncState as getAccountSyncStateWithPolicy,
+  readAccountSyncStateEnvelope as readAccountSyncStateEnvelopeWithPolicy,
+  parseGoalCloudState as parseGoalCloudStateWithPolicy,
   parseLearningPlanCloudState,
   isDeletedAccountDataRecord,
-  markAccountDataPending,
-  markAccountResetPending,
-  markAccountResetRemoteRestorePending,
-  markAccountMaterializationPending,
-  markGuestDiscardMaterializationApplying,
-  markGuestDiscardMaterializationPending,
-  partitionRemoteAccountDataForRecovery,
-  recordAccountMutationAcknowledgements,
-  reserveLearningPlanRecoveryAttempt,
+  markAccountDataPending as markAccountDataPendingWithPolicy,
+  markAccountResetPending as markAccountResetPendingWithPolicy,
+  markAccountResetRemoteRestorePending as markAccountResetRemoteRestorePendingWithPolicy,
+  markAccountMaterializationPending as markAccountMaterializationPendingWithPolicy,
+  markGuestDiscardMaterializationApplying as markGuestDiscardMaterializationApplyingWithPolicy,
+  markGuestDiscardMaterializationPending as markGuestDiscardMaterializationPendingWithPolicy,
+  partitionRemoteAccountDataForRecovery as partitionRemoteAccountDataForRecoveryWithPolicy,
+  recordAccountMutationAcknowledgements as recordAccountMutationAcknowledgementsWithPolicy,
+  reserveLearningPlanRecoveryAttempt as reserveLearningPlanRecoveryAttemptWithPolicy,
   dismissLearningPlanRecovery as dismissPersistedLearningPlanRecovery,
   restoreGuestOwnedLocalDataBackup,
-  saveAccountSyncState,
-  saveGuestAdoptionChoice,
-  splitAccountSyncBatches,
+  saveAccountSyncState as saveAccountSyncStateWithPolicy,
+  saveGuestAdoptionChoice as saveGuestAdoptionChoiceWithPolicy,
+  splitAccountSyncBatches as splitAccountSyncBatchesWithPolicy,
   type AccountDataRecord,
   type AccountOutboxEntry,
   type AccountSyncPlanItem,
@@ -62,10 +62,10 @@ import {
   updateAccountDeletionState,
 } from "../../storage/repositories/accountLifecycleRepository";
 import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInstallation, markGuestInstallationAdoptionPending } from "../../storage/repositories/guestInstallationRepository";
-import { getActiveMutationJournal } from "../../storage/repositories/mutationJournalRepository";
+import { hasPendingMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 import { commitLearningStateReset, preflightLearningStateReset, LearningStateResetPreflightError } from "../learningMutations";
@@ -80,12 +80,40 @@ import { getActiveTrainingSession } from "../../storage/repositories/trainingSes
 import { normalizeGoalRecord } from "../../domain/goals/goalContracts";
 import { normalizeLearningPlan } from "../../domain";
 import type { GoalRecord, LearningPlan } from "../../domain";
-import { isGoalRecordShapeForTrack } from "../../domain/goals/goalContracts";
+import { isGoalRecordForPolicy } from "../../domain/goals/goalContracts";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
 import { isLearningPlanV1ForTrack } from "../../domain";
 import { readCanonicalEnvelope, type CanonicalRecordEnvelope } from "../../storage/repositories/canonicalRecordCodec";
 import { STORAGE_KEYS } from "../../storage/keys";
 import type { AccountSyncConflictResolutionRecord } from "../../storage/repositories/mutationJournalRepository";
 import { isRegisteredTrackId } from "../../domain";
+
+// The application owner binds the canonical product policy once and passes it
+// explicitly into persistence. Repository validation never discovers policy.
+const getAccountSyncState = () => getAccountSyncStateWithPolicy(productionLearningDataAdmissionContext);
+const readAccountSyncStateEnvelope = () => readAccountSyncStateEnvelopeWithPolicy(productionLearningDataAdmissionContext);
+const saveAccountSyncState = (state: AccountSyncState, expectedRevision?: number | null) => saveAccountSyncStateWithPolicy(state, productionLearningDataAdmissionContext, expectedRevision);
+const saveGuestAdoptionChoice = (choice: "transfer" | "discard") => saveGuestAdoptionChoiceWithPolicy(choice, productionLearningDataAdmissionContext);
+const buildAccountDataSnapshot = () => buildAccountDataSnapshotWithPolicy(productionLearningDataAdmissionContext);
+const ensureAccountOutboxFromLocalDataset = () => ensureAccountOutboxFromLocalDatasetWithPolicy(productionLearningDataAdmissionContext);
+const markAccountDataPending = () => markAccountDataPendingWithPolicy(productionLearningDataAdmissionContext);
+const markAccountResetPending = (accountId: string, operationId: string, createdAt: string) => markAccountResetPendingWithPolicy(accountId, operationId, createdAt, productionLearningDataAdmissionContext);
+const markAccountResetRemoteRestorePending = (accountId: string, operationId: string) => markAccountResetRemoteRestorePendingWithPolicy(accountId, operationId, productionLearningDataAdmissionContext);
+const markAccountMaterializationPending = (operationId: string, previewFingerprint: string, accountId: string) => markAccountMaterializationPendingWithPolicy(operationId, previewFingerprint, accountId, productionLearningDataAdmissionContext);
+const markGuestDiscardMaterializationPending = (accountId: string, installationId: string, backup: Parameters<typeof markGuestDiscardMaterializationPendingWithPolicy>[2]) => markGuestDiscardMaterializationPendingWithPolicy(accountId, installationId, backup, productionLearningDataAdmissionContext);
+const markGuestDiscardMaterializationApplying = (accountId: string) => markGuestDiscardMaterializationApplyingWithPolicy(accountId, productionLearningDataAdmissionContext);
+const applyRemoteAccountData = (records: readonly AccountDataRecord[], options?: Readonly<{ preserveLocalContext?: boolean }>) => applyRemoteAccountDataWithPolicy(records, productionLearningDataAdmissionContext, options);
+const finishAccountMaterialization = (records: readonly AccountDataRecord[], accountId: string, remoteRevision: number, syncedAt: string, recovery?: LearningPlanRecoveryIncident | null) => finishAccountMaterializationWithPolicy(records, accountId, remoteRevision, syncedAt, productionLearningDataAdmissionContext, recovery);
+function assertValidAccountDataRecords(records: unknown): asserts records is readonly AccountDataRecord[] { assertValidAccountDataRecordsWithPolicy(records, productionLearningDataAdmissionContext); }
+const partitionRemoteAccountDataForRecovery = (input: Parameters<typeof partitionRemoteAccountDataForRecoveryWithPolicy>[0]) => partitionRemoteAccountDataForRecoveryWithPolicy(input, productionLearningDataAdmissionContext);
+const recordAccountMutationAcknowledgements = (input: Parameters<typeof recordAccountMutationAcknowledgementsWithPolicy>[0]) => recordAccountMutationAcknowledgementsWithPolicy(input, productionLearningDataAdmissionContext);
+const reserveLearningPlanRecoveryAttempt = (accountId: string, incidentId: string, now: Date) => reserveLearningPlanRecoveryAttemptWithPolicy(accountId, incidentId, now, nextLearningPlanRecoveryRetryAt, isLearningPlanRecoveryRetryDue, productionLearningDataAdmissionContext);
+const completeLearningPlanRecovery = (accountId: string, incidentId: string, record: AccountDataRecord) => completeLearningPlanRecoveryWithPolicy(accountId, incidentId, record, productionLearningDataAdmissionContext);
+const splitAccountSyncBatches = (input: Parameters<typeof splitAccountSyncBatchesWithPolicy>[0]) => splitAccountSyncBatchesWithPolicy(input, productionLearningDataAdmissionContext);
+const rebuildConflictResolutionSyncPlan = (input: Parameters<typeof rebuildConflictResolutionSyncPlanWithPolicy>[0]) => rebuildConflictResolutionSyncPlanWithPolicy(input, productionLearningDataAdmissionContext);
+const parseGoalCloudState = (value: Parameters<typeof parseGoalCloudStateWithPolicy>[0], track: string) => parseGoalCloudStateWithPolicy(value, track, requireGoalPolicy);
+const dismissLearningPlanRecovery = (accountId: string, incidentId: string) => dismissPersistedLearningPlanRecovery(accountId, incidentId, productionLearningDataAdmissionContext);
 
 export { accountDataRecordFingerprint } from "../../storage/repositories/accountDataRepository";
 export { clearAccountDeletionOwnedLocalData } from "../../storage/repositories/accountDataRepository";
@@ -124,7 +152,7 @@ export type AccountSyncConflictPreview = Readonly<{
 export { saveGuestAdoptionChoice };
 
 export function dismissAccountLearningPlanRecovery(accountId: string, incidentId: string): void {
-  dismissPersistedLearningPlanRecovery(accountId, incidentId);
+  dismissPersistedLearningPlanRecovery(accountId, incidentId, productionLearningDataAdmissionContext);
 }
 
 export type AccountDeletionResult = Readonly<{ ok: true; proofId: string } | { ok: false; failure: "journalRecoveryFailure" | "pendingSyncRequiresNetwork" | "conflict" | "remoteDeletionPending" | "localCleanupFailure" | "reauthenticationRequired" }>;
@@ -633,7 +661,7 @@ export function retryLearningPlanRecovery(api: PatternlyApiClient, accountId: st
     const before = await getAccountSyncState();
     const incident = before.learningPlanRecovery;
     if (!installation || installation.accountId !== accountId || before.accountId !== accountId || !incident || incident.accountId !== accountId) return null;
-    const reserved = reserveLearningPlanRecoveryAttempt(accountId, incident.incidentId, now, nextLearningPlanRecoveryRetryAt, isLearningPlanRecoveryRetryDue);
+    const reserved = reserveLearningPlanRecoveryAttempt(accountId, incident.incidentId, now);
     if (!reserved) return null;
     try {
       const remote = await api.getProgress();
@@ -704,7 +732,7 @@ function materializationTargetAccountId(state: AccountSyncState): string | null 
 
 async function assertMaterializationGuards(accountId: string): Promise<void> {
   await assertMaterializationTarget(accountId);
-  if (await getActiveMutationJournal()) throw new AccountDataFailure("journal_recovery_required");
+  if (hasPendingMutationJournal()) throw new AccountDataFailure("journal_recovery_required");
 }
 
 /**
@@ -895,7 +923,7 @@ async function readVerifiedDeletionStatus(api: PatternlyApiClient, pending: NonN
 }
 
 async function assertDeletionCleanupGuards(accountId: string): Promise<void> {
-  if (await getActiveMutationJournal()) throw new AccountDataFailure("journal_recovery_required");
+  if (hasPendingMutationJournal()) throw new AccountDataFailure("journal_recovery_required");
   const installation = await getGuestInstallation();
   if (!installation) throw new AccountDataFailure("guest_installation_required");
   if (installation.accountId !== null && installation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
@@ -928,7 +956,7 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
     // Existing remote markers already represent an authorized/requested
     // operation. A new deletion marker is created only after all preflight
     // checks and synchronization have completed.
-    if (await getActiveMutationJournal()) return { ok: false, failure: "journalRecoveryFailure" };
+    if (hasPendingMutationJournal()) return { ok: false, failure: "journalRecoveryFailure" };
     const installation = await getGuestInstallation();
     const existingRemoteMarker = pending !== null && isResumableDeletionState(pending);
     if (!existingRemoteMarker && (!installation || installation.accountId !== accountId)) throw new AccountDataFailure("account_binding_mismatch");
@@ -1505,8 +1533,9 @@ export function resolveAccountSyncConflict(input: Readonly<{
       if (!analysis.changedPairTrackIds.includes(input.trackId!)) throw new AccountDataFailure("account_sync_conflict_stale");
       if (analysis.changedOtherRecordCount > 0) throw new AccountDataFailure("account_sync_conflict_unsupported_changes");
       const pair = await resolvePairForChoice({ state, snapshot, remoteRecords, remoteAccountRevision: remote.accountRevision, accountId: input.accountId, trackId: input.trackId!, resolution });
-      const goalSnapshot = await getGoalSnapshot(input.trackId!);
-      const planSnapshot = getLearningPlanSnapshot(input.trackId!);
+      const policy = requireGoalPolicy(input.trackId!);
+      const goalSnapshot = await getGoalSnapshot(input.trackId!, policy);
+      const planSnapshot = getLearningPlanSnapshot(input.trackId!, policy);
       const afterState = stateAfterPairChoice({ state, snapshot, accountId: input.accountId, trackId: input.trackId!, remoteRecords, remoteAccountRevision: remote.accountRevision, pair, resolution });
       const record: AccountSyncConflictResolutionRecord = Object.freeze({
         conflictId: input.conflictId,
@@ -1558,8 +1587,7 @@ async function validateConflictReadContext(context: ConflictReadContext): Promis
     || binding.kind !== "verified" || binding.binding.accountId !== context.accountId || binding.binding.profileId !== context.profileId) {
     throw new AccountDataFailure("account_sync_conflict_stale");
   }
-  const activeJournal = await getActiveMutationJournal();
-  if (activeJournal) throw new AccountDataFailure("journal_recovery_required");
+  if (hasPendingMutationJournal()) throw new AccountDataFailure("journal_recovery_required");
   const snapshot = await buildAccountDataSnapshot();
   const state = await getAccountSyncState();
   const syncEnvelope = readAccountSyncStateEnvelope();
@@ -1605,8 +1633,9 @@ type ResolvedConflictPair = Readonly<{ afterGoal: GoalRecord | null; afterPlan: 
 async function resolvePairForChoice(input: Readonly<{
   state: AccountSyncState; snapshot: AccountDataSnapshot; remoteRecords: readonly AccountDataRecord[]; remoteAccountRevision: number; accountId: string; trackId: TrackId; resolution: "keep_local" | "keep_account";
 }>): Promise<ResolvedConflictPair> {
-  const goal = await getGoalSnapshot(input.trackId);
-  const plan = getLearningPlanSnapshot(input.trackId);
+  const policy = requireGoalPolicy(input.trackId);
+  const goal = await getGoalSnapshot(input.trackId, policy);
+  const plan = getLearningPlanSnapshot(input.trackId, policy);
   if (input.resolution === "keep_local") {
     const localRecords = input.snapshot.records.filter((record) => record.trackId === input.trackId && (record.recordType === "goal" || record.recordType === "learning_plan"));
     let localPairRecords = localRecords;

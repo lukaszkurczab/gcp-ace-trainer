@@ -1,6 +1,6 @@
 import { inspectExpoNodePackageInventory, inspectExpoNodePackageRootReadiness, type NodePackageRootReadiness, type Q13NodePackageInventory } from "../../content/runtime/nodePackageStorage";
 import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { getActiveTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
 import { readActiveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
 import { readTrainingAttempts } from "../../storage/repositories/trainingAttemptRepository";
@@ -11,6 +11,7 @@ import { inspectQ13RecoveryOperationVault } from "../../infrastructure/security/
 import { inspectQ13RecoveryCodeClipboard } from "../../infrastructure/security/recoveryCodeClipboard";
 import { inspectQ13GuestPrivacyDraft } from "../../features/home/guestPrivacyDraft";
 import { inspectPreparedQ13StorageInventory, inspectPreparedQ13StorageReadiness, type Q13StorageInventorySnapshot, type Q13StorageReadiness } from "../../storage/repositories/profileStorageRepository";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export type Q13FullStorageReceipt = Readonly<{
   kind: "observed" | "unavailable";
@@ -170,9 +171,9 @@ export async function inspectQ13CapabilityProbe(
       if (logoutReason) actor = Object.freeze({ kind: "unavailable", reason: logoutReason });
       else {
         try {
-          const session = readActiveTrainingSession();
-          const draft = await getActiveTrainingSessionDraft();
-          const attempts = readTrainingAttempts().value;
+          const session = readActiveTrainingSession(productionTrackAdmissionContext);
+          const draft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
+          const attempts = readTrainingAttempts(productionTrackAdmissionContext).value;
           const fingerprint = fingerprintQ13ActiveSession({ session, draft, attempts });
           if (!fingerprint) actor = Object.freeze({ kind: "unavailable", reason: "session_fingerprint_unavailable" });
           else {

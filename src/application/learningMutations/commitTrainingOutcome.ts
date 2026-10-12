@@ -1,12 +1,13 @@
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../../domain";
 import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { JournalWriteError } from "../../storage/errors";
 import { getReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
 import { StaleMutationRevisionError } from "../../storage/repositories/mutationJournalRepository";
 import { MutationCommitFailure } from "../mutationBoundary";
 import { buildMutationJournal } from "./mutationJournalBuilder";
 import { commitMutationAfterPreflight } from "./commitMutation";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export async function commitTrainingOutcome(input: {
   attempt: TrainingAttempt<unknown>;
@@ -19,7 +20,7 @@ export async function commitTrainingOutcome(input: {
 }): Promise<boolean> {
   let conflict = input.reviewSnapshotConflict === true;
   const execute = (includeReviewWrites: boolean) => commitMutationAfterPreflight(async () => {
-    const snapshot = await getReviewQueueSnapshot();
+    const snapshot = await getReviewQueueSnapshot(productionTrackAdmissionContext);
     const reviewWrites = includeReviewWrites ? input.reviews : [];
     const resolvedReviews = includeReviewWrites ? input.resolvedReviews ?? [] : [];
     const touched = [...reviewWrites, ...resolvedReviews];

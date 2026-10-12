@@ -13,6 +13,7 @@ import {
 } from "../application/notificationPreferences";
 import { expoNotificationPlatform } from "../infrastructure/notifications/expoNotificationPlatform";
 import { getActiveTrackId, getLearningPlanSnapshot } from "../storage/repositories";
+import { requireGoalPolicy } from "../domain/tracks/trackGoalPolicies";
 import type { DeviceReminderSlot } from "../storage/repositories/notificationSettingsRepository";
 import type { TrackId } from "../domain";
 import { createNotificationSettingsRequestGuard, type NotificationSettingsRequestGuard } from "./notificationSettingsState";
@@ -51,7 +52,7 @@ const EMPTY_PLAN: AcceptedPlanSlots = Object.freeze({ planReady: false, trackId:
 async function readAcceptedPlanSlots(): Promise<AcceptedPlanSlots> {
   const trackId = await getActiveTrackId();
   if (!trackId) return EMPTY_PLAN;
-  const snapshot = getLearningPlanSnapshot(trackId);
+  const snapshot = getLearningPlanSnapshot(trackId, requireGoalPolicy(trackId));
   if (!snapshot || snapshot.plan.status !== "accepted") return Object.freeze({ planReady: false, trackId, slots: Object.freeze([]) });
   const slots = Object.freeze(snapshot.plan.slots.map((slot) => Object.freeze({ slotId: slot.slotId, day: slot.day, localTime: slot.localTime })));
   return Object.freeze({

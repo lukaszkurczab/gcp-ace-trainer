@@ -10,6 +10,7 @@ import { readActiveTrainingSession, readTrainingSessions } from "./trainingSessi
 import { readActiveTrainingSessionDraft } from "./trainingSessionDraftRepository";
 import { readActiveForegroundTimer } from "./foregroundTimerRepository";
 import { canPersistTrainingSessionDraft } from "../../domain";
+import type { TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 
 export type LearningStateResetEntry = Readonly<{ key: string; sha256: string }>;
 export type LearningStateResetTargetPlan = Readonly<{
@@ -66,18 +67,18 @@ function currentLeaseFor(plan: LearningStateResetTargetPlan): ActiveProfileStora
 function currentEntries() {
   return readCanonicalNamespaceEntries();
 }
-function assertLearningStateResetInputIntegrity(): void {
-  assertTrainingEvidenceIntegrity();
+function assertLearningStateResetInputIntegrity(admission: TrackAdmissionContext): void {
+  assertTrainingEvidenceIntegrity(admission);
   assertContentIdentityRecordIntegrity();
-  const sessions = readTrainingSessions().value;
+  const sessions = readTrainingSessions(admission).value;
   const activeRecords = sessions.filter((session) => session.status === "active");
-  const active = readActiveTrainingSession();
+  const active = readActiveTrainingSession(admission);
   if ((!active && activeRecords.length > 0)
     || (active && (activeRecords.length !== 1 || activeRecords[0]?.id !== active.id))) fail();
-  const draft = readActiveTrainingSessionDraft();
+  const draft = readActiveTrainingSessionDraft(admission);
   if (draft && (!active || draft.sessionId !== active.id || draft.trackId !== active.trackId)) fail();
   if (active && canPersistTrainingSessionDraft(active) && !draft) fail();
-  const timer = readActiveForegroundTimer();
+  const timer = readActiveForegroundTimer(admission);
   if (timer && (!active || timer.sessionId !== active.id || timer.trackId !== active.trackId)) fail();
 }
 function hashesMatch(actual: readonly LearningStateResetEntry[], expected: readonly LearningStateResetEntry[]): boolean {
@@ -115,10 +116,10 @@ export function isLearningStateResetTargetPlan(value: unknown): value is Learnin
 }
 
 /** Full read-only integrity gate followed by an immutable exact physical snapshot. */
-export function captureLearningStateResetTargetPlan(): LearningStateResetTargetPlan {
+export function captureLearningStateResetTargetPlan(admission: TrackAdmissionContext): LearningStateResetTargetPlan {
   const lease = captureActiveProfileStorageLease();
   if (!lease || !isActiveProfileStorageLeaseCurrent(lease)) fail();
-  assertLearningStateResetInputIntegrity();
+  assertLearningStateResetInputIntegrity(admission);
   const entries = currentEntries();
   const plan: LearningStateResetTargetPlan = Object.freeze({
     schema: "patternly:learning-state-reset-targets.v1",
@@ -131,10 +132,10 @@ export function captureLearningStateResetTargetPlan(): LearningStateResetTargetP
 }
 
 /** Rechecks exact bytes before a new reset journal becomes durable. */
-export function assertLearningStateResetPlanBeforeJournal(plan: LearningStateResetTargetPlan): void {
+export function assertLearningStateResetPlanBeforeJournal(plan: LearningStateResetTargetPlan, admission: TrackAdmissionContext): void {
   if (!isLearningStateResetTargetPlan(plan)) fail();
   currentLeaseFor(plan);
-  assertLearningStateResetInputIntegrity();
+  assertLearningStateResetInputIntegrity(admission);
   const entries = currentEntries();
   if (!hashesMatch(currentTargetEntries(entries), plan.targets)
     || !hashesMatch(currentPreservedEntries(entries), plan.preserved)) fail();

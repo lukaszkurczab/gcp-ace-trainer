@@ -39,6 +39,9 @@ import {
   saveTrainingSession,
   saveTrainingSessionDraft,
 } from "../../storage/repositories";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 
@@ -102,8 +105,8 @@ test("stored package integrity failure blocks bootstrap before resume and is not
 test("bootstrap replays a pending journal before surfacing an unrelated unavailable active session", async () => {
   testStorage = installMemoryStorage();
   const historical = session("completed");
-  await saveTrainingSession(historical);
-  await addTrainingAttempt(attempt());
+  await saveTrainingSession(historical, productionTrackAdmissionContext);
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
   await saveUnavailableActiveRecord(createContentIdentityUnavailableActiveRecord({
     schemaVersion: 1,
     kind: "unavailable_active",
@@ -117,7 +120,7 @@ test("bootstrap replays a pending journal before surfacing an unrelated unavaila
   const pendingReview = review();
   const pending = await buildMutationJournal({ operation: "set_review_entry", sessionId: historical.id, trackId: historical.trackId,
     identity: pendingReview, writes: [{ kind: "put_review_entry", record: pendingReview }], createdAt: timestamp });
-  await persistMutationJournal(pending);
+  await persistMutationJournal(pending, productionLearningDataAdmissionContext);
 
   let contentReached = false;
   const result = await bootstrapApplication(
@@ -127,8 +130,8 @@ test("bootstrap replays a pending journal before surfacing an unrelated unavaila
   );
   assert.deepEqual(result, { kind: "content_identity_unavailable", sessionIds: ["bootstrap-unavailable-with-pending-journal"] });
   assert.equal(contentReached, false);
-  assert.equal(await getActiveMutationJournal(), null, "the unrelated pending review journal was verified and cleared first");
-  assert.deepEqual((await getTrainingSessions()).value, [historical]);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, "the unrelated pending review journal was verified and cleared first");
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, [historical]);
   assert.equal(testStorage.getString(STORAGE_KEYS.reviewEntry(pendingReview.id)) !== undefined, true, "the pending journal took effect before unavailable state was presented");
 });
 
@@ -162,16 +165,16 @@ test("bootstrap fails closed without writes when evidence exists but canonical m
 test("bootstrap replays a durable reset from a record-deleted/index-retained prefix before maintenance and content", async () => {
   testStorage = installMemoryStorage();
   const profile = { id: "guest-test-profile", kind: "guest" as const, accountId: null };
-  await saveTrainingSession(session());
-  await addTrainingAttempt(attempt());
+  await saveTrainingSession(session(), productionTrackAdmissionContext);
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
   await saveSettings({ appearance: "dark", language: "en" });
-  const plan = captureLearningStateResetTargetPlan();
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   const resetJournal = await buildMutationJournal({
     operation: "reset_learning_state", sessionId: "learning-state-reset", trackId: TRACK_ID,
     identity: ["bootstrap-reset", "2026-10-11T00:00:00.000Z"],
     writes: [{ kind: "clear_learning_state", targetPlan: plan }], createdAt: "2026-10-11T00:00:00.000Z",
   });
-  await persistMutationJournal(resetJournal);
+  await persistMutationJournal(resetJournal, productionLearningDataAdmissionContext);
   const attemptIndexBefore = testStorage.getString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX);
   const settingsBefore = testStorage.getString(STORAGE_KEYS.SETTINGS);
   testStorage.remove(STORAGE_KEYS.trainingAttempt("attempt-1"));
@@ -182,7 +185,7 @@ test("bootstrap replays a durable reset from a record-deleted/index-retained pre
   const bootstrap = () => bootstrapApplication(
     async () => {
       events.push("content");
-      assert.equal(await getActiveMutationJournal(), null);
+      assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
       assert.deepEqual(testStorage.getAllKeys().filter((key) => plan.targets.some((target) => target.key === key)), []);
     },
     async () => assert.fail("A reset must clear active-session ownership before resume."),
@@ -206,7 +209,7 @@ test("bootstrap replays a durable reset from a record-deleted/index-retained pre
   events.length = 0;
   assert.deepEqual(await bootstrap(), { kind: "ready", activeSessionId: null });
   assert.equal(testStorage.getString(STORAGE_KEYS.SETTINGS), settingsBefore);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.deepEqual(testStorage.getAllKeys().filter((key) => plan.targets.some((target) => target.key === key)), []);
 });
 
@@ -353,7 +356,7 @@ test("verified Premium sessions remain available in Home when resume admission i
       status: "active",
       startedAt: "2026-10-08T08:00:00.000Z",
     });
-    await saveTrainingSession(active);
+    await saveTrainingSession(active, productionTrackAdmissionContext);
     await saveTrainingSessionDraft({
       schemaVersion: 1,
       familyId: "design_interview",
@@ -364,7 +367,7 @@ test("verified Premium sessions remain available in Home when resume admission i
       responsesByOccurrenceId: {},
       flaggedOccurrenceIds: [],
       updatedAt: active.startedAt,
-    }, null);
+    }, null, productionTrackAdmissionContext);
     const before = testStorage.snapshot();
     let exactResolutions = 0;
     let admissions = 0;
@@ -403,8 +406,8 @@ test("verified Premium sessions remain available in Home when resume admission i
     assert.equal(exactResolutions, 0, "Premium admission precedes exact package resolution");
     assert.equal(timerRestores, 0, "a denied resume never restores the foreground timer");
     assert.deepEqual(testStorage.snapshot(), before, "Home readiness does not mutate the active session, draft, journal, or history");
-    assert.deepEqual(await getActiveTrainingSession(), active);
-    const currentDraft = await getActiveTrainingSessionDraft();
+    assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), active);
+    const currentDraft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
     assert.equal(currentDraft?.sessionId, active.id);
 
     if (decision === "denied") {
@@ -415,7 +418,7 @@ test("verified Premium sessions remain available in Home when resume admission i
           try { await lifecycle.resumeActiveSession(); }
           catch (error) {
             if (error instanceof TrainingApplicationFailure && error.code === "premium_entitlement_denied") {
-              await saveTrainingSessionDraft({ ...currentDraft, revision: currentDraft.revision + 1, updatedAt: "2026-10-08T08:01:00.000Z" }, currentDraft.revision);
+              await saveTrainingSessionDraft({ ...currentDraft, revision: currentDraft.revision + 1, updatedAt: "2026-10-08T08:01:00.000Z" }, currentDraft.revision, productionTrackAdmissionContext);
               return { kind: "premium_resume_unavailable", reason: error.code } as const;
             }
             throw error;
@@ -487,7 +490,7 @@ test("bootstrap remains blocking when a terminal session pointer has no recovery
     startedAt: "2026-10-07T12:00:00.000Z",
     completedAt: "2026-10-07T12:00:01.000Z",
   });
-  await saveTrainingSession(terminal);
+  await saveTrainingSession(terminal, productionTrackAdmissionContext);
   testStorage.setString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, JSON.stringify(terminal.id));
   const diagnostics: unknown[] = [];
 
@@ -501,7 +504,7 @@ test("bootstrap remains blocking when a terminal session pointer has no recovery
   assert.deepEqual(result, { kind: "blocking", reason: "Application bootstrap failed. [STORAGE_RECORD_INVALID]" });
   assert.deepEqual(diagnostics, [{ stage: ApplicationBootstrapStage.RecoveringLearningState, operationalCode: "STORAGE_RECORD_INVALID", errorKind: "error" }]);
   assert.equal(testStorage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), true, "bootstrap must not silently clear a stale pointer without a journal");
-  assert.deepEqual((await getTrainingSessions()).value, [terminal]);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, [terminal]);
 });
 
 test("bootstrap reconstructs a still-active session after replaying a submit interrupted before its attempt index", async () => {
@@ -535,13 +538,13 @@ test("bootstrap reconstructs a still-active session after replaying a submit int
     answeredAt: active.startedAt,
     committedAt: active.startedAt,
   });
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   testStorage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.TRAINING_ATTEMPT_INDEX });
   await assert.rejects(commitTrainingOutcome({ attempt, session: active, reviews: [], createdAt: active.startedAt }));
   testStorage.setFailurePlan(null);
   assert.ok(testStorage.getString(STORAGE_KEYS.trainingAttempt(attempt.id)), "the attempt record is durable before the interrupted index write");
   assert.equal(testStorage.getString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX), undefined);
-  assert.notEqual(await getActiveMutationJournal(), null, "the exact journal survives the physical write failure");
+  assert.notEqual(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, "the exact journal survives the physical write failure");
 
   let lifecycle!: ReturnType<typeof composeTrainingLifecycleUseCases>;
   const result = await bootstrapApplication(
@@ -551,9 +554,9 @@ test("bootstrap reconstructs a still-active session after replaying a submit int
   );
 
   assert.deepEqual(result, { kind: "ready", activeSessionId: active.id });
-  assert.deepEqual(await getActiveTrainingSession(), active);
-  assert.deepEqual((await getTrainingAttempts()).value, [attempt]);
-  assert.deepEqual((await getTrainingAttempts()).value[0]?.result, attempt.result, "bootstrap recovery preserves the committed outcome without rescoring");
+  assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), active);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, [attempt]);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value[0]?.result, attempt.result, "bootstrap recovery preserves the committed outcome without rescoring");
   assert.equal(lifecycle.getOperationProjection(active.id)?.kind, "feedback", "active-session projection is reconstructed from the replayed attempt");
 });
 
@@ -593,8 +596,8 @@ test("production bootstrap recovers every start physical, phase, and clear cut w
 
     const bootstrap = () => bootstrapApplication(
       async () => {
-        assert.equal(await getActiveMutationJournal(), null, `${cut.name}: content follows recovery and journal clear`);
-        assert.deepEqual(await getActiveForegroundTimer(), expectedTimer, `${cut.name}: exact initial timer verified before content`);
+        assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, `${cut.name}: content follows recovery and journal clear`);
+        assert.deepEqual(await getActiveForegroundTimer(productionTrackAdmissionContext), expectedTimer, `${cut.name}: exact initial timer verified before content`);
       },
       async (sessionId) => { assert.equal(sessionId, active.id); },
       async () => { composeTrainingLifecycleUseCases(); },
@@ -648,15 +651,15 @@ test("bootstrap recovers completion and finalization interrupted at active-point
     testStorage.setFailurePlan(null);
 
     const bootstrap = () => bootstrapApplication(
-      async () => { assert.equal(await getActiveMutationJournal(), null, `${workflow}: recover and verify before content`); },
+      async () => { assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, `${workflow}: recover and verify before content`); },
       async () => assert.fail(`${workflow}: terminal replay clears ownership before resume`),
       async () => { composeTrainingLifecycleUseCases(); },
     );
     assert.deepEqual(await bootstrap(), { kind: "ready", activeSessionId: null });
-    assert.deepEqual((await getTrainingSessions()).value.find((candidate) => candidate.id === id), completed);
-    assert.deepEqual(await getTrainingSessionResult(id), result);
-    assert.equal(await getActiveForegroundTimer(), null);
-    if (workflow === "finalization") assert.equal(await getActiveTrainingSessionDraft(), null);
+    assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value.find((candidate) => candidate.id === id), completed);
+    assert.deepEqual(await getTrainingSessionResult(id, productionTrackAdmissionContext), result);
+    assert.equal(await getActiveForegroundTimer(productionTrackAdmissionContext), null);
+    if (workflow === "finalization") assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
     const keys = [STORAGE_KEYS.trainingSession(id), STORAGE_KEYS.TRAINING_SESSION_INDEX, STORAGE_KEYS.ACTIVE_TRAINING_SESSION,
       STORAGE_KEYS.trainingSessionResult(id), STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, STORAGE_KEYS.ACTIVE_JOURNAL];
     const first = keys.map((key) => testStorage.getString(key));
@@ -687,8 +690,8 @@ test("bootstrap keeps malformed journal bytes blocking and recovers a start befo
   const missingContent = await bootstrapApplication(
     async () => {
       contentReached = true;
-      assert.equal(await getActiveMutationJournal(), null, "the pending start recovers before content resolution");
-      assert.deepEqual(await getActiveForegroundTimer(), expectedTimer);
+      assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, "the pending start recovers before content resolution");
+      assert.deepEqual(await getActiveForegroundTimer(productionTrackAdmissionContext), expectedTimer);
       throw new Error("exact content artifact unavailable");
     },
     async () => assert.fail("missing content blocks before session resume"),
@@ -697,7 +700,7 @@ test("bootstrap keeps malformed journal bytes blocking and recovers a start befo
   assert.equal(missingContent.kind, "blocking");
   assert.equal(contentReached, true);
   assert.equal(testStorage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), undefined, "verified recovery clears J even when following content resolution fails");
-  assert.deepEqual(await getActiveForegroundTimer(), expectedTimer, "the source timer survives a later content preparation failure");
+  assert.deepEqual(await getActiveForegroundTimer(productionTrackAdmissionContext), expectedTimer, "the source timer survives a later content preparation failure");
 });
 
 test("a local Free Guest can confirm exact-missing abandonment and recover its real journal on bootstrap", async () => {
@@ -763,8 +766,8 @@ test("a local Free Guest can confirm exact-missing abandonment and recover its r
     committedAt: active.startedAt,
     durationMs: 7_000,
   });
-  await saveTrainingSession(active);
-  await addTrainingAttempt(attempt);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
+  await addTrainingAttempt(attempt, productionTrackAdmissionContext);
   const beforeUnavailableStorage = testStorage.snapshot();
   let premiumAdmissionCalls = 0;
   let lifecycle!: ReturnType<typeof composeTrainingLifecycleUseCases>;
@@ -783,8 +786,8 @@ test("a local Free Guest can confirm exact-missing abandonment and recover its r
     exactMissingIdentity: { trackId: oldRef.trackId, contentVersion: oldRef.contentVersion, artifactSha256: oldRef.artifactSha256 },
   });
   assert.equal(premiumAdmissionCalls, 0, "a Free Guest path does not invoke Premium admission");
-  assert.deepEqual(await getActiveTrainingSession(), active);
-  assert.deepEqual((await getTrainingAttempts()).value, [attempt]);
+  assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), active);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, [attempt]);
   assert.equal(await lifecycle.getPendingMutationProjection(active.id), null, "bootstrap and unavailable presentation do not create an abandonment journal");
   assert.deepEqual(testStorage.snapshot(), beforeUnavailableStorage, "no canonical bytes change before explicit confirmation");
 
@@ -802,7 +805,7 @@ test("a local Free Guest can confirm exact-missing abandonment and recover its r
 
   testStorage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION });
   await assert.rejects(lifecycle.abandonUnavailableExactActiveSession({ sessionId: active.id, identity: oldRef, isCurrent: guestFence.isCurrent }));
-  assert.equal((await getTrainingSessions()).value[0]?.status, "abandoned");
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value[0]?.status, "abandoned");
   assert.equal(testStorage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), true);
   assert.equal(premiumAdmissionCalls, 0);
   testStorage.setFailurePlan(null);
@@ -813,12 +816,12 @@ test("a local Free Guest can confirm exact-missing abandonment and recover its r
     async () => { lifecycle = composeTrainingLifecycleUseCases(dependencies); },
   );
   assert.deepEqual(recovered, { kind: "ready", activeSessionId: null });
-  const abandoned = (await getTrainingSessions()).value[0];
+  const abandoned = (await getTrainingSessions(productionTrackAdmissionContext)).value[0];
   assert.ok(abandoned);
   assert.equal(abandoned.status, "abandoned");
   assert.deepEqual(abandoned.itemOrder, active.itemOrder);
-  assert.deepEqual((await getTrainingAttempts()).value, [attempt]);
-  assert.equal(await getActiveTrainingSession(), null);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, [attempt]);
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
   assert.equal(premiumAdmissionCalls, 0);
 });
 
@@ -866,7 +869,7 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
     status: "active",
     startedAt: "2026-10-07T12:00:00.000Z",
   });
-  await saveTrainingSession(session);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
 
   const attempt = createTrainingAttempt({
     id: "q13-ood-v23-resume-repro-answer",
@@ -882,7 +885,7 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
     committedAt: "2026-10-07T12:00:12.000Z",
     durationMs: 12_000,
   });
-  await addTrainingAttempt(attempt);
+  await addTrainingAttempt(attempt, productionTrackAdmissionContext);
   const draftInput = {
     schemaVersion: 1 as const,
     familyId: "design_interview",
@@ -894,12 +897,12 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
     flaggedOccurrenceIds: [] as const,
     updatedAt: "2026-10-07T12:00:12.000Z",
   };
-  await saveTrainingSessionDraft(draftInput, null);
+  await saveTrainingSessionDraft(draftInput, null, productionTrackAdmissionContext);
 
   const before = {
-    session: await getActiveTrainingSession(),
-    attempts: (await getTrainingAttempts()).value,
-    draft: await getActiveTrainingSessionDraft(),
+    session: await getActiveTrainingSession(productionTrackAdmissionContext),
+    attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value,
+    draft: await getActiveTrainingSessionDraft(productionTrackAdmissionContext),
   };
   const beforeBytes = testStorage.snapshot();
   assert.deepEqual(before.session, session);
@@ -930,9 +933,9 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
     exactMissingIdentity: { trackId: oldRef.trackId, contentVersion: oldRef.contentVersion, artifactSha256: oldRef.artifactSha256 },
   });
   assert.deepEqual({
-    session: await getActiveTrainingSession(),
-    attempts: (await getTrainingAttempts()).value,
-    draft: await getActiveTrainingSessionDraft(),
+    session: await getActiveTrainingSession(productionTrackAdmissionContext),
+    attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value,
+    draft: await getActiveTrainingSessionDraft(productionTrackAdmissionContext),
   }, before);
 
   await assert.rejects(lifecycle.abandonUnavailableExactActiveSession({ sessionId: session.id, identity: oldRef, isCurrent: () => false }));
@@ -941,9 +944,9 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   await assert.rejects(lifecycle.abandonUnavailableExactActiveSession({ sessionId: session.id, identity: oldRef, isCurrent: () => ++actorFenceReads < 5 }));
   assert.equal(actorFenceReads, 5, "the actor/profile fence is checked again after exact-package resolution under the journal lane");
   assert.deepEqual({
-    session: await getActiveTrainingSession(),
-    attempts: (await getTrainingAttempts()).value,
-    draft: await getActiveTrainingSessionDraft(),
+    session: await getActiveTrainingSession(productionTrackAdmissionContext),
+    attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value,
+    draft: await getActiveTrainingSessionDraft(productionTrackAdmissionContext),
   }, before);
 
   const unreadableLifecycle = composeTrainingLifecycleUseCases({
@@ -961,9 +964,9 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   );
   assert.deepEqual(unreadable, { kind: "blocking", reason: "Application bootstrap failed. [LOCAL_OPERATION_FAILED]" });
   assert.deepEqual({
-    session: await getActiveTrainingSession(),
-    attempts: (await getTrainingAttempts()).value,
-    draft: await getActiveTrainingSessionDraft(),
+    session: await getActiveTrainingSession(productionTrackAdmissionContext),
+    attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value,
+    draft: await getActiveTrainingSessionDraft(productionTrackAdmissionContext),
   }, before);
 
   const availableLifecycle = composeTrainingLifecycleUseCases({
@@ -979,9 +982,9 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   });
   await assert.rejects(availableLifecycle.abandonUnavailableExactActiveSession({ sessionId: session.id, identity: oldRef, isCurrent: () => true }), /available again/u);
   assert.deepEqual({
-    session: await getActiveTrainingSession(),
-    attempts: (await getTrainingAttempts()).value,
-    draft: await getActiveTrainingSessionDraft(),
+    session: await getActiveTrainingSession(productionTrackAdmissionContext),
+    attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value,
+    draft: await getActiveTrainingSessionDraft(productionTrackAdmissionContext),
   }, before);
 
   testStorage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL });
@@ -993,9 +996,9 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   assert.equal(beforeJournalState.error.allowedAction, "reconcile");
   const blockedBytes = testStorage.snapshot();
   assert.deepEqual({
-    session: await getActiveTrainingSession(),
-    attempts: (await getTrainingAttempts()).value,
-    draft: await getActiveTrainingSessionDraft(),
+    session: await getActiveTrainingSession(productionTrackAdmissionContext),
+    attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value,
+    draft: await getActiveTrainingSessionDraft(productionTrackAdmissionContext),
   }, before);
   assert.deepEqual(testStorage.snapshot(), beforeBytes, "the failed journal attempt leaves canonical bytes unchanged");
   assert.equal(await lifecycle.reconcileUncertainMutation(session.id), "conflict", "the unchanged prior journal bytes do not confirm this attempted abandonment");
@@ -1019,7 +1022,7 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   assert.equal(afterJournalState.error.durableState, "journal_durable");
   assert.equal(afterJournalState.error.allowedAction, "recover");
   assert.equal(testStorage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), true, "the interrupted terminal write leaves the old active pointer in place");
-  assert.equal((await getTrainingSessions()).value[0]?.status, "abandoned", "the terminal session write completed before active-pointer removal failed");
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value[0]?.status, "abandoned", "the terminal session write completed before active-pointer removal failed");
   assert.notEqual(await lifecycle.getPendingMutationProjection(session.id), null);
 
   const failedRecoveryDiagnostics: unknown[] = [];
@@ -1037,7 +1040,7 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   assert.deepEqual(failedRecovery, { kind: "blocking", reason: "Application bootstrap failed. [LOCAL_OPERATION_FAILED]" });
   assert.deepEqual(failedRecoveryDiagnostics, [{ stage: ApplicationBootstrapStage.RecoveringLearningState, operationalCode: "LOCAL_OPERATION_FAILED", errorKind: "error" }]);
   assert.equal(testStorage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), true);
-  assert.equal((await getTrainingSessions()).value[0]?.status, "abandoned");
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value[0]?.status, "abandoned");
   assert.notEqual(await lifecycle.getPendingMutationProjection(session.id), null, "failed recovery retains its immutable journal for another launch");
   testStorage.setFailurePlan(null);
 
@@ -1055,16 +1058,16 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   );
   assert.deepEqual(recoveryDiagnostics, []);
   assert.deepEqual(recoveredBootstrap, { kind: "ready", activeSessionId: null });
-  const abandoned = (await getTrainingSessions()).value[0];
+  const abandoned = (await getTrainingSessions(productionTrackAdmissionContext)).value[0];
   assert.ok(abandoned);
   assert.equal(abandoned.status, "abandoned");
   assert.deepEqual(abandoned.itemOrder, session.itemOrder);
   assert.deepEqual(abandoned.optionOrderByOccurrence, session.optionOrderByOccurrence);
   assert.equal(abandoned.activeForegroundMs, session.activeForegroundMs);
-  assert.equal(await getActiveTrainingSession(), null);
-  assert.deepEqual((await getTrainingSessions()).value, [abandoned]);
-  assert.deepEqual((await getTrainingAttempts()).value, [attempt]);
-  assert.equal(await getActiveTrainingSessionDraft(), null);
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, [abandoned]);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, [attempt]);
+  assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
   const recoveredCanonicalRaw = testStorage.snapshot();
   const replayBootstrap = await bootstrapApplication(
     () => owner.verifyBundledPackages(),
@@ -1077,6 +1080,6 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
     },
   );
   assert.deepEqual(replayBootstrap, { kind: "ready", activeSessionId: null });
-  assert.deepEqual((await getTrainingSessions()).value, [abandoned]);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, [abandoned]);
   assert.deepEqual(testStorage.snapshot(), recoveredCanonicalRaw, "a second fresh production composition preserves every canonical envelope and revision exactly");
 });

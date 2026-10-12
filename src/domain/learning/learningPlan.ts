@@ -1,5 +1,6 @@
 import type { GoalDay, GoalRecord } from "../goals/goalContracts";
-import { GOAL_DAY_IDS, getTrackGoalTemplates, isGoalDay, isIsoDate } from "../goals/goalContracts";
+import { GOAL_DAY_IDS, isGoalDay, isIsoDate } from "../goals/goalContracts";
+import { isCanonicalSafeIdentity } from "../identity/canonicalIdentity";
 import { projectGoalTargetDate } from "../goals/goalTargetDateSemantics";
 import { deepFreeze } from "./familyEnvelope";
 import { createArtifactSha256 } from "./contentItemRef";
@@ -117,8 +118,7 @@ export function normalizeLearningPlan(value: unknown): LearningPlan {
   if (plan.schemaVersion === 2 && (!positiveInteger(plan.minutesPerStudyDay) || plan.minutesPerStudyDay > 1440)) fail("invalid_availability");
   const executionPolicy = plan.schemaVersion === 2 ? validateExecutionPolicy(plan.executionPolicy) : null;
   const planningPolicyIdentity = plan.schemaVersion === 2 ? validatePlanningPolicyIdentity(plan.planningPolicyIdentity) : null;
-  if (!nonEmpty(plan.planId) || !nonEmpty(plan.trackId) || !nonEmpty(plan.commandId)) fail("invalid_identity");
-  try { getTrackGoalTemplates(plan.trackId); } catch { fail("unknown_track"); }
+  if (!nonEmpty(plan.planId) || !isCanonicalSafeIdentity(plan.trackId) || !nonEmpty(plan.commandId)) fail("invalid_identity");
   if (!positiveInteger(plan.goalRevision) || !positiveInteger(plan.planRevision)) fail("invalid_revision");
   if (plan.status !== "accepted" && plan.status !== "paused" && plan.status !== "completed") fail("invalid_status");
   const timezone = validateTimezone(plan.timezone);

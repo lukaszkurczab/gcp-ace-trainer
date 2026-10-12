@@ -1,7 +1,7 @@
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { MAX_ARTIFACT_BYTES, MAX_PACKAGE_BYTES, NodePackageError, NodePackageStorageIntegrityError, NodePackageStorageUnavailableError, validateNodePayload, type NodePackageIdentity, type NodePackageManifest, type NodePackageStore, type VerifiedNodePackage } from "./nodeContentPackage";
-import { isCanonicalSafeIdentity } from "../canonical";
+import { isCanonicalSafeIdentity } from "../../domain/identity/canonicalIdentity";
 
 export interface NodePackageFilePort {
   write(path: string, bytes: Uint8Array, overwrite?: boolean): Promise<void>;

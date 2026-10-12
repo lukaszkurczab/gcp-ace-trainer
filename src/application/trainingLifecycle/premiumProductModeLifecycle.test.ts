@@ -14,6 +14,8 @@ import { readReviewQueueFinalizationProofs } from "../../storage/repositories/re
 import { readTrainingSessionEnvelopeProof, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
 import type { ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import type { DraftStorageLeaseHandle } from "./contracts";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
 const PROFILE_ID = "algorithms-interview-simulation-v1";
@@ -101,35 +103,38 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
       getReviews: async () => [],
       getDraft: async () => draft,
       getResult: async () => ({ sessionId: session.id }),
-      getDraftStateProof: async () => finalizationCommitted ? null : readActiveTrainingSessionDraftStateProof(),
-      getSessionEnvelopeProof: async (sessionId: string) => readTrainingSessionEnvelopeProof(sessionId),
-      getFinalizationReviews: async (refs: readonly import("../../domain").ResolvedContentRef[]) => readReviewQueueFinalizationProofs(refs),
-      verifyAcceptedFinalizationProof: isExactAcceptedFinalizationEnvelopeProof,
+      getDraftStateProof: async () => finalizationCommitted ? null : readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext),
+      getSessionEnvelopeProof: async (sessionId: string) => readTrainingSessionEnvelopeProof(sessionId, productionTrackAdmissionContext),
+      getFinalizationReviews: async (refs: readonly import("../../domain").ResolvedContentRef[]) => readReviewQueueFinalizationProofs(refs, productionTrackAdmissionContext),
+      verifyAcceptedFinalizationProof: (
+        accepted: import("../../domain").AcceptedSimulationFinalization,
+        proof: Readonly<{ state: import("../../domain").TrainingSessionDraftState; revision: number; digest: string }>,
+      ) => isExactAcceptedFinalizationEnvelopeProof(accepted, proof, productionTrackAdmissionContext),
       isDraftStorageLeaseCurrent: (lease: DraftStorageLeaseHandle | null) => {
         const current = isTrainingSessionDraftLeaseCurrent(lease as unknown as ActiveProfileStorageLease | null);
         return current;
       },
       acceptFinalization: async (accepted: import("../../domain").AcceptedSimulationFinalization, expected: Readonly<{ revision: number; digest: string }>, lease: DraftStorageLeaseHandle | null, refs: readonly import("../../domain").ResolvedContentRef[]) => {
-        const result = await acceptSimulationFinalization(accepted, expected, lease as unknown as ActiveProfileStorageLease | null, refs);
+        const result = await acceptSimulationFinalization(accepted, expected, lease as unknown as ActiveProfileStorageLease | null, refs, productionTrackAdmissionContext);
         if (result.attempt) finalizationAttempt = result.attempt;
         return result.kind === "verified" ? "verified" as const : result.kind === "unknown" ? "unknown" as const : result.kind === "conflict" ? "conflict" as const : "not_applied" as const;
       },
-      reconcileAcceptedFinalization: async (accepted: import("../../domain").AcceptedSimulationFinalization) => reconcileAcceptedSimulationFinalization(accepted, finalizationAttempt as CanonicalWriteAttempt<import("../../domain").TrainingSessionDraft | import("../../domain").AcceptedSimulationFinalization> | undefined),
+      reconcileAcceptedFinalization: async (accepted: import("../../domain").AcceptedSimulationFinalization) => reconcileAcceptedSimulationFinalization(accepted, productionTrackAdmissionContext, finalizationAttempt as CanonicalWriteAttempt<import("../../domain").TrainingSessionDraft | import("../../domain").AcceptedSimulationFinalization> | undefined),
       captureDraftStorageLease: () => captureTrainingSessionDraftLease() as unknown as DraftStorageLeaseHandle | null,
       captureDraftWriteReceipt: (attempt: unknown) => attempt ? Object.freeze({ kind: "draft_write_receipt" as const }) : null,
       saveDraft: async (command: { draft: TrainingSessionDraft; expectedPreviousRevision: number; lease: DraftStorageLeaseHandle | null }) => {
         events.push("save-draft");
-        draft = await persistTrainingSessionDraft(command.draft, command.expectedPreviousRevision, command.lease as unknown as ActiveProfileStorageLease | null);
+        draft = await persistTrainingSessionDraft(command.draft, command.expectedPreviousRevision, productionTrackAdmissionContext, command.lease as unknown as ActiveProfileStorageLease | null);
         await saveDraftHook?.();
       },
     },
     mutations: {
-      start: async () => { events.push("start"); startCount += 1; await saveTrainingSession(session); active = session; draft = await persistTrainingSessionDraft(draft, null); },
+      start: async () => { events.push("start"); startCount += 1; await saveTrainingSession(session, productionTrackAdmissionContext); active = session; draft = await persistTrainingSessionDraft(draft, null, productionTrackAdmissionContext); },
       finalize: async () => { events.push("finalize"); active = null; finalizationCommitted = true; return finalizedReviewConflict; },
     },
     ...(decision === "missing" ? {} : { premiumSessionAdmission: { authorize: async () => { events.push("authorize"); return decision; } } }),
   } as unknown as TrainingLifecyclePorts;
-  return { lifecycle: new TrainingLifecycleUseCases(ports), events, session, get active() { return active; }, get finalizationDraft() { return finalizationDraft; }, async setActive(value: TrainingSession | null) { if (value) { await saveTrainingSession(value); draft = await persistTrainingSessionDraft(draft, null); } active = value; }, setNow(value: string) { now = value; }, get resolutionCount() { return resolutionCount; }, get startCount() { return startCount; } };
+  return { lifecycle: new TrainingLifecycleUseCases(ports), events, session, get active() { return active; }, get finalizationDraft() { return finalizationDraft; }, async setActive(value: TrainingSession | null) { if (value) { await saveTrainingSession(value, productionTrackAdmissionContext); draft = await persistTrainingSessionDraft(draft, null, productionTrackAdmissionContext); } active = value; }, setNow(value: string) { now = value; }, get resolutionCount() { return resolutionCount; }, get startCount() { return startCount; } };
 }
 
 test("Free and unavailable Coding Mock access fail before package resolution, preparation, or mutation", async () => {

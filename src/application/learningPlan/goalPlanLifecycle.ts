@@ -1,4 +1,5 @@
 import type { GoalRecord, GoalSnapshot, LearningPlan, LearningPlanSnapshot, TrackId } from "../../domain";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import { readGoalSnapshot } from "../../storage/repositories/goalRepository";
 import { getLearningPlanSnapshot } from "../../storage/repositories/learningPlanRepository";
 import { commitGoalPlanAcceptance } from "../learningMutations/commitGoalPlanAcceptance";
@@ -7,8 +8,9 @@ export type GoalPlanLifecycleResult = Readonly<{ goal: GoalSnapshot; plan: Learn
 
 /** Pause/resume the canonical goal and accepted plan as one journaled pair. */
 export async function transitionGoalPlanStatus(trackId: TrackId, now = new Date().toISOString()): Promise<GoalPlanLifecycleResult> {
-  const beforeGoal = readGoalSnapshot(trackId);
-  const beforePlan = getLearningPlanSnapshot(trackId);
+  const policy = requireGoalPolicy(trackId);
+  const beforeGoal = readGoalSnapshot(trackId, policy);
+  const beforePlan = getLearningPlanSnapshot(trackId, policy);
   if (!beforeGoal || !beforePlan || beforePlan.plan.schemaVersion !== 2 || beforePlan.plan.goalRevision !== beforeGoal.revision) {
     throw new Error("An accepted v2 goal and plan pair is required to change its status.");
   }
@@ -21,8 +23,8 @@ export async function transitionGoalPlanStatus(trackId: TrackId, now = new Date(
     commandId: `goal-plan:${cause}:${trackId}:${beforeGoal.revision}:${beforePlan.revision}:${now}` });
   const proposalId = plan.commandId;
   const unchanged = () => {
-    const goal = readGoalSnapshot(trackId);
-    const currentPlan = getLearningPlanSnapshot(trackId);
+    const goal = readGoalSnapshot(trackId, policy);
+    const currentPlan = getLearningPlanSnapshot(trackId, policy);
     if (!goal || !currentPlan || goal.revision !== beforeGoal.revision || currentPlan.revision !== beforePlan.revision ||
       JSON.stringify(goal.record) !== JSON.stringify(beforeGoal.record) || JSON.stringify(currentPlan.plan) !== JSON.stringify(beforePlan.plan)) {
       throw new Error("Goal or plan changed during the lifecycle transition.");

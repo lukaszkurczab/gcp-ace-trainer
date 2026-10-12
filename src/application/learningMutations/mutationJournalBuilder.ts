@@ -11,6 +11,7 @@ import {
 } from "../../storage/repositories/mutationJournalRepository";
 import { createIdentityFingerprint } from "./identity";
 import { isArtifactSha256 } from "../../domain";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export type { MutationOperation };
 
@@ -85,7 +86,7 @@ export async function buildMutationJournal(input: { operation: MutationOperation
     artifactSha256,
     commandIdentity: { version: 1, fingerprint: commandFingerprint },
     expectedRevisions: captureMutationExpectedRevisions(input.writes, input.expectedRevisionOverrides),
-    physicalWrites: input.operation === "reset_learning_state" ? [] : captureMutationPhysicalWrites(input.writes),
+    physicalWrites: input.operation === "reset_learning_state" ? [] : captureMutationPhysicalWrites(input.writes, productionTrackAdmissionContext),
     writes: input.writes,
   };
   return {

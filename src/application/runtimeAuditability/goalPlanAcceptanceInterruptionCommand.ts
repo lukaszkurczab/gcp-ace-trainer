@@ -3,12 +3,13 @@ import { isRegisteredTrackId } from "../../domain/tracks/trackRegistry";
 import { getAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, readActiveAccountIdentityBinding, getActiveStorageProfileOrNull } from "../../storage/repositories/profileStorageRepository";
-import { readActiveMutationJournal, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { getActiveMutationJournal, hasPendingMutationJournal, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
 import { learningPlanProposalCoordinator, type DevelopmentGoalPlanFaultProposalSnapshot } from "../learningPlan/LearningPlanProposalCoordinator";
 import type { GoalPlanAcceptanceInterruptionContext, GoalPlanAcceptanceInterruptionHook } from "../../storage/repositories/goalPlanAcceptanceRepository";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export const DEVELOPMENT_INTERRUPT_GOAL_PLAN_ACCEPTANCE_URL = "com.lkurczab.patternly://audit/goal-plan-interruption";
 
@@ -107,11 +108,11 @@ export async function handleGoalPlanAcceptanceInterruptionUrl(url: string | null
     if (binding.kind !== "verified" || binding.binding.profileId !== profile.id || binding.binding.profileKind !== profile.kind ||
       binding.binding.accountId !== context.accountId || binding.binding.firebaseUid !== context.firebaseUid || !actorFence.isCurrentSdkUid(context.firebaseUid) ||
       !isActiveProfileStorageLeaseCurrent(lease)) return "rejected";
-    const sync = await getAccountSyncState();
+    const sync = await getAccountSyncState(productionLearningDataAdmissionContext);
     if (sync.status !== "synced" || sync.accountId !== context.accountId || sync.materialization !== null || sync.pendingConfirmation !== null) return "rejected";
     const storageScope = readLearningPlanStorageScope();
     const proposal = learningPlanProposalCoordinator.readDevelopmentGoalPlanFaultProposalSnapshot(command.proposalId, command.trackId);
-    if (!proposal || proposal.storageScope !== storageScope || readActiveMutationJournal() !== null || !proposal.isCurrent() ||
+    if (!proposal || proposal.storageScope !== storageScope || hasPendingMutationJournal() || !proposal.isCurrent() ||
       !actorFence.isCurrentSdkUid(context.firebaseUid) || !isActiveProfileStorageLeaseCurrent(lease)) return "rejected";
     armedInterruption = Object.freeze({ command, proposal, actorFence, firebaseUid: context.firebaseUid, profileId: profile.id,
       accountId: context.accountId, lease, storageScope });
@@ -142,7 +143,7 @@ export function takeGoalPlanAcceptanceInterruptionHook(proposalId: string, track
 export function clearGoalPlanAcceptanceInterruptionArm(): void { armedInterruption = null; claimedInterruption = null; }
 
 function runArmedInterruption(armed: ArmedInterruption, nonce: string, context: GoalPlanAcceptanceInterruptionContext, isConsumed: () => boolean, consume: () => void): never {
-  const active = readActiveMutationJournal();
+  const active = getActiveMutationJournal(productionLearningDataAdmissionContext);
   const journal = context.journal;
   const pair = journal.writes[0];
   const exactJournal = active !== null && canonicalSerialize(active) === canonicalSerialize(journal) && journal.status === "journal_durable" &&

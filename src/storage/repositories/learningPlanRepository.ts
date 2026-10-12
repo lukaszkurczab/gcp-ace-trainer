@@ -1,5 +1,6 @@
 import type { LearningPlan, LearningPlanSnapshot, TrackId } from "../../domain";
-import { isLearningPlanV1ForTrack, normalizeLearningPlan, learningPlansEqual } from "../../domain";
+import { normalizeLearningPlan, learningPlansEqual } from "../../domain";
+import { isGoalPolicyForTrack, type GoalPolicy } from "../../domain/goals/goalPolicy";
 import { readCanonicalEnvelope, writeCanonicalJsonUnlocked, withCanonicalWriteLocks, type CanonicalRecordEnvelope } from "./canonicalRecordCodec";
 import { STORAGE_KEYS } from "../keys";
 import { CanonicalWriteConflictError, UnsupportedStoredRecordError } from "../errors";
@@ -26,28 +27,30 @@ export class LearningPlanCommandConflictError extends Error {
 
 export type SaveLearningPlanAtomicallyInput = Readonly<{
   trackId?: TrackId;
+  policy: GoalPolicy;
   plan: LearningPlan;
   expectedGoalRevision: number | null;
   expectedPlanStorageRevision: number | null;
 }>;
 
 /** Reads the plan envelope revision; absence is a valid first-run state. */
-export function getLearningPlanSnapshot(trackId: TrackId): LearningPlanSnapshot | null {
+export function getLearningPlanSnapshot(trackId: TrackId, policy: GoalPolicy): LearningPlanSnapshot | null {
   assertGoalPlanPairReadable();
-  const envelope = readCanonicalEnvelope(STORAGE_KEYS.learningPlan(trackId), (value): value is LearningPlan => isLearningPlanV1ForTrack(value, trackId));
+  if (!isGoalPolicyForTrack(policy, trackId)) throw new Error("A matching goal policy is required to read a learning plan.");
+  const envelope = readCanonicalEnvelope(STORAGE_KEYS.learningPlan(trackId), (value): value is LearningPlan => isPlanForPolicy(value, policy));
   return envelope ? freezeSnapshot(envelope) : null;
 }
 
-export function getLearningPlan(trackId: TrackId): LearningPlan | null {
-  return getLearningPlanSnapshot(trackId)?.plan ?? null;
+export function getLearningPlan(trackId: TrackId, policy: GoalPolicy): LearningPlan | null {
+  return getLearningPlanSnapshot(trackId, policy)?.plan ?? null;
 }
 
 /** Small per-track facade for callers that prefer a repository instance. */
 export class LearningPlanRepository {
-  constructor(readonly trackId: TrackId) {}
+  constructor(readonly trackId: TrackId, readonly policy: GoalPolicy) {}
 
   getSnapshot(): LearningPlanSnapshot | null {
-    return getLearningPlanSnapshot(this.trackId);
+    return getLearningPlanSnapshot(this.trackId, this.policy);
   }
 
   get(): LearningPlan | null {
@@ -55,22 +58,25 @@ export class LearningPlanRepository {
   }
 
   saveAtomically(plan: LearningPlan, expectedGoalRevision: number | null, expectedPlanStorageRevision: number | null): LearningPlanSnapshot {
-    return saveLearningPlanAtomically({ trackId: this.trackId, plan, expectedGoalRevision, expectedPlanStorageRevision });
+    return saveLearningPlanAtomically({ trackId: this.trackId, policy: this.policy, plan, expectedGoalRevision, expectedPlanStorageRevision });
   }
 }
 
 export function saveLearningPlanAtomically(input: SaveLearningPlanAtomicallyInput): LearningPlanSnapshot;
-export function saveLearningPlanAtomically(trackId: TrackId, plan: LearningPlan, expectedGoalRevision: number | null, expectedPlanStorageRevision: number | null): LearningPlanSnapshot;
+export function saveLearningPlanAtomically(trackId: TrackId, plan: LearningPlan, expectedGoalRevision: number | null, expectedPlanStorageRevision: number | null, policy: GoalPolicy): LearningPlanSnapshot;
 export function saveLearningPlanAtomically(
   inputOrTrackId: SaveLearningPlanAtomicallyInput | TrackId,
   positionalPlan?: LearningPlan,
   positionalExpectedGoalRevision?: number | null,
   positionalExpectedPlanStorageRevision?: number | null,
+  positionalPolicy?: GoalPolicy,
 ): LearningPlanSnapshot {
   assertGoalPlanPairReadable();
   const input: SaveLearningPlanAtomicallyInput = typeof inputOrTrackId === "string"
-    ? { trackId: inputOrTrackId, plan: positionalPlan!, expectedGoalRevision: positionalExpectedGoalRevision!, expectedPlanStorageRevision: positionalExpectedPlanStorageRevision! }
+    ? { trackId: inputOrTrackId, plan: positionalPlan!, expectedGoalRevision: positionalExpectedGoalRevision!, expectedPlanStorageRevision: positionalExpectedPlanStorageRevision!, policy: positionalPolicy! }
     : inputOrTrackId;
+  const normalizedTrackId = input.trackId ?? input.plan.trackId;
+  if (!isGoalPolicyForTrack(input.policy, normalizedTrackId)) throw new Error("A matching goal policy is required to save a learning plan.");
   const normalized = normalizeLearningPlan(input.plan);
   const trackId = input.trackId ?? normalized.trackId;
   if (trackId !== normalized.trackId) throw new Error("Learning plan track identity does not match its storage key.");
@@ -80,7 +86,7 @@ export function saveLearningPlanAtomically(
   const goalKey = STORAGE_KEYS.goal(trackId);
   const planKey = STORAGE_KEYS.learningPlan(trackId);
   return withCanonicalWriteLocks([goalKey, planKey], () => {
-    const currentPlanRaw = readCanonicalEnvelope(planKey, (value): value is LearningPlan => isLearningPlanV1ForTrack(value, trackId));
+    const currentPlanRaw = readCanonicalEnvelope(planKey, (value): value is LearningPlan => isPlanForPolicy(value, input.policy));
     const currentPlanEnvelope = currentPlanRaw ? Object.freeze({ ...currentPlanRaw, payload: normalizeLearningPlan(currentPlanRaw.payload) }) : null;
     const actualGoalRevision = readCanonicalEnvelope(goalKey, (_value): _value is unknown => true)?.revision ?? null;
     if (actualGoalRevision !== input.expectedGoalRevision) throw new StaleGoalRevisionError(input.expectedGoalRevision, actualGoalRevision);
@@ -100,7 +106,7 @@ export function saveLearningPlanAtomically(
       return freezeSnapshot(saved);
     } catch (error) {
       if (error instanceof UnsupportedStoredRecordError || error instanceof CanonicalWriteConflictError) {
-        const raced = readCanonicalEnvelope(planKey, (value): value is LearningPlan => isLearningPlanV1ForTrack(value, trackId));
+        const raced = readCanonicalEnvelope(planKey, (value): value is LearningPlan => isPlanForPolicy(value, input.policy));
         throw new StaleLearningPlanStorageRevisionError(input.expectedPlanStorageRevision, raced?.revision ?? null);
       }
       throw error;
@@ -110,6 +116,16 @@ export function saveLearningPlanAtomically(
 
 function freezeSnapshot(envelope: CanonicalRecordEnvelope<LearningPlan>): LearningPlanSnapshot {
   return Object.freeze({ plan: normalizeLearningPlan(envelope.payload), revision: envelope.revision });
+}
+
+function isPlanForPolicy(value: unknown, policy: GoalPolicy): value is LearningPlan {
+  return typeof value === "object" && value !== null && !Array.isArray(value) &&
+    isGoalPolicyForTrack(policy, String((value as { trackId?: unknown }).trackId)) &&
+    normalizePlanSafely(value);
+}
+
+function normalizePlanSafely(value: unknown): value is LearningPlan {
+  try { normalizeLearningPlan(value); return true; } catch { return false; }
 }
 
 function assertExpectedRevision(value: number | null, label: string): void {

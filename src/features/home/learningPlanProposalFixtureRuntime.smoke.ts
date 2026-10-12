@@ -1,6 +1,7 @@
 import { createClaudeCoverageFixtureCompletion } from "../../testing/claudeCoverageFixture";
 import { learningPlanProposalFixtureTrackId } from "./learningPlanProposalFixtureCommand";
 import { generateLearningPlanProposal, type GoalSnapshot } from "../../domain";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import type { LearningPlanEditorStartResult } from "../../application/learningPlan/LearningPlanEditorCoordinator";
 import type { LearningPlanAcceptRuntimeResult } from "../../application/learningPlan/learningPlanMutationRuntime";
 import type { LearningPlanProposalResult } from "../../application/learningPlan/LearningPlanProposalCoordinator";
@@ -97,6 +98,7 @@ function createOutcome(scenario: LearningPlanProposalFixtureCase) {
       ? { kind: "shortfall" as const, requestedLength: 10, eligibleItemCount: 2, missingItemCount: 8 }
       : { kind: "exact" as const, actualLength: 10 };
   return generateLearningPlanProposal({
+    goalPolicy: requireGoalPolicy(trackId),
     goalRecord: goalSnapshot.record,
     expectedGoalRevision: goalSnapshot.revision,
     minutesPerStudyDay: 60,

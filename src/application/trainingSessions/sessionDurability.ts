@@ -7,6 +7,7 @@ import {
   type TrainingSession,
 } from "../../domain";
 import { getActiveTrainingSession, saveTrainingSession } from "../../storage/repositories";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export type TrainingSessionPersistenceBoundary = Readonly<{
   getActive(): Promise<TrainingSession | null>;
@@ -14,8 +15,8 @@ export type TrainingSessionPersistenceBoundary = Readonly<{
 }>;
 
 const canonicalPersistence: TrainingSessionPersistenceBoundary = {
-  getActive: getActiveTrainingSession,
-  save: saveTrainingSession,
+  getActive: () => getActiveTrainingSession(productionTrackAdmissionContext),
+  save: (session) => saveTrainingSession(session, productionTrackAdmissionContext),
 };
 
 export class TrainingSessionStartError extends Error {}

@@ -9,6 +9,9 @@ import { resolvePremiumSessionAdmission } from "../account/premiumSessionAdmissi
 import { hasOfflinePremiumAccess } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { getActiveMutationJournal, getActiveTrainingSession, getTrainingAttempts, getTrainingSessions } from "../../storage/repositories";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
 const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === TRACK_ID)!;
@@ -132,9 +135,9 @@ test("P20: actual offline Premium policy denial leaves session, attempts, and jo
 
   assert.equal(sessionIdentityCalls, 0, "denial occurs before a session identity is allocated");
   assert.equal(refreshCalls, 0, "confirmed-offline denial does not fall through to a network refresh");
-  assert.equal(await getActiveTrainingSession(), null);
-  assert.equal((await getTrainingSessions()).value.length, 0);
-  assert.equal((await getTrainingAttempts()).value.length, 0);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.length, 0);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 0);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.deepEqual(storage.snapshot(), before, "the denied start persists no session or journal state");
 });

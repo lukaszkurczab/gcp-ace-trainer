@@ -6,7 +6,7 @@ import {
   type VerifiedPackageCompletionProfile, type PackageCompletionState,
 } from "../../domain/learning/packageCompletionRule";
 import type { ImmutableCompletedFacts } from "../../domain/learning/paceForecast";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 
 export type LearningEvidenceProjection = Readonly<{
   completion: PackageCompletionState;

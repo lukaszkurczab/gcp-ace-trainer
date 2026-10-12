@@ -30,7 +30,7 @@ import type { DurableOperationError, DurableOperationState, PracticeDurableOpera
 import { OperationProjectionStore } from "./operationProjectionStore";
 import { requiresPremiumProductMode } from "./premiumProductModePolicy";
 import { CanonicalWriteOutcomeError } from "../../storage/errors";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
 

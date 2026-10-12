@@ -12,6 +12,8 @@ import { addReviewQueueItems, addTrainingAttempt, getActiveTrainingSession, getR
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const NOW = "2026-10-03T12:00:00.000Z";
@@ -125,12 +127,12 @@ test("actual lifecycle persists only due current refs, shortens to available due
   assert.ok(pool.length >= 4, "fixture needs distinct due and historical-miss questions");
   const due = pool.slice(0, 3);
   const miss = historicalMiss(track, pool[3]!, "lifecycle-mixed");
-  await addTrainingAttempt(miss);
+  await addTrainingAttempt(miss, productionTrackAdmissionContext);
   for (const [index, question] of due.entries()) {
-    await addTrainingAttempt(historicalMiss(track, question, `lifecycle-due-${index}`, `review-attempt:lifecycle-${index}`));
+    await addTrainingAttempt(historicalMiss(track, question, `lifecycle-due-${index}`, `review-attempt:lifecycle-${index}`), productionTrackAdmissionContext);
   }
   const reviews = due.map((question, index) => dueReview(track, question, `lifecycle-${index}`));
-  await addReviewQueueItems(reviews);
+  await addReviewQueueItems(reviews, productionTrackAdmissionContext);
 
   const lifecycle = await actualLifecycle("coding-due-review-start");
   const prepared = await lifecycle.startSession({
@@ -145,9 +147,9 @@ test("actual lifecycle persists only due current refs, shortens to available due
   assert.deepEqual(selected, due.map((question) => question.questionId));
   assert.equal(new Set(selected).size, selected.length);
   assert.equal(selected.includes(pool[3]!.questionId), false, "an unrelated persisted miss cannot expand due_queue");
-  assert.deepEqual((await getReviewQueueItems()).value, reviews);
-  assert.equal((await getTrainingAttempts()).value.length, 4, "preparation does not rewrite historical attempts");
-  assert.equal((await getActiveTrainingSession())?.id, "coding-due-review-start");
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, reviews);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 4, "preparation does not rewrite historical attempts");
+  assert.equal((await getActiveTrainingSession(productionTrackAdmissionContext))?.id, "coding-due-review-start");
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false, "the real journal-backed start mutation has completed");
 });
 
@@ -165,7 +167,7 @@ test("actual lifecycle prepares and consumes one future manual request without c
     stage: "retention7" as const,
     status: "active" as const,
   };
-  await addReviewQueueItems([original]);
+  await addReviewQueueItems([original], productionTrackAdmissionContext);
 
   const lifecycle = await actualLifecycle("coding-manual-request-start");
   const prepared = await lifecycle.startSession({
@@ -187,7 +189,7 @@ test("actual lifecycle prepares and consumes one future manual request without c
   });
 
   await lifecycle.submitPracticeResponse(correctResponse(question));
-  const stored = (await getReviewQueueItems()).value;
+  const stored = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.equal(stored.length, 1);
   assert.equal(stored[0]?.id, original.id);
   assert.deepEqual(stored[0]?.reasons, ["scheduled_retrieval"]);
@@ -196,7 +198,7 @@ test("actual lifecycle prepares and consumes one future manual request without c
   assert.equal(stored[0]?.stage, original.stage);
   assert.equal(stored[0]?.consecutiveAfterDueSuccesses, original.consecutiveAfterDueSuccesses);
   assert.equal(stored[0]?.persistent, original.persistent);
-  assert.equal((await getTrainingAttempts()).value.length, 1);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
 });
 
 test("actual lifecycle rejects empty due evidence with no session write and preserves the historical attempt", async () => {
@@ -204,7 +206,7 @@ test("actual lifecycle rejects empty due evidence with no session write and pres
   const track = await trackPromise;
   const mode = track.getMode("coding-interview-weak-area-review");
   const miss = historicalMiss(track, track.getPool(mode.modeId)[0]!, "lifecycle-empty");
-  await addTrainingAttempt(miss);
+  await addTrainingAttempt(miss, productionTrackAdmissionContext);
   storage.resetCounters();
 
   const lifecycle = await actualLifecycle("coding-due-review-empty");
@@ -212,10 +214,10 @@ test("actual lifecycle rejects empty due evidence with no session write and pres
     lifecycle.startSession({ trackId: TRACK_ID, modeId: mode.modeId, source: "practiceHub", request: { requestedLength: 10, reviewSource: "due_queue" } }),
     (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "unknown_mode" && /insufficient eligible content/u.test(String(error.cause)),
   );
-  assert.equal((await getActiveTrainingSession()), null);
-  assert.deepEqual((await getTrainingSessions()).value, []);
-  assert.equal(JSON.stringify((await getTrainingAttempts()).value), JSON.stringify([miss]));
-  assert.deepEqual((await getReviewQueueItems()).value, []);
+  assert.equal((await getActiveTrainingSession(productionTrackAdmissionContext)), null);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, []);
+  assert.equal(JSON.stringify((await getTrainingAttempts(productionTrackAdmissionContext)).value), JSON.stringify([miss]));
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false);
   assert.equal(storage.contains(STORAGE_KEYS.TRAINING_SESSION_INDEX), false);
   assert.equal(storage.operations.some((operation) => operation.kind !== "read"), false, "rejected preparation performs no durable write or removal");

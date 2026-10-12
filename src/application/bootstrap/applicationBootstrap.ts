@@ -25,12 +25,13 @@ import {
   abandonUnavailableActiveSession,
   finishCanonicalRepositories,
   inspectCanonicalRepositories,
-  readActiveMutationJournal,
+  getActiveMutationJournal,
   assertTrainingEvidenceIntegrity,
   assertTrainingEvidenceJournalPreflight,
   assertLearningStateResetReplayState,
   assertContentIdentityRecordIntegrity,
 } from "../../storage/repositories";
+import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export type ApplicationBootstrapState =
   | Readonly<{ kind: "ready"; activeSessionId: string | null }>
@@ -77,14 +78,14 @@ export async function bootstrapApplication(
       },
     };
     await inspectCanonicalRepositories(instrumentedRepositoryDependencies);
-    const pendingJournal = await readActiveMutationJournal();
+    const pendingJournal = await getActiveMutationJournal(productionLearningDataAdmissionContext);
     if (pendingJournal?.operation === "reset_learning_state") {
       const reset = pendingJournal.writes[0];
       if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
       assertLearningStateResetReplayState(reset.targetPlan);
-    } else if (pendingJournal) assertTrainingEvidenceJournalPreflight(pendingJournal);
+    } else if (pendingJournal) assertTrainingEvidenceJournalPreflight(pendingJournal, productionTrackAdmissionContext);
     else {
-      assertTrainingEvidenceIntegrity();
+      assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
       assertContentIdentityRecordIntegrity();
     }
     // On a fresh profile, create metadata/identity only after proving the
@@ -103,7 +104,7 @@ export async function bootstrapApplication(
       await lifecycle.recoverPendingJournal();
       reportRecoveryStep(null);
       reportRecoveryStep("active_session_read");
-      const activeAfterRecovery = await getActiveTrainingSession();
+    const activeAfterRecovery = await getActiveTrainingSession(productionTrackAdmissionContext);
       reportRecoveryStep(null);
       if (activeAfterRecovery) {
         reportRecoveryStep("operation_projection_reconstruction");
@@ -114,7 +115,7 @@ export async function bootstrapApplication(
       // Test-only/headless bootstrap has no lifecycle composition to install.
       await recoverPendingMutation();
     }
-    assertTrainingEvidenceIntegrity();
+    assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
     assertContentIdentityRecordIntegrity();
     if (pendingJournal) await finishCanonicalRepositories(instrumentedRepositoryDependencies);
     const unavailableActive = (await getUnavailableActiveRecords()).value;
@@ -131,9 +132,9 @@ export async function bootstrapApplication(
     // resumable active session.
     stage = ApplicationBootstrapStage.ValidatingActiveSession;
     if (prepareLifecycle) await getTrainingLifecycleUseCases().finalizeExpiredSimulationIfDue();
-    const activeSession = await getActiveTrainingSession();
+    const activeSession = await getActiveTrainingSession(productionTrackAdmissionContext);
     resumingSession = activeSession;
-    const sessions = (await getTrainingSessions()).value;
+    const sessions = (await getTrainingSessions(productionTrackAdmissionContext)).value;
     const activeRecords = sessions.filter((session) => session.status === "active");
     if (!activeSession && activeRecords.length > 0) {
       throw new BootstrapInvariantError("active_session_records_without_reference", "An active training session exists without an active-session reference.");
@@ -142,7 +143,7 @@ export async function bootstrapApplication(
       throw new BootstrapInvariantError("active_session_reference_inconsistent", "The active-session reference is inconsistent with canonical session records.");
     }
     if (!activeSession) return { kind: "ready", activeSessionId: null };
-    const draft = await getActiveTrainingSessionDraft();
+    const draft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
     if (canPersistTrainingSessionDraft(activeSession) && !draft) {
       throw new BootstrapInvariantError("active_session_draft_missing", "The active session requires a missing canonical draft.");
     }
@@ -153,9 +154,9 @@ export async function bootstrapApplication(
     const resumeOutcome = await resolveActiveSession(activeSession.id);
     if (resumeOutcome?.kind === "premium_resume_unavailable") {
       const [latestActiveSession, latestSessions, latestDraft] = await Promise.all([
-        getActiveTrainingSession(),
-        getTrainingSessions(),
-        getActiveTrainingSessionDraft(),
+        getActiveTrainingSession(productionTrackAdmissionContext),
+        getTrainingSessions(productionTrackAdmissionContext),
+        getActiveTrainingSessionDraft(productionTrackAdmissionContext),
       ]);
       const latestActiveRecords = latestSessions.value.filter((session) => session.status === "active");
       if (!sameJsonSnapshot(activeSession, latestActiveSession)

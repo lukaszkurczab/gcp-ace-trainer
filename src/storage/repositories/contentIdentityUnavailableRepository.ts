@@ -1,5 +1,5 @@
 import { isContentIdentityTombstone, type ContentIdentityTombstone } from "../../domain/learning/resolvedContentRef";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import type { KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalEnvelope, readCanonicalJson, readCanonicalNamespaceKeys, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";

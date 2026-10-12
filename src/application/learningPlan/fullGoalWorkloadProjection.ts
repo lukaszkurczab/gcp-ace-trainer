@@ -14,7 +14,7 @@ import {
 import type { ProductModeConfig } from "../../content/canonical/productModeConfig";
 import { resolveRequiredUnitFocusMode } from "../../content/canonical/productModeConfig";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { matchesReviewSourceSnapshot } from "../../domain/learning/reviewQueueEntry";
 import { qualifyPackageAttempts } from "../../domain/learning/packageCompletionRule";
 import type { ObservedPlanningCalibration } from "../../domain/learning/planningWorkEstimate";

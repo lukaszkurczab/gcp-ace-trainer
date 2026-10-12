@@ -14,7 +14,7 @@ import {
   type TrackId,
 } from "../../domain";
 import { getTrackRegistration } from "../../domain/tracks/trackRegistry";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { createProposalSlotId } from "../../domain/learning/slotIdentity";
 import { readLearningPlanInputSnapshot, type LearningPlanInputSnapshot } from "../../storage/repositories/learningPlanInputSnapshot";
@@ -30,10 +30,12 @@ import type { FullGoalTimeCapacity } from "./fullGoalTimeCapacity";
 import type { PlanningWorkEstimateResult } from "../../domain/learning/planningWorkEstimate";
 import { buildPlanningCalendar, type PlanningCalendarResult, type PlanningSessionDemand, type TodayActiveTime } from "../../domain/learning/planningCalendar";
 import { projectGoalTargetDate } from "../../domain/goals/goalTargetDateSemantics";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import { readActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { getApplicationCurrentTime } from "../trainingLifecycle/applicationLifecycle";
 import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
 import { getTrainingSessionProgress } from "../trainingSessions/sessionDurability";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export type ProposalId = string;
 
@@ -75,7 +77,7 @@ export type LearningPlanProposalResult =
 export type LearningPlanProposalDependencies = Readonly<{
   createProposalId(): ProposalId;
   getTimezone(): string;
-  readInputs(trackId: TrackId): LearningPlanInputSnapshot;
+  readInputs(trackId: TrackId, policy: import("../../domain/goals/goalPolicy").GoalPolicy): LearningPlanInputSnapshot;
   peekPackage(trackId: TrackId): ResolvedPackageRuntime | null;
   now(): string;
   resolvePackage(trackId: TrackId, familyId: string): Promise<ResolvedPackageRuntime>;
@@ -117,7 +119,8 @@ export class LearningPlanProposalCoordinator {
 
   async create(trackId: TrackId, draft?: Readonly<{ goal: GoalRecord; minutesPerStudyDay: number }>): Promise<LearningPlanProposalResult> {
     let before: LearningPlanInputSnapshot;
-    try { before = this.dependencies.readInputs(trackId); }
+    const goalPolicy = requireGoalPolicy(trackId);
+    try { before = this.dependencies.readInputs(trackId, goalPolicy); }
     catch { return generatorError("retryable"); }
     const goalRecord = draft?.goal ?? before.goal?.record;
     if (!goalRecord) return frozen({ kind: "no_goal" });
@@ -144,7 +147,7 @@ export class LearningPlanProposalCoordinator {
     let after: LearningPlanInputSnapshot;
     let beforeContext: ProposalContext;
     let context: ProposalContext;
-    try { after = this.dependencies.readInputs(trackId); }
+    try { after = this.dependencies.readInputs(trackId, goalPolicy); }
     catch { return generatorError("retryable"); }
     try { await validateActiveSession(after, resolved, familyId); }
     catch (error) { return error instanceof ActiveSessionPlanningError ? activeSessionFailure(error) : generatorError("unclassified"); }
@@ -166,6 +169,7 @@ export class LearningPlanProposalCoordinator {
         ? Object.freeze({ kind: "exact" as const, actualLength: requestedLength })
         : Object.freeze({ kind: "shortfall" as const, requestedLength, eligibleItemCount: pool.length, missingItemCount: Math.max(0, requestedLength - pool.length) });
       const outcome = generateLearningPlanProposal({
+        goalPolicy,
         goalRecord: context.goalRecord,
         expectedGoalRevision: context.expectedGoalRevision,
         minutesPerStudyDay: context.minutesPerStudyDay,
@@ -263,7 +267,7 @@ export class LearningPlanProposalCoordinator {
     if (!stored || stored.proposal.trackId !== trackId) return frozen({ kind: "stale" });
 
     let before: LearningPlanInputSnapshot;
-    try { before = this.dependencies.readInputs(trackId); }
+    try { before = this.dependencies.readInputs(trackId, requireGoalPolicy(trackId)); }
     catch { return generatorError("retryable"); }
     if ((before.goal?.revision ?? null) !== stored.context.expectedGoalRevision) return frozen({ kind: "stale" });
 
@@ -284,7 +288,7 @@ export class LearningPlanProposalCoordinator {
     let after: LearningPlanInputSnapshot;
     let beforeContext: ProposalContext;
     let context: ProposalContext;
-    try { after = this.dependencies.readInputs(trackId); }
+    try { after = this.dependencies.readInputs(trackId, requireGoalPolicy(trackId)); }
     catch { return generatorError("retryable"); }
     try { await validateActiveSession(after, resolved, familyId); }
     catch (error) { return error instanceof ActiveSessionPlanningError ? activeSessionFailure(error) : generatorError("unclassified"); }
@@ -309,7 +313,7 @@ export class LearningPlanProposalCoordinator {
     let resolved: ResolvedPackageRuntime | null;
     let context: ProposalContext;
     try {
-      snapshot = this.dependencies.readInputs(trackId);
+      snapshot = this.dependencies.readInputs(trackId, requireGoalPolicy(trackId));
       resolved = this.dependencies.peekPackage(trackId);
       if (!resolved) return frozen({ kind: "stale" });
       if ((snapshot.goal?.revision ?? null) !== stored.context.expectedGoalRevision) return frozen({ kind: "stale" });
@@ -355,7 +359,7 @@ export class LearningPlanProposalCoordinator {
   private readDevelopmentGoalPlanFaultProposalState(proposalId: ProposalId, trackId: TrackId, stored: StoredProposal): boolean {
     try {
       if (this.proposals.get(proposalId) !== stored || readActiveTrackId() !== trackId) return false;
-      const snapshot = this.dependencies.readInputs(trackId);
+      const snapshot = this.dependencies.readInputs(trackId, requireGoalPolicy(trackId));
       if (snapshot.goal !== null || snapshot.plan !== null || (snapshot.sessions?.length ?? 0) > 0 ||
         !sameStorageScope(snapshot, { storageScope: stored.context.storageScope })) return false;
       const resolvedPackage = this.dependencies.peekPackage(trackId);
@@ -410,7 +414,7 @@ let proposalSequence = 0;
 export const learningPlanProposalCoordinator = new LearningPlanProposalCoordinator({
   createProposalId: () => `proposal:${Date.now()}:${++proposalSequence}`,
   getTimezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
-  readInputs: readLearningPlanInputSnapshot,
+  readInputs: (trackId, policy) => readLearningPlanInputSnapshot(trackId, policy, productionTrackAdmissionContext),
   peekPackage: (trackId) => {
     try { return contentPackageRuntimeOwner.getPreparedDiscovery(trackId); }
     catch { return null; }

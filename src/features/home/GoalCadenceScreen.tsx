@@ -21,7 +21,6 @@ import { reconcileDeviceReminder, reminderNeedsAttention } from "../../preferenc
 import { ROUTES } from "../../constants/routes";
 import {
   createDefaultGoal,
-  getTrackGoalTemplates,
   GOAL_DAY_IDS,
   normalizeGoalRecord,
   normalizeGoalForExplicitSave,
@@ -30,6 +29,7 @@ import {
   type GoalRecord,
   type GoalTemplateId,
 } from "../../domain";
+import { getGoalPolicy, requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import { getTrackDisplay, isRegisteredTrackId, type TrackId } from "../../domain";
 import type { GoalCadenceReturnTo, RootStackParamList } from "../../navigation";
 import { useAppPreferences, useNotificationSettings, useThemedStyles, type AppLocale } from "../../preferences";
@@ -182,7 +182,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           setTrackId(savedTrackId);
           setGoal(savedGoal);
           setAcceptedPlan(savedPlan?.plan.status === "accepted");
-          setDraft(savedGoal ? null : createDefaultGoal(savedTrackId));
+          setDraft(savedGoal ? null : createDefaultGoal(requireGoalPolicy(savedTrackId)));
           setDateInput(savedGoal?.targetDate ?? "");
           const loadedMinutes = savedPlan?.plan.schemaVersion === 2 ? savedPlan.plan.minutesPerStudyDay : null;
           setMinutesPerStudyDay(loadedMinutes);
@@ -201,7 +201,8 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const track = useMemo(() => trackId ? getTrackDisplay(trackId) : null, [trackId]);
   const editing = draft !== null;
   const current = draft ?? goal;
-  const templates = track ? getTrackGoalTemplates(track.id) : [];
+  const goalPolicy = track ? getGoalPolicy(track.id) : null;
+  const templates = goalPolicy?.validGoalTemplateIds ?? [];
 
   function updateDraft(update: (currentDraft: GoalRecord) => GoalRecord): void {
     setDraft((currentDraft) => currentDraft ? update(currentDraft) : currentDraft);
@@ -232,10 +233,15 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
 
   async function save(): Promise<void> {
     if (!current || !track) return;
+    const policy = getGoalPolicy(track.id);
+    if (!policy) {
+      setSaveError("Goal settings are unavailable for this track.");
+      return;
+    }
     const nextGoal = normalizeGoalRecord(normalizeGoalForExplicitSave({
       ...current,
       targetDate: dateInput.length > 0 ? dateInput : undefined,
-    }));
+    }), policy);
     if (nextGoal.preferredDays.length === 0) {
       setSaveError(t("Choose at least one practice day."));
       return;

@@ -22,6 +22,7 @@ import {
   saveTrainingSessionDraft,
   saveTrainingSessionResult,
 } from "../../storage/repositories";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export async function seedPersist13ResetFixtureState(runId: string, options: Readonly<{ includeActiveSession?: boolean }> = {}) {
   const trackId = "coding-interview-dsa-problem-solving" as TrackId;
@@ -49,8 +50,8 @@ export async function seedPersist13ResetFixtureState(runId: string, options: Rea
   });
   if (!prepared.draft || prepared.session.status !== "active") throw new Error("persist13_registered_simulation_draft_unavailable");
   if (options.includeActiveSession !== false) {
-    await saveTrainingSession(prepared.session);
-    await saveTrainingSessionDraft(prepared.draft, null);
+    await saveTrainingSession(prepared.session, productionTrackAdmissionContext);
+    await saveTrainingSessionDraft(prepared.draft, null, productionTrackAdmissionContext);
     await saveActiveForegroundTimer(createForegroundTimerState({
       schemaVersion: 1,
       timerVersion: 1,
@@ -61,7 +62,7 @@ export async function seedPersist13ResetFixtureState(runId: string, options: Rea
       checkpointRevision: 1,
       lastCheckpointAt: now,
       running: false,
-    }), null);
+    }), null, productionTrackAdmissionContext);
   }
 
   const completedAt = new Date(Date.now() - 60_000).toISOString();
@@ -81,7 +82,7 @@ export async function seedPersist13ResetFixtureState(runId: string, options: Rea
   const practiceModeId = resolved.track.modes[0]?.modeId;
   if (!practiceModeId) throw new Error("persist13_bundled_mode_unavailable");
   const completedSession = makeFixtureSession(completedId, trackId, practiceModeId, ref, occurrenceId, completedAt, "completed", completedAt);
-  await saveTrainingSession(completedSession);
+  await saveTrainingSession(completedSession, productionTrackAdmissionContext);
   await saveTrainingSessionResult(createTrainingSessionResult({
     id: `result:${completedId}`,
     sessionId: completedId,
@@ -91,7 +92,7 @@ export async function seedPersist13ResetFixtureState(runId: string, options: Rea
     unansweredOccurrenceIds: [],
     completedAt,
     evidence: { familyId: "coding_interview", details: { fixture: "persist13" } },
-  }));
+  }), productionTrackAdmissionContext);
   const evidence = Object.freeze({ sourceItem: ref, taxonomyOrSkillRefs: Object.freeze([{ axisId: "fixture", nodeId: question.nodeId }]) });
   await addTrainingAttempt(createTrainingAttempt({
     id: attemptId,
@@ -105,7 +106,7 @@ export async function seedPersist13ResetFixtureState(runId: string, options: Rea
     reviewEvidence: evidence,
     answeredAt: completedAt,
     committedAt: completedAt,
-  }));
+  }), productionTrackAdmissionContext);
   await addReviewQueueItems([{
     ...evidence,
     id: reviewId,
@@ -120,14 +121,14 @@ export async function seedPersist13ResetFixtureState(runId: string, options: Rea
     policyVersion: REVIEW_CYCLE_POLICY_VERSION,
     stage: "repair24",
     status: "active",
-  }]);
+  }], productionTrackAdmissionContext);
   await saveSettings({ appearance: "dark", language: "en" });
   saveDeviceReminderSettings({ schemaVersion: 1, enabled: false, identity: null, schedules: [], legacyNotificationIds: [], pending: null });
   const installation = await getGuestInstallation();
   if (!installation || installation.localDatasetId !== runId || installation.bindingState !== "guest") {
     throw new Error("persist13_fixture_guest_identity_missing");
   }
-  const plan = captureLearningStateResetTargetPlan();
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   return Object.freeze({
     profile: plan.profile,
     targets: Object.freeze([...plan.targets]),

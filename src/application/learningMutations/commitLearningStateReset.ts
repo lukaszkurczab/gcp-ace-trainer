@@ -3,6 +3,7 @@ import { commitMutation } from "./commitMutation";
 import { recoverPendingMutation } from "./recoverPendingMutation";
 import { captureLearningStateResetTargetPlan } from "../../storage/repositories/learningStateResetRepository";
 import { withLocalLearningWriteOperation } from "./localLearningWriteOperation";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export type LearningStateResetBarrier = (reset: () => Promise<void>) => Promise<void>;
 
@@ -39,7 +40,7 @@ export async function preflightLearningStateReset(): Promise<void> {
   try {
     await withLocalLearningWriteOperation(async () => {
       await recoverPendingMutation();
-      captureLearningStateResetTargetPlan();
+      captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
     });
   } catch {
     throw new LearningStateResetPreflightError();
@@ -55,7 +56,7 @@ async function commitLearningStateResetDurably(createdAt: string): Promise<void>
     sessionId: "learning-state-reset",
     trackId: "coding-interview-dsa-problem-solving",
     identity: ["learning-state-reset", createdAt],
-    writes: [{ kind: "clear_learning_state", targetPlan: captureLearningStateResetTargetPlan() }],
+    writes: [{ kind: "clear_learning_state", targetPlan: captureLearningStateResetTargetPlan(productionTrackAdmissionContext) }],
     createdAt,
   }));
 }

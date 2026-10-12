@@ -1,6 +1,7 @@
 import type { GoalRecord, GoalSnapshot, LearningPlan, LearningPlanSnapshot, TrackId } from "../../domain";
 import { acceptedTargetFromGoal, normalizeLearningPlan } from "../../domain";
 import { normalizeGoalRecord, isGoalRecordForTrack } from "../../domain/goals/goalContracts";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import { getActiveStorageProfile } from "../../storage/repositories/profileStorageRepository";
 import { goalPlanAcceptanceGoalRevision, readGoalPlanAcceptancePrecondition } from "../../storage/repositories/goalPlanAcceptanceRepository";
 import { readGoalSnapshot } from "../../storage/repositories/goalRepository";
@@ -26,15 +27,16 @@ export type GoalPlanAcceptanceInput = Readonly<{
 /** Persists one immutable, recoverable acceptance intent for the goal/plan pair. */
 export async function commitGoalPlanAcceptance(input: GoalPlanAcceptanceInput): Promise<Readonly<{ goal: GoalSnapshot; plan: LearningPlanSnapshot }>> {
   const cause = input.cause ?? "proposal_acceptance";
-  const proposedGoal = normalizeGoalRecord(input.proposedGoal);
-  if (!isGoalRecordForTrack(proposedGoal, input.trackId)) throw new Error("Accepted goal must include at least one study day.");
+  const policy = requireGoalPolicy(input.trackId);
+  const proposedGoal = normalizeGoalRecord(input.proposedGoal, policy);
+  if (!isGoalRecordForTrack(proposedGoal, policy)) throw new Error("Accepted goal must include at least one study day.");
   const proposedPlan = normalizeLearningPlan(input.plan);
   if (proposedPlan.trackId !== input.trackId || proposedPlan.schemaVersion !== 2) throw new Error("Accepted plans require v2 per-track availability.");
   if (proposedGoal.status !== (cause === "pause" ? "paused" : "active")) throw new Error("Goal-plan pair status does not match its transition cause.");
   if (JSON.stringify(proposedPlan.acceptedTarget) !== JSON.stringify(acceptedTargetFromGoal(proposedGoal))) throw new Error("Accepted plan target must match the proposed goal.");
   await commitMutationAfterPreflight(async () => {
     const profile = getActiveStorageProfile();
-    const { goal: beforeGoal, plan: beforePlan } = readGoalPlanAcceptancePrecondition(input.trackId);
+    const { goal: beforeGoal, plan: beforePlan } = readGoalPlanAcceptancePrecondition(input.trackId, policy);
     const actualGoalRevision = beforeGoal?.revision ?? null;
     const actualPlanRevision = beforePlan?.revision ?? null;
     if (actualGoalRevision !== input.expectedGoalRevision || actualPlanRevision !== input.expectedPlanStorageRevision) throw new Error("Goal-plan proposal revisions are stale.");
@@ -66,8 +68,8 @@ export async function commitGoalPlanAcceptance(input: GoalPlanAcceptanceInput): 
       } }],
     });
   }, input.revalidate, input.beforePlanWrite);
-  const goal = readGoalSnapshot(input.trackId);
-  const plan = getLearningPlanSnapshot(input.trackId);
+  const goal = readGoalSnapshot(input.trackId, policy);
+  const plan = getLearningPlanSnapshot(input.trackId, policy);
   if (!goal || !plan || plan.plan.goalRevision !== goal.revision) throw new Error("Committed goal-plan pair could not be verified.");
   return Object.freeze({ goal, plan });
 }

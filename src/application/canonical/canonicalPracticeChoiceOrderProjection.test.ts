@@ -13,6 +13,8 @@ import { toCanonicalQuestionViewModel } from "../../features/practice/canonicalQ
 import { scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
 import { getTrainingAttempts } from "../../storage/repositories";
 import { projectCanonicalQuestionInSessionOrder } from "./canonicalOptionOrder";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const NOW = "2026-10-05T12:00:00.000Z";
 const CASES = [
@@ -67,7 +69,7 @@ for (const config of CASES) test(`${config.trackId} actual practice facade prese
     const response = { type: "choice_single" as const, optionId };
     assert.equal(scoreCanonicalQuestion(question, response).kind, correct ? "correct" : "incorrect");
     await config.submit(response);
-    const attempts = (await getTrainingAttempts()).value;
+    const attempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
     assert.equal(attempts.length, 1);
     assert.deepEqual(attempts[0]!.response, response);
     installKeyValueStorageForTests(storage);

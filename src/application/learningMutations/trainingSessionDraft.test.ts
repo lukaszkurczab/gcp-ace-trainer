@@ -20,7 +20,7 @@ import {
 import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import type { CanonicalWriteAttempt } from "../../storage/repositories/canonicalRecordCodec";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { readTrainingSessionEnvelopeProof } from "../../storage/repositories/trainingSessionRepository";
 import { acceptSimulationFinalization, readActiveTrainingSessionDraftStateProof, reconcileAcceptedSimulationFinalization } from "../../storage/repositories/trainingSessionDraftRepository";
@@ -35,6 +35,8 @@ import {
   saveTrainingSessionDraft as persistTrainingSessionDraft,
 } from "../../storage/repositories";
 import { acceptSimulationFinalizationForTest, installMemoryStorage, session, timestamp } from "../../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 installLearningStateResetBarrier(async (reset) => reset());
 
@@ -93,32 +95,32 @@ function failNextScopedDraftRead(base: MemoryKeyValueStorage, profileId: string)
 const draftConfiguration = { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } as const;
 
 async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
-  return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft())?.revision ?? null);
+  return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft(productionTrackAdmissionContext))?.revision ?? null, productionTrackAdmissionContext);
 }
 
 test("an occurrence-keyed draft persists, edits, and resumes without learning side effects", async () => {
   installMemoryStorage();
   const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   const first = createTrainingSessionDraft({
     sessionId: active.id,
     trackId: active.trackId,
     responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["a"] } },
     updatedAt: timestamp,
   });
-  const persistedFirst = await persistTrainingSessionDraft(first, null);
+  const persistedFirst = await persistTrainingSessionDraft(first, null, productionTrackAdmissionContext);
   const edited = createTrainingSessionDraft({
     ...persistedFirst,
     responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["b"] } },
     updatedAt: "2026-07-15T10:01:00.000Z",
   });
-  const persistedEdited = await persistTrainingSessionDraft(edited, persistedFirst.revision);
+  const persistedEdited = await persistTrainingSessionDraft(edited, persistedFirst.revision, productionTrackAdmissionContext);
   await assert.rejects(
-    persistTrainingSessionDraft(createTrainingSessionDraft({ ...persistedEdited, responsesByOccurrenceId: {}, updatedAt: persistedEdited.updatedAt }), persistedFirst.revision),
+    persistTrainingSessionDraft(createTrainingSessionDraft({ ...persistedEdited, responsesByOccurrenceId: {}, updatedAt: persistedEdited.updatedAt }), persistedFirst.revision, productionTrackAdmissionContext),
     /expected revision is stale/,
   );
 
-  const resumed = await getActiveTrainingSessionDraft();
+  const resumed = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   assert.deepEqual(resumed, persistedEdited);
   assert.ok(Object.isFrozen(resumed));
   assert.ok(Object.isFrozen(resumed?.responsesByOccurrenceId["occurrence-1"]));
@@ -127,16 +129,16 @@ test("an occurrence-keyed draft persists, edits, and resumes without learning si
     responsesByOccurrenceId: {},
     updatedAt: "2026-07-15T10:02:00.000Z",
   });
-  const persistedRemoved = await persistTrainingSessionDraft(removed, persistedEdited.revision);
-  assert.deepEqual(await getActiveTrainingSessionDraft(), persistedRemoved);
-  assert.deepEqual((await getTrainingAttempts()).value, []);
-  assert.deepEqual((await getReviewQueueItems()).value, []);
+  const persistedRemoved = await persistTrainingSessionDraft(removed, persistedEdited.revision, productionTrackAdmissionContext);
+  assert.deepEqual(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), persistedRemoved);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, []);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
 });
 
 test("draft persistence rejects unknown occurrences and mismatched session scope", async () => {
   installMemoryStorage();
   const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   await assert.rejects(saveTrainingSessionDraft(createTrainingSessionDraft({
     sessionId: active.id,
     trackId: active.trackId,
@@ -154,7 +156,7 @@ test("draft persistence rejects unknown occurrences and mismatched session scope
 test("immediate-feedback sessions cannot persist draft responses", async () => {
   installMemoryStorage();
   const active = session();
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   await assert.rejects(saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp })), /does not permit persisted draft/);
 });
 
@@ -167,10 +169,10 @@ test("uncertain draft writes reconcile only the exact attempted envelope and ori
   const storage = new ReadbackBlockedStorage();
   installKeyValueStorageForTests(storage);
   const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   const input = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["a"] } }, updatedAt: timestamp });
   let attempt: CanonicalWriteAttempt<TrainingSessionDraft> | undefined;
-  await assert.rejects(persistTrainingSessionDraft(input, null), (error: unknown) => {
+  await assert.rejects(persistTrainingSessionDraft(input, null, productionTrackAdmissionContext), (error: unknown) => {
     assert.ok(error instanceof CanonicalWriteOutcomeError);
     assert.equal(error.outcome.kind, "unknown");
     attempt = error.attempt as CanonicalWriteAttempt<TrainingSessionDraft>;
@@ -178,13 +180,13 @@ test("uncertain draft writes reconcile only the exact attempted envelope and ori
   });
   storage.blockDraftRead = false;
   assert.ok(attempt);
-  assert.equal(await reconcileTrainingSessionDraftWrite(attempt), "verified");
+  assert.equal(await reconcileTrainingSessionDraftWrite(attempt, productionTrackAdmissionContext), "verified");
 
-  const saved = await getActiveTrainingSessionDraft();
+  const saved = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   assert.equal(saved?.revision, 1);
   assert.deepEqual(saved?.responsesByOccurrenceId, input.responsesByOccurrenceId);
   MemoryKeyValueStorage.prototype.setString.call(storage, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision: 2, payload: saved }));
-  assert.equal(await reconcileTrainingSessionDraftWrite(attempt), "conflict", "a payload-identical envelope with a different physical revision is not the attempted write");
+  assert.equal(await reconcileTrainingSessionDraftWrite(attempt, productionTrackAdmissionContext), "conflict", "a payload-identical envelope with a different physical revision is not the attempted write");
 });
 
 test("a transient prerequisite read preserves the exact draft command for a safe revision-checked retry", async () => {
@@ -205,30 +207,30 @@ test("a transient prerequisite read preserves the exact draft command for a safe
   const storage = new OneShotDraftReadFailureStorage();
   installKeyValueStorageForTests(storage);
   const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   const input = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["a"] } }, updatedAt: timestamp });
 
-  await assert.rejects(persistTrainingSessionDraft(input, null), (error: unknown) => {
+  await assert.rejects(persistTrainingSessionDraft(input, null, productionTrackAdmissionContext), (error: unknown) => {
     assert.ok(error instanceof CanonicalWriteOutcomeError);
     assert.equal(error.outcome.kind, "provenNotApplied");
     assert.equal(error.attempt, undefined);
     return true;
   });
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), false);
-  const saved = await persistTrainingSessionDraft(input, null);
+  const saved = await persistTrainingSessionDraft(input, null, productionTrackAdmissionContext);
   assert.equal(saved.revision, 1);
   assert.deepEqual(saved.responsesByOccurrenceId, input.responsesByOccurrenceId);
-  assert.deepEqual((await getReviewQueueItems()).value, []);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
 });
 
 test("corrupt draft bytes remain blocked instead of becoming a retryable command", async () => {
   const storage = installMemoryStorage();
   const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   const corrupt = "{";
   storage.setString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, corrupt);
   const input = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp });
-  await assert.rejects(persistTrainingSessionDraft(input, null), (error: unknown) => {
+  await assert.rejects(persistTrainingSessionDraft(input, null, productionTrackAdmissionContext), (error: unknown) => {
     assert.equal(error instanceof CanonicalWriteOutcomeError, false);
     return true;
   });
@@ -239,12 +241,12 @@ test("a D retry is fenced to its original router profile when another profile ha
   const { base, profileA } = await installDraftRouterOnProfileA();
   try {
     const active = { ...session(), id: "same-session-across-profiles", modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-    await saveTrainingSession(active);
+    await saveTrainingSession(active, productionTrackAdmissionContext);
     const lease = captureTrainingSessionDraftLease();
     assert.ok(lease);
     const input = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["A-answer"] } }, updatedAt: timestamp });
     failNextScopedDraftRead(base, profileA.id);
-    await assert.rejects(persistTrainingSessionDraft(input, null, lease!), (error: unknown) => {
+    await assert.rejects(persistTrainingSessionDraft(input, null, productionTrackAdmissionContext, lease!), (error: unknown) => {
       assert.ok(error instanceof CanonicalWriteOutcomeError);
       assert.equal(error.outcome.kind, "provenNotApplied");
       return true;
@@ -252,11 +254,11 @@ test("a D retry is fenced to its original router profile when another profile ha
     base.setFailurePlan(null);
 
     const profileB = await activateDraftRouterAccount();
-    await saveTrainingSession(active);
+    await saveTrainingSession(active, productionTrackAdmissionContext);
     const beforeA = profileBytes(base, profileA.id);
     const beforeB = profileBytes(base, profileB.id);
     base.resetCounters();
-    await assert.rejects(persistTrainingSessionDraft(input, null, lease!), /profile lease changed/u);
+    await assert.rejects(persistTrainingSessionDraft(input, null, productionTrackAdmissionContext, lease!), /profile lease changed/u);
     assert.equal(base.operations.length, 0, "stale lease rejection happens before any profile preflight read");
     assert.deepEqual(profileBytes(base, profileA.id), beforeA);
     assert.deepEqual(profileBytes(base, profileB.id), beforeB);
@@ -270,12 +272,12 @@ test("a same-profile generation change rejects an old D retry lease", async () =
   const { base, control, profileA } = await installDraftRouterOnProfileA();
   try {
     const active = { ...session(), id: "same-session-generation-aba", modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-    await saveTrainingSession(active);
+    await saveTrainingSession(active, productionTrackAdmissionContext);
     const oldLease = captureTrainingSessionDraftLease();
     assert.ok(oldLease);
     const input = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["frozen-answer"] } }, updatedAt: timestamp });
     failNextScopedDraftRead(base, profileA.id);
-    await assert.rejects(persistTrainingSessionDraft(input, null, oldLease!), (error: unknown) => error instanceof CanonicalWriteOutcomeError && error.outcome.kind === "provenNotApplied");
+    await assert.rejects(persistTrainingSessionDraft(input, null, productionTrackAdmissionContext, oldLease!), (error: unknown) => error instanceof CanonicalWriteOutcomeError && error.outcome.kind === "provenNotApplied");
     base.setFailurePlan(null);
 
     setProfileStoragePreparationFactoryForTests(async () => {
@@ -291,7 +293,7 @@ test("a same-profile generation change rejects an old D retry lease", async () =
     assert.notEqual(newLease?.generation, oldLease!.generation);
     const before = profileBytes(base, profileA.id);
     base.resetCounters();
-    await assert.rejects(persistTrainingSessionDraft(input, null, oldLease!), /profile lease changed/u);
+    await assert.rejects(persistTrainingSessionDraft(input, null, productionTrackAdmissionContext, oldLease!), /profile lease changed/u);
     assert.equal(base.operations.length, 0);
     assert.deepEqual(profileBytes(base, profileA.id), before);
   } finally {
@@ -304,11 +306,11 @@ test("a profile switch during the final journal await blocks D before setString"
   const { base, profileA } = await installDraftRouterOnProfileA();
   try {
     const active = { ...session(), id: "same-session-final-await-switch", modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-    await saveTrainingSession(active);
+    await saveTrainingSession(active, productionTrackAdmissionContext);
     const leaseA = captureTrainingSessionDraftLease();
     assert.ok(leaseA);
     const profileB = await activateDraftRouterAccount();
-    await saveTrainingSession(active);
+    await saveTrainingSession(active, productionTrackAdmissionContext);
     await activateDraftRouterGuest(profileA.id);
     const input = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["frozen-answer"] } }, updatedAt: timestamp });
     const beforeA = profileBytes(base, profileA.id);
@@ -327,7 +329,7 @@ test("a profile switch during the final journal await blocks D before setString"
       return value;
     };
     base.resetCounters();
-    await assert.rejects(persistTrainingSessionDraft(input, null, leaseA!), /profile lease changed during preflight/u);
+    await assert.rejects(persistTrainingSessionDraft(input, null, productionTrackAdmissionContext, leaseA!), /profile lease changed during preflight/u);
     assert.equal(journalReads, 2, "the changed lease was injected during the final journal read");
     assert.equal(base.operations.some((operation) => operation.kind === "write"), false, "no setString occurs after the final-await owner change");
     assert.deepEqual(profileBytes(base, profileA.id), beforeA);
@@ -343,14 +345,14 @@ test("the unchanged original D lease permits an exact transport-failure retry", 
   const { base, profileA } = await installDraftRouterOnProfileA();
   try {
     const active = { ...session(), id: "same-session-exact-retry", modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-    await saveTrainingSession(active);
+    await saveTrainingSession(active, productionTrackAdmissionContext);
     const lease = captureTrainingSessionDraftLease();
     assert.ok(lease);
     const input = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["frozen-answer"] } }, updatedAt: timestamp });
     failNextScopedDraftRead(base, profileA.id);
-    await assert.rejects(persistTrainingSessionDraft(input, null, lease!), (error: unknown) => error instanceof CanonicalWriteOutcomeError && error.outcome.kind === "provenNotApplied");
+    await assert.rejects(persistTrainingSessionDraft(input, null, productionTrackAdmissionContext, lease!), (error: unknown) => error instanceof CanonicalWriteOutcomeError && error.outcome.kind === "provenNotApplied");
     base.setFailurePlan(null);
-    const saved = await persistTrainingSessionDraft(input, null, lease!);
+    const saved = await persistTrainingSessionDraft(input, null, productionTrackAdmissionContext, lease!);
     assert.equal(saved.revision, 1);
     assert.deepEqual(saved.responsesByOccurrenceId, input.responsesByOccurrenceId);
   } finally {
@@ -362,20 +364,20 @@ test("the unchanged original D lease permits an exact transport-failure retry", 
 test("clear local history removes the resumable draft", async () => {
   installMemoryStorage();
   const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   await saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp }));
   await clearPatternlyLocalHistory();
-  assert.equal(await getActiveTrainingSessionDraft(), null);
+  assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
 });
 
 test("D owner accepts and reads the exact tagged finalization envelope with one revision bump", async () => {
   const storage = installMemoryStorage();
   const active = { ...session("active", "accepted-d-owner-probe"), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   const draft = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: { "occurrence-1": { z: 1, a: 2 } }, updatedAt: timestamp });
-  await persistTrainingSessionDraft(draft, null);
-  const draftBefore = readActiveTrainingSessionDraftStateProof();
-  const sessionBefore = readTrainingSessionEnvelopeProof(active.id);
+  await persistTrainingSessionDraft(draft, null, productionTrackAdmissionContext);
+  const draftBefore = readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext);
+  const sessionBefore = readTrainingSessionEnvelopeProof(active.id, productionTrackAdmissionContext);
   assert.ok(draftBefore && !(("kind" in draftBefore.state) && draftBefore.state.kind === "accepted_simulation_finalization"));
   assert.ok(sessionBefore);
   const acceptanceIdentity = {
@@ -395,22 +397,22 @@ test("D owner accepts and reads the exact tagged finalization envelope with one 
     kind: "accepted_simulation_finalization", version: 1, responseDraft: draft,
     acceptance: { ...acceptanceIdentity, commandId: sha256Utf8(canonicalSerialize(acceptanceIdentity)) },
   };
-  const outcome = await acceptSimulationFinalization(accepted, { revision: draftBefore.revision, digest: draftBefore.digest }, captureTrainingSessionDraftLease(), []);
+  const outcome = await acceptSimulationFinalization(accepted, { revision: draftBefore.revision, digest: draftBefore.digest }, captureTrainingSessionDraftLease(), [], productionTrackAdmissionContext);
   assert.equal(outcome.kind, "verified");
-  const after = readActiveTrainingSessionDraftStateProof();
+  const after = readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext);
   assert.ok(after && "kind" in after.state && after.state.kind === "accepted_simulation_finalization");
   assert.equal(after.revision, draftBefore.revision + 1);
   assert.equal(canonicalSerialize(after.state), canonicalSerialize(accepted));
-  assert.equal(await reconcileAcceptedSimulationFinalization(accepted, outcome.attempt), "verified");
+  assert.equal(await reconcileAcceptedSimulationFinalization(accepted, productionTrackAdmissionContext, outcome.attempt), "verified");
   const exactAcceptedBytes = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
   assert.ok(exactAcceptedBytes);
-  assert.equal(await reconcileAcceptedSimulationFinalization(accepted), "verified", "cold reconciliation verifies the exact accepted envelope");
+  assert.equal(await reconcileAcceptedSimulationFinalization(accepted, productionTrackAdmissionContext), "verified", "cold reconciliation verifies the exact accepted envelope");
   MemoryKeyValueStorage.prototype.setString.call(storage, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, JSON.stringify(JSON.parse(exactAcceptedBytes), null, 2));
-  assert.equal(await reconcileAcceptedSimulationFinalization(accepted), "conflict", "whitespace-only raw-byte changes do not prove the accepted write");
+  assert.equal(await reconcileAcceptedSimulationFinalization(accepted, productionTrackAdmissionContext), "conflict", "whitespace-only raw-byte changes do not prove the accepted write");
   const envelope = JSON.parse(exactAcceptedBytes) as Record<string, unknown>;
   const reorderedEnvelope = { payload: envelope.payload, revision: envelope.revision, schemaIdentity: envelope.schemaIdentity };
   MemoryKeyValueStorage.prototype.setString.call(storage, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, JSON.stringify(reorderedEnvelope));
-  assert.equal(await reconcileAcceptedSimulationFinalization(accepted), "conflict", "a reordered raw envelope is not the canonical exact accepted-after state");
+  assert.equal(await reconcileAcceptedSimulationFinalization(accepted, productionTrackAdmissionContext), "conflict", "a reordered raw envelope is not the canonical exact accepted-after state");
 });
 
 test("ordinary session and timer writers recheck accepted D after their awaited preflight", async () => {
@@ -421,12 +423,12 @@ test("ordinary session and timer writers recheck accepted D after their awaited 
       modeId: "coding-interview-simulation",
       configurationSnapshot: draftConfiguration,
     };
-    await saveTrainingSession(active);
+    await saveTrainingSession(active, productionTrackAdmissionContext);
     const draft = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp });
-    await persistTrainingSessionDraft(draft, null);
+    await persistTrainingSessionDraft(draft, null, productionTrackAdmissionContext);
     const timer = initialForegroundTimerForSession(active, getTrackRegistration(active.trackId).familyId);
     assert.ok(timer);
-    await saveActiveForegroundTimer(timer, null);
+    await saveActiveForegroundTimer(timer, null, productionTrackAdmissionContext);
 
     const plainDraftBytes = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
     assert.ok(plainDraftBytes);
@@ -448,11 +450,11 @@ test("ordinary session and timer writers recheck accepted D after their awaited 
 
     if (writer === "session") {
       const before = storage.snapshot().get(STORAGE_KEYS.trainingSession(active.id));
-      await assert.rejects(saveTrainingSession(createTrainingSession({ ...active, activeForegroundMs: active.activeForegroundMs + 1 })), /accepted simulation finalization owns/u);
+      await assert.rejects(saveTrainingSession(createTrainingSession({ ...active, activeForegroundMs: active.activeForegroundMs + 1 }), productionTrackAdmissionContext), /accepted simulation finalization owns/u);
       assert.equal(storage.snapshot().get(STORAGE_KEYS.trainingSession(active.id)), before, "session bytes remain untouched when acceptance wins during session preflight");
     } else {
       const before = storage.snapshot().get(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
-      await assert.rejects(saveActiveForegroundTimer({ ...timer, accumulatedForegroundMs: timer.accumulatedForegroundMs + 1 }, timer.checkpointRevision), /accepted simulation finalization freezes/u);
+      await assert.rejects(saveActiveForegroundTimer({ ...timer, accumulatedForegroundMs: timer.accumulatedForegroundMs + 1 }, timer.checkpointRevision, productionTrackAdmissionContext), /accepted simulation finalization freezes/u);
       assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), before, "timer bytes remain untouched when acceptance wins during timer preflight");
     }
     assert.equal(acceptanceWonDuringAwait, true, `${writer} preflight reached its awaited storage boundary`);
@@ -464,10 +466,10 @@ test("D owner rejects recomputed semantic and source-proof forgeries before chan
   for (const forgedField of ["commandId", "responseDraft", "responseEncoding", "sessionDigest", "semanticsVersion"] as const) {
     const storage = installMemoryStorage();
     const active = { ...session("active", `accepted-forgery-${forgedField}`), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
-    await saveTrainingSession(active);
+    await saveTrainingSession(active, productionTrackAdmissionContext);
     const draft = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp });
-    await persistTrainingSessionDraft(draft, null);
-    const prior = readActiveTrainingSessionDraftStateProof();
+    await persistTrainingSessionDraft(draft, null, productionTrackAdmissionContext);
+    const prior = readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext);
     assert.ok(prior && !("kind" in prior.state));
     const priorBytes = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
     assert.ok(priorBytes);
@@ -487,7 +489,7 @@ test("D owner rejects recomputed semantic and source-proof forgeries before chan
       const { commandId: _oldCommandId, ...preimage } = identity;
       forged = { ...accepted, acceptance: { ...identity, commandId: sha256Utf8(canonicalSerialize(preimage)) } };
     }
-    const outcome = await acceptSimulationFinalization(forged, { revision: prior.revision, digest: prior.digest }, captureTrainingSessionDraftLease(), []);
+    const outcome = await acceptSimulationFinalization(forged, { revision: prior.revision, digest: prior.digest }, captureTrainingSessionDraftLease(), [], productionTrackAdmissionContext);
     assert.notEqual(outcome.kind, "verified", `${forgedField} forgery must fail its owner check`);
     assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), priorBytes, `${forgedField} forgery leaves the exact prior D bytes unchanged`);
   }

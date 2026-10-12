@@ -14,6 +14,8 @@ import {
   materializeReviewQueueItems,
   removeReviewQueueEntry,
 } from "./reviewQueueRepository";
+import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+
 
 const TRACK_ID = "google-cloud-associate-cloud-engineer" as const;
 const QUESTION_ID = "gcp-ace-gcpace-n01-b02-002";
@@ -47,27 +49,27 @@ test("keeps the same question distinct across immutable artifact SHA-256 values"
   const oldReview = review("review:gcp:0004", "attempt:gcp:0004", "session:gcp:0004", item(OLD_SHA256, "gcp-core-0004"));
   const currentReview = review("review:gcp:0006", "attempt:gcp:0006", "session:gcp:0006", item(CURRENT_SHA256));
 
-  await addReviewQueueItems([oldReview]);
-  await addReviewQueueItems([currentReview]);
+  await addReviewQueueItems([oldReview], productionTrackAdmissionContext);
+  await addReviewQueueItems([currentReview], productionTrackAdmissionContext);
 
-  const stored = (await getReviewQueueItems()).value;
+  const stored = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.deepEqual(stored.map((entry) => entry.id), [oldReview.id, currentReview.id]);
   assert.deepEqual(stored.map((entry) => entry.sourceItem.artifactSha256), [OLD_SHA256, CURRENT_SHA256]);
 });
 
 test("preserves durable identity conflicts for one resolved content reference", async () => {
   const first = review("review:gcp:current", "attempt:gcp:current", "session:gcp:current", item(CURRENT_SHA256));
-  await addReviewQueueItems([first]);
+  await addReviewQueueItems([first], productionTrackAdmissionContext);
 
   await assert.rejects(
-    () => addReviewQueueItems([{ ...first, id: "review:gcp:replacement", sourceAttemptId: "attempt:gcp:replacement" }]),
+    () => addReviewQueueItems([{ ...first, id: "review:gcp:replacement", sourceAttemptId: "attempt:gcp:replacement" }], productionTrackAdmissionContext),
     /would create a second active cycle for its exact content reference/,
   );
   await assert.rejects(
-    () => addReviewQueueItems([{ ...first, sourceAttemptId: "attempt:gcp:changed" }]),
+    () => addReviewQueueItems([{ ...first, sourceAttemptId: "attempt:gcp:changed" }], productionTrackAdmissionContext),
     /conflicting immutable evidence/,
   );
-  assert.deepEqual((await getReviewQueueItems()).value, [first]);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [first]);
 });
 
 test("rejects a durable ID rewrite across artifact identities before writing either entry", async () => {
@@ -75,23 +77,23 @@ test("rejects a durable ID rewrite across artifact identities before writing eit
   const currentReview = review("review:gcp:batch", "attempt:gcp:0006", "session:gcp:0006", item(CURRENT_SHA256));
 
   await assert.rejects(
-    () => addReviewQueueItems([oldReview, currentReview]),
+    () => addReviewQueueItems([oldReview, currentReview], productionTrackAdmissionContext),
     /conflicting immutable evidence/,
   );
-  assert.deepEqual((await getReviewQueueItems()).value, []);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
 });
 
 test("preserves index order while updating and removing canonical entries", async () => {
   const first = review("review:first", "attempt:first", "session:first", item(OLD_SHA256, "gcp-core-0004"));
   const second = review("review:second", "attempt:second", "session:second", item(CURRENT_SHA256));
-  await addReviewQueueItems([first, second]);
+  await addReviewQueueItems([first, second], productionTrackAdmissionContext);
 
-  await addReviewQueueItems([{ ...first, dueAt: "2026-09-04T08:00:00.000Z" }]);
-  assert.deepEqual((await getReviewQueueItems()).value.map((entry) => entry.id), [first.id, second.id]);
-  assert.deepEqual((await getDueReviewQueueItems(TRACK_ID, "2026-09-05T09:00:00.000Z")).value.map((entry) => entry.id), [second.id, first.id]);
+  await addReviewQueueItems([{ ...first, dueAt: "2026-09-04T08:00:00.000Z" }], productionTrackAdmissionContext);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value.map((entry) => entry.id), [first.id, second.id]);
+  assert.deepEqual((await getDueReviewQueueItems(TRACK_ID, "2026-09-05T09:00:00.000Z", productionTrackAdmissionContext)).value.map((entry) => entry.id), [second.id, first.id]);
 
-  await removeReviewQueueEntry(first.id);
-  assert.deepEqual((await getReviewQueueItems()).value.map((entry) => entry.id), [second.id]);
+  await removeReviewQueueEntry(first.id, productionTrackAdmissionContext);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value.map((entry) => entry.id), [second.id]);
 });
 
 test("materializing the middle of three reviews writes only its changed envelope", async () => {
@@ -100,7 +102,7 @@ test("materializing the middle of three reviews writes only its changed envelope
   const first = review("review:first", "attempt:first", "session:first", item(OLD_SHA256, "gcp-core-0004"));
   const middle = review("review:middle", "attempt:middle", "session:middle", item(CURRENT_SHA256));
   const last = review("review:last", "attempt:last", "session:last", item("c".repeat(64), "gcp-core-0007"));
-  await addReviewQueueItems([first, middle, last]);
+  await addReviewQueueItems([first, middle, last], productionTrackAdmissionContext);
 
   const before = storage.snapshot();
   const beforeFirst = before.get(STORAGE_KEYS.reviewEntry(first.id));
@@ -109,7 +111,7 @@ test("materializing the middle of three reviews writes only its changed envelope
   const beforeIndex = before.get(STORAGE_KEYS.REVIEW_INDEX);
   storage.resetCounters();
 
-  await materializeReviewQueueItems([{ ...middle, dueAt: "2026-09-04T08:00:00.000Z" }]);
+  await materializeReviewQueueItems([{ ...middle, dueAt: "2026-09-04T08:00:00.000Z" }], productionTrackAdmissionContext);
 
   assert.deepEqual(storage.operations.filter((operation) => operation.kind === "write").map((operation) => operation.key), [STORAGE_KEYS.reviewEntry(middle.id)]);
   const after = storage.snapshot();
@@ -144,11 +146,11 @@ test("rejects legacy identity fields, mixed records, tombstones, and non-lowerca
   };
   const uppercase = { ...canonical, sourceItem: { ...canonical.sourceItem, artifactSha256: CURRENT_SHA256.toUpperCase() } };
 
-  await assert.rejects(() => addReviewQueueItems([legacy as unknown as ReviewQueueEntry]), /invalid/);
-  await assert.rejects(() => addReviewQueueItems([mixed as unknown as ReviewQueueEntry]), /invalid/);
-  await assert.rejects(() => addReviewQueueItems([tombstone as unknown as ReviewQueueEntry]), /invalid/);
-  await assert.rejects(() => addReviewQueueItems([uppercase as unknown as ReviewQueueEntry]), /invalid/);
-  assert.deepEqual((await getReviewQueueItems()).value, []);
+  await assert.rejects(() => addReviewQueueItems([legacy as unknown as ReviewQueueEntry], productionTrackAdmissionContext), /invalid/);
+  await assert.rejects(() => addReviewQueueItems([mixed as unknown as ReviewQueueEntry], productionTrackAdmissionContext), /invalid/);
+  await assert.rejects(() => addReviewQueueItems([tombstone as unknown as ReviewQueueEntry], productionTrackAdmissionContext), /invalid/);
+  await assert.rejects(() => addReviewQueueItems([uppercase as unknown as ReviewQueueEntry], productionTrackAdmissionContext), /invalid/);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
 });
 
 test("accepts only explicitly identified new manual overlays on false-persistent schedules", async () => {
@@ -160,14 +162,14 @@ test("accepts only explicitly identified new manual overlays on false-persistent
     manualRequestId: `manual:${"c".repeat(64)}`,
   } satisfies ReviewQueueEntry;
 
-  await addReviewQueueItems([falseScheduledManual]);
-  assert.deepEqual((await getReviewQueueItems()).value, [falseScheduledManual]);
+  await addReviewQueueItems([falseScheduledManual], productionTrackAdmissionContext);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [falseScheduledManual]);
 
-  await clearReviewQueueItems();
+  await clearReviewQueueItems(productionTrackAdmissionContext);
   const ambiguousLegacy = { ...falseScheduledManual } as Record<string, unknown>;
   delete ambiguousLegacy.manualRequestId;
-  await assert.rejects(() => addReviewQueueItems([ambiguousLegacy as unknown as ReviewQueueEntry]), /invalid/);
-  assert.deepEqual((await getReviewQueueItems()).value, []);
+  await assert.rejects(() => addReviewQueueItems([ambiguousLegacy as unknown as ReviewQueueEntry], productionTrackAdmissionContext), /invalid/);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
 });
 
 test("enforces the versioned review-cycle stage tuple without rewriting malformed records", async () => {
@@ -191,9 +193,9 @@ test("enforces the versioned review-cycle stage tuple without rewriting malforme
     })),
   ];
   for (const entry of valid) {
-    await addReviewQueueItems([entry]);
-    assert.deepEqual((await getReviewQueueItems()).value, [entry]);
-    await clearReviewQueueItems();
+    await addReviewQueueItems([entry], productionTrackAdmissionContext);
+    assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [entry]);
+    await clearReviewQueueItems(productionTrackAdmissionContext);
   }
   const terminal: ReviewQueueEntry = {
     ...base,
@@ -208,9 +210,9 @@ test("enforces the versioned review-cycle stage tuple without rewriting malforme
     completedByAttemptId: "attempt:completed",
   };
   const { dueAt: _omittedDueAt, ...validTerminal } = terminal;
-  await addReviewQueueItems([validTerminal]);
-  assert.deepEqual((await getReviewQueueItems()).value, [validTerminal]);
-  await clearReviewQueueItems();
+  await addReviewQueueItems([validTerminal], productionTrackAdmissionContext);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [validTerminal]);
+  await clearReviewQueueItems(productionTrackAdmissionContext);
 
   const malformed: ReviewQueueEntry[] = [
     { ...valid[0]!, reasons: ["scheduled_retrieval"] },
@@ -226,8 +228,8 @@ test("enforces the versioned review-cycle stage tuple without rewriting malforme
   ];
   for (const [index, entry] of malformed.entries()) {
     const malformedEntry = { ...entry, id: `review:malformed:${index}`, sourceAttemptId: `attempt:malformed:${index}` };
-    await assert.rejects(() => addReviewQueueItems([malformedEntry]), /invalid/u);
-    assert.deepEqual((await getReviewQueueItems()).value, []);
+    await assert.rejects(() => addReviewQueueItems([malformedEntry], productionTrackAdmissionContext), /invalid/u);
+    assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
   }
 });
 
@@ -240,13 +242,13 @@ test("reads only strict canonical entries from durable storage", async () => {
     sourceItem: { ...canonical.sourceItem, artifactSha256: CURRENT_SHA256.toUpperCase() },
   });
 
-  await assert.rejects(() => getReviewQueueItems(), UnsupportedStoredRecordError);
+  await assert.rejects(() => getReviewQueueItems(productionTrackAdmissionContext), UnsupportedStoredRecordError);
   assert.equal(getKeyValueStorage().getString(STORAGE_KEYS.REVIEW_INDEX) !== undefined, true);
 });
 
 test("clears all canonical review records and the index", async () => {
-  await addReviewQueueItems([review("review:one", "attempt:one", "session:one", item(CURRENT_SHA256))]);
-  await clearReviewQueueItems();
-  assert.deepEqual((await getReviewQueueItems()).value, []);
+  await addReviewQueueItems([review("review:one", "attempt:one", "session:one", item(CURRENT_SHA256))], productionTrackAdmissionContext);
+  await clearReviewQueueItems(productionTrackAdmissionContext);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
   assert.equal(getKeyValueStorage().getString(STORAGE_KEYS.REVIEW_INDEX), undefined);
 });

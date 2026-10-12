@@ -1,7 +1,7 @@
 import type { AcceptedSimulationFinalization, ResolvedContentRef, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
 import { getTrainingSessionFinalizationCleanupKind } from "../../domain";
 import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { getActiveTrainingSessionDraft, readActiveTrainingSessionDraftStateProof } from "../../storage/repositories";
 import { getReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
 import { StaleMutationRevisionError, type ActiveProfileStorageLease } from "../../storage/repositories/mutationJournalRepository";
@@ -9,6 +9,7 @@ import { JournalWriteError } from "../../storage/errors";
 import { MutationCommitFailure } from "../mutationBoundary";
 import { buildMutationJournal } from "./mutationJournalBuilder";
 import { commitMutationAfterPreflight } from "./commitMutation";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export type TrainingSessionFinalizationCleanup =
   Readonly<{ kind: "training_session_draft"; draft: TrainingSessionDraft; acceptedFinalization: AcceptedSimulationFinalization; submittedOccurrenceIds: readonly string[] }>;
@@ -35,8 +36,8 @@ export async function commitTrainingSessionFinalization(input: {
     throw new Error("Training session finalization cleanup does not match the session configuration.");
   }
   if (input.cleanup.kind === "training_session_draft") {
-    const currentDraft = await getActiveTrainingSessionDraft();
-    const currentState = readActiveTrainingSessionDraftStateProof();
+    const currentDraft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
+    const currentState = readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext);
     if (!currentDraft || canonicalSerialize(currentDraft) !== canonicalSerialize(input.cleanup.draft) || !currentState ||
       canonicalSerialize(currentState.state) !== canonicalSerialize(input.cleanup.acceptedFinalization) ||
       canonicalSerialize(input.cleanup.acceptedFinalization.responseDraft) !== canonicalSerialize(input.cleanup.draft) ||
@@ -66,7 +67,7 @@ export async function commitTrainingSessionFinalization(input: {
   }
   let reviewConflict = false;
   const execute = (includeReviewWrites: boolean) => commitMutationAfterPreflight(async () => {
-    const snapshot = await getReviewQueueSnapshot();
+    const snapshot = await getReviewQueueSnapshot(productionTrackAdmissionContext);
     const mutations = includeReviewWrites ? [...reviewMutationByContent.values()] : [];
     const touchedKeys = new Set(mutations.map(({ record }) => `${record.trackId}:${contentKey(record.sourceItem)}`));
     if (includeReviewWrites && input.reviewBaseline !== undefined) {

@@ -6,6 +6,8 @@ import { STORAGE_KEYS } from "../keys";
 import { captureMutationPhysicalWrites } from "./mutationJournalRepository";
 import { materializeReviewQueueBatch, addReviewQueueItems } from "./reviewQueueRepository";
 import { materializeTrainingAttemptBatch } from "./trainingAttemptRepository";
+import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+
 
 function distinctAttempts() {
   return ["one", "two", "three"].map((part, index) => {
@@ -26,10 +28,10 @@ test("writes three attempts in journal order before one sequential-prepend index
   const storage = installMemoryStorage();
   const attempts = distinctAttempts();
   const writes = attempts.map((record) => ({ kind: "put_attempt" as const, record }));
-  const steps = captureMutationPhysicalWrites(writes);
+  const steps = captureMutationPhysicalWrites(writes, productionTrackAdmissionContext);
   storage.resetCounters();
 
-  materializeTrainingAttemptBatch(attempts, steps);
+  materializeTrainingAttemptBatch(attempts, steps, productionTrackAdmissionContext);
 
   assert.deepEqual(storage.operations.filter((entry) => entry.kind === "write").map((entry) => entry.key), [
     STORAGE_KEYS.trainingAttempt("attempt-one"), STORAGE_KEYS.trainingAttempt("attempt-two"), STORAGE_KEYS.trainingAttempt("attempt-three"), STORAGE_KEYS.TRAINING_ATTEMPT_INDEX,
@@ -40,17 +42,17 @@ test("writes three attempts in journal order before one sequential-prepend index
 test("writes three review records, one derived index, then deletes in journal order", async () => {
   const storage = installMemoryStorage();
   const prior = review("review-delete", "old-attempt");
-  await addReviewQueueItems([prior]);
+  await addReviewQueueItems([prior], productionTrackAdmissionContext);
   const puts = distinctReviews();
   const deletes = [prior];
   const writes = [
     ...puts.map((record) => ({ kind: "put_review_entry" as const, record })),
     ...deletes.map((record) => ({ kind: "delete_review_entry" as const, record })),
   ];
-  const steps = captureMutationPhysicalWrites(writes);
+  const steps = captureMutationPhysicalWrites(writes, productionTrackAdmissionContext);
   storage.resetCounters();
 
-  materializeReviewQueueBatch(puts, deletes, steps);
+  materializeReviewQueueBatch(puts, deletes, steps, productionTrackAdmissionContext);
 
   assert.deepEqual(storage.operations.filter((entry) => entry.kind === "write").map((entry) => entry.key), [
     STORAGE_KEYS.reviewEntry("review-one"), STORAGE_KEYS.reviewEntry("review-two"), STORAGE_KEYS.reviewEntry("review-three"), STORAGE_KEYS.REVIEW_INDEX,

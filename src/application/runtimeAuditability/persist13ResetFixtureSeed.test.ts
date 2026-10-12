@@ -18,6 +18,9 @@ import { STORAGE_KEYS } from "../../storage/keys";
 import { installPersist13ResetPauseHook, PERSIST13_RESET_PAUSE_STAGE } from "./persist13ResetPauseHook";
 import { seedPersist13ResetFixtureState } from "./persist13ResetFixtureSeed";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 installLearningStateResetBarrier(async (reset) => reset());
 
@@ -26,12 +29,12 @@ test("PERSIST-13 journal baseline keeps completed history without pre-seeding an
   const runId = "33333333-3333-4333-8333-333333333333";
   await provisionGuestInstallation({ async create() { return Object.freeze({ installationId: "44444444-4444-4444-8444-444444444444", localDatasetId: runId }); } });
   const plan = await seedPersist13ResetFixtureState(runId, { includeActiveSession: false });
-  const sessions = (await getTrainingSessions()).value;
-  const attempts = (await getTrainingAttempts()).value;
+  const sessions = (await getTrainingSessions(productionTrackAdmissionContext)).value;
+  const attempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
   assert.ok(sessions.some((session) => session.status === "completed"));
   assert.ok(attempts.some((attempt) => sessions.some((session) => session.id === attempt.sessionId && session.status === "completed")));
-  assert.equal(await getActiveTrainingSession(), null);
-  assert.equal(await getActiveTrainingSessionDraft(), null);
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+  assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), undefined);
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), undefined);
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), undefined);
@@ -47,9 +50,9 @@ test("PERSIST-13 seed uses the registered Coding simulation draft and pauses aft
   });
   await provisionGuestInstallation({ async create() { return guestIdentity; } });
   const plan = await seedPersist13ResetFixtureState(runId);
-  const sessions = (await getTrainingSessions()).value;
+  const sessions = (await getTrainingSessions(productionTrackAdmissionContext)).value;
   const active = sessions.find((session) => session.status === "active");
-  const draft = await getActiveTrainingSessionDraft();
+  const draft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   assert.ok(active);
   assert.equal(active.modeId, "coding-interview-simulation");
   assert.equal(active.configurationSnapshot.kind, "algorithmsInterviewSimulation");
@@ -94,7 +97,7 @@ test("PERSIST-13 seed uses the registered Coding simulation draft and pauses aft
   }
 
   assert.equal(reachedPause, true);
-  const journal = await getActiveMutationJournal();
+  const journal = await getActiveMutationJournal(productionLearningDataAdmissionContext);
   assert.equal(journal?.operation, "reset_learning_state");
   assert.equal(journal?.status, "journal_durable");
   assert.ok(plan.targets.every(({ key }) => storage.getString(key) === undefined));

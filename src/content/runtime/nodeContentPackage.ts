@@ -1,5 +1,6 @@
 import { gunzipSync } from "fflate";
-import { assertValidQuestion, isCanonicalSafeIdentity, validateQuestionRelations, type Question } from "../canonical";
+import { assertValidQuestion, validateQuestionRelations, type Question } from "../canonical";
+import { isCanonicalSafeIdentity } from "../../domain/identity/canonicalIdentity";
 import { isRegisteredTrackId } from "../../domain/tracks/trackRegistry";
 
 export const NODE_PACKAGE_SCHEMA = "patternly-content-node-payload-v1" as const;

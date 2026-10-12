@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 
 import { closeActiveProfileStorage, activatePreparedProfile, prepareProfileStorage, setProfileStoragePreparationFactoryForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
@@ -31,6 +32,8 @@ import {
   GUEST_LOCAL_DATA_EXPORT_FILE_PREFIX,
 } from "./guestLocalDataExportService";
 import type { ProfileExportFile, ProfileExportFileStore } from "../account/profileExportFileStore";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const INSTALLATION_ID = "11111111-1111-4111-8111-111111111111";
 const MARKER_DATASET_ID = "22222222-2222-4222-8222-222222222222";
@@ -299,14 +302,14 @@ test("exports the active session, persisted draft, and canonical foreground chec
       status: "active",
       startedAt: "2026-10-09T11:00:00.000Z",
     });
-    await saveTrainingSession(session);
+    await saveTrainingSession(session, productionTrackAdmissionContext);
     const draft = createTrainingSessionDraft({
       sessionId: session.id,
       trackId,
       responsesByOccurrenceId: { "guest-export-occurrence": { selectedOptionIds: ["option-a"] } },
       updatedAt: "2026-10-09T11:01:00.000Z",
     });
-    await saveTrainingSessionDraft(draft, null);
+    await saveTrainingSessionDraft(draft, null, productionTrackAdmissionContext);
     await saveActiveForegroundTimer(createForegroundTimerState({
       schemaVersion: 1,
       timerVersion: 1,
@@ -317,7 +320,7 @@ test("exports the active session, persisted draft, and canonical foreground chec
       checkpointRevision: 1,
       lastCheckpointAt: "2026-10-09T11:01:00.000Z",
       running: true,
-    }), null);
+    }), null, productionTrackAdmissionContext);
 
     const before = base.snapshot();
     const files = fileStore();
@@ -413,9 +416,24 @@ test("fails closed when an accepted plan no longer matches its goal during file 
   await activateGuest(ROUTER_PROFILE_ID);
   try {
     const trackId = "coding-interview-dsa-problem-solving" as const;
-    const goal = createDefaultGoal(trackId);
-    await saveGoalSnapshot(goal, null);
-    saveLearningPlanAtomically({
+    const goal = createDefaultGoal(requireGoalPolicy(trackId));
+    await saveGoalSnapshot(goal, null, requireGoalPolicy(goal.trackId));
+    saveLearningPlanAtomically({ policy: requireGoalPolicy({
+        schemaVersion: 1,
+        planId: "guest-export-plan",
+        trackId,
+        goalRevision: 1,
+        status: "accepted",
+        timezone: "Europe/Warsaw",
+        contentVersion: "content-v1",
+        artifactSha256: "a".repeat(64),
+        acceptedTarget: { meaning: "event", targetDate: null },
+        createdAt: "2026-10-09T11:00:00.000Z",
+        updatedAt: "2026-10-09T11:00:00.000Z",
+        planRevision: 1,
+        commandId: "guest-export-plan-command",
+        slots: [{ slotId: createLearningPlanSlotId("guest-export-slot"), day: "mon", localTime: "18:00", sessionLength: 10 }],
+      }.trackId),
       plan: {
         schemaVersion: 1,
         planId: "guest-export-plan",
@@ -468,7 +486,7 @@ test("fails closed when a completed session has no persisted result", async () =
       status: "completed",
       startedAt: "2026-10-09T11:00:00.000Z",
       completedAt: "2026-10-09T11:01:00.000Z",
-    }));
+    }), productionTrackAdmissionContext);
     const files = fileStore();
     const result = await exportGuestLocalData(dependencies(files.store, async () => "sharedAction"));
     assert.deepEqual(result, { kind: "failure", failure: "sourceInvalid" });

@@ -12,11 +12,15 @@ import {
   createMutationPlanFingerprint,
   captureMutationPhysicalWrites,
   captureMutationExpectedRevisions,
+  getActiveMutationJournal,
   hasValidMutationJournalIntegrity,
   isMutationJournalRecord,
   persistMutationJournal,
 } from "./mutationJournalRepository";
 import { createMutationPlanFingerprint as fingerprint } from "./mutationJournalRepository";
+import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+
 
 function refingerprint(record: ReturnType<typeof journal>, physicalWrites: ReturnType<typeof captureMutationPhysicalWrites>) {
   const plan = { operation: record.operation, status: "journal_durable" as const, createdAt: record.createdAt, sessionId: record.sessionId, trackId: record.trackId,
@@ -32,7 +36,7 @@ function timedSession(trackId = "coding-interview-dsa-problem-solving", id = "se
 
 function replanWithWrites(record: ReturnType<typeof journal>, writes: ReturnType<typeof journal>["writes"]) {
   const expectedRevisions = captureMutationExpectedRevisions(writes);
-  const physicalWrites = captureMutationPhysicalWrites(writes);
+  const physicalWrites = captureMutationPhysicalWrites(writes, productionTrackAdmissionContext);
   const plan = { operation: record.operation, status: "journal_durable" as const, createdAt: record.createdAt, sessionId: record.sessionId, trackId: record.trackId,
     artifactSha256: record.artifactSha256, commandIdentity: record.commandIdentity, expectedRevisions, physicalWrites, writes };
   return { ...record, expectedRevisions, physicalWrites, writes, planFingerprint: fingerprint(plan) };
@@ -40,12 +44,36 @@ function replanWithWrites(record: ReturnType<typeof journal>, writes: ReturnType
 
 beforeEach(() => installMemoryStorage());
 
+test("journal storage rejects a denied admission context before persistence and during readback", async () => {
+  const storage = installMemoryStorage();
+  const record = journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_session", record: session() }]);
+  const deniedContext = Object.freeze({
+    trackAdmission: Object.freeze({ isAdmittedTrackId: () => false }),
+    goalPolicyResolver: productionLearningDataAdmissionContext.goalPolicyResolver,
+  });
+  const malformedContext = Object.freeze({ trackAdmission: Object.freeze({}), goalPolicyResolver: () => null });
+  const emptyBefore = storage.snapshot();
+
+  assert.equal(isMutationJournalRecord(record, deniedContext), false);
+  await assert.rejects(persistMutationJournal(record, deniedContext));
+  await assert.rejects(Reflect.apply(persistMutationJournal, undefined, [record, malformedContext]));
+  await assert.rejects(Reflect.apply(persistMutationJournal, undefined, [record]));
+  assert.deepEqual(storage.snapshot(), emptyBefore, "denied journal writes must not persist bytes");
+
+  await persistMutationJournal(record, productionLearningDataAdmissionContext);
+  const persisted = storage.snapshot();
+  assert.throws(() => getActiveMutationJournal(deniedContext));
+  assert.throws(() => Reflect.apply(getActiveMutationJournal, undefined, [malformedContext]));
+  assert.throws(() => Reflect.apply(getActiveMutationJournal, undefined, []));
+  assert.deepEqual(storage.snapshot(), persisted, "denied journal reads must retain the exact pending journal");
+});
+
 test("start plan derives one exact initial timer only for foreground-timed sessions", () => {
   const timed = timedSession();
   const timer = initialForegroundTimerForSession(timed, getTrackRegistration(timed.trackId).familyId)!;
   const start = journal([{ kind: "put_session", record: timed }, { kind: "put_active_foreground_timer", record: timer }], "start_training_session");
-  assert.equal(hasValidMutationJournalIntegrity(start), true);
-  assert.equal(isMutationJournalRecord(start), true);
+  assert.equal(hasValidMutationJournalIntegrity(start, productionLearningDataAdmissionContext), true);
+  assert.equal(isMutationJournalRecord(start, productionLearningDataAdmissionContext), true);
   assert.deepEqual(start.physicalWrites.find((step) => step.target === "active_foreground_timer")?.before, { kind: "absent" });
   assert.deepEqual(start.physicalWrites.find((step) => step.target === "active_foreground_timer")?.after, {
     kind: "present",
@@ -66,12 +94,12 @@ test("start plan derives one exact initial timer only for foreground-timed sessi
     assert.equal(derived.accumulatedForegroundMs, candidate.activeForegroundMs);
     assert.equal(derived.lastCheckpointAt, candidate.startedAt);
     assert.equal(derived.running, false);
-    assert.equal(isMutationJournalRecord(journal([{ kind: "put_session", record: candidate }, { kind: "put_active_foreground_timer", record: derived }], "start_training_session")), true);
+    assert.equal(isMutationJournalRecord(journal([{ kind: "put_session", record: candidate }, { kind: "put_active_foreground_timer", record: derived }], "start_training_session"), productionLearningDataAdmissionContext), true);
   }
   for (const [trackId, kind] of [["google-cloud-associate-cloud-engineer", "certificationSimulation"], ["backend-system-design-interview", "designInterviewSimulation"]] as const) {
     const absolute = createTrainingSession({ ...timedSession(trackId, `deadline-${kind}`), configurationSnapshot: { kind, timer: "absoluteDeadline", timerDeadlineAt: timestamp } });
     assert.equal(initialForegroundTimerForSession(absolute, getTrackRegistration(absolute.trackId).familyId), null);
-    assert.equal(isMutationJournalRecord(journal([{ kind: "put_session", record: absolute }], "start_training_session")), true);
+    assert.equal(isMutationJournalRecord(journal([{ kind: "put_session", record: absolute }], "start_training_session"), productionLearningDataAdmissionContext), true);
   }
 });
 
@@ -89,7 +117,7 @@ test("rejects recomputed start journals with a missing or forged initial timer",
     valid.writes.map((write) => write.kind === "put_active_foreground_timer" ? { ...write, record: { ...write.record, checkpointRevision: 2 } } : write),
     valid.writes.map((write) => write.kind === "put_active_foreground_timer" ? { ...write, record: { ...write.record, running: true } } : write),
   ];
-  for (const writes of forgeries) assert.equal(isMutationJournalRecord(replanWithWrites(valid, writes as typeof valid.writes)), false);
+  for (const writes of forgeries) assert.equal(isMutationJournalRecord(replanWithWrites(valid, writes as typeof valid.writes), productionLearningDataAdmissionContext), false);
 });
 
 test("rejects recomputed start journals whose timer is ordered before session or draft", () => {
@@ -97,7 +125,7 @@ test("rejects recomputed start journals whose timer is ordered before session or
   const timerWrite = { kind: "put_active_foreground_timer" as const, record: initialForegroundTimerForSession(timed, getTrackRegistration(timed.trackId).familyId)! };
   const sessionWrite = { kind: "put_session" as const, record: timed };
   const noDraft = journal([sessionWrite, timerWrite], "start_training_session");
-  const timerBeforeSessionAccepted = isMutationJournalRecord(replanWithWrites(noDraft, [timerWrite, sessionWrite]));
+  const timerBeforeSessionAccepted = isMutationJournalRecord(replanWithWrites(noDraft, [timerWrite, sessionWrite]), productionLearningDataAdmissionContext);
 
   const simulation = createTrainingSession({ ...timed, modeId: "coding-interview-simulation", configurationSnapshot: {
     kind: "algorithmsInterviewSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission",
@@ -114,7 +142,7 @@ test("rejects recomputed start journals whose timer is ordered before session or
   const withDraft = journal([{ kind: "put_session", record: simulation }, draftWrite, simulationTimerWrite], "start_training_session");
   const timerBeforeDraftAccepted = isMutationJournalRecord(replanWithWrites(withDraft, [
     { kind: "put_session", record: simulation }, simulationTimerWrite, draftWrite,
-  ]));
+  ]), productionLearningDataAdmissionContext);
   assert.deepEqual([timerBeforeSessionAccepted, timerBeforeDraftAccepted], [false, false]);
 });
 
@@ -131,12 +159,12 @@ test("start rejects every existing timer and a timer that races the pre-journal 
   storage.remove(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
   const absentPlan = journal([{ kind: "put_session", record: timed }, { kind: "put_active_foreground_timer", record: existing }], "start_training_session");
   storage.setFailurePlan({ kind: "fail_on_key_read", key: STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER });
-  await assert.rejects(() => persistMutationJournal(absentPlan));
+  await assert.rejects(() => persistMutationJournal(absentPlan, productionLearningDataAdmissionContext));
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), undefined, "a failed fresh timer read cannot durably claim the start journal");
   storage.setFailurePlan(null);
   writeCanonicalJson(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, { ...existing, sessionId: "foreign-session" });
   const racedTimer = storage.getString(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
-  await assert.rejects(() => persistMutationJournal(absentPlan));
+  await assert.rejects(() => persistMutationJournal(absentPlan, productionLearningDataAdmissionContext));
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), undefined);
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), racedTimer);
   assert.notEqual(priorTimer, undefined);
@@ -148,8 +176,8 @@ test("accepts a journal whose scope and writes use one exact resolved artifact",
     { kind: "put_session", record: session() },
   ]);
 
-  assert.equal(hasValidMutationJournalIntegrity(record), true);
-  assert.equal(isMutationJournalRecord(record), true);
+  assert.equal(hasValidMutationJournalIntegrity(record, productionLearningDataAdmissionContext), true);
+  assert.equal(isMutationJournalRecord(record, productionLearningDataAdmissionContext), true);
   assert.equal(createMutationPlanFingerprint({
     operation: record.operation,
     status: "journal_durable",
@@ -183,7 +211,7 @@ test("uses the complete resolved reference when validating attempt and session r
   };
   const withFingerprint = {
     ...candidate,
-    physicalWrites: captureMutationPhysicalWrites(candidate.writes),
+    physicalWrites: captureMutationPhysicalWrites(candidate.writes, productionTrackAdmissionContext),
     planFingerprint: createMutationPlanFingerprint({
       operation: candidate.operation,
       status: "journal_durable" as const,
@@ -193,13 +221,13 @@ test("uses the complete resolved reference when validating attempt and session r
       artifactSha256: candidate.artifactSha256,
       commandIdentity: candidate.commandIdentity,
       expectedRevisions: candidate.expectedRevisions,
-      physicalWrites: captureMutationPhysicalWrites(candidate.writes),
+      physicalWrites: captureMutationPhysicalWrites(candidate.writes, productionTrackAdmissionContext),
       writes: candidate.writes,
     }),
   };
 
-  assert.equal(hasValidMutationJournalIntegrity(withFingerprint), true);
-  assert.equal(isMutationJournalRecord(withFingerprint), false);
+  assert.equal(hasValidMutationJournalIntegrity(withFingerprint, productionLearningDataAdmissionContext), true);
+  assert.equal(isMutationJournalRecord(withFingerprint, productionLearningDataAdmissionContext), false);
 });
 
 test("requires an exact lowercase artifact SHA and rejects legacy top-level identity fields", () => {
@@ -217,8 +245,8 @@ test("requires an exact lowercase artifact SHA and rejects legacy top-level iden
     packagePin: { packageIdentity: "a".repeat(64), packageVersion: "v1", contentReleaseId: "release" },
   };
 
-  assert.equal(hasValidMutationJournalIntegrity(uppercase), false);
-  assert.equal(hasValidMutationJournalIntegrity(legacy), false);
+  assert.equal(hasValidMutationJournalIntegrity(uppercase, productionLearningDataAdmissionContext), false);
+  assert.equal(hasValidMutationJournalIntegrity(legacy, productionLearningDataAdmissionContext), false);
 });
 
 test("rejects additional, missing, duplicate, and reordered physical targets even with a recomputed fingerprint", () => {
@@ -230,7 +258,7 @@ test("rejects additional, missing, duplicate, and reordered physical targets eve
     [...steps.slice(0, 1), steps[0]!, ...steps.slice(1)],
     [steps[1]!, steps[0]!, ...steps.slice(2)],
   ];
-  for (const physicalWrites of variants) assert.equal(hasValidMutationJournalIntegrity(refingerprint(record, physicalWrites)), false);
+  for (const physicalWrites of variants) assert.equal(hasValidMutationJournalIntegrity(refingerprint(record, physicalWrites), productionLearningDataAdmissionContext), false);
 });
 
 test("derives the final attempt index from its captured prior envelope, retaining unrelated ids", () => {
@@ -242,13 +270,13 @@ test("derives the final attempt index from its captured prior envelope, retainin
     const envelope = { ...step.after.envelope, payload: [] };
     return { ...step, after: { ...step.after, envelope, digest: sha256Utf8(JSON.stringify(envelope)) } };
   });
-  assert.equal(hasValidMutationJournalIntegrity(refingerprint(record, physicalWrites)), false);
+  assert.equal(hasValidMutationJournalIntegrity(refingerprint(record, physicalWrites), productionLearningDataAdmissionContext), false);
 });
 
 test("rejects a recomputed same-revision forged before payload digest for a mutable review without changing bytes", async () => {
   const storage = installMemoryStorage();
   const prior = review();
-  await addReviewQueueItems([prior]);
+  await addReviewQueueItems([prior], productionTrackAdmissionContext);
   const next = { ...prior, dueAt: "2026-07-16T00:00:00.000Z" };
   const record = journal([{ kind: "update_review_entry", record: next, transitionId: "attempt-1" }], "set_review_entry");
   const physicalWrites = record.physicalWrites.map((step) => {
@@ -258,10 +286,10 @@ test("rejects a recomputed same-revision forged before payload digest for a muta
     return { ...step, before: { ...step.before, payloadDigest: forgedPayloadDigest }, after: { ...step.after, envelope, digest: step.before.digest } };
   });
   const forged = refingerprint(record, physicalWrites);
-  assert.equal(hasValidMutationJournalIntegrity(forged), true, "the persisted shape and derived operation are internally consistent");
+  assert.equal(hasValidMutationJournalIntegrity(forged, productionLearningDataAdmissionContext), true, "the persisted shape and derived operation are internally consistent");
   const beforePersist = storage.snapshot();
 
-  await assert.rejects(() => persistMutationJournal(forged));
+  await assert.rejects(() => persistMutationJournal(forged, productionLearningDataAdmissionContext));
   assert.deepEqual(storage.snapshot(), beforePersist);
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
 });
@@ -270,22 +298,22 @@ test("rejects standalone review removal when the journal session differs from th
   const storage = installMemoryStorage();
   const valid = journal([{ kind: "delete_review_entry", record: review() }], "remove_review_entry");
   const writes = [{ kind: "delete_review_entry" as const, record: { ...review(), sourceSessionId: "another-session" } }];
-  const physicalWrites = captureMutationPhysicalWrites(writes);
+  const physicalWrites = captureMutationPhysicalWrites(writes, productionTrackAdmissionContext);
   const plan = { operation: valid.operation, status: "journal_durable" as const, createdAt: valid.createdAt, sessionId: valid.sessionId, trackId: valid.trackId,
     artifactSha256: valid.artifactSha256, commandIdentity: valid.commandIdentity, expectedRevisions: valid.expectedRevisions, physicalWrites, writes };
   const forged = { ...valid, writes, physicalWrites, planFingerprint: fingerprint(plan) };
   const before = storage.snapshot();
 
-  await assert.rejects(() => persistMutationJournal(forged));
+  await assert.rejects(() => persistMutationJournal(forged, productionLearningDataAdmissionContext));
   assert.deepEqual(storage.snapshot(), before);
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
 });
 
 test("permits a reset journal only with a null artifact scope", () => {
-  const reset = journal([{ kind: "clear_learning_state", targetPlan: captureLearningStateResetTargetPlan() }], "reset_learning_state");
-  assert.equal(isMutationJournalRecord(reset), true);
+  const reset = journal([{ kind: "clear_learning_state", targetPlan: captureLearningStateResetTargetPlan(productionTrackAdmissionContext) }], "reset_learning_state");
+  assert.equal(isMutationJournalRecord(reset, productionLearningDataAdmissionContext), true);
   const nonReset = { ...reset, operation: "submit_training_outcome" as const };
-  assert.equal(hasValidMutationJournalIntegrity(nonReset), false);
+  assert.equal(hasValidMutationJournalIntegrity(nonReset, productionLearningDataAdmissionContext), false);
 });
 
 test("refuses to journal terminal cleanup when the foreground timer belongs to another session", () => {

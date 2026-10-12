@@ -10,6 +10,7 @@ import type { GoalPlanAcceptanceInterruptionHook } from "../../storage/repositor
 import { pausePersist13ResetAfterMaterialization } from "../runtimeAuditability/persist13ResetPauseHook";
 import { recoverPendingMutation } from "./recoverPendingMutation";
 import type { ActiveProfileStorageLease } from "../../storage/repositories/mutationJournalRepository";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export async function commitMutation(record: MutationJournalRecord, expectedLease: ActiveProfileStorageLease | null = captureMutationJournalLease()): Promise<void> {
   return withLocalLearningWriteOperation(() => {
@@ -41,10 +42,10 @@ export function retainMutationRetryPreflight(error: unknown, preflight: (() => P
 }
 
 async function commitMutationUnlocked(record: MutationJournalRecord, beforeGoalPlanWrite?: GoalPlanAcceptanceInterruptionHook, lease = captureMutationJournalLease()): Promise<void> {
-  const accountState = await getAccountSyncState();
+  const accountState = await getAccountSyncState(productionLearningDataAdmissionContext);
   if (accountState.materialization || accountState.pendingConfirmation) throw new MutationCommitFailure("journal_write", "not_durable", new Error("Account data transition is in progress."));
   let prepared: MutationJournalRecord;
-  try { prepared = await persistMutationJournal(record, lease); }
+  try { prepared = await persistMutationJournal(record, productionLearningDataAdmissionContext, lease); }
   catch (error) {
     const cause = error instanceof Error ? error.cause : undefined;
     const outcome = cause instanceof CanonicalWriteOutcomeError ? cause.outcome.kind : null;
@@ -71,16 +72,16 @@ async function commitMutationUnlocked(record: MutationJournalRecord, beforeGoalP
   try {
     await materializeMutation(prepared, beforeGoalPlanWrite);
     await pausePersist13ResetAfterMaterialization(prepared.operation);
-    await updateMutationJournalPhase(prepared, "materialized");
+    await updateMutationJournalPhase(prepared, "materialized", productionLearningDataAdmissionContext);
   }
   catch (error) { throw new MutationCommitFailure("materialization", "journal_durable", error); }
-  try { await verifyMutation(prepared); await updateMutationJournalPhase(prepared, "verified_pending_clear"); }
+  try { await verifyMutation(prepared); await updateMutationJournalPhase(prepared, "verified_pending_clear", productionLearningDataAdmissionContext); }
   catch (error) { throw new MutationCommitFailure("verification", "materialized", error); }
   try {
     await verifyMutation(prepared);
-    if (prepared.operation !== "resolve_account_sync_conflict" && prepared.operation !== "reset_learning_state") await markAccountDataPending();
+    if (prepared.operation !== "resolve_account_sync_conflict" && prepared.operation !== "reset_learning_state") await markAccountDataPending(productionLearningDataAdmissionContext);
     await verifyMutation(prepared);
-    await clearMutationJournal(prepared.commandIdentity.fingerprint);
+    await clearMutationJournal(productionLearningDataAdmissionContext, prepared.commandIdentity.fingerprint);
   }
   catch (error) { throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error); }
 }
@@ -94,7 +95,7 @@ function isPrewriteStorageReadFailure(error: unknown): boolean {
 
 function immutableRetryRecord(record: MutationJournalRecord): MutationJournalRecord {
   const clone = JSON.parse(JSON.stringify(record)) as MutationJournalRecord;
-  assertValidMutationJournal(clone);
+  assertValidMutationJournal(clone, productionLearningDataAdmissionContext);
   const freeze = (value: unknown): void => {
     if (!value || typeof value !== "object" || Object.isFrozen(value)) return;
     Object.freeze(value);

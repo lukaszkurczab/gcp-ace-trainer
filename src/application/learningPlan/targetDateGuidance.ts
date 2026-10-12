@@ -17,6 +17,7 @@ import type {
   ForecastSource,
   PaceForecastUnavailableReason,
 } from "../../domain/learning/paceForecast";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 
 export type TargetDateGuidanceInput = Readonly<{
   currentGoal: GoalSnapshot | null;
@@ -145,7 +146,7 @@ export function projectTargetDateGuidance(input: TargetDateGuidanceInput): Targe
   let goalRecord: GoalSnapshot["record"];
   let plan: LearningPlan;
   try {
-    goalRecord = normalizeGoalRecord(input.currentGoal.record);
+    goalRecord = normalizeGoalRecord(input.currentGoal.record, requireGoalPolicy(input.currentGoal.record.trackId));
     plan = normalizeLearningPlan(input.acceptedPlan);
   } catch {
     return buildCalculationError();

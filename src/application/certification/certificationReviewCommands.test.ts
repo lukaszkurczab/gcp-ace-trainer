@@ -11,6 +11,9 @@ import { STORAGE_KEYS } from "../../storage/keys";
 import { setIdentityNonceGeneratorForTests } from "../../infrastructure/identity/identityNonceShared";
 import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 async function fixture() {
   await contentPackageRuntimeOwner.verifyBundledPackages();
@@ -53,7 +56,7 @@ test("manual request creates one due-now cycle and repeated marking is idempoten
   const input = { sourceItem, sourceSessionId: "session:manual-command", sourceAttemptId: "attempt:manual-command" };
 
   await setQuestionNeedsReview(input, true);
-  const first = (await getReviewQueueItems()).value;
+  const first = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.equal(first.length, 1);
   assert.deepEqual(first[0]?.reasons, ["manual_mark"]);
   assert.equal(first[0]?.stage, "manual_requested");
@@ -63,14 +66,14 @@ test("manual request creates one due-now cycle and repeated marking is idempoten
   assert.match(first[0]?.manualRequestId ?? "", /^manual:[a-f0-9]{64}$/u);
 
   await setQuestionNeedsReview(input, true);
-  const repeated = (await getReviewQueueItems()).value;
+  const repeated = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.equal(repeated.length, 1);
   assert.equal(repeated[0]?.id, first[0]?.id);
   assert.deepEqual(repeated[0]?.reasons, ["manual_mark"]);
   assert.equal(repeated[0]?.manualRequestId, first[0]?.manualRequestId);
 
   await setQuestionNeedsReview(input, false);
-  assert.deepEqual((await getReviewQueueItems()).value, []);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
 });
 
 test("marking and unmarking a scheduled automatic cycle preserves its due date and qualification state", async () => {
@@ -80,11 +83,11 @@ test("marking and unmarking a scheduled automatic cycle preserves its due date a
     reasons: ["scheduled_retrieval"], dueAt: "2099-10-20T12:00:00.000Z", persistent: false,
     consecutiveAfterDueSuccesses: 0, stage: "retention7",
   });
-  await addReviewQueueItems([original]);
+  await addReviewQueueItems([original], productionTrackAdmissionContext);
   const input = { sourceItem, sourceSessionId: "session:manual-command", sourceAttemptId: "attempt:manual-command" };
 
   await setQuestionNeedsReview(input, true);
-  const marked = (await getReviewQueueItems()).value[0]!;
+  const marked = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
   assert.equal(marked.id, original.id);
   assert.equal(marked.stage, original.stage);
   assert.equal(marked.dueAt, original.dueAt);
@@ -93,10 +96,10 @@ test("marking and unmarking a scheduled automatic cycle preserves its due date a
   assert.deepEqual(marked.reasons, ["scheduled_retrieval", "manual_mark"]);
 
   await setQuestionNeedsReview(input, false);
-  assert.deepEqual((await getReviewQueueItems()).value[0], original);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value[0], original);
 
   await setQuestionNeedsReview(input, true);
-  const secondMark = (await getReviewQueueItems()).value[0]!;
+  const secondMark = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
   assert.notEqual(secondMark.manualRequestId, marked.manualRequestId, "a new off→on request has fresh identity");
   assert.equal(secondMark.dueAt, original.dueAt);
   assert.equal(secondMark.stage, original.stage);
@@ -124,10 +127,10 @@ test("same-millisecond mark/off/on produces a new request and transition identit
   try {
     const input = { sourceItem, sourceSessionId: "session:same-ms", sourceAttemptId: "attempt:same-ms" };
     await setQuestionNeedsReview(input, true);
-    const first = (await getReviewQueueItems()).value[0]!;
+    const first = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
     await setQuestionNeedsReview(input, false);
     await setQuestionNeedsReview(input, true);
-    const second = (await getReviewQueueItems()).value[0]!;
+    const second = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
     assert.equal(first.createdAt, fixedTime);
     assert.equal(second.createdAt, fixedTime);
     assert.notEqual(first.manualRequestId, second.manualRequestId);
@@ -160,8 +163,8 @@ test("manual no-ops do not consume entropy and entropy failure occurs before any
     setIdentityNonceGeneratorForTests(() => { throw new Error("injected entropy failure"); });
     await assert.rejects(() => setQuestionNeedsReview(input, true), /Identity nonce generation failed/u);
     assert.deepEqual(storage.operations.filter((operation) => operation.kind !== "read"), []);
-    assert.equal(await getActiveMutationJournal(), null);
-    assert.deepEqual((await getReviewQueueItems()).value, []);
+    assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+    assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
   } finally {
     setIdentityNonceGeneratorForTests(null);
   }
@@ -171,14 +174,14 @@ test("a durable manual command recovers twice with the exact stored identities a
   const storage = installMemoryStorage();
   const { sourceItem } = await fixture();
   const original = existingCycle(sourceItem, { reasons: ["scheduled_retrieval"], stage: "retention7", persistent: false, consecutiveAfterDueSuccesses: 0 });
-  await addReviewQueueItems([original]);
+  await addReviewQueueItems([original], productionTrackAdmissionContext);
   const nonce = "123e4567-e89b-42d3-a456-426614174004";
   let generated = 0;
   setIdentityNonceGeneratorForTests(() => { generated += 1; return nonce; });
   storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.reviewEntry(original.id) });
   try {
     await assert.rejects(() => setQuestionNeedsReview({ sourceItem, sourceSessionId: "session:journal", sourceAttemptId: "attempt:journal" }, true));
-    const journal = await getActiveMutationJournal();
+    const journal = await getActiveMutationJournal(productionLearningDataAdmissionContext);
     assert.ok(journal);
     const journalEntry = journal.writes.find((write) => write.kind === "update_review_entry");
     assert.ok(journalEntry && journalEntry.kind === "update_review_entry");
@@ -190,8 +193,8 @@ test("a durable manual command recovers twice with the exact stored identities a
     await recoverPendingMutation();
     await recoverPendingMutation();
     assert.equal(generated, 1);
-    assert.equal(await getActiveMutationJournal(), null);
-    assert.deepEqual((await getReviewQueueItems()).value.map((entry) => [entry.id, entry.manualRequestId]), [[original.id, storedRequestId]]);
+    assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+    assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value.map((entry) => [entry.id, entry.manualRequestId]), [[original.id, storedRequestId]]);
   } finally {
     setIdentityNonceGeneratorForTests(null);
     storage.setFailurePlan(null);
@@ -202,7 +205,7 @@ test("a stale review snapshot conflicts before consuming its queued intent", asy
   const storage = installMemoryStorage();
   const { sourceItem } = await fixture();
   const original = existingCycle(sourceItem, { reasons: ["scheduled_retrieval"], stage: "retention7", persistent: false, consecutiveAfterDueSuccesses: 0 });
-  await addReviewQueueItems([original]);
+  await addReviewQueueItems([original], productionTrackAdmissionContext);
   let generated = 0;
   setIdentityNonceGeneratorForTests(() => { generated += 1; return "123e4567-e89b-42d3-a456-426614174005"; });
   const getString = storage.getString.bind(storage);
@@ -216,13 +219,13 @@ test("a stale review snapshot conflicts before consuming its queued intent", asy
   };
   try {
     await assert.rejects(() => setQuestionNeedsReview({ sourceItem, sourceSessionId: "session:stale", sourceAttemptId: "attempt:stale" }, true));
-    const current = (await getReviewQueueItems()).value[0]!;
+    const current = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
     assert.equal(raced, true);
     assert.equal(generated, 1);
     assert.equal(current.dueAt, "2099-12-20T12:00:00.000Z");
     assert.equal(current.manualRequestId, undefined);
     assert.deepEqual(current.reasons, ["scheduled_retrieval"]);
-    assert.equal(await getActiveMutationJournal(), null);
+    assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   } finally {
     setIdentityNonceGeneratorForTests(null);
   }
@@ -269,10 +272,10 @@ test("new manual mark on known persistent=false legacy schedule writes an explic
     persistent: false,
     consecutiveAfterDueSuccesses: 0,
   };
-  await addReviewQueueItems([legacy]);
+  await addReviewQueueItems([legacy], productionTrackAdmissionContext);
   const input = { sourceItem, sourceSessionId: "session:legacy-manual", sourceAttemptId: "attempt:legacy-manual" };
   await setQuestionNeedsReview(input, true);
-  const marked = (await getReviewQueueItems()).value[0]!;
+  const marked = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
   assert.deepEqual(marked.reasons, ["scheduled_retrieval", "manual_mark"]);
   assert.match(marked.manualRequestId ?? "", /^manual:[a-f0-9]{64}$/u);
   assert.equal(marked.persistent, false);
@@ -280,7 +283,7 @@ test("new manual mark on known persistent=false legacy schedule writes an explic
   assert.equal(marked.consecutiveAfterDueSuccesses, legacy.consecutiveAfterDueSuccesses);
   assert.equal(marked.policyVersion, undefined);
   await setQuestionNeedsReview(input, false);
-  const unmarked = (await getReviewQueueItems()).value[0]!;
+  const unmarked = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
   assert.deepEqual(unmarked.reasons, ["scheduled_retrieval"]);
   assert.equal(unmarked.manualRequestId, undefined);
   assert.equal(unmarked.persistent, false);
@@ -300,10 +303,10 @@ test("unmarking a recognized historical manual scheduled item preserves its due 
     consecutiveAfterDueSuccesses: 1,
     persistent: true,
   };
-  await addReviewQueueItems([legacy]);
+  await addReviewQueueItems([legacy], productionTrackAdmissionContext);
 
   await setQuestionNeedsReview({ sourceItem, sourceSessionId: "session:manual-command" }, false);
-  const result = (await getReviewQueueItems()).value[0]!;
+  const result = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
   assert.equal(result.id, legacy.id);
   assert.deepEqual(result.reasons, ["scheduled_retrieval"]);
   assert.equal(result.persistent, false);
@@ -330,10 +333,10 @@ test("a manual request after a terminal cycle receives a fresh ID and retains hi
     completedAt: "2026-10-07T12:00:00.000Z",
     completedByAttemptId: "attempt:retention28",
   };
-  await addReviewQueueItems([completed]);
+  await addReviewQueueItems([completed], productionTrackAdmissionContext);
 
   await setQuestionNeedsReview({ sourceItem, sourceSessionId: "session:new-manual", sourceAttemptId: "attempt:new-manual" }, true);
-  const entries = (await getReviewQueueItems()).value;
+  const entries = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.equal(entries.length, 2);
   assert.equal(entries.find((entry) => entry.id === completed.id)?.status, "completed");
   const active = entries.find((entry) => entry.status === "active");

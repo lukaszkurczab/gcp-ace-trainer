@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 
 import {
@@ -39,7 +40,7 @@ function plan(): LearningPlan {
 }
 
 function goal(status: "active" | "paused" = "active"): GoalSnapshot {
-  return { record: { ...createDefaultGoal(TRACK_ID), status }, revision: 1 };
+  return { record: { ...createDefaultGoal(requireGoalPolicy(TRACK_ID)), status }, revision: 1 };
 }
 
 function guidanceFor(currentGoal: GoalSnapshot | null, acceptedPlan: LearningPlan | null, c3Result: "in_progress" | "completed" = "in_progress") {

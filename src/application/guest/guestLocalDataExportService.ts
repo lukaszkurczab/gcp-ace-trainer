@@ -1,12 +1,12 @@
 import type { ForegroundTimerState, GoalRecord, LearningPlan, TrackId, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
 import { acceptedTargetFromGoal, LAUNCH_TRACK_IDS } from "../../domain";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { cleanupProfileExportFiles, createRuntimeProfileExportFileStore, type ProfileExportFile, type ProfileExportFileStore } from "../account/profileExportFileStore";
 import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, getActiveStorageProfileOrNull, type ActiveProfileStorageLease } from "../../storage/repositories/profileStorageRepository";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 import { readActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { readGuestInstallation, type GuestInstallation } from "../../storage/repositories/guestInstallationRepository";
-import { readActiveMutationJournal } from "../../storage/repositories/mutationJournalRepository";
+import { hasPendingMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { readTrainingSessions, readActiveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
 import { readActiveTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
 import { readActiveForegroundTimer } from "../../storage/repositories/foregroundTimerRepository";
@@ -14,6 +14,7 @@ import { readTrainingSessionResult } from "../../storage/repositories/trainingSe
 import { readTrainingAttempts } from "../../storage/repositories/trainingAttemptRepository";
 import { readReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
 import { readGoalSnapshot } from "../../storage/repositories/goalRepository";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import { getLearningPlanSnapshot } from "../../storage/repositories/learningPlanRepository";
 import { readSettings } from "../../storage/repositories/settingsRepository";
 import { readGoalOnboardingPreferencesForExport } from "../../storage/repositories/goalOnboardingPreferenceRepository";
@@ -22,6 +23,7 @@ import { getContentReportOutbox } from "../../storage/repositories/contentReport
 import { assertContentIdentityRecordIntegrity, readContentIdentityRetainedHistory } from "../../storage/repositories/contentIdentityUnavailableRepository";
 import { assertTrainingEvidenceIntegrity } from "../../storage/repositories/trainingEvidenceIntegrityRepository";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export const GUEST_LOCAL_DATA_EXPORT_FILE_PREFIX = "patternly-guest-local-data-";
 
@@ -140,39 +142,39 @@ function readGuestSource(): CapturedGuestSource {
     || profile.accountId !== lease.profile.accountId || !isActiveGuestLease(lease, installation)) {
     throw new GuestLocalExportError("guestProfileUnavailable");
   }
-  if (readActiveMutationJournal()) throw new GuestLocalExportError("sourcePending");
+  if (hasPendingMutationJournal()) throw new GuestLocalExportError("sourcePending");
 
   try {
-    assertTrainingEvidenceIntegrity();
+    assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
     assertContentIdentityRecordIntegrity();
   } catch {
     throw new GuestLocalExportError("sourceInvalid");
   }
 
-  const sessionResult = readTrainingSessions();
-  const attemptResult = readTrainingAttempts();
-  const reviewResult = readReviewQueueSnapshot();
+  const sessionResult = readTrainingSessions(productionTrackAdmissionContext);
+  const attemptResult = readTrainingAttempts(productionTrackAdmissionContext);
+  const reviewResult = readReviewQueueSnapshot(productionTrackAdmissionContext);
   if (!sessionResult.ok || sessionResult.issues?.length || !attemptResult.ok || attemptResult.issues?.length || !reviewResult.ok || reviewResult.issues?.length) {
     throw new GuestLocalExportError("sourceInvalid");
   }
   const sessions = sessionResult.value;
   const sessionIds = new Set(sessions.map((session) => session.id));
   if (sessionIds.size !== sessions.length) throw new GuestLocalExportError("sourceInvalid");
-  const activeSession = readActiveTrainingSession();
+  const activeSession = readActiveTrainingSession(productionTrackAdmissionContext);
   const activeSessions = sessions.filter((session) => session.status === "active");
   if (activeSessions.length > 1 || (activeSession === null) !== (activeSessions.length === 0)
     || (activeSession !== null && activeSessions[0]?.id !== activeSession.id)) throw new GuestLocalExportError("sourceInvalid");
 
-  const draft = readActiveTrainingSessionDraft();
+  const draft = readActiveTrainingSessionDraft(productionTrackAdmissionContext);
   if (draft && (!activeSession || draft.sessionId !== activeSession.id || draft.trackId !== activeSession.trackId)) {
     throw new GuestLocalExportError("sourceInvalid");
   }
-  const foregroundTimer = readActiveForegroundTimer();
+  const foregroundTimer = readActiveForegroundTimer(productionTrackAdmissionContext);
   if (foregroundTimer && (!activeSession || foregroundTimer.sessionId !== activeSession.id || foregroundTimer.trackId !== activeSession.trackId)) {
     throw new GuestLocalExportError("sourceInvalid");
   }
   const results = sessions.flatMap((session) => {
-    const result = readTrainingSessionResult(session.id);
+    const result = readTrainingSessionResult(session.id, productionTrackAdmissionContext);
     if (session.status === "completed" && result === null) throw new GuestLocalExportError("sourceInvalid");
     if (result && result.sessionId !== session.id) throw new GuestLocalExportError("sourceInvalid");
     return result ? [Object.freeze({ sessionId: session.id, result })] : [];
@@ -181,8 +183,9 @@ function readGuestSource(): CapturedGuestSource {
   const goals: Array<Readonly<{ trackId: TrackId; goal: GoalRecord }>> = [];
   const acceptedPlans: Array<Readonly<{ trackId: TrackId; plan: LearningPlan }>> = [];
   for (const trackId of LAUNCH_TRACK_IDS) {
-    const goal = readGoalSnapshot(trackId);
-    const plan = getLearningPlanSnapshot(trackId);
+    const policy = requireGoalPolicy(trackId);
+    const goal = readGoalSnapshot(trackId, policy);
+    const plan = getLearningPlanSnapshot(trackId, policy);
     if (plan && (!goal || plan.plan.goalRevision !== goal.revision
       || canonicalSerialize(plan.plan.acceptedTarget) !== canonicalSerialize(acceptedTargetFromGoal(goal.record)))) {
       throw new GuestLocalExportError("sourceInvalid");
@@ -238,7 +241,7 @@ function readGuestSource(): CapturedGuestSource {
   });
 
   const verifiedInstallation = readGuestInstallation();
-  if (readActiveMutationJournal() || !isActiveProfileStorageLeaseCurrent(lease)
+  if (hasPendingMutationJournal() || !isActiveProfileStorageLeaseCurrent(lease)
     || readLearningPlanStorageScope() !== storageScope || !isActiveGuestLease(lease, verifiedInstallation)
     || canonicalSerialize(verifiedInstallation) !== canonicalSerialize(installation)) {
     throw new GuestLocalExportError("sourceChanged");

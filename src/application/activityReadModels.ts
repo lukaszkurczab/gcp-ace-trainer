@@ -1,10 +1,11 @@
 import { isContentIdentityTombstone, type EvidenceRef, type TrainingAttempt, type TrainingSession, type TrainingSessionResult } from "../domain";
 import { getArchivalHistoryRecords, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions, type ContentIdentityArchivalHistoryRecord } from "../storage/repositories";
 import { createLocalCalendar } from "../utils/date";
-import { canonicalSerialize } from "../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../domain/identity/canonicalSerialization";
 import { captureProfileReadFence } from "./profileReadFence";
 import { StorageReadError } from "../storage/errors";
 import type { StorageRepositoryResult } from "../storage/repositories/result";
+import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
 
 export type ActivitySessionRecord = Readonly<{
   attemptCount: number;
@@ -143,8 +144,8 @@ export async function loadActivitySessionRecords(
   const getResult = dependencies.getResult ?? getTrainingSessionResult;
   const getSessions = dependencies.getSessions ?? getTrainingSessions;
   const [sessionsResult, attemptsResult] = await Promise.all([
-    getSessions(),
-    getAttempts(),
+    getSessions(productionTrackAdmissionContext),
+    getAttempts(productionTrackAdmissionContext),
   ]);
   assertNoActivityReadIssues(sessionsResult, attemptsResult);
   const attemptsBySession = groupAttemptsBySession(attemptsResult.value);
@@ -159,7 +160,7 @@ export async function loadActivitySessionRecords(
     return {
       attemptCount: attempts.length,
       latestAttemptAt,
-      result: await getResult(session.id),
+      result: await getResult(session.id, productionTrackAdmissionContext),
       session,
       scopeRefs: activityScopeRefs(attempts),
     } satisfies ActivitySessionRecord;

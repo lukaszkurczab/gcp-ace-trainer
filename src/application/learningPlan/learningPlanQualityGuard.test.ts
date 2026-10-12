@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import {
@@ -14,6 +15,8 @@ import { completionCopy, targetCopy } from "../../features/home/homePlanUiContra
 import { projectTargetDateGuidance } from "./targetDateGuidance";
 import { presentTargetDateGuidance } from "./targetDateGuidancePresentation";
 import { readLearningPlanInputSnapshot } from "../../storage/repositories/learningPlanInputSnapshot";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK = "google-cloud-associate-cloud-engineer";
 const TODAY = "2026-03-01";
@@ -23,7 +26,7 @@ const TIMEZONE = "Europe/Warsaw";
 async function qualityFixture(attemptCount = 25) {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, "certification");
-  const goal = await saveGoalSnapshot({ ...createDefaultGoal(TRACK), targetDate: "2026-04-01" }, null);
+  const goal = await saveGoalSnapshot({ ...createDefaultGoal(requireGoalPolicy(TRACK)), targetDate: "2026-04-01" }, null, requireGoalPolicy(TRACK));
   const focusQuestion = resolved.track.questions[0]!;
   const profile = {
     trackId: TRACK, contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256,
@@ -38,7 +41,7 @@ async function qualityFixture(attemptCount = 25) {
       result: index < attemptCount - 5 ? { kind: "correct", earnedPoints: 1, maxPoints: 1 } : { kind: "incorrect", earnedPoints: 0, maxPoints: 1 },
       reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt,
     };
-    await addTrainingAttempt(attempt);
+    await addTrainingAttempt(attempt, productionTrackAdmissionContext);
   }
   const plan = normalizeLearningPlan({
     schemaVersion: 1, planId: "quality-plan", trackId: TRACK, goalRevision: goal.revision, status: "accepted",
@@ -47,8 +50,8 @@ async function qualityFixture(attemptCount = 25) {
     planRevision: 1, commandId: "quality-command",
     slots: [{ slotId: createLearningPlanSlotId("quality-slot"), day: "mon", localTime: "18:00", sessionLength: 40 }],
   });
-  saveLearningPlanAtomically({ plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
-  const inputs = readLearningPlanInputSnapshot(TRACK);
+  saveLearningPlanAtomically({ policy: requireGoalPolicy(plan.trackId), plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
+  const inputs = readLearningPlanInputSnapshot(TRACK, requireGoalPolicy(TRACK), productionTrackAdmissionContext);
   const completion = evaluatePackageCompletion(profile, inputs.attempts, resolved.track.getQuestion);
   assert.equal(completion.kind, "in_progress");
   if (completion.kind === "in_progress") {
@@ -72,7 +75,7 @@ test("P05 persisted 25 attempts / 5 correct in latest 10 cannot predict completi
 test("P05 evaluator result cannot become an achievable target merely because volume is met", async () => {
   const f = await qualityFixture();
   const proposal = generateLearningPlanProposal({
-    goalRecord: f.inputs.goal!.record, expectedGoalRevision: f.inputs.goal!.revision, minutesPerStudyDay: 60, executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: { modeId: "certification-diagnostic-baseline", requestedLength: 40 }, practice: { modeId: "certification-focus-practice", requestedLength: 10 } }, nextSession: { kind: "diagnosis", modeId: "certification-diagnostic-baseline", requestedLength: 40 }, diagnosisStatus: "scheduled", artifactSha256: f.profile.artifactSha256, planningPolicyIdentity: f.resolved.planningPolicyIdentity!, contentVersion: f.profile.contentVersion,
+    goalPolicy: requireGoalPolicy(f.inputs.goal!.record.trackId), goalRecord: f.inputs.goal!.record, expectedGoalRevision: f.inputs.goal!.revision, minutesPerStudyDay: 60, executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: { modeId: "certification-diagnostic-baseline", requestedLength: 40 }, practice: { modeId: "certification-focus-practice", requestedLength: 10 } }, nextSession: { kind: "diagnosis", modeId: "certification-diagnostic-baseline", requestedLength: 40 }, diagnosisStatus: "scheduled", artifactSha256: f.profile.artifactSha256, planningPolicyIdentity: f.resolved.planningPolicyIdentity!, contentVersion: f.profile.contentVersion,
     primaryModeId: "certification-focus-practice", requestedLength: 10,
     sessionCapacity: { kind: "exact", actualLength: 10 },
     completionState: f.completion, dueReviewCount: 0, primaryScopeLabel: "Track", localToday: TODAY, timezone: TIMEZONE,
@@ -87,7 +90,7 @@ function completedFacts(f: Awaited<ReturnType<typeof qualityFixture>>) {
 }
 function proposalFor(f: Awaited<ReturnType<typeof qualityFixture>>, completion: PackageCompletionState = f.completion, goal = f.inputs.goal!, shortfall = false) {
   return generateLearningPlanProposal({
-    goalRecord: goal.record, expectedGoalRevision: goal.revision, minutesPerStudyDay: 60, executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: { modeId: "certification-diagnostic-baseline", requestedLength: 40 }, practice: { modeId: "certification-focus-practice", requestedLength: 10 } }, nextSession: { kind: "diagnosis", modeId: "certification-diagnostic-baseline", requestedLength: 40 }, diagnosisStatus: "scheduled", artifactSha256: f.profile.artifactSha256, planningPolicyIdentity: f.resolved.planningPolicyIdentity!, contentVersion: f.profile.contentVersion,
+    goalPolicy: requireGoalPolicy(goal.record.trackId), goalRecord: goal.record, expectedGoalRevision: goal.revision, minutesPerStudyDay: 60, executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: { modeId: "certification-diagnostic-baseline", requestedLength: 40 }, practice: { modeId: "certification-focus-practice", requestedLength: 10 } }, nextSession: { kind: "diagnosis", modeId: "certification-diagnostic-baseline", requestedLength: 40 }, diagnosisStatus: "scheduled", artifactSha256: f.profile.artifactSha256, planningPolicyIdentity: f.resolved.planningPolicyIdentity!, contentVersion: f.profile.contentVersion,
     primaryModeId: "certification-focus-practice", requestedLength: 10,
     sessionCapacity: shortfall ? { kind: "shortfall", requestedLength: 10, eligibleItemCount: 0, missingItemCount: 10 } : { kind: "exact", actualLength: 10 },
     completionState: completion, dueReviewCount: 0, primaryScopeLabel: "Track", localToday: TODAY, timezone: TIMEZONE,
@@ -152,9 +155,9 @@ test("current completed window permits zero-work; later incorrect durable attemp
   for (let index = 0; index < 20; index++) {
     const answeredAt = `2026-03-01T12:00:${String(index).padStart(2, "0")}.000Z`;
     await addTrainingAttempt({ ...base, id: `quality-later-${index}`, occurrenceId: `quality-later-occurrence-${index}`, answeredAt, committedAt: answeredAt,
-      result: index < 16 ? { kind: "correct", earnedPoints: 1, maxPoints: 1 } : { kind: "incorrect", earnedPoints: 0, maxPoints: 1 } });
+      result: index < 16 ? { kind: "correct", earnedPoints: 1, maxPoints: 1 } : { kind: "incorrect", earnedPoints: 0, maxPoints: 1 } }, productionTrackAdmissionContext);
     if (index === 19) {
-      const inputs = readLearningPlanInputSnapshot(TRACK);
+      const inputs = readLearningPlanInputSnapshot(TRACK, requireGoalPolicy(TRACK), productionTrackAdmissionContext);
       const completion = evaluatePackageCompletion(f.profile, inputs.attempts, f.resolved.track.getQuestion);
       assert.equal(completion.kind, "completed");
       const proposal = proposalFor(f, completion);
@@ -167,9 +170,9 @@ test("current completed window permits zero-work; later incorrect durable attemp
   for (let index = 0; index < 5; index++) {
     const answeredAt = `2026-03-01T12:01:${String(index).padStart(2, "0")}.000Z`;
     await addTrainingAttempt({ ...base, id: `quality-regression-${index}`, occurrenceId: `quality-regression-occurrence-${index}`, answeredAt, committedAt: answeredAt,
-      result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 } });
+      result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 } }, productionTrackAdmissionContext);
   }
-  const inputs = readLearningPlanInputSnapshot(TRACK);
+  const inputs = readLearningPlanInputSnapshot(TRACK, requireGoalPolicy(TRACK), productionTrackAdmissionContext);
   const completion = evaluatePackageCompletion(f.profile, inputs.attempts, f.resolved.track.getQuestion);
   assert.equal(completion.kind, "in_progress");
   assert.deepEqual(proposalFor(f, completion).targetAssessment, { kind: "quality_requirement_unmet" });

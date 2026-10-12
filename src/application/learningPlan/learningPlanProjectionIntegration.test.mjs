@@ -15,6 +15,8 @@ const { createLearningPlanSlotId } = require('../../domain/learning/slotIdentity
 const { MemoryKeyValueStorage, installKeyValueStorageForTests } = require('../../infrastructure/storage/mmkvClient.ts');
 const repositories = require('../../storage/repositories/index.ts');
 const { readLearningPlanInputSnapshot } = require('../../storage/repositories/learningPlanInputSnapshot.ts');
+const { requireGoalPolicy } = require('../../domain/tracks/trackGoalPolicies.ts');
+const { productionLearningDataAdmissionContext, productionTrackAdmissionContext } = require('../tracks/trackAdmissionContext.ts');
 const { buildProgressPlanPresentationModel } = require('../../features/home/progressPlanPresentationModel.ts');
 const { buildHomePlanPracticeSetupParams } = require('../../features/home/homePlanUiContract.ts');
 const { runtimeSelectors } = require('../../testing/runtimeSelectors.ts');
@@ -23,6 +25,21 @@ const { getTrackRegistration } = require('../../domain/tracks/trackRegistry.ts')
 const LOCALES = ['en', 'pl', 'de', 'fr', 'es', 'it', 'et'];
 
 const TRACK = 'aws-certified-solutions-architect-associate';
+function readPlanInputs(trackId, policy = requireGoalPolicy(trackId)) {
+  return readLearningPlanInputSnapshot(trackId, policy, productionTrackAdmissionContext);
+}
+function addAttempt(attempt) {
+  return repositories.addTrainingAttempt(attempt, productionTrackAdmissionContext);
+}
+function addReviews(entries) {
+  return repositories.addReviewQueueItems(entries, productionTrackAdmissionContext);
+}
+function getActiveTrainingSession() {
+  return repositories.getActiveTrainingSession(productionTrackAdmissionContext);
+}
+function getTrainingSessions() {
+  return repositories.getTrainingSessions(productionTrackAdmissionContext);
+}
 const CONTENT = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? fileURLToPath(new URL('../../../../patternly-content/', import.meta.url)));
 const APP_ROOT = path.resolve(fileURLToPath(new URL('../../../', import.meta.url)));
 const { buildTrack, buildAll } = await import(pathToFileURL(path.join(CONTENT, 'scripts/build.mjs')).href);
@@ -57,7 +74,8 @@ test('Home rejects a goal change during exact package resolution instead of publ
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, 'certification');
   assert.ok(resolved.planningPolicyIdentity);
   const executionPolicy = executionPolicyFor(resolved);
-  const goal = await repositories.saveGoalSnapshot({ ...createDefaultGoal(TRACK), targetDate: '2026-10-31' }, null);
+  const policy = requireGoalPolicy(TRACK);
+  const goal = await repositories.saveGoalSnapshot({ ...createDefaultGoal(policy), targetDate: '2026-10-31' }, null, policy);
   const plan = normalizeLearningPlan({
     schemaVersion: 2, planId: 'projection-plan', trackId: TRACK, goalRevision: goal.revision, status: 'accepted',
     timezone: 'Europe/Warsaw', contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256,
@@ -66,12 +84,12 @@ test('Home rejects a goal change during exact package resolution instead of publ
     planRevision: 1, commandId: 'projection-command',
     slots: [{ slotId: createLearningPlanSlotId('projection-slot'), day: 'fri', localTime: '18:00', sessionLength: executionPolicy.practice.requestedLength }],
   });
-  repositories.saveLearningPlanAtomically({ plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
+  repositories.saveLearningPlanAtomically({ policy, plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
   const reader = new HomePlanSnapshotReader({
-    readInputs: readLearningPlanInputSnapshot,
-    getActiveTrainingSession: repositories.getActiveTrainingSession, getTrainingSessions: repositories.getTrainingSessions,
+    readInputs: readPlanInputs,
+    getActiveTrainingSession, getTrainingSessions,
     resolveExactArtifact: async () => {
-      await repositories.saveGoalSnapshot({ ...goal.record, targetDate: '2026-11-01' }, goal.revision);
+      await repositories.saveGoalSnapshot({ ...goal.record, targetDate: '2026-11-01' }, goal.revision, policy);
       return resolved;
     },
   });
@@ -102,7 +120,8 @@ async function learningFixture(resolved, install = true, goalOverrides = {}) {
   const executionPolicy = executionPolicyFor(resolved);
   const storage = new MemoryKeyValueStorage();
   if (install) installKeyValueStorageForTests(storage);
-  const goal = await repositories.saveGoalSnapshot({ ...createDefaultGoal(trackId), targetDate: '2026-11-30', ...goalOverrides }, null);
+  const policy = requireGoalPolicy(trackId);
+  const goal = await repositories.saveGoalSnapshot({ ...createDefaultGoal(policy), targetDate: '2026-11-30', ...goalOverrides }, null, policy);
   const plan = normalizeLearningPlan({
     schemaVersion: 2, planId: 'shared-projection-plan', trackId, goalRevision: goal.revision, status: 'accepted',
     timezone: 'Europe/Warsaw', contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256,
@@ -110,17 +129,17 @@ async function learningFixture(resolved, install = true, goalOverrides = {}) {
     acceptedTarget: acceptedTargetFromGoal(goal.record), createdAt: '2026-09-01T12:00:00.000Z', updatedAt: '2026-09-01T12:00:00.000Z',
     planRevision: 1, commandId: 'shared-projection-command', slots: [{ slotId: createLearningPlanSlotId('shared-projection-slot'), day: 'fri', localTime: '18:00', sessionLength: executionPolicy.practice.requestedLength }],
   });
-  repositories.saveLearningPlanAtomically({ plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
+  repositories.saveLearningPlanAtomically({ policy, plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
   let sequence = 0;
   let now = '2026-10-02T12:00:00.000Z';
   const base = {
-    readInputs: readLearningPlanInputSnapshot,
-    getActiveTrainingSession: repositories.getActiveTrainingSession, getTrainingSessions: repositories.getTrainingSessions,
+    readInputs: readPlanInputs,
+    getActiveTrainingSession, getTrainingSessions,
     resolveExactArtifact: async () => resolved,
   };
   const proposal = new LearningPlanProposalCoordinator({
     createProposalId: () => `shared-projection:${++sequence}`, getTimezone: () => 'Europe/Warsaw',
-    readInputs: readLearningPlanInputSnapshot, peekPackage: () => resolved, now: () => now,
+    readInputs: readPlanInputs, peekPackage: () => resolved, now: () => now,
     resolvePackage: async () => resolved, resolveTrackFamily: () => getTrackRegistration(trackId).familyId,
   });
   return { trackId, storage, goal, plan, base, proposal, get now() { return now; }, setNow(value) { now = value; }, home: new HomePlanSnapshotReader(base) };
@@ -146,7 +165,7 @@ async function completeAllButFirstChapter(f, resolved) {
     const question = resolved.track.questions.find(candidate => candidate.nodeId === chapter.nodeId);
     assert.ok(question, `chapter ${chapter.nodeId} has a canonical question`);
     for (let count = 0; count < chapter.minimumAttemptCount; count++) {
-      await repositories.addTrainingAttempt(durableAttempt(resolved, index++, 'correct', {}, question));
+      await addAttempt(durableAttempt(resolved, index++, 'correct', {}, question));
       qualifyingAttemptCount++;
     }
   }
@@ -173,17 +192,17 @@ test('real producer → verified canonical runtime → persisted evidence → Ho
   const firstChapter = RULE.chapters[0];
   const question = resolved.track.questions.find(candidate => candidate.nodeId === firstChapter.nodeId);
   assert.ok(question);
-  for (let index = 0; index < firstChapter.minimumAttemptCount; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, index >= firstChapter.minimumAttemptCount - 15 ? 'correct' : 'incorrect', {}, question));
+  for (let index = 0; index < firstChapter.minimumAttemptCount; index++) await addAttempt(durableAttempt(resolved, index, index >= firstChapter.minimumAttemptCount - 15 ? 'correct' : 'incorrect', {}, question));
   const quality = await assertShared(f, 'in_progress');
   assert.equal(quality.home.completion.qualifyingAttemptCount, otherChapterAttempts + firstChapter.minimumAttemptCount);
   assert.equal(quality.home.completion.chapters[0].qualifyingAttemptCount, firstChapter.minimumAttemptCount);
   assert.deepEqual(quality.home.paceForecast, { kind: 'unavailable', reason: 'quality_requirement_unmet' });
   assert.deepEqual(quality.proposal.outcome.targetAssessment, { kind: 'quality_requirement_unmet' });
-  for (let index = firstChapter.minimumAttemptCount; index < firstChapter.minimumAttemptCount + 5; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', {}, question));
+  for (let index = firstChapter.minimumAttemptCount; index < firstChapter.minimumAttemptCount + 5; index++) await addAttempt(durableAttempt(resolved, index, 'correct', {}, question));
   const completed = await assertShared(f, 'completed');
   assert.equal(completed.home.completion.chapters[0].quality, 1);
   assert.equal(completed.home.guidance.state, 'completed');
-  for (let index = firstChapter.minimumAttemptCount + 5; index < firstChapter.minimumAttemptCount + 10; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
+  for (let index = firstChapter.minimumAttemptCount + 5; index < firstChapter.minimumAttemptCount + 10; index++) await addAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
   await assertShared(f, 'in_progress');
 });
 
@@ -197,25 +216,25 @@ test('Progress consumes actual shared evidence without claiming completion from 
     assert.ok(question);
     await assertProgressCompletion(await assertShared(f, 'in_progress'), otherChapterAttempts);
     for (let index = 0; index < 19; index++) {
-      await repositories.addTrainingAttempt(durableAttempt(resolved, index, index < 15 ? 'correct' : 'incorrect', {}, question));
+      await addAttempt(durableAttempt(resolved, index, index < 15 ? 'correct' : 'incorrect', {}, question));
       if ([8, 15, 18, 19].includes(index + 1)) await assertProgressCompletion(await assertShared(f, 'in_progress'), otherChapterAttempts + index + 1);
     }
-    await repositories.addTrainingAttempt(durableAttempt(resolved, 19, 'incorrect', {}, question));
+    await addAttempt(durableAttempt(resolved, 19, 'incorrect', {}, question));
     await assertProgressCompletion(await assertShared(f, 'in_progress'), otherChapterAttempts + 20);
-    for (let index = 20; index < 20 + firstChapter.minimumAttemptCount - 20; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
+    for (let index = 20; index < 20 + firstChapter.minimumAttemptCount - 20; index++) await addAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
     const quality = await assertShared(f, 'in_progress');
     const reachedMinimum = 20 + (firstChapter.minimumAttemptCount - 20);
     await assertProgressCompletion(quality, otherChapterAttempts + reachedMinimum);
     for (const surface of ['home', 'progress']) assert.equal(runtimeSelectors.targetDateGuidance.reason(surface, 'quality_requirement_unmet'), `patternly:target-date-guidance:reason:${surface}:quality-requirement-unmet`);
     assert.throws(() => runtimeSelectors.targetDateGuidance.reason('progress', 'quality_unmet'), /Unknown target date guidance reason/);
-    const before = readLearningPlanInputSnapshot(f.trackId);
+    const before = readPlanInputs(f.trackId);
     await assertProgressCompletion(quality, otherChapterAttempts + reachedMinimum);
-    assert.deepEqual(readLearningPlanInputSnapshot(f.trackId), before, 'Presentation cannot change attempts, reviews, goal or accepted plan');
-    for (let index = reachedMinimum; index < reachedMinimum + 16; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', {}, question));
+    assert.deepEqual(readPlanInputs(f.trackId), before, 'Presentation cannot change attempts, reviews, goal or accepted plan');
+    for (let index = reachedMinimum; index < reachedMinimum + 16; index++) await addAttempt(durableAttempt(resolved, index, 'correct', {}, question));
     const completed = await assertShared(f, 'completed');
     await assertProgressCompletion(completed, otherChapterAttempts + reachedMinimum + 16);
     assert.equal(completed.home.completion.chapters[0].quality, 0.8);
-    for (let index = reachedMinimum + 16; index < reachedMinimum + 21; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
+    for (let index = reachedMinimum + 16; index < reachedMinimum + 21; index++) await addAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
     await assertProgressCompletion(await assertShared(f, 'in_progress'), otherChapterAttempts + reachedMinimum + 21);
   });
 });
@@ -266,15 +285,15 @@ async function assertProgressCompletion(state, count) {
 test('shared evidence is package-wide across plan revisions, exact by artifact, deduplicated, and partial is not correct', async t => {
   const resolved = await verifiedProducerRuntime(t);
   const f = await learningFixture(resolved);
-  for (let index = 0; index < 20; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, index < 17 ? 'correct' : 'partial'));
+  for (let index = 0; index < 20; index++) await addAttempt(durableAttempt(resolved, index, index < 17 ? 'correct' : 'partial'));
   const old = durableAttempt(resolved, 20, 'correct');
   const oldItem = { ...old.item, contentVersion: 'historical-policy-content' };
-  await repositories.addTrainingAttempt({ ...old, item: oldItem, reviewEvidence: { ...old.reviewEvidence, sourceItem: oldItem } });
-  const savedPlan = repositories.getLearningPlanSnapshot(TRACK);
-  repositories.saveLearningPlanAtomically({ plan: normalizeLearningPlan({ ...savedPlan.plan, planRevision: 2, updatedAt: f.now, commandId: 'revised-plan' }), expectedGoalRevision: f.goal.revision, expectedPlanStorageRevision: savedPlan.revision });
+  await addAttempt({ ...old, item: oldItem, reviewEvidence: { ...old.reviewEvidence, sourceItem: oldItem } });
+  const savedPlan = repositories.getLearningPlanSnapshot(TRACK, requireGoalPolicy(TRACK));
+  repositories.saveLearningPlanAtomically({ policy: requireGoalPolicy(TRACK), plan: normalizeLearningPlan({ ...savedPlan.plan, planRevision: 2, updatedAt: f.now, commandId: 'revised-plan' }), expectedGoalRevision: f.goal.revision, expectedPlanStorageRevision: savedPlan.revision });
   const state = await assertShared(f, 'in_progress');
   assert.equal(state.home.completion.qualifyingAttemptCount, 20);
-  const inputs = readLearningPlanInputSnapshot(TRACK);
+  const inputs = readPlanInputs(TRACK);
   const duplicate = projectLearningEvidence({ profile: resolved.track, attempts: [...inputs.attempts, inputs.attempts[0]], reviews: [], now: f.now });
   assert.equal(duplicate.attempts.length, 20);
   assert.equal(duplicate.completedFacts.attempts.length, 20);
@@ -324,7 +343,7 @@ test('P01: all nine verified current artifacts report zero attempts and the full
     assert.equal(empty.home.completion.remainingAttemptCount, minimumTotal);
     await assertProgressCompletion(empty, 0);
     const question = track.questions[0];
-    await repositories.addTrainingAttempt(durableAttempt(resolved, 0, 'correct', {}, question));
+    await addAttempt(durableAttempt(resolved, 0, 'correct', {}, question));
     const state = await assertShared(f, 'in_progress');
     assert.equal(state.home.completion.requiredChapterCount, expectedNodes.length);
     assert.equal(state.home.completion.remainingAttemptCount, track.completionRule.chapters.reduce((sum, chapter) => sum + chapter.minimumAttemptCount, 0) - 1);
@@ -338,10 +357,10 @@ test('actual Home none and Progress unavailable preserve honest status, actions 
   const f = await learningFixture(resolved);
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   for (const goalState of ['no_goal', 'no_plan', 'goal_paused']) {
-    if (goalState === 'no_plan') await repositories.saveGoalSnapshot(createDefaultGoal(TRACK), null);
+    if (goalState === 'no_plan') await repositories.saveGoalSnapshot(createDefaultGoal(requireGoalPolicy(TRACK)), null, requireGoalPolicy(TRACK));
     if (goalState === 'goal_paused') {
-      const current = await repositories.getGoalSnapshot(TRACK);
-      await repositories.saveGoalSnapshot({ ...current.record, status: 'paused' }, current.revision);
+      const current = await repositories.getGoalSnapshot(TRACK, requireGoalPolicy(TRACK));
+      await repositories.saveGoalSnapshot({ ...current.record, status: 'paused' }, current.revision, requireGoalPolicy(TRACK));
     }
     const snapshot = await f.home.read({ trackId: TRACK, now: f.now });
     assert.equal(snapshot.kind, 'none');
@@ -396,10 +415,10 @@ test('Home rejects evidence changes and journal failure inside exact resolution'
   for (const effect of ['attempt', 'journal']) {
     const f = await learningFixture(resolved);
     const home = new HomePlanSnapshotReader({ ...f.base, resolveExactArtifact: async () => {
-      if (effect === 'attempt') await repositories.addTrainingAttempt(durableAttempt(resolved, 0));
+      if (effect === 'attempt') await addAttempt(durableAttempt(resolved, 0));
       if (effect === 'journal') {
         const { journal, session } = require('../../testing/journalTestSupport.ts');
-        await repositories.persistMutationJournal(journal([{ kind: 'put_session', record: session() }], 'start_training_session'));
+        await repositories.persistMutationJournal(journal([{ kind: 'put_session', record: session() }], 'start_training_session'), productionLearningDataAdmissionContext);
       }
       return resolved;
     } });
@@ -413,7 +432,7 @@ test('matching-package phantom question IDs fail instead of contributing fabrica
   const f = await learningFixture(resolved);
   const attempt = durableAttempt(resolved, 0, 'correct');
   const item = { ...attempt.item, questionId: 'question-not-in-verified-artifact' };
-  await repositories.addTrainingAttempt({ ...attempt, item, reviewEvidence: { ...attempt.reviewEvidence, sourceItem: item } });
+  await addAttempt({ ...attempt, item, reviewEvidence: { ...attempt.reviewEvidence, sourceItem: item } });
   const home = await f.home.read({ trackId: TRACK, now: f.now });
   assert.deepEqual(home, { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
   const proposal = await f.proposal.create(TRACK);
@@ -437,14 +456,14 @@ test('actual profile router A/B/A rejects old Home snapshot even when account A 
   try {
     const oldLease = await select('projection-account-a');
     const f = await learningFixture(resolved, false);
-    await repositories.addTrainingAttempt(durableAttempt(resolved, 0, 'correct'));
-    const before = readLearningPlanInputSnapshot(TRACK);
+    await addAttempt(durableAttempt(resolved, 0, 'correct'));
+    const before = readPlanInputs(TRACK);
     const home = new HomePlanSnapshotReader({ ...f.base, resolveExactArtifact: async () => {
       await select('projection-account-b');
       assert.equal((await f.home.read({ trackId: TRACK, now: f.now })).kind, 'none');
       const newLease = await select('projection-account-a');
       assert.notStrictEqual(newLease, oldLease);
-      const after = readLearningPlanInputSnapshot(TRACK);
+      const after = readPlanInputs(TRACK);
       assert.deepEqual(after.goal, before.goal); assert.deepEqual(after.plan, before.plan);
       return resolved;
     } });
@@ -456,7 +475,7 @@ test('actual persisted reviews share exact qualification and due cutoff; phantom
   const resolved = await verifiedProducerRuntime(t);
   const f = await learningFixture(resolved);
   const attempt = durableAttempt(resolved, 0);
-  await repositories.addTrainingAttempt(attempt);
+  await addAttempt(attempt);
   const review = {
     id: 'projection-review', trackId: TRACK, sourceAttemptId: attempt.id, sourceSessionId: attempt.sessionId,
     sourceItem: attempt.item, taxonomyOrSkillRefs: [], reasons: ['incorrect'], dueAt: f.now,
@@ -464,9 +483,9 @@ test('actual persisted reviews share exact qualification and due cutoff; phantom
   };
   const futureItem = { ...attempt.item, questionId: resolved.track.questions[1].questionId };
   const futureAttempt = durableAttempt(resolved, 1, 'incorrect', { item: futureItem, reviewEvidence: { sourceItem: futureItem, taxonomyOrSkillRefs: [] } });
-  await repositories.addTrainingAttempt(futureAttempt);
-  await repositories.addReviewQueueItems([review, { ...review, id: 'projection-future-review', sourceItem: futureItem, sourceAttemptId: futureAttempt.id, dueAt: '2026-10-03T12:00:00.000Z' }]);
-  const inputs = readLearningPlanInputSnapshot(TRACK);
+  await addAttempt(futureAttempt);
+  await addReviews([review, { ...review, id: 'projection-future-review', sourceItem: futureItem, sourceAttemptId: futureAttempt.id, dueAt: '2026-10-03T12:00:00.000Z' }]);
+  const inputs = readPlanInputs(TRACK);
   const projected = projectLearningEvidence({ profile: resolved.track, attempts: inputs.attempts, reviews: [...inputs.reviews, review], now: f.now });
   assert.equal(projected.reviews.length, 2); assert.equal(projected.dueReviews.length, 1);
   const state = await assertShared(f, 'in_progress');
@@ -478,7 +497,7 @@ test('actual persisted reviews share exact qualification and due cutoff; phantom
   assert.equal(reviewSetup.reviewSource, 'due_queue');
   assert.equal(Object.hasOwn(reviewSetup, 'topicId'), false, 'due review uses its canonical request source without a fabricated node');
   const phantom = { ...review, id: 'projection-phantom-review', sourceItem: { ...review.sourceItem, questionId: 'review-item-absent-from-current-package' } };
-  await repositories.addReviewQueueItems([phantom]);
+  await addReviews([phantom]);
   assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
   assert.equal((await f.proposal.create(TRACK)).kind, 'generator_error');
 });
@@ -488,15 +507,15 @@ test('future exact-package evidence cannot complete proposal while Home rejects 
   const f = await learningFixture(resolved);
   const future = '2026-10-03T12:00:00.000Z';
   for (let index = 0; index < RULE.chapters[0].minimumAttemptCount; index++) {
-    await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: future, committedAt: future }));
+    await addAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: future, committedAt: future }));
   }
-  const before = readLearningPlanInputSnapshot(TRACK);
+  const before = readPlanInputs(TRACK);
   const home = await f.home.read({ trackId: TRACK, now: f.now });
   const proposal = await f.proposal.create(TRACK);
   t.diagnostic(JSON.stringify({ home: home.kind, reason: home.reason, proposal: proposal.kind, completion: proposal.proposal?.outcome.completionState.kind }));
   assert.deepEqual(home, { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
   assert.deepEqual(proposal, { kind: 'generator_error', classification: 'unclassified' });
-  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before, 'failure must not alter evidence or the accepted goal/plan');
+  assert.deepEqual(readPlanInputs(TRACK), before, 'failure must not alter evidence or the accepted goal/plan');
 });
 
 test('captured instant rejects same-day future answers by one millisecond without silently dropping them', async t => {
@@ -506,27 +525,27 @@ test('captured instant rejects same-day future answers by one millisecond withou
   const firstChapter = RULE.chapters[0];
   const question = resolved.track.questions.find(candidate => candidate.nodeId === firstChapter.nodeId);
   assert.ok(question);
-  for (let index = 0; index < 19; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', {}, question));
+  for (let index = 0; index < 19; index++) await addAttempt(durableAttempt(resolved, index, 'correct', {}, question));
   const future = '2026-10-02T12:00:00.001Z';
-  await repositories.addTrainingAttempt(durableAttempt(resolved, 19, 'correct', { answeredAt: future, committedAt: future }, question));
-  const before = readLearningPlanInputSnapshot(TRACK);
+  await addAttempt(durableAttempt(resolved, 19, 'correct', { answeredAt: future, committedAt: future }, question));
+  const before = readPlanInputs(TRACK);
   assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: before.attempts, reviews: [], now: f.now }), /answer time.*captured clock/);
   assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
   assert.deepEqual(await f.proposal.create(TRACK), { kind: 'generator_error', classification: 'unclassified' });
-  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
+  assert.deepEqual(readPlanInputs(TRACK), before);
   assert.equal(before.attempts.length, otherChapterAttempts + 20);
   // Rebind the same persisted dataset: this is memory repository continuity, not SDK recovery.
   installKeyValueStorageForTests(f.storage);
   f.setNow(future);
-  for (let index = 20; index < firstChapter.minimumAttemptCount; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: future, committedAt: future }, question));
+  for (let index = 20; index < firstChapter.minimumAttemptCount; index++) await addAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: future, committedAt: future }, question));
   const valid = await assertShared(f, 'completed');
   assert.equal(valid.home.completion.qualifyingAttemptCount, otherChapterAttempts + firstChapter.minimumAttemptCount);
-  const after = readLearningPlanInputSnapshot(TRACK);
+  const after = readPlanInputs(TRACK);
   assert.equal(after.attempts.length, otherChapterAttempts + firstChapter.minimumAttemptCount);
   const afterIds = new Set(after.attempts.map(attempt => attempt.id));
   assert.ok(before.attempts.every(attempt => afterIds.has(attempt.id)));
-  assert.deepEqual(readLearningPlanInputSnapshot(TRACK).goal, before.goal);
-  assert.deepEqual(readLearningPlanInputSnapshot(TRACK).plan, before.plan);
+  assert.deepEqual(readPlanInputs(TRACK).goal, before.goal);
+  assert.deepEqual(readPlanInputs(TRACK).plan, before.plan);
 });
 
 test('past and exactly captured answers remain eligible despite later materialization, duplicates and historical future evidence', async t => {
@@ -538,20 +557,20 @@ test('past and exactly captured answers remain eligible despite later materializ
   assert.ok(question);
   for (let index = 0; index < 20; index++) {
     const record = durableAttempt(resolved, index, 'correct', { answeredAt: index === 19 ? f.now : '2026-10-02T11:59:59.999Z', committedAt: '2026-10-03T12:00:00.000Z' }, question);
-    await repositories.addTrainingAttempt(record);
-    if (index === 19) await repositories.addTrainingAttempt(record);
+    await addAttempt(record);
+    if (index === 19) await addAttempt(record);
   }
   const historical = durableAttempt(resolved, 20, 'correct', { answeredAt: '2026-10-03T12:00:00.000Z', committedAt: '2026-10-03T12:00:00.000Z' }, question);
   const item = { ...historical.item, contentVersion: 'other-exact-package-version' };
-  await repositories.addTrainingAttempt({ ...historical, item, reviewEvidence: { ...historical.reviewEvidence, sourceItem: item } });
-  for (let index = 100; index < 100 + firstChapter.minimumAttemptCount - 20; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: f.now, committedAt: '2026-10-03T12:00:00.000Z' }, question));
-  const before = readLearningPlanInputSnapshot(TRACK);
+  await addAttempt({ ...historical, item, reviewEvidence: { ...historical.reviewEvidence, sourceItem: item } });
+  for (let index = 100; index < 100 + firstChapter.minimumAttemptCount - 20; index++) await addAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: f.now, committedAt: '2026-10-03T12:00:00.000Z' }, question));
+  const before = readPlanInputs(TRACK);
   const valid = await assertShared(f, 'completed');
   assert.equal(valid.home.completion.qualifyingAttemptCount, otherChapterAttempts + firstChapter.minimumAttemptCount);
   const projected = projectLearningEvidence({ profile: resolved.track, attempts: [...before.attempts, before.attempts[0]], reviews: [], now: f.now });
   assert.equal(projected.attempts.length, otherChapterAttempts + firstChapter.minimumAttemptCount);
   assert.equal(projected.completedFacts.attempts.length, otherChapterAttempts + firstChapter.minimumAttemptCount);
-  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
+  assert.deepEqual(readPlanInputs(TRACK), before);
   assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: [ { ...before.attempts[0], answeredAt: 'not-an-instant' } ], reviews: [], now: f.now }), /invalid/);
   assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: before.attempts, reviews: [], now: 'not-a-clock' }), /clock is invalid/);
 });
@@ -561,11 +580,11 @@ test('future exact-package evidence remains unavailable until the captured clock
   assert.equal(resolved.track.completionRule.ruleVersion, 2);
   const f = await learningFixture(resolved);
   const future = '2026-10-02T12:00:00.001Z';
-  await repositories.addTrainingAttempt(durableAttempt(resolved, 0, 'correct', { answeredAt: future, committedAt: future }));
-  const before = readLearningPlanInputSnapshot(TRACK);
+  await addAttempt(durableAttempt(resolved, 0, 'correct', { answeredAt: future, committedAt: future }));
+  const before = readPlanInputs(TRACK);
   assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
   assert.deepEqual(await f.proposal.create(TRACK), { kind: 'generator_error', classification: 'unclassified' });
-  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
+  assert.deepEqual(readPlanInputs(TRACK), before);
   f.setNow(future);
   const available = await assertShared(f, 'in_progress');
   assert.equal(available.home.completion.qualifyingAttemptCount, 1);
@@ -574,7 +593,7 @@ test('future exact-package evidence remains unavailable until the captured clock
 test('clock rollback blocks real proposal resolve and acceptance before goal-plan CAS or reminders', async t => {
   const resolved = await verifiedProducerRuntime(t);
   const f = await learningFixture(resolved);
-  for (let index = 0; index < 20; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: f.now, committedAt: f.now }));
+  for (let index = 0; index < 20; index++) await addAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: f.now, committedAt: f.now }));
   const created = await f.proposal.create(TRACK);
   assert.equal(created.kind, 'ready');
   const id = created.proposal.proposalId;
@@ -595,14 +614,14 @@ test('clock rollback blocks real proposal resolve and acceptance before goal-pla
     reconcile: async () => { reconciles++; return { kind: 'disabled', status: 'disabled' }; },
     retry: async () => { throw new Error('retry is not part of this operation'); },
   });
-  const before = readLearningPlanInputSnapshot(TRACK);
+  const before = readPlanInputs(TRACK);
   f.setNow('2026-10-02T11:59:59.999Z');
   assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
   assert.deepEqual(await f.proposal.resolve(id, TRACK), { kind: 'generator_error', classification: 'unclassified' });
   assert.deepEqual(f.proposal.resolveForCommit(id, TRACK), { kind: 'generator_error', classification: 'retryable' });
   assert.deepEqual(await mutation.acceptProposal(id, TRACK, { title: 'fixture', body: 'fixture' }), { kind: 'storage_error' });
   assert.equal(saves, 0); assert.equal(reconciles, 0);
-  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
+  assert.deepEqual(readPlanInputs(TRACK), before);
   f.setNow('2026-10-02T12:00:00.000Z');
   assert.equal((await f.proposal.resolve(id, TRACK)).kind, 'ready');
 });
@@ -662,18 +681,18 @@ test('P13: production lifecycle submit materializes one exact attempt into fresh
 
   await lifecycle.submitPracticeResponse(question.answer);
 
-  const attempts = (await repositories.getTrainingAttempts()).value;
+  const attempts = (await repositories.getTrainingAttempts(productionTrackAdmissionContext)).value;
   assert.equal(attempts.length, 1);
   assert.equal(attempts[0].sessionId, prepared.session.id);
   assert.equal(attempts[0].occurrenceId, prepared.session.itemOrder[0].occurrenceId);
   assert.deepEqual(attempts[0].item, item);
   assert.equal(attempts[0].result.kind, 'correct');
-  assert.equal(await repositories.getActiveMutationJournal(), null, 'the submit journal is materialized and cleared before Home reads');
+  assert.equal(await repositories.getActiveMutationJournal(productionLearningDataAdmissionContext), null, 'the submit journal is materialized and cleared before Home reads');
 
   const home = new HomePlanSnapshotReader({
-    readInputs: readLearningPlanInputSnapshot,
-    getActiveTrainingSession: repositories.getActiveTrainingSession,
-    getTrainingSessions: repositories.getTrainingSessions,
+    readInputs: readPlanInputs,
+    getActiveTrainingSession,
+    getTrainingSessions,
     resolveExactArtifact: identity => contentPackageRuntimeOwner.resolveExactArtifact(identity),
   });
   const snapshot = await home.read({ trackId, now: f.now });
@@ -685,7 +704,7 @@ test('P13: production lifecycle submit materializes one exact attempt into fresh
   const proposal = new LearningPlanProposalCoordinator({
     createProposalId: () => 'bizq02-p13-production-proposal',
     getTimezone: () => 'Europe/Warsaw',
-    readInputs: readLearningPlanInputSnapshot,
+    readInputs: readPlanInputs,
     peekPackage: () => contentPackageRuntimeOwner.getPreparedDiscovery(trackId),
     now: () => f.now,
     resolvePackage: () => contentPackageRuntimeOwner.resolveForDiscovery(trackId, familyId),
@@ -710,13 +729,13 @@ test('P20: completed Free chapter remains complete while every required Premium 
   const freeQuestion = resolved.track.questions.find(question => question.nodeId === descriptor.freeNodeId);
   assert.ok(freeQuestion);
   for (let index = 0; index < freeChapter.minimumAttemptCount; index++) {
-    await repositories.addTrainingAttempt(durableAttempt(resolved, 3000 + index, 'correct', {}, freeQuestion));
+    await addAttempt(durableAttempt(resolved, 3000 + index, 'correct', {}, freeQuestion));
   }
 
   const home = new HomePlanSnapshotReader({
-    readInputs: readLearningPlanInputSnapshot,
-    getActiveTrainingSession: repositories.getActiveTrainingSession,
-    getTrainingSessions: repositories.getTrainingSessions,
+    readInputs: readPlanInputs,
+    getActiveTrainingSession,
+    getTrainingSessions,
     resolveExactArtifact: identity => contentPackageRuntimeOwner.resolveExactArtifact(identity),
   });
   const snapshot = await home.read({ trackId, now: f.now, premiumAccess: 'denied' });

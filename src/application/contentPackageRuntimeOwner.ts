@@ -1,5 +1,6 @@
 import { CanonicalTrainingRuntime } from "./canonical/CanonicalTrainingRuntime";
-import { createCanonicalRuntimeCatalogOwner, isCanonicalSafeIdentity, type CanonicalTrackRuntime, type Question } from "../content/canonical";
+import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime, type Question } from "../content/canonical";
+import { isCanonicalSafeIdentity } from "../domain/identity/canonicalIdentity";
 import { createResolvedContentRef, isArtifactSha256, type ResolvedContentRef, type TrackFamilyId, type TrackId } from "../domain";
 import type { VerifiedNodePackage } from "../content/runtime/nodeContentPackage";
 import { getProductSimulationModeConfig } from "../content/canonical/productModeConfig";

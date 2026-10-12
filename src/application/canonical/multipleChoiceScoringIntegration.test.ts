@@ -13,6 +13,8 @@ import { getTrainingAttempts, getReviewQueueItems } from "../../storage";
 import { commitTrainingOutcome, commitTrainingSessionStart } from "../learningMutations";
 import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
 import { composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls } from "./canonicalInteractionPresentation";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const NOW = "2026-10-02T12:00:00.000Z";
 const catalogPromise = loadCanonicalRuntimeCatalog();
@@ -84,8 +86,8 @@ test("actual practice runtime writes zero-point incorrect attempt/review, surviv
   await commit();
   await commit();
   installKeyValueStorageForTests(storage);
-  const attempts = (await getTrainingAttempts()).value;
-  const storedReviews = (await getReviewQueueItems()).value;
+  const attempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
+  const storedReviews = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.equal(attempts.length, 1);
   assert.deepEqual(attempts[0]!.result, { kind: "incorrect", earnedPoints: 0, maxPoints: question.interaction.options.length });
   assert.deepEqual(attempts[0]!.response, response);
@@ -105,8 +107,8 @@ test("actual practice runtime writes zero-point incorrect attempt/review, surviv
   for (const optionIds of [[], ["unknown"], [wrong, wrong]]) {
     await assert.rejects(runtime.submitPractice({ session, response: { type: "choice_multiple", optionIds }, attempts, reviews: storedReviews, now: NOW }), /incomplete or invalid/);
   }
-  assert.deepEqual((await getTrainingAttempts()).value, attempts);
-  assert.deepEqual((await getReviewQueueItems()).value, storedReviews);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, attempts);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, storedReviews);
 });
 
 test("actual Coding Mock simulation finalization records wrong-containing response as incorrect zero, preserving other answers", async () => {

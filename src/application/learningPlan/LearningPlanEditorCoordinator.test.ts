@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 
 import { LearningPlanEditorCoordinator, type LearningPlanEditorDependencies } from "./LearningPlanEditorCoordinator";
@@ -39,8 +40,8 @@ function proposal(goal: GoalSnapshot): ProposalOutcome {
 
 async function fixture() {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
-  const goal = Object.freeze({ record: createDefaultGoal(TRACK_ID), revision: 1 });
-  await saveGoalSnapshot(goal.record, null);
+  const goal = Object.freeze({ record: createDefaultGoal(requireGoalPolicy(TRACK_ID)), revision: 1 });
+  await saveGoalSnapshot(goal.record, null, requireGoalPolicy(goal.record.trackId));
   let currentGoal: GoalSnapshot | null = goal;
   let currentPlan: LearningPlanSnapshot | null = null;
   let sequence = 0;
@@ -84,15 +85,15 @@ async function fixture() {
     },
     acceptGoalPlan: async (input) => {
       input.revalidate();
-      const before = readGoalPlanAcceptancePrecondition(TRACK_ID);
+      const before = readGoalPlanAcceptancePrecondition(TRACK_ID, requireGoalPolicy(TRACK_ID));
       if ((before.goal?.revision ?? null) !== input.expectedGoalRevision || (before.plan?.revision ?? null) !== input.expectedPlanStorageRevision) throw new Error("stale pair");
       saveCount += 1;
       const goalRevision = goalPlanAcceptanceGoalRevision(input.expectedGoalRevision, before.goal, input.proposedGoal);
       const nextGoal = goalRevision === (currentGoal?.revision ?? 0)
         ? currentGoal!
-        : await saveGoalSnapshot(input.proposedGoal, input.expectedGoalRevision);
+        : await saveGoalSnapshot(input.proposedGoal, input.expectedGoalRevision, requireGoalPolicy(input.proposedGoal.trackId));
       const nextPlan = normalizeLearningPlan({ ...input.plan, goalRevision, planRevision: (currentPlan?.revision ?? 0) + 1, status: "accepted" });
-      const savedPlan = saveLearningPlanAtomically({ plan: nextPlan, expectedGoalRevision: goalRevision, expectedPlanStorageRevision: input.expectedPlanStorageRevision });
+      const savedPlan = saveLearningPlanAtomically({ policy: requireGoalPolicy(nextPlan.trackId), plan: nextPlan, expectedGoalRevision: goalRevision, expectedPlanStorageRevision: input.expectedPlanStorageRevision });
       currentGoal = nextGoal;
       currentPlan = savedPlan;
       if (uncertainSave) { uncertainSave = false; throw new Error("response lost after pair commit"); }
@@ -294,11 +295,12 @@ test("a target-date replacement remains explicit and atomically updates the acce
   assert.equal(first.kind, "accepted");
   if (first.kind !== "accepted") return;
 
-  const currentGoal = await getGoalSnapshot(TRACK_ID);
+  const currentGoal = await getGoalSnapshot(TRACK_ID, requireGoalPolicy(TRACK_ID));
   assert.ok(currentGoal);
   const changedGoal = await saveGoalSnapshot(
     { ...f.goal.record, goalType: "build_foundations", targetDate: "2027-03-31" },
     currentGoal.revision,
+    requireGoalPolicy(f.goal.record.trackId),
   );
   f.setGoal(changedGoal);
 

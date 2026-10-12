@@ -4,16 +4,17 @@ import { materializeMutation } from "./mutationMaterializer";
 import { verifyMutation } from "./mutationVerifier";
 import { MutationCommitFailure } from "../mutationBoundary";
 import { assertLearningStateResetMaterialized } from "../../storage/repositories/learningStateResetRepository";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
 
 /** Replays only the durable phase that remains.  The immutable journal plan is
  * deliberately reused so retry never creates new attempts, reviews or results. */
 export async function recoverPendingMutation(): Promise<void> {
-  let record = await getActiveMutationJournal();
+  let record = await getActiveMutationJournal(productionLearningDataAdmissionContext);
   if (!record) return;
   if (record.status === "journal_durable") {
     try {
       await materializeMutation(record);
-      record = await updateMutationJournalPhase(record, "materialized");
+      record = await updateMutationJournalPhase(record, "materialized", productionLearningDataAdmissionContext);
     } catch (error) {
       throw new MutationCommitFailure("materialization", "journal_durable", error);
     }
@@ -21,7 +22,7 @@ export async function recoverPendingMutation(): Promise<void> {
   if (record.status === "materialized") {
     try {
       await verifyMutation(record);
-      record = await updateMutationJournalPhase(record, "verified_pending_clear");
+      record = await updateMutationJournalPhase(record, "verified_pending_clear", productionLearningDataAdmissionContext);
     } catch (error) {
       throw new MutationCommitFailure("verification", "materialized", error);
     }
@@ -34,9 +35,9 @@ export async function recoverPendingMutation(): Promise<void> {
         assertLearningStateResetMaterialized(reset.targetPlan);
       }
       await verifyMutation(record);
-      if (record.operation !== "resolve_account_sync_conflict" && record.operation !== "reset_learning_state") await markAccountDataPending();
+      if (record.operation !== "resolve_account_sync_conflict" && record.operation !== "reset_learning_state") await markAccountDataPending(productionLearningDataAdmissionContext);
       await verifyMutation(record);
-      await clearMutationJournal(record.commandIdentity.fingerprint);
+      await clearMutationJournal(productionLearningDataAdmissionContext, record.commandIdentity.fingerprint);
     } catch (error) {
       throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error);
     }

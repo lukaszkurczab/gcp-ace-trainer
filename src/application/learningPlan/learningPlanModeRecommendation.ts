@@ -2,7 +2,7 @@ import type { ProductModeConfig } from "../../content/canonical/productModeConfi
 import type { LearningPlanExecutionPolicy } from "../../domain/learning/learningPlan";
 import type { TrainingSession } from "../../domain/learning/trainingSession";
 import type { TrackFamilyId } from "../../domain/learning/trackIdentity";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { ALGORITHM_MODE_IDS } from "../../tracks/coding-interview/domain/algorithmModes";
 import { CERTIFICATION_PRACTICE_MODE_IDS } from "../../tracks/certification";
 import { DESIGN_INTERVIEW_MODE_IDS } from "../../tracks/design-interview/designModes";

@@ -1,5 +1,6 @@
 import { createArtifactSha256, type GoalDay, type GoalSnapshot, type LearningPlan, type LearningPlanSnapshot, type ResolvedContentRef, type TrackId } from "../domain";
 import { getActiveTrackId, getGoalSnapshot, getLearningPlanSnapshot } from "../storage/repositories";
+import { requireGoalPolicy } from "../domain/tracks/trackGoalPolicies";
 import { CorruptStoredRecordError, StorageReadError, UnsupportedStoredRecordError } from "../storage/errors";
 import { contentPackageRuntimeOwner, type ResolvedPackageRuntime } from "./contentPackageRuntimeOwner";
 import {
@@ -238,8 +239,8 @@ function defaultLearningPlanReminderDependencies(): LearningPlanReminderDependen
   return {
     getActiveTrackId,
     getDeviceTimezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
-    getGoalSnapshot,
-    getLearningPlanSnapshot,
+    getGoalSnapshot: (trackId) => getGoalSnapshot(trackId, requireGoalPolicy(trackId)),
+    getLearningPlanSnapshot: (trackId) => getLearningPlanSnapshot(trackId, requireGoalPolicy(trackId)),
     resolveExactArtifact: (input) => contentPackageRuntimeOwner.resolveExactArtifact(input),
   };
 }

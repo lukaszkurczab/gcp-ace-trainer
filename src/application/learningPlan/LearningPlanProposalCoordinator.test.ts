@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 import { LearningPlanProposalCoordinator } from "./LearningPlanProposalCoordinator";
 import { recommendLearningPlanMode } from "./learningPlanModeRecommendation";
@@ -20,6 +21,9 @@ import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime"
 import { homePlanSnapshotReader } from "../homePlanSnapshotReader";
 import { estimatePlanningWork } from "../../domain/learning/planningWorkEstimate";
 import { estimateNextSessionTime } from "./nextSessionTimeEstimate";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK = "google-cloud-associate-cloud-engineer" as const;
 
@@ -27,7 +31,7 @@ async function fixture() {
   const storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
   setActiveProfileLeaseForTests({ id: "guest-test-profile", kind: "guest", accountId: null });
-  await saveGoalSnapshot(createDefaultGoal(TRACK), null);
+  await saveGoalSnapshot(createDefaultGoal(requireGoalPolicy(TRACK)), null, requireGoalPolicy(TRACK));
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, "certification");
   let now = "2026-10-02T12:00:00.000Z";
   let timezone = "Europe/Warsaw";
@@ -36,7 +40,7 @@ async function fixture() {
   const coordinator = new LearningPlanProposalCoordinator({
     createProposalId: () => `clock-test:${++sequence}`,
     getTimezone: () => timezone,
-    readInputs: readLearningPlanInputSnapshot,
+    readInputs: (trackId, policy) => readLearningPlanInputSnapshot(trackId, policy, productionTrackAdmissionContext),
     peekPackage: () => resolved,
     now: () => now,
     resolvePackage: async () => {
@@ -74,7 +78,7 @@ function attempt(f: Awaited<ReturnType<typeof fixture>>, id: string, questionInd
 }
 
 function createProposal(f: Awaited<ReturnType<typeof fixture>>, coordinator = f.coordinator) {
-  const goal = createDefaultGoal(TRACK);
+  const goal = createDefaultGoal(requireGoalPolicy(TRACK));
   return coordinator.create(TRACK, { goal, minutesPerStudyDay: 60 });
 }
 
@@ -109,11 +113,11 @@ test("the development interruption proposal snapshot rejects every existing sess
     });
     const coordinator = new LearningPlanProposalCoordinator({
       createProposalId: () => `interruption-history:${status}`, getTimezone: () => "Europe/Warsaw",
-      readInputs: (trackId) => ({ ...readLearningPlanInputSnapshot(trackId), goal: null, sessions: [session] }),
+      readInputs: (trackId) => ({ ...readLearningPlanInputSnapshot(trackId, requireGoalPolicy(trackId), productionTrackAdmissionContext), goal: null, sessions: [session] }),
       peekPackage: () => f.resolved, now: () => "2026-10-02T12:00:00.000Z",
       resolvePackage: async () => f.resolved, resolveTrackFamily: () => "certification",
     });
-    const created = await coordinator.create(TRACK, { goal: createDefaultGoal(TRACK), minutesPerStudyDay: 60 });
+    const created = await coordinator.create(TRACK, { goal: createDefaultGoal(requireGoalPolicy(TRACK)), minutesPerStudyDay: 60 });
     if (status === "active") {
       assert.deepEqual(created, { kind: "active_session_unavailable", reason: "active_session_not_indexed" }, "an unindexed active record never becomes a new-session recommendation");
       continue;
@@ -138,7 +142,7 @@ test("proposal resolution rejects a timezone change during package resolution", 
 test("proposal becomes stale when the accepted-day session window closes at its local scheduled time", async () => {
   const f = await fixture();
   f.setNow("2026-10-02T15:59:00.000Z"); // 17:59 in the selected Europe/Warsaw timezone.
-  const goal = { ...createDefaultGoal(TRACK), preferredDays: ["fri"] as const, weeklySessionTarget: 1 };
+  const goal = { ...createDefaultGoal(requireGoalPolicy(TRACK)), preferredDays: ["fri"] as const, weeklySessionTarget: 1 };
   const created = await f.coordinator.create(TRACK, { goal, minutesPerStudyDay: 60 });
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected a proposal.");
@@ -148,7 +152,7 @@ test("proposal becomes stale when the accepted-day session window closes at its 
 
 test("editing a proposal's local time recomputes its calendar before acceptance", async () => {
   const f = await fixture();
-  const goal = { ...createDefaultGoal(TRACK), preferredDays: ["fri"] as const, weeklySessionTarget: 1 };
+  const goal = { ...createDefaultGoal(requireGoalPolicy(TRACK)), preferredDays: ["fri"] as const, weeklySessionTarget: 1 };
   const created = await f.coordinator.create(TRACK, { goal, minutesPerStudyDay: 60 });
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected a proposal.");
@@ -186,7 +190,7 @@ test("unchanged persisted GCP inputs stay ready through the synchronous commit g
 
 test("proposal accepts a goal whose optional target date was explicitly cleared by the UI", async () => {
   const f = await fixture();
-  const goal = normalizeGoalRecord({ ...createDefaultGoal(TRACK), targetDate: undefined });
+  const goal = normalizeGoalRecord({ ...createDefaultGoal(requireGoalPolicy(TRACK)), targetDate: undefined }, requireGoalPolicy(TRACK));
   assert.equal(Object.hasOwn(goal, "targetDate"), false);
   const created = await f.coordinator.create(TRACK, { goal, minutesPerStudyDay: 60 });
   assert.equal(created.kind, "ready");
@@ -194,7 +198,7 @@ test("proposal accepts a goal whose optional target date was explicitly cleared 
 
 test("real GCP proposals schedule one exact diagnostic across short and long 20-minute horizons without repeating it", async () => {
   const f = await fixture();
-  const goal = { ...createDefaultGoal(TRACK), preferredDays: ["mon", "wed", "sat"] as const, weeklySessionTarget: 3, targetDate: "2026-10-09" };
+  const goal = { ...createDefaultGoal(requireGoalPolicy(TRACK)), preferredDays: ["mon", "wed", "sat"] as const, weeklySessionTarget: 3, targetDate: "2026-10-09" };
   const created = await f.coordinator.create(TRACK, { goal, minutesPerStudyDay: 20 });
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected a GCP proposal.");
@@ -242,13 +246,13 @@ test("an active diagnostic resumes its persisted legal 40-question session with 
     request: { sessionId: "active-gcp-diagnostic", requestedLength: 40 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z" });
   const activeSession = createTrainingSession({ ...prepared.session, currentItemIndex: 4, activeForegroundMs: 10 * 60_000 });
   const ordered = activeSession.itemOrder;
-  await saveTrainingSession(activeSession);
+  await saveTrainingSession(activeSession, productionTrackAdmissionContext);
   for (const occurrence of ordered.slice(0, 5)) await addTrainingAttempt(createTrainingAttempt({ id: `attempt:${occurrence.occurrenceId}`, sessionId: activeSession.id, trackId: TRACK,
     modeId: diagnostic.modeId, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response: { kind: "correct" },
     result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [] },
-    answeredAt: "2026-10-02T10:10:00.000Z", committedAt: "2026-10-02T10:10:00.000Z" }));
+    answeredAt: "2026-10-02T10:10:00.000Z", committedAt: "2026-10-02T10:10:00.000Z" }), productionTrackAdmissionContext);
 
-  const goal = { ...createDefaultGoal(TRACK), preferredDays: ["fri", "sat"] as const, weeklySessionTarget: 2, targetDate: "2026-10-09" };
+  const goal = { ...createDefaultGoal(requireGoalPolicy(TRACK)), preferredDays: ["fri", "sat"] as const, weeklySessionTarget: 2, targetDate: "2026-10-09" };
   const created = await f.coordinator.create(TRACK, { goal, minutesPerStudyDay: 20 });
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected a proposal with the exact active diagnostic.");
@@ -274,7 +278,7 @@ test("an active diagnostic resumes its persisted legal 40-question session with 
 
 test("the same GCP goal moves from its exact initial diagnosis pool to history-conditioned practice scopes", async () => {
   const f = await fixture();
-  const goal = createDefaultGoal(TRACK);
+  const goal = createDefaultGoal(requireGoalPolicy(TRACK));
   const first = await f.coordinator.create(TRACK, { goal, minutesPerStudyDay: 60 });
   assert.equal(first.kind, "ready");
   if (!("proposal" in first)) throw new Error("Expected the initial proposal.");
@@ -287,11 +291,11 @@ test("the same GCP goal moves from its exact initial diagnosis pool to history-c
     configurationSnapshot: { kind: "diagnosis" }, requestedLength: 40, actualLength: 40, currentItemIndex: 39, itemOrder: occurrences,
     optionOrderByOccurrence: {}, activeForegroundMs: 40 * 60_000, contentVersion: f.resolved.track.contentVersion, artifactSha256: f.resolved.track.artifactSha256,
     status: "completed", startedAt: "2026-10-02T10:00:00.000Z", completedAt: "2026-10-02T10:40:00.000Z" });
-  await saveTrainingSession(session);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
   for (const occurrence of occurrences) {
     await addTrainingAttempt(createTrainingAttempt({ id: `diag-attempt:${occurrence.occurrenceId}`, sessionId: session.id, trackId: TRACK, modeId: diagnostic.modeId,
       occurrenceId: occurrence.occurrenceId, item: occurrence.item, response: { kind: "correct" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
-      reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [] }, answeredAt: session.completedAt!, committedAt: session.completedAt! }));
+      reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [] }, answeredAt: session.completedAt!, committedAt: session.completedAt! }), productionTrackAdmissionContext);
 }
 
   const replanned = await f.coordinator.create(TRACK, { goal, minutesPerStudyDay: 60 });
@@ -299,7 +303,7 @@ test("the same GCP goal moves from its exact initial diagnosis pool to history-c
   if (!("proposal" in replanned)) throw new Error("Expected the history-conditioned proposal.");
   assert.equal(replanned.proposal.outcome.nextSession.kind, "practice");
   const practiceMode = f.resolved.track.getMode(replanned.proposal.outcome.nextSession.modeId);
-  const practiceQuestions = selectPracticeQuestions(f.resolved.track.getPool(practiceMode.modeId), (await readLearningPlanInputSnapshot(TRACK)).attempts, f.resolved.track, replanned.proposal.outcome.nextSession.requestedLength);
+  const practiceQuestions = selectPracticeQuestions(f.resolved.track.getPool(practiceMode.modeId), (await readLearningPlanInputSnapshot(TRACK, requireGoalPolicy(TRACK), productionTrackAdmissionContext)).attempts, f.resolved.track, replanned.proposal.outcome.nextSession.requestedLength);
   assert.ok(practiceQuestions.length > 0);
   if (practiceMode.selection.kind !== "node") throw new Error("Expected the canonical node-scoped practice mode.");
   const practiceNodeId = practiceMode.selection.nodeId;
@@ -312,28 +316,28 @@ test("an active Coding session resumes its exact 10-question pin and does not co
   const trackId = "coding-interview-dsa-problem-solving" as const;
   const storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
-  await saveGoalSnapshot(createDefaultGoal(trackId), null);
+  await saveGoalSnapshot(createDefaultGoal(requireGoalPolicy(trackId)), null, requireGoalPolicy(trackId));
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "coding_interview");
   const mode = resolved.track.getMode("coding-interview-guided-practice");
   const prepared = await new CanonicalTrainingRuntime(resolved.track, "coding_interview").prepare({
     trackId, modeId: mode.modeId, request: { sessionId: "active-coding-session", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z",
   });
   const activeSession = prepared.session;
-  await saveTrainingSession(activeSession);
+  await saveTrainingSession(activeSession, productionTrackAdmissionContext);
   const first = activeSession.itemOrder[0]!;
   await addTrainingAttempt(createTrainingAttempt({
     id: "active-coding-answer-1", sessionId: activeSession.id, trackId, modeId: activeSession.modeId,
     occurrenceId: first.occurrenceId, item: first.item, response: { answer: "committed" },
     result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: first.item, taxonomyOrSkillRefs: [] },
     answeredAt: "2026-10-02T10:10:00.000Z", committedAt: "2026-10-02T10:10:00.000Z",
-  }));
+  }), productionTrackAdmissionContext);
   let sequence = 0;
   const coordinator = new LearningPlanProposalCoordinator({
-    createProposalId: () => `active-coding:${++sequence}`, getTimezone: () => "Europe/Warsaw", readInputs: readLearningPlanInputSnapshot,
+    createProposalId: () => `active-coding:${++sequence}`, getTimezone: () => "Europe/Warsaw", readInputs: (trackId, policy) => readLearningPlanInputSnapshot(trackId, policy, productionTrackAdmissionContext),
     peekPackage: () => resolved, now: () => "2026-10-02T12:00:00.000Z", resolvePackage: async () => resolved,
     resolveTrackFamily: () => "coding_interview",
   });
-  const created = await coordinator.create(trackId, { goal: createDefaultGoal(trackId), minutesPerStudyDay: 60 });
+  const created = await coordinator.create(trackId, { goal: createDefaultGoal(requireGoalPolicy(trackId)), minutesPerStudyDay: 60 });
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected the active canonical session proposal.");
   assert.deepEqual(created.proposal.outcome.nextSession, { kind: "continue_existing", modeId: mode.modeId, requestedLength: 10, sessionId: activeSession.id });
@@ -393,19 +397,19 @@ test("a session active on another track blocks a new recommendation without chan
   const diagnostic = f.resolved.track.getMode("certification-diagnostic-baseline");
   const prepared = await new CanonicalTrainingRuntime(f.resolved.track).prepare({ trackId: TRACK, modeId: diagnostic.modeId,
     request: { sessionId: "active-gcp-other-track", requestedLength: 40 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z" });
-  await saveTrainingSession(prepared.session);
+  await saveTrainingSession(prepared.session, productionTrackAdmissionContext);
   const codingTrack = "coding-interview-dsa-problem-solving" as const;
   const codingPackage = await contentPackageRuntimeOwner.resolveForDiscovery(codingTrack, "coding_interview");
   const coordinator = new LearningPlanProposalCoordinator({
-    createProposalId: () => "other-track-active", getTimezone: () => "Europe/Warsaw", readInputs: readLearningPlanInputSnapshot,
+    createProposalId: () => "other-track-active", getTimezone: () => "Europe/Warsaw", readInputs: (trackId, policy) => readLearningPlanInputSnapshot(trackId, policy, productionTrackAdmissionContext),
     peekPackage: (trackId) => trackId === TRACK ? f.resolved : codingPackage,
     now: () => "2026-10-02T12:00:00.000Z",
     resolvePackage: async (trackId) => trackId === TRACK ? f.resolved : codingPackage,
     resolveTrackFamily: (trackId) => trackId === TRACK ? "certification" : "coding_interview",
   });
-  const result = await coordinator.create(codingTrack, { goal: createDefaultGoal(codingTrack), minutesPerStudyDay: 60 });
+  const result = await coordinator.create(codingTrack, { goal: createDefaultGoal(requireGoalPolicy(codingTrack)), minutesPerStudyDay: 60 });
   assert.deepEqual(result, { kind: "active_session_unavailable", reason: "another_track_active" });
-  const snapshot = readLearningPlanInputSnapshot(codingTrack);
+  const snapshot = readLearningPlanInputSnapshot(codingTrack, requireGoalPolicy(codingTrack), productionTrackAdmissionContext);
   assert.equal(snapshot.activeSession?.id, prepared.session.id);
   assert.equal(snapshot.sessions?.filter((session) => session.status === "active").length, 1);
   assert.equal(snapshot.goal, null);
@@ -421,13 +425,13 @@ test("an active session with a stale exact artifact pin is explicitly unavailabl
     itemOrder: prepared.session.itemOrder.map((occurrence) => ({ ...occurrence, item: createResolvedContentRef({ ...occurrence.item, contentVersion: "stale-training-version" }) })) });
   const coordinator = new LearningPlanProposalCoordinator({
     createProposalId: () => "stale-active-pin", getTimezone: () => "Europe/Warsaw",
-    readInputs: (trackId) => ({ ...readLearningPlanInputSnapshot(trackId), activeSession: staleSession, sessions: [staleSession] }),
+    readInputs: (trackId) => ({ ...readLearningPlanInputSnapshot(trackId, requireGoalPolicy(trackId), productionTrackAdmissionContext), activeSession: staleSession, sessions: [staleSession] }),
     peekPackage: () => f.resolved, now: () => "2026-10-02T12:00:00.000Z", resolvePackage: async () => f.resolved,
     resolveTrackFamily: () => "certification",
   });
-  const result = await coordinator.create(TRACK, { goal: createDefaultGoal(TRACK), minutesPerStudyDay: 60 });
+  const result = await coordinator.create(TRACK, { goal: createDefaultGoal(requireGoalPolicy(TRACK)), minutesPerStudyDay: 60 });
   assert.deepEqual(result, { kind: "active_session_unavailable", reason: "active_session_mode_unavailable" });
-  const actual = readLearningPlanInputSnapshot(TRACK);
+  const actual = readLearningPlanInputSnapshot(TRACK, requireGoalPolicy(TRACK), productionTrackAdmissionContext);
   assert.equal(actual.activeSession, null);
   assert.deepEqual(actual.sessions, []);
 });
@@ -435,7 +439,7 @@ test("an active session with a stale exact artifact pin is explicitly unavailabl
 test("an active due-review continuation coalesces its queue entry and preserves its exact due source", async () => {
   const trackId = "coding-interview-dsa-problem-solving" as const;
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
-  await saveGoalSnapshot(createDefaultGoal(trackId), null);
+  await saveGoalSnapshot(createDefaultGoal(requireGoalPolicy(trackId)), null, requireGoalPolicy(trackId));
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "coding_interview");
   const runtime = new CanonicalTrainingRuntime(resolved.track, "coding_interview");
   const practiceMode = resolved.track.getMode("coding-interview-guided-practice");
@@ -450,25 +454,25 @@ test("an active due-review continuation coalesces its queue entry and preserves 
     reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-10-02T10:05:00.000Z", committedAt: "2026-10-02T10:05:00.000Z",
   }));
   const completedSource = await runtime.finalizePractice({ session: sourcePrepared.session, attempts: sourceAttempts, now: "2026-10-02T10:10:00.000Z" });
-  await saveTrainingSession(completedSource.session);
-  for (const attempt of sourceAttempts) await addTrainingAttempt(attempt);
+  await saveTrainingSession(completedSource.session, productionTrackAdmissionContext);
+  for (const attempt of sourceAttempts) await addTrainingAttempt(attempt, productionTrackAdmissionContext);
   const sourceAttempt = sourceAttempts[0]!;
   const queueEntry: ReviewQueueEntry = {
     id: "coding-active-due-review", trackId, sourceAttemptId: sourceAttempt.id, sourceSessionId: sourcePrepared.session.id,
     sourceItem: sourceAttempt.item, taxonomyOrSkillRefs: [], reasons: ["incorrect"], dueAt: "2026-10-02T11:00:00.000Z",
     createdAt: "2026-10-02T10:05:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: true,
   };
-  await addReviewQueueItems([queueEntry]);
+  await addReviewQueueItems([queueEntry], productionTrackAdmissionContext);
   const reviewPrepared = await runtime.prepare({ trackId, modeId: reviewMode.modeId,
     request: { sessionId: "coding-active-review", requestedLength: 10, reviewSource: "due_queue" }, attempts: sourceAttempts, reviews: [queueEntry], now: "2026-10-02T12:00:00.000Z" });
   assert.equal(reviewPrepared.session.itemOrder.length, 1);
-  await saveTrainingSession(reviewPrepared.session);
+  await saveTrainingSession(reviewPrepared.session, productionTrackAdmissionContext);
   const coordinator = new LearningPlanProposalCoordinator({
-    createProposalId: () => "coding-active-review-proposal", getTimezone: () => "Europe/Warsaw", readInputs: readLearningPlanInputSnapshot,
+    createProposalId: () => "coding-active-review-proposal", getTimezone: () => "Europe/Warsaw", readInputs: (trackId, policy) => readLearningPlanInputSnapshot(trackId, policy, productionTrackAdmissionContext),
     peekPackage: () => resolved, now: () => "2026-10-02T12:00:00.000Z", resolvePackage: async () => resolved,
     resolveTrackFamily: () => "coding_interview",
   });
-  const result = await coordinator.create(trackId, { goal: createDefaultGoal(trackId), minutesPerStudyDay: 60 });
+  const result = await coordinator.create(trackId, { goal: createDefaultGoal(requireGoalPolicy(trackId)), minutesPerStudyDay: 60 });
   assert.equal(result.kind, "ready");
   if (!("proposal" in result)) throw new Error("Expected the active review continuation proposal.");
   assert.deepEqual(result.proposal.outcome.nextSession, { kind: "continue_existing", modeId: reviewMode.modeId, requestedLength: 10, sessionId: reviewPrepared.session.id });
@@ -484,7 +488,7 @@ test("an active due-review continuation coalesces its queue entry and preserves 
 test("Home keeps the exact active training pin after an accepted plan revision", async () => {
   const trackId = "coding-interview-dsa-problem-solving" as const;
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
-  const goalSnapshot = await saveGoalSnapshot(createDefaultGoal(trackId), null);
+  const goalSnapshot = await saveGoalSnapshot(createDefaultGoal(requireGoalPolicy(trackId)), null, requireGoalPolicy(trackId));
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "coding_interview");
   if (!resolved.planningPolicyIdentity) throw new Error("Expected the current planning policy identity.");
   const executionPolicy = recommendLearningPlanMode({ familyId: "coding_interview", trackId, modes: resolved.track.modes, sessions: [], dueReviewCount: 0 }).executionPolicy;
@@ -493,18 +497,18 @@ test("Home keeps the exact active training pin after an accepted plan revision",
     timezone: "Europe/Warsaw", contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256, minutesPerStudyDay: 60,
     executionPolicy, planningPolicyIdentity: resolved.planningPolicyIdentity, acceptedTarget: acceptedTargetFromGoal(goalSnapshot.record), createdAt, updatedAt: createdAt,
     planRevision: 1, commandId: "active-session-replan:first", slots: [{ slotId: createLearningPlanSlotId("active-session-replan:first-slot"), day: "fri", localTime: "18:00", sessionLength: 10 }] });
-  const firstPlanSnapshot = saveLearningPlanAtomically({ plan: firstPlan, expectedGoalRevision: goalSnapshot.revision, expectedPlanStorageRevision: null });
+  const firstPlanSnapshot = saveLearningPlanAtomically({ policy: requireGoalPolicy(firstPlan.trackId), plan: firstPlan, expectedGoalRevision: goalSnapshot.revision, expectedPlanStorageRevision: null });
   const mode = resolved.track.getMode("coding-interview-guided-practice");
   const prepared = await new CanonicalTrainingRuntime(resolved.track, "coding_interview").prepare({ trackId, modeId: mode.modeId,
     request: { sessionId: "pinned-across-plan-revisions", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-10-02T10:00:00.000Z" });
-  await saveTrainingSession(prepared.session);
+  await saveTrainingSession(prepared.session, productionTrackAdmissionContext);
   const firstOccurrence = prepared.session.itemOrder[0]!;
   await addTrainingAttempt(createTrainingAttempt({ id: "active-replan-answer", sessionId: prepared.session.id, trackId, modeId: mode.modeId,
     occurrenceId: firstOccurrence.occurrenceId, item: firstOccurrence.item, response: { answer: "committed" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
-    reviewEvidence: { sourceItem: firstOccurrence.item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-10-02T10:10:00.000Z", committedAt: "2026-10-02T10:10:00.000Z" }));
+    reviewEvidence: { sourceItem: firstOccurrence.item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-10-02T10:10:00.000Z", committedAt: "2026-10-02T10:10:00.000Z" }), productionTrackAdmissionContext);
   const revisedPlan = normalizeLearningPlan({ ...firstPlan, planRevision: 2, commandId: "active-session-replan:second", updatedAt: "2026-10-02T11:00:00.000Z",
     slots: [{ slotId: createLearningPlanSlotId("active-session-replan:second-slot"), day: "sat", localTime: "18:00", sessionLength: 10 }] });
-  saveLearningPlanAtomically({ plan: revisedPlan, expectedGoalRevision: goalSnapshot.revision, expectedPlanStorageRevision: firstPlanSnapshot.revision });
+  saveLearningPlanAtomically({ policy: requireGoalPolicy(revisedPlan.trackId), plan: revisedPlan, expectedGoalRevision: goalSnapshot.revision, expectedPlanStorageRevision: firstPlanSnapshot.revision });
   const home = await homePlanSnapshotReader.read({ trackId, now: "2026-10-02T12:00:00.000Z", premiumAccess: "denied" });
   assert.equal(home.kind, "ready");
   if (home.kind !== "ready") throw new Error("Expected the accepted plan and active session to remain readable.");
@@ -518,7 +522,7 @@ test("Home keeps the exact active training pin after an accepted plan revision",
 test("an actual due queue selects the canonical review request and estimates only its due responses", async () => {
   const f = await fixture();
   const source = attempt(f, "gcp-due-review-source");
-  await addReviewQueueItems([review(f, source, "2026-10-02T11:00:00.000Z")]);
+  await addReviewQueueItems([review(f, source, "2026-10-02T11:00:00.000Z")], productionTrackAdmissionContext);
   const created = await createProposal(f);
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected a proposal.");
@@ -544,10 +548,10 @@ test("a 19-item GCP review backlog previews the recommended 10-request session w
     const source = attempt(f, `gcp-due-review-backlog-${index}`, index);
     const entry = review(f, source, "2026-10-02T11:00:00.000Z");
     dueIds.push(entry.id);
-    await addTrainingAttempt(source);
-    await addReviewQueueItems([entry]);
+    await addTrainingAttempt(source, productionTrackAdmissionContext);
+    await addReviewQueueItems([entry], productionTrackAdmissionContext);
   }
-  const goal = { ...createDefaultGoal(TRACK), preferredDays: ["mon", "wed", "fri", "sat"] as const, weeklySessionTarget: 4, targetDate: "2026-10-13" };
+  const goal = { ...createDefaultGoal(requireGoalPolicy(TRACK)), preferredDays: ["mon", "wed", "fri", "sat"] as const, weeklySessionTarget: 4, targetDate: "2026-10-13" };
   const created = await f.coordinator.create(TRACK, { goal, minutesPerStudyDay: 180 });
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected a GCP backlog proposal.");
@@ -580,18 +584,18 @@ test("a newly persisted exact-package attempt stales the proposal; immutable rep
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected a proposal.");
   const record = attempt(f, "gcp-attempt-one");
-  await addTrainingAttempt(record);
-  const replay = await addTrainingAttempt(record);
+  await addTrainingAttempt(record, productionTrackAdmissionContext);
+  const replay = await addTrainingAttempt(record, productionTrackAdmissionContext);
   assert.deepEqual(replay.value, record);
-  assert.equal(readLearningPlanInputSnapshot(TRACK).attempts.length, 1);
+  assert.equal(readLearningPlanInputSnapshot(TRACK, requireGoalPolicy(TRACK), productionTrackAdmissionContext).attempts.length, 1);
   assert.deepEqual(await f.coordinator.resolve(created.proposal.proposalId, TRACK), { kind: "stale" });
 });
 
 test("a persisted review becoming due within the same local day stales its proposal", async () => {
   const f = await fixture();
   const source = attempt(f, "gcp-review-source");
-  await addTrainingAttempt(source);
-  await addReviewQueueItems([review(f, source, "2026-10-02T17:00:00.000Z")]);
+  await addTrainingAttempt(source, productionTrackAdmissionContext);
+  await addReviewQueueItems([review(f, source, "2026-10-02T17:00:00.000Z")], productionTrackAdmissionContext);
   const created = await createProposal(f);
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected a proposal.");
@@ -604,8 +608,8 @@ test("a persisted goal revision change stales its proposal", async () => {
   const created = await createProposal(f);
   assert.equal(created.kind, "ready");
   if (!("proposal" in created)) throw new Error("Expected a proposal.");
-  const before = readLearningPlanInputSnapshot(TRACK).goal!;
-  await saveGoalSnapshot({ ...before.record, weeklySessionTarget: before.record.weeklySessionTarget + 1 }, before.revision);
+  const before = readLearningPlanInputSnapshot(TRACK, requireGoalPolicy(TRACK), productionTrackAdmissionContext).goal!;
+  await saveGoalSnapshot({ ...before.record, weeklySessionTarget: before.record.weeklySessionTarget + 1 }, before.revision, requireGoalPolicy({ ...before.record, weeklySessionTarget: before.record.weeklySessionTarget + 1 }.trackId));
   assert.deepEqual(await f.coordinator.resolve(created.proposal.proposalId, TRACK), { kind: "stale" });
 });
 
@@ -617,7 +621,7 @@ test("corrupt, dangling, and journaled evidence reads are errors, never empty hi
     if (scenario === "dangling-attempt") f.storage.setString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision: 1, payload: ["missing-attempt"] }));
     if (scenario === "active-journal") {
       const { captureLearningStateResetTargetPlan } = await import("../../storage/repositories/learningStateResetRepository");
-      await persistMutationJournal(journal([{ kind: "clear_learning_state", targetPlan: captureLearningStateResetTargetPlan() }], "reset_learning_state"));
+      await persistMutationJournal(journal([{ kind: "clear_learning_state", targetPlan: captureLearningStateResetTargetPlan(productionTrackAdmissionContext) }], "reset_learning_state"), productionLearningDataAdmissionContext);
     }
     assert.deepEqual(await createProposal(f), { kind: "generator_error", classification: "retryable" });
   });
@@ -636,7 +640,7 @@ test("an injected canonical-package artifact change stales the synchronous guard
   let current = f.resolved;
   const coordinator = new LearningPlanProposalCoordinator({
     createProposalId: () => "artifact-change-proposal", getTimezone: () => "Europe/Warsaw",
-    readInputs: readLearningPlanInputSnapshot, peekPackage: () => current,
+    readInputs: (trackId, policy) => readLearningPlanInputSnapshot(trackId, policy, productionTrackAdmissionContext), peekPackage: () => current,
     now: () => "2026-10-02T12:00:00.000Z", resolvePackage: async () => current,
     resolveTrackFamily: () => "certification",
   });
@@ -654,7 +658,7 @@ test("exact duplicate evidence preserves order and conflicting duplicate IDs fai
   let records: readonly TrainingAttempt[] = [first, second, first];
   const coordinator = new LearningPlanProposalCoordinator({
     createProposalId: () => "ordered-evidence-proposal", getTimezone: () => "Europe/Warsaw",
-    readInputs: (trackId) => ({ ...readLearningPlanInputSnapshot(trackId), attempts: records }),
+    readInputs: (trackId) => ({ ...readLearningPlanInputSnapshot(trackId, requireGoalPolicy(trackId), productionTrackAdmissionContext), attempts: records }),
     peekPackage: () => f.resolved, now: () => "2026-10-02T12:00:00.000Z",
     resolvePackage: async () => f.resolved, resolveTrackFamily: () => "certification",
   });
@@ -669,7 +673,7 @@ test("exact duplicate evidence preserves order and conflicting duplicate IDs fai
 
   const conflicting = new LearningPlanProposalCoordinator({
     createProposalId: () => "conflicting-evidence-proposal", getTimezone: () => "Europe/Warsaw",
-    readInputs: (trackId) => ({ ...readLearningPlanInputSnapshot(trackId), attempts: [first, { ...first, committedAt: "2026-10-02T11:01:00.000Z" }] }),
+    readInputs: (trackId) => ({ ...readLearningPlanInputSnapshot(trackId, requireGoalPolicy(trackId), productionTrackAdmissionContext), attempts: [first, { ...first, committedAt: "2026-10-02T11:01:00.000Z" }] }),
     peekPackage: () => f.resolved, now: () => "2026-10-02T12:00:00.000Z",
     resolvePackage: async () => f.resolved, resolveTrackFamily: () => "certification",
   });
@@ -681,7 +685,7 @@ test("a repository read failure after package await remains retryable", async ()
   const f = await fixture(); let reads = 0;
   const coordinator = new LearningPlanProposalCoordinator({
     createProposalId: () => "read-failure", getTimezone: () => "Europe/Warsaw",
-    readInputs: (trackId) => { reads++; if (reads === 2) throw new Error("read unavailable"); return readLearningPlanInputSnapshot(trackId); },
+    readInputs: (trackId) => { reads++; if (reads === 2) throw new Error("read unavailable"); return readLearningPlanInputSnapshot(trackId, requireGoalPolicy(trackId), productionTrackAdmissionContext); },
     peekPackage: () => f.resolved, now: () => "2026-10-02T12:00:00.000Z",
     resolvePackage: async () => f.resolved, resolveTrackFamily: () => "certification",
   });

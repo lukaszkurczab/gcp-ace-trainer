@@ -1,5 +1,5 @@
-import { isCanonicalSafeIdentity } from "../../content/canonical/questionValidation";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { isCanonicalSafeIdentity } from "../identity/canonicalIdentity";
+import { canonicalSerialize } from "../identity/canonicalSerialization";
 import { deepFreeze } from "./familyEnvelope";
 
 /** The only content identity that may cross the runtime boundary. */

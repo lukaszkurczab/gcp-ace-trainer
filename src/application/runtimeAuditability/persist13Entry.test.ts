@@ -185,7 +185,7 @@ test("fixture pauses only after the durable reset materialization and exact nati
   const commit = readFileSync("src/application/learningMutations/commitMutation.ts", "utf8");
   const hook = readFileSync("src/application/runtimeAuditability/persist13ResetPauseHook.ts", "utf8");
   const fixture = readFileSync("src/application/runtimeAuditability/Persist13ResetFixtureRoot.tsx", "utf8");
-  assert.match(commit, /await materializeMutation\(prepared, beforeGoalPlanWrite\);\s*await pausePersist13ResetAfterMaterialization\(prepared\.operation\);\s*await updateMutationJournalPhase\(prepared, "materialized"\)/u);
+  assert.match(commit, /await materializeMutation\(prepared, beforeGoalPlanWrite\);\s*await pausePersist13ResetAfterMaterialization\(prepared\.operation\);\s*await updateMutationJournalPhase\(prepared, "materialized", productionLearningDataAdmissionContext\)/u);
   assert.match(hook, /process\.env\.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"[\s\S]*?process\.env\.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE === "seed"/u);
   assert.match(fixture, /journal\?\.operation !== "reset_learning_state" \|\| journal\.status !== "journal_durable"[\s\S]*?targetEntries\.some\(\(\{ key \}\) => storage\.getString\(key\) !== undefined\)/u);
   assert.match(fixture, /await assertRecoverableManifestAuthority\(manifest\);\s*writeManifest\(withPersist13ManifestState\(manifest, "recovering"\)\)/u);

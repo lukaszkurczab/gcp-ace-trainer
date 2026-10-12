@@ -11,6 +11,8 @@ import { isPersist13ResetBarrierCold } from "../learningMutations/commitLearning
 import { clearPatternlyLocalHistory } from "../../features/home/localReset";
 import { getActiveMutationJournal, getActiveTrainingSession, getActiveTrainingSessionDraft, getReviewQueueItems, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions, provisionGuestInstallation, saveTrainingSessionDraft } from "../../storage/repositories";
 import { STORAGE_KEYS } from "../../storage/keys";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { TrainingApplicationFailure } from "../trainingLifecycle/contracts";
 import { MutationCommitFailure } from "../mutationBoundary";
 import { getForegroundSessionTimerFacade } from "../trainingLifecycle/ForegroundSessionTimerFacade";
@@ -25,6 +27,7 @@ import { installPersist13ResetPauseHook, isPersist13ResetPauseHookCold, PERSIST1
 import { areHashedSnapshotsEqual, arePersist13PhysicalSnapshotsEqual, createPersist13Manifest, fixtureInstallationId, fixtureModeAllowsManifest, fixtureStoreIds, hashPersist13PhysicalSnapshot, isPersist13ControlNamespace, isPersist13Manifest, isPersist13ScenarioSidecar, PERSIST13_FIXTURE_CACHE_PREFIXES, PERSIST13_FIXTURE_MANIFEST_KEY, PERSIST13_SCENARIO_SIDECAR_KEY, persist13FixturePhysicalKey, withPersist13ManifestState, type Persist13FixtureManifest, type Persist13ScenarioSidecar } from "./persist13ResetFixtureProtocol";
 import { seedPersist13ResetFixtureState } from "./persist13ResetFixtureSeed";
 import type { Persist13Entry } from "./persist13Entry";
+
 
 type FixtureStage = "preflight" | "cache_preflight" | "native_store_open" | "router_prepare" | "bootstrap" | "seed" | "reset_pause" | "journal_unknown" | "draft_unknown" | "recovery" | "verification" | "complete" | "cleanup";
 type FixtureErrorCategory = "runtime_disabled" | "cold_owner_not_cold" | "store_collision" | "manifest_invalid" | "cache_collision" | "cache_unavailable" | "storage_unavailable" | "bootstrap_blocked" | "seed_failed" | "reset_failed" | "fault_injection_failed" | "recovery_failed" | "preservation_failed" | "native_store_cleanup_failed" | "unknown";
@@ -112,7 +115,7 @@ async function runPersist13Fixture(entry: Persist13Entry, publish: (receipt: Fix
       writeManifest(currentManifest);
       installPersist13ResetPauseHook(async (stage) => {
         if (stage !== PERSIST13_RESET_PAUSE_STAGE) throw Object.assign(new Error("persist13_unexpected_pause_stage"), { stage: "reset_pause", category: "reset_failed" });
-        const journal = await getActiveMutationJournal();
+        const journal = await getActiveMutationJournal(productionLearningDataAdmissionContext);
         const storage = getKeyValueStorage();
         const resetWrite = journal?.operation === "reset_learning_state" ? journal.writes[0] : null;
         const lease = captureActiveProfileStorageLease();
@@ -146,7 +149,7 @@ async function runPersist13Fixture(entry: Persist13Entry, publish: (receipt: Fix
     if (!arePersist13PhysicalSnapshotsEqual(firstSnapshot, secondSnapshot)) throw Object.assign(new Error("persist13_bootstrap_not_idempotent"), { stage: "verification", category: "recovery_failed" });
     publish({ result: "pending", stage: "verification", targetCount: manifest.targets.length, preservedCount: manifest.preserved.length });
     const targetsAbsent = areFixtureTargetsAbsent(manifest);
-    const journalAbsent = await getActiveMutationJournal() === null;
+    const journalAbsent = await getActiveMutationJournal(productionLearningDataAdmissionContext) === null;
     const preservedEqual = areFixturePreservedEntriesEqual(manifest);
     if (!targetsAbsent || !journalAbsent || !preservedEqual) throw Object.assign(new Error("persist13_recovery_postcondition_failed"), { stage: "verification", category: "preservation_failed" });
     writeManifest(withPersist13ManifestState(manifest, "recovered"));
@@ -316,8 +319,8 @@ async function seedJournalOrDraftScenario(
     if (!firstOccurrence) throw Object.assign(new Error("persist13_free_practice_occurrence_missing"), { stage: "seed", category: "seed_failed" });
     const question = await contentPackageRuntimeOwner.resolveItem(firstOccurrence.item);
     const before = hashPersist13PhysicalSnapshot(capturePhysicalSnapshot(requireBase(stores)), sha256Utf8);
-    if (await getActiveMutationJournal() !== null) throw Object.assign(new Error("persist13_unexpected_pending_journal"), { stage: "seed", category: "seed_failed" });
-    const attempts = await getTrainingAttempts();
+    if (await getActiveMutationJournal(productionLearningDataAdmissionContext) !== null) throw Object.assign(new Error("persist13_unexpected_pending_journal"), { stage: "seed", category: "seed_failed" });
+    const attempts = await getTrainingAttempts(productionTrackAdmissionContext);
     sessionId = prepared.session.id;
     baselineAttemptCount = attempts.value.length;
     baselineSessionIndex = prepared.session.currentItemIndex;
@@ -368,18 +371,18 @@ async function seedJournalOrDraftScenario(
   } else {
     publish({ result: "pending", scenario: entry.scenario, stage: "seed" });
     await seedPersist13ResetFixtureState(entry.runId);
-    const active = await getActiveTrainingSession();
-    const draft = await getActiveTrainingSessionDraft();
+    const active = await getActiveTrainingSession(productionTrackAdmissionContext);
+    const draft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
     if (!active || !draft || active.configurationSnapshot.submission !== "manualOrForegroundTimeout" || !active.itemOrder[0]) {
       throw Object.assign(new Error("persist13_registered_draft_fixture_unavailable"), { stage: "seed", category: "seed_failed" });
     }
     const question = await contentPackageRuntimeOwner.resolveItem(active.itemOrder[0].item);
     const occurrenceId = active.itemOrder[0].occurrenceId;
     const baseline = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: new Date().toISOString() });
-    const savedBaseline = await saveTrainingSessionDraft(baseline, draft.revision);
+    const savedBaseline = await saveTrainingSessionDraft(baseline, draft.revision, productionTrackAdmissionContext);
     const before = hashPersist13PhysicalSnapshot(capturePhysicalSnapshot(requireBase(stores)), sha256Utf8);
-    if (await getActiveMutationJournal() !== null) throw Object.assign(new Error("persist13_unexpected_pending_journal"), { stage: "seed", category: "seed_failed" });
-    const attempts = await getTrainingAttempts();
+    if (await getActiveMutationJournal(productionLearningDataAdmissionContext) !== null) throw Object.assign(new Error("persist13_unexpected_pending_journal"), { stage: "seed", category: "seed_failed" });
+    const attempts = await getTrainingAttempts(productionTrackAdmissionContext);
     sessionId = active.id;
     baselineAttemptCount = attempts.value.length;
     baselineSessionIndex = active.currentItemIndex;
@@ -389,7 +392,7 @@ async function seedJournalOrDraftScenario(
     expectedDraftPayloadSha256 = hashJsonForAssertion(createTrainingSessionDraft(attempted));
     requireFault(stores).arm(faultPhysicalKey);
     let attemptedReceipt: CanonicalWriteAttempt<typeof attempted> | null = null;
-    try { await saveTrainingSessionDraft(attempted, savedBaseline.revision); }
+    try { await saveTrainingSessionDraft(attempted, savedBaseline.revision, productionTrackAdmissionContext); }
     catch (error) {
       if (error instanceof CanonicalWriteOutcomeError && error.outcome.kind === "unknown" && error.attempt && typeof error.attempt === "object") {
         attemptedReceipt = error.attempt as CanonicalWriteAttempt<typeof attempted>;
@@ -399,7 +402,7 @@ async function seedJournalOrDraftScenario(
     if (!fault.didWrite() || !fault.didDenyRead() || !attemptedReceipt) throw Object.assign(new Error("persist13_draft_fault_not_observed"), { stage: "seed", category: "fault_injection_failed" });
     expectedDraftEnvelopeSha256 = sha256Utf8(attemptedReceipt.afterRaw);
     if (hashJsonForAssertion(attemptedReceipt.envelope.payload) !== expectedDraftPayloadSha256) throw Object.assign(new Error("persist13_draft_expected_payload_mismatch"), { stage: "seed", category: "fault_injection_failed" });
-    if (await reconcileTrainingSessionDraftWrite(attemptedReceipt) !== "unknown") throw Object.assign(new Error("persist13_draft_reconcile_was_not_unknown"), { stage: "seed", category: "fault_injection_failed" });
+    if (await reconcileTrainingSessionDraftWrite(attemptedReceipt, productionTrackAdmissionContext) !== "unknown") throw Object.assign(new Error("persist13_draft_reconcile_was_not_unknown"), { stage: "seed", category: "fault_injection_failed" });
     const after = hashPersist13PhysicalSnapshot(fault.snapshotForAssertion(), sha256Utf8);
     assertOnlyFaultKeyChanged(before, after, faultPhysicalKey);
     expectedDraftRevision = attemptedReceipt.envelope.revision;
@@ -432,7 +435,7 @@ async function recoverJournalOrDraftScenario(
     throw Object.assign(new Error("persist13_faulted_target_mismatch"), { stage: "preflight", category: "manifest_invalid" });
   }
   if (entry.scenario === "journal") {
-    const journal = await getActiveMutationJournal();
+    const journal = await getActiveMutationJournal(productionLearningDataAdmissionContext);
     if (!journal || journal.status !== "journal_durable" || journal.operation !== "submit_training_outcome" || sha256Utf8(journal.sessionId) !== sidecar.sessionIdSha256) {
       throw Object.assign(new Error("persist13_journal_authority_missing"), { stage: "preflight", category: "manifest_invalid" });
     }
@@ -444,16 +447,16 @@ async function recoverJournalOrDraftScenario(
     const second = await runProductionBootstrap(identity, entry.scenario);
     const secondSnapshot = capturePhysicalSnapshot(requireBase(stores));
     if (!arePersist13PhysicalSnapshotsEqual(firstSnapshot, secondSnapshot)) throw Object.assign(new Error("persist13_scenario_bootstrap_not_idempotent"), { stage: "verification", category: "recovery_failed" });
-    const journalAbsent = await getActiveMutationJournal() === null;
+    const journalAbsent = await getActiveMutationJournal(productionLearningDataAdmissionContext) === null;
     if (!journalAbsent) throw Object.assign(new Error("persist13_scenario_journal_remains"), { stage: "verification", category: "recovery_failed" });
     const physicalTarget = requireBase(stores).getString(sidecar.faultPhysicalKey);
     if (first.kind !== "ready" || second.kind !== "ready" || !first.activeSessionId || first.activeSessionId !== second.activeSessionId) {
       throw Object.assign(new Error("persist13_journal_bootstrap_not_resumed"), { stage: "verification", category: "bootstrap_blocked" });
     }
-    const attempts = await getTrainingAttempts();
-    const sessions = await getTrainingSessions();
-    const reviews = await getReviewQueueItems();
-    const resumed = await getActiveTrainingSession();
+    const attempts = await getTrainingAttempts(productionTrackAdmissionContext);
+    const sessions = await getTrainingSessions(productionTrackAdmissionContext);
+    const reviews = await getReviewQueueItems(productionTrackAdmissionContext);
+    const resumed = await getActiveTrainingSession(productionTrackAdmissionContext);
     const resumedOccurrence = resumed?.itemOrder[sidecar.baselineSessionIndex];
     const actualAttempt = attempts.value.find((attempt) => attempt.sessionId === resumed?.id && attempt.occurrenceId === resumedOccurrence?.occurrenceId);
     const actualSession = sessions.value.find((session) => session.id === resumed?.id);
@@ -467,7 +470,7 @@ async function recoverJournalOrDraftScenario(
       || !actualSession || hashJsonForAssertion(actualSession) !== sidecar.expectedSessionSha256
       || !sidecar.expectedReviewSha256?.every((hash) => actualReviewHashes.has(hash))
       || sessions.value.filter((session) => session.status === "active").length !== 1
-      || await getTrainingSessionResult(resumed.id) !== null || physicalTarget !== undefined) {
+      || await getTrainingSessionResult(resumed.id, productionTrackAdmissionContext) !== null || physicalTarget !== undefined) {
       throw Object.assign(new Error("persist13_journal_recovery_postcondition_failed"), { stage: "verification", category: "recovery_failed" });
     }
     writeScenarioSidecar(stores, Object.freeze({ ...sidecar, phase: "recovered" }));
@@ -485,8 +488,8 @@ async function recoverJournalOrDraftScenario(
     publish({ result: "observed", scenario: entry.scenario, stage: "complete", bootstrapReady: true, journalAbsent, targetsAbsent: true, preservedEqual: true, cleanupVerified: true });
     return;
   } else {
-    if (await getActiveMutationJournal() !== null) throw Object.assign(new Error("persist13_draft_has_pending_journal"), { stage: "preflight", category: "manifest_invalid" });
-    const draft = await getActiveTrainingSessionDraft();
+    if (await getActiveMutationJournal(productionLearningDataAdmissionContext) !== null) throw Object.assign(new Error("persist13_draft_has_pending_journal"), { stage: "preflight", category: "manifest_invalid" });
+    const draft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
     if (!draft || draft.revision !== sidecar.expectedDraftRevision || sha256Utf8(draft.sessionId) !== sidecar.sessionIdSha256
       || Object.keys(draft.responsesByOccurrenceId).length === 0 || draft.flaggedOccurrenceIds.length === 0) {
       throw Object.assign(new Error("persist13_draft_authority_mismatch"), { stage: "preflight", category: "manifest_invalid" });
@@ -499,7 +502,7 @@ async function recoverJournalOrDraftScenario(
   const second = await runProductionBootstrap(identity, entry.scenario);
   const secondSnapshot = capturePhysicalSnapshot(requireBase(stores));
   if (!arePersist13PhysicalSnapshotsEqual(firstSnapshot, secondSnapshot)) throw Object.assign(new Error("persist13_scenario_bootstrap_not_idempotent"), { stage: "verification", category: "recovery_failed" });
-  const journalAbsent = await getActiveMutationJournal() === null;
+  const journalAbsent = await getActiveMutationJournal(productionLearningDataAdmissionContext) === null;
   if (!journalAbsent) throw Object.assign(new Error("persist13_scenario_journal_remains"), { stage: "verification", category: "recovery_failed" });
   const physicalTarget = requireBase(stores).getString(sidecar.faultPhysicalKey);
   if (first.kind !== "home_ready_resume_unavailable" || second.kind !== "home_ready_resume_unavailable"
@@ -507,10 +510,10 @@ async function recoverJournalOrDraftScenario(
     || !["premium_entitlement_denied", "premium_entitlement_unavailable"].includes(second.reason)) {
     throw Object.assign(new Error("persist13_draft_bootstrap_unavailable_outcome_missing"), { stage: "verification", category: "bootstrap_blocked" });
   }
-  const draft = await getActiveTrainingSessionDraft();
-  const active = await getActiveTrainingSession();
-  const attempts = await getTrainingAttempts();
-  const sessions = await getTrainingSessions();
+  const draft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
+  const active = await getActiveTrainingSession(productionTrackAdmissionContext);
+  const attempts = await getTrainingAttempts(productionTrackAdmissionContext);
+  const sessions = await getTrainingSessions(productionTrackAdmissionContext);
   const expectedTarget = sidecar.after.find((row) => row.key === sidecar.faultPhysicalKey);
   if (!areHashedSnapshotsEqual(sidecar.after, hashPersist13PhysicalSnapshot(firstSnapshot, sha256Utf8))
     || !draft || draft.revision !== sidecar.expectedDraftRevision || sha256Utf8(draft.sessionId) !== sidecar.sessionIdSha256
@@ -672,7 +675,7 @@ function areFixturePreservedEntriesEqual(manifest: Persist13FixtureManifest): bo
 }
 
 async function assertRecoverableManifestAuthority(manifest: Persist13FixtureManifest): Promise<void> {
-  const journal = await getActiveMutationJournal();
+  const journal = await getActiveMutationJournal(productionLearningDataAdmissionContext);
   const lease = captureActiveProfileStorageLease();
   if (!lease || lease.profile.id !== manifest.fixtureProfileId || lease.profile.kind !== "guest" || lease.profile.accountId !== null) {
     throw Object.assign(new Error("persist13_recovery_profile_mismatch"), { stage: "preflight", category: "manifest_invalid" });

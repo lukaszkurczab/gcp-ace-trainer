@@ -1,4 +1,5 @@
 import type { GoalRecord, GoalSnapshot, TrackId } from "../domain";
+import { requireGoalPolicy } from "../domain/tracks/trackGoalPolicies";
 import { getTrainingLifecycleUseCases } from "./trainingLifecycle";
 import type { CodingInterviewDashboard } from "./coding-interview/codingInterviewContracts";
 import {
@@ -27,26 +28,27 @@ import {
 } from "../tracks/certification";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 import { transitionGoalPlanStatus } from "./learningPlan/goalPlanLifecycle";
+import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
 
 /** Application-owned read ports consumed by presentation. */
 export type { StorageIssue };
 
 export async function loadActiveTrackId() { return loadSettledActiveTrackSelection(); }
 export async function selectActiveTrack(trackId: TrackId) { await commitActiveTrackSelection(trackId); }
-export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId); }
+export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId, requireGoalPolicy(trackId)); }
 export async function persistGoalPlanStatus(trackId: TrackId) { return transitionGoalPlanStatus(trackId); }
-export async function loadGoalSnapshot(trackId: TrackId): Promise<GoalSnapshot | null> { return getGoalSnapshot(trackId); }
-export async function loadLearningPlan(trackId: TrackId) { return getLearningPlanSnapshot(trackId); }
+export async function loadGoalSnapshot(trackId: TrackId): Promise<GoalSnapshot | null> { return getGoalSnapshot(trackId, requireGoalPolicy(trackId)); }
+export async function loadLearningPlan(trackId: TrackId) { return getLearningPlanSnapshot(trackId, requireGoalPolicy(trackId)); }
 export function loadGoalOnboardingDismissed(trackId: TrackId): boolean { return isGoalOnboardingDismissed(trackId); }
 export function persistGoalOnboardingDismissal(trackId: TrackId): void { dismissGoalOnboarding(trackId); }
-export async function loadExamSummaries() { return getAttempts(); }
-export async function loadPracticeHistory() { return getPracticeHistory(); }
-export async function loadTrainingAttempts() { return getTrainingAttempts(); }
-export async function loadReviewQueueItems() { return getReviewQueueItems(); }
-export async function loadActiveTrainingSession() { return getActiveTrainingSession(); }
-export async function loadActiveTrainingSessionDraft() { return getActiveTrainingSessionDraft(); }
-export async function loadTrainingSession(sessionId: string) { return (await getTrainingSessions()).value.find((session) => session.id === sessionId) ?? null; }
-export async function loadTrainingSessionResult(sessionId: string) { return getTrainingSessionResult(sessionId); }
+export async function loadExamSummaries() { return getAttempts(productionTrackAdmissionContext); }
+export async function loadPracticeHistory() { return getPracticeHistory(productionTrackAdmissionContext); }
+export async function loadTrainingAttempts() { return getTrainingAttempts(productionTrackAdmissionContext); }
+export async function loadReviewQueueItems() { return getReviewQueueItems(productionTrackAdmissionContext); }
+export async function loadActiveTrainingSession() { return getActiveTrainingSession(productionTrackAdmissionContext); }
+export async function loadActiveTrainingSessionDraft() { return getActiveTrainingSessionDraft(productionTrackAdmissionContext); }
+export async function loadTrainingSession(sessionId: string) { return (await getTrainingSessions(productionTrackAdmissionContext)).value.find((session) => session.id === sessionId) ?? null; }
+export async function loadTrainingSessionResult(sessionId: string) { return getTrainingSessionResult(sessionId, productionTrackAdmissionContext); }
 
 /** Typed Home read. Presentation receives the family dashboard, never its runtime or repositories. */
 export async function loadCodingInterviewDashboard(): Promise<CodingInterviewDashboard> {
@@ -60,7 +62,7 @@ export async function loadAlgorithmsDeclaredScopeOptions(input: Readonly<{ modeI
 }
 
 export async function loadCloudCertificationProgress(input: { now?: string; recentAttemptCount?: number } = {}): Promise<CloudCertificationProgressViewModel> {
-  const [attempts, reviews] = await Promise.all([getTrainingAttempts(), getReviewQueueItems()]);
+  const [attempts, reviews] = await Promise.all([getTrainingAttempts(productionTrackAdmissionContext), getReviewQueueItems(productionTrackAdmissionContext)]);
   return buildCloudCertificationProgressViewModel({
     attempts: attempts.value,
     issues: [...(attempts.issues ?? []), ...(reviews.issues ?? [])],

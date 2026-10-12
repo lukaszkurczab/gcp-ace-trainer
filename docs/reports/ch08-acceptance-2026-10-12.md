@@ -35,3 +35,9 @@ Końcowa rutynowa korekta dodaje ponowny owner-fence bezpośrednio po await odcz
 Końcowy matching fullgate93196 **EXIT0** na zamrożonych src/scripts f7fe1eb06f257815f5625d7f1d7bbd998c1a1a30d48e46eeb94a2d4cef742bcc i unchanged nowych plikach:2470total/2465PASS/0FAIL/5SKIP, recovery489/365/2354, Stage1/TC/content/privacyPASS. Exact wejścia jak historyczny gate powyżej. Log SHA25623ae0bf5ee3318ac76adb9046e510fecfdc500a5262a62ea3835f855c26f7999, ignored artifacts/private/ch08-20261012/final-fullgate.log,0600. Independent full-logreview w toku. CH07 native nadal OPEN; nie odebrano ordinary login/logout ani pełnego zadania CH07.
 
 Independent końcowy full-log/source-input review **PASS WITH ISSUES**: SHA logu, src/scripts freeze i trzy wejścia potwierdzone; pięć SKIP nie jest PASS. Bez wykazanego defektu CH08. Bounded source/local pakiet gotowy do zwykłego commit/push i exact CI; CH07 native odbiór pozostaje otwarty.
+
+Dostarczono spójny pakiet28files (21source/test+7docs): commit0cf82bb472d759c21de51e341f8edb348fff4f72, zwykły push main. Exact hosted CI38195358560 uruchomione dla tego SHA; wynik oczekiwany. Bez metadata-only push.
+
+[Exact CI38195358560](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38195358560) **SUCCESS obu jobs** dla0cf82bb472d759c21de51e341f8edb348fff4f72:2470total/2465PASS/0FAIL/5SKIP, recovery489/365/2354, contracts3/3, TC/platform/content/privacyPASS. Pełny log zachowany prywatnie; niezależny odbiór końcowego hosted logu w toku.
+
+Końcowy niezależny exact hosted odbiór **PASS WITH ISSUES**: HEAD/obie jobs/wejścia/full-log potwierdzone, log SHA2569613c96bc86ea3f93555cd7f0c92c075df155f4d5921c0a19ccce5d21512a3f0. CH08 odebrane i usunięte z kolejki. CH07 pozostaje native BLOCKED. Baseline sourceFiles487 to inny enumerator od active inventory489, nie zmiana SHA. Finalmetadata zostaje przeniesione z następnym spójnym source pakietem.

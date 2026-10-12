@@ -40,7 +40,7 @@ test("all selected Design modes require Premium admission before their canonical
   assert.match(hub, /if \(isDesignInterviewModeId\(resolvedMode\)\)[\s\S]*?authorizePremiumSessionStart\(\)[\s\S]*?case "purchasePremium":[\s\S]*?ROUTES\.PREMIUM_PURCHASE/);
   assert.match(hub, /if \(resolvedMode !== "design-interview-simulation"\)[\s\S]*?ROUTES\.PRACTICE_SETUP[\s\S]*?ROUTES\.DESIGN_INTERVIEW_SIMULATION/);
   assert.match(hub, /setDesignAdmissionMode\(resolvedMode\)[\s\S]*?startSession\(designAdmissionMode\)/);
-  assert.match(hub, /startSession\(primaryMode\.mode as PracticeSessionMode, "practiceHub"\)/);
+  assert.match(hub, /startSession\(primaryMode\.mode as CanonicalPracticeModeId, "practiceHub"\)/);
 });
 
 test("practice route changes cannot submit stale setup controls and preserve track identity", () => {

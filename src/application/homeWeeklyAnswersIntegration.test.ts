@@ -9,6 +9,8 @@ import { loadActivitySessionRecords, projectWeeklyAnsweredActivity, projectWeekl
 import { buildHomeOverviewMetrics } from "../features/home/tabs/homeOverviewPresentation";
 import { addTrainingAttempt, getTrainingAttempts, saveTrainingSession } from "../storage/repositories";
 import { installMemoryStorage } from "../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
+
 
 const TRACK = "coding-interview-dsa-problem-solving";
 const NOW = "2026-10-02T12:00:00.000Z";
@@ -25,12 +27,12 @@ async function recordedAnswer(id: string, answeredAt = "2026-10-01T10:00:00.000Z
     item, response: { answer: "fixture" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
     reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt,
   });
-  await addTrainingAttempt(attempt);
+  await addTrainingAttempt(attempt, productionTrackAdmissionContext);
   return attempt;
 }
 
 async function weeklyMetric(context: typeof CONTEXT & { activeSessionId?: string } = CONTEXT) {
-  return buildHomeOverviewMetrics({ ...context, reviewQueueItems: [], trainingAttempts: (await getTrainingAttempts()).value })[0]!;
+  return buildHomeOverviewMetrics({ ...context, reviewQueueItems: [], trainingAttempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value })[0]!;
 }
 
 function count(attempts: readonly TrainingAttempt[], context: typeof CONTEXT & { activeSessionId?: string } = CONTEXT) {
@@ -97,7 +99,7 @@ test("active exclusion, ended-early history and old package facts remain distinc
       itemOrder: [{ occurrenceId: `${id}-answer`, item }], optionOrderByOccurrence: {}, activeForegroundMs: 1000,
       contentVersion: item.contentVersion, artifactSha256: item.artifactSha256,
       startedAt: "2026-09-01T08:00:00.000Z", ...(status === "active" ? {} : { completedAt: "2026-10-01T10:01:00.000Z" }),
-    }));
+    }), productionTrackAdmissionContext);
   }
   assert.equal((await weeklyMetric({ ...CONTEXT, activeSessionId: "active" })).count, 1);
   const sessions = projectWeeklySessionActivity(await loadActivitySessionRecords(), CONTEXT);
@@ -119,7 +121,7 @@ test("civil Monday boundaries agree in Warsaw/Los Angeles and across both DST tr
   for (const [now, answeredAt, timezone, expected] of cases) {
     installMemoryStorage();
     await recordedAnswer("boundary", answeredAt);
-    assert.equal(count((await getTrainingAttempts()).value, { ...CONTEXT, now, timezone }), expected, `${timezone}/${answeredAt}`);
+    assert.equal(count((await getTrainingAttempts(productionTrackAdmissionContext)).value, { ...CONTEXT, now, timezone }), expected, `${timezone}/${answeredAt}`);
   }
 });
 
@@ -143,7 +145,7 @@ test("invalid relevant record/context never becomes empty activity; repository c
   await recordedAnswer("corrupt");
   const { STORAGE_KEYS } = await import("../storage/keys");
   storage.setString(STORAGE_KEYS.trainingAttempt("corrupt"), "{");
-  await assert.rejects(getTrainingAttempts);
+  await assert.rejects(() => getTrainingAttempts(productionTrackAdmissionContext));
 });
 
 test("weekly text and accessibility label share real translated plural values in seven locales", async () => {

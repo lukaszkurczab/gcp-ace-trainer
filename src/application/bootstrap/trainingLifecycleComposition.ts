@@ -51,6 +51,7 @@ import type { ActiveProfileStorageLease, MutationJournalRecord } from "../../sto
 import { assertValidMutationJournal, isMutationJournalLeaseCurrent } from "../../storage/repositories/mutationJournalRepository";
 import { isTrainingSessionDraft } from "../../storage/repositories/trainingModelGuards";
 import { isTrainingSessionDraftLeaseCurrent } from "../../storage/repositories/trainingSessionDraftRepository";
+import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { trainingSessionIdentity } from "../../infrastructure/identity/trainingSessionIdentity";
 import { MutationCommitFailure, type RetryMutationCommandHandle, type RetryableMutationOperation } from "../mutationBoundary";
 import type { DraftStorageLeaseHandle, DraftWriteReceipt } from "../trainingLifecycle/contracts";
@@ -151,54 +152,54 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     packages: dependencies.packages ?? contentPackageRuntimeOwner,
     premiumSessionAdmission: dependencies.premiumSessionAdmission,
     repositories: {
-      async getActiveSession() { return getActiveTrainingSession(); },
-      async getSession(sessionId) { return (await getTrainingSessions()).value.find((session) => session.id === sessionId) ?? null; },
-      async getHistory() { return (await getTrainingSessions()).value; },
-      async getAttempts() { return (await getTrainingAttempts()).value; },
-      async getReviews() { return (await getReviewQueueItems()).value; },
+      async getActiveSession() { return getActiveTrainingSession(productionTrackAdmissionContext); },
+      async getSession(sessionId) { return (await getTrainingSessions(productionTrackAdmissionContext)).value.find((session) => session.id === sessionId) ?? null; },
+      async getHistory() { return (await getTrainingSessions(productionTrackAdmissionContext)).value; },
+      async getAttempts() { return (await getTrainingAttempts(productionTrackAdmissionContext)).value; },
+      async getReviews() { return (await getReviewQueueItems(productionTrackAdmissionContext)).value; },
       async getDraft(sessionId) {
-        const draft = await getActiveTrainingSessionDraft();
+        const draft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
         return draft?.sessionId === sessionId ? draft : null;
       },
-      async getDraftStateProof() { return readActiveTrainingSessionDraftStateProof(); },
-      verifyAcceptedFinalizationProof(accepted, proof) { return isExactAcceptedFinalizationEnvelopeProof(accepted, proof); },
+      async getDraftStateProof() { return readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext); },
+      verifyAcceptedFinalizationProof(accepted, proof) { return isExactAcceptedFinalizationEnvelopeProof(accepted, proof, productionTrackAdmissionContext); },
       isDraftStorageLeaseCurrent(handle) {
         const resolved = resolveDraftLease(handle);
         return resolved.valid && isTrainingSessionDraftLeaseCurrent(resolved.lease);
       },
-      async getSessionEnvelopeProof(sessionId) { return readTrainingSessionEnvelopeProof(sessionId); },
-      async getFinalizationReviews(refs) { return readReviewQueueFinalizationProofs(refs); },
+      async getSessionEnvelopeProof(sessionId) { return readTrainingSessionEnvelopeProof(sessionId, productionTrackAdmissionContext); },
+      async getFinalizationReviews(refs) { return readReviewQueueFinalizationProofs(refs, productionTrackAdmissionContext); },
       async acceptFinalization(accepted, expected, handle, reviewRefs) {
         const resolved = resolveDraftLease(handle);
         if (!resolved.valid || !isTrainingSessionDraftLeaseCurrent(resolved.lease)) return "not_applied";
-        const result = await acceptSimulationFinalization(accepted, expected, resolved.lease, reviewRefs);
+        const result = await acceptSimulationFinalization(accepted, expected, resolved.lease, reviewRefs, productionTrackAdmissionContext);
         if (result.attempt) finalizationAttemptByCommand.set(accepted, result.attempt);
         return result.kind === "verified" ? "verified" : result.kind === "unknown" ? "unknown" : result.kind === "conflict" ? "conflict" : "not_applied";
       },
       async reconcileAcceptedFinalization(accepted) {
         const attempt = finalizationAttemptByCommand.get(accepted);
         if (attempt) {
-          const result = await reconcileAcceptedSimulationFinalization(accepted, attempt);
+          const result = await reconcileAcceptedSimulationFinalization(accepted, productionTrackAdmissionContext, attempt);
           if (result === "verified" || result === "not_applied") finalizationAttemptByCommand.delete(accepted);
           return result;
         }
-        return reconcileAcceptedSimulationFinalization(accepted);
+        return reconcileAcceptedSimulationFinalization(accepted, productionTrackAdmissionContext, undefined);
       },
-      async getResult(sessionId) { return getTrainingSessionResult(sessionId); },
+      async getResult(sessionId) { return getTrainingSessionResult(sessionId, productionTrackAdmissionContext); },
       captureDraftStorageLease: captureDraftLease,
       captureDraftWriteReceipt: captureDraftReceipt,
       async saveDraft(input) {
         const resolved = resolveDraftLease(input.lease);
         if (!resolved.valid) throw new Error("The original draft storage lease is unknown.");
         if (!isTrainingSessionDraftLeaseCurrent(resolved.lease)) throw new Error("The original draft storage lease is stale.");
-        await saveTrainingSessionDraft(input.draft, input.expectedPreviousRevision, resolved.lease);
+        await saveTrainingSessionDraft(input.draft, input.expectedPreviousRevision, productionTrackAdmissionContext, resolved.lease);
       },
       async reconcileDraftWrite(receipt) {
         const attempt = draftAttemptByReceipt.get(receipt);
-        return attempt ? reconcileTrainingSessionDraftWrite(attempt) : "conflict";
+        return attempt ? reconcileTrainingSessionDraftWrite(attempt, productionTrackAdmissionContext) : "conflict";
       },
       async getPendingMutation() {
-        const pending = await getActiveMutationJournal();
+        const pending = await getActiveMutationJournal(productionLearningDataAdmissionContext);
         if (!pending || pending.operation === "accept_goal_plan" || pending.operation === "resolve_account_sync_conflict") return null;
         const attempt = pending.writes.find((write): write is Extract<typeof pending.writes[number], { kind: "put_attempt" }> => write.kind === "put_attempt");
         const reviews: ReviewMutationCommand[] = [];
@@ -222,7 +223,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
       },
       async reconcilePendingMutationWrite(proof) {
         if (!proof.attempt || typeof proof.attempt !== "object") return "unknown";
-        return reconcileMutationJournalWriteAttempt(proof.attempt, proof);
+        return reconcileMutationJournalWriteAttempt(proof.attempt, proof, productionLearningDataAdmissionContext);
       },
     },
     mutations: {
@@ -262,7 +263,10 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   const lifecycle = new TrainingLifecycleUseCases(ports, new OperationProjectionStore());
   installTrainingLifecycleUseCases(lifecycle);
   const timerFacade = new ForegroundSessionTimerFacade({
-    repository: { getActive: getActiveForegroundTimer, save: saveActiveForegroundTimer },
+    repository: {
+      getActive: () => getActiveForegroundTimer(productionTrackAdmissionContext),
+      save: (timer, expectedRevision) => saveActiveForegroundTimer(timer, expectedRevision, productionTrackAdmissionContext),
+    },
     lifecycle,
     tracks: { getTrackRegistration },
     monotonicClock: { now: monotonicNow },
@@ -270,7 +274,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     schedule: (callback) => setInterval(callback, 1_000),
     cancel: (handle) => clearInterval(handle),
     finalize: async (_session, authorization, cause) => lifecycle.finalizeSimulation(authorization, cause),
-    getActiveSession: getActiveTrainingSession,
+    getActiveSession: () => getActiveTrainingSession(productionTrackAdmissionContext),
     ...(developmentAuditability ? {
       advanceMonotonicClockBy(milliseconds: number) {
         if (!Number.isSafeInteger(milliseconds) || milliseconds <= 0 || !Number.isSafeInteger(monotonicAuditOffsetMs + milliseconds)) {
@@ -288,7 +292,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
 
 const developmentAuditSessionIdentity: TrainingSessionIdentityPort = Object.freeze({
   async create({ trackId, modeId }: TrainingSessionIdentityRequest) {
-    const sessions = (await getTrainingSessions()).value;
+    const sessions = (await getTrainingSessions(productionTrackAdmissionContext)).value;
     const maximumSuffix = sessions.reduce((maximum, session) => {
       if (session.trackId !== trackId || !session.id.startsWith(`${trackId}:`)) return maximum;
       const suffix = session.id.slice(session.id.lastIndexOf(":") + 1);
@@ -304,7 +308,7 @@ const developmentAuditSessionIdentity: TrainingSessionIdentityPort = Object.free
 
 async function commitFinalization(input: SimulationFinalization, accepted: AcceptedSimulationFinalization | undefined, wallClock: WallClock, expectedLease: ActiveProfileStorageLease | null): Promise<boolean> {
   if (!accepted) throw new Error("A simulation outcome cannot finalize without its durable acceptance record.");
-  const existingById = new Map((await getReviewQueueItems()).value.map((review) => [review.id, review]));
+  const existingById = new Map((await getReviewQueueItems(productionTrackAdmissionContext)).value.map((review) => [review.id, review]));
   return commitTrainingSessionFinalization({
     session: input.session,
     attempts: input.attempts,
@@ -338,7 +342,7 @@ function isCanonicalDraftWriteAttempt(value: unknown): value is CanonicalWriteAt
     || !attempt.storage || typeof attempt.storage !== "object") return false;
   const envelope = attempt.envelope as Partial<CanonicalWriteAttempt<unknown>["envelope"]>;
   return envelope.schemaIdentity === "patternly:canonical:v1" && Number.isSafeInteger(envelope.revision)
-    && (envelope.revision ?? 0) > 0 && isTrainingSessionDraft(envelope.payload);
+    && (envelope.revision ?? 0) > 0 && isTrainingSessionDraft(envelope.payload, productionTrackAdmissionContext);
 }
 
 function retrySeedFromUnknown(value: unknown): ExactMutationRetrySeed | null {
@@ -348,7 +352,7 @@ function retrySeedFromUnknown(value: unknown): ExactMutationRetrySeed | null {
     || !(seed.lease === null || (seed.lease && typeof seed.lease === "object"))
     || !(seed.preflight === undefined || typeof seed.preflight === "function")) return null;
   try {
-    assertValidMutationJournal(seed.record);
+    assertValidMutationJournal(seed.record, productionLearningDataAdmissionContext);
     if (!isDeepFrozen(seed.record)) return null;
     return { record: seed.record as MutationJournalRecord, lease: seed.lease as ActiveProfileStorageLease | null, ...(typeof seed.preflight === "function" ? { preflight: seed.preflight as () => Promise<void> } : {}) };
   } catch { return null; }

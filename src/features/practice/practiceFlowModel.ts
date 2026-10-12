@@ -20,7 +20,7 @@ import type { CertificationModeId } from "../../tracks/certification";
 import { getDesignModeTitle } from "../../tracks/design-interview";
 import { getDomainLabel } from "../../utils";
 import type { AnalyticsData } from "../analytics/analyticsService";
-import type { PracticeSessionMode } from "./sessionConfig";
+import type { CanonicalPracticeModeId } from "../../application/practice/practiceModeContract";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import type { Question } from "../../content/canonical";
 import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
@@ -79,7 +79,7 @@ export type PracticeModeModel = {
   detail?: string;
   enabled: boolean;
   icon: IconName;
-  mode: PracticeSessionMode | CertificationModeId;
+  mode: CanonicalPracticeModeId | CertificationModeId;
   title: string;
   tone: "danger" | "info" | "muted" | "primary" | "success" | "warning";
   unavailableReason?: string;

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { LearningPlanProposalCoordinator } from "./LearningPlanProposalCoordinator";
@@ -8,13 +9,15 @@ import { saveGoalSnapshot } from "../../storage/repositories/goalRepository";
 import { addTrainingAttempt } from "../../storage/repositories/trainingAttemptRepository";
 import { saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
 import { readLearningPlanInputSnapshot } from "../../storage/repositories/learningPlanInputSnapshot";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK = "coding-interview-dsa-problem-solving" as const;
 const MODE = "coding-interview-guided-practice";
 
 test("proposal projection carries observed method metadata from persisted canonical sessions and attempts", async () => {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
-  await saveGoalSnapshot(createDefaultGoal(TRACK), null);
+  await saveGoalSnapshot(createDefaultGoal(requireGoalPolicy(TRACK)), null, requireGoalPolicy(TRACK));
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, "coding_interview");
   const track = resolved.track;
   const mode = track.getMode(MODE);
@@ -59,7 +62,7 @@ test("proposal projection carries observed method metadata from persisted canoni
       status: "completed",
       startedAt: input.completedAt,
       completedAt: input.completedAt,
-    }));
+    }), productionTrackAdmissionContext);
     for (let index = 0; index < itemOrder.length; index += 1) {
       const occurrence = itemOrder[index]!;
       const question = input.questions[index]!;
@@ -75,7 +78,7 @@ test("proposal projection carries observed method metadata from persisted canoni
         reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [] },
         answeredAt: input.completedAt,
         committedAt: input.completedAt,
-      }));
+      }), productionTrackAdmissionContext);
     }
   };
 
@@ -99,13 +102,13 @@ test("proposal projection carries observed method metadata from persisted canoni
   const coordinator = new LearningPlanProposalCoordinator({
     createProposalId: () => "persisted-calibration-integration",
     getTimezone: () => "Europe/Warsaw",
-    readInputs: readLearningPlanInputSnapshot,
+    readInputs: (trackId, policy) => readLearningPlanInputSnapshot(trackId, policy, productionTrackAdmissionContext),
     peekPackage: () => resolved,
     now: () => "2026-10-09T12:00:00.000Z",
     resolvePackage: async () => resolved,
     resolveTrackFamily: () => "coding_interview",
   });
-  const result = await coordinator.create(TRACK, { goal: createDefaultGoal(TRACK), minutesPerStudyDay: 180 });
+  const result = await coordinator.create(TRACK, { goal: createDefaultGoal(requireGoalPolicy(TRACK)), minutesPerStudyDay: 180 });
   assert.equal(result.kind, "ready");
   if (!("proposal" in result)) throw new Error("Expected a ready proposal.");
   assert.equal(result.proposal.outcome.nextSession.modeId, MODE);
@@ -133,14 +136,14 @@ test("proposal projection carries observed method metadata from persisted canoni
   const horizonCoordinator = new LearningPlanProposalCoordinator({
     createProposalId: () => `horizon-${++horizonProposalId}`,
     getTimezone: () => "Europe/Warsaw",
-    readInputs: readLearningPlanInputSnapshot,
+    readInputs: (trackId, policy) => readLearningPlanInputSnapshot(trackId, policy, productionTrackAdmissionContext),
     peekPackage: () => resolved,
     now: () => "2026-10-09T12:00:00.000Z",
     resolvePackage: async () => resolved,
     resolveTrackFamily: () => "coding_interview",
   });
-  const shortHorizon = await horizonCoordinator.create(TRACK, { goal: { ...createDefaultGoal(TRACK), targetDate: "2026-10-16" }, minutesPerStudyDay: 240 });
-  const longHorizon = await horizonCoordinator.create(TRACK, { goal: { ...createDefaultGoal(TRACK), targetDate: "2026-12-08" }, minutesPerStudyDay: 240 });
+  const shortHorizon = await horizonCoordinator.create(TRACK, { goal: { ...createDefaultGoal(requireGoalPolicy(TRACK)), targetDate: "2026-10-16" }, minutesPerStudyDay: 240 });
+  const longHorizon = await horizonCoordinator.create(TRACK, { goal: { ...createDefaultGoal(requireGoalPolicy(TRACK)), targetDate: "2026-12-08" }, minutesPerStudyDay: 240 });
   assert.ok("proposal" in shortHorizon && "proposal" in longHorizon);
   if (!("proposal" in shortHorizon) || !("proposal" in longHorizon)) throw new Error("Expected horizon proposals.");
   assert.equal(shortHorizon.proposal.fullGoalWorkload.requiredResponses, longHorizon.proposal.fullGoalWorkload.requiredResponses);

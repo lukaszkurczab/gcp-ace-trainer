@@ -119,7 +119,9 @@ export function buildReadExpression(expectedGuestProfileIdSha256, runId) {
     const runtime=load("src/infrastructure/runtime/runtimeMode.ts");
     const storage=load("src/infrastructure/storage/mmkvClient.ts");
     const hash=load("src/infrastructure/identity/sha256.ts").sha256Utf8;
-    const canonical=load("src/infrastructure/identity/canonicalSerialization.ts").canonicalSerialize;
+    const canonical=load("src/domain/identity/canonicalSerialization.ts").canonicalSerialize;
+    const learningAdmission=load("src/application/tracks/trackAdmissionContext.ts").productionLearningDataAdmissionContext;
+    const trackAdmission=learningAdmission.trackAdmission;
     const profileState=()=>storage.inspectPreparedProfileState();
     const scopeReader=load("src/storage/repositories/learningPlanInputSnapshot.ts");
     const capture=(state)=>{
@@ -137,37 +139,39 @@ export function buildReadExpression(expectedGuestProfileIdSha256, runId) {
       if(!guestInstallation||guestInstallation.bindingState!=="guest"||guestInstallation.accountId!==null
         ||guestInstallation.localDatasetId!==profile.id)reject("guest_marker_invalid");
       const scope=scopeReader.readLearningPlanStorageScope();
-      const journal=repo("mutationJournal").readActiveMutationJournal();
+      const journal=repo("mutationJournal").getActiveMutationJournal(learningAdmission);
       if(journal)reject("source_pending");
       try{
-        repo("trainingEvidenceIntegrity").assertTrainingEvidenceIntegrity();
+        repo("trainingEvidenceIntegrity").assertTrainingEvidenceIntegrity(trackAdmission);
         repo("contentIdentityUnavailable").assertContentIdentityRecordIntegrity();
       }catch{reject("source_invalid");}
-      const sessionsResult=repo("trainingSession").readTrainingSessions();
-      const attemptsResult=repo("trainingAttempt").readTrainingAttempts();
-      const reviewResult=repo("reviewQueue").readReviewQueueSnapshot();
+      const sessionsResult=repo("trainingSession").readTrainingSessions(trackAdmission);
+      const attemptsResult=repo("trainingAttempt").readTrainingAttempts(trackAdmission);
+      const reviewResult=repo("reviewQueue").readReviewQueueSnapshot(trackAdmission);
       if(!sessionsResult.ok||sessionsResult.issues?.length||!attemptsResult.ok||attemptsResult.issues?.length||!reviewResult.ok||reviewResult.issues?.length)reject("source_invalid");
       const sessions=sessionsResult.value;
       if(new Set(sessions.map((entry)=>entry.id)).size!==sessions.length)reject("source_invalid");
-      const activeSession=repo("trainingSession").readActiveTrainingSession();
+      const activeSession=repo("trainingSession").readActiveTrainingSession(trackAdmission);
       const activeSessions=sessions.filter((entry)=>entry.status==="active");
       if(activeSessions.length>1||(activeSession===null)!==(activeSessions.length===0)||(activeSession!==null&&activeSessions[0]?.id!==activeSession.id))reject("source_invalid");
-      const draft=repo("trainingSessionDraft").readActiveTrainingSessionDraft();
+      const draft=repo("trainingSessionDraft").readActiveTrainingSessionDraft(trackAdmission);
       if(draft&&(!activeSession||draft.sessionId!==activeSession.id||draft.trackId!==activeSession.trackId))reject("source_invalid");
-      const foregroundTimer=repo("foregroundTimer").readActiveForegroundTimer();
+      const foregroundTimer=repo("foregroundTimer").readActiveForegroundTimer(trackAdmission);
       if(foregroundTimer&&(!activeSession||foregroundTimer.sessionId!==activeSession.id||foregroundTimer.trackId!==activeSession.trackId))reject("source_invalid");
       const results=sessions.flatMap((session)=>{
-        const result=repo("trainingSessionResult").readTrainingSessionResult(session.id);
+        const result=repo("trainingSessionResult").readTrainingSessionResult(session.id,trackAdmission);
         if(session.status==="completed"&&result===null)reject("source_invalid");
         if(result&&result.sessionId!==session.id)reject("source_invalid");
         return result?[{sessionId:session.id,result}]:[];
       });
       const domain=load("src/domain/index.ts");
+      const goalPolicy=load("src/domain/tracks/trackGoalPolicies.ts").requireGoalPolicy;
       const goals=[];
       const acceptedPlans=[];
       for(const trackId of domain.LAUNCH_TRACK_IDS){
-        const goal=repo("goal").readGoalSnapshot(trackId);
-        const plan=repo("learningPlan").getLearningPlanSnapshot(trackId);
+        const policy=goalPolicy(trackId);
+        const goal=repo("goal").readGoalSnapshot(trackId,policy);
+        const plan=repo("learningPlan").getLearningPlanSnapshot(trackId,policy);
         if(plan&&(!goal||plan.plan.goalRevision!==goal.revision||canonical(plan.plan.acceptedTarget)!==canonical(domain.acceptedTargetFromGoal(goal.record))))reject("source_invalid");
         if(goal)goals.push({trackId,goal:goal.record});
         if(plan)acceptedPlans.push({trackId,plan:plan.plan});
@@ -214,7 +218,7 @@ export function buildReadExpression(expectedGuestProfileIdSha256, runId) {
           ],
         },
       };
-      if(repo("mutationJournal").readActiveMutationJournal()||!storage.isActiveProfileStorageLeaseCurrent(lease)
+      if(repo("mutationJournal").getActiveMutationJournal(learningAdmission)||!storage.isActiveProfileStorageLeaseCurrent(lease)
         ||scopeReader.readLearningPlanStorageScope()!==scope)reject("source_changed");
       return {
         lease:{generation:lease.generation,profile:{id:lease.profile.id,kind:lease.profile.kind,accountId:lease.profile.accountId}},

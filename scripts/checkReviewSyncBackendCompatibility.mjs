@@ -10,6 +10,7 @@ const backendMerge = await import(pathToFileURL(join(backendRoot, "src/modules/u
 const backendPaths = await import(pathToFileURL(join(backendRoot, "src/infrastructure/firestore/paths.ts")).href);
 const appDomain = await import(pathToFileURL(join(appRoot, "src/domain/index.ts")).href);
 const appGuards = await import(pathToFileURL(join(appRoot, "src/storage/repositories/trainingModelGuards.ts")).href);
+const appAdmission = await import(pathToFileURL(join(appRoot, "src/application/tracks/trackAdmissionContext.ts")).href);
 const runtimeCatalogModule = await import(pathToFileURL(join(appRoot, "src/content/canonical/runtimeCatalog.ts")).href);
 const runtimeModule = await import(pathToFileURL(join(appRoot, "src/application/canonical/CanonicalTrainingRuntime.ts")).href);
 const { createTrainingSession, createTrainingSessionResult, createResolvedContentRef } = appDomain;
@@ -68,9 +69,9 @@ const legacyActiveReview = {
   dueAt: now,
   consecutiveAfterDueSuccesses: 1,
 };
-assert.ok(isReviewQueueEntry(activeReview));
-assert.ok(isReviewQueueEntry(completedReview));
-assert.ok(isReviewQueueEntry(legacyActiveReview));
+assert.ok(isReviewQueueEntry(activeReview, appAdmission.productionTrackAdmissionContext));
+assert.ok(isReviewQueueEntry(completedReview, appAdmission.productionTrackAdmissionContext));
+assert.ok(isReviewQueueEntry(legacyActiveReview, appAdmission.productionTrackAdmissionContext));
 
 const runtime = new runtimeModule.CanonicalTrainingRuntime(track);
 const prepared = await runtime.prepare({
@@ -83,7 +84,7 @@ const prepared = await runtime.prepare({
 });
 assert.equal(prepared.session.itemOrder[0]?.reviewSourceSnapshot?.reviewEntryId, activeReview.id);
 const completedSession = createTrainingSession({ ...prepared.session, status: "completed", completedAt: now });
-assert.ok(isTrainingSession(completedSession));
+assert.ok(isTrainingSession(completedSession, appAdmission.productionTrackAdmissionContext));
 const sessionResult = createTrainingSessionResult({
   id: "session-result-compat-001",
   sessionId: completedSession.id,
@@ -94,7 +95,7 @@ const sessionResult = createTrainingSessionResult({
   completedAt: now,
   evidence: { familyId: "coding_interview", details: { sourceIdentity: { kind: "resolved", ref: item } } },
 });
-assert.ok(isTrainingSessionResult(sessionResult));
+assert.ok(isTrainingSessionResult(sessionResult, appAdmission.productionTrackAdmissionContext));
 
 const cases = [
   ["active_review", "review_queue_entry", activeReview.id, "item", activeReview],

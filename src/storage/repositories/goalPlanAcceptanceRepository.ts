@@ -1,6 +1,7 @@
 import type { GoalRecord, LearningPlan, TrackId } from "../../domain";
 import { isLearningPlanV1ForTrack } from "../../domain";
-import { isGoalRecordShapeForTrack } from "../../domain/goals/goalContracts";
+import { isGoalRecordForPolicy } from "../../domain/goals/goalContracts";
+import { isGoalPolicyForTrack, type GoalPolicy } from "../../domain/goals/goalPolicy";
 import { CanonicalWriteConflictError, UnsupportedStoredRecordError } from "../errors";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalEnvelope, writeCanonicalJsonUnlocked, withCanonicalWriteLocks, type CanonicalRecordEnvelope } from "./canonicalRecordCodec";
@@ -31,15 +32,16 @@ export function goalPlanAcceptanceGoalRevision(
 }
 
 /** Reads the exact current pair while excluding pair materialization and pending journals. */
-export function readGoalPlanAcceptancePrecondition(trackId: TrackId): Readonly<{
+export function readGoalPlanAcceptancePrecondition(trackId: TrackId, policy: GoalPolicy): Readonly<{
   goal: CanonicalRecordEnvelope<GoalRecord> | null;
   plan: CanonicalRecordEnvelope<LearningPlan> | null;
 }> {
+  if (!isGoalPolicyForTrack(policy, trackId)) throw new Error("A matching goal policy is required for goal-plan acceptance.");
   const goalKey = STORAGE_KEYS.goal(trackId);
   const planKey = STORAGE_KEYS.learningPlan(trackId);
   return withCanonicalWriteLocks([goalKey, planKey], () => {
     assertGoalPlanPairReadable();
-    const goal = readCanonicalEnvelope(goalKey, (value): value is GoalRecord => isGoalRecordShapeForTrack(value, trackId));
+    const goal = readCanonicalEnvelope(goalKey, (value): value is GoalRecord => isGoalRecordForPolicy(value, policy));
     const plan = readCanonicalEnvelope(planKey, (value): value is LearningPlan => isLearningPlanV1ForTrack(value, trackId));
     return Object.freeze({ goal, plan });
   });
@@ -54,12 +56,13 @@ function expectedGoalEnvelope(record: GoalPlanAcceptanceRecord): CanonicalRecord
 }
 
 /** Roll-forward-only materialization for the immutable acceptance journal. */
-export function materializeGoalPlanAcceptance(record: GoalPlanAcceptanceRecord, journal: MutationJournalRecord, beforePlanWrite?: GoalPlanAcceptanceInterruptionHook): void {
+export function materializeGoalPlanAcceptance(record: GoalPlanAcceptanceRecord, journal: MutationJournalRecord, policy: GoalPolicy, beforePlanWrite?: GoalPlanAcceptanceInterruptionHook): void {
+  if (!isGoalPolicyForTrack(policy, record.trackId)) throw new Error("A matching goal policy is required for goal-plan materialization.");
   const goalKey = STORAGE_KEYS.goal(record.trackId);
   const planKey = STORAGE_KEYS.learningPlan(record.trackId);
   withCanonicalWriteLocks([goalKey, planKey], () => {
     assertProfileIdentity(record.profileId);
-    const goalGuard = (value: unknown): value is GoalRecord => isGoalRecordShapeForTrack(value, record.trackId);
+    const goalGuard = (value: unknown): value is GoalRecord => isGoalRecordForPolicy(value, policy);
     const planGuard = (value: unknown): value is LearningPlan => isLearningPlanV1ForTrack(value, record.trackId);
     let currentGoal = readCanonicalEnvelope(goalKey, goalGuard);
     let currentPlan = readCanonicalEnvelope(planKey, planGuard);
@@ -80,13 +83,14 @@ export function materializeGoalPlanAcceptance(record: GoalPlanAcceptanceRecord, 
       try { currentPlan = writeCanonicalJsonUnlocked(planKey, record.plan, record.expectedPlanStorageRevision); }
       catch (error) { if (error instanceof UnsupportedStoredRecordError || error instanceof CanonicalWriteConflictError) throw new GoalPlanAcceptanceConflictError(); throw error; }
     }
-    if (!isGoalPlanAcceptanceMaterialized(record)) throw new GoalPlanAcceptanceConflictError();
+    if (!isGoalPlanAcceptanceMaterialized(record, policy)) throw new GoalPlanAcceptanceConflictError();
   });
 }
 
-export function isGoalPlanAcceptanceMaterialized(record: GoalPlanAcceptanceRecord): boolean {
+export function isGoalPlanAcceptanceMaterialized(record: GoalPlanAcceptanceRecord, policy: GoalPolicy): boolean {
+  if (!isGoalPolicyForTrack(policy, record.trackId)) throw new Error("A matching goal policy is required for goal-plan verification.");
   assertProfileIdentity(record.profileId);
-  const goal = readCanonicalEnvelope(STORAGE_KEYS.goal(record.trackId), (value): value is GoalRecord => isGoalRecordShapeForTrack(value, record.trackId));
+  const goal = readCanonicalEnvelope(STORAGE_KEYS.goal(record.trackId), (value): value is GoalRecord => isGoalRecordForPolicy(value, policy));
   const plan = readCanonicalEnvelope(STORAGE_KEYS.learningPlan(record.trackId), (value): value is LearningPlan => isLearningPlanV1ForTrack(value, record.trackId));
   const expectedGoal = expectedGoalEnvelope(record);
   const expectedPlan = nextEnvelope(record.expectedPlanStorageRevision, record.plan);
