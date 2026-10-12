@@ -2,62 +2,6 @@ import { GOAL_DAY_IDS, createArtifactSha256, createLearningPlanSlotId, isArtifac
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalEnvelope, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 
-export const PRACTICE_REMINDER_JOURNAL_VERSION = 2 as const;
-export const DEFAULT_PRACTICE_REMINDER_TIME = Object.freeze({ hour: 20, minute: 0 });
-
-type PracticeReminderMode = "same-time" | "by-day";
-type ReminderTime = Readonly<{ hour: number; minute: number }>;
-type PracticeReminderDay = Readonly<{ day: GoalDay; time: ReminderTime }>;
-type ScheduledPracticeReminder = Readonly<PracticeReminderDay & { notificationId: string }>;
-type PracticeReminder = Readonly<{
-  mode: PracticeReminderMode;
-  commonTime: ReminderTime | null;
-  schedules: readonly ScheduledPracticeReminder[];
-  trackId: TrackId;
-  transactionId: string;
-}>;
-type NotificationSettings = Readonly<{ practiceReminder: PracticeReminder | null }>;
-type LegacyDailyReminder = Readonly<{ hour: number; minute: number; notificationId: string }>;
-type LegacyNotificationSettings = Readonly<{ dailyReminder: LegacyDailyReminder | null }>;
-type StoredNotificationSettings = NotificationSettings | LegacyNotificationSettings;
-type PracticeReminderTarget = Readonly<{
-  mode: PracticeReminderMode;
-  commonTime: ReminderTime | null;
-  days: readonly PracticeReminderDay[];
-  trackId: TrackId;
-}>;
-type PracticeReminderJournal = Readonly<{
-  version: typeof PRACTICE_REMINDER_JOURNAL_VERSION;
-  created: readonly ScheduledPracticeReminder[];
-  desired: PracticeReminderTarget | null;
-  remainingOldIds: readonly string[];
-  transactionId: string;
-}>;
-
-type LegacyScheduledPracticeReminder = Readonly<{ day: GoalDay; notificationId: string }>;
-type LegacyPracticeReminder = Readonly<{
-  hour: number;
-  minute: number;
-  schedules: readonly LegacyScheduledPracticeReminder[];
-  trackId: TrackId;
-  transactionId: string;
-}>;
-type LegacyPracticeNotificationSettings = Readonly<{ practiceReminder: LegacyPracticeReminder | null }>;
-type LegacyPracticeReminderTarget = Readonly<{
-  days: readonly GoalDay[];
-  hour: number;
-  minute: number;
-  trackId: TrackId;
-}>;
-type LegacyPracticeReminderJournal = Readonly<{
-  created: readonly LegacyScheduledPracticeReminder[];
-  desired: LegacyPracticeReminderTarget | null;
-  remainingOldIds: readonly string[];
-  transactionId: string;
-}>;
-type RawStoredNotificationSettings = StoredNotificationSettings | LegacyPracticeNotificationSettings;
-type RawPracticeReminderJournal = PracticeReminderJournal | LegacyPracticeReminderJournal;
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -66,279 +10,15 @@ function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): 
   return Object.keys(value).length === keys.length && keys.every((key) => key in value);
 }
 
-function isTime(value: unknown): value is ReminderTime {
-  if (!isRecord(value) || !hasExactKeys(value, ["hour", "minute"])) return false;
-  return Number.isInteger(value.hour) && Number(value.hour) >= 0 && Number(value.hour) <= 23 &&
-    Number.isInteger(value.minute) && Number(value.minute) >= 0 && Number(value.minute) <= 59;
-}
-
-function freezeTime(value: ReminderTime): ReminderTime {
-  return Object.freeze({ hour: value.hour, minute: value.minute });
-}
-
-function sameTime(left: ReminderTime | null, right: ReminderTime | null): boolean {
-  return left?.hour === right?.hour && left?.minute === right?.minute;
-}
-
 function dayIndex(day: GoalDay): number {
   return GOAL_DAY_IDS.indexOf(day);
-}
-
-function orderDays<T extends { day: GoalDay }>(days: readonly T[]): readonly T[] {
-  return Object.freeze([...days].sort((left, right) => dayIndex(left.day) - dayIndex(right.day)));
 }
 
 function isGoalDay(value: unknown): value is GoalDay {
   return GOAL_DAY_IDS.includes(value as GoalDay);
 }
 
-function isPracticeReminderDay(value: unknown): value is PracticeReminderDay {
-  return isRecord(value) && hasExactKeys(value, ["day", "time"]) && isGoalDay(value.day) && isTime(value.time);
-}
-
-function isLegacyScheduledPracticeReminder(value: unknown): value is LegacyScheduledPracticeReminder {
-  return isRecord(value) && hasExactKeys(value, ["day", "notificationId"]) && isGoalDay(value.day) &&
-    typeof value.notificationId === "string" && value.notificationId.length > 0;
-}
-
-function isScheduledPracticeReminder(value: unknown): value is ScheduledPracticeReminder {
-  return isRecord(value) && hasExactKeys(value, ["day", "time", "notificationId"]) && isPracticeReminderDay({ day: value.day, time: value.time }) &&
-    typeof value.notificationId === "string" && value.notificationId.length > 0;
-}
-
-function hasUniqueDays(days: readonly { day: GoalDay }[]): boolean {
-  return new Set(days.map((entry) => entry.day)).size === days.length;
-}
-
-function hasUniqueGoalDays(days: readonly GoalDay[]): boolean {
-  return new Set(days).size === days.length;
-}
-
-function hasUniqueIds(ids: readonly string[]): boolean {
-  return new Set(ids).size === ids.length;
-}
-
-function isPracticeReminderMode(value: unknown): value is PracticeReminderMode {
-  return value === "same-time" || value === "by-day";
-}
-
-function isPracticeReminderTarget(value: unknown): value is PracticeReminderTarget {
-  if (!isRecord(value) || !hasExactKeys(value, ["mode", "commonTime", "days", "trackId"]) ||
-    !isPracticeReminderMode(value.mode) || !isRegisteredTrackId(value.trackId as string) || !Array.isArray(value.days) ||
-    !value.days.every(isPracticeReminderDay) || !hasUniqueDays(value.days)) return false;
-  if (value.mode === "same-time") {
-    if (!isTime(value.commonTime)) return false;
-    return value.days.every((entry) => sameTime(entry.time, value.commonTime as ReminderTime));
-  }
-  return value.commonTime === null;
-}
-
-function isPracticeReminder(value: unknown): value is PracticeReminder {
-  if (!isRecord(value) || !hasExactKeys(value, ["mode", "commonTime", "schedules", "trackId", "transactionId"]) ||
-    !isPracticeReminderMode(value.mode) || !isRegisteredTrackId(value.trackId as string) ||
-    typeof value.transactionId !== "string" || value.transactionId.length === 0 || !Array.isArray(value.schedules) ||
-    !value.schedules.every(isScheduledPracticeReminder) || !hasUniqueDays(value.schedules)) return false;
-  if (value.mode === "same-time") {
-    if (!isTime(value.commonTime)) return false;
-    return value.schedules.every((entry) => sameTime(entry.time, value.commonTime as ReminderTime));
-  }
-  return value.commonTime === null;
-}
-
-function isLegacyPracticeReminder(value: unknown): value is LegacyPracticeReminder {
-  if (!isRecord(value) || !hasExactKeys(value, ["hour", "minute", "schedules", "trackId", "transactionId"]) ||
-    !isTime({ hour: value.hour, minute: value.minute }) || !isRegisteredTrackId(value.trackId as string) ||
-    typeof value.transactionId !== "string" || value.transactionId.length === 0 || !Array.isArray(value.schedules) ||
-    !value.schedules.every(isLegacyScheduledPracticeReminder)) return false;
-  return hasUniqueDays(value.schedules);
-}
-
-function isLegacyDailyReminder(value: unknown): value is LegacyDailyReminder {
-  return isRecord(value) && hasExactKeys(value, ["hour", "minute", "notificationId"]) && isTime({ hour: value.hour, minute: value.minute }) &&
-    typeof value.notificationId === "string" && value.notificationId.length > 0;
-}
-
-function isStoredNotificationSettings(value: unknown): value is RawStoredNotificationSettings {
-  if (!isRecord(value)) return false;
-  if (hasExactKeys(value, ["dailyReminder"])) return value.dailyReminder === null || isLegacyDailyReminder(value.dailyReminder);
-  if (!hasExactKeys(value, ["practiceReminder"])) return false;
-  return value.practiceReminder === null || isPracticeReminder(value.practiceReminder) || isLegacyPracticeReminder(value.practiceReminder);
-}
-
-function isLegacyPracticeReminderTarget(value: unknown): value is LegacyPracticeReminderTarget {
-  return isRecord(value) && hasExactKeys(value, ["days", "hour", "minute", "trackId"]) && isTime({ hour: value.hour, minute: value.minute }) &&
-    isRegisteredTrackId(value.trackId as string) && Array.isArray(value.days) && value.days.every(isGoalDay) && hasUniqueGoalDays(value.days);
-}
-
-function isPracticeReminderJournal(value: unknown): value is RawPracticeReminderJournal {
-  if (!isRecord(value)) return false;
-  if (value.version === PRACTICE_REMINDER_JOURNAL_VERSION) {
-    if (!hasExactKeys(value, ["version", "created", "desired", "remainingOldIds", "transactionId"]) ||
-      !Array.isArray(value.created) || !value.created.every(isScheduledPracticeReminder) ||
-      !Array.isArray(value.remainingOldIds) || !value.remainingOldIds.every((id) => typeof id === "string" && id.length > 0) ||
-      !hasUniqueIds(value.remainingOldIds) || typeof value.transactionId !== "string" || value.transactionId.length === 0 ||
-      !(value.desired === null || isPracticeReminderTarget(value.desired))) return false;
-    return true;
-  }
-  if (!hasExactKeys(value, ["created", "desired", "remainingOldIds", "transactionId"]) ||
-    !Array.isArray(value.created) || !value.created.every(isLegacyScheduledPracticeReminder) ||
-    !Array.isArray(value.remainingOldIds) || !value.remainingOldIds.every((id) => typeof id === "string" && id.length > 0) ||
-    typeof value.transactionId !== "string" || value.transactionId.length === 0 ||
-    !(value.desired === null || isLegacyPracticeReminderTarget(value.desired))) return false;
-  return true;
-}
-
-function normalizeDays<T extends { day: GoalDay }>(days: readonly T[]): readonly T[] {
-  return orderDays(days);
-}
-
-function normalizeTarget(target: PracticeReminderTarget): PracticeReminderTarget {
-  const commonTime = target.mode === "same-time" ? freezeTime(target.commonTime!) : null;
-  return Object.freeze({
-    mode: target.mode,
-    commonTime,
-    days: Object.freeze(normalizeDays(target.days).map((entry) => Object.freeze({ day: entry.day, time: freezeTime(entry.time) }))),
-    trackId: target.trackId,
-  });
-}
-
-function normalizePracticeReminder(reminder: PracticeReminder): PracticeReminder {
-  const commonTime = reminder.mode === "same-time" ? freezeTime(reminder.commonTime!) : null;
-  return Object.freeze({
-    mode: reminder.mode,
-    commonTime,
-    schedules: Object.freeze(normalizeDays(reminder.schedules).map((entry) => Object.freeze({
-      day: entry.day,
-      time: freezeTime(entry.time),
-      notificationId: entry.notificationId,
-    }))),
-    trackId: reminder.trackId,
-    transactionId: reminder.transactionId,
-  });
-}
-
-function migrateLegacyPracticeReminder(reminder: LegacyPracticeReminder): PracticeReminder {
-  const time = freezeTime({ hour: reminder.hour, minute: reminder.minute });
-  return normalizePracticeReminder({
-    mode: "same-time",
-    commonTime: time,
-    schedules: reminder.schedules.map((entry) => ({ day: entry.day, time, notificationId: entry.notificationId })),
-    trackId: reminder.trackId,
-    transactionId: reminder.transactionId,
-  });
-}
-
-function targetFromLegacy(target: LegacyPracticeReminderTarget): PracticeReminderTarget {
-  const time = freezeTime({ hour: target.hour, minute: target.minute });
-  return normalizeTarget({
-    mode: "same-time",
-    commonTime: time,
-    days: target.days.map((day) => ({ day, time })),
-    trackId: target.trackId,
-  });
-}
-
-function normalizeStoredSettings(value: RawStoredNotificationSettings): StoredNotificationSettings {
-  if (hasExactKeys(value, ["dailyReminder"])) return value as LegacyNotificationSettings;
-  const practiceValue = value as NotificationSettings | LegacyPracticeNotificationSettings;
-  if (practiceValue.practiceReminder === null) return Object.freeze({ practiceReminder: null });
-  return Object.freeze({
-    practiceReminder: isLegacyPracticeReminder(practiceValue.practiceReminder)
-      ? migrateLegacyPracticeReminder(practiceValue.practiceReminder)
-      : normalizePracticeReminder(practiceValue.practiceReminder),
-  });
-}
-
-function normalizeCreatedEntry(entry: ScheduledPracticeReminder, desired: PracticeReminderTarget | null): ScheduledPracticeReminder {
-  const targetEntry = desired?.days.find((candidate) => candidate.day === entry.day);
-  const time = targetEntry?.time ?? (desired?.mode === "same-time" ? desired.commonTime : null) ?? entry.time;
-  return Object.freeze({ day: entry.day, time: freezeTime(time), notificationId: entry.notificationId });
-}
-
-function migrateLegacyJournal(journal: LegacyPracticeReminderJournal): PracticeReminderJournal {
-  const desired = journal.desired === null ? null : targetFromLegacy(journal.desired);
-  const created = journal.created.map((entry) => normalizeCreatedEntry({
-    day: entry.day,
-    time: desired?.days.find((candidate) => candidate.day === entry.day)?.time ??
-      (desired?.mode === "same-time" ? desired.commonTime! : DEFAULT_PRACTICE_REMINDER_TIME),
-    notificationId: entry.notificationId,
-  }, desired));
-  return Object.freeze({
-    version: PRACTICE_REMINDER_JOURNAL_VERSION,
-    created: Object.freeze(orderDays(created)),
-    desired,
-    remainingOldIds: Object.freeze([...new Set(journal.remainingOldIds)]),
-    transactionId: journal.transactionId,
-  });
-}
-
-function normalizeJournal(journal: PracticeReminderJournal): PracticeReminderJournal {
-  return Object.freeze({
-    version: PRACTICE_REMINDER_JOURNAL_VERSION,
-    created: Object.freeze(journal.created.map((entry) => normalizeCreatedEntry(entry, journal.desired))),
-    desired: journal.desired === null ? null : normalizeTarget(journal.desired),
-    remainingOldIds: Object.freeze([...new Set(journal.remainingOldIds)]),
-    transactionId: journal.transactionId,
-  });
-}
-
-function isSameJson(left: unknown, right: unknown): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
-}
-
-async function getStoredNotificationSettings(): Promise<StoredNotificationSettings | null> {
-  const envelope = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS, isStoredNotificationSettings);
-  if (!envelope) return null;
-  const normalized = normalizeStoredSettings(envelope.payload);
-  if (!isSameJson(envelope.payload, normalized)) writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS, normalized, envelope.revision);
-  return normalized;
-}
-
-async function saveNotificationSettings(settings: NotificationSettings): Promise<void> {
-  if (!isStoredNotificationSettings(settings) || hasExactKeys(settings, ["dailyReminder"])) throw new Error("INVALID_NOTIFICATION_SETTINGS: expected canonical practice reminder settings.");
-  writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS, normalizeStoredSettings(settings));
-}
-
-async function getPracticeReminderJournal(): Promise<PracticeReminderJournal | null> {
-  const envelope = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, isPracticeReminderJournal);
-  if (!envelope) return null;
-  const payload = envelope.payload;
-  const normalized = valueHasJournalVersion(payload) ? normalizeJournal(payload) : migrateLegacyJournal(payload);
-  if (!isSameJson(payload, normalized)) writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, normalized, envelope.revision);
-  return normalized;
-}
-
-function valueHasJournalVersion(value: RawPracticeReminderJournal): value is PracticeReminderJournal {
-  return isRecord(value) && "version" in value && value.version === PRACTICE_REMINDER_JOURNAL_VERSION;
-}
-
-async function savePracticeReminderJournal(journal: PracticeReminderJournal): Promise<void> {
-  if (!isPracticeReminderJournal(journal) || !valueHasJournalVersion(journal)) throw new Error("INVALID_PRACTICE_REMINDER_JOURNAL: unsupported journal.");
-  writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, normalizeJournal(journal));
-}
-
-async function clearPracticeReminderJournal(): Promise<void> {
-  removeCanonicalValue(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL);
-}
-
-function isCanonicalPracticeReminder(value: unknown): value is PracticeReminder {
-  return isPracticeReminder(value);
-}
-
-function isCanonicalPracticeReminderTarget(value: unknown): value is PracticeReminderTarget {
-  return isPracticeReminderTarget(value);
-}
-
-function isLegacyNotificationSettings(value: StoredNotificationSettings | null): value is LegacyNotificationSettings {
-  return Boolean(value && hasExactKeys(value, ["dailyReminder"]));
-}
-
-/**
- * The ODK034 record is deliberately separate from the ODK024/025 shape above.
- * Previous settings can be read as an enabled migration marker, but they never
- * provide a schedule.  Every native schedule is materialised from this record
- * and the accepted LearningPlan identity below.
- */
+/** Current device-local reminder persistence. Older practice/daily shapes are unsupported. */
 export const DEVICE_REMINDER_SETTINGS_VERSION = 1 as const;
 export const DEVICE_REMINDER_JOURNAL_VERSION = 1 as const;
 
@@ -374,7 +54,7 @@ export type DeviceReminderSettings = Readonly<{
   enabled: boolean;
   identity: NotificationPlanIdentity | null;
   schedules: readonly DeviceReminderSchedule[];
-  /** Native IDs from ODK024/025, retained only so the next reconciliation can cancel them. */
+  /** Native IDs retained for cancellation after an uncertain current-plan cleanup. */
   legacyNotificationIds: readonly string[];
   pending: DeviceReminderPending | null;
 }>;
@@ -389,16 +69,6 @@ export type ReminderPreferencesForExport = Readonly<{
     enabled: boolean;
     schedules: readonly Readonly<{ day: GoalDay; localTime: string }>[];
     pending: Readonly<{ enabled: boolean; slots: readonly Readonly<{ day: GoalDay; localTime: string }>[]; reason: DeviceReminderPendingReason }> | null;
-  }> | Readonly<{
-    kind: "practice";
-    trackId: TrackId | null;
-    mode: PracticeReminderMode | null;
-    commonTime: string | null;
-    schedules: readonly Readonly<{ day: GoalDay; localTime: string }>[];
-  }> | Readonly<{
-    kind: "legacy_daily";
-    enabled: boolean;
-    localTime: string | null;
   }> | null;
   hasPendingJournal: boolean;
 }>;
@@ -412,7 +82,7 @@ export type DeviceReminderJournal = Readonly<{
   created: readonly DeviceReminderSchedule[];
   remainingOldIds: readonly string[];
 }>;
-export type CanonicalNotificationSettingsJournal = DeviceReminderJournal | RawPracticeReminderJournal;
+export type CanonicalNotificationSettingsJournal = DeviceReminderJournal;
 
 function isPositiveInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
@@ -525,83 +195,40 @@ function normalizeDeviceJournal(value: DeviceReminderJournal): DeviceReminderJou
   });
 }
 
-type AnyNotificationSettings = StoredNotificationSettings | DeviceReminderSettings;
-function isAnyNotificationSettings(value: unknown): value is AnyNotificationSettings {
-  return isStoredNotificationSettings(value) || isDeviceReminderSettings(value);
-}
-
 /** Pure owner guards for inventory/preflight callers; they never normalize or write. */
 export function isCanonicalNotificationSettings(value: unknown): boolean {
-  return isAnyNotificationSettings(value);
+  return isDeviceReminderSettings(value);
 }
 
 export function isCanonicalNotificationSettingsJournal(value: unknown): value is CanonicalNotificationSettingsJournal {
-  return isDeviceReminderJournal(value) || isPracticeReminderJournal(value);
-}
-
-function clockText(value: ReminderTime): string {
-  return `${String(value.hour).padStart(2, "0")}:${String(value.minute).padStart(2, "0")}`;
+  return isDeviceReminderJournal(value);
 }
 
 /** Pure export projection: no legacy migration, scheduler IDs, transaction IDs, or journal payload. */
 export function readReminderPreferencesForExport(): ReminderPreferencesForExport {
-  const envelope = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS, isAnyNotificationSettings);
+  const envelope = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS, isDeviceReminderSettings);
   const journal = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, isCanonicalNotificationSettingsJournal);
   if (!envelope) return Object.freeze({ revision: null, preferences: null, hasPendingJournal: journal !== null });
 
   const stored = envelope.payload;
-  if (isDeviceReminderSettings(stored)) {
-    const preferences = Object.freeze({
-      kind: "device" as const,
-      enabled: stored.enabled,
-      schedules: Object.freeze(normalizeDeviceSlots(stored.schedules).map((entry) => Object.freeze({ day: entry.day, localTime: entry.localTime }))),
-      pending: stored.pending ? Object.freeze({
-        enabled: stored.pending.enabled,
-        slots: Object.freeze(normalizeDeviceSlots(stored.pending.slots).map((entry) => Object.freeze({ day: entry.day, localTime: entry.localTime }))),
-        reason: stored.pending.reason,
-      }) : null,
-    });
-    return Object.freeze({ revision: envelope.revision, preferences, hasPendingJournal: journal !== null });
-  }
-  if (isLegacyNotificationSettings(stored)) {
-    const reminder = stored.dailyReminder;
-    return Object.freeze({ revision: envelope.revision, preferences: Object.freeze({ kind: "legacy_daily", enabled: reminder !== null, localTime: reminder ? clockText(reminder) : null }), hasPendingJournal: journal !== null });
-  }
-
-  const reminder = stored.practiceReminder;
-  if (reminder === null) {
-    return Object.freeze({ revision: envelope.revision, preferences: Object.freeze({ kind: "practice", trackId: null, mode: null, commonTime: null, schedules: Object.freeze([]) }), hasPendingJournal: journal !== null });
-  }
-  if (isLegacyPracticeReminder(reminder)) {
-    const localTime = clockText(reminder);
-    return Object.freeze({ revision: envelope.revision, preferences: Object.freeze({ kind: "practice", trackId: reminder.trackId, mode: "same-time", commonTime: localTime, schedules: Object.freeze(reminder.schedules.map((entry) => Object.freeze({ day: entry.day, localTime }))) }), hasPendingJournal: journal !== null });
-  }
-  return Object.freeze({ revision: envelope.revision, preferences: Object.freeze({
-    kind: "practice",
-    trackId: reminder.trackId,
-    mode: reminder.mode,
-    commonTime: reminder.commonTime ? clockText(reminder.commonTime) : null,
-    schedules: Object.freeze(reminder.schedules.map((entry) => Object.freeze({ day: entry.day, localTime: clockText(entry.time) }))),
-  }), hasPendingJournal: journal !== null });
+  const preferences = Object.freeze({
+    kind: "device" as const,
+    enabled: stored.enabled,
+    schedules: Object.freeze(normalizeDeviceSlots(stored.schedules).map((entry) => Object.freeze({ day: entry.day, localTime: entry.localTime }))),
+    pending: stored.pending ? Object.freeze({
+      enabled: stored.pending.enabled,
+      slots: Object.freeze(normalizeDeviceSlots(stored.pending.slots).map((entry) => Object.freeze({ day: entry.day, localTime: entry.localTime }))),
+      reason: stored.pending.reason,
+    }) : null,
+  });
+  return Object.freeze({ revision: envelope.revision, preferences, hasPendingJournal: journal !== null });
 }
 
-function legacyNotificationIds(value: StoredNotificationSettings): readonly string[] {
-  if (isLegacyNotificationSettings(value)) return value.dailyReminder ? Object.freeze([value.dailyReminder.notificationId]) : Object.freeze([]);
-  return Object.freeze([...new Set(value.practiceReminder?.schedules.map((entry) => entry.notificationId) ?? [])]);
-}
-
-/** Reads the ODK034 record with its canonical envelope revision. */
+/** Reads the current device reminder record without migrating or rewriting it. */
 export function getDeviceReminderSettingsSnapshot(): DeviceReminderSettingsSnapshot | null {
-  const envelope = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS, isAnyNotificationSettings);
+  const envelope = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS, isDeviceReminderSettings);
   if (!envelope) return null;
-  if (isDeviceReminderSettings(envelope.payload)) return Object.freeze({ settings: normalizeDeviceSettings(envelope.payload), revision: envelope.revision });
-  const legacy = envelope.payload;
-  const enabled = isLegacyNotificationSettings(legacy)
-    ? legacy.dailyReminder !== null
-    : legacy.practiceReminder !== null;
-  const settings = normalizeDeviceSettings({ schemaVersion: DEVICE_REMINDER_SETTINGS_VERSION, enabled, identity: null, schedules: [], legacyNotificationIds: legacyNotificationIds(legacy), pending: null });
-  const migrated = writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS, settings, envelope.revision);
-  return Object.freeze({ settings, revision: migrated.revision });
+  return Object.freeze({ settings: normalizeDeviceSettings(envelope.payload), revision: envelope.revision });
 }
 
 export function getDeviceReminderSettings(): DeviceReminderSettings | null {
@@ -610,42 +237,32 @@ export function getDeviceReminderSettings(): DeviceReminderSettings | null {
 
 export function saveDeviceReminderSettings(settings: DeviceReminderSettings, expectedRevision?: number | null): DeviceReminderSettingsSnapshot {
   if (!isDeviceReminderSettings(settings)) throw new Error("INVALID_DEVICE_REMINDER_SETTINGS: unsupported record.");
+  readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS, isDeviceReminderSettings);
   const saved = writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS, normalizeDeviceSettings(settings), expectedRevision);
   return Object.freeze({ settings: normalizeDeviceSettings(saved.payload), revision: saved.revision });
 }
 
 export function getDeviceReminderJournal(): DeviceReminderJournal | null {
-  const envelope = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, (value): value is DeviceReminderJournal | PracticeReminderJournal | LegacyPracticeReminderJournal => isDeviceReminderJournal(value) || isPracticeReminderJournal(value));
+  const envelope = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, isDeviceReminderJournal);
   if (!envelope) return null;
-  if (isDeviceReminderJournal(envelope.payload)) return normalizeDeviceJournal(envelope.payload);
-
-  // ODK024/025 journals contain no accepted-plan identity.  They can only be
-  // migrated into a cancellation-only journal; their desired times/days are
-  // deliberately discarded so a later retry cannot resurrect an older plan.
-  const legacyIds = isPracticeReminderJournal(envelope.payload) && valueHasJournalVersion(envelope.payload)
-    ? [...envelope.payload.created.map((entry) => entry.notificationId), ...envelope.payload.remainingOldIds]
-    : [...envelope.payload.created.map((entry) => entry.notificationId), ...envelope.payload.remainingOldIds];
-  const migrated = normalizeDeviceJournal({
-    schemaVersion: DEVICE_REMINDER_JOURNAL_VERSION,
-    transactionId: `legacy:${envelope.payload.transactionId}`,
-    commandId: `legacy:${envelope.payload.transactionId}`,
-    expectedIdentity: null,
-    enabled: false,
-    slots: [],
-    created: [],
-    remainingOldIds: [...new Set(legacyIds)],
-  });
-  writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, migrated, envelope.revision);
-  return migrated;
+  return normalizeDeviceJournal(envelope.payload);
 }
 
 export function saveDeviceReminderJournal(journal: DeviceReminderJournal): void {
   if (!isDeviceReminderJournal(journal)) throw new Error("INVALID_DEVICE_REMINDER_JOURNAL: unsupported journal.");
+  readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, isDeviceReminderJournal);
   writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, normalizeDeviceJournal(journal));
 }
 
 export function clearDeviceReminderJournal(): void {
+  if (!getDeviceReminderJournal()) return;
   removeCanonicalValue(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL);
+}
+
+/** Preflights both durable reminder records before any permission or native scheduler side effect. */
+export function assertCurrentDeviceReminderRecords(): void {
+  getDeviceReminderSettingsSnapshot();
+  getDeviceReminderJournal();
 }
 
 export function isCanonicalDeviceReminderSettings(value: unknown): value is DeviceReminderSettings { return isDeviceReminderSettings(value); }

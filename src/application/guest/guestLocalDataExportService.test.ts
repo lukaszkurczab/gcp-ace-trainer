@@ -412,7 +412,7 @@ test("removes the temporary export when the Guest marker is rebound during file 
   }
 });
 
-test("fails closed when a reminder journal appears during file writing", async () => {
+test("fails closed when an unsupported reminder journal appears during file writing", async () => {
   closeActiveProfileStorage();
   await activateGuest("legacy_guest", MARKER_DATASET_ID);
   try {
@@ -421,7 +421,7 @@ test("fails closed when a reminder journal appears during file writing", async (
     }));
     let shares = 0;
     const result = await exportGuestLocalData(dependencies(files.store, async () => { shares += 1; return "sharedAction"; }));
-    assert.deepEqual(result, { kind: "failure", failure: "sourcePending" });
+    assert.deepEqual(result, { kind: "failure", failure: "sourceChanged" });
     assert.equal(files.deleted, 1);
     assert.equal(shares, 0);
   } finally {

@@ -24,6 +24,7 @@ import {
 } from "../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../storage/keys";
+import { CorruptStoredRecordError, UnsupportedStoredRecordError } from "../storage/errors";
 import { writeCanonicalJson } from "../storage/repositories/canonicalRecordCodec";
 import {
   getDeviceReminderJournal,
@@ -166,6 +167,41 @@ test("explicit enable is the only path that requests permission and persists a d
   assert.equal(getDeviceReminderJournal(), null);
 });
 
+test("unsupported or malformed reminder settings and journals block every mutation before permission and native effects", async () => {
+  const records = [
+    { key: STORAGE_KEYS.NOTIFICATION_SETTINGS, kind: "unsupported", payload: { dailyReminder: { hour: 9, minute: 15, notificationId: "old-native" } } },
+    { key: STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, kind: "unsupported", payload: { version: 2, created: [], desired: null, remainingOldIds: [], transactionId: "old-journal" } },
+    { key: STORAGE_KEYS.NOTIFICATION_SETTINGS, kind: "corrupt", payload: "{broken" },
+    { key: STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, kind: "corrupt", payload: "{broken" },
+  ] as const;
+  const operations = [
+    (f: ReturnType<typeof fixture>) => enableLearningPlanReminders(f.platform, COPY, f.dependencies),
+    (f: ReturnType<typeof fixture>) => reconcileLearningPlanReminders(f.platform, COPY, f.dependencies),
+    (f: ReturnType<typeof fixture>) => disableLearningPlanReminders(f.platform, COPY, f.dependencies),
+    (f: ReturnType<typeof fixture>) => retryLearningPlanReminders(f.platform, COPY, f.dependencies),
+  ];
+
+  for (const record of records) {
+    for (const operation of operations) {
+      const storage = new MemoryKeyValueStorage();
+      installKeyValueStorageForTests(storage);
+      if (record.kind === "corrupt") storage.setString(record.key, record.payload);
+      else writeCanonicalJson(record.key, record.payload);
+      const before = storage.snapshot();
+      storage.resetCounters();
+      const f = fixture({ permission: "undetermined" });
+
+      const expectedError = record.kind === "corrupt" ? CorruptStoredRecordError : UnsupportedStoredRecordError;
+      await assert.rejects(() => operation(f), expectedError);
+      assert.equal(f.platform.permissionRequests, 0);
+      assert.deepEqual(f.platform.requests, []);
+      assert.deepEqual(f.platform.cancelled, []);
+      assert.deepEqual(storage.snapshot(), before);
+      assert.equal(storage.operations.some((entry) => entry.kind === "write" || entry.kind === "remove"), false);
+    }
+  }
+});
+
 test("disable cancels every native reminder before persisting disabled state and fails closed on cancellation errors", async () => {
   const f = fixture();
   assert.equal((await enableLearningPlanReminders(f.platform, COPY, f.dependencies)).kind, "synced");
@@ -306,8 +342,10 @@ test("full source identity mismatch is fail-closed before scheduling", async () 
   assert.deepEqual(f.platform.requests, []);
 });
 
-test("legacy cancellation-only journal is cancelled before the current plan is scheduled", async () => {
+test("legacy journal is retained and blocks scheduling until explicit recovery is available", async () => {
   const f = fixture();
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
   saveDeviceReminderSettings({ schemaVersion: 1, enabled: true, identity: null, schedules: [], legacyNotificationIds: [], pending: null }, null);
   writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, {
     version: 2,
@@ -316,13 +354,14 @@ test("legacy cancellation-only journal is cancelled before the current plan is s
     remainingOldIds: [],
     transactionId: "old-transaction",
   });
+  const before = storage.snapshot();
+  storage.resetCounters();
 
-  const result = await enableLearningPlanReminders(f.platform, COPY, f.dependencies);
-
-  assert.equal(result.kind, "synced");
-  assert.deepEqual(f.platform.cancelled, ["old-native"]);
-  assert.deepEqual(f.platform.requests.map((request) => request.slotId), ["slot:mon", "slot:sat"]);
-  assert.equal(getDeviceReminderJournal(), null);
+  await assert.rejects(() => enableLearningPlanReminders(f.platform, COPY, f.dependencies), UnsupportedStoredRecordError);
+  assert.deepEqual(f.platform.cancelled, []);
+  assert.deepEqual(f.platform.requests, []);
+  assert.deepEqual(storage.snapshot(), before);
+  assert.equal(storage.operations.some((entry) => entry.kind === "write" || entry.kind === "remove"), false);
 });
 
 test("journal-created slots are trusted only when the discovered native identity and day match", async () => {
@@ -487,14 +526,18 @@ test("a newer accepted plan replaces schedules and cancels the previous native I
   assert.equal(getDeviceReminderSettings()?.identity?.planRevision, 2);
 });
 
-test("corrupt durable journal becomes scheduler_failure instead of publishing", async () => {
+test("corrupt durable journal blocks before publishing or rewriting reminder state", async () => {
   const f = fixture();
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
   saveDeviceReminderSettings({ schemaVersion: 1, enabled: true, identity: null, schedules: [], legacyNotificationIds: [], pending: null }, null);
   writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, { corrupt: true });
+  const before = storage.snapshot();
+  storage.resetCounters();
 
-  const result = await enableLearningPlanReminders(f.platform, COPY, f.dependencies);
-
-  assert.equal(result.kind, "scheduler_failure");
-  assert.equal(result.status, "pending");
+  await assert.rejects(() => enableLearningPlanReminders(f.platform, COPY, f.dependencies));
   assert.deepEqual(f.platform.requests, []);
+  assert.deepEqual(f.platform.cancelled, []);
+  assert.deepEqual(storage.snapshot(), before);
+  assert.equal(storage.operations.some((entry) => entry.kind === "write" || entry.kind === "remove"), false);
 });

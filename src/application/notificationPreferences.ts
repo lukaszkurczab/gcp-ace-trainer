@@ -1,7 +1,9 @@
 import { createArtifactSha256, type GoalDay, type GoalSnapshot, type LearningPlan, type LearningPlanSnapshot, type ResolvedContentRef, type TrackId } from "../domain";
 import { getActiveTrackId, getGoalSnapshot, getLearningPlanSnapshot } from "../storage/repositories";
+import { CorruptStoredRecordError, StorageReadError, UnsupportedStoredRecordError } from "../storage/errors";
 import { contentPackageRuntimeOwner, type ResolvedPackageRuntime } from "./contentPackageRuntimeOwner";
 import {
+  assertCurrentDeviceReminderRecords,
   clearDeviceReminderJournal,
   getDeviceReminderJournal,
   getDeviceReminderSettingsSnapshot,
@@ -170,6 +172,10 @@ function sameReminderIdentity(left: NotificationPlanIdentity | null, right: Noti
 
 function freezeReminderResult<T extends object>(value: T): Readonly<T> { return Object.freeze(value); }
 
+function isReminderRecordReadFailure(error: unknown): boolean {
+  return error instanceof CorruptStoredRecordError || error instanceof UnsupportedStoredRecordError || error instanceof StorageReadError;
+}
+
 function sourceFailureResult(kind: Exclude<LearningPlanReminderFailure, "permission_denied" | "scheduler_failure" | "concurrent_change">, identity?: NotificationPlanIdentity): LearningPlanReminderResult {
   return freezeReminderResult({ kind, status: "cleared" as const, ...(identity ? { identity } : {}) });
 }
@@ -251,6 +257,7 @@ export class LearningPlanReminderCoordinator {
 
   disable(platform: NotificationPlatform, copy: PracticeReminderCopy = DEFAULT_REMINDER_COPY): Promise<LearningPlanReminderResult> {
     return serializeReminderOperation(async () => {
+      assertCurrentDeviceReminderRecords();
       const source = await this.readSource();
       const cancellation = await this.cancelAll(platform);
       if (!cancellation.ok) {
@@ -262,7 +269,8 @@ export class LearningPlanReminderCoordinator {
         const current = getDeviceReminderSettingsSnapshot();
         if (current) saveDeviceReminderSettings({ schemaVersion: 1, enabled: false, identity: null, schedules: [], legacyNotificationIds: [], pending: null }, current.revision);
         return freezeReminderResult({ kind: "disabled" as const, status: "disabled" as const });
-      } catch {
+      } catch (error) {
+        if (isReminderRecordReadFailure(error)) throw error;
         return this.pendingResult("scheduler_failure", source.kind === "ready" ? source : undefined);
       }
     });
@@ -270,15 +278,20 @@ export class LearningPlanReminderCoordinator {
 
   retry(platform: NotificationPlatform, copy: PracticeReminderCopy = DEFAULT_REMINDER_COPY, expected?: LearningPlanReminderExpectedIdentity): Promise<LearningPlanReminderResult> {
     return serializeReminderOperation(async () => {
+      assertCurrentDeviceReminderRecords();
       let persisted: NotificationPlanIdentity | undefined;
       if (!expected) {
-        try { persisted = getDeviceReminderSettingsSnapshot()?.settings.pending?.expectedIdentity ?? undefined; } catch { persisted = undefined; }
+        try { persisted = getDeviceReminderSettingsSnapshot()?.settings.pending?.expectedIdentity ?? undefined; } catch (error) {
+          if (isReminderRecordReadFailure(error)) throw error;
+          persisted = undefined;
+        }
       }
       return this.enableLatest(platform, copy, normalizeExpectedIdentity(expected ?? persisted));
     });
   }
 
   private async enableLatest(platform: NotificationPlatform, copy: PracticeReminderCopy, expected?: NotificationPlanIdentity): Promise<LearningPlanReminderResult> {
+    assertCurrentDeviceReminderRecords();
     const source = await this.readSource(expected);
     if (source.kind === "concurrent_change") {
       await this.persistPendingIdentity(source.expectedIdentity, "concurrent_change");
@@ -298,6 +311,7 @@ export class LearningPlanReminderCoordinator {
   }
 
   private async reconcileLatest(platform: NotificationPlatform, copy: PracticeReminderCopy, expected?: NotificationPlanIdentity): Promise<LearningPlanReminderResult> {
+    assertCurrentDeviceReminderRecords();
     const source = await this.readSource(expected);
     if (source.kind === "concurrent_change") {
       await this.persistPendingIdentity(source.expectedIdentity, "concurrent_change");
@@ -307,7 +321,8 @@ export class LearningPlanReminderCoordinator {
     let settings: ReturnType<typeof getDeviceReminderSettingsSnapshot>;
     try {
       settings = getDeviceReminderSettingsSnapshot();
-    } catch {
+    } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
       await this.persistGenericPending("scheduler_failure");
       return this.pendingResult("scheduler_failure", source);
     }
@@ -379,7 +394,8 @@ export class LearningPlanReminderCoordinator {
       current = getDeviceReminderSettingsSnapshot();
       existing = current?.settings;
       pendingJournal = getDeviceReminderJournal();
-    } catch {
+    } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
       await this.persistPending(source, "scheduler_failure");
       return this.pendingResult("scheduler_failure", source);
     }
@@ -392,7 +408,8 @@ export class LearningPlanReminderCoordinator {
     let journal: Awaited<ReturnType<typeof this.prepareJournal>>;
     try {
       journal = await this.prepareJournal(platform, source, existing);
-    } catch {
+    } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
       await this.persistPending(source, "scheduler_failure");
       return this.pendingResult("scheduler_failure", source);
     }
@@ -473,7 +490,8 @@ export class LearningPlanReminderCoordinator {
       saveDeviceReminderSettings({ schemaVersion: 1, enabled: true, identity: source.identity, schedules, legacyNotificationIds: [], pending: null }, latest?.revision ?? null);
       clearDeviceReminderJournal();
       return freezeReminderResult({ kind: "synced" as const, status: "synced" as const, identity: source.identity, schedules });
-    } catch {
+    } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
       await this.persistPending(source, "scheduler_failure");
       return this.pendingResult("scheduler_failure", source);
     }
@@ -488,7 +506,8 @@ export class LearningPlanReminderCoordinator {
         try {
           for (const id of new Set(priorIds)) await platform.cancelReminder(id);
           clearDeviceReminderJournal();
-        } catch {
+        } catch (error) {
+          if (isReminderRecordReadFailure(error)) throw error;
           await this.persistPending(source, "scheduler_failure");
           return { kind: "error", result: this.pendingResult("scheduler_failure", source) };
         }
@@ -507,7 +526,10 @@ export class LearningPlanReminderCoordinator {
       created: [],
       remainingOldIds: [...new Set(oldIds)],
     };
-    try { saveDeviceReminderJournal(journal); return { kind: "ready", journal }; } catch { return { kind: "error", result: this.pendingResult("scheduler_failure", source) }; }
+    try { saveDeviceReminderJournal(journal); return { kind: "ready", journal }; } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
+      return { kind: "error", result: this.pendingResult("scheduler_failure", source) };
+    }
   }
 
   private async clearForSource(platform: NotificationPlatform, kind: Exclude<LearningPlanReminderFailure, "permission_denied" | "scheduler_failure" | "concurrent_change">): Promise<LearningPlanReminderResult> {
@@ -519,7 +541,8 @@ export class LearningPlanReminderCoordinator {
     try {
       const current = getDeviceReminderSettingsSnapshot();
       if (current) saveDeviceReminderSettings({ schemaVersion: 1, enabled: current.settings.enabled, identity: null, schedules: [], legacyNotificationIds: [], pending: null }, current.revision);
-    } catch {
+    } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
       return this.pendingResult("scheduler_failure");
     }
     return sourceFailureResult(kind);
@@ -537,7 +560,8 @@ export class LearningPlanReminderCoordinator {
       for (const id of ids) await platform.cancelReminder(id);
       if (journal) clearDeviceReminderJournal();
       return { ok: true };
-    } catch {
+    } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
       return { ok: false };
     }
   }
@@ -554,7 +578,8 @@ export class LearningPlanReminderCoordinator {
         legacyNotificationIds: [...new Set(retainedIds)],
         pending: { commandId: source.identity.commandId, expectedIdentity: source.identity, enabled: true, slots: source.slots, reason },
       }, current?.revision ?? null);
-    } catch {
+    } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
       // The journal remains the durable source of truth when this write fails.
     }
   }
@@ -571,7 +596,8 @@ export class LearningPlanReminderCoordinator {
         legacyNotificationIds: [...new Set(retainedIds)],
         pending: { commandId: identity.commandId, expectedIdentity: identity, enabled: true, slots: [], reason },
       }, current?.revision ?? null);
-    } catch {
+    } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
       // The caller still receives a pending result; a later latest-plan
       // reconciliation can recover any native IDs left by this uncertainty.
     }
@@ -591,7 +617,8 @@ export class LearningPlanReminderCoordinator {
         legacyNotificationIds: [...new Set(retainedIds)],
         pending: { commandId, expectedIdentity: current.settings.identity, enabled: current.settings.enabled, slots: [], reason },
       }, current.revision);
-    } catch {
+    } catch (error) {
+      if (isReminderRecordReadFailure(error)) throw error;
       // Leave the journal in place when the settings record itself cannot be updated.
     }
   }

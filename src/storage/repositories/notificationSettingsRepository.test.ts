@@ -4,9 +4,9 @@ import test, { beforeEach } from "node:test";
 import { createLearningPlanSlotId } from "../../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalEnvelope, writeCanonicalJson } from "./canonicalRecordCodec";
-import { isCanonicalNotificationSettingsJournal } from "./notificationSettingsRepository";
-import { UnsupportedStoredRecordError } from "../errors";
+import { writeCanonicalJson } from "./canonicalRecordCodec";
+import { isCanonicalNotificationSettingsJournal, saveDeviceReminderJournal, clearDeviceReminderJournal, getDeviceReminderSettings, readReminderPreferencesForExport } from "./notificationSettingsRepository";
+import { CorruptStoredRecordError, UnsupportedStoredRecordError } from "../errors";
 import {
   DEVICE_REMINDER_JOURNAL_VERSION,
   DEVICE_REMINDER_SETTINGS_VERSION,
@@ -14,7 +14,6 @@ import {
   getDeviceReminderSettingsSnapshot,
   isCanonicalDeviceReminderSettings,
   saveDeviceReminderSettings,
-  type DeviceReminderJournal,
   type DeviceReminderSettings,
   type NotificationPlanIdentity,
 } from "./notificationSettingsRepository";
@@ -51,6 +50,16 @@ function settings(overrides: Partial<DeviceReminderSettings> = {}): DeviceRemind
 
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 
+test("true absence stays null and does not create reminder records", () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+
+  assert.equal(getDeviceReminderSettingsSnapshot(), null);
+  assert.equal(getDeviceReminderJournal(), null);
+  assert.deepEqual(readReminderPreferencesForExport(), { revision: null, preferences: null, hasPendingJournal: false });
+  assert.equal(storage.operations.some((entry) => entry.kind === "write" || entry.kind === "remove"), false);
+});
+
 test("stores and reads the complete plan identity, slot identity, and envelope revision", () => {
   const saved = saveDeviceReminderSettings(settings(), null);
   const read = getDeviceReminderSettingsSnapshot();
@@ -63,76 +72,80 @@ test("stores and reads the complete plan identity, slot identity, and envelope r
   assert.equal(Object.isFrozen(read?.settings.identity), true);
   assert.equal(Object.isFrozen(read?.settings.schedules), true);
 });
-test("legacy settings migrate to enabled-only state while retaining every native notification id", () => {
+
+test("current settings updates retain canonical revisions and reject stale compare-and-set", () => {
+  const first = saveDeviceReminderSettings(settings(), null);
+  const nextSettings = settings({ schedules: [{ slotId: createLearningPlanSlotId("slot:tue"), day: "tue", localTime: "19:00", notificationId: "native-tue" }] });
+  const second = saveDeviceReminderSettings(nextSettings, first.revision);
+
+  assert.equal(first.revision, 1);
+  assert.equal(second.revision, 2);
+  assert.throws(() => saveDeviceReminderSettings(settings(), first.revision), UnsupportedStoredRecordError);
+  assert.deepEqual(getDeviceReminderSettingsSnapshot(), second);
+});
+test("old settings are unsupported and remain byte-for-byte untouched by reads, export, and attempted save", () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
   writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS, {
-    practiceReminder: {
-      mode: "by-day",
-      commonTime: null,
-      schedules: [
-        { day: "sat", time: { hour: 20, minute: 15 }, notificationId: "old-sat" },
-        { day: "mon", time: { hour: 18, minute: 0 }, notificationId: "old-mon" },
-      ],
-      trackId: TRACK_ID,
-      transactionId: "old-transaction",
-    },
+    practiceReminder: { mode: "by-day", commonTime: null, schedules: [{ day: "mon", time: { hour: 18, minute: 0 }, notificationId: "old-mon" }], trackId: TRACK_ID, transactionId: "old-transaction" },
   });
+  const before = storage.snapshot();
+  storage.resetCounters();
 
-  const migrated = getDeviceReminderSettingsSnapshot();
-  assert.equal(migrated?.settings.enabled, true);
-  assert.deepEqual(migrated?.settings.schedules, []);
-  assert.deepEqual(migrated?.settings.identity, null);
-  assert.deepEqual(migrated?.settings.legacyNotificationIds, ["old-sat", "old-mon"]);
-
-  const persisted = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS, (value): value is DeviceReminderSettings => isCanonicalDeviceReminderSettings(value));
-  assert.equal(persisted?.payload.schemaVersion, DEVICE_REMINDER_SETTINGS_VERSION);
-  assert.deepEqual(persisted?.payload.legacyNotificationIds, ["old-sat", "old-mon"]);
+  assert.throws(() => getDeviceReminderSettingsSnapshot(), UnsupportedStoredRecordError);
+  assert.throws(() => getDeviceReminderSettings(), UnsupportedStoredRecordError);
+  assert.throws(() => readReminderPreferencesForExport(), UnsupportedStoredRecordError);
+  assert.throws(() => saveDeviceReminderSettings(settings()), UnsupportedStoredRecordError);
+  assert.deepEqual(storage.snapshot(), before);
+  assert.equal(storage.operations.some((entry) => entry.kind === "write" || entry.kind === "remove"), false);
 });
 
-test("legacy daily settings retain the one native id during migration", () => {
-  writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS, {
-    dailyReminder: { hour: 9, minute: 15, notificationId: "old-daily" },
-  });
-
-  const migrated = getDeviceReminderSettingsSnapshot();
-  assert.deepEqual(migrated?.settings.legacyNotificationIds, ["old-daily"]);
-  assert.equal(migrated?.settings.enabled, true);
-});
-
-test("legacy journals become cancellation-only journals and cannot restore their old desired slots", () => {
+test("old journals are unsupported and remain byte-for-byte untouched by reads, export, save, and clear", () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
   writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, {
     version: 2,
     created: [{ day: "mon", time: { hour: 8, minute: 0 }, notificationId: "old-created" }],
-    desired: {
-      mode: "same-time",
-      commonTime: { hour: 8, minute: 0 },
-      days: [{ day: "mon", time: { hour: 8, minute: 0 } }, { day: "wed", time: { hour: 8, minute: 0 } }],
-      trackId: TRACK_ID,
-    },
+    desired: null,
     remainingOldIds: ["old-remaining"],
     transactionId: "old-journal",
   });
+  const before = storage.snapshot();
+  storage.resetCounters();
 
-  const migrated = getDeviceReminderJournal();
-  assert.equal(migrated?.schemaVersion, DEVICE_REMINDER_JOURNAL_VERSION);
-  assert.equal(migrated?.expectedIdentity, null);
-  assert.equal(migrated?.enabled, false);
-  assert.deepEqual(migrated?.slots, []);
-  assert.deepEqual(migrated?.created, []);
-  assert.deepEqual(migrated?.remainingOldIds, ["old-created", "old-remaining"]);
-
-  const persisted = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, (value): value is DeviceReminderJournal => Boolean(value && typeof value === "object" && (value as { schemaVersion?: unknown }).schemaVersion === DEVICE_REMINDER_JOURNAL_VERSION));
-  assert.equal(persisted?.payload.commandId, "legacy:old-journal");
-  assert.deepEqual(persisted?.payload.slots, []);
+  assert.throws(() => getDeviceReminderJournal(), UnsupportedStoredRecordError);
+  assert.throws(() => readReminderPreferencesForExport(), UnsupportedStoredRecordError);
+  assert.throws(() => saveDeviceReminderJournal({
+    schemaVersion: DEVICE_REMINDER_JOURNAL_VERSION,
+    transactionId: "new-journal", commandId: "new-command", expectedIdentity: null,
+    enabled: false, slots: [], created: [], remainingOldIds: [],
+  }), UnsupportedStoredRecordError);
+  assert.throws(() => clearDeviceReminderJournal(), UnsupportedStoredRecordError);
+  assert.deepEqual(storage.snapshot(), before);
+  assert.equal(storage.operations.some((entry) => entry.kind === "write" || entry.kind === "remove"), false);
 });
 
-test("the canonical journal guard accepts the supported legacy journal shape and rejects malformed records", () => {
+test("malformed settings and journal bytes are corrupt and are never repaired implicitly", () => {
+  for (const key of [STORAGE_KEYS.NOTIFICATION_SETTINGS, STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL]) {
+    const storage = new MemoryKeyValueStorage();
+    installKeyValueStorageForTests(storage);
+    storage.setString(key, "{broken");
+    const before = storage.snapshot();
+    storage.resetCounters();
+    assert.throws(() => key === STORAGE_KEYS.NOTIFICATION_SETTINGS ? getDeviceReminderSettingsSnapshot() : getDeviceReminderJournal(), CorruptStoredRecordError);
+    assert.deepEqual(storage.snapshot(), before);
+    assert.equal(storage.operations.some((entry) => entry.kind === "write" || entry.kind === "remove"), false);
+  }
+});
+
+test("the canonical journal guard accepts only the current typed journal shape", () => {
   const legacy = {
     created: [{ day: "sat", notificationId: "legacy-notification" }],
     desired: null,
     remainingOldIds: ["old-notification"],
     transactionId: "legacy-reminder-transaction",
   };
-  assert.equal(isCanonicalNotificationSettingsJournal(legacy), true);
+  assert.equal(isCanonicalNotificationSettingsJournal(legacy), false);
   assert.equal(isCanonicalNotificationSettingsJournal({ ...legacy, remainingOldIds: [""] }), false);
   assert.equal(isCanonicalNotificationSettingsJournal({ ...legacy, unexpected: true }), false);
 });
