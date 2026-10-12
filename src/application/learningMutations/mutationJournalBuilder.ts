@@ -1,5 +1,6 @@
 import {
   captureMutationExpectedRevisions,
+  captureMutationPhysicalWrites,
   createMutationPlanFingerprint,
   type JournalWrite,
   type MutationJournalPlan,
@@ -10,6 +11,7 @@ import {
 } from "../../storage/repositories/mutationJournalRepository";
 import { createIdentityFingerprint } from "./identity";
 import { isArtifactSha256 } from "../../domain";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 export type { MutationOperation };
 
@@ -29,6 +31,7 @@ export async function buildMutationJournal(input: { operation: MutationOperation
       artifactSha256: input.writes[0].record.plan.artifactSha256,
       commandIdentity: { version: 1, fingerprint: commandFingerprint },
       expectedRevisions: captureMutationExpectedRevisions(input.writes),
+      physicalWrites: [],
       writes: input.writes,
     };
     return { journalId: `journal:${commandFingerprint}`, ...plan, planFingerprint: createMutationPlanFingerprint(plan) };
@@ -46,6 +49,7 @@ export async function buildMutationJournal(input: { operation: MutationOperation
       artifactSha256: write.record.afterPlan?.artifactSha256 ?? null,
       commandIdentity: { version: 1, fingerprint: commandFingerprint },
       expectedRevisions: captureMutationExpectedRevisions(input.writes),
+      physicalWrites: [],
       writes: input.writes,
     };
     return { journalId: `journal:${commandFingerprint}`, ...plan, planFingerprint: createMutationPlanFingerprint(plan) };
@@ -60,7 +64,19 @@ export async function buildMutationJournal(input: { operation: MutationOperation
   const artifactSha256 = artifactSha256Values[0] ?? null;
   if (input.operation !== "reset_learning_state" && (!isArtifactSha256(artifactSha256) || artifactSha256Values.some((value) => value !== artifactSha256))) throw new Error("A mutation journal cannot cross content artifacts.");
   if (input.operation === "reset_learning_state" && artifactSha256 !== null) throw new Error("A learning-state reset cannot claim an artifact SHA-256.");
-  const commandFingerprint = await createIdentityFingerprint([input.operation, input.sessionId, input.trackId, artifactSha256, input.identity]);
+  let commandFingerprint: string;
+  if (input.operation === "finalize_training_session") {
+    const acceptedDelete = input.writes.find((write) => write.kind === "delete_active_session_draft");
+    if (!acceptedDelete || acceptedDelete.kind !== "delete_active_session_draft" ||
+      !acceptedDelete.record || typeof acceptedDelete.record !== "object" ||
+      !("kind" in acceptedDelete.record) || acceptedDelete.record.kind !== "accepted_simulation_finalization" ||
+      !/^[a-f0-9]{64}$/.test(acceptedDelete.record.acceptance.commandId)) {
+      throw new Error("Simulation finalization requires its accepted command identity in the typed cleanup write.");
+    }
+    commandFingerprint = acceptedDelete.record.acceptance.commandId;
+  } else {
+    commandFingerprint = await createIdentityFingerprint([input.operation, input.sessionId, input.trackId, artifactSha256, input.identity]);
+  }
   const plan: MutationJournalPlan = {
     operation: input.operation,
     status: "journal_durable",
@@ -70,6 +86,7 @@ export async function buildMutationJournal(input: { operation: MutationOperation
     artifactSha256,
     commandIdentity: { version: 1, fingerprint: commandFingerprint },
     expectedRevisions: captureMutationExpectedRevisions(input.writes, input.expectedRevisionOverrides),
+    physicalWrites: input.operation === "reset_learning_state" ? [] : captureMutationPhysicalWrites(input.writes, productionTrackAdmissionContext),
     writes: input.writes,
   };
   return {

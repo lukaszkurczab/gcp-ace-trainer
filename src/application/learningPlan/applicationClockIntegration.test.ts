@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
@@ -19,6 +20,8 @@ import {
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import { getGoalSnapshot, getReviewQueueItems } from "../../storage/repositories";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK: TrackId = "google-cloud-associate-cloud-engineer";
 const START = "2026-10-01T12:00:00.000Z";
@@ -81,7 +84,7 @@ test("one lifecycle clock drives a real answer due time and proposal, editor, an
     wallClock: clock,
     sessionIds: { async create() { return "clock-integration-diagnostic"; } },
   });
-  const goal = createDefaultGoal(TRACK);
+  const goal = createDefaultGoal(requireGoalPolicy(TRACK));
   const initial = await learningPlanProposalCoordinator.create(TRACK, { goal, minutesPerStudyDay: 180 });
   assert.ok("proposal" in initial, "the canonical initial diagnosis proposal should be available");
   if (!("proposal" in initial)) return;
@@ -102,7 +105,7 @@ test("one lifecycle clock drives a real answer due time and proposal, editor, an
   const expectedDueAt = new Date(Date.parse(getApplicationCurrentTime()) + DAY_MS).toISOString();
   await lifecycle.submitPracticeResponse(incorrectResponse(question));
 
-  const persistedReviews = (await getReviewQueueItems()).value;
+  const persistedReviews = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   const dueReview = persistedReviews.find((entry) => entry.sourceSessionId === prepared.session.id);
   assert.ok(dueReview, "the canonical incorrect answer must create its persisted repair review");
   assert.equal(dueReview.stage, "repair24");
@@ -112,7 +115,7 @@ test("one lifecycle clock drives a real answer due time and proposal, editor, an
   assert.equal(clock.advanceBy(DAY_MS), expectedDueAt);
   assert.equal(getApplicationCurrentTime(), expectedDueAt);
 
-  const currentGoal = await getGoalSnapshot(TRACK);
+  const currentGoal = await getGoalSnapshot(TRACK, requireGoalPolicy(TRACK));
   assert.ok(currentGoal);
   const replanned = await learningPlanProposalCoordinator.create(TRACK, { goal: currentGoal.record, minutesPerStudyDay: 180 });
   assert.ok("proposal" in replanned, "the actual due review should keep proposal generation available");

@@ -7,19 +7,24 @@ import { evaluatePackageCompletion } from "../domain/learning/packageCompletionR
 import { createTrainingAttempt } from "../domain/learning/trainingAttempt";
 import type { TrackId } from "../domain/learning/trackIdentity";
 import frozenRelease from "../../integration/contracts/content-release/release.lock.json";
+import historicalRelease from "../../integration/contracts/content-release/release.lock.historical-0024.json";
 import { ContentPackageRuntimeOwner } from "../application/contentPackageRuntimeOwner";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
 import { initializeStorageMetadata } from "../storage/repositories/storageMetadataRepository";
 import { addTrainingAttempt, getTrainingAttempts } from "../storage/repositories";
+import { productionTrackAdmissionContext } from "../application/tracks/trackAdmissionContext";
+
 
 const TRACK = "claude-certified-architect-professional-certification";
 const NOW = "2026-10-11T12:00:00.000Z";
 
-test("CC05 bundled Claude exposes both learning resources and all 53 required exam units", async () => {
+test("CC05 formal bundled Claude exposes both learning resources and all 53 required exam units", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack(TRACK);
   assert.equal(track.questions.length, 918);
-  assert.equal(track.artifactSha256, "12e6c8637b112af9e48ca870bb80d89f9db6ad7d1949c51efceb37572a6cd0bd");
+  const activeReleaseArtifact = frozenRelease.artifacts.find((artifact) => artifact.trackId === TRACK);
+  assert.ok(activeReleaseArtifact, "the formal release lock must bind Claude");
+  assert.equal(track.artifactSha256, activeReleaseArtifact.checksumSha256, "runtime pin must match the formal release lock, not the local-only acceptance record");
   const rule = track.completionRule;
   assert.equal(rule?.ruleVersion, 3);
   if (rule?.ruleVersion !== 3) throw new Error("The locally accepted Claude package requires unit coverage.");
@@ -53,7 +58,7 @@ test("CC05 bundled Claude exposes both learning resources and all 53 required ex
 test("CC05 keeps historical answer identity intact and grants no current coverage or resume alias", async () => {
   const owner = new ContentPackageRuntimeOwner(() => null, async () => []);
   const { track, runtime } = await owner.resolveForPreparation({ trackId: TRACK, familyId: "certification", modeId: "certification-focus-practice" });
-  const previous = frozenRelease.artifacts.find((artifact) => artifact.trackId === TRACK)!;
+  const previous = historicalRelease.artifacts.find((artifact) => artifact.trackId === TRACK)!;
   const previousTraining = { contentVersion: "ccarp-2026.10.11-capacity-v1-bizq02-v2-bizq03-planning-v2-training", artifactSha256: "4cf89c3a8a8bd5576abea3b655d90a6362d0ac9ae0eda08894dcdb26a943e23a" };
   const question = track.questions[0]!;
   const oldItem = { trackId: TRACK as TrackId, questionId: question.questionId, ...previousTraining };
@@ -61,7 +66,7 @@ test("CC05 keeps historical answer identity intact and grants no current coverag
   const before = JSON.stringify(history);
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   initializeStorageMetadata();
-  await addTrainingAttempt(history[0]!);
+  await addTrainingAttempt(history[0]!, productionTrackAdmissionContext);
   const completion = evaluatePackageCompletion(track, history, (questionId) => track.getQuestion(questionId));
   assert.equal(completion.kind, "in_progress");
   assert.equal(completion.qualifyingAttemptCount, 0);
@@ -70,7 +75,7 @@ test("CC05 keeps historical answer identity intact and grants no current coverag
   assert.notEqual(track.trainingIdentity?.artifactSha256, previous.checksumSha256);
   assert.notEqual(track.artifactSha256, previousTraining.artifactSha256);
   await assert.rejects(() => owner.resolveExactArtifact({ trackId: TRACK, ...previousTraining }), /unavailable/u);
-  assert.deepEqual((await getTrainingAttempts()).value, history, "loading the new package and failing old exact resolution preserve stored historical attempts");
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, history, "loading the new package and failing old exact resolution preserve stored historical attempts");
   const prepared = await runtime.prepare({ trackId: TRACK, modeId: "certification-focus-practice", request: { sessionId: "cc05-current", requestedLength: 10 }, attempts: [], reviews: [], now: NOW });
   await assert.rejects(() => runtime.validateResume({ session: { ...prepared.session, contentVersion: previous.contentVersion, artifactSha256: previous.checksumSha256 }, draft: null }), /content identity is unavailable/u);
 });

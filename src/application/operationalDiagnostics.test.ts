@@ -5,6 +5,7 @@ import { StorageReadError } from "../storage/errors";
 import { EncryptedStorageBootstrapError } from "../infrastructure/storage/encryptedStorageBootstrap";
 import { LocalLogoutControlError } from "../infrastructure/storage/localLogoutControl";
 import { ProfileStorageError } from "../infrastructure/storage/profileStorageRouter";
+import { NodePackageStorageIntegrityError, NodePackageStorageUnavailableError } from "../content/runtime/nodeContentPackage";
 import {
   ApplicationBootstrapStage,
   BootstrapInvariantError,
@@ -42,6 +43,24 @@ test("operational diagnostics classify failures without exposing raw details", (
   const error = new StorageReadError("secret-key", "raw=session-123");
   assert.equal(operationalDiagnosticCode(error), "STORAGE_READ_FAILED");
   assert.equal(describeOperationalFailure(error, "Bootstrap failed."), "Bootstrap failed. [STORAGE_READ_FAILED]");
+});
+
+test("Premium storage diagnostics distinguish integrity from uncertain writes without leaking details", () => {
+  const corrupt = new NodePackageStorageIntegrityError("corrupt", "manifest_decode");
+  assert.equal(operationalDiagnosticCode(corrupt), "NODE_PACKAGE_STORAGE_CORRUPT");
+  const corruptCopy = describeOperationalFailure(corrupt, "Bootstrap failed.");
+  assert.equal(corruptCopy, "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.");
+  assert.doesNotMatch(corruptCopy, /manifest_decode|secret|payload|nodeId/u);
+
+  const identityMismatchCopy = describeOperationalFailure(new NodePackageStorageIntegrityError("identity_mismatch", "pointer_identity"), "Bootstrap failed.");
+  assert.equal(identityMismatchCopy, "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.");
+
+  const unknown = new NodePackageStorageUnavailableError("pointer_readback", "unknown");
+  assert.equal(operationalDiagnosticCode(unknown), "NODE_PACKAGE_STORAGE_UNAVAILABLE");
+  const unknownCopy = describeOperationalFailure(unknown, "Bootstrap failed.");
+  assert.match(unknownCopy, /couldn't confirm/u);
+  assert.match(unknownCopy, /operation is blocked/u);
+  assert.doesNotMatch(unknownCopy, /pointer_readback|secret|payload/u);
 });
 
 test("bootstrap observers receive only the canonical bounded event", () => {

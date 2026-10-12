@@ -11,7 +11,7 @@ const installation = Object.freeze({
   accountId: null,
 });
 
-for (const kind of ["guest", "legacy_guest"] as const) {
+for (const kind of ["guest"] as const) {
   test(`captures a current ${kind} exact-missing confirmation without requiring account auth`, async () => {
     const profile = Object.freeze({ id: installation.localDatasetId, kind, accountId: null });
     const storage = {};
@@ -146,7 +146,7 @@ test("fresh account confirmation rejects a changed actor, profile, or storage an
 });
 
 test("Guest confirmation remains anchored to the bootstrap installation, dataset, binding, and access", async () => {
-  for (const kind of ["guest", "legacy_guest"] as const) {
+  for (const kind of ["guest"] as const) {
     const profile = Object.freeze({ id: installation.localDatasetId, kind, accountId: null });
     const storage = {};
     const anchor = await captureExactMissingActorAnchor({ profile, storage, readGuestInstallation: async () => installation, hasGuestAccess: () => true });

@@ -7,25 +7,28 @@ import { STORAGE_KEYS } from "../../storage/keys";
 import { getActiveMutationJournal, persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { addReviewQueueItems, addTrainingAttempt, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, saveTrainingSession } from "../../storage/repositories";
 import { installMemoryStorage, attempt, journal, review, session } from "../../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 function outcome() { return journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_review_entry", record: review() }, { kind: "put_session", record: session() }]); }
-async function assertOneOutcome() { assert.equal((await getTrainingAttempts()).value.length, 1); assert.equal((await getReviewQueueItems()).value.length, 1); assert.equal((await getTrainingSessions()).value.length, 1); assert.equal((await getTrainingSessions()).value[0]?.status, "active"); assert.equal(await getActiveMutationJournal(), null); }
-test("A before journal persistence leaves no durable outcome", async () => { const storage = installMemoryStorage(); storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL }); await assert.rejects(() => commitMutation(outcome())); assert.equal((await getTrainingAttempts()).value.length, 0); assert.equal((await getReviewQueueItems()).value.length, 0); assert.equal((await getTrainingSessions()).value.length, 0); assert.equal(await getActiveMutationJournal(), null); });
-test("B after journal persistence recovers complete", async () => { installMemoryStorage(); await persistMutationJournal(outcome()); await recoverPendingMutation(); await assertOneOutcome(); });
-test("C after attempt write does not duplicate", async () => { installMemoryStorage(); const record = outcome(); await persistMutationJournal(record); await addTrainingAttempt(attempt()); await recoverPendingMutation(); await assertOneOutcome(); });
-test("D after review writes no duplicate evidence", async () => { installMemoryStorage(); const record = outcome(); await persistMutationJournal(record); await addTrainingAttempt(attempt()); await addReviewQueueItems([review()]); await recoverPendingMutation(); await assertOneOutcome(); });
-test("E after session no twice advance", async () => { installMemoryStorage(); const record = outcome(); await persistMutationJournal(record); await addTrainingAttempt(attempt()); await addReviewQueueItems([review()]); await saveTrainingSession(session()); await recoverPendingMutation(); await assertOneOutcome(); });
-test("F all writes before verification", async () => { installMemoryStorage(); const record = outcome(); await persistMutationJournal(record); await materializeMutation(record); await recoverPendingMutation(); await assertOneOutcome(); });
-test("G verification before clear safely replays", async () => { const storage = installMemoryStorage(); const record = outcome(); await persistMutationJournal(record); await materializeMutation(record); storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_JOURNAL }); await assert.rejects(() => recoverPendingMutation()); storage.setFailurePlan(null); await recoverPendingMutation(); await assertOneOutcome(); });
+async function assertOneOutcome() { assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1); assert.equal((await getReviewQueueItems(productionTrackAdmissionContext)).value.length, 1); assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.length, 1); assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value[0]?.status, "active"); assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null); }
+test("A before journal persistence leaves no durable outcome", async () => { const storage = installMemoryStorage(); storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL }); await assert.rejects(() => commitMutation(outcome())); assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 0); assert.equal((await getReviewQueueItems(productionTrackAdmissionContext)).value.length, 0); assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.length, 0); assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null); });
+test("B after journal persistence recovers complete", async () => { installMemoryStorage(); await persistMutationJournal(outcome(), productionLearningDataAdmissionContext); await recoverPendingMutation(); await assertOneOutcome(); });
+test("C after attempt write does not duplicate", async () => { installMemoryStorage(); const record = outcome(); await persistMutationJournal(record, productionLearningDataAdmissionContext); await addTrainingAttempt(attempt(), productionTrackAdmissionContext); await recoverPendingMutation(); await assertOneOutcome(); });
+test("D after review writes no duplicate evidence", async () => { installMemoryStorage(); const record = outcome(); await persistMutationJournal(record, productionLearningDataAdmissionContext); await addTrainingAttempt(attempt(), productionTrackAdmissionContext); await addReviewQueueItems([review()], productionTrackAdmissionContext); await recoverPendingMutation(); await assertOneOutcome(); });
+test("E after session no twice advance", async () => { installMemoryStorage(); const record = outcome(); await persistMutationJournal(record, productionLearningDataAdmissionContext); await addTrainingAttempt(attempt(), productionTrackAdmissionContext); await addReviewQueueItems([review()], productionTrackAdmissionContext); await saveTrainingSession(session(), productionTrackAdmissionContext); await recoverPendingMutation(); await assertOneOutcome(); });
+test("F all writes before verification", async () => { installMemoryStorage(); const record = outcome(); await persistMutationJournal(record, productionLearningDataAdmissionContext); await materializeMutation(record); await recoverPendingMutation(); await assertOneOutcome(); });
+test("G verification before clear safely replays", async () => { const storage = installMemoryStorage(); const record = outcome(); await persistMutationJournal(record, productionLearningDataAdmissionContext); await materializeMutation(record); storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_JOURNAL }); await assert.rejects(() => recoverPendingMutation()); storage.setFailurePlan(null); await recoverPendingMutation(); await assertOneOutcome(); });
 test("resolved review deletion is physical and safely replays after force-close", async () => {
   const storage = installMemoryStorage();
   const resolved = review("review-resolved", "older-attempt");
-  await addReviewQueueItems([resolved]);
+  await addReviewQueueItems([resolved], productionTrackAdmissionContext);
   const record = journal([{ kind: "put_attempt", record: attempt() }, { kind: "delete_review_entry", record: resolved }, { kind: "put_session", record: session() }]);
-  await persistMutationJournal(record);
-  await addTrainingAttempt(attempt());
+  await persistMutationJournal(record, productionLearningDataAdmissionContext);
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
   await recoverPendingMutation();
-  assert.equal((await getReviewQueueItems()).value.some((entry) => entry.id === resolved.id), false);
+  assert.equal((await getReviewQueueItems(productionTrackAdmissionContext)).value.some((entry) => entry.id === resolved.id), false);
   assert.equal(storage.contains(STORAGE_KEYS.reviewEntry(resolved.id)), false);
   await recoverPendingMutation();
   assert.equal(storage.contains(STORAGE_KEYS.reviewEntry(resolved.id)), false);
@@ -33,9 +36,9 @@ test("resolved review deletion is physical and safely replays after force-close"
 test("resolved review deletion recovers when its index update fails", async () => {
   const storage = installMemoryStorage();
   const resolved = review("review-index-failure", "older-attempt");
-  await addReviewQueueItems([resolved]);
+  await addReviewQueueItems([resolved], productionTrackAdmissionContext);
   const record = journal([{ kind: "put_attempt", record: attempt() }, { kind: "delete_review_entry", record: resolved }, { kind: "put_session", record: session() }]);
-  await persistMutationJournal(record);
+  await persistMutationJournal(record, productionLearningDataAdmissionContext);
   storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.REVIEW_INDEX });
   await assert.rejects(() => recoverPendingMutation());
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true);

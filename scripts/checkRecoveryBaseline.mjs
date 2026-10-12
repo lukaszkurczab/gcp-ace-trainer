@@ -116,7 +116,7 @@ if (!/AlgorithmsInterviewSimulationScreen/.test(rootNavigator)) fail("Algorithms
 if (/createAlgorithms(?:ImmediatePractice|InterviewSimulation)Controller|createCodingInterviewFamilyRuntime/.test(rootNavigator)) fail("Algorithms route retains a persistence-owning runner.");
 
 if (/tracks\/coding-interview|google-cloud-associate-cloud-engineer|AlgorithmQuestion|CertificationQuestion|ValidatedBank/.test(kernel)) fail("learning kernel imports family semantics.");
-for (const path of walk(join(root, "src/domain/learning"))) {
+for (const path of pathsUnder(join(root, "src/domain/learning"))) {
   const source = readFileSync(path, "utf8");
   if (/from\s+["'][^"']*(?:tracks\/|react(?:-native)?|mmkv|storage\/repositories)[^"']*["']/.test(source)) {
     fail(`learning kernel imports a forbidden owner: ${path}`);

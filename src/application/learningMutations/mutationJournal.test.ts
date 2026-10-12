@@ -8,22 +8,25 @@ import { STORAGE_KEYS } from "../../storage/keys";
 import { buildMutationJournal, commitTrainingOutcome, recoverPendingMutation } from "./";
 import { commitMutation } from "./commitMutation";
 import { MutationCommitFailure } from "../mutationBoundary";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 const artifactSha256 = "a".repeat(64);
 const session = createTrainingSession({ id: "s", trackId: "coding-interview-dsa-problem-solving", modeId: "m", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: "coding-interview-dsa-problem-solving", questionId: "i", contentVersion: "v", artifactSha256 } }], optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v", artifactSha256, status: "active" as const, startedAt: "2026-01-01T00:00:00.000Z" });
 const attempt = { id: "a", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", modeId: "m", occurrenceId: "occurrence-1", item: session.itemOrder[0]!.item, response: { ids: ["x"] }, result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: session.itemOrder[0]!.item, taxonomyOrSkillRefs: [] }, answeredAt: session.startedAt, committedAt: session.startedAt };
-test("journal durability precedes idempotent materialization and recovery", async () => { const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt }); await persistMutationJournal(record); assert.equal((await getTrainingAttempts()).value.length, 0); await recoverPendingMutation(); assert.equal((await getActiveMutationJournal()), null); assert.equal((await getTrainingAttempts()).value.length, 1); assert.equal((await getTrainingSessions()).value.length, 1); await recoverPendingMutation(); assert.equal((await getTrainingAttempts()).value.length, 1); });
+test("journal durability precedes idempotent materialization and recovery", async () => { const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt }); await persistMutationJournal(record, productionLearningDataAdmissionContext); assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 0); await recoverPendingMutation(); assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext)), null); assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1); assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.length, 1); await recoverPendingMutation(); assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1); });
 test("same journal command and exact plan reuses its original envelope without a revision bump", async () => {
   const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
-  const first = await persistMutationJournal(record);
+  const first = await persistMutationJournal(record, productionLearningDataAdmissionContext);
   const before = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_JOURNAL, (_value): _value is typeof record => true);
-  const second = await persistMutationJournal(record);
+  const second = await persistMutationJournal(record, productionLearningDataAdmissionContext);
   const after = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_JOURNAL, (_value): _value is typeof record => true);
   assert.deepEqual(second, first);
   assert.equal(after?.revision, before?.revision);
   const differentPlan = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: { ...session, activeForegroundMs: 1 } }], createdAt: session.startedAt });
   assert.equal(differentPlan.commandIdentity.fingerprint, record.commandIdentity.fingerprint);
-  await assert.rejects(persistMutationJournal(differentPlan), (error: unknown) => error instanceof Error && error.cause instanceof Error && /different immutable plan/.test(error.cause.message));
+  await assert.rejects(persistMutationJournal(differentPlan, productionLearningDataAdmissionContext), (error: unknown) => error instanceof Error && error.cause instanceof Error && /different immutable plan/.test(error.cause.message));
 });
 
 test("a transient journal prerequisite read can retry only the same frozen record", async () => {
@@ -40,9 +43,9 @@ test("a transient journal prerequisite read can retry only the same frozen recor
   let journalWrites = 0;
   storage.setString = (key: string, value: string) => { if (key === STORAGE_KEYS.ACTIVE_JOURNAL) journalWrites += 1; setString(key, value); };
 
-  await assert.rejects(persistMutationJournal(record), (error: unknown) => error instanceof Error && error.cause instanceof Error && error.cause.name === "StorageReadError");
+  await assert.rejects(persistMutationJournal(record, productionLearningDataAdmissionContext), (error: unknown) => error instanceof Error && error.cause instanceof Error && error.cause.name === "StorageReadError");
   assert.equal(journalWrites, 0);
-  const retried = await persistMutationJournal(record);
+  const retried = await persistMutationJournal(record, productionLearningDataAdmissionContext);
   assert.equal(retried.commandIdentity.fingerprint, record.commandIdentity.fingerprint);
   assert.equal(retried.planFingerprint, record.planFingerprint);
   assert.equal(readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_JOURNAL, (_value): _value is typeof record => true)?.revision, 1);
@@ -51,7 +54,7 @@ test("a transient journal prerequisite read can retry only the same frozen recor
 test("commit freezes the exact built journal and retries it with the original lease after a transient prewrite read", async () => {
   const storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
-  await saveTrainingSession(session);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
   const getString = storage.getString.bind(storage);
   let failuresRemaining = 2;
   storage.getString = (key: string) => {
@@ -88,9 +91,9 @@ test("commit freezes the exact built journal and retries it with the original le
   assert.equal(journalWrites, 0);
   assert.equal(secondSeed?.record?.commandIdentity.fingerprint, retrySeed.record.commandIdentity.fingerprint);
   await commitMutation(secondSeed!.record, secondSeed!.lease);
-  assert.equal((await getActiveMutationJournal()), null);
-  assert.deepEqual((await getTrainingAttempts()).value, [attempt]);
-  assert.equal((await getTrainingSessions()).value[0]?.activeForegroundMs, 1);
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext)), null);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, [attempt]);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value[0]?.activeForegroundMs, 1);
   assert.deepEqual(journalWritePhases, ["journal_durable", "materialized", "verified_pending_clear"]);
 });
 test("corrupt journal preconditions stay blocked and preserve their bytes", async () => {
@@ -102,7 +105,7 @@ test("corrupt journal preconditions stay blocked and preserve their bytes", asyn
   let journalWrites = 0;
   const setString = storage.setString.bind(storage);
   storage.setString = (key: string, value: string) => { if (key === STORAGE_KEYS.ACTIVE_JOURNAL) journalWrites += 1; setString(key, value); };
-  await assert.rejects(persistMutationJournal(record), (error: unknown) => error instanceof Error && error.cause instanceof Error && error.cause.name === "CorruptStoredRecordError");
+  await assert.rejects(persistMutationJournal(record, productionLearningDataAdmissionContext), (error: unknown) => error instanceof Error && error.cause instanceof Error && error.cause.name === "CorruptStoredRecordError");
   assert.equal(journalWrites, 0);
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), corrupt);
   await assert.rejects(commitMutation(record, null), (error: unknown) => {
@@ -119,7 +122,7 @@ test("a different pending journal blocks a new command without relabeling it as 
   const storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
   const pending = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: "existing-command", writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
-  await persistMutationJournal(pending);
+  await persistMutationJournal(pending, productionLearningDataAdmissionContext);
   const originalRaw = storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL);
   const next = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: attempt.response, writes: [{ kind: "put_attempt", record: { ...attempt, id: "next-attempt" } }, { kind: "put_session", record: { ...session, activeForegroundMs: 1 } }], createdAt: session.startedAt });
   await assert.rejects(commitMutation(next, null), (error: unknown) => {
@@ -133,30 +136,30 @@ test("a different pending journal blocks a new command without relabeling it as 
 
 test("journal phase advances only one immutable step at a time", async () => {
   const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
-  const initial = await persistMutationJournal(record);
-  await assert.rejects(updateMutationJournalPhase(initial, "verified_pending_clear"));
-  const materialized = await updateMutationJournalPhase(initial, "materialized");
+  const initial = await persistMutationJournal(record, productionLearningDataAdmissionContext);
+  await assert.rejects(updateMutationJournalPhase(initial, "verified_pending_clear", productionLearningDataAdmissionContext));
+  const materialized = await updateMutationJournalPhase(initial, "materialized", productionLearningDataAdmissionContext);
   assert.equal(materialized.status, "materialized");
-  await assert.rejects(updateMutationJournalPhase(materialized, "journal_durable"));
+  await assert.rejects(updateMutationJournalPhase(materialized, "journal_durable", productionLearningDataAdmissionContext));
   const changedPlan = { ...materialized, planFingerprint: "0".repeat(64) };
-  await assert.rejects(updateMutationJournalPhase(changedPlan, "verified_pending_clear"));
-  assert.equal((await getActiveMutationJournal())?.status, "materialized");
+  await assert.rejects(updateMutationJournalPhase(changedPlan, "verified_pending_clear", productionLearningDataAdmissionContext));
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext))?.status, "materialized");
 });
-test("journaled command rejects a conflicting pending command", async () => { const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity: "other", writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt }); await persistMutationJournal(record); await assert.rejects(commitTrainingOutcome({ attempt, session, reviews: [], createdAt: session.startedAt })); });
+test("journaled command rejects a conflicting pending command", async () => { const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity: "other", writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt }); await persistMutationJournal(record, productionLearningDataAdmissionContext); await assert.rejects(commitTrainingOutcome({ attempt, session, reviews: [], createdAt: session.startedAt })); });
 test("journal has a versioned SHA-256 command identity and rejects stale expected revisions", async () => {
   const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity: "stale", writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
   assert.deepEqual(record.commandIdentity.version, 1);
   assert.match(record.commandIdentity.fingerprint, /^[a-f0-9]{64}$/);
   assert.ok(record.expectedRevisions.some((condition) => condition.target === "session:s" && condition.revision === null));
-  await saveTrainingSession(session);
-  await assert.rejects(persistMutationJournal(record), (error: Error & { cause?: unknown }) => error.cause instanceof Error && /expected revisions are stale/.test(error.cause.message));
+  await saveTrainingSession(session, productionTrackAdmissionContext);
+  await assert.rejects(persistMutationJournal(record, productionLearningDataAdmissionContext), (error: Error & { cause?: unknown }) => error.cause instanceof Error && /expected revisions are stale/.test(error.cause.message));
   await assert.rejects(commitMutation(record, null), (error: unknown) => {
     assert.ok(error instanceof MutationCommitFailure);
     assert.equal(error.durableState, "not_durable");
     assert.equal(error.commandProof, undefined);
     return true;
   });
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 });
 test("journal construction rejects writes that cross exact resolved artifact identities", async () => {
   const otherArtifactSha256 = "b".repeat(64);
@@ -185,13 +188,12 @@ test("practice submission recovers identically after every durable write boundar
     { kind: "fail_on_key_write", key: STORAGE_KEYS.reviewEntry(review.id) },
     { kind: "fail_on_key_write", key: STORAGE_KEYS.REVIEW_INDEX },
     { kind: "fail_on_key_write", key: STORAGE_KEYS.trainingSession(session.id) },
-    { kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION },
     { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_JOURNAL },
   ] as const;
   for (const boundary of boundaries) {
     const storage = new MemoryKeyValueStorage();
     installKeyValueStorageForTests(storage);
-    await saveTrainingSession(session);
+    await saveTrainingSession(session, productionTrackAdmissionContext);
     const submittedSession = boundary.key === STORAGE_KEYS.trainingSession(session.id)
       ? { ...session, activeForegroundMs: session.activeForegroundMs + 1 }
       : session;
@@ -201,11 +203,41 @@ test("practice submission recovers identically after every durable write boundar
     storage.setFailurePlan(null);
     if (boundary.key === STORAGE_KEYS.ACTIVE_JOURNAL && boundary.kind === "fail_on_key_write") await submit();
     else await recoverPendingMutation();
-    assert.equal(await getActiveMutationJournal(), null, boundary.key);
-    assert.deepEqual((await getTrainingAttempts()).value, [submittedAttempt], boundary.key);
-    assert.deepEqual((await getReviewQueueItems()).value, [review], boundary.key);
-    assert.deepEqual((await getTrainingSessions()).value, [submittedSession], boundary.key);
+    assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, boundary.key);
+    assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, [submittedAttempt], boundary.key);
+    assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [review], boundary.key);
+    assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, [submittedSession], boundary.key);
   }
+});
+
+test("practice submission keeps the unchanged active-session pointer as an exact-after no-op", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
+  const pointerRawBefore = storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
+  const pointerBefore = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, (value): value is string => typeof value === "string");
+  assert.equal(pointerBefore?.payload, session.id);
+  const pointerWritesBefore = storage.operations.filter((operation) => operation.kind === "write" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION).length;
+  const pointerRemovesBefore = storage.operations.filter((operation) => operation.kind === "remove" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION).length;
+  const submittedAttempt = { ...attempt, id: "practice-noop-pointer-attempt", result: { kind: "incorrect" as const, earnedPoints: 0, maxPoints: 1 } };
+  const review = {
+    id: "practice-noop-pointer-review", trackId: session.trackId, sourceAttemptId: submittedAttempt.id, sourceSessionId: session.id,
+    sourceItem: submittedAttempt.item, taxonomyOrSkillRefs: submittedAttempt.reviewEvidence.taxonomyOrSkillRefs,
+    reasons: ["incorrect"] as const, dueAt: session.startedAt, createdAt: session.startedAt,
+    consecutiveAfterDueSuccesses: 0, persistent: true,
+  };
+
+  assert.equal(await commitTrainingOutcome({ attempt: submittedAttempt, session, reviews: [review], createdAt: session.startedAt }), false);
+
+  const pointerAfter = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, (value): value is string => typeof value === "string");
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), pointerRawBefore, "the exact pointer bytes remain unchanged");
+  assert.equal(pointerAfter?.revision, pointerBefore?.revision, "an exact-after pointer does not advance its revision");
+  assert.equal(pointerAfter?.payload, session.id);
+  assert.equal(storage.operations.filter((operation) => operation.kind === "write" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION).length, pointerWritesBefore);
+  assert.equal(storage.operations.filter((operation) => operation.kind === "remove" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION).length, pointerRemovesBefore);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, [submittedAttempt]);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [review]);
 });
 
 test("a review revision race preserves the graded attempt and leaves the concurrent cycle untouched", async () => {
@@ -214,8 +246,8 @@ test("a review revision race preserves the graded attempt and leaves the concurr
   const prior = { id: "review-race", trackId: attempt.trackId, sourceAttemptId: "older-attempt", sourceSessionId: "older-session", sourceItem: attempt.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs, reasons: ["incorrect"] as const, dueAt: session.startedAt, createdAt: session.startedAt, consecutiveAfterDueSuccesses: 0, persistent: true };
   const proposed = { ...prior, dueAt: "2026-07-22T10:00:00.000Z", lastReviewedAt: session.startedAt };
   const concurrent = { ...prior, dueAt: "2026-07-23T10:00:00.000Z", lastReviewedAt: "2026-07-16T10:00:00.000Z" };
-  await saveTrainingSession(session);
-  await addReviewQueueItems([prior]);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
+  await addReviewQueueItems([prior], productionTrackAdmissionContext);
   const read = storage.getString.bind(storage);
   let raced = false;
   storage.getString = (key: string) => {
@@ -228,10 +260,10 @@ test("a review revision race preserves the graded attempt and leaves the concurr
   const conflict = await commitTrainingOutcome({ attempt, session: { ...session, activeForegroundMs: 1 }, reviews: [proposed], reviewBaseline: [prior], createdAt: session.startedAt });
   assert.equal(raced, true, "the test changes the review after the journal preflight read and before its CAS");
   assert.equal(conflict, true, "the durable answer reports that review credit was not applied");
-  assert.deepEqual((await getTrainingAttempts()).value, [attempt]);
-  assert.deepEqual((await getReviewQueueItems()).value, [concurrent]);
-  assert.equal((await getTrainingSessions()).value[0]?.activeForegroundMs, 1);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, [attempt]);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [concurrent]);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value[0]?.activeForegroundMs, 1);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 });
 
 test("a non-review revision conflict is not converted into a review-credit conflict", async () => {
@@ -239,8 +271,8 @@ test("a non-review revision conflict is not converted into a review-credit confl
   installKeyValueStorageForTests(storage);
   const prior = { id: "review-session-race", trackId: attempt.trackId, sourceAttemptId: "older-attempt", sourceSessionId: "older-session", sourceItem: attempt.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs, reasons: ["incorrect"] as const, dueAt: session.startedAt, createdAt: session.startedAt, consecutiveAfterDueSuccesses: 0, persistent: true };
   const proposed = { ...prior, dueAt: "2026-07-22T10:00:00.000Z", lastReviewedAt: session.startedAt };
-  await saveTrainingSession(session);
-  await addReviewQueueItems([prior]);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
+  await addReviewQueueItems([prior], productionTrackAdmissionContext);
   const read = storage.getString.bind(storage);
   let raced = false;
   storage.getString = (key: string) => {
@@ -251,22 +283,22 @@ test("a non-review revision conflict is not converted into a review-credit confl
     return read(key);
   };
   await assert.rejects(commitTrainingOutcome({ attempt, session: { ...session, activeForegroundMs: 1 }, reviews: [proposed], reviewBaseline: [prior], createdAt: session.startedAt }));
-  assert.deepEqual((await getTrainingAttempts()).value, [], "the attempt remains recoverable and is not written without its session CAS");
-  assert.deepEqual((await getReviewQueueItems()).value, [prior]);
-  assert.equal((await getTrainingSessions()).value[0]?.activeForegroundMs, 2);
-  assert.equal(await getActiveMutationJournal(), null, "the stale CAS failed before a durable journal existed");
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, [], "the attempt remains recoverable and is not written without its session CAS");
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [prior]);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value[0]?.activeForegroundMs, 2);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, "the stale CAS failed before a durable journal existed");
 });
 test("concurrent conflicting journal persists use one CAS winner and ownership-checked clear", async () => {
   const make = (identity: string) => buildMutationJournal({ operation: "submit_training_outcome" as const, sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity, writes: [{ kind: "put_attempt" as const, record: attempt }, { kind: "put_session" as const, record: session }], createdAt: session.startedAt });
   const [left, right] = await Promise.all([make("left"), make("right")]);
-  const outcomes = await Promise.allSettled([persistMutationJournal(left), persistMutationJournal(right)]);
+  const outcomes = await Promise.allSettled([persistMutationJournal(left, productionLearningDataAdmissionContext), persistMutationJournal(right, productionLearningDataAdmissionContext)]);
   assert.equal(outcomes.filter((outcome) => outcome.status === "fulfilled").length, 1);
   assert.equal(outcomes.filter((outcome) => outcome.status === "rejected").length, 1);
-  const durable = await getActiveMutationJournal();
+  const durable = await getActiveMutationJournal(productionLearningDataAdmissionContext);
   assert.ok(durable);
   const loser = durable.commandIdentity.fingerprint === left.commandIdentity.fingerprint ? right : left;
-  await assert.rejects(clearMutationJournal(loser.commandIdentity.fingerprint), /ownership/);
-  assert.equal((await getActiveMutationJournal())?.commandIdentity.fingerprint, durable.commandIdentity.fingerprint);
-  await clearMutationJournal(durable.commandIdentity.fingerprint);
-  assert.equal(await getActiveMutationJournal(), null);
+  await assert.rejects(clearMutationJournal(productionLearningDataAdmissionContext, loser.commandIdentity.fingerprint), /ownership/);
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext))?.commandIdentity.fingerprint, durable.commandIdentity.fingerprint);
+  await clearMutationJournal(productionLearningDataAdmissionContext, durable.commandIdentity.fingerprint);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 });

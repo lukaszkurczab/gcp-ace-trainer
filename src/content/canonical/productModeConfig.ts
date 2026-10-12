@@ -1,4 +1,4 @@
-import { isCanonicalSafeIdentity } from "./questionValidation";
+import { isCanonicalSafeIdentity } from "../../domain/identity/canonicalIdentity";
 import type { CanonicalProductSimulationProfile } from "./questionTypes";
 import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 

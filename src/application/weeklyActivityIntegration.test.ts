@@ -10,6 +10,8 @@ import { createActivityReadOwner, loadActivityRecords, projectWeeklySessionActiv
 import { addTrainingAttempt, getTrainingAttempts, saveTrainingSession } from "../storage/repositories";
 import { installMemoryStorage } from "../testing/journalTestSupport";
 import { buildProgressTabModel } from "../features/home/tabs/progressTabModel";
+import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
+
 
 const TRACK = "coding-interview-dsa-problem-solving";
 const NOW = "2026-10-02T12:00:00.000Z";
@@ -28,7 +30,7 @@ async function durableSession(id: string, status: TrainingSession["status"], com
     contentVersion, artifactSha256,
     status, startedAt: "2026-09-01T08:00:00.000Z", ...(status === "active" ? {} : { completedAt }),
   });
-  await saveTrainingSession(session);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
   return { session, refs };
 }
 
@@ -37,7 +39,7 @@ async function recordAnswers(id: string, refs: readonly ResolvedContentRef[]) {
     id: `${id}:attempt:${index}`, sessionId: id, trackId: item.trackId, modeId: "coding-interview-guided-practice", occurrenceId: `${id}:${index}`,
     item, response: { answer: "fixture" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] },
     answeredAt: "2026-10-01T09:00:00.000Z", committedAt: "2026-10-01T09:00:00.000Z",
-  }));
+  }), productionTrackAdmissionContext);
 }
 
 test("Progress week counts durable completed sessions, not distinct answers or earlier sessions", async () => {
@@ -45,7 +47,7 @@ test("Progress week counts durable completed sessions, not distinct answers or e
   await recordAnswers(current.session.id, current.refs);
   await durableSession("earlier", "completed", "2026-09-20T10:00:00.000Z");
   const records = await loadActivitySessionRecords();
-  const model = buildProgressTabModel({ activeTrackId: TRACK, activityRecords: records, analytics: {} as never, attempts: [], practiceHistory: [], trainingAttempts: (await getTrainingAttempts()).value, reviewQueueItems: [], now: NOW, timezone: "Europe/Warsaw" });
+  const model = buildProgressTabModel({ activeTrackId: TRACK, activityRecords: records, analytics: {} as never, attempts: [], practiceHistory: [], trainingAttempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value, reviewQueueItems: [], now: NOW, timezone: "Europe/Warsaw" });
   assert.equal(model.weeklyActivity.kind, "ready");
   if (model.weeklyActivity.kind === "ready") assert.equal(model.weeklyActivity.completedSessionCount, 1);
 });

@@ -14,6 +14,7 @@ export async function installPremiumNodeOffer(input: Readonly<{ api: Pick<Patter
   const scopeKey = getActiveNodePackageScopeKey();
   if (!scopeKey) throw new Error("encrypted_storage_not_initialized");
   const store = createProfileNodePackageStore();
+  await store.listActive();
   const active = await store.getActive(offer.trackId, offer.nodeId);
   if (active?.contentVersion === offer.contentVersion && active.artifactSha256 === offer.artifactSha256) {
     const installed = await store.read(active);

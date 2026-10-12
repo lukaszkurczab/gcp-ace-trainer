@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test, { beforeEach } from "node:test";
 
 import { MemoryKeyValueStorage, getKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
@@ -28,6 +29,10 @@ import { addReviewQueueItems, getReviewQueueItems } from "./reviewQueueRepositor
 import { STORAGE_KEYS } from "../keys";
 import { writeCanonicalJson } from "./canonicalRecordCodec";
 import { attempt } from "../../testing/journalTestSupport";
+import { productionLearningDataAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+import { GoalPolicyUnavailableError } from "../../domain/goals/goalPolicy";
+
 
 const ACCOUNT_ID = "55555555-5555-4555-8555-555555555555";
 const INSTALLATION_ID = "66666666-6666-4666-8666-666666666666";
@@ -41,12 +46,12 @@ beforeEach(async () => {
 
 async function bindSyncedAccount(): Promise<void> {
   await bindGuestInstallationToAccount(ACCOUNT_ID);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId: ACCOUNT_ID, status: "synced" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: ACCOUNT_ID, status: "synced" }, productionLearningDataAdmissionContext);
 }
 
 test("active sessions stay local and block account snapshot export", async () => {
   await saveActiveTrackId(TRACK_ID);
-  const snapshot = await buildAccountDataSnapshot();
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   assert.deepEqual(snapshot.records.map((record) => record.recordType), ["active_track"]);
   assert.equal(snapshot.activeSession, false);
   assert.equal(snapshot.records[0]?.state.trackId, TRACK_ID);
@@ -61,25 +66,44 @@ test("corrupt training evidence blocks account snapshots, outbox reconciliation,
   const storage = getKeyValueStorage() as MemoryKeyValueStorage;
   const before = storage.snapshot();
 
-  await assert.rejects(buildAccountDataSnapshot());
-  await assert.rejects(ensureAccountOutboxFromLocalDataset());
-  await assert.rejects(applyRemoteAccountData([]));
+  await assert.rejects(buildAccountDataSnapshot(productionLearningDataAdmissionContext));
+  await assert.rejects(ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext));
+  await assert.rejects(applyRemoteAccountData([], productionLearningDataAdmissionContext));
   assert.deepEqual(storage.snapshot(), before);
 });
 
 test("canonical account records round trip through remote materialization", async () => {
   await saveActiveTrackId(TRACK_ID);
-  const snapshot = await buildAccountDataSnapshot();
-  assertValidAccountDataRecords(snapshot.records);
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
+  assertValidAccountDataRecords(snapshot.records, productionLearningDataAdmissionContext);
 
-  await applyRemoteAccountData(snapshot.records);
+  await applyRemoteAccountData(snapshot.records, productionLearningDataAdmissionContext);
   assert.equal(await getActiveTrackId(), TRACK_ID);
-  assert.equal(isCanonicalAccountSyncState(await getAccountSyncState()), true);
+  assert.equal(isCanonicalAccountSyncState(await getAccountSyncState(productionLearningDataAdmissionContext), productionLearningDataAdmissionContext), true);
+});
+
+test("account sync rejects a goal evaluated under another track's program policy", async () => {
+  const policy = requireGoalPolicy(TRACK_ID);
+  await saveGoalSnapshot(createDefaultGoal(policy), null, policy);
+  const goalRecord = (await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).records.find((record) => record.recordType === "goal");
+  assert.ok(goalRecord);
+  const wrongPolicyContext = Object.freeze({
+    trackAdmission: productionTrackAdmissionContext,
+    goalPolicyResolver: () => requireGoalPolicy(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID),
+  });
+  const storage = getKeyValueStorage();
+  const persistedBefore = [...storage.getAllKeys()].sort().map((key) => [key, storage.getString(key)]);
+
+  assert.throws(() => assertValidAccountDataRecords([goalRecord], wrongPolicyContext), GoalPolicyUnavailableError);
+  assert.throws(() => Reflect.apply(assertValidAccountDataRecords, undefined, [[goalRecord]]));
+  assert.throws(() => Reflect.apply(assertValidAccountDataRecords, undefined, [[goalRecord], { trackAdmission: productionTrackAdmissionContext }]));
+  await assert.rejects(applyRemoteAccountData([goalRecord], wrongPolicyContext), GoalPolicyUnavailableError);
+  assert.deepEqual([...storage.getAllKeys()].sort().map((key) => [key, storage.getString(key)]), persistedBefore);
 });
 
 test("account sync requires a v2 accepted goal-plan pair, including exact target and revision", async () => {
-  const goal = { ...createDefaultGoal(TRACK_ID), goalType: "prepare_for_an_interview" as const, targetDate: "2026-12-01" };
-  await saveGoalSnapshot(goal, null);
+  const goal = { ...createDefaultGoal(requireGoalPolicy(TRACK_ID)), goalType: "prepare_for_an_interview" as const, targetDate: "2026-12-01" };
+  await saveGoalSnapshot(goal, null, requireGoalPolicy(goal.trackId));
   const plan = createLearningPlan({
     schemaVersion: 2, planId: "plan:v2-bundle", trackId: TRACK_ID, goalRevision: 1, status: "accepted", timezone: "Europe/Warsaw",
     contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256, acceptedTarget: { meaning: "event", targetDate: "2026-12-01" },
@@ -88,9 +112,9 @@ test("account sync requires a v2 accepted goal-plan pair, including exact target
     executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: null, practice: { modeId: "coding-interview-guided-practice", requestedLength: 10 } },
     planningPolicyIdentity: { contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256, policyVersion: "policy-v3" },
   });
-  saveLearningPlanAtomically({ plan, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
-  const snapshot = await buildAccountDataSnapshot();
-  assertValidAccountDataRecords(snapshot.records);
+  saveLearningPlanAtomically({ policy: requireGoalPolicy(plan.trackId), plan, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
+  assertValidAccountDataRecords(snapshot.records, productionLearningDataAdmissionContext);
   const current = snapshot.records.find((record) => record.recordType === "learning_plan")!;
   const state = current.state as Record<string, unknown>;
   const planState = state.plan as Record<string, unknown>;
@@ -101,7 +125,7 @@ test("account sync requires a v2 accepted goal-plan pair, including exact target
     const changedState = { ...state, plan: changedPlan };
     const payload = { recordId: current.recordId, recordType: current.recordType, state: changedState, trackId: current.trackId };
     const changed = { ...payload, fingerprint: accountDataRecordFingerprint(payload), version: current.version };
-    assert.throws(() => assertValidAccountDataRecords(snapshot.records.map((record) => record === current ? changed : record)), { code: "account_data_goal_plan_invalid" });
+    assert.throws(() => assertValidAccountDataRecords(snapshot.records.map((record) => record === current ? changed : record), productionLearningDataAdmissionContext), { code: "account_data_goal_plan_invalid" });
   }
 });
 
@@ -145,18 +169,18 @@ test("review cycle history and active obligations survive account snapshot mater
     completedAt: "2026-10-01T12:00:00.000Z",
     completedByAttemptId: "attempt-sync-completed-prior",
   };
-  await addReviewQueueItems([active, priorCompleted, completed]);
-  const snapshot = await buildAccountDataSnapshot();
+  await addReviewQueueItems([active, priorCompleted, completed], productionTrackAdmissionContext);
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   const reviewRecords = snapshot.records.filter((record) => record.recordType === "review_queue_entry");
   assert.equal(reviewRecords.length, 3);
-  assertValidAccountDataRecords(reviewRecords);
+  assertValidAccountDataRecords(reviewRecords, productionLearningDataAdmissionContext);
 
   const storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
   await provisionGuestInstallation({ async create() { return { installationId: INSTALLATION_ID, localDatasetId: "88888888-8888-4888-8888-888888888888" }; } });
-  await applyRemoteAccountData(reviewRecords);
+  await applyRemoteAccountData(reviewRecords, productionLearningDataAdmissionContext);
 
-  const restored = (await getReviewQueueItems()).value;
+  const restored = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
   assert.deepEqual(restored, [active, priorCompleted, completed]);
   assert.equal(restored.find((entry) => entry.id === completed.id)?.dueAt, undefined);
   assert.equal(restored.find((entry) => entry.id === completed.id)?.completedByAttemptId, "attempt-sync-completed");
@@ -170,9 +194,9 @@ test("remote materialization keeps the newest active track independent of input 
     const storage = new MemoryKeyValueStorage();
     installKeyValueStorageForTests(storage);
     await provisionGuestInstallation({ async create() { return { installationId: INSTALLATION_ID, localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
-    const partition = await partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records });
-    await applyRemoteAccountData(partition.records);
-    const completed = await finishAccountMaterialization(partition.records, ACCOUNT_ID, 2, "2026-01-03T10:00:00.000Z", partition.incident);
+    const partition = await partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records }, productionLearningDataAdmissionContext);
+    await applyRemoteAccountData(partition.records, productionLearningDataAdmissionContext);
+    const completed = await finishAccountMaterialization(partition.records, ACCOUNT_ID, 2, "2026-01-03T10:00:00.000Z", productionLearningDataAdmissionContext, partition.incident);
     assert.equal(completed.acknowledged[JSON.stringify({ recordId: "current", recordType: "active_track", trackId: TRACK_ID })]?.remoteVersion, 1);
     assert.equal(completed.acknowledged[JSON.stringify({ recordId: "current", recordType: "active_track", trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID })]?.remoteVersion, 1);
     // Reinstalling the adapter models a fresh repository instance over persisted storage.
@@ -183,14 +207,14 @@ test("remote materialization keeps the newest active track independent of input 
 
 test("remote materialization rejects missing or invalid updatedAt", async () => {
   const record = remoteActiveTrack(TRACK_ID, "2026-01-01T10:00:00.000Z");
-  await assert.rejects(partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records: [{ ...record, updatedAt: undefined } as never] }), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_data_record_invalid");
-  await assert.rejects(partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records: [{ ...record, updatedAt: "yesterday" }] }), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_data_record_invalid");
+  await assert.rejects(partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records: [{ ...record, updatedAt: undefined } as never] }, productionLearningDataAdmissionContext), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_data_record_invalid");
+  await assert.rejects(partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records: [{ ...record, updatedAt: "yesterday" }] }, productionLearningDataAdmissionContext), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_data_record_invalid");
 });
 
 test("equal updatedAt selects the same active track using canonical identity", async () => {
   const records = [remoteActiveTrack(TRACK_ID, "2026-01-01T10:00:00.000Z"), remoteActiveTrack(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, "2026-01-01T10:00:00.000Z")];
-  const first = await partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records });
-  const second = await partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records: [...records].reverse() });
+  const first = await partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records }, productionLearningDataAdmissionContext);
+  const second = await partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records: [...records].reverse() }, productionLearningDataAdmissionContext);
   assert.equal(first.records.at(-1)?.trackId, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
   assert.equal(second.records.at(-1)?.trackId, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
 });
@@ -201,8 +225,8 @@ function remoteActiveTrack(trackId: string, updatedAt: string) {
 }
 
 test("snapshot and materialization preserve one exact goal-plan bundle", async () => {
-  const goal = createDefaultGoal(TRACK_ID);
-  await saveGoalSnapshot(goal, null);
+  const goal = createDefaultGoal(requireGoalPolicy(TRACK_ID));
+  await saveGoalSnapshot(goal, null, requireGoalPolicy(goal.trackId));
   const plan = createLearningPlan({
     schemaVersion: 1,
     planId: "plan:sync",
@@ -219,23 +243,23 @@ test("snapshot and materialization preserve one exact goal-plan bundle", async (
     commandId: "command:sync",
     slots: [{ slotId: createLearningPlanSlotId("slot:mon"), day: "mon", localTime: "18:00", sessionLength: 10 }],
   });
-  saveLearningPlanAtomically({ plan, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
+  saveLearningPlanAtomically({ policy: requireGoalPolicy(plan.trackId), plan, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
 
-  const snapshot = await buildAccountDataSnapshot();
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   assert.deepEqual(snapshot.records.map((record) => record.recordType), ["goal", "learning_plan"]);
-  assertValidAccountDataRecords(snapshot.records);
+  assertValidAccountDataRecords(snapshot.records, productionLearningDataAdmissionContext);
 
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   await provisionGuestInstallation({ async create() { return { installationId: INSTALLATION_ID, localDatasetId: "88888888-8888-4888-8888-888888888888" }; } });
-  await applyRemoteAccountData(snapshot.records);
-  assert.deepEqual(await getGoalSnapshot(TRACK_ID), { record: goal, revision: 1 });
-  assert.deepEqual(getLearningPlanSnapshot(TRACK_ID), { plan, revision: 1 });
+  await applyRemoteAccountData(snapshot.records, productionLearningDataAdmissionContext);
+  assert.deepEqual(await getGoalSnapshot(TRACK_ID, requireGoalPolicy(TRACK_ID)), { record: goal, revision: 1 });
+  assert.deepEqual(getLearningPlanSnapshot(TRACK_ID, requireGoalPolicy(TRACK_ID)), { plan, revision: 1 });
 });
 
 test("bound account sync validates a goal and learning plan as one sync-plan bundle", async () => {
   await bindSyncedAccount();
-  const goal = createDefaultGoal(TRACK_ID);
-  await saveGoalSnapshot(goal, null);
+  const goal = createDefaultGoal(requireGoalPolicy(TRACK_ID));
+  await saveGoalSnapshot(goal, null, requireGoalPolicy(goal.trackId));
   const plan = createLearningPlan({
     schemaVersion: 1,
     planId: "plan:pending-sync",
@@ -252,27 +276,27 @@ test("bound account sync validates a goal and learning plan as one sync-plan bun
     commandId: "command:pending-sync",
     slots: [{ slotId: createLearningPlanSlotId("slot:tue"), day: "tue", localTime: "18:00", sessionLength: 10 }],
   });
-  saveLearningPlanAtomically({ plan, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
+  saveLearningPlanAtomically({ policy: requireGoalPolicy(plan.trackId), plan, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
 
-  const pending = await ensureAccountOutboxFromLocalDataset();
+  const pending = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
 
   assert.deepEqual(pending.outbox.map((record) => record.recordType), ["goal", "learning_plan"]);
   assert.deepEqual(pending.syncPlan?.items.map((item) => item.payload.recordType), ["goal", "learning_plan"]);
-  assert.equal(isCanonicalAccountSyncState(pending), true);
-  assert.deepEqual((await getAccountSyncState()).syncPlan, pending.syncPlan);
+  assert.equal(isCanonicalAccountSyncState(pending, productionLearningDataAdmissionContext), true);
+  assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).syncPlan, pending.syncPlan);
 });
 
 test("bound account sync builds one retryable canonical outbox and acknowledges it", async () => {
   await bindSyncedAccount();
   await saveActiveTrackId(TRACK_ID);
-  const pending = await ensureAccountOutboxFromLocalDataset();
+  const pending = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   assert.equal(pending.outbox.length, 1);
   assert.equal(pending.outbox[0]?.expectedVersion, null);
   assert.equal(pending.syncPlan?.items[0]?.recordKey, pending.outbox[0] && JSON.stringify({ recordId: "current", recordType: "active_track", trackId: TRACK_ID }));
-  const batches = splitAccountSyncBatches({ entries: pending.outbox, expectedAccountRevision: 0, sessionId: "session-canonical", highWatermark: pending.highWatermark });
+  const batches = splitAccountSyncBatches({ entries: pending.outbox, expectedAccountRevision: 0, sessionId: "session-canonical", highWatermark: pending.highWatermark }, productionLearningDataAdmissionContext);
   assert.equal(batches.length, 1);
 
-  const acknowledged = await finishAccountMaterialization(pending.outbox.map(({ fingerprint, recordId, recordType, state, trackId }) => ({ fingerprint, recordId, recordType, state, trackId, version: 1 })), ACCOUNT_ID, 1, "2026-01-01T00:00:00.000Z");
+  const acknowledged = await finishAccountMaterialization(pending.outbox.map(({ fingerprint, recordId, recordType, state, trackId }) => ({ fingerprint, recordId, recordType, state, trackId, version: 1 })), ACCOUNT_ID, 1, "2026-01-01T00:00:00.000Z", productionLearningDataAdmissionContext);
   assert.equal(acknowledged.status, "synced");
   assert.equal(acknowledged.outbox.length, 0);
   assert.equal(acknowledged.acknowledged[Object.keys(acknowledged.acknowledged)[0] ?? ""]?.remoteVersion, 1);
@@ -281,11 +305,11 @@ test("bound account sync builds one retryable canonical outbox and acknowledges 
 test("bound account outbox creates an explicit tombstone for a deleted acknowledged record", async () => {
   await bindSyncedAccount();
   await saveActiveTrackId(TRACK_ID);
-  const created = await ensureAccountOutboxFromLocalDataset();
-  await finishAccountMaterialization(created.outbox.map(({ fingerprint, recordId, recordType, state, trackId }) => ({ fingerprint, recordId, recordType, state, trackId, version: 1 })), ACCOUNT_ID, 1, "2026-01-01T00:00:00.000Z");
+  const created = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
+  await finishAccountMaterialization(created.outbox.map(({ fingerprint, recordId, recordType, state, trackId }) => ({ fingerprint, recordId, recordType, state, trackId, version: 1 })), ACCOUNT_ID, 1, "2026-01-01T00:00:00.000Z", productionLearningDataAdmissionContext);
 
   await clearActiveTrackId();
-  const afterDeletion = await ensureAccountOutboxFromLocalDataset();
+  const afterDeletion = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   assert.equal(afterDeletion.outbox.length, 1);
   assert.equal(isDeletedAccountDataRecord(afterDeletion.outbox[0]!), true);
   assert.deepEqual(afterDeletion.outbox[0]?.state, { deleted: true });
@@ -298,11 +322,11 @@ test("reselecting an acknowledged active track tombstones the previously acknowl
     const { updatedAt, ...record } = remoteActiveTrack(trackId, `2026-01-0${index + 1}T00:00:00.000Z`);
     return record;
   });
-  const acknowledged = await finishAccountMaterialization(records, ACCOUNT_ID, 2, "2026-01-02T00:00:00.000Z");
+  const acknowledged = await finishAccountMaterialization(records, ACCOUNT_ID, 2, "2026-01-02T00:00:00.000Z", productionLearningDataAdmissionContext);
   assert.equal(acknowledged.outbox.length, 0);
 
   await saveActiveTrackId(TRACK_ID);
-  const pending = await ensureAccountOutboxFromLocalDataset();
+  const pending = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
 
   assert.equal(pending.outbox.length, 1);
   assert.equal(pending.outbox[0]?.recordType, "active_track");
@@ -316,18 +340,18 @@ test("reselecting an acknowledged active track tombstones the previously acknowl
 test("pending mutation IDs stay stable across an uncertain retry", async () => {
   await bindSyncedAccount();
   await saveActiveTrackId(TRACK_ID);
-  const first = await ensureAccountOutboxFromLocalDataset();
+  const first = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   const firstEntry = first.outbox[0]!;
-  saveAccountSyncState({ ...first, status: "offlinePending", lastFailureCode: "offline" });
+  saveAccountSyncState({ ...first, status: "offlinePending", lastFailureCode: "offline" }, productionLearningDataAdmissionContext);
 
-  const retry = await ensureAccountOutboxFromLocalDataset();
+  const retry = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   assert.equal(retry.outbox[0]?.mutationId, firstEntry.mutationId);
   assert.equal(retry.outbox[0]?.expectedVersion, firstEntry.expectedVersion);
   assert.deepEqual(retry.outbox[0]?.state, firstEntry.state);
 });
 
 test("removed identity metadata is rejected before persistence", async () => {
-  const state = await getAccountSyncState();
+  const state = await getAccountSyncState(productionLearningDataAdmissionContext);
   const record = {
     fingerprint: accountDataRecordFingerprint({ recordId: "current", recordType: "active_track", state: { trackId: TRACK_ID }, trackId: TRACK_ID }),
     recordId: "current",
@@ -336,10 +360,10 @@ test("removed identity metadata is rejected before persistence", async () => {
     trackId: TRACK_ID,
     version: 0,
   };
-  assert.throws(() => assertValidAccountDataRecords([record]), (error: unknown) => error instanceof AccountDataFailure && error.code === "content_identity_schema_conflict");
+  assert.throws(() => assertValidAccountDataRecords([record], productionLearningDataAdmissionContext), (error: unknown) => error instanceof AccountDataFailure && error.code === "content_identity_schema_conflict");
   const invalidState = { ...state, protocolVersion: 4, contentIdentitySchema: "patternly:content-identity:v1" } as never;
-  assert.equal(isCanonicalAccountSyncState(invalidState), false);
-  assert.throws(() => saveAccountSyncState(invalidState), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_sync_state_invalid");
+  assert.equal(isCanonicalAccountSyncState(invalidState, productionLearningDataAdmissionContext), false);
+  assert.throws(() => saveAccountSyncState(invalidState, productionLearningDataAdmissionContext), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_sync_state_invalid");
 });
 
 test("deleted records keep their exact durable identity and tombstone state", async () => {
@@ -352,5 +376,5 @@ test("deleted records keep their exact durable identity and tombstone state", as
     version: 2,
   };
   assert.equal(isDeletedAccountDataRecord(record), true);
-  assertValidAccountDataRecords([record]);
+  assertValidAccountDataRecords([record], productionLearningDataAdmissionContext);
 });

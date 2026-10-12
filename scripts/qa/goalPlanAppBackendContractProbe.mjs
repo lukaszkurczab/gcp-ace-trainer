@@ -13,6 +13,8 @@ const {
   createLearningPlanSlotId,
 } = require(resolve(APP_ROOT, "src/domain/index.ts"));
 const { contentPackageRuntimeOwner } = require(resolve(APP_ROOT, "src/application/contentPackageRuntimeOwner.ts"));
+const { requireGoalPolicy } = require(resolve(APP_ROOT, "src/domain/tracks/trackGoalPolicies.ts"));
+const { productionLearningDataAdmissionContext } = require(resolve(APP_ROOT, "src/application/tracks/trackAdmissionContext.ts"));
 const { recommendLearningPlanMode } = require(resolve(APP_ROOT, "src/application/learningPlan/learningPlanModeRecommendation.ts"));
 const { commitGoalPlanAcceptance } = require(resolve(APP_ROOT, "src/application/learningMutations/commitGoalPlanAcceptance.ts"));
 const { accountDataRecordFingerprint, assertValidAccountDataRecords, buildAccountDataSnapshot } = require(resolve(APP_ROOT, "src/storage/repositories/accountDataRepository.ts"));
@@ -82,7 +84,7 @@ async function main() {
     dueReviewCount: 0,
   });
   assert.ok(recommendation.mode.requestedLengths.includes(recommendation.mode.defaultRequestedLength));
-  const goal = createDefaultGoal(trackId);
+  const goal = createDefaultGoal(requireGoalPolicy(trackId));
   const day = goal.preferredDays[0];
   assert.ok(day);
   const committed = await commitGoalPlanAcceptance({
@@ -120,7 +122,7 @@ async function main() {
   assert.deepEqual(committed.plan.plan.planningPolicyIdentity, resolved.planningPolicyIdentity);
   assert.equal(committed.plan.plan.goalRevision, committed.goal.revision);
   assert.equal(committed.plan.plan.minutesPerStudyDay, 60);
-  const snapshot = await buildAccountDataSnapshot();
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   assert.equal(snapshot.pendingJournal, false);
   const parsed = snapshotForBackend(snapshot);
   assertGoalPlanRecordShapes(parsed.records);
@@ -155,7 +157,7 @@ async function main() {
     malformedPairPlan.fingerprint = accountDataRecordFingerprint({ recordId: malformedPairPlan.recordId, recordType: malformedPairPlan.recordType, state: malformedPairPlan.state, trackId: malformedPairPlan.trackId });
     const malformedPairSnapshot = snapshotForBackend(malformedPair);
     assertGoalPlanRecordShapes(malformedPairSnapshot.records);
-    assert.throws(() => assertValidAccountDataRecords(malformedPairSnapshot.records), { code: "account_data_goal_plan_invalid" });
+    assert.throws(() => assertValidAccountDataRecords(malformedPairSnapshot.records, productionLearningDataAdmissionContext), { code: "account_data_goal_plan_invalid" });
     assert.throws(() => assertGoalPlanBundles(malformedPairSnapshot.records), { message: "goal_plan_bundle_invalid" });
   };
   assertInvalidV2PairRejectedByBothOwners((pair, plan) => { const goal = pair.records.find((record) => record.recordType === "goal" && record.trackId === trackId); goal.state.revision += 1; });
@@ -171,7 +173,7 @@ async function main() {
   assert.equal(newerGoalRevisionRejected, true);
 
   installLegacyFixtureStorage();
-  const legacyGoal = createDefaultGoal(trackId);
+  const legacyGoal = createDefaultGoal(requireGoalPolicy(trackId));
   const goalEnvelope = writeCanonicalJson(STORAGE_KEYS.goal(trackId), legacyGoal, null);
   const legacyPlan = {
     schemaVersion: 1,
@@ -190,7 +192,7 @@ async function main() {
     slots: [{ slotId: createLearningPlanSlotId("legacy-v1-slot"), day: legacyGoal.preferredDays[0], localTime: "18:00", sessionLength: recommendation.mode.defaultRequestedLength }],
   };
   writeCanonicalJson(STORAGE_KEYS.learningPlan(trackId), legacyPlan, null);
-  const legacySnapshot = snapshotForBackend(await buildAccountDataSnapshot());
+  const legacySnapshot = snapshotForBackend(await buildAccountDataSnapshot(productionLearningDataAdmissionContext));
   assertGoalPlanRecordShapes(legacySnapshot.records);
   assertGoalPlanBundles(legacySnapshot.records);
   const legacyPreview = buildGuestMergePreview({ accountUserId: "123e4567-e89b-42d3-a456-426614174099", accountSnapshotVersion: 0, guestSnapshot: legacySnapshot, remoteRecords: [] });

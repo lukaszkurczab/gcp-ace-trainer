@@ -136,11 +136,21 @@ export function DesignInterviewSimulationScreen({ navigation, route }: RunnerPro
   const uncertainSave = projection.operation.kind === "save_failed" && projection.operation.error.allowedAction === "reconcile";
   const retryableSave = projection.operation.kind === "save_failed" && projection.operation.error.allowedAction === "retry_same_command";
   const staleConflict = projection.operation.kind === "stale_revision";
-  const editingLocked = uncertainSave || staleConflict || drain.isBlocked();
+  const acceptedFinalization = ["frozen", "finalization_journal_pending", "materializing", "verifying", "verified_pending_clear", "finalization_journal_failed", "materialization_failed", "verification_failed", "recovery_required"].includes(projection.operation.kind);
+  const finalizationRecovery = ["finalization_journal_failed", "materialization_failed", "verification_failed", "recovery_required"].includes(projection.operation.kind);
+  const finalizationCanResume = projection.operation.kind === "frozen" || ("error" in projection.operation &&
+    projection.operation.error.operation === "simulation_finalization" &&
+    ["recover", "reconcile", "retry_same_command"].includes(projection.operation.error.allowedAction));
+  const editingLocked = uncertainSave || staleConflict || drain.isBlocked() || acceptedFinalization;
   return <Screen scroll edges={["top", "bottom"]}>
-    <View style={styles.header}><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { trackId: route.params.trackId })} variant="ghost">{t("Leave")}</Button><Text style={styles.timer}>{formatRemaining(projection.remainingMs)}</Text></View>
+    <View style={styles.header}><Button disabled={acceptedFinalization} onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { trackId: route.params.trackId })} variant="ghost">{t("Leave")}</Button><Text style={styles.timer}>{formatRemaining(projection.remainingMs)}</Text></View>
     <Text style={styles.title} testID={runtimeSelectors.designSimulation.root(projection.session.id)}>{projection.profile.familyConfig.title}</Text>
     <Text style={styles.brief}>{projection.profile.familyConfig.brief}</Text>
+    {acceptedFinalization ? <View accessibilityRole="alert" style={styles.stage}>
+      <Text style={styles.stageTitle}>{t(finalizationRecovery ? "Finalization incomplete" : "Finalizing simulation")}</Text>
+      <Text>{t("Your session is frozen and saved responses are preserved.")}</Text>
+      {finalizationCanResume ? <Text>{t("Resume finalization before any results are shown.")}</Text> : null}
+    </View> : null}
     {STAGES.map((stageId) => {
       const stage = projection.profile.familyConfig.stages.find((candidate) => candidate.stageId === stageId)!;
       return <View key={stageId} style={styles.stage}>
@@ -156,7 +166,9 @@ export function DesignInterviewSimulationScreen({ navigation, route }: RunnerPro
     {retryableSave ? <Button onPress={retrySave} testID={runtimeSelectors.designSimulation.retrySave(projection.session.id)} variant="secondary">{t("Retry save")}</Button> : null}
     {staleConflict ? <Button onPress={useResponseAsNewSave} variant="secondary">{t("Keep editing")}</Button> : null}
     <Button disabled={!complete || saving || editingLocked || !drain.isSaved(responses)} loading={saving} onPress={() => void finish()} testID={runtimeSelectors.designSimulation.finish(projection.session.id)}>{t("Finish simulation")}</Button>
-    <Button onPress={() => void recoverDesignInterviewSimulationOperation().then(refresh).catch((cause) => setError(describeOperationalFailure(cause, t("Simulation recovery is unavailable."))))} variant="ghost">{t("Refresh saved responses")}</Button>
+    {acceptedFinalization
+      ? finalizationCanResume ? <Button onPress={() => void recoverDesignInterviewSimulationOperation().then(refresh).catch((cause) => setError(describeOperationalFailure(cause, t("Simulation recovery is unavailable."))))} variant="secondary">{t("Resume finalization")}</Button> : null
+      : <Button onPress={() => void recoverDesignInterviewSimulationOperation().then(refresh).catch((cause) => setError(describeOperationalFailure(cause, t("Simulation recovery is unavailable."))))} variant="ghost">{t("Refresh saved responses")}</Button>}
   </Screen>;
 }
 

@@ -1,5 +1,5 @@
 import type { TrainingSession, TrainingSessionConditionalReinsertBranch } from "../../domain";
-import { canonicalFingerprintPayload } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalFingerprintPayload } from "../../domain/identity/canonicalSerialization";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { createResolvedContentRef, type ResolvedContentRef } from "../../domain";
 

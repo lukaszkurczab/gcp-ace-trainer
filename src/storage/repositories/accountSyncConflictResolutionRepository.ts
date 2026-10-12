@@ -1,6 +1,8 @@
 import type { GoalRecord, LearningPlan } from "../../domain";
 import { isLearningPlanV1ForTrack } from "../../domain";
-import { isGoalRecordShapeForTrack } from "../../domain/goals/goalContracts";
+import { isGoalRecordForPolicy } from "../../domain/goals/goalContracts";
+import { isGoalPolicyForTrack, type GoalPolicy } from "../../domain/goals/goalPolicy";
+import type { LearningDataAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 import { getActiveStorageProfileOrNull } from "../../infrastructure/storage/mmkvClient";
 import type { AccountSyncConflictResolutionRecord, MutationJournalRecord } from "./mutationJournalRepository";
 import type { AccountSyncState } from "./accountDataRepository";
@@ -14,17 +16,18 @@ export class AccountSyncConflictResolutionConflictError extends Error {
 }
 
 /** Roll-forward-only exact pair + sync-state materializer for the typed resolver journal. */
-export function materializeAccountSyncConflictResolution(record: AccountSyncConflictResolutionRecord, _journal: MutationJournalRecord): void {
+export function materializeAccountSyncConflictResolution(record: AccountSyncConflictResolutionRecord, _journal: MutationJournalRecord, policy: GoalPolicy, context: LearningDataAdmissionContext): void {
+  if (!isGoalPolicyForTrack(policy, record.trackId)) throw new Error("A matching goal policy is required for conflict materialization.");
   const goalKey = STORAGE_KEYS.goal(record.trackId);
   const planKey = STORAGE_KEYS.learningPlan(record.trackId);
   const syncKey = STORAGE_KEYS.ACCOUNT_SYNC;
   withCanonicalWriteLocks([goalKey, planKey, syncKey], () => {
     assertProfileIdentity(record.profileId);
-    const goalGuard = (value: unknown): value is GoalRecord => isGoalRecordShapeForTrack(value, record.trackId);
+    const goalGuard = (value: unknown): value is GoalRecord => isGoalRecordForPolicy(value, policy);
     const planGuard = (value: unknown): value is LearningPlan => isLearningPlanV1ForTrack(value, record.trackId);
     let goal = readCanonicalEnvelope(goalKey, goalGuard);
     let plan = readCanonicalEnvelope(planKey, planGuard);
-    let sync = readCanonicalEnvelope(syncKey, isAccountSyncState);
+    let sync = readCanonicalEnvelope(syncKey, (value): value is AccountSyncState => isAccountSyncState(value, context));
     const afterGoal = record.afterGoal === null || record.afterGoalRevision === null ? null : envelope(record.afterGoalRevision, record.afterGoal);
     const afterPlan = record.afterPlan === null || record.afterPlanStorageRevision === null ? null : envelope(record.afterPlanStorageRevision, record.afterPlan);
     const afterSync = nextEnvelope(record.expectedSyncStateRevision, record.afterSyncState, record.beforeSyncState);
@@ -41,15 +44,16 @@ export function materializeAccountSyncConflictResolution(record: AccountSyncConf
       try { sync = restoreCanonicalEnvelopeUnlocked(syncKey, afterSync); }
       catch (error) { if (error instanceof UnsupportedStoredRecordError || error instanceof CanonicalWriteConflictError) throw new AccountSyncConflictResolutionConflictError(); throw error; }
     }
-    if (!isAccountSyncConflictResolutionMaterialized(record)) throw new AccountSyncConflictResolutionConflictError();
+    if (!isAccountSyncConflictResolutionMaterialized(record, policy, context)) throw new AccountSyncConflictResolutionConflictError();
   });
 }
 
-export function isAccountSyncConflictResolutionMaterialized(record: AccountSyncConflictResolutionRecord): boolean {
+export function isAccountSyncConflictResolutionMaterialized(record: AccountSyncConflictResolutionRecord, policy: GoalPolicy, context: LearningDataAdmissionContext): boolean {
+  if (!isGoalPolicyForTrack(policy, record.trackId)) throw new Error("A matching goal policy is required for conflict verification.");
   assertProfileIdentity(record.profileId);
-  const goal = readCanonicalEnvelope(STORAGE_KEYS.goal(record.trackId), (value): value is GoalRecord => isGoalRecordShapeForTrack(value, record.trackId));
+  const goal = readCanonicalEnvelope(STORAGE_KEYS.goal(record.trackId), (value): value is GoalRecord => isGoalRecordForPolicy(value, policy));
   const plan = readCanonicalEnvelope(STORAGE_KEYS.learningPlan(record.trackId), (value): value is LearningPlan => isLearningPlanV1ForTrack(value, record.trackId));
-  const sync = readCanonicalEnvelope(STORAGE_KEYS.ACCOUNT_SYNC, isAccountSyncState);
+  const sync = readCanonicalEnvelope(STORAGE_KEYS.ACCOUNT_SYNC, (value): value is AccountSyncState => isAccountSyncState(value, context));
   const afterGoal = record.afterGoal === null || record.afterGoalRevision === null ? null : envelope(record.afterGoalRevision, record.afterGoal);
   const afterPlan = record.afterPlan === null || record.afterPlanStorageRevision === null ? null : envelope(record.afterPlanStorageRevision, record.afterPlan);
   return exact(goal, afterGoal)
@@ -61,7 +65,7 @@ export function isAccountSyncConflictResolutionMaterialized(record: AccountSyncC
 function assertProfileIdentity(profileId: string): void {
   if (getActiveStorageProfileOrNull()?.id !== profileId) throw new AccountSyncConflictResolutionConflictError();
 }
-function isAccountSyncState(value: unknown): value is AccountSyncState { return isCanonicalAccountSyncState(value); }
+function isAccountSyncState(value: unknown, context: LearningDataAdmissionContext): value is AccountSyncState { return isCanonicalAccountSyncState(value, context); }
 function envelope<T>(revision: number, payload: T): CanonicalRecordEnvelope<T> {
   return Object.freeze({ schemaIdentity: "patternly:canonical:v1", revision, payload });
 }

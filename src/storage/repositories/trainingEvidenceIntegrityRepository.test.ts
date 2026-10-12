@@ -7,6 +7,8 @@ import { CanonicalEvidenceIntegrityError } from "../errors";
 import { STORAGE_KEYS } from "../keys";
 import { writeCanonicalJson } from "./canonicalRecordCodec";
 import { assertTrainingEvidenceIntegrity, assertTrainingEvidenceJournalPreflight, readTrainingAttemptsStrict, readTrainingSessionsStrict } from "./trainingEvidenceIntegrityRepository";
+import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+
 
 function assertStableFailure(storage: ReturnType<typeof installMemoryStorage>, read: () => unknown): void {
   const before = storage.snapshot();
@@ -17,9 +19,9 @@ function assertStableFailure(storage: ReturnType<typeof installMemoryStorage>, r
 
 test("strict evidence collections accept genuinely empty storage and reject a populated canonical set", async () => {
   installMemoryStorage();
-  assert.deepEqual(readTrainingSessionsStrict().value, []);
-  assert.deepEqual(readTrainingAttemptsStrict().value, []);
-  assertTrainingEvidenceIntegrity();
+  assert.deepEqual(readTrainingSessionsStrict(productionTrackAdmissionContext).value, []);
+  assert.deepEqual(readTrainingAttemptsStrict(productionTrackAdmissionContext).value, []);
+  assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
 
   installMemoryStorage();
   const completed = session("completed");
@@ -33,9 +35,9 @@ test("strict evidence collections accept genuinely empty storage and reject a po
     answeredOccurrenceIds: ["occurrence-1"], unansweredOccurrenceIds: [], completedAt: completed.completedAt!,
     evidence: { familyId: "coding-interview", details: {} },
   }));
-  assertTrainingEvidenceIntegrity();
-  assert.deepEqual(readTrainingSessionsStrict().value, [completed]);
-  assert.deepEqual(readTrainingAttemptsStrict().value, [responseAttempt]);
+  assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
+  assert.deepEqual(readTrainingSessionsStrict(productionTrackAdmissionContext).value, [completed]);
+  assert.deepEqual(readTrainingAttemptsStrict(productionTrackAdmissionContext).value, [responseAttempt]);
 });
 
 test("strict evidence gate rejects duplicate and dangling index entries without repairing bytes", () => {
@@ -43,11 +45,11 @@ test("strict evidence gate rejects duplicate and dangling index entries without 
   const record = session();
   writeCanonicalJson(STORAGE_KEYS.trainingSession(record.id), record);
   writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [record.id, record.id]);
-  assertStableFailure(duplicateStorage, assertTrainingEvidenceIntegrity);
+  assertStableFailure(duplicateStorage, () => assertTrainingEvidenceIntegrity(productionTrackAdmissionContext));
 
   const missingStorage = installMemoryStorage();
   writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, ["missing-session"]);
-  assertStableFailure(missingStorage, assertTrainingEvidenceIntegrity);
+  assertStableFailure(missingStorage, () => assertTrainingEvidenceIntegrity(productionTrackAdmissionContext));
 });
 
 test("strict evidence gate rejects unindexed orphan and key/payload identity mismatch", () => {
@@ -55,13 +57,13 @@ test("strict evidence gate rejects unindexed orphan and key/payload identity mis
   const orphan = session();
   writeCanonicalJson(STORAGE_KEYS.trainingSession(orphan.id), orphan);
   writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, []);
-  assertStableFailure(orphanStorage, assertTrainingEvidenceIntegrity);
+  assertStableFailure(orphanStorage, () => assertTrainingEvidenceIntegrity(productionTrackAdmissionContext));
 
   const mismatchStorage = installMemoryStorage();
   const record = attempt();
   writeCanonicalJson(STORAGE_KEYS.trainingAttempt(record.id), { ...record, id: "different-attempt" });
   writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, [record.id]);
-  assertStableFailure(mismatchStorage, assertTrainingEvidenceIntegrity);
+  assertStableFailure(mismatchStorage, () => assertTrainingEvidenceIntegrity(productionTrackAdmissionContext));
 });
 
 test("strict evidence gate rejects unknown tracks, malformed indexes, and orphan results", () => {
@@ -69,11 +71,11 @@ test("strict evidence gate rejects unknown tracks, malformed indexes, and orphan
   const record = session();
   writeCanonicalJson(STORAGE_KEYS.trainingSession(record.id), { ...record, trackId: "unknown-track" });
   writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [record.id]);
-  assertStableFailure(unknownStorage, assertTrainingEvidenceIntegrity);
+  assertStableFailure(unknownStorage, () => assertTrainingEvidenceIntegrity(productionTrackAdmissionContext));
 
   const malformedStorage = installMemoryStorage();
   malformedStorage.setString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, "not-json");
-  assertStableFailure(malformedStorage, assertTrainingEvidenceIntegrity);
+  assertStableFailure(malformedStorage, () => assertTrainingEvidenceIntegrity(productionTrackAdmissionContext));
 
   const resultStorage = installMemoryStorage();
   const result = createTrainingSessionResult({
@@ -82,7 +84,7 @@ test("strict evidence gate rejects unknown tracks, malformed indexes, and orphan
     completedAt: "2026-07-15T10:00:00.000Z", evidence: { familyId: "coding-interview", details: {} },
   });
   writeCanonicalJson(STORAGE_KEYS.trainingSessionResult(result.sessionId), result);
-  assertStableFailure(resultStorage, assertTrainingEvidenceIntegrity);
+  assertStableFailure(resultStorage, () => assertTrainingEvidenceIntegrity(productionTrackAdmissionContext));
 });
 
 test("journal preflight does not permit unrelated orphan evidence", () => {
@@ -92,7 +94,7 @@ test("journal preflight does not permit unrelated orphan evidence", () => {
   writeCanonicalJson(STORAGE_KEYS.trainingAttempt(orphan.id), orphan);
   writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, []);
   const before = storage.snapshot();
-  assert.throws(() => assertTrainingEvidenceJournalPreflight({ writes: [{ kind: "put_attempt", record: target }] }), CanonicalEvidenceIntegrityError);
+  assert.throws(() => assertTrainingEvidenceJournalPreflight({ writes: [{ kind: "put_attempt", record: target }] }, productionTrackAdmissionContext), CanonicalEvidenceIntegrityError);
   assert.deepEqual(storage.snapshot(), before);
 });
 
@@ -103,11 +105,11 @@ test("journal preflight compares attempt payloads as persisted and rejects chang
   writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, [stored.id]);
   const replay = { ...stored, durationMs: undefined };
 
-  assert.doesNotThrow(() => assertTrainingEvidenceJournalPreflight({ writes: [{ kind: "put_attempt", record: replay }] }));
+  assert.doesNotThrow(() => assertTrainingEvidenceJournalPreflight({ writes: [{ kind: "put_attempt", record: replay }] }, productionTrackAdmissionContext));
 
   const before = storage.snapshot();
   assert.throws(
-    () => assertTrainingEvidenceJournalPreflight({ writes: [{ kind: "put_attempt", record: { ...stored, durationMs: 1 } }] }),
+    () => assertTrainingEvidenceJournalPreflight({ writes: [{ kind: "put_attempt", record: { ...stored, durationMs: 1 } }] }, productionTrackAdmissionContext),
     CanonicalEvidenceIntegrityError,
   );
   assert.deepEqual(storage.snapshot(), before);

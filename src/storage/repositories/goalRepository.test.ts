@@ -1,20 +1,28 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { CODING_INTERVIEW_TRACK_ID, createDefaultGoal } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, createDefaultGoal as createDefaultGoalWithPolicy } from "../../domain";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import { type KeyValueStorage, MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import {
   StaleGoalRevisionError,
-  getGoal,
-  getGoalSnapshot,
-  saveGoal,
-  saveGoalSnapshot,
+  getGoal as getGoalWithPolicy,
+  getGoalSnapshot as getGoalSnapshotWithPolicy,
+  saveGoal as saveGoalWithPolicy,
+  saveGoalSnapshot as saveGoalSnapshotWithPolicy,
 } from "./goalRepository";
 
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 
+const policy = requireGoalPolicy(CODING_INTERVIEW_TRACK_ID);
+const createDefaultGoal = () => createDefaultGoalWithPolicy(policy);
+const getGoalSnapshot = (trackId: typeof CODING_INTERVIEW_TRACK_ID) => getGoalSnapshotWithPolicy(trackId, requireGoalPolicy(trackId));
+const getGoal = (trackId: typeof CODING_INTERVIEW_TRACK_ID) => getGoalWithPolicy(trackId, requireGoalPolicy(trackId));
+const saveGoal = (goal: ReturnType<typeof createDefaultGoal>) => saveGoalWithPolicy(goal, requireGoalPolicy(goal.trackId));
+const saveGoalSnapshot = (goal: ReturnType<typeof createDefaultGoal>, expectedRevision: number | null) => saveGoalSnapshotWithPolicy(goal, expectedRevision, requireGoalPolicy(goal.trackId));
+
 test("goal snapshots expose canonical revisions and CAS advances them", async () => {
-  const goal = createDefaultGoal(CODING_INTERVIEW_TRACK_ID);
+  const goal = createDefaultGoal();
   assert.equal(await getGoalSnapshot(CODING_INTERVIEW_TRACK_ID), null);
 
   const created = await saveGoalSnapshot(goal, null);
@@ -28,7 +36,7 @@ test("goal snapshots expose canonical revisions and CAS advances them", async ()
 });
 
 test("goal snapshot CAS rejects stale create and update without changing durable data", async () => {
-  const goal = createDefaultGoal(CODING_INTERVIEW_TRACK_ID);
+  const goal = createDefaultGoal();
   const created = await saveGoalSnapshot(goal, null);
 
   await assert.rejects(saveGoalSnapshot(goal, null), (error: unknown) =>
@@ -39,7 +47,7 @@ test("goal snapshot CAS rejects stale create and update without changing durable
 });
 
 test("legacy goal access stays compatible and snapshot writes keep goal validation", async () => {
-  const goal = createDefaultGoal(CODING_INTERVIEW_TRACK_ID);
+  const goal = createDefaultGoal();
   await saveGoal(goal);
   assert.equal((await getGoalSnapshot(CODING_INTERVIEW_TRACK_ID))?.revision, 1);
 
@@ -52,7 +60,7 @@ test("legacy goal access stays compatible and snapshot writes keep goal validati
 
 test("goal snapshot CAS rejects a reentrant create for the same canonical key", async () => {
   const memory = new MemoryKeyValueStorage();
-  const goal = createDefaultGoal(CODING_INTERVIEW_TRACK_ID);
+  const goal = createDefaultGoal();
   let nested: Promise<unknown> | null = null;
   let triggered = false;
   const storage: KeyValueStorage = {

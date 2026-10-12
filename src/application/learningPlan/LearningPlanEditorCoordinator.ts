@@ -12,6 +12,7 @@ import {
   type AcceptedTargetSnapshot,
 } from "../../domain";
 import { GOAL_DAY_IDS } from "../../domain/goals/goalContracts";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import {
   LearningPlanProposalCoordinator,
   learningPlanProposalCoordinator,
@@ -571,7 +572,7 @@ export class LearningPlanEditorCoordinator {
 
   private persistEditorPlan(session: InternalSession, plan: LearningPlan, goalRevision: number, expectedPlanStorageRevision: number | null): LearningPlanEditorCommitResult {
     try {
-      const snapshot = this.dependencies.saveLearningPlan({ plan, expectedGoalRevision: goalRevision, expectedPlanStorageRevision, trackId: session.trackId });
+      const snapshot = this.dependencies.saveLearningPlan({ plan, policy: requireGoalPolicy(session.trackId), expectedGoalRevision: goalRevision, expectedPlanStorageRevision, trackId: session.trackId });
       this.sessions.delete(session.editorId);
       this.pendingPlans.delete(session.editorId);
       if (session.source.kind === "proposal" && session.source.proposalId) this.dependencies.proposalCoordinator.remove(session.source.proposalId);
@@ -610,7 +611,7 @@ export class LearningPlanEditorCoordinator {
   private buildProposalPlan(outcome: Pick<ProposalOutcome, "identity" | "goal" | "minutesPerStudyDay" | "executionPolicy"> & { slots: readonly PlanSlot[] }, planId: string, commandId: string, goal: GoalSnapshot | null, currentPlan: LearningPlanSnapshot | null = null, slots = cloneSlots(outcome.slots)): LearningPlan {
     const now = this.dependencies.now();
     const source = currentPlan?.plan;
-    const precondition = readGoalPlanAcceptancePrecondition(outcome.identity.trackId);
+    const precondition = readGoalPlanAcceptancePrecondition(outcome.identity.trackId, requireGoalPolicy(outcome.identity.trackId));
     const currentGoalRevision = precondition.goal?.revision ?? null;
     if (currentGoalRevision !== (goal?.revision ?? null)) {
       throw new StaleGoalRevisionError(goal?.revision ?? null, currentGoalRevision);
@@ -709,14 +710,14 @@ let editorSequence = 0;
 export const learningPlanEditorCoordinator = new LearningPlanEditorCoordinator({
   proposalCoordinator: learningPlanProposalCoordinator,
   readStorageScope: readLearningPlanStorageScope,
-  readGoalSnapshot,
+  readGoalSnapshot: (trackId) => readGoalSnapshot(trackId, requireGoalPolicy(trackId)),
   peekContentContext: (trackId) => {
     const resolved = contentPackageRuntimeOwner.getPreparedDiscovery(trackId);
     if (!resolved.planningPolicyIdentity) throw new Error("The exact planning policy identity is unavailable.");
     return Object.freeze({ contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256, planningPolicyIdentity: resolved.planningPolicyIdentity, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
   },
-  loadGoalSnapshot: getGoalSnapshot,
-  loadLearningPlanSnapshot: getLearningPlanSnapshot,
+  loadGoalSnapshot: (trackId) => getGoalSnapshot(trackId, requireGoalPolicy(trackId)),
+  loadLearningPlanSnapshot: (trackId) => getLearningPlanSnapshot(trackId, requireGoalPolicy(trackId)),
   loadContentContext: async (trackId) => {
     const registration = getTrackRegistration(trackId);
     const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, registration.familyId);

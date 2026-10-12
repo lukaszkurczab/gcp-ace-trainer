@@ -790,6 +790,8 @@
   "Feedback was available after each answer, but this report cannot confirm it was read.": "Objaśnienie było dostępne po każdej odpowiedzi, ale raport nie potwierdza, że zostało przeczytane.",
   "Learning unit {{number}}": "Jednostka nauki {{number}}",
   "This session is limited to learning unit {{number}} in this chapter.": "Ta sesja obejmuje jednostkę nauki {{number}} z tego rozdziału.",
+  "This required exam topic has {{count}} questions, so this session will use all {{count}}.": "Ten wymagany temat egzaminacyjny zawiera {{count}} pytań, dlatego ta sesja obejmie je wszystkie ({{count}}).",
+  "This required exam topic needs Premium access.": "Ten wymagany temat egzaminacyjny wymaga dostępu Premium.",
   "This recommended learning unit is unavailable in the current content package.": "Ta polecana jednostka nauki nie jest dostępna w bieżącym pakiecie treści.",
   "This recommended practice scope is no longer available for the current content package.": "Polecany zakres praktyki nie jest już dostępny w bieżącym pakiecie treści.",
   "This recommended practice scope does not have enough available questions.": "W polecanym zakresie praktyki jest za mało dostępnych pytań.",
@@ -805,8 +807,14 @@
   "Documentation": "Dokumentacja",
   "Course module": "Moduł kursu",
   "Requires an Anthropic Partner Academy account": "Wymaga konta Anthropic Partner Academy",
+  "Premium access is currently unavailable. Check your account and try again.": "Dostęp Premium jest obecnie niedostępny. Sprawdź swoje konto i spróbuj ponownie.",
   "Premium access is required to continue covering the remaining exam topics.": "Aby przećwiczyć pozostałe tematy egzaminacyjne, sprawdź swój dostęp Premium.",
   "Review Premium access": "Sprawdź dostęp Premium",
   "Required topic questions remaining: {{count}}": "Pozostałe pytania z wymaganych tematów: {{count}}",
-  "Recent accuracy is not yet measurable": "Nie można jeszcze zmierzyć ostatniej skuteczności"
+  "Recent accuracy is not yet measurable": "Nie można jeszcze zmierzyć ostatniej skuteczności",
+  "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.": "Ta wersja aplikacji nie może odczytać zapisanego formatu pakietu Premium. Dane pozostały na urządzeniu. Zaktualizuj Patternly, aby kontynuować.",
+  "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Zapisana zawartość Premium nie pasuje do tego tematu. Operacja jest zablokowana, a zapisane pliki pozostały na urządzeniu.",
+  "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly nie może zweryfikować zapisanej zawartości Premium na tym urządzeniu. Operacja jest zablokowana, a zapisane pliki pozostały na urządzeniu.",
+  "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly nie może potwierdzić stanu zapisanej zawartości Premium. Ta operacja jest zablokowana; spróbuj ponownie później.",
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly nie może odczytać zapisanej zawartości Premium. Spróbuj ponownie później."
 }

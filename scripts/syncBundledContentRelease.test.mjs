@@ -1,47 +1,93 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { execFileSync } from "node:child_process";
-import { pathToFileURL } from "node:url";
 
 import {
   EXPECTED_TRACK_IDS,
   CLAUDE_TRACK_ID,
-  LOCAL_CANDIDATE_SCHEMA_VERSION,
   GENERATED_DIRECTORY,
   SUCCESSOR_LEDGER_FILE_NAME,
   historicalTrainingProjection,
   parseArgs,
-  prepareLocalClaudeCandidate,
+  readApprovedBESDSuccessorProof,
   validateReviewedCandidate,
   syncCanonicalContent,
   validateBuiltContent,
+  verifyApprovedTrainingSuccessor,
 } from "./syncBundledContentRelease.mjs";
 
 const SMALL_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 9, mentalUnitCount: 9, questionCount: 48 });
 const HEAD = "1".repeat(40);
 const FROZEN_APP_CONTENT_BASE = "07881c44f26ffbbe84d80d4b123e709eef884c06";
 const DESIGN_TRACK_IDS = ["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"];
+const TEST_BESD_DESCRIPTOR_BASE = Object.freeze({
+  path: "evidence/business-quality/test-besd-successor.json",
+  schemaVersion: "patternly-bizq-semantic-replacement-v1",
+  trackId: "backend-system-design-interview",
+  beforeProducerCommit: "0".repeat(40),
+  beforeContentVersion: "besd-source-v1",
+  contentVersion: "besd-successor-v2",
+  replacementCount: 1,
+  questionCount: 2,
+});
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
-function canonical(value) {
-  if (value === null || ["boolean", "number", "string"].includes(typeof value)) return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
-  return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(",")}}`;
-}
 
-test("reviewed-candidate sync is an explicit opt-in while ordinary mode keeps its default", () => {
+test("reviewed candidate sync is explicit and rejects duplicate or malformed opt-in", () => {
   assert.deepEqual(parseArgs([]), { mode: "sync" });
   assert.deepEqual(parseArgs(["check", "--reviewed-candidate"]), { mode: "check", reviewedCandidate: true });
+  assert.deepEqual(parseArgs(["check", "--reviewed-candidate", "--content-root", "/tmp/patternly-content"]), {
+    mode: "check", reviewedCandidate: true, producerRoot: path.resolve("/tmp/patternly-content"),
+  });
   assert.deepEqual(parseArgs(["check", "--local-reviewed-candidate", "acceptance.json"]), { mode: "check", localReviewedCandidate: path.resolve("acceptance.json") });
   assert.deepEqual(parseArgs(["prepare-local-candidate", "--track", CLAUDE_TRACK_ID]), { command: "prepare-local-candidate", trackId: CLAUDE_TRACK_ID });
   assert.throws(() => parseArgs(["prepare-local-candidate", "--track", "other-track"]), /prepare-local-candidate requires/u);
   assert.throws(() => parseArgs(["sync", "--reviewed-candidate", "--local-reviewed-candidate", "acceptance.json"]), /cannot be combined/u);
   assert.throws(() => parseArgs(["--reviewed-candidate", "--reviewed-candidate"]), /Usage:/u);
 });
+
+function besdMigrationFixture() {
+  const oldVersion = "besd-training-v1";
+  const previousArtifact = {
+    schemaVersion: "patternly-content-artifact-v2",
+    trackId: TEST_BESD_DESCRIPTOR_BASE.trackId,
+    contentVersion: "besd-source-v1",
+    questions: [
+      { questionId: "besd-b02-i001", mentalUnitId: "BESD-N02-B02", prompt: "Old cohort question" },
+      { questionId: "besd-b02-i002", mentalUnitId: "BESD-N02-B02", prompt: "Unchanged question" },
+    ],
+    planningPolicy: { schemaVersion: "patternly-learning-planning-policy-v1", policyVersion: "policy-v1" },
+  };
+  const currentArtifact = structuredClone(previousArtifact);
+  currentArtifact.contentVersion = TEST_BESD_DESCRIPTOR_BASE.contentVersion;
+  currentArtifact.questions[0] = { questionId: "besd-b02-i003", mentalUnitId: "BESD-N02-B02", prompt: "Reviewed successor question" };
+  const beforeTrainingProjection = historicalTrainingProjection(previousArtifact, oldVersion);
+  const trainingProjection = historicalTrainingProjection(currentArtifact, TEST_BESD_DESCRIPTOR_BASE.contentVersion);
+  const descriptor = Object.freeze({
+    ...TEST_BESD_DESCRIPTOR_BASE,
+    beforeTraining: Object.freeze({ contentVersion: oldVersion, artifactSha256: sha256(beforeTrainingProjection), questionCount: 2 }),
+    trainingSha256: sha256(trainingProjection),
+  });
+  const proof = {
+    schemaVersion: descriptor.schemaVersion,
+    trackId: descriptor.trackId,
+    beforeProducerCommit: descriptor.beforeProducerCommit,
+    beforeContentVersion: descriptor.beforeContentVersion,
+    contentVersion: descriptor.contentVersion,
+    replacements: [{
+      beforeQuestionId: previousArtifact.questions[0].questionId,
+      questionId: currentArtifact.questions[0].questionId,
+      mentalUnitId: currentArtifact.questions[0].mentalUnitId,
+      beforeQuestion: structuredClone(previousArtifact.questions[0]),
+      currentQuestion: structuredClone(currentArtifact.questions[0]),
+    }],
+  };
+  return { descriptor, proof, previousArtifact, currentArtifact };
+}
 
 function validGcpSimulationProfile(contentVersion, nodeId, evidenceVersion = "gcp-published-2026.08.01") {
   return {
@@ -209,9 +255,15 @@ async function fixture() {
   const producerOutput = path.join(root, "producer-output");
   const predecessorOutput = path.join(root, "predecessor-output");
   const targetDirectory = path.join(appRoot, GENERATED_DIRECTORY);
+  const contractRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(import.meta.dirname, "../../patternly-content"));
   await mkdir(path.dirname(targetDirectory), { recursive: true });
   await mkdir(path.join(producerRoot, "scripts"), { recursive: true });
   await writeFile(path.join(producerRoot, "scripts", "build.mjs"), "// fixture\n");
+  await mkdir(path.join(producerRoot, "scripts", "content"), { recursive: true });
+  await Promise.all(["question-contract.mjs", "planning-policy.mjs"].map((name) => cp(
+    path.join(contractRoot, "scripts", "content", name),
+    path.join(producerRoot, "scripts", "content", name),
+  )));
   await createBuiltSet(producerOutput);
   await createPredecessorFromBuiltSet(producerOutput, predecessorOutput);
   const runBuild = async ({ outputRoot }) => {
@@ -222,7 +274,7 @@ async function fixture() {
     const artifacts = new Map(await Promise.all(EXPECTED_TRACK_IDS.map(async (trackId) => [`${trackId}.json`, await readFile(path.join(predecessorOutput, `${trackId}.json`))])));
     return { lock, artifacts };
   };
-  const options = { appRoot, producerRoot, targetDirectory, runBuild, getProducerHead: async () => HEAD, getBootstrapPredecessor, verifyProducer: async () => {}, expectedInventory: SMALL_INVENTORY };
+  const options = { appRoot, producerRoot, targetDirectory, runBuild, getProducerHead: async () => HEAD, getProducerContentSourceCommit: async () => HEAD, getBootstrapPredecessor, verifyProducer: async () => {}, expectedInventory: SMALL_INVENTORY };
   return { root, appRoot, producerRoot, producerOutput, predecessorOutput, targetDirectory, options };
 }
 
@@ -231,7 +283,7 @@ async function snapshot(directory) {
   return Promise.all(names.map(async (name) => [name, sha256(await readFile(path.join(directory, name)))]));
 }
 
-test("local Claude acceptance sync is scoped, evidence-bound, and idempotent", async (t) => {
+test("historical local Claude acceptance is not silently retargeted after producer source drift", async (t) => {
   const root = await mkdtemp(path.join(tmpdir(), "patternly-local-claude-sync-test-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const realAppRoot = path.resolve(import.meta.dirname, "..");
@@ -268,66 +320,14 @@ test("local Claude acceptance sync is scoped, evidence-bound, and idempotent", a
   for (const relativePath of contentPinPaths) await lstat(path.join(producerRoot, relativePath));
 
   const before = Object.fromEntries(await snapshot(targetDirectory));
-  const oldLedger = JSON.parse(await readFile(path.join(targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"));
-  const oldClaudeTraining = oldLedger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID).training;
-  const releaseLockPath = path.join(appRoot, "integration/contracts/content-release/release.lock.json");
-  const releaseLockBefore = sha256(await readFile(releaseLockPath));
-  const candidate = await prepareLocalClaudeCandidate({ appRoot, producerRoot, targetDirectory });
-  assert.equal(candidate.artifact.artifactSha256, "12e6c8637b112af9e48ca870bb80d89f9db6ad7d1949c51efceb37572a6cd0bd");
-  assert.equal(candidate.artifact.questionCount, 918);
-  assert.equal(candidate.artifact.mentalUnitCount, 53);
-  assert.equal(candidate.base.priorClaudeTraining.questionCount, 845);
-  assert.deepEqual(candidate.base.priorClaudeTraining, oldClaudeTraining);
   const acceptancePath = path.join(root, "local-acceptance.json");
-  const acceptance = {
-    schemaVersion: LOCAL_CANDIDATE_SCHEMA_VERSION,
-    scope: "local_only",
-    decision: "accepted_for_local_runtime",
-    publication: "not_granted",
-    releaseLockUpdate: false,
-    candidate,
-  };
-  await writeFile(acceptancePath, JSON.stringify(acceptance));
-  const options = { appRoot, producerRoot, targetDirectory, localReviewedCandidate: acceptancePath };
-
-  for (const [name, mutate, message] of [
-    ["wrong-version", (value) => { value.candidate.artifact.contentVersion = "wrong-version"; }, /artifact identity/u],
-    ["wrong-count", (value) => { value.candidate.artifact.questionCount = 845; }, /artifact identity/u],
-    ["wrong-fingerprint", (value) => { value.candidate.sourceFingerprint.sha256 = "0".repeat(64); }, /fingerprint digest/u],
-    ["wrong-review-evidence", (value) => { value.candidate.reviewEvidence[0].path = "docs/other.md"; }, /approved path set/u],
-  ]) {
-    const invalid = structuredClone(acceptance);
-    mutate(invalid);
-    const invalidPath = path.join(root, `${name}.json`);
-    await writeFile(invalidPath, JSON.stringify(invalid));
-    await assert.rejects(syncCanonicalContent({ ...options, localReviewedCandidate: invalidPath }), message, name);
-    assert.deepEqual(Object.fromEntries(await snapshot(targetDirectory)), before, `${name} must fail before changing the bundle`);
-  }
-
-  await rename(targetDirectory, `${targetDirectory}.backup`);
-  const synced = await syncCanonicalContent(options);
-  assert.equal(await lstat(`${targetDirectory}.backup`).then(() => true, () => false), false, "a crash after target-to-backup move is recovered before sync");
-  assert.deepEqual(synced.inventory, { trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_695 });
-  const after = Object.fromEntries(await snapshot(targetDirectory));
-  for (const trackId of EXPECTED_TRACK_IDS.filter((id) => id !== CLAUDE_TRACK_ID)) assert.equal(after[`${trackId}.json`], before[`${trackId}.json`]);
-  assert.notEqual(after["content-lock.json"], before["content-lock.json"]);
-  assert.equal(sha256(await readFile(releaseLockPath)), releaseLockBefore);
-  const ledger = JSON.parse(await readFile(path.join(targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"));
-  assert.deepEqual(ledger.tracks.filter((entry) => entry.trackId !== CLAUDE_TRACK_ID), candidate.base.preservedLedgerEntries);
-  assert.equal(ledger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID).training.questionCount, 918);
-  assert.notDeepEqual(ledger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID).training, oldClaudeTraining);
-  assert.deepEqual((await syncCanonicalContent({ ...options, mode: "check" })).inventory, synced.inventory);
-  const afterFirstSync = await snapshot(targetDirectory);
-  await syncCanonicalContent(options);
-  assert.deepEqual(await snapshot(targetDirectory), afterFirstSync, "repeated sync is byte-idempotent");
-
-  const tampered = structuredClone(acceptance);
-  tampered.candidate.artifact.artifactSha256 = "0".repeat(64);
-  const tamperedPath = path.join(root, "tampered-acceptance.json");
-  await writeFile(tamperedPath, JSON.stringify(tampered));
-  const installedBeforeReject = await snapshot(targetDirectory);
-  await assert.rejects(syncCanonicalContent({ ...options, localReviewedCandidate: tamperedPath }), /artifact identity/u);
-  assert.deepEqual(await snapshot(targetDirectory), installedBeforeReject, "stale acceptance must not change installed files");
+  await cp(path.join(realAppRoot, "docs/reports/claude-local-candidate-2026-10-11.json"), acceptancePath);
+  await assert.rejects(
+    syncCanonicalContent({ appRoot, producerRoot, targetDirectory, localReviewedCandidate: acceptancePath }),
+    /acceptance record is stale for current producer inputs/u,
+    "the immutable CC-05 evidence must not be silently retargeted to changed producer bytes",
+  );
+  assert.deepEqual(Object.fromEntries(await snapshot(targetDirectory)), before, "changed candidate bytes must be rejected before changing the bundle");
 });
 
 test("sync replaces the whole generated directory with an exact validated set", async (t) => {
@@ -341,6 +341,18 @@ test("sync replaces the whole generated directory with an exact validated set", 
   const producer = Object.fromEntries(await snapshot(state.producerOutput));
   for (const [name, digest] of Object.entries(producer)) assert.equal(installed[name], digest);
   assert.equal(result.ledger.tracks.length, 9);
+});
+
+test("sync loads content validation contracts from its explicit producer root", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const policyPath = path.join(state.producerRoot, "scripts/content/planning-policy.mjs");
+  const policySource = await readFile(policyPath, "utf8");
+  const signature = "export function validatePlanningPolicy(policy, questions) {";
+  assert.ok(policySource.includes(signature), "test producer has its own contract implementation");
+  await writeFile(policyPath, policySource.replace(signature, `${signature}\n  throw new Error("explicit producer contract root used");`));
+  await assert.rejects(syncCanonicalContent(state.options), /explicit producer contract root used/u);
+  assert.equal(await lstat(state.targetDirectory).then(() => true, () => false), false, "invalid producer contracts cannot install staged artifacts");
 });
 
 test("repeated sync and check preserve the validated training predecessor ledger byte-for-byte", async (t) => {
@@ -360,6 +372,65 @@ test("repeated sync and check preserve the validated training predecessor ledger
   assert.equal(checked.ledger.tracks.length, 9);
 });
 
+test("the fixed BESD proof verifier binds every before/current object and preserves all questions outside its cohort", () => {
+  const fixture = besdMigrationFixture();
+  const successor = verifyApprovedTrainingSuccessor({
+    previousTraining: fixture.descriptor.beforeTraining,
+    previousArtifact: fixture.previousArtifact,
+    currentArtifact: fixture.currentArtifact,
+    proof: fixture.proof,
+    descriptor: fixture.descriptor,
+  });
+  assert.deepEqual(successor, {
+    contentVersion: fixture.descriptor.contentVersion,
+    artifactSha256: fixture.descriptor.trainingSha256,
+    questionCount: fixture.descriptor.questionCount,
+  });
+
+  const missingProof = structuredClone(fixture.proof);
+  missingProof.replacements.pop();
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, proof: missingProof }), /fixed cohort/u);
+
+  const alteredBefore = structuredClone(fixture.proof);
+  alteredBefore.replacements[0].beforeQuestion.prompt += " drift";
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, proof: alteredBefore }), /exact predecessor or current question/u);
+
+  const alteredCurrent = structuredClone(fixture.proof);
+  alteredCurrent.replacements[0].currentQuestion.prompt += " drift";
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, proof: alteredCurrent }), /exact predecessor or current question/u);
+
+  const unrelatedDrift = structuredClone(fixture.currentArtifact);
+  unrelatedDrift.questions[1].prompt += " drift";
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, currentArtifact: unrelatedDrift }), /outside its fixed cohort/u);
+
+  const wrongSuccessorHash = { ...fixture.descriptor, trainingSha256: "f".repeat(64) };
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, descriptor: wrongSuccessorHash }), /exact successor training identity/u);
+});
+
+test("the BESD proof reader fails closed on absence, byte drift, and a symlink path", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const migration = besdMigrationFixture();
+  const descriptor = {
+    ...migration.descriptor,
+    path: "evidence/business-quality/test-besd-successor.json",
+    sha256: sha256(Buffer.from(JSON.stringify(migration.proof))),
+  };
+  const proofPath = path.join(state.producerRoot, descriptor.path);
+  await assert.rejects(readApprovedBESDSuccessorProof(state.producerRoot, descriptor), /Cannot inspect approved BESD successor proof/u);
+  await mkdir(path.dirname(proofPath), { recursive: true });
+  const proofBytes = Buffer.from(JSON.stringify(migration.proof));
+  await writeFile(proofPath, proofBytes);
+  assert.deepEqual(await readApprovedBESDSuccessorProof(state.producerRoot, descriptor), migration.proof);
+  await writeFile(proofPath, Buffer.concat([proofBytes, Buffer.from(" ")]));
+  await assert.rejects(readApprovedBESDSuccessorProof(state.producerRoot, descriptor), /proof hash differs/u);
+  await rm(proofPath);
+  const linkedProof = path.join(state.root, "linked-besd-successor.json");
+  await writeFile(linkedProof, proofBytes);
+  await symlink(linkedProof, proofPath);
+  await assert.rejects(readApprovedBESDSuccessorProof(state.producerRoot, descriptor), /Symbolic links are not allowed/u);
+});
+
 test("sync admits a policy-only canonical version while retaining the historical GCP evidence pin", async (t) => {
   const state = await fixture();
   t.after(() => rm(state.root, { recursive: true, force: true }));
@@ -372,156 +443,108 @@ test("sync admits a policy-only canonical version while retaining the historical
   assert.equal(result.inventory.questionCount, SMALL_INVENTORY.questionCount);
 });
 
-test("training changes remain rejected by default and require exact reviewed candidate bindings to reset one track", async (t) => {
+test("only an explicitly reviewed Claude candidate may advance its training projection", async (t) => {
   const state = await fixture();
   t.after(() => rm(state.root, { recursive: true, force: true }));
   await syncCanonicalContent(state.options);
+  const originalLedger = JSON.parse(await readFile(path.join(state.targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"));
+
   const trackId = "claude-certified-architect-professional-certification";
   const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
   const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
-  artifact.questions[0].questionId += "-reviewed-fix";
-  artifact.contentVersion = "2026.09.13-reviewed";
+  artifact.contentVersion = "claude-reviewed-successor-v2";
+  artifact.questions[0].prompt += " Reviewed clarification.";
   const artifactBytes = Buffer.from(JSON.stringify(artifact));
   await writeFile(artifactPath, artifactBytes);
   const lockPath = path.join(state.producerOutput, "content-lock.json");
   const lock = JSON.parse(await readFile(lockPath, "utf8"));
-  const changedLockEntry = lock.tracks.find((entry) => entry.trackId === trackId);
-  changedLockEntry.contentVersion = artifact.contentVersion;
-  changedLockEntry.sha256 = sha256(artifactBytes);
+  const entry = lock.tracks.find((track) => track.trackId === trackId);
+  entry.contentVersion = artifact.contentVersion;
+  entry.sha256 = sha256(artifactBytes);
   await writeFile(lockPath, JSON.stringify(lock));
-  const before = await snapshot(state.targetDirectory);
 
-  await assert.rejects(syncCanonicalContent(state.options), /v1 training predecessor cannot be silently replaced/u);
-  assert.deepEqual(await snapshot(state.targetDirectory), before, "unreviewed changes must leave the installed bundle untouched");
-
-  const reviewed = new Map([[trackId, { artifactSha256: sha256(artifactBytes), contentVersion: artifact.contentVersion, questionCount: artifact.questions.length }]]);
+  await assert.rejects(syncCanonicalContent(state.options), /cannot be silently replaced/u);
   const result = await syncCanonicalContent({
     ...state.options,
     reviewedCandidate: true,
-    getProducerContentSourceCommit: async () => HEAD,
-    verifyReviewedCandidate: async ({ artifacts: staged, lock: stagedLock }) => {
-      const entry = stagedLock.tracks.find((item) => item.trackId === trackId);
-      assert.equal(entry.sha256, reviewed.get(trackId).artifactSha256);
-      assert.deepEqual(staged.get(`${trackId}.json`).questions, artifact.questions);
-      return reviewed;
+    verifyReviewedCandidate: async ({ artifacts, lock: builtLock }) => {
+      const bundled = builtLock.tracks.find((track) => track.trackId === trackId);
+      const current = artifacts.get(`${trackId}.json`);
+      return new Map([[trackId, {
+        artifactSha256: bundled.sha256,
+        contentVersion: current.contentVersion,
+        questionCount: current.questions.length,
+      }]]);
     },
   });
-  const training = result.ledger.tracks.find((entry) => entry.trackId === trackId).training;
-  assert.equal(training.contentVersion, `${artifact.contentVersion}-training`);
-  assert.equal(training.artifactSha256, sha256(historicalTrainingProjection(artifact, training.contentVersion)));
-  assert.equal(result.ledger.tracks.find((entry) => entry.trackId !== trackId).training.contentVersion, `legacy-2026.09.12-current`);
+  const successor = result.ledger.tracks.find((track) => track.trackId === trackId);
+  assert.equal(successor.training.contentVersion, `${artifact.contentVersion}-training`);
+  assert.notEqual(successor.training.artifactSha256, originalLedger.tracks.find((track) => track.trackId === trackId)?.training.artifactSha256);
+  assert.deepEqual(result.ledger.tracks.filter((track) => track.trackId !== trackId).map((track) => track.training),
+    originalLedger.tracks.filter((track) => track.trackId !== trackId).map((track) => track.training));
 });
 
-test("reviewed training changes still require a new contentVersion", async (t) => {
+test("exact reviewed candidate resets mixed-track training identity when a track gains questions", async (t) => {
   const state = await fixture();
   t.after(() => rm(state.root, { recursive: true, force: true }));
   await syncCanonicalContent(state.options);
-  const trackId = "claude-certified-architect-professional-certification";
-  const previousEntry = JSON.parse(await readFile(path.join(state.targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"))
-    .tracks.find((entry) => entry.trackId === trackId);
-  const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
-  const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
-  artifact.questions[0].questionId += "-reviewed-fix";
-  artifact.contentVersion = previousEntry.planningPolicy.contentVersion;
-  const artifactBytes = Buffer.from(JSON.stringify(artifact));
-  await writeFile(artifactPath, artifactBytes);
-  const lockPath = path.join(state.producerOutput, "content-lock.json");
-  const lock = JSON.parse(await readFile(lockPath, "utf8"));
-  const lockEntry = lock.tracks.find((entry) => entry.trackId === trackId);
-  lockEntry.contentVersion = artifact.contentVersion;
-  lockEntry.sha256 = sha256(artifactBytes);
-  await writeFile(lockPath, JSON.stringify(lock));
-  const reviewed = new Map([[trackId, { artifactSha256: sha256(artifactBytes), contentVersion: artifact.contentVersion, questionCount: artifact.questions.length }]]);
-  await assert.rejects(syncCanonicalContent({
-    ...state.options,
-    reviewedCandidate: true,
-    getProducerContentSourceCommit: async () => HEAD,
-    verifyReviewedCandidate: async () => reviewed,
-  }), /v1 training predecessor cannot be silently replaced/u);
-});
-
-test("reviewed candidate validator reuses readiness v2 and rejects stale source, bytes, version, or readiness", async (t) => {
-  const state = await fixture();
-  t.after(() => rm(state.root, { recursive: true, force: true }));
-  const realProducerRoot = path.resolve(import.meta.dirname, "../../patternly-content");
-  const fixtureRoot = path.join(state.root, "reviewed-producer");
-  await mkdir(path.join(fixtureRoot, "scripts"), { recursive: true });
-  await cp(path.join(realProducerRoot, "scripts/review"), path.join(fixtureRoot, "scripts/review"), { recursive: true });
-  await cp(path.join(realProducerRoot, "scripts/content"), path.join(fixtureRoot, "scripts/content"), { recursive: true });
-  await cp(path.join(realProducerRoot, "scripts/build.mjs"), path.join(fixtureRoot, "scripts/build.mjs"));
-  await cp(path.join(realProducerRoot, "schemas/review"), path.join(fixtureRoot, "schemas/review"), { recursive: true });
-  const sourceCommit = execFileSync("git", ["log", "-1", "--format=%H", "--", "content"], { cwd: realProducerRoot, encoding: "utf8" }).trim();
-  const releaseId = "patternly-candidate-reviewed-test";
-  const artifactRoot = path.join(fixtureRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release");
-  const candidatePath = path.join(fixtureRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json");
-  const releasePath = "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json";
-  const decisionPath = "evidence/candidate-decisions/current-candidate-decision-v2.json";
-  const readinessPath = "evidence/readiness/current-candidate-readiness-v2.json";
-  await mkdir(path.join(artifactRoot, "artifacts"), { recursive: true });
-  await mkdir(path.dirname(candidatePath), { recursive: true });
-  await mkdir(path.join(fixtureRoot, "evidence/candidate-decisions"), { recursive: true });
-  await mkdir(path.join(fixtureRoot, "evidence/readiness"), { recursive: true });
-  const releases = [];
-  const candidateTracks = [];
-  const lockTracks = [];
-  const artifactBytesByTrack = new Map();
-  const questionSetSha256 = "a".repeat(64);
-  for (const trackId of EXPECTED_TRACK_IDS) {
-    const contentVersion = `2026.10.11-${trackId === "claude-certified-architect-professional-certification" ? "claude" : "stable"}`;
-    const artifact = { schemaVersion: "patternly-content-artifact-v2", trackId, contentVersion, questions: [{ questionId: `${trackId}-q1` }] };
-    const bytes = Buffer.from(JSON.stringify(artifact));
-    const artifactPath = `artifacts/${trackId}.json`;
-    const digest = sha256(bytes);
-    await writeFile(path.join(artifactRoot, artifactPath), bytes);
-    artifactBytesByTrack.set(trackId, bytes);
-    releases.push({ trackId, sourcePath: `content/${trackId}`, artifactPath, artifactBytes: bytes.length, checksumSha256: digest, contentVersion, questionCount: 1, questionSetSha256 });
-    candidateTracks.push({ trackId, sourcePath: `content/${trackId}`, artifactPath, checksumSha256: digest, contentVersion, questionCount: 1, questionSetSha256 });
-    lockTracks.push({ trackId, contentVersion, questionCount: 1, sha256: digest });
+  const originalLedger = JSON.parse(await readFile(path.join(state.targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"));
+  const changedTrackIds = [CLAUDE_TRACK_ID, "frontend-system-design-interview"];
+  const changedArtifacts = new Map();
+  for (const trackId of changedTrackIds) {
+    const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+    const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
+    artifact.contentVersion = `${trackId}-reviewed-count-successor-v2`;
+    artifact.questions.push({ ...artifact.questions[0], questionId: `${trackId}-reviewed-added-question` });
+    const artifactBytes = Buffer.from(JSON.stringify(artifact));
+    await writeFile(artifactPath, artifactBytes);
+    changedArtifacts.set(trackId, artifact);
+    const lockPath = path.join(state.producerOutput, "content-lock.json");
+    const lock = JSON.parse(await readFile(lockPath, "utf8"));
+    const entry = lock.tracks.find((track) => track.trackId === trackId);
+    entry.contentVersion = artifact.contentVersion;
+    entry.questionCount = artifact.questions.length;
+    entry.sha256 = sha256(artifactBytes);
+    await writeFile(lockPath, JSON.stringify(lock));
   }
-  const release = { schemaVersion: "patternly-content-release-envelope-v2", manifest: { envelopeVersion: 2, releaseId, sourceRepositoryCommit: sourceCommit }, artifacts: releases };
-  const releaseChecksum = sha256(Buffer.from(`${canonical(release)}\n`));
-  await writeFile(path.join(artifactRoot, "release.json"), `${canonical(release)}\n`);
-  const candidate = { schemaVersion: "patternly-content-candidate-draft-v2", candidateId: "pending", status: "draft_not_admitted", release: { releaseId, releasePath: "release/release.json", checksumSha256: releaseChecksum, sourceRepositoryCommit: sourceCommit }, review: { candidateApproval: "not_granted", publishingAdmission: "not_granted", runtimeAdmission: "not_granted", appReleaseLockUpdated: false }, tracks: candidateTracks };
-  candidate.candidateId = sha256(Buffer.from(canonical(Object.fromEntries(Object.entries(candidate).filter(([key]) => key !== "candidateId")))));
-  await writeFile(candidatePath, `${canonical(candidate)}\n`);
-  await writeFile(path.join(fixtureRoot, releasePath), `${canonical(release)}\n`);
-  const bindings = releases.map(({ trackId, sourcePath, artifactPath, questionCount, questionSetSha256, checksumSha256 }) => ({ trackId, sourcePath, artifactPath, questionCount, questionSetSha256, artifactSha256: checksumSha256 }));
-  const decision = {
-    schemaVersion: "patternly-content-candidate-decision-v2",
-    decisionId: `codex-content-candidate-review-v2:${candidate.candidateId}`,
-    decisionAuthority: "delegated_codex", taskId: "BIZQ-05/CANDIDATE", decision: "approved_for_candidate_readiness",
-    decisionRationale: "Synthetic fixture for the existing readiness v2 validator.", candidatePath: "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json",
-    candidateId: candidate.candidateId, sourceRepositoryCommit: sourceCommit,
-    release: { releaseId, releasePath, checksumSha256: releaseChecksum },
-    trackIds: [...EXPECTED_TRACK_IDS], tracks: bindings,
-    basis: { odk096: "passed", nineTrackBuild: "passed", repositoryTests: "passed", migrationVerification: "passed" },
-    boundaries: { publishingAdmission: "not_granted", runtimeAdmission: "not_granted", appReleaseLockUpdated: false },
+  const expectedInventory = { ...SMALL_INVENTORY, questionCount: SMALL_INVENTORY.questionCount + changedTrackIds.length };
+  const syncOptions = { ...state.options, expectedInventory, previousExpectedInventory: SMALL_INVENTORY };
+  await assert.rejects(syncCanonicalContent(syncOptions), /cannot be silently replaced/u, "unreviewed track count changes are rejected");
+
+  const bindingFor = async (trackId, artifact) => {
+    const lock = JSON.parse(await readFile(path.join(state.producerOutput, "content-lock.json"), "utf8"));
+    return { artifactSha256: lock.tracks.find((track) => track.trackId === trackId).sha256, contentVersion: artifact.contentVersion, questionCount: artifact.questions.length };
   };
-  await writeFile(path.join(fixtureRoot, decisionPath), `${canonical(decision)}\n`);
-  const readinessModule = await import(pathToFileURL(path.join(fixtureRoot, "scripts/review/candidate-readiness-v2.mjs")).href);
-  const readiness = await readinessModule.createCandidateReadinessV2({ root: fixtureRoot });
-  await writeFile(path.join(fixtureRoot, readinessPath), `${canonical(readiness)}\n`);
-  const artifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [
-    `${trackId}.json`, JSON.parse(artifactBytesByTrack.get(trackId).toString("utf8")),
-  ]));
-  const files = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, artifactBytesByTrack.get(trackId)]));
-  const lock = { tracks: lockTracks };
-  const validate = (overrides = {}) => validateReviewedCandidate({ producerRoot: fixtureRoot, sourceCommit, artifacts, files, lock, ...overrides });
-  const approved = await validate();
-  assert.equal(approved.size, EXPECTED_TRACK_IDS.length);
-  assert.equal(approved.get("claude-certified-architect-professional-certification").contentVersion, "2026.10.11-claude");
-  await rm(path.join(fixtureRoot, readinessPath));
-  await assert.rejects(validate(), /ENOENT/u, "missing readiness must fail closed");
-  await writeFile(path.join(fixtureRoot, readinessPath), `${canonical(readiness)}\n`);
-  await assert.rejects(validate({ sourceCommit: "b".repeat(40) }), /source commit differs/u);
-  const alteredLock = structuredClone(lock);
-  alteredLock.tracks[2].sha256 = "0".repeat(64);
-  await assert.rejects(validate({ lock: alteredLock }), /exactly match the committed build/u);
-  const alteredVersionArtifacts = new Map(artifacts);
-  alteredVersionArtifacts.set("claude-certified-architect-professional-certification.json", { ...artifacts.get("claude-certified-architect-professional-certification.json"), contentVersion: "stale-version" });
-  await assert.rejects(validate({ artifacts: alteredVersionArtifacts }), /exactly match the committed build/u);
-  await writeFile(path.join(fixtureRoot, readinessPath), `${canonical({ ...readiness, candidateId: "c".repeat(64) })}\n`);
-  await assert.rejects(validate(), /stale or invalid/u, "stale readiness must fail closed");
+  await assert.rejects(syncCanonicalContent({
+    ...syncOptions,
+    reviewedCandidate: true,
+    verifyReviewedCandidate: async () => new Map([[CLAUDE_TRACK_ID, await bindingFor(CLAUDE_TRACK_ID, changedArtifacts.get(CLAUDE_TRACK_ID))]]),
+  }), /cannot be silently replaced/u, "review binding for one changed track cannot authorize another");
+  await assert.rejects(syncCanonicalContent({
+    ...syncOptions,
+    reviewedCandidate: true,
+    verifyReviewedCandidate: async () => new Map(await Promise.all(changedTrackIds.map(async (trackId) => [trackId, { ...await bindingFor(trackId, changedArtifacts.get(trackId)), questionCount: 1 }]))),
+  }), /cannot be silently replaced/u, "stale question-count binding is rejected");
+
+  const result = await syncCanonicalContent({
+    ...syncOptions,
+    reviewedCandidate: true,
+    verifyReviewedCandidate: async () => new Map(await Promise.all(changedTrackIds.map(async (trackId) => [trackId, await bindingFor(trackId, changedArtifacts.get(trackId))]))),
+  });
+  for (const trackId of changedTrackIds) {
+    const artifact = changedArtifacts.get(trackId);
+    const previous = originalLedger.tracks.find((entry) => entry.trackId === trackId).training;
+    const current = result.ledger.tracks.find((entry) => entry.trackId === trackId).training;
+    assert.equal(current.contentVersion, `${artifact.contentVersion}-training`);
+    assert.equal(current.questionCount, artifact.questions.length);
+    assert.equal(current.artifactSha256, sha256(historicalTrainingProjection(artifact, current.contentVersion)));
+    assert.notDeepEqual(current, previous, "a changed reviewed track starts a fresh training identity with no predecessor credit");
+  }
+  for (const trackId of EXPECTED_TRACK_IDS.filter((id) => !changedTrackIds.includes(id))) {
+    assert.deepEqual(result.ledger.tracks.find((entry) => entry.trackId === trackId).training, originalLedger.tracks.find((entry) => entry.trackId === trackId).training, `${trackId} retains its unchanged training identity`);
+  }
+  const installed = await validateBuiltContent(state.targetDirectory, { expectedInventory });
+  assert.deepEqual(installed.inventory, expectedInventory);
 });
 
 test("sync accepts a complete GCP Exam envelope inside the artifact lock boundary", async (t) => {

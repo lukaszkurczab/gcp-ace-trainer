@@ -11,6 +11,8 @@ import { commitSessionCompletion, commitTrainingOutcome, commitTrainingSessionAd
 import { getReviewQueueItems, getTrainingAttempts, getTrainingSessions } from "../../storage";
 import { isCanonicalOptionOrder, prepareCanonicalOptionOrder } from "./canonicalOptionOrder";
 import { scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const NOW = "2026-10-02T12:00:00.000Z";
 const catalogPromise = loadCanonicalRuntimeCatalog();
@@ -29,7 +31,7 @@ test("actual GCP practice choice orders vary between session identities and surv
   assert.deepEqual((await prepare(first.session.id)).session, first.session);
   await commitTrainingSessionStart({ session: first.session, draft: null, createdAt: NOW });
   installKeyValueStorageForTests(storage);
-  const resumed = (await getTrainingSessions()).value.find((session) => session.id === first.session.id)!;
+  const resumed = (await getTrainingSessions(productionTrackAdmissionContext)).value.find((session) => session.id === first.session.id)!;
   assert.deepEqual(resumed, first.session);
   await runtime.validateResume({ session: resumed, draft: null });
   const occurrence = resumed.itemOrder[0]!;
@@ -94,7 +96,7 @@ test("all current actual items preserve control membership, ID answers and non-c
       assert.deepEqual(vm.accessibility.controls.map((control) => control.id), order);
     }
   }
-  assert.deepEqual({ choiceCount, nonChoiceCount }, { choiceCount: 14880, nonChoiceCount: 1742 });
+  assert.deepEqual({ choiceCount, nonChoiceCount }, { choiceCount: 15036, nonChoiceCount: 1659 });
 });
 
 test("all real 29 practice modes and canonical simulation profiles prepare valid frozen orders with unchanged question selection", async () => {
@@ -157,7 +159,7 @@ test("actual Coding conditional repeat retains the source prepared order after t
     assert.equal(question.interaction.type, "choice_single");
     const correct = (question.answer as { optionId: string }).optionId;
     const wrong = (question.interaction as { options: readonly { optionId: string }[] }).options.find((option) => option.optionId !== correct)!.optionId;
-    const outcome = await runtime.submitPractice({ session, response: index === 0 ? { type: "choice_single", optionId: wrong } : question.answer, attempts: (await getTrainingAttempts()).value, reviews: (await getReviewQueueItems()).value, now: NOW });
+    const outcome = await runtime.submitPractice({ session, response: index === 0 ? { type: "choice_single", optionId: wrong } : question.answer, attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value, reviews: (await getReviewQueueItems(productionTrackAdmissionContext)).value, now: NOW });
     await commitTrainingOutcome({ attempt: outcome.attempt, session: outcome.session, reviews: outcome.reviewMutations.filter((mutation) => mutation.kind === "upsert").map((mutation) => mutation.entry), createdAt: NOW });
     session = advanceTrainingSession(outcome.session);
     await commitTrainingSessionAdvance(session, NOW);
@@ -165,10 +167,10 @@ test("actual Coding conditional repeat retains the source prepared order after t
   assert.equal(session.itemOrder[4]!.occurrenceId, slot.exactSourceBranch.occurrence.occurrenceId);
   assert.deepEqual(session.optionOrderByOccurrence[session.itemOrder[4]!.occurrenceId], sourceOrder);
   installKeyValueStorageForTests(storage);
-  const resumed = (await getTrainingSessions()).value.find((entry) => entry.id === session.id)!;
+  const resumed = (await getTrainingSessions(productionTrackAdmissionContext)).value.find((entry) => entry.id === session.id)!;
   await runtime.validateResume({ session: resumed, draft: null });
   assert.deepEqual(resumed, session);
-  assert.equal((await getTrainingAttempts()).value.length, 4);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 4);
 });
 
 test("MC becomes reachable through completed canonical sessions and real persisted history without changing selection policy", async () => {
@@ -179,17 +181,17 @@ test("MC becomes reachable through completed canonical sessions and real persist
     let encountered = false;
     const bound = Math.ceil(track.getPool(mode.modeId).length / mode.defaultRequestedLength);
     for (let round = 1; round <= bound && !encountered; round += 1) {
-      let { session } = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: `mc-history:${trackId}:${round}`, requestedLength: mode.defaultRequestedLength }, attempts: (await getTrainingAttempts()).value, reviews: (await getReviewQueueItems()).value, now: NOW });
+      let { session } = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: `mc-history:${trackId}:${round}`, requestedLength: mode.defaultRequestedLength }, attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value, reviews: (await getReviewQueueItems(productionTrackAdmissionContext)).value, now: NOW });
       encountered = session.itemOrder.some((entry) => track.getQuestion(entry.item.questionId)!.interaction.type === "choice_multiple");
       await commitTrainingSessionStart({ session, draft: null, createdAt: NOW });
       for (let index = 0; index < session.actualLength; index += 1) {
         const response = track.getQuestion(session.itemOrder[index]!.item.questionId)!.answer;
-        const outcome = await runtime.submitPractice({ session, response, attempts: (await getTrainingAttempts()).value, reviews: (await getReviewQueueItems()).value, now: NOW });
+        const outcome = await runtime.submitPractice({ session, response, attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value, reviews: (await getReviewQueueItems(productionTrackAdmissionContext)).value, now: NOW });
         await commitTrainingOutcome({ attempt: outcome.attempt, session: outcome.session, reviews: outcome.reviewMutations.filter((mutation) => mutation.kind === "upsert").map((mutation) => mutation.entry), createdAt: NOW });
         session = outcome.session;
         if (index < session.actualLength - 1) { session = advanceTrainingSession(session); await commitTrainingSessionAdvance(session, NOW); }
       }
-      const finalized = await runtime.finalizePractice({ session, attempts: (await getTrainingAttempts()).value, now: NOW });
+      const finalized = await runtime.finalizePractice({ session, attempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value, now: NOW });
       await commitSessionCompletion(finalized.session, finalized.result, NOW);
       installKeyValueStorageForTests(storage);
       if (encountered) console.log(`MC_REACHABLE ${trackId} completedRound=${round}`);

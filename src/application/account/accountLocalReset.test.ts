@@ -25,6 +25,9 @@ import { getTrainingSessions } from "../../storage/repositories/trainingSessionR
 import { resetAccountLocalLearningHistory } from "./accountDataService";
 import { installLearningStateResetBarrier } from "../learningMutations";
 import { attempt, review, session } from "../../testing/journalTestSupport";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 installLearningStateResetBarrier(async (reset) => reset());
 
@@ -44,15 +47,15 @@ async function prepareBoundAccount(): Promise<MemoryKeyValueStorage> {
   setActiveProfileLeaseForTests({ id: "account-reset-test-guest", kind: "guest", accountId: null });
   await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
   await bindGuestInstallationToAccount(accountId);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
   return storage;
 }
 
 async function seedHistory() {
   await saveActiveTrackId("coding-interview-dsa-problem-solving");
-  await saveTrainingSession(session("abandoned"));
-  await addTrainingAttempt(attempt());
-  await addReviewQueueItems([review()]);
+  await saveTrainingSession(session("abandoned"), productionTrackAdmissionContext);
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
+  await addReviewQueueItems([review()], productionTrackAdmissionContext);
 }
 
 function remoteRecords(snapshot: Awaited<ReturnType<typeof buildAccountDataSnapshot>>) {
@@ -71,7 +74,7 @@ test("authenticated reset restores history without uploading tombstones and pres
   storage.setString(STORAGE_KEYS.SETTINGS, "device settings");
   storage.setString(STORAGE_KEYS.NOTIFICATION_SETTINGS, "device notifications");
   storage.setString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, "report outbox");
-  const remote = remoteRecords(await buildAccountDataSnapshot());
+  const remote = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext));
   let reads = 0;
   let writes = 0;
   const result = await resetAccountLocalLearningHistory(client({
@@ -82,24 +85,24 @@ test("authenticated reset restores history without uploading tombstones and pres
   assert.equal(result.status, "synced");
   assert.equal(reads, 1);
   assert.equal(writes, 0);
-  assert.equal((await getAccountSyncState()).resetGuard, null);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard, null);
   assert.equal(await getActiveTrackId(), "coding-interview-dsa-problem-solving");
-  assert.equal((await getTrainingSessions()).value.length, 1);
-  assert.equal((await getTrainingAttempts()).value.length, 1);
-  assert.equal((await getReviewQueueItems()).value.length, 1);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.length, 1);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
+  assert.equal((await getReviewQueueItems(productionTrackAdmissionContext)).value.length, 1);
   assert.equal(storage.getString(STORAGE_KEYS.SETTINGS), "device settings");
   assert.equal(storage.getString(STORAGE_KEYS.NOTIFICATION_SETTINGS), "device notifications");
   assert.equal(storage.getString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX), "report outbox");
   assert.equal((await getGuestInstallation())?.accountId, accountId);
-  assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0);
+  assert.equal((await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext)).outbox.length, 0);
 });
 
 test("authenticated reset rejects pending account context without changing state or calling the API", async () => {
   await prepareBoundAccount();
   await saveActiveTrackId("coding-interview-dsa-problem-solving");
-  const pending = await ensureAccountOutboxFromLocalDataset();
+  const pending = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   assert.equal(pending.outbox.length, 1);
-  const before = await getAccountSyncState();
+  const before = await getAccountSyncState(productionLearningDataAdmissionContext);
   const activeTrackBefore = await getActiveTrackId();
   let getProgressCalls = 0;
   let syncProgressCalls = 0;
@@ -113,8 +116,8 @@ test("authenticated reset rejects pending account context without changing state
   assert.equal(failed.lastFailureCode, "account_reset_requires_clean_sync");
   assert.equal(getProgressCalls, 0);
   assert.equal(syncProgressCalls, 0);
-  assert.deepEqual(await getAccountSyncState(), before);
-  assert.equal((await getAccountSyncState()).resetGuard, null);
+  assert.deepEqual(await getAccountSyncState(productionLearningDataAdmissionContext), before);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard, null);
   assert.equal(await getActiveTrackId(), activeTrackBefore);
 });
 
@@ -122,7 +125,7 @@ test("authenticated reset refuses corrupt evidence before creating its guard or 
   const storage = await prepareBoundAccount();
   storage.setString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, "not-json");
   const before = storage.snapshot();
-  const stateBefore = await getAccountSyncState();
+  const stateBefore = await getAccountSyncState(productionLearningDataAdmissionContext);
   let getProgressCalls = 0;
   const failed = await resetAccountLocalLearningHistory(client({
     getProgress: async () => { getProgressCalls += 1; return { accountRevision: 2, records: [] }; },
@@ -131,8 +134,8 @@ test("authenticated reset refuses corrupt evidence before creating its guard or 
   assert.equal(failed.status, "failed");
   assert.equal(failed.lastFailureCode, "local_reset_integrity_unavailable");
   assert.equal(getProgressCalls, 0);
-  assert.equal((await getAccountSyncState()).resetGuard, null);
-  assert.deepEqual(await getAccountSyncState(), stateBefore);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard, null);
+  assert.deepEqual(await getAccountSyncState(productionLearningDataAdmissionContext), stateBefore);
   assert.deepEqual(storage.snapshot(), before);
 });
 
@@ -146,7 +149,7 @@ test("canonical clean synced state remains eligible for the guarded reset", asyn
 
   assert.equal(result.status, "synced");
   assert.equal(getProgressCalls, 1);
-  assert.equal((await getAccountSyncState()).resetGuard, null);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard, null);
 });
 
 test("authenticated reset exposes the remote-restore guard and keeps it after a fetch failure", async () => {
@@ -155,8 +158,8 @@ test("authenticated reset exposes the remote-restore guard and keeps it after a 
   let guardAtFetch: Awaited<ReturnType<typeof getAccountSyncState>>["resetGuard"] = null;
   const failed = await resetAccountLocalLearningHistory(client({
     getProgress: async () => {
-      guardAtFetch = (await getAccountSyncState()).resetGuard;
-      assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0);
+      guardAtFetch = (await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard;
+      assert.equal((await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext)).outbox.length, 0);
       throw new Error("offline");
     },
   }), accountId);
@@ -164,8 +167,8 @@ test("authenticated reset exposes the remote-restore guard and keeps it after a 
   assert.notEqual(failed.status, "synced");
   const observedGuardAtFetch = guardAtFetch as NonNullable<Awaited<ReturnType<typeof getAccountSyncState>>["resetGuard"]> | null;
   assert.equal(observedGuardAtFetch?.phase, "remoteRestorePending");
-  assert.equal((await getAccountSyncState()).resetGuard?.phase, "remoteRestorePending");
-  assert.equal((await getTrainingSessions()).value.length, 0);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard?.phase, "remoteRestorePending");
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.length, 0);
 });
 
 test("a failed remote restore retains the reset guard and account binding", async () => {
@@ -177,10 +180,10 @@ test("a failed remote restore retains the reset guard and account binding", asyn
 
   const failed = await resetAccountLocalLearningHistory(api, accountId);
   assert.notEqual(failed.status, "synced");
-  const guard = (await getAccountSyncState()).resetGuard;
+  const guard = (await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard;
   assert.equal(guard?.phase, "remoteRestorePending");
 
-  assert.deepEqual((await getAccountSyncState()).resetGuard, guard);
+  assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard, guard);
   assert.equal((await getGuestInstallation())?.accountId, accountId);
 });
 
@@ -190,19 +193,19 @@ test("a failed local reset keeps the pre-reset marker and retries the same journ
   storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL });
   const failed = await resetAccountLocalLearningHistory(client(), accountId);
   assert.notEqual(failed.status, "synced");
-  assert.equal((await getAccountSyncState()).resetGuard?.phase, "localResetPending");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard?.phase, "localResetPending");
   storage.setFailurePlan(null);
 
-  const snapshot = await buildAccountDataSnapshot();
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   const retried = await resetAccountLocalLearningHistory(client({ getProgress: async () => ({ accountRevision: 2, records: remoteRecords(snapshot) }) }), accountId);
   assert.equal(retried.status, "synced");
-  assert.equal((await getAccountSyncState()).resetGuard, null);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).resetGuard, null);
 });
 
 test("concurrent authenticated reset requests share one guarded operation", async () => {
   await prepareBoundAccount();
   await seedHistory();
-  const snapshot = await buildAccountDataSnapshot();
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   let release!: () => void;
   const blocked = new Promise<void>((resolve) => { release = resolve; });
   let reads = 0;
@@ -220,7 +223,7 @@ test("concurrent authenticated reset requests share one guarded operation", asyn
 test("reset guard blocks outbox synthesis for a canonical acknowledged record", async () => {
   await prepareBoundAccount();
   await saveActiveTrackId("coding-interview-dsa-problem-solving");
-  const state = await getAccountSyncState();
+  const state = await getAccountSyncState(productionLearningDataAdmissionContext);
   saveAccountSyncState({
     ...state,
     acknowledged: {
@@ -243,8 +246,8 @@ test("reset guard blocks outbox synthesis for a canonical acknowledged record", 
       operationId: "reset-guard",
       phase: "remoteRestorePending",
     },
-  });
-  const guarded = await ensureAccountOutboxFromLocalDataset();
+  }, productionLearningDataAdmissionContext);
+  const guarded = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   assert.equal(guarded.outbox.length, 0);
   assert.equal(guarded.resetGuard?.operationId, "reset-guard");
 });

@@ -1,16 +1,16 @@
-import { isRegisteredTrackId } from "../tracks/trackRegistry";
-import { TRACK_DENSITY_DESCRIPTORS } from "../tracks/trackAdmission";
-import type { TrackId } from "../learning";
+import type { TrackId } from "../learning/trackIdentity";
+import {
+  GOAL_TEMPLATE_IDS,
+  GoalPolicyUnavailableError,
+  isGoalPolicyForTrack,
+  type GoalPolicy,
+  type GoalTemplateId,
+} from "./goalPolicy";
 
-export const GOAL_TEMPLATE_IDS = Object.freeze([
-  "prepare_for_an_interview",
-  "prepare_for_a_certification",
-  "build_foundations",
-  "refresh_and_maintain_skills",
-  "learn_at_own_pace",
-] as const);
-
-export type GoalTemplateId = (typeof GOAL_TEMPLATE_IDS)[number];
+export { GOAL_TEMPLATE_IDS } from "./goalPolicy";
+export type { GoalPolicy, GoalTemplateId } from "./goalPolicy";
+export type { GoalPolicyResolver } from "./goalPolicy";
+export { isGoalPolicyForTrack, GoalPolicyUnavailableError } from "./goalPolicy";
 
 export const GOAL_DAY_IDS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const);
 export type GoalDay = (typeof GOAL_DAY_IDS)[number];
@@ -30,50 +30,42 @@ export type GoalSnapshot = Readonly<{
   revision: number;
 }>;
 
-export function getTrackGoalTemplates(trackId: TrackId): readonly GoalTemplateId[] {
-  const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === trackId);
-  if (!descriptor) throw new Error(`No goal templates are declared for track ${trackId}.`);
-  const templates = descriptor.goalTemplates.map((template) => {
-    if (!isGoalTemplateId(template)) throw new Error(`Unsupported goal template ${template} for track ${trackId}.`);
-    return template;
-  });
-  return Object.freeze(templates);
-}
-
-export function createDefaultGoal(trackId: TrackId): GoalRecord {
-  const templates = getTrackGoalTemplates(trackId);
-  const firstTemplate = templates[0];
-  if (!firstTemplate) throw new Error(`Track ${trackId} has no selectable goal template.`);
-  return Object.freeze({
-    goalType: firstTemplate,
-    preferredDays: Object.freeze(["mon", "wed", "sat"] as const),
-    status: "active" as const,
-    trackId,
-    weeklySessionTarget: 3,
-  });
-}
-
-export function isGoalRecordShapeForTrack(value: unknown, trackId: string): value is GoalRecord {
+/** Structural validation is independent of track admission and track-specific goal policy. */
+export function isGoalRecordShape(value: unknown): value is GoalRecord {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const record = value as Record<string, unknown>;
   const keys = Object.keys(record);
   if (keys.some((key) => !["goalType", "preferredDays", "status", "targetDate", "trackId", "weeklySessionTarget"].includes(key)) || keys.length < 5 || keys.length > 6) return false;
-  if (record.trackId !== trackId || typeof record.trackId !== "string" || !isRegisteredTrackId(record.trackId)) return false;
-  let templates: readonly GoalTemplateId[];
-  try { templates = getTrackGoalTemplates(record.trackId); } catch { return false; }
-  if (!Array.isArray(record.preferredDays) || record.preferredDays.length > 7 ||
-    !record.preferredDays.every(isGoalDay) || new Set(record.preferredDays).size !== record.preferredDays.length) return false;
+  if (typeof record.trackId !== "string" || record.trackId.length === 0 || !isGoalTemplateId(record.goalType)) return false;
+  if (!Array.isArray(record.preferredDays) || record.preferredDays.length > 7 || !record.preferredDays.every(isGoalDay) || new Set(record.preferredDays).size !== record.preferredDays.length) return false;
   const preferredDays = record.preferredDays;
-  return templates.includes(record.goalType as GoalTemplateId) &&
-    Number.isSafeInteger(record.weeklySessionTarget) && Number(record.weeklySessionTarget) >= 0 && Number(record.weeklySessionTarget) <= 7 &&
+  return Number.isSafeInteger(record.weeklySessionTarget) && Number(record.weeklySessionTarget) >= 0 && Number(record.weeklySessionTarget) <= 7 &&
     (record.weeklySessionTarget !== 0 || preferredDays.length === 0) &&
     (record.targetDate === undefined || isIsoDate(record.targetDate)) &&
     (record.status === "active" || record.status === "paused");
 }
+/** Semantic validation is a separate required step at every per-track boundary. */
+export function isGoalRecordForPolicy(value: unknown, policy: GoalPolicy): value is GoalRecord {
+  if (!isGoalRecordShape(value)) return false;
+  return isGoalPolicyForTrack(policy, value.trackId) && policy.validGoalTemplateIds.includes(value.goalType);
+}
 
-export function normalizeGoalRecord(value: GoalRecord): GoalRecord {
-  const trackId = value.trackId;
-  if (!isGoalRecordShapeForTrack(value, trackId)) throw new Error(`Goal record for ${trackId} is invalid.`);
+export function createDefaultGoal(policy: GoalPolicy): GoalRecord {
+  if (!isGoalPolicyForTrack(policy, policy.trackId)) throw new GoalPolicyUnavailableError(policy.trackId);
+  const firstTemplate = policy.validGoalTemplateIds[0];
+  if (!firstTemplate) throw new GoalPolicyUnavailableError(policy.trackId);
+  return Object.freeze({
+    goalType: firstTemplate,
+    preferredDays: Object.freeze(["mon", "wed", "sat"] as const),
+    status: "active" as const,
+    trackId: policy.trackId,
+    weeklySessionTarget: 3,
+  });
+}
+
+export function normalizeGoalRecord(value: GoalRecord, policy: GoalPolicy): GoalRecord {
+  if (!isGoalRecordShape(value)) throw new Error("Goal record is structurally invalid.");
+  if (!isGoalPolicyForTrack(policy, value.trackId) || !policy.validGoalTemplateIds.includes(value.goalType)) throw new Error(`Goal record for ${value.trackId} is invalid.`);
   const preferredDays = GOAL_DAY_IDS.filter((day) => value.preferredDays.includes(day));
   const { targetDate, ...requiredFields } = value;
   return Object.freeze({
@@ -84,8 +76,8 @@ export function normalizeGoalRecord(value: GoalRecord): GoalRecord {
   });
 }
 
-export function isGoalRecordForTrack(value: unknown, trackId: string): value is GoalRecord {
-  return isGoalRecordShapeForTrack(value, trackId) && value.preferredDays.length > 0 && value.weeklySessionTarget === value.preferredDays.length;
+export function isGoalRecordForTrack(value: unknown, policy: GoalPolicy): value is GoalRecord {
+  return isGoalRecordForPolicy(value, policy) && value.preferredDays.length > 0 && value.weeklySessionTarget === value.preferredDays.length;
 }
 
 export function isGoalTemplateId(value: unknown): value is GoalTemplateId {

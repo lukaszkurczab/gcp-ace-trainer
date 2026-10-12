@@ -66,6 +66,8 @@ try {
   const require = createRequire(resolve(appRoot, "package.json"));
   const { acceptedTargetFromGoal, createLearningPlanSlotId } = require(resolve(appRoot, "src/domain/index.ts"));
   const { isGoalRecordForTrack, isLearningPlanV1ForTrack } = require(resolve(appRoot, "src/domain/index.ts"));
+  const { requireGoalPolicy } = require(resolve(appRoot, "src/domain/tracks/trackGoalPolicies.ts"));
+  const { productionLearningDataAdmissionContext } = require(resolve(appRoot, "src/application/tracks/trackAdmissionContext.ts"));
   const { contentPackageRuntimeOwner } = require(resolve(appRoot, "src/application/contentPackageRuntimeOwner.ts"));
   const { recommendLearningPlanMode } = require(resolve(appRoot, "src/application/learningPlan/learningPlanModeRecommendation.ts"));
   const { commitGoalPlanAcceptance } = require(resolve(appRoot, "src/application/learningMutations/commitGoalPlanAcceptance.ts"));
@@ -74,7 +76,7 @@ try {
   const accountData = require(resolve(appRoot, "src/storage/repositories/accountDataRepository.ts"));
   const { readCanonicalEnvelope } = require(resolve(appRoot, "src/storage/repositories/canonicalRecordCodec.ts"));
   const { STORAGE_KEYS } = require(resolve(appRoot, "src/storage/keys.ts"));
-  const { canonicalJsonV1 } = require(resolve(appRoot, "src/infrastructure/identity/canonicalSerialization.ts"));
+  const { canonicalJsonV1 } = require(resolve(appRoot, "src/domain/identity/canonicalSerialization.ts"));
   const {
     applyRemoteAccountData,
     buildAccountDataSnapshot,
@@ -128,12 +130,13 @@ try {
   if (installation.accountId !== input.accountId) throw new Error("account_installation_account_mismatch");
 
   stage = "remote_materialization";
-  const partition = await partitionRemoteAccountDataForRecovery({ accountId: input.accountId, generation: input.generation, records: input.records });
+  const partition = await partitionRemoteAccountDataForRecovery({ accountId: input.accountId, generation: input.generation, records: input.records }, productionLearningDataAdmissionContext);
   assert.equal(partition.incident, null, "remote_recovery_incident_unexpected");
-  await applyRemoteAccountData(partition.records);
-  await finishAccountMaterialization(partition.records, input.accountId, input.accountRevision, new Date().toISOString());
-  const beforeGoal = readGoalSnapshot(trackId);
-  const beforePlan = getLearningPlanSnapshot(trackId);
+  await applyRemoteAccountData(partition.records, productionLearningDataAdmissionContext);
+  await finishAccountMaterialization(partition.records, input.accountId, input.accountRevision, new Date().toISOString(), productionLearningDataAdmissionContext);
+  const policy = requireGoalPolicy(trackId);
+  const beforeGoal = readGoalSnapshot(trackId, policy);
+  const beforePlan = getLearningPlanSnapshot(trackId, policy);
   assert.ok(beforeGoal && beforePlan, "coding_pair_missing");
   assert.equal(beforePlan.plan.schemaVersion, 2, "coding_pair_not_v2");
   assert.equal(beforePlan.plan.goalRevision, beforeGoal.revision, "coding_pair_revision_mismatch");
@@ -199,19 +202,19 @@ try {
   assert.equal(committed.plan.plan.goalRevision, committed.goal.revision);
   stage = "committed_target_validation";
   assert.deepEqual(committed.plan.plan.acceptedTarget, acceptedTargetFromGoal(committed.goal.record));
-  const committedGoalEnvelope = readCanonicalEnvelope(STORAGE_KEYS.goal(trackId), (value) => isGoalRecordForTrack(value, trackId));
+  const committedGoalEnvelope = readCanonicalEnvelope(STORAGE_KEYS.goal(trackId), (value) => isGoalRecordForTrack(value, policy));
   const committedPlanEnvelope = readCanonicalEnvelope(STORAGE_KEYS.learningPlan(trackId), (value) => isLearningPlanV1ForTrack(value, trackId));
   assert.ok(committedGoalEnvelope && committedPlanEnvelope, "committed_pair_envelopes_missing");
   assert.equal(committedGoalEnvelope.revision, committed.goal.revision, "committed_goal_envelope_revision_mismatch");
   assert.equal(committedPlanEnvelope.revision, committed.plan.revision, "committed_plan_envelope_revision_mismatch");
   stage = "local_snapshot_build";
-  const snapshot = await buildAccountDataSnapshot();
+  const snapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
   stage = "local_snapshot_invariants";
   assert.equal(snapshot.activeSession, false, "active_session_unexpected");
   assert.equal(snapshot.pendingJournal, false, "pending_journal_unexpected");
 
   stage = "canonical_outbox_batch";
-  const outboxState = await ensureAccountOutboxFromLocalDataset();
+  const outboxState = await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
   const pairEntries = outboxState.outbox.filter((entry) => entry.trackId === trackId && (entry.recordType === "goal" || entry.recordType === "learning_plan"));
   assert.equal(outboxState.accountId, input.accountId, "outbox_account_mismatch");
   assert.equal(outboxState.remoteAccountRevision, input.accountRevision, "outbox_revision_mismatch");
@@ -250,7 +253,7 @@ try {
   assert.equal(request.mutations.length, 2);
   assert.ok(request.mutations.every((mutation) => mutation.trackId === trackId));
   assert.ok(request.mutations.every((mutation) => mutation.targetId === trackId));
-  assert.equal((await getAccountSyncState()).pendingMutationCount, 2);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).pendingMutationCount, 2);
 
   stage = "private_output";
   assert.equal(existsSync(outputPath), false, "output_already_exists");

@@ -34,9 +34,9 @@ import {
   resolvePracticeSessionLength,
   isCloudTopicId,
   type PracticeFeedbackMode,
-  type PracticeSessionMode,
   type PracticeSessionLength,
 } from "./sessionConfig";
+import type { CanonicalPracticeModeId } from "../../application/practice/practiceModeContract";
 import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
@@ -59,7 +59,7 @@ type PracticeSetupLoadingVariant =
   | "quickReview"
   | "unknown";
 
-function resolvePracticeSetupLoadingVariant(mode?: PracticeSessionMode): PracticeSetupLoadingVariant {
+function resolvePracticeSetupLoadingVariant(mode?: CanonicalPracticeModeId): PracticeSetupLoadingVariant {
   if (!mode) return "unknown";
   if (mode === "certification-diagnostic-baseline") return "diagnostic";
   if (mode === "certification-focus-practice" || mode === "certification-scenario-practice") return "selector";
@@ -71,7 +71,7 @@ function resolvePracticeSetupLoadingVariant(mode?: PracticeSessionMode): Practic
   return "unknown";
 }
 
-export function PracticeSetupLoadingSkeleton({ mode }: Readonly<{ mode?: PracticeSessionMode }> = {}) {
+export function PracticeSetupLoadingSkeleton({ mode }: Readonly<{ mode?: CanonicalPracticeModeId }> = {}) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
@@ -292,7 +292,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   if (activeTrack.familyId === "certification" && !isCertificationPracticeModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
   if (activeTrack.familyId === "design_interview" && (!isDesignInterviewModeId(requestedMode) || requestedMode === "design-interview-simulation")) return renderUnavailable(t("This practice mode is unavailable."));
   const premiumOffers = listAvailablePremiumNodeOffers(activeTrack.id);
-  const selectedMode = requestedMode as PracticeSessionMode;
+  const selectedMode = requestedMode as CanonicalPracticeModeId;
   let selectedPackageMode: ProductModeConfig;
   try {
     selectedPackageMode = canonicalTrack.getMode(selectedMode);

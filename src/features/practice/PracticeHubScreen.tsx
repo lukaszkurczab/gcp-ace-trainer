@@ -54,8 +54,8 @@ import {
 import {
   buildPracticeSessionConfig,
   getGeneralPracticeReviewSource,
-  type PracticeSessionMode,
 } from "./sessionConfig";
+import type { CanonicalPracticeModeId } from "../../application/practice/practiceModeContract";
 
 type PracticeHubScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -142,7 +142,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const designAdmissionPendingRef = useRef(false);
   const [designAdmissionPending, setDesignAdmissionPending] = useState(false);
   const [designAccessUnavailable, setDesignAccessUnavailable] = useState(false);
-  const [designAdmissionMode, setDesignAdmissionMode] = useState<PracticeSessionMode | null>(null);
+  const [designAdmissionMode, setDesignAdmissionMode] = useState<CanonicalPracticeModeId | null>(null);
   const { readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load your practice options."),
     includeReviews: true,
@@ -213,7 +213,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const primaryMode = modes[0]!;
   const secondaryModes = modes.filter((mode) => mode.mode !== primaryMode.mode && mode.mode !== ALGORITHM_MODE_IDS.customPractice);
   const topicDetail = formatPracticeTopicDetail(topic.detail, t);
-  function startSession(mode?: PracticeSessionMode | CertificationModeId, source: "practiceHub" | "modeShortcut" = mode === undefined ? "practiceHub" : "modeShortcut") {
+  function startSession(mode?: CanonicalPracticeModeId | CertificationModeId, source: "practiceHub" | "modeShortcut" = mode === undefined ? "practiceHub" : "modeShortcut") {
     const resolvedMode = mode ?? primaryMode.mode;
     if (isCodingInterviewTrack && resolvedMode === ALGORITHM_MODE_IDS.customPractice) {
       navigation.navigate(ROUTES.PRACTICE_SETUP, {
@@ -256,7 +256,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           .finally(() => { designAdmissionPendingRef.current = false; setDesignAdmissionPending(false); });
         return;
       }
-      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode as PracticeSessionMode, source, topicId: topic.id, trackId: activeTrack.id });
+      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode as CanonicalPracticeModeId, source, topicId: topic.id, trackId: activeTrack.id });
       return;
     }
     if (activeTrack.familyId === "certification" && resolvedMode === "certification-diagnostic-baseline") {
@@ -327,7 +327,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         });
       return;
     }
-    const practiceMode = resolvedMode as PracticeSessionMode;
+    const practiceMode = resolvedMode as CanonicalPracticeModeId;
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({
@@ -395,13 +395,13 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                   return;
                 }
                 if (isDesignInterviewTrack) {
-                  startSession(primaryMode.mode as PracticeSessionMode, "practiceHub");
+                  startSession(primaryMode.mode as CanonicalPracticeModeId, "practiceHub");
                   return;
                 }
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    mode: isDesignInterviewTrack ? (modes[0]?.mode as PracticeSessionMode) : "certification-focus-practice",
+                    mode: isDesignInterviewTrack ? (modes[0]?.mode as CanonicalPracticeModeId) : "certification-focus-practice",
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,

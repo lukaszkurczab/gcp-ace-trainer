@@ -2,7 +2,7 @@
 
 Priorytet i status określa wyłącznie [plan główny](../../PATTERNLY-WORKING-PLAN.md). Porównanie z 07.10.2026 obejmuje źródła contentu `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03` i wersję audytowaną `78ba999098ea12704b74fe9de2eecdf89578e885`.
 
-Zachowano 158 zakresów napraw obejmujących 2 129 aktualnych pytań. Pełna treść każdego wskazanego pytania jest identyczna z treścią ocenianą podczas audytu. Dokumenty poniżej zawierają konkretne problemy, identyfikatory i skróty plików. Pozwalają rozpocząć poprawę wybranej partii bez odtwarzania całego audytu. Przed zmianą sprawdź jednak, czy pliki nadal odpowiadają tym skrótom.
+Historyczna lista zachowuje 158 zakresów napraw obejmujących 2 129 pytań z porównania 07.10. Treść niezmienionych zakresów odpowiada ocenianym źródłom; naprawy i ich aktualny status wskazano przy istniejących zadaniach. Dokumenty poniżej zawierają konkretne problemy, identyfikatory i skróty plików. Pozwalają rozpocząć poprawę wybranej partii bez odtwarzania całego audytu. Przed zmianą sprawdź jednak, czy pliki nadal odpowiadają tym skrótom.
 
 ## Zakresy już rozwiązane
 
@@ -32,6 +32,10 @@ Doprowadź spójnie zmianę źródeł, wersję i migrację, zatwierdzenie i dopu
 ## Celowany zakres Claude — autoryzowany 11.10.2026
 
 [Weryfikacja 37 kluczy P1 + korekta P2 Claude](content-maintenance/claude-certified-architect-professional-certification.md): PO autoryzował wykonanie i publikację przed iOS. Niezależne QA wykazało poprawność wszystkich 37 kluczy już w wskazanym source SHA; błędne były litery ID z raportu. W źródle zmieniono tylko P2, z testem regresji dokładnych 38 przypadków. Niezależne QA, runtime admission i release gate PASS; publikacja Git autoryzowana przez PO. Q13 bez zmian. Nie jest to pełny odbiór 845 pytań ani przywrócenie dawnych rozstrzygniętych findingów.
+
+## Celowany zakres BESD — autoryzowany 11.10.2026
+
+[134 naprawy N02-B02–B09 i dowód rodziny BESD-09-04](content-maintenance/backend-system-design-interview.md): osiem istniejących FCA-EDIT otrzymało nowe tożsamości pytań i opcji, pełny mapping before/after oraz niezależny semantic QA PASS 134/134. B01 N02/N04 pozostają niezmienione. Aktualny statyczny alert obejmuje 1401 pytań w 79 plikach, z dokładnym ledgerem ścieżek, ID i hashy w tej samej specyfikacji; to nie jest odbiór semantyczny pozostałego banku. Osiem zadań jest zamkniętych: source i app opublikowane, niezależny QA, runtime admission oraz pełne hosted CI PASS. Końcowe commity i dowody znajdują się w sekcji autoryzowanego wyjątku.
 
 ## Celowane naprawy AWS SAA — odebrane 11.10.2026
 

@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 
-import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { closeActiveProfileStorage, activatePreparedProfile, prepareProfileStorage, setProfileStoragePreparationFactoryForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
-import { openProfileStorageRouter, type StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
+import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import { CANONICAL_RECORD_SCHEMA } from "../../storage/repositories/canonicalRecordCodec";
 import { STORAGE_KEYS } from "../../storage/keys";
@@ -32,6 +32,8 @@ import {
   GUEST_LOCAL_DATA_EXPORT_FILE_PREFIX,
 } from "./guestLocalDataExportService";
 import type { ProfileExportFile, ProfileExportFileStore } from "../account/profileExportFileStore";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const INSTALLATION_ID = "11111111-1111-4111-8111-111111111111";
 const MARKER_DATASET_ID = "22222222-2222-4222-8222-222222222222";
@@ -44,17 +46,6 @@ class MemoryControlStore implements StorageManifestStore {
   async remove(key: string) { this.values.delete(key); }
 }
 
-function profileRegistry(profile: StorageProfile): string {
-  const body = {
-    version: 1,
-    generation: 1,
-    profiles: [profile],
-    legacyProfileId: profile.kind === "legacy_guest" ? profile.id : null,
-    selectedProfileId: profile.id,
-  };
-  return JSON.stringify({ ...body, checksum: sha256Utf8(JSON.stringify(body)) });
-}
-
 function envelope(payload: unknown, revision = 1): string {
   return JSON.stringify({ schemaIdentity: CANONICAL_RECORD_SCHEMA, revision, payload });
 }
@@ -63,24 +54,15 @@ function scopedKey(profileId: string, key: string): string {
   return `patternly:profile:v1:${profileId}:${encodeURIComponent(key)}`;
 }
 
-async function activateGuest(kind: "guest" | "legacy_guest", markerDatasetId: string) {
-  const profileId = kind === "legacy_guest" ? ROUTER_PROFILE_ID : ROUTER_PROFILE_ID;
-  const profile = Object.freeze({ id: profileId, kind, accountId: null }) as StorageProfile;
+async function activateGuest(markerDatasetId: string) {
   const base = new MemoryKeyValueStorage();
   const control = new MemoryControlStore();
-  const marker = envelope({ installationId: INSTALLATION_ID, localDatasetId: markerDatasetId, bindingState: "guest", accountId: null }, 4);
-  const access = envelope({ mode: "guest" }, 2);
-  if (kind === "legacy_guest") {
-    base.setString(STORAGE_KEYS.METADATA, "legacy-profile-metadata");
-    base.setString(STORAGE_KEYS.GUEST_INSTALLATION, marker);
-    base.setString(STORAGE_KEYS.GUEST_ACCESS, access);
-  } else {
-    base.setString(scopedKey(profileId, STORAGE_KEYS.GUEST_INSTALLATION), marker);
-    base.setString(scopedKey(profileId, STORAGE_KEYS.GUEST_ACCESS), access);
-  }
-  control.values.set("patternly.profile-root.v1.b", profileRegistry(profile));
-  const router = await openProfileStorageRouter(base, control);
+  const router = await openProfileStorageRouter(base, control, {
+    identity: { async create() { return { installationId: INSTALLATION_ID, localDatasetId: ROUTER_PROFILE_ID }; } },
+  });
+  const profile = router.profile;
   await router.selectExistingGuest(profile.id);
+  if (markerDatasetId !== profile.id) base.setString(scopedKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION), envelope({ installationId: INSTALLATION_ID, localDatasetId: markerDatasetId, bindingState: "guest", accountId: null }, 4));
   setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
   const prepared = await prepareProfileStorage();
   activatePreparedProfile(prepared.id, prepared.kind);
@@ -110,11 +92,10 @@ function dependencies(files: ProfileExportFileStore, share: () => Promise<"share
   return { files, share, createExportId: () => "guest-export-12345678", now: () => new Date("2026-10-09T12:00:00.000Z") };
 }
 
-test("exports only the active legacy Guest profile when its canonical dataset identity differs from the storage profile", async () => {
+test("exports only the active current Guest profile without exposing its identifiers", async () => {
   closeActiveProfileStorage();
-  const { base, profile } = await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  const { base, profile } = await activateGuest(ROUTER_PROFILE_ID);
   try {
-    assert.notEqual(profile.id, MARKER_DATASET_ID);
     const before = base.snapshot();
     const files = fileStore();
     let shares = 0;
@@ -131,7 +112,7 @@ test("exports only the active legacy Guest profile when its canonical dataset id
     assert.ok(document.manifest.included.includes("sessions and saved draft"));
     assert.ok(document.manifest.omitted.some((entry: { category: string }) => entry.category === "report delivery identifiers and transport state"));
     assert.equal(JSON.stringify(document).includes(INSTALLATION_ID), false);
-    assert.equal(JSON.stringify(document).includes(MARKER_DATASET_ID), false);
+    assert.equal(JSON.stringify(document).includes(profile.id), false);
   } finally {
     closeActiveProfileStorage();
     setProfileStoragePreparationFactoryForTests(null);
@@ -140,7 +121,7 @@ test("exports only the active legacy Guest profile when its canonical dataset id
 
 test("rejects a modern Guest marker whose dataset ID does not match its profile before file creation", async () => {
   closeActiveProfileStorage();
-  await activateGuest("guest", MARKER_DATASET_ID);
+  await activateGuest(MARKER_DATASET_ID);
   try {
     const files = fileStore();
     let shares = 0;
@@ -156,7 +137,7 @@ test("rejects a modern Guest marker whose dataset ID does not match its profile 
 
 test("exports an empty new Guest profile with explicit empty categories", async () => {
   closeActiveProfileStorage();
-  await activateGuest("guest", ROUTER_PROFILE_ID);
+  await activateGuest(ROUTER_PROFILE_ID);
   try {
     const files = fileStore();
     const result = await exportGuestLocalData(dependencies(files.store, async () => "dismissedAction"));
@@ -189,7 +170,7 @@ function retainedHistoryRecords(suffix: string) {
 
 test("exports all validated retained history families and describes unavailable question text", async () => {
   closeActiveProfileStorage();
-  await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  await activateGuest(ROUTER_PROFILE_ID);
   try {
     const records = retainedHistoryRecords("export");
     await saveArchivalHistoryRecord(records.archival);
@@ -211,7 +192,7 @@ test("exports all validated retained history families and describes unavailable 
 
 test("changed retained history during file writing prevents sharing and removes the file", async () => {
   closeActiveProfileStorage();
-  await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  await activateGuest(ROUTER_PROFILE_ID);
   try {
     const records = retainedHistoryRecords("changed");
     await saveUnavailableReviewRecord(records.review);
@@ -227,7 +208,7 @@ test("changed retained history during file writing prevents sharing and removes 
 });
 test("includes user settings, reminder preferences, and report text without transport metadata", async () => {
   closeActiveProfileStorage();
-  const { base } = await activateGuest("guest", ROUTER_PROFILE_ID);
+  const { base } = await activateGuest(ROUTER_PROFILE_ID);
   try {
     await saveSettings({ appearance: "dark", language: "pl" });
     saveDeviceReminderSettings({ schemaVersion: 1, enabled: false, identity: null, schedules: [], legacyNotificationIds: [], pending: null }, null);
@@ -280,7 +261,7 @@ test("includes user settings, reminder preferences, and report text without tran
 
 test("includes goal onboarding preferences and their explicit manifest category", async () => {
   closeActiveProfileStorage();
-  await activateGuest("guest", ROUTER_PROFILE_ID);
+  await activateGuest(ROUTER_PROFILE_ID);
   try {
     dismissGoalOnboarding("coding-interview-dsa-problem-solving");
     const files = fileStore();
@@ -296,7 +277,7 @@ test("includes goal onboarding preferences and their explicit manifest category"
 
 test("exports the active session, persisted draft, and canonical foreground checkpoint", async () => {
   closeActiveProfileStorage();
-  const { base } = await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  const { base } = await activateGuest(ROUTER_PROFILE_ID);
   try {
     const trackId = "coding-interview-dsa-problem-solving" as const;
     const session = createTrainingSession({
@@ -321,14 +302,14 @@ test("exports the active session, persisted draft, and canonical foreground chec
       status: "active",
       startedAt: "2026-10-09T11:00:00.000Z",
     });
-    await saveTrainingSession(session);
+    await saveTrainingSession(session, productionTrackAdmissionContext);
     const draft = createTrainingSessionDraft({
       sessionId: session.id,
       trackId,
       responsesByOccurrenceId: { "guest-export-occurrence": { selectedOptionIds: ["option-a"] } },
       updatedAt: "2026-10-09T11:01:00.000Z",
     });
-    await saveTrainingSessionDraft(draft, null);
+    await saveTrainingSessionDraft(draft, null, productionTrackAdmissionContext);
     await saveActiveForegroundTimer(createForegroundTimerState({
       schemaVersion: 1,
       timerVersion: 1,
@@ -339,7 +320,7 @@ test("exports the active session, persisted draft, and canonical foreground chec
       checkpointRevision: 1,
       lastCheckpointAt: "2026-10-09T11:01:00.000Z",
       running: true,
-    }), null);
+    }), null, productionTrackAdmissionContext);
 
     const before = base.snapshot();
     const files = fileStore();
@@ -360,7 +341,7 @@ test("exports the active session, persisted draft, and canonical foreground chec
 
 test("removes the temporary export and refuses sharing if the profile lease changes during file writing", async () => {
   closeActiveProfileStorage();
-  await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  await activateGuest(ROUTER_PROFILE_ID);
   try {
     const files = fileStore(() => closeActiveProfileStorage());
     let shares = 0;
@@ -377,7 +358,7 @@ test("removes the temporary export and refuses sharing if the profile lease chan
 
 test("removes the temporary export when included user data changes during file writing", async () => {
   closeActiveProfileStorage();
-  await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  await activateGuest(ROUTER_PROFILE_ID);
   try {
     const files = fileStore(() => { void saveSettings({ appearance: "dark", language: "pl" }); });
     let shares = 0;
@@ -393,14 +374,32 @@ test("removes the temporary export when included user data changes during file w
 
 test("removes the temporary export when the Guest marker is rebound during file writing", async () => {
   closeActiveProfileStorage();
-  const { base } = await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  const { base, profile } = await activateGuest(ROUTER_PROFILE_ID);
   try {
-    const files = fileStore(() => base.setString(STORAGE_KEYS.GUEST_INSTALLATION, envelope({
+    const files = fileStore(() => base.setString(scopedKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION), envelope({
       installationId: "44444444-4444-4444-8444-444444444444",
       localDatasetId: MARKER_DATASET_ID,
       bindingState: "guest",
       accountId: null,
     }, 5)));
+    let shares = 0;
+    const result = await exportGuestLocalData(dependencies(files.store, async () => { shares += 1; return "sharedAction"; }));
+    assert.deepEqual(result, { kind: "failure", failure: "guestProfileUnavailable" });
+    assert.equal(files.deleted, 1);
+    assert.equal(shares, 0);
+  } finally {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+  }
+});
+
+test("fails closed when an unsupported reminder journal appears during file writing", async () => {
+  closeActiveProfileStorage();
+  await activateGuest(ROUTER_PROFILE_ID);
+  try {
+    const files = fileStore(() => writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, {
+      created: [], desired: null, remainingOldIds: [], transactionId: "legacy-pending-reminder",
+    }));
     let shares = 0;
     const result = await exportGuestLocalData(dependencies(files.store, async () => { shares += 1; return "sharedAction"; }));
     assert.deepEqual(result, { kind: "failure", failure: "sourceChanged" });
@@ -412,32 +411,29 @@ test("removes the temporary export when the Guest marker is rebound during file 
   }
 });
 
-test("fails closed when a reminder journal appears during file writing", async () => {
-  closeActiveProfileStorage();
-  await activateGuest("legacy_guest", MARKER_DATASET_ID);
-  try {
-    const files = fileStore(() => writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, {
-      created: [], desired: null, remainingOldIds: [], transactionId: "legacy-pending-reminder",
-    }));
-    let shares = 0;
-    const result = await exportGuestLocalData(dependencies(files.store, async () => { shares += 1; return "sharedAction"; }));
-    assert.deepEqual(result, { kind: "failure", failure: "sourcePending" });
-    assert.equal(files.deleted, 1);
-    assert.equal(shares, 0);
-  } finally {
-    closeActiveProfileStorage();
-    setProfileStoragePreparationFactoryForTests(null);
-  }
-});
-
 test("fails closed when an accepted plan no longer matches its goal during file writing", async () => {
   closeActiveProfileStorage();
-  await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  await activateGuest(ROUTER_PROFILE_ID);
   try {
     const trackId = "coding-interview-dsa-problem-solving" as const;
-    const goal = createDefaultGoal(trackId);
-    await saveGoalSnapshot(goal, null);
-    saveLearningPlanAtomically({
+    const goal = createDefaultGoal(requireGoalPolicy(trackId));
+    await saveGoalSnapshot(goal, null, requireGoalPolicy(goal.trackId));
+    saveLearningPlanAtomically({ policy: requireGoalPolicy({
+        schemaVersion: 1,
+        planId: "guest-export-plan",
+        trackId,
+        goalRevision: 1,
+        status: "accepted",
+        timezone: "Europe/Warsaw",
+        contentVersion: "content-v1",
+        artifactSha256: "a".repeat(64),
+        acceptedTarget: { meaning: "event", targetDate: null },
+        createdAt: "2026-10-09T11:00:00.000Z",
+        updatedAt: "2026-10-09T11:00:00.000Z",
+        planRevision: 1,
+        commandId: "guest-export-plan-command",
+        slots: [{ slotId: createLearningPlanSlotId("guest-export-slot"), day: "mon", localTime: "18:00", sessionLength: 10 }],
+      }.trackId),
       plan: {
         schemaVersion: 1,
         planId: "guest-export-plan",
@@ -471,7 +467,7 @@ test("fails closed when an accepted plan no longer matches its goal during file 
 
 test("fails closed when a completed session has no persisted result", async () => {
   closeActiveProfileStorage();
-  await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  await activateGuest(ROUTER_PROFILE_ID);
   try {
     const trackId = "coding-interview-dsa-problem-solving" as const;
     await saveTrainingSession(createTrainingSession({
@@ -490,7 +486,7 @@ test("fails closed when a completed session has no persisted result", async () =
       status: "completed",
       startedAt: "2026-10-09T11:00:00.000Z",
       completedAt: "2026-10-09T11:01:00.000Z",
-    }));
+    }), productionTrackAdmissionContext);
     const files = fileStore();
     const result = await exportGuestLocalData(dependencies(files.store, async () => "sharedAction"));
     assert.deepEqual(result, { kind: "failure", failure: "sourceInvalid" });
@@ -503,9 +499,9 @@ test("fails closed when a completed session has no persisted result", async () =
 
 test("fails closed on corrupt canonical data without creating a file", async () => {
   closeActiveProfileStorage();
-  const { base } = await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  const { base } = await activateGuest(ROUTER_PROFILE_ID);
   try {
-    base.setString(STORAGE_KEYS.TRAINING_SESSION_INDEX, "not-json");
+  base.setString(scopedKey(ROUTER_PROFILE_ID, STORAGE_KEYS.TRAINING_SESSION_INDEX), "not-json");
     const files = fileStore();
     const result = await exportGuestLocalData(dependencies(files.store, async () => "sharedAction"));
     assert.deepEqual(result, { kind: "failure", failure: "sourceInvalid" });
@@ -518,7 +514,7 @@ test("fails closed on corrupt canonical data without creating a file", async () 
 
 test("orphan results fail the full evidence gate before file creation and remain unchanged on repeat", async () => {
   closeActiveProfileStorage();
-  const { base } = await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  const { base } = await activateGuest(ROUTER_PROFILE_ID);
   try {
     const trackId = "coding-interview-dsa-problem-solving" as const;
     const orphan = createTrainingSessionResult({
@@ -553,9 +549,9 @@ test("corrupt attempt, review, archive, and unavailable indexes fail before file
   ];
   for (const key of corruptibleKeys) {
     closeActiveProfileStorage();
-    const { base } = await activateGuest("legacy_guest", MARKER_DATASET_ID);
+    const { base } = await activateGuest(ROUTER_PROFILE_ID);
     try {
-      base.setString(key, "not-json");
+      base.setString(scopedKey(ROUTER_PROFILE_ID, key), "not-json");
       const before = base.snapshot();
       const files = fileStore();
       let shares = 0;
@@ -572,7 +568,7 @@ test("corrupt attempt, review, archive, and unavailable indexes fail before file
 
 test("reports file, share, and cleanup failures and removes temporary data whenever possible", async () => {
   closeActiveProfileStorage();
-  await activateGuest("legacy_guest", MARKER_DATASET_ID);
+  await activateGuest(ROUTER_PROFILE_ID);
   try {
     const writeFailureFiles = fileStore(undefined, { failWrite: true });
     assert.deepEqual(await exportGuestLocalData(dependencies(writeFailureFiles.store, async () => "sharedAction")), { kind: "failure", failure: "fileFailure" });
@@ -597,6 +593,6 @@ test("orphan cleanup deletes only Guest export files for the selected profile", 
     file(`${GUEST_LOCAL_DATA_EXPORT_FILE_PREFIX}${ROUTER_PROFILE_ID}-old.json`),
     file(`${GUEST_LOCAL_DATA_EXPORT_FILE_PREFIX}${MARKER_DATASET_ID}-other.json`),
     file("unrelated.json"),
-  ] }, { id: ROUTER_PROFILE_ID, kind: "legacy_guest", accountId: null });
+  ] }, { id: ROUTER_PROFILE_ID, kind: "guest", accountId: null });
   assert.deepEqual(deleted, [`${GUEST_LOCAL_DATA_EXPORT_FILE_PREFIX}${ROUTER_PROFILE_ID}-old.json`]);
 });

@@ -1,109 +1,86 @@
 import { JournalMaterializationError } from "../../storage/errors";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
+import { canPersistTrainingSessionDraft } from "../../domain";
 import {
-  clearActiveTrainingSession,
-  clearActiveForegroundTimer,
-  clearActiveTrainingSessionDraft,
   getActiveTrainingSessionDraft,
-  materializeReviewQueueItems,
-  materializeReviewQueueRemoval,
-  materializeTrainingAttempt,
-  materializeTrainingSession,
-  materializeActiveTrainingSessionDraft,
+  materializeMutationPhysicalWrites,
   readReviewQueueForJournal,
   readTrainingSessionForJournal,
-  saveTrainingSessionResult,
+  assertTrainingSessionJournalWrite,
+  assertTrainingSessionResultJournalWrite,
 } from "../../storage/repositories";
-import { assertMutationJournalIntegrity, readActiveMutationJournal, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
+import { readActiveTrainingSessionDraftStateProof } from "../../storage/repositories/trainingSessionDraftRepository";
+import { isAcceptedSimulationFinalization } from "../../storage/repositories/trainingModelGuards";
+import { assertValidMutationJournal, getActiveMutationJournal, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
 import { assertTrainingEvidenceJournalPreflight } from "../../storage/repositories/trainingEvidenceIntegrityRepository";
 import { assertLearningStateResetReplayState, materializeLearningStateReset } from "../../storage/repositories/learningStateResetRepository";
 import { materializeGoalPlanAcceptance, type GoalPlanAcceptanceInterruptionHook } from "../../storage/repositories/goalPlanAcceptanceRepository";
 import { materializeAccountSyncConflictResolution } from "../../storage/repositories/accountSyncConflictResolutionRepository";
-
-function unsupportedWrite(write: never): never { throw new Error(`Unsupported journal write kind: ${String((write as { kind?: unknown }).kind)}.`); }
+import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
 
 export async function materializeMutation(record: MutationJournalRecord, beforeGoalPlanWrite?: GoalPlanAcceptanceInterruptionHook): Promise<void> {
   try {
-    assertMutationJournalIntegrity(record);
+    assertValidMutationJournal(record, productionLearningDataAdmissionContext);
     if (record.operation === "reset_learning_state") {
       const reset = record.writes[0];
       if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
       assertLearningStateResetReplayState(reset.targetPlan);
     } else {
-      assertTrainingEvidenceJournalPreflight(record);
+      assertTrainingEvidenceJournalPreflight(record, productionTrackAdmissionContext);
+    }
+    if (record.operation === "accept_goal_plan" || record.operation === "resolve_account_sync_conflict") {
+      const write = record.writes[0];
+      if (write?.kind === "accept_goal_plan") materializeGoalPlanAcceptance(write.record, record, resolveGoalPolicy(productionLearningDataAdmissionContext.goalPolicyResolver, write.record.trackId), beforeGoalPlanWrite ? (context) => {
+        const active = getActiveMutationJournal(productionLearningDataAdmissionContext);
+        if (!active || canonicalSerialize(active) !== canonicalSerialize(record)) throw new Error("The exact durable goal-plan journal is no longer current.");
+        beforeGoalPlanWrite(Object.freeze({ ...context, journal: active }));
+      } : undefined);
+      else if (write?.kind === "resolve_account_sync_conflict") materializeAccountSyncConflictResolution(write.record, record, resolveGoalPolicy(productionLearningDataAdmissionContext.goalPolicyResolver, write.record.trackId), productionLearningDataAdmissionContext);
+      else throw new Error("A pair journal has no exact typed write.");
+      return;
+    }
+    if (record.operation === "reset_learning_state") {
+      const reset = record.writes[0];
+      if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
+      materializeLearningStateReset(reset.targetPlan);
+      return;
     }
     await assertDraftDeletePreflight(record);
     await assertDraftClearPreflight(record);
     await assertReviewDeletePreflight(record);
     for (const write of record.writes) {
-      switch (write.kind) {
-        case "accept_goal_plan": {
-          if (beforeGoalPlanWrite && (record.operation !== "accept_goal_plan" || !isGoalPlanAcceptanceJournal(record))) throw new JournalMaterializationError(new Error("A goal-plan interruption hook cannot attach to a training mutation."));
-          materializeGoalPlanAcceptance(write.record, record, beforeGoalPlanWrite ? (context) => {
-            const active = readActiveMutationJournal();
-            if (!active || canonicalSerialize(active) !== canonicalSerialize(record)) throw new Error("The exact durable goal-plan journal is no longer current.");
-            beforeGoalPlanWrite(Object.freeze({ ...context, journal: active }));
-          } : undefined);
-          break;
-        }
-        case "resolve_account_sync_conflict":
-          materializeAccountSyncConflictResolution(write.record, record);
-          break;
-        case "put_attempt": await materializeTrainingAttempt(write.record); break;
-        case "put_review_entry":
-        case "put_review_entry_for_attempt": await materializeReviewQueueItems([write.record]); break;
-        case "update_review_entry": {
-          if (!readReviewQueueForJournal([write.record]).some((entry) => entry.id === write.record.id)) throw new Error(`Review update ${write.record.id} has no durable record to update.`);
-          await materializeReviewQueueItems([write.record]);
-          break;
-        }
-        case "delete_review_entry": await materializeReviewQueueRemoval(write.record); break;
-        case "delete_review_entry_for_attempt": {
-          const durable = readReviewQueueForJournal([write.record]).find((entry) => entry.id === write.record.id);
-          if (durable) await materializeReviewQueueRemoval(write.record);
-          break;
-        }
-        case "put_session": await materializeTrainingSession(write.record); break;
-        case "put_session_result": await saveTrainingSessionResult(write.record); break;
-        case "put_active_session_draft": await materializeActiveTrainingSessionDraft(write.record); break;
-        case "clear_active_session":
-          await clearActiveTrainingSession(write.sessionId);
-          await clearActiveForegroundTimer(write.sessionId);
-          break;
-        case "clear_active_session_draft": await clearActiveTrainingSessionDraft(write.sessionId); break;
-        case "delete_active_session_draft": {
-          const activeDraft = await getActiveTrainingSessionDraft();
-          if (activeDraft && canonicalSerialize(activeDraft) !== canonicalSerialize(write.record)) throw new Error(`Active draft for ${write.record.sessionId} does not match the journaled finalization draft.`);
-          if (activeDraft) await clearActiveTrainingSessionDraft(write.record.sessionId);
-          break;
-        }
-        case "clear_learning_state":
-          materializeLearningStateReset(write.targetPlan);
-          break;
-        default: unsupportedWrite(write);
+      if (write.kind === "put_session") await assertTrainingSessionJournalWrite(write.record, productionTrackAdmissionContext);
+      if (write.kind === "put_session_result") await assertTrainingSessionResultJournalWrite(write.record, productionTrackAdmissionContext);
+    }
+    const draftPut = record.writes.find((write) => write.kind === "put_active_session_draft");
+    if (draftPut?.kind === "put_active_session_draft") {
+      const sessionWrite = record.writes.find((write) => write.kind === "put_session");
+      const activeDraft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
+      if (!sessionWrite || sessionWrite.kind !== "put_session" || sessionWrite.record.status !== "active" ||
+        sessionWrite.record.id !== draftPut.record.sessionId || sessionWrite.record.trackId !== draftPut.record.trackId || !canPersistTrainingSessionDraft(sessionWrite.record) ||
+        (activeDraft && canonicalSerialize(activeDraft) !== canonicalSerialize(draftPut.record))) {
+        throw new Error("Journaled active draft does not match its active session or conflicts with the durable draft.");
       }
     }
+    materializeMutationPhysicalWrites(record, productionTrackAdmissionContext);
   } catch (error) {
     throw new JournalMaterializationError(error);
   }
-}
-
-function isGoalPlanAcceptanceJournal(record: MutationJournalRecord): record is Extract<MutationJournalRecord, { operation: "accept_goal_plan" }> {
-  return record.operation === "accept_goal_plan";
 }
 
 async function assertDraftClearPreflight(record: MutationJournalRecord): Promise<void> {
   const draftClear = record.writes.find((write): write is Extract<MutationJournalRecord["writes"][number], { kind: "clear_active_session_draft" }> => write.kind === "clear_active_session_draft");
   if (!draftClear) return;
   const sessionWrite = record.writes.find((write): write is Extract<MutationJournalRecord["writes"][number], { kind: "put_session" }> => write.kind === "put_session");
-  const activeDraft = await getActiveTrainingSessionDraft();
+  const activeDraft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   if (activeDraft) {
     if (!sessionWrite || activeDraft.sessionId !== draftClear.sessionId || activeDraft.sessionId !== sessionWrite.record.id || activeDraft.trackId !== sessionWrite.record.trackId) {
       throw new Error(`Active draft does not match the journaled abandonment for ${draftClear.sessionId}.`);
     }
     return;
   }
-  const durableSession = sessionWrite ? readTrainingSessionForJournal(sessionWrite.record) ?? undefined : undefined;
+  const durableSession = sessionWrite ? readTrainingSessionForJournal(sessionWrite.record, productionTrackAdmissionContext) ?? undefined : undefined;
   if (!sessionWrite || !durableSession || canonicalSerialize(durableSession) !== canonicalSerialize(sessionWrite.record)) {
     throw new Error(`Journaled draft cleanup for ${draftClear.sessionId} cannot replay before its terminal session is durable.`);
   }
@@ -112,7 +89,7 @@ async function assertDraftClearPreflight(record: MutationJournalRecord): Promise
 async function assertReviewDeletePreflight(record: MutationJournalRecord): Promise<void> {
   const deletes = record.writes.filter((write) => write.kind === "delete_review_entry_for_attempt");
   if (deletes.length === 0) return;
-  const durable = readReviewQueueForJournal(deletes.map((write) => write.record));
+  const durable = readReviewQueueForJournal(deletes.map((write) => write.record), productionTrackAdmissionContext);
   for (const write of deletes) {
     const existing = durable.find((entry) => entry.id === write.record.id);
     if (existing && canonicalSerialize(existing) !== canonicalSerialize(write.record)) {
@@ -124,14 +101,15 @@ async function assertReviewDeletePreflight(record: MutationJournalRecord): Promi
 async function assertDraftDeletePreflight(record: MutationJournalRecord): Promise<void> {
   const draftDelete = record.writes.find((write) => write.kind === "delete_active_session_draft");
   if (!draftDelete) return;
-  const activeDraft = await getActiveTrainingSessionDraft();
-  if (activeDraft) {
-    if (canonicalSerialize(activeDraft) !== canonicalSerialize(draftDelete.record)) throw new Error(`Active draft for ${draftDelete.record.sessionId} does not match the journaled finalization draft.`);
+  const state = readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext);
+  if (state) {
+    if (canonicalSerialize(state.state) !== canonicalSerialize(draftDelete.record)) throw new Error("Active D state does not match the exact journaled finalization cleanup.");
     return;
   }
   const completedWrite = record.writes.find((write) => write.kind === "put_session");
-  const durableSession = completedWrite ? readTrainingSessionForJournal(completedWrite.record) ?? undefined : undefined;
+  const durableSession = completedWrite ? readTrainingSessionForJournal(completedWrite.record, productionTrackAdmissionContext) ?? undefined : undefined;
   if (!completedWrite || !durableSession || canonicalSerialize(durableSession) !== canonicalSerialize(completedWrite.record)) {
-    throw new Error(`Journaled draft deletion for ${draftDelete.record.sessionId} cannot replay before its completed session is durable.`);
+    const draft = isAcceptedSimulationFinalization(draftDelete.record, productionTrackAdmissionContext) ? draftDelete.record.responseDraft : draftDelete.record;
+    throw new Error(`Journaled draft deletion for ${draft.sessionId} cannot replay before its completed session is durable.`);
   }
 }

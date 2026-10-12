@@ -10,6 +10,7 @@ test("learning plan fixture URL accepts only the explicit development smoke case
     "ready3-no-target", "ready1-target", "ready7-target", "shortened", "shortfall",
     "quality-unmet-target", "quality-unmet-open-ended",
     "delayed-loading", "stale", "unavailable", "accept-validation", "accept-stale", "edit-storage", "edit-stale",
+    "cc04-missing-unit", "cc04-completed",
   ]);
   assert.equal(parseLearningPlanProposalFixtureUrl(ready, true), "ready3-no-target");
   for (const url of [null, "", `${LEARNING_PLAN_PROPOSAL_FIXTURE_URL}?case=unknown`, `${ready}&case=stale`, `${ready}&anything=true`, `${ready}#fragment`, `com.lkurczab.patternly:/audit/learning-plan-proposal?case=ready3-no-target`, `https://example.test/audit/learning-plan-proposal?case=ready3-no-target`]) {

@@ -6,8 +6,6 @@ import { fileURLToPath } from 'node:url';
 
 const APP_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const APP_PACKAGE = resolve(APP_ROOT, 'package.json');
-const CDP_ORIGIN = 'http://127.0.0.1:8081';
-const CDP_LIST_URL = `${CDP_ORIGIN}/json/list`;
 const CDP_TIMEOUT_MS = 5_000;
 const INVENTORY_TIMEOUT_MS = 30_000;
 const OPERATION_KEY = '__patternlyGuestExportReadbackV1';
@@ -17,6 +15,7 @@ const NATIVE_TITLE = 'com.lkurczab.patternly (iPhone 17)';
 
 const ERROR_CATEGORIES = new Set([
   'input_rejected', 'private_root_invalid', 'private_file_invalid', 'private_path_invalid',
+  'metro_origin_rejected',
   'expected_guest_hash_rejected', 'native_target_ambiguous', 'native_target_rejected',
   'native_connect_timeout', 'native_connect_failed', 'native_read_timeout',
   'native_owner_read_rejected', 'native_read_busy', 'native_guest_profile_mismatch',
@@ -27,19 +26,48 @@ export function parseArguments(argv) {
   const values = new Map();
   for (let index = 0; index < argv.length; index += 1) {
     const name = argv[index];
-    if (!['--private-root', '--expected-guest-sha256', '--output'].includes(name) || values.has(name)) throw new Error('input_rejected');
+    if (!['--private-root', '--expected-guest-sha256', '--output', '--metro-origin'].includes(name) || values.has(name)) throw new Error('input_rejected');
     const value = argv[index + 1];
     if (!value || value.startsWith('--')) throw new Error('input_rejected');
     values.set(name, value);
     index += 1;
   }
-  if (values.size !== 3) throw new Error('input_rejected');
+  if (values.size !== 4) throw new Error('input_rejected');
   if (!/^[a-f0-9]{64}$/u.test(values.get('--expected-guest-sha256') ?? '')) throw new Error('expected_guest_hash_rejected');
+  const metroOrigin = parseMetroOrigin(values.get('--metro-origin'));
   return Object.freeze({
     privateRoot: values.get('--private-root'),
     expectedGuestProfileIdSha256: values.get('--expected-guest-sha256'),
     output: values.get('--output'),
+    metroOrigin,
   });
+}
+
+export function parseMetroOrigin(value) {
+  if (typeof value !== 'string') throw new Error('metro_origin_rejected');
+  let parsed;
+  try { parsed = new URL(value); } catch { throw new Error('metro_origin_rejected'); }
+  const port = Number(parsed.port);
+  if (parsed.protocol !== 'http:' || parsed.hostname !== '127.0.0.1' || !parsed.port
+    || !Number.isInteger(port) || port < 1 || port > 65_535
+    || parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash
+    || parsed.origin !== value || value !== `http://127.0.0.1:${port}`) throw new Error('metro_origin_rejected');
+  return parsed.origin;
+}
+
+export function validateNativeWebSocketEndpoint(value, metroOrigin) {
+  let endpoint;
+  let origin;
+  try { endpoint = new URL(value); origin = new URL(metroOrigin); } catch { throw new Error('native_target_rejected'); }
+  if (endpoint.protocol !== 'ws:' || endpoint.hostname !== '127.0.0.1' || endpoint.port !== origin.port
+    || endpoint.username || endpoint.password || endpoint.hash || origin.protocol !== 'http:'
+    || origin.hostname !== '127.0.0.1' || !origin.port) throw new Error('native_target_rejected');
+  return endpoint;
+}
+
+export function nativeTargetConnectionSettings(webSocketDebuggerUrl, metroOrigin) {
+  const endpoint = validateNativeWebSocketEndpoint(webSocketDebuggerUrl, metroOrigin);
+  return Object.freeze({ listUrl: `${metroOrigin}/json/list`, webSocketUrl: endpoint.href, webSocketOrigin: metroOrigin });
 }
 
 function privateBasename(name) {
@@ -91,7 +119,9 @@ export function buildReadExpression(expectedGuestProfileIdSha256, runId) {
     const runtime=load("src/infrastructure/runtime/runtimeMode.ts");
     const storage=load("src/infrastructure/storage/mmkvClient.ts");
     const hash=load("src/infrastructure/identity/sha256.ts").sha256Utf8;
-    const canonical=load("src/infrastructure/identity/canonicalSerialization.ts").canonicalSerialize;
+    const canonical=load("src/domain/identity/canonicalSerialization.ts").canonicalSerialize;
+    const learningAdmission=load("src/application/tracks/trackAdmissionContext.ts").productionLearningDataAdmissionContext;
+    const trackAdmission=learningAdmission.trackAdmission;
     const profileState=()=>storage.inspectPreparedProfileState();
     const scopeReader=load("src/storage/repositories/learningPlanInputSnapshot.ts");
     const capture=(state)=>{
@@ -99,47 +129,49 @@ export function buildReadExpression(expectedGuestProfileIdSha256, runId) {
       const lease=storage.captureActiveProfileStorageLease();
       if(!lease||!storage.isActiveProfileStorageLeaseCurrent(lease))reject("guest_lease_unavailable");
       const profile=storage.getActiveStorageProfileOrNull();
-      if(!profile||profile.id!==lease.profile.id||profile.kind!==lease.profile.kind||profile.accountId!==null||(profile.kind!=="guest"&&profile.kind!=="legacy_guest"))reject("guest_profile_required");
+      if(!profile||profile.id!==lease.profile.id||profile.kind!==lease.profile.kind||profile.accountId!==null||profile.kind!=="guest")reject("guest_profile_required");
       const profileIdSha256=hash(profile.id);
       if(profileIdSha256!==expectedGuestProfileIdSha256)reject("guest_profile_hash_mismatch");
       if(state.selectedProfile.id!==profile.id||state.selectedProfile.kind!==profile.kind)reject("guest_selection_mismatch");
-      const guests=state.profiles.filter((entry)=>entry.kind==="guest"||entry.kind==="legacy_guest");
+      const guests=state.profiles.filter((entry)=>entry.kind==="guest");
       if(guests.length!==1||guests[0]?.id!==profile.id)reject("guest_registry_not_unique");
       const guestInstallation=repo("guestInstallation").readGuestInstallation();
       if(!guestInstallation||guestInstallation.bindingState!=="guest"||guestInstallation.accountId!==null
-        ||(profile.kind==="guest"&&guestInstallation.localDatasetId!==profile.id))reject("guest_marker_invalid");
+        ||guestInstallation.localDatasetId!==profile.id)reject("guest_marker_invalid");
       const scope=scopeReader.readLearningPlanStorageScope();
-      const journal=repo("mutationJournal").readActiveMutationJournal();
+      const journal=repo("mutationJournal").getActiveMutationJournal(learningAdmission);
       if(journal)reject("source_pending");
       try{
-        repo("trainingEvidenceIntegrity").assertTrainingEvidenceIntegrity();
+        repo("trainingEvidenceIntegrity").assertTrainingEvidenceIntegrity(trackAdmission);
         repo("contentIdentityUnavailable").assertContentIdentityRecordIntegrity();
       }catch{reject("source_invalid");}
-      const sessionsResult=repo("trainingSession").readTrainingSessions();
-      const attemptsResult=repo("trainingAttempt").readTrainingAttempts();
-      const reviewResult=repo("reviewQueue").readReviewQueueSnapshot();
+      const sessionsResult=repo("trainingSession").readTrainingSessions(trackAdmission);
+      const attemptsResult=repo("trainingAttempt").readTrainingAttempts(trackAdmission);
+      const reviewResult=repo("reviewQueue").readReviewQueueSnapshot(trackAdmission);
       if(!sessionsResult.ok||sessionsResult.issues?.length||!attemptsResult.ok||attemptsResult.issues?.length||!reviewResult.ok||reviewResult.issues?.length)reject("source_invalid");
       const sessions=sessionsResult.value;
       if(new Set(sessions.map((entry)=>entry.id)).size!==sessions.length)reject("source_invalid");
-      const activeSession=repo("trainingSession").readActiveTrainingSession();
+      const activeSession=repo("trainingSession").readActiveTrainingSession(trackAdmission);
       const activeSessions=sessions.filter((entry)=>entry.status==="active");
       if(activeSessions.length>1||(activeSession===null)!==(activeSessions.length===0)||(activeSession!==null&&activeSessions[0]?.id!==activeSession.id))reject("source_invalid");
-      const draft=repo("trainingSessionDraft").readActiveTrainingSessionDraft();
+      const draft=repo("trainingSessionDraft").readActiveTrainingSessionDraft(trackAdmission);
       if(draft&&(!activeSession||draft.sessionId!==activeSession.id||draft.trackId!==activeSession.trackId))reject("source_invalid");
-      const foregroundTimer=repo("foregroundTimer").readActiveForegroundTimer();
+      const foregroundTimer=repo("foregroundTimer").readActiveForegroundTimer(trackAdmission);
       if(foregroundTimer&&(!activeSession||foregroundTimer.sessionId!==activeSession.id||foregroundTimer.trackId!==activeSession.trackId))reject("source_invalid");
       const results=sessions.flatMap((session)=>{
-        const result=repo("trainingSessionResult").readTrainingSessionResult(session.id);
+        const result=repo("trainingSessionResult").readTrainingSessionResult(session.id,trackAdmission);
         if(session.status==="completed"&&result===null)reject("source_invalid");
         if(result&&result.sessionId!==session.id)reject("source_invalid");
         return result?[{sessionId:session.id,result}]:[];
       });
       const domain=load("src/domain/index.ts");
+      const goalPolicy=load("src/domain/tracks/trackGoalPolicies.ts").requireGoalPolicy;
       const goals=[];
       const acceptedPlans=[];
       for(const trackId of domain.LAUNCH_TRACK_IDS){
-        const goal=repo("goal").readGoalSnapshot(trackId);
-        const plan=repo("learningPlan").getLearningPlanSnapshot(trackId);
+        const policy=goalPolicy(trackId);
+        const goal=repo("goal").readGoalSnapshot(trackId,policy);
+        const plan=repo("learningPlan").getLearningPlanSnapshot(trackId,policy);
         if(plan&&(!goal||plan.plan.goalRevision!==goal.revision||canonical(plan.plan.acceptedTarget)!==canonical(domain.acceptedTargetFromGoal(goal.record))))reject("source_invalid");
         if(goal)goals.push({trackId,goal:goal.record});
         if(plan)acceptedPlans.push({trackId,plan:plan.plan});
@@ -186,7 +218,7 @@ export function buildReadExpression(expectedGuestProfileIdSha256, runId) {
           ],
         },
       };
-      if(repo("mutationJournal").readActiveMutationJournal()||!storage.isActiveProfileStorageLeaseCurrent(lease)
+      if(repo("mutationJournal").getActiveMutationJournal(learningAdmission)||!storage.isActiveProfileStorageLeaseCurrent(lease)
         ||scopeReader.readLearningPlanStorageScope()!==scope)reject("source_changed");
       return {
         lease:{generation:lease.generation,profile:{id:lease.profile.id,kind:lease.profile.kind,accountId:lease.profile.accountId}},
@@ -210,13 +242,13 @@ export function buildReadExpression(expectedGuestProfileIdSha256, runId) {
         if(inventory?.kind!=="observed"||inventory.complete!==true)reject("inventory_unavailable");
         const expectedInventoryProfiles=firstState.profiles.map((profile)=>({profileIdSha256:hash(profile.id),kind:profile.kind})).sort((left,right)=>left.profileIdSha256.localeCompare(right.profileIdSha256));
         const observedInventoryProfiles=inventory.profileInventories?.map((profile)=>({profileIdSha256:profile.profileIdSha256,kind:profile.kind})).sort((left,right)=>left.profileIdSha256.localeCompare(right.profileIdSha256));
-        const inventoryGuests=inventory.profileInventories?.filter((profile)=>profile.profileIdSha256===expectedGuestProfileIdSha256&&(profile.kind==="guest"||profile.kind==="legacy_guest"))??[];
+        const inventoryGuests=inventory.profileInventories?.filter((profile)=>profile.profileIdSha256===expectedGuestProfileIdSha256&&profile.kind==="guest")??[];
         const expectedRegistryIdentityRows=firstState.profiles.map((profile)=>[hash(profile.id),profile.kind,profile.accountId===null?null:hash(profile.accountId)]).sort((left,right)=>JSON.stringify(left).localeCompare(JSON.stringify(right)));
         if(!Number.isSafeInteger(inventory.registryGeneration)||inventory.registryGeneration<0||!/^[a-f0-9]{64}$/u.test(inventory.registryChecksumSha256??"")
           ||inventory.profileCount!==firstState.profiles.length||!observedInventoryProfiles||inventory.profileInventories?.length!==inventory.profileCount
           ||canonical(expectedInventoryProfiles)!==canonical(observedInventoryProfiles)||inventoryGuests.length!==1
           ||inventoryGuests[0]?.kind!==first.profileKind
-          ||inventory.profileInventories.filter((profile)=>profile.kind==="guest"||profile.kind==="legacy_guest").length!==1
+          ||inventory.profileInventories.filter((profile)=>profile.kind==="guest").length!==1
           ||inventory.profileInventorySha256!==hash(JSON.stringify(expectedRegistryIdentityRows)))reject("source_changed");
         operation.phase="canonical_revalidation";
         const secondState=await profileState();
@@ -225,7 +257,7 @@ export function buildReadExpression(expectedGuestProfileIdSha256, runId) {
           ||first.fingerprint!==second.fingerprint||canonical(firstState.profiles)!==canonical(secondState.profiles))reject("source_changed");
         operation.result={
           schemaVersion:1,stage:"native_guest_export_readback",capturedAt:new Date().toISOString(),
-          registry:{selectedProfileKind:firstState.selectedProfile.kind,selectedProfileIdSha256:first.profileIdSha256,profileCount:firstState.profiles.length,guestCount:firstState.profiles.filter((entry)=>entry.kind==="guest"||entry.kind==="legacy_guest").length},
+          registry:{selectedProfileKind:firstState.selectedProfile.kind,selectedProfileIdSha256:first.profileIdSha256,profileCount:firstState.profiles.length,guestCount:firstState.profiles.filter((entry)=>entry.kind==="guest").length},
           canonicalExportInputs:first.exportInputs,rawUserReports:first.rawUserReports,
           source:{fingerprintSha256:hash(first.fingerprint),goalOnboardingRevision:first.goalOnboardingRevision,reminderRevision:first.reminderRevision},
           inventory:{
@@ -267,16 +299,14 @@ async function validatePaths(args) {
   return { privateRoot, outputPath, expectedGuestProfileIdSha256: args.expectedGuestProfileIdSha256 };
 }
 
-async function connectToNativeTarget(WS) {
-  const response = await fetch(CDP_LIST_URL, { signal: AbortSignal.timeout(CDP_TIMEOUT_MS) });
+async function connectToNativeTarget(WS, metroOrigin) {
+  const response = await fetch(`${metroOrigin}/json/list`, { signal: AbortSignal.timeout(CDP_TIMEOUT_MS) });
   if (!response.ok) throw new Error('native_target_rejected');
   const targets = await response.json();
   const matches = targets.filter((target) => target.type === 'node' && target.title === NATIVE_TITLE);
   if (matches.length !== 1) throw new Error('native_target_ambiguous');
-  const endpoint = new URL(matches[0].webSocketDebuggerUrl);
-  if (endpoint.protocol !== 'ws:' || endpoint.port !== '8081' || !['localhost', '127.0.0.1'].includes(endpoint.hostname)) throw new Error('native_target_rejected');
-  endpoint.hostname = '127.0.0.1';
-  const socket = new WS(endpoint.href, { origin: CDP_ORIGIN });
+  const connection = nativeTargetConnectionSettings(matches[0].webSocketDebuggerUrl, metroOrigin);
+  const socket = new WS(connection.webSocketUrl, { origin: connection.webSocketOrigin });
   await new Promise((resolveOpen, rejectOpen) => {
     const timer = setTimeout(() => { socket.terminate(); rejectOpen(new Error('native_connect_timeout')); }, CDP_TIMEOUT_MS);
     socket.once('open', () => { clearTimeout(timer); resolveOpen(); });
@@ -389,7 +419,7 @@ async function main(argv = process.argv.slice(2)) {
   const paths = await validatePaths(args);
   const require = createRequire(APP_PACKAGE);
   const WS = require('ws');
-  const socket = await connectToNativeTarget(WS);
+  const socket = await connectToNativeTarget(WS, args.metroOrigin);
   const evaluate = createCdpEvaluator(socket);
   const proposedRunId = randomUUID();
   let settledRunId;
@@ -419,7 +449,7 @@ async function main(argv = process.argv.slice(2)) {
 }
 
 export const __testables = Object.freeze({
-  privateBasename, resolvePrivateFile, resolveInitializedOwnerId, ERROR_CATEGORIES, INVENTORY_TIMEOUT_MS,
+  privateBasename, resolvePrivateFile, resolveInitializedOwnerId, parseMetroOrigin, validateNativeWebSocketEndpoint, nativeTargetConnectionSettings, ERROR_CATEGORIES, INVENTORY_TIMEOUT_MS,
   operationKey: OPERATION_KEY, operationProtocol: OPERATION_PROTOCOL, previousOperationProtocol: PREVIOUS_OPERATION_PROTOCOL,
   summarizeSnapshot,
 });

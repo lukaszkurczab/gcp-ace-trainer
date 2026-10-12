@@ -264,5 +264,7 @@ test("rejects malformed numbers, dates, timezones, future facts, and inconsisten
   assertInvalid(input({ remainingAttemptCount: -1 }), "invalid_completion_requirement");
   assertInvalid(input({ completedFacts: { sessions: [], attempts: [{ answeredAt: "2026-02-02T10:00:00.000Z", countsTowardCompletion: true }] } }), "future_fact");
   assertInvalid(input({ completedFacts: { sessions: [{ completedAt: "2026-01-20T10:00:00.000Z", completedQuestions: 4, plannedQuestions: 3 }], attempts: [] } }), "inconsistent_fact");
-  assertInvalid(input({ acceptedPlan: { ...plan(), trackId: "not-a-track" } }), "invalid_plan");
+  const opaqueTrackPlan = plan({ trackId: "not-a-track" });
+  assert.equal(calculatePaceForecast(input({ acceptedPlan: opaqueTrackPlan })).kind, "available", "the neutral kernel accepts a structurally valid opaque track identity");
+  assertInvalid(input({ acceptedPlan: { ...plan(), trackId: "" } }), "invalid_plan");
 });

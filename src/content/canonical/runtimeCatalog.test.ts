@@ -26,7 +26,11 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and exa
     assert.match(track.artifactSha256, /^[a-f0-9]{64}$/u);
     assert.ok(track.trainingIdentity);
     assert.ok(track.planningPolicyIdentity);
-    assert.notEqual(track.trainingIdentity.contentVersion, track.contentVersion);
+    assert.ok(
+      track.trainingIdentity.contentVersion !== track.contentVersion
+        || track.trainingIdentity.artifactSha256 !== track.artifactSha256,
+      "the training identity must remain pinned to its exact projection, even when its version label is shared",
+    );
     assert.equal(track.planningPolicyIdentity.contentVersion, track.contentVersion);
     assert.equal(track.planningPolicyIdentity.artifactSha256, track.artifactSha256);
     assert.ok(Object.isFrozen(track.questions));

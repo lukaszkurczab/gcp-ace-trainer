@@ -1,12 +1,17 @@
-import { canPersistTrainingSessionDraft, createTrainingSessionDraft, StaleDraftRevisionError, type TrainingSessionDraft } from "../../domain";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canPersistTrainingSessionDraft, createTrainingSessionDraft, StaleDraftRevisionError, type AcceptedSimulationFinalization, type ResolvedContentRef, type TrainingSessionDraft, type TrainingSessionDraftState } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalEnvelope, readCanonicalJson, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalEnvelope, readCanonicalEnvelopeProof, readCanonicalJson, reconcileCanonicalWriteAttempt, reconcileCanonicalWriteAttemptWithPrior, removeCanonicalValue, writeCanonicalJsonWithOutcome, type CanonicalPhysicalWrite, type CanonicalWriteAttempt, type CanonicalWriteOutcome } from "./canonicalRecordCodec";
 import { CanonicalWriteOutcomeError, StorageReadError } from "../errors";
 import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
-import { isTrainingSessionDraft } from "./trainingModelGuards";
-import { getActiveMutationJournal } from "./mutationJournalRepository";
+import { isAcceptedSimulationFinalization, isTrainingSessionDraft, isTrainingSessionDraftState } from "./trainingModelGuards";
+import { hasPendingMutationJournal } from "./mutationJournalRepository";
+import { getTrackRegistration } from "../../domain";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
+import { readTrainingSessionEnvelopeProof } from "./trainingSessionRepository";
+import { readReviewQueueFinalizationProofs } from "./reviewQueueRepository";
+import type { TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 
 export type { ActiveProfileStorageLease };
 
@@ -23,23 +28,147 @@ export function isTrainingSessionDraftLeaseCurrent(lease: ActiveProfileStorageLe
   }
 }
 
-export function readActiveTrainingSessionDraft(): TrainingSessionDraft | null {
-  const stored = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraft);
-  return stored ? createTrainingSessionDraft(stored) : null;
+/** The accepted D payload has stable outer field order and retains its exact captured response encoding. */
+function acceptedFinalizationWritePayload(value: AcceptedSimulationFinalization): AcceptedSimulationFinalization {
+  const acceptance = value.acceptance;
+  return Object.freeze({
+    kind: value.kind,
+    version: value.version,
+    // Keep the exact parsed prior payload field order. Its raw bytes are bound
+    // by priorDraftEnvelopeDigest and must remain reconstructible on cold read.
+    responseDraft: value.responseDraft,
+    acceptance: Object.freeze({
+      commandId: acceptance.commandId,
+      sessionId: acceptance.sessionId,
+      trackId: acceptance.trackId,
+      familyId: acceptance.familyId,
+      trigger: acceptance.trigger,
+      capturedAt: acceptance.capturedAt,
+      semanticsVersion: acceptance.semanticsVersion,
+      sessionRevision: acceptance.sessionRevision,
+      sessionDigest: acceptance.sessionDigest,
+      priorDraftEnvelopeRevision: acceptance.priorDraftEnvelopeRevision,
+      priorDraftEnvelopeDigest: acceptance.priorDraftEnvelopeDigest,
+      reviewProofs: acceptance.reviewProofs.map((proof) => ({ id: proof.id, revision: proof.revision, digest: proof.digest })),
+    }),
+  });
 }
 
-export async function getActiveTrainingSessionDraft(): Promise<TrainingSessionDraft | null> {
-  return readActiveTrainingSessionDraft();
+function expectedAcceptedEnvelopeDigest(accepted: AcceptedSimulationFinalization, revision: number): string {
+  const envelope = { schemaIdentity: "patternly:canonical:v1", revision, payload: acceptedFinalizationWritePayload(accepted) };
+  return sha256Utf8(JSON.stringify(envelope));
 }
 
-export async function getActiveTrainingSessionDraftRevision(): Promise<number | null> {
-  return readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraft)?.revision ?? null;
+export function isExactAcceptedFinalizationEnvelopeProof(
+  accepted: AcceptedSimulationFinalization,
+  proof: Readonly<{ state: TrainingSessionDraftState; revision: number; digest: string }>,
+  admission: TrackAdmissionContext,
+): boolean {
+  return isAcceptedSimulationFinalization(proof.state, admission) && canonicalSerialize(proof.state) === canonicalSerialize(accepted) &&
+    proof.revision === accepted.acceptance.priorDraftEnvelopeRevision + 1 &&
+    proof.digest === expectedAcceptedEnvelopeDigest(accepted, proof.revision);
 }
 
-export async function saveTrainingSessionDraft(draft: TrainingSessionDraft, expectedRevision: number | null, expectedLease: ActiveProfileStorageLease | null = captureActiveProfileStorageLease()): Promise<TrainingSessionDraft> {
+export function readActiveTrainingSessionDraft(admission: TrackAdmissionContext): TrainingSessionDraft | null {
+  const stored = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraftState => isTrainingSessionDraftState(value, admission));
+  return stored ? createTrainingSessionDraft(isAcceptedSimulationFinalization(stored, admission) ? stored.responseDraft : stored) : null;
+}
+
+export function readActiveTrainingSessionDraftStateProof(admission: TrackAdmissionContext): Readonly<{ state: TrainingSessionDraftState; revision: number; digest: string }> | null {
+  const proof = readCanonicalEnvelopeProof(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraftState => isTrainingSessionDraftState(value, admission));
+  return proof ? Object.freeze({ state: proof.envelope.payload, revision: proof.envelope.revision, digest: proof.digest }) : null;
+}
+
+export async function getActiveTrainingSessionDraft(admission: TrackAdmissionContext): Promise<TrainingSessionDraft | null> {
+  return readActiveTrainingSessionDraft(admission);
+}
+
+export async function getActiveTrainingSessionDraftRevision(admission: TrackAdmissionContext): Promise<number | null> {
+  return readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraftState => isTrainingSessionDraftState(value, admission))?.revision ?? null;
+}
+
+/** Replaces the exact verified draft by an explicit acceptance in the same D owner. */
+export async function acceptSimulationFinalization(
+  accepted: AcceptedSimulationFinalization,
+  expected: Readonly<{ revision: number; digest: string }>,
+  lease: ActiveProfileStorageLease | null,
+  reviewRefs: readonly ResolvedContentRef[],
+  admission: TrackAdmissionContext,
+): Promise<CanonicalWriteOutcome<TrainingSessionDraftState>> {
+  if (!isAcceptedSimulationFinalization(accepted, admission) || !isTrainingSessionDraftLeaseCurrent(lease)) return { kind: "provenNotApplied", cause: new Error("Simulation finalization acceptance is invalid or its profile lease is stale.") };
+  if (hasPendingMutationJournal()) return { kind: "provenNotApplied", cause: new Error("A durable mutation must be recovered before finalization acceptance.") };
+  const current = readCanonicalEnvelopeProof(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraft => isTrainingSessionDraft(value, admission));
+  if (!current || current.envelope.revision !== expected.revision || current.digest !== expected.digest ||
+    accepted.acceptance.priorDraftEnvelopeRevision !== current.envelope.revision || accepted.acceptance.priorDraftEnvelopeDigest !== current.digest ||
+    canonicalSerialize(current.envelope.payload) !== canonicalSerialize(accepted.responseDraft) ||
+    JSON.stringify(current.envelope.payload) !== JSON.stringify(accepted.responseDraft) ||
+    current.envelope.payload.sessionId !== accepted.acceptance.sessionId || current.envelope.payload.trackId !== accepted.acceptance.trackId ||
+    !isTrainingSessionDraftLeaseCurrent(lease)) return { kind: "conflict", cause: new Error("The exact draft changed before finalization acceptance.") };
+  const sessionProof = readTrainingSessionEnvelopeProof(accepted.acceptance.sessionId, admission);
+  const session = sessionProof?.session;
+  let familyId: string;
+  try { familyId = getTrackRegistration(accepted.acceptance.trackId).familyId; }
+  catch { return { kind: "conflict", cause: new Error("The accepted simulation family is no longer registered.") }; }
+  const acceptance = accepted.acceptance;
+  const commandPreimage = {
+    sessionId: acceptance.sessionId,
+    trackId: acceptance.trackId,
+    familyId: acceptance.familyId,
+    trigger: acceptance.trigger,
+    capturedAt: acceptance.capturedAt,
+    semanticsVersion: acceptance.semanticsVersion,
+    sessionRevision: acceptance.sessionRevision,
+    sessionDigest: acceptance.sessionDigest,
+    priorDraftEnvelopeRevision: acceptance.priorDraftEnvelopeRevision,
+    priorDraftEnvelopeDigest: acceptance.priorDraftEnvelopeDigest,
+    reviewProofs: acceptance.reviewProofs,
+  };
+  const expectedCommandId = sha256Utf8(canonicalSerialize(commandPreimage));
+  const triggerMatchesTimer = acceptance.trigger === "manual" ||
+    (acceptance.trigger === "countdown-expiry" && session?.configurationSnapshot.timer === "countdownForeground") ||
+    (acceptance.trigger === "absolute-deadline" && session?.configurationSnapshot.timer === "absoluteDeadline");
+  if (!session || session.id !== acceptance.sessionId || session.trackId !== acceptance.trackId || session.status !== "active" ||
+    sessionProof?.revision !== acceptance.sessionRevision || sessionProof.digest !== acceptance.sessionDigest || familyId !== acceptance.familyId ||
+    !triggerMatchesTimer || acceptance.commandId !== expectedCommandId ||
+    !isTrainingSessionDraftLeaseCurrent(lease)) return { kind: "conflict", cause: new Error("The active session changed before finalization acceptance.") };
+  if (hasPendingMutationJournal()) return { kind: "conflict", cause: new Error("A durable mutation appeared before finalization acceptance.") };
+  const latestSessionProof = readTrainingSessionEnvelopeProof(acceptance.sessionId, admission);
+  if (!latestSessionProof || latestSessionProof.revision !== acceptance.sessionRevision || latestSessionProof.digest !== acceptance.sessionDigest ||
+    !isTrainingSessionDraftLeaseCurrent(lease)) return { kind: "conflict", cause: new Error("The exact session changed during finalization acceptance.") };
+  const latestDraftProof = readCanonicalEnvelopeProof(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraft => isTrainingSessionDraft(value, admission));
+  if (!latestDraftProof || latestDraftProof.envelope.revision !== expected.revision || latestDraftProof.digest !== expected.digest) {
+    return { kind: "conflict", cause: new Error("The exact response draft changed during finalization acceptance.") };
+  }
+  const latestReviewProofs = readReviewQueueFinalizationProofs(reviewRefs, admission);
+  if (canonicalSerialize(latestReviewProofs.proofs) !== canonicalSerialize(acceptance.reviewProofs) ||
+    !isTrainingSessionDraftLeaseCurrent(lease)) return { kind: "conflict", cause: new Error("Review evidence changed during finalization acceptance.") };
+  if (hasPendingMutationJournal()) return { kind: "conflict", cause: new Error("A durable mutation appeared during finalization acceptance.") };
+  const finalSessionProof = readTrainingSessionEnvelopeProof(acceptance.sessionId, admission);
+  const finalDraftProof = readCanonicalEnvelopeProof(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraft => isTrainingSessionDraft(value, admission));
+  if (!finalSessionProof || finalSessionProof.revision !== acceptance.sessionRevision || finalSessionProof.digest !== acceptance.sessionDigest ||
+    !finalDraftProof || finalDraftProof.envelope.revision !== expected.revision || finalDraftProof.digest !== expected.digest ||
+    !isTrainingSessionDraftLeaseCurrent(lease)) return { kind: "conflict", cause: new Error("An accepted finalization source changed at the last prewrite fence.") };
+  return writeCanonicalJsonWithOutcome(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, acceptedFinalizationWritePayload(accepted), expected.revision, lease);
+}
+
+export async function reconcileAcceptedSimulationFinalization(accepted: AcceptedSimulationFinalization, admission: TrackAdmissionContext, attempt?: CanonicalWriteAttempt<TrainingSessionDraftState>): Promise<"verified" | "not_applied" | "conflict" | "unknown"> {
+  if (attempt) {
+    if (attempt.key !== STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT || !isAcceptedSimulationFinalization(attempt.envelope.payload, admission) ||
+      canonicalSerialize(attempt.envelope.payload) !== canonicalSerialize(accepted)) return "conflict";
+    const result = reconcileCanonicalWriteAttemptWithPrior(attempt);
+    return result.kind === "verified" ? "verified" : result.kind === "provenNotApplied" ? "not_applied" : result.kind;
+  }
+  try {
+    const proof = readCanonicalEnvelopeProof(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraftState => isTrainingSessionDraftState(value, admission));
+    if (!proof) return "conflict";
+    return isExactAcceptedFinalizationEnvelopeProof(accepted, { state: proof.envelope.payload, revision: proof.envelope.revision, digest: proof.digest }, admission) ? "verified" : "conflict";
+  } catch { return "unknown"; }
+}
+
+export async function saveTrainingSessionDraft(draft: TrainingSessionDraft, expectedRevision: number | null, admission: TrackAdmissionContext, expectedLease: ActiveProfileStorageLease | null = captureActiveProfileStorageLease()): Promise<TrainingSessionDraft> {
   try {
     if (!isTrainingSessionDraftLeaseCurrent(expectedLease)) throw new Error("Training session draft profile lease changed before save.");
-    return await saveTrainingSessionDraftAfterPreflight(draft, expectedRevision, expectedLease);
+    return await saveTrainingSessionDraftAfterPreflight(draft, expectedRevision, expectedLease, admission);
   } catch (error) {
     if (error instanceof StorageReadError) {
       if (!isTrainingSessionDraftLeaseCurrent(expectedLease)) throw new Error("Training session draft profile lease changed during preflight.");
@@ -49,12 +178,12 @@ export async function saveTrainingSessionDraft(draft: TrainingSessionDraft, expe
   }
 }
 
-async function saveTrainingSessionDraftAfterPreflight(draft: TrainingSessionDraft, expectedRevision: number | null, lease: ActiveProfileStorageLease | null): Promise<TrainingSessionDraft> {
-  if (!isTrainingSessionDraft(draft)) throw new Error("Training session draft is invalid.");
+async function saveTrainingSessionDraftAfterPreflight(draft: TrainingSessionDraft, expectedRevision: number | null, lease: ActiveProfileStorageLease | null, admission: TrackAdmissionContext): Promise<TrainingSessionDraft> {
+  if (!isTrainingSessionDraft(draft, admission)) throw new Error("Training session draft is invalid.");
   if (!isTrainingSessionDraftLeaseCurrent(lease)) throw new Error("Training session draft profile lease changed before preflight.");
-  if (await getActiveMutationJournal()) throw new Error("Training session draft cannot change while a durable mutation is pending.");
+  if (hasPendingMutationJournal()) throw new Error("Training session draft cannot change while a durable mutation is pending.");
   if (!isTrainingSessionDraftLeaseCurrent(lease)) throw new Error("Training session draft profile lease changed during preflight.");
-  const activeSession = await getActiveTrainingSession();
+  const activeSession = await getActiveTrainingSession(admission);
   if (!isTrainingSessionDraftLeaseCurrent(lease)) throw new Error("Training session draft profile lease changed during preflight.");
   if (!activeSession || activeSession.status !== "active") throw new Error("An active training session is required to save a draft.");
   if (!canPersistTrainingSessionDraft(activeSession)) throw new Error("The active training session does not permit persisted draft responses.");
@@ -66,8 +195,10 @@ async function saveTrainingSessionDraftAfterPreflight(draft: TrainingSessionDraf
   if (unknownOccurrenceId) throw new Error(`Training session draft occurrence ${unknownOccurrenceId} is outside the active session plan.`);
   const unknownFlaggedOccurrenceId = draft.flaggedOccurrenceIds.find((occurrenceId) => !occurrenceIds.has(occurrenceId));
   if (unknownFlaggedOccurrenceId) throw new Error(`Training session draft flag ${unknownFlaggedOccurrenceId} is outside the active session plan.`);
-  const envelope = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraft);
-  const existing = envelope?.payload ? createTrainingSessionDraft(envelope.payload) : null;
+  const envelope = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraftState => isTrainingSessionDraftState(value, admission));
+  const currentState = envelope?.payload;
+  if (currentState && isAcceptedSimulationFinalization(currentState, admission)) throw new Error("The simulation response is durably accepted for finalization and cannot be edited.");
+  const existing = currentState ? createTrainingSessionDraft(currentState) : null;
   if (existing && (existing.sessionId !== draft.sessionId || existing.trackId !== draft.trackId)) {
     throw new Error("A different training session draft is already active.");
   }
@@ -75,17 +206,20 @@ async function saveTrainingSessionDraftAfterPreflight(draft: TrainingSessionDraf
   if (expectedRevision !== previousRevision) throw new StaleDraftRevisionError(expectedRevision, previousRevision);
   const nextRevision = (previousRevision ?? 0) + 1;
   const durable = createTrainingSessionDraft({ ...draft, revision: nextRevision });
-  if (await getActiveMutationJournal()) throw new Error("Training session draft cannot change while a durable mutation is pending.");
+  if (hasPendingMutationJournal()) throw new Error("Training session draft cannot change while a durable mutation is pending.");
   if (!isTrainingSessionDraftLeaseCurrent(lease)) throw new Error("Training session draft profile lease changed during preflight.");
-  const outcome = writeCanonicalJsonWithOutcome(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, durable, envelope?.revision ?? null, lease);
+  const latest = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraftState => isTrainingSessionDraftState(value, admission));
+  if (latest?.revision !== envelope?.revision) throw new StaleDraftRevisionError(previousRevision, latest?.revision ?? null);
+  if (latest && isAcceptedSimulationFinalization(latest.payload, admission)) throw new Error("The simulation response was accepted for finalization while this save was preparing.");
+  const outcome = writeCanonicalJsonWithOutcome(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, durable, latest?.revision ?? null, lease);
   if (outcome.kind !== "verified") throw new CanonicalWriteOutcomeError(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, outcome);
   return createTrainingSessionDraft(outcome.envelope.payload);
 }
 
-export async function reconcileTrainingSessionDraftWrite(attempt: CanonicalWriteAttempt<TrainingSessionDraft>): Promise<"verified" | "conflict" | "unknown"> {
-  if (attempt.key !== STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT || !isTrainingSessionDraft(attempt.envelope.payload)) return "conflict";
+export async function reconcileTrainingSessionDraftWrite(attempt: CanonicalWriteAttempt<TrainingSessionDraft>, admission: TrackAdmissionContext): Promise<"verified" | "conflict" | "unknown"> {
+  if (attempt.key !== STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT || !isTrainingSessionDraft(attempt.envelope.payload, admission)) return "conflict";
   try {
-    const active = await getActiveTrainingSession();
+    const active = await getActiveTrainingSession(admission);
     const draft = attempt.envelope.payload;
     if (!active || active.id !== draft.sessionId || active.trackId !== draft.trackId || active.status !== "active" || !canPersistTrainingSessionDraft(active)) return "conflict";
     const outcome = reconcileCanonicalWriteAttempt(attempt);
@@ -93,25 +227,19 @@ export async function reconcileTrainingSessionDraftWrite(attempt: CanonicalWrite
   } catch { return "unknown"; }
 }
 
-export async function materializeActiveTrainingSessionDraft(draft: TrainingSessionDraft): Promise<void> {
-  if (!isTrainingSessionDraft(draft)) throw new Error("Training session draft is invalid.");
-  const journal = await getActiveMutationJournal();
-  const planned = journal?.writes.find((write) => write.kind === "put_active_session_draft");
-  if (!planned || canonicalSerialize(planned.record) !== canonicalSerialize(draft)) {
-    throw new Error("Active training session draft is not owned by the pending mutation journal.");
-  }
-  const activeSession = await getActiveTrainingSession();
-  if (!activeSession || activeSession.status !== "active" || activeSession.id !== draft.sessionId || activeSession.trackId !== draft.trackId || !canPersistTrainingSessionDraft(activeSession)) {
-    throw new Error("Journaled training session draft does not match the active session.");
-  }
-  const existing = await getActiveTrainingSessionDraft();
-  if (existing && canonicalSerialize(existing) !== canonicalSerialize(draft)) {
-    throw new Error("A conflicting active training session draft is already durable.");
-  }
-  if (!existing) writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, createTrainingSessionDraft(draft));
+export async function clearActiveTrainingSessionDraft(sessionId: string, admission: TrackAdmissionContext): Promise<void> {
+  const state = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraftState => isTrainingSessionDraftState(value, admission));
+  if (state && isAcceptedSimulationFinalization(state, admission)) throw new Error("An accepted simulation finalization can only be cleared by its exact durable journal.");
+  const draft = state ? createTrainingSessionDraft(isAcceptedSimulationFinalization(state, admission) ? state.responseDraft : state) : null;
+  if (draft?.sessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
 }
 
-export async function clearActiveTrainingSessionDraft(sessionId: string): Promise<void> {
-  const draft = await getActiveTrainingSessionDraft();
-  if (draft?.sessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+/** Applies the single journal-owned draft target through the draft repository. */
+export function materializeTrainingSessionDraftJournalStep(hasDraftWrite: boolean, steps: readonly CanonicalPhysicalWrite[], admission: TrackAdmissionContext): void {
+  const expected = hasDraftWrite ? ["active_session_draft"] : [];
+  if (steps.length !== expected.length || steps.some((step, index) => step.target !== expected[index])) throw new Error("Training session draft step does not match its exact journal plan.");
+  for (const step of steps) {
+    if (step.after.kind === "present" && !isTrainingSessionDraftState(step.after.envelope.payload, admission)) throw new Error("Training session draft journal step has an unadmitted track.");
+    applyCanonicalPhysicalWrite(step);
+  }
 }

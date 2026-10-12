@@ -1,9 +1,9 @@
 import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRule } from "../../domain/learning/packageCompletionRule";
+import { hasCanonicalEdgeWhitespace, isCanonicalSafeIdentity } from "../../domain/identity/canonicalIdentity";
 import type { CanonicalArtifact, CanonicalContentLockRecord, Question, QuestionInteractionType } from "./questionTypes";
 
 const WHITESPACE = "\\u0009-\\u000D\\u001C-\\u001F\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF";
 const HAS_CONTENT = new RegExp(`[^${WHITESPACE}]`, "u");
-const EDGE_WHITESPACE = new RegExp(`^[${WHITESPACE}]|[${WHITESPACE}]$`, "u");
 const SHA256 = /^[a-f0-9]{64}$/;
 const SAFE_CONTENT_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
 const TYPES = new Set<QuestionInteractionType>(["choice_single", "choice_multiple", "ordering", "complexity", "decision_matrix"]);
@@ -23,11 +23,8 @@ function exact(value: unknown, allowed: readonly string[], required: readonly st
   return true;
 }
 function id(value: unknown, path: string, errors: string[]): value is string {
-  if (typeof value !== "string" || value.length === 0 || EDGE_WHITESPACE.test(value)) { errors.push(`${path}: must be a non-empty, trim-clean identity`); return false; }
+  if (typeof value !== "string" || value.length === 0 || hasCanonicalEdgeWhitespace(value)) { errors.push(`${path}: must be a non-empty, trim-clean identity`); return false; }
   return true;
-}
-export function isCanonicalSafeIdentity(value: unknown): value is string {
-  return typeof value === "string" && value.length > 0 && !EDGE_WHITESPACE.test(value) && value !== "." && value !== ".." && !/[\\/\u0000]/u.test(value);
 }
 function safeIdentity(value: unknown, path: string, errors: string[]): value is string { if (!id(value, path, errors)) return false; if (!isCanonicalSafeIdentity(value)) { errors.push(`${path}: must not contain unsafe path segments`); return false; } return true; }
 function text(value: unknown, path: string, errors: string[]): value is string { if (typeof value !== "string" || !HAS_CONTENT.test(value)) { errors.push(`${path}: must contain a non-whitespace character`); return false; } return true; }

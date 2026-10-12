@@ -1,7 +1,7 @@
 import type { TrainingAttempt } from "./trainingAttempt";
 import type { TrainingSession } from "./trainingSession";
 import type { PlanningScopeRef } from "./planningWorkEstimate";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../identity/canonicalSerialization";
 
 export type CalibrationQuestion = Readonly<{ questionId: string; nodeId: string; mentalUnitId: string }>;
 export type CalibrationPolicy = Readonly<{ policyVersion: string; workEstimates: readonly Readonly<{ estimateId: string; modeId: string; scopeRefs: readonly PlanningScopeRef[] }>[] }>;

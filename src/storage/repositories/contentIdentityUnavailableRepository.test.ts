@@ -20,6 +20,8 @@ import {
   saveUnavailableReviewRecord,
 } from "./contentIdentityUnavailableRepository";
 import { clearTrainingSessions } from "./trainingSessionRepository";
+import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const SHA = "a".repeat(64);
@@ -277,7 +279,7 @@ test("committed unavailable-active repair removes archive-only IDs while preserv
 test("learning-state reset clears all three private content-identity stores", async () => {
   await saveUnavailableActiveRecord(createContentIdentityUnavailableActiveRecord(activeRecord("session-reset")));
   await saveUnavailableReviewRecord(createContentIdentityUnavailableReviewRecord(reviewRecord("review-reset")));
-  await clearTrainingSessions();
+  await clearTrainingSessions(productionTrackAdmissionContext);
   assert.equal((await getUnavailableActiveRecords()).value.length, 0);
   assert.equal((await getUnavailableReviewRecords()).value.length, 0);
   assert.equal((await getArchivalHistoryRecords()).value.length, 0);

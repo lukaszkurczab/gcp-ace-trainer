@@ -8,6 +8,14 @@ import { TrainingApplicationFailure, TrainingLifecycleUseCases, type TrainingFam
 import { CanonicalWriteOutcomeError } from "../../storage/errors";
 import { STORAGE_KEYS } from "../../storage/keys";
 import type { CanonicalWriteAttempt } from "../../storage/repositories/canonicalRecordCodec";
+import { installMemoryStorage } from "../../testing/journalTestSupport";
+import { acceptSimulationFinalization, captureTrainingSessionDraftLease, isExactAcceptedFinalizationEnvelopeProof, isTrainingSessionDraftLeaseCurrent, readActiveTrainingSessionDraftStateProof, reconcileAcceptedSimulationFinalization, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
+import { readReviewQueueFinalizationProofs } from "../../storage/repositories/reviewQueueRepository";
+import { readTrainingSessionEnvelopeProof, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
+import type { ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
+import type { DraftStorageLeaseHandle } from "./contracts";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
 const PROFILE_ID = "algorithms-interview-simulation-v1";
@@ -61,6 +69,7 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
     startedAt: NOW,
   });
   const events: string[] = [];
+  installMemoryStorage();
   let finalizationDraft: TrainingSessionDraft | null = null;
   const runtime = {
     familyId: isDesign ? "design_interview" : "coding_interview",
@@ -75,9 +84,11 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
   } as unknown as TrainingFamilyRuntime;
   let draft: TrainingSessionDraft = { schemaVersion: 1, draftVersion: 1, sessionId: session.id, trackId: requestedTrackId, familyId: isDesign ? "design_interview" : "coding_interview", revision: 1, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: NOW };
   let active: TrainingSession | null = null;
+  let finalizationCommitted = false;
   let resolutionCount = 0;
   let startCount = 0;
   let now = NOW;
+  let finalizationAttempt: CanonicalWriteAttempt<unknown> | undefined;
   const ports = {
     clock: { now: () => now },
     sessionIds: { create: async () => "mock-session" },
@@ -92,17 +103,38 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
       getReviews: async () => [],
       getDraft: async () => draft,
       getResult: async () => ({ sessionId: session.id }),
-      captureDraftStorageLease: () => null,
+      getDraftStateProof: async () => finalizationCommitted ? null : readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext),
+      getSessionEnvelopeProof: async (sessionId: string) => readTrainingSessionEnvelopeProof(sessionId, productionTrackAdmissionContext),
+      getFinalizationReviews: async (refs: readonly import("../../domain").ResolvedContentRef[]) => readReviewQueueFinalizationProofs(refs, productionTrackAdmissionContext),
+      verifyAcceptedFinalizationProof: (
+        accepted: import("../../domain").AcceptedSimulationFinalization,
+        proof: Readonly<{ state: import("../../domain").TrainingSessionDraftState; revision: number; digest: string }>,
+      ) => isExactAcceptedFinalizationEnvelopeProof(accepted, proof, productionTrackAdmissionContext),
+      isDraftStorageLeaseCurrent: (lease: DraftStorageLeaseHandle | null) => {
+        const current = isTrainingSessionDraftLeaseCurrent(lease as unknown as ActiveProfileStorageLease | null);
+        return current;
+      },
+      acceptFinalization: async (accepted: import("../../domain").AcceptedSimulationFinalization, expected: Readonly<{ revision: number; digest: string }>, lease: DraftStorageLeaseHandle | null, refs: readonly import("../../domain").ResolvedContentRef[]) => {
+        const result = await acceptSimulationFinalization(accepted, expected, lease as unknown as ActiveProfileStorageLease | null, refs, productionTrackAdmissionContext);
+        if (result.attempt) finalizationAttempt = result.attempt;
+        return result.kind === "verified" ? "verified" as const : result.kind === "unknown" ? "unknown" as const : result.kind === "conflict" ? "conflict" as const : "not_applied" as const;
+      },
+      reconcileAcceptedFinalization: async (accepted: import("../../domain").AcceptedSimulationFinalization) => reconcileAcceptedSimulationFinalization(accepted, productionTrackAdmissionContext, finalizationAttempt as CanonicalWriteAttempt<import("../../domain").TrainingSessionDraft | import("../../domain").AcceptedSimulationFinalization> | undefined),
+      captureDraftStorageLease: () => captureTrainingSessionDraftLease() as unknown as DraftStorageLeaseHandle | null,
       captureDraftWriteReceipt: (attempt: unknown) => attempt ? Object.freeze({ kind: "draft_write_receipt" as const }) : null,
-      saveDraft: async (command: { draft: TrainingSessionDraft; expectedPreviousRevision: number; lease: null }) => { events.push("save-draft"); draft = command.draft; await saveDraftHook?.(); },
+      saveDraft: async (command: { draft: TrainingSessionDraft; expectedPreviousRevision: number; lease: DraftStorageLeaseHandle | null }) => {
+        events.push("save-draft");
+        draft = await persistTrainingSessionDraft(command.draft, command.expectedPreviousRevision, productionTrackAdmissionContext, command.lease as unknown as ActiveProfileStorageLease | null);
+        await saveDraftHook?.();
+      },
     },
     mutations: {
-      start: async () => { events.push("start"); startCount += 1; active = session; },
-      finalize: async () => { events.push("finalize"); active = null; return finalizedReviewConflict; },
+      start: async () => { events.push("start"); startCount += 1; await saveTrainingSession(session, productionTrackAdmissionContext); active = session; draft = await persistTrainingSessionDraft(draft, null, productionTrackAdmissionContext); },
+      finalize: async () => { events.push("finalize"); active = null; finalizationCommitted = true; return finalizedReviewConflict; },
     },
     ...(decision === "missing" ? {} : { premiumSessionAdmission: { authorize: async () => { events.push("authorize"); return decision; } } }),
   } as unknown as TrainingLifecyclePorts;
-  return { lifecycle: new TrainingLifecycleUseCases(ports), events, session, get active() { return active; }, get finalizationDraft() { return finalizationDraft; }, setActive(value: TrainingSession | null) { active = value; }, setNow(value: string) { now = value; }, get resolutionCount() { return resolutionCount; }, get startCount() { return startCount; } };
+  return { lifecycle: new TrainingLifecycleUseCases(ports), events, session, get active() { return active; }, get finalizationDraft() { return finalizationDraft; }, async setActive(value: TrainingSession | null) { if (value) { await saveTrainingSession(value, productionTrackAdmissionContext); draft = await persistTrainingSessionDraft(draft, null, productionTrackAdmissionContext); } active = value; }, setNow(value: string) { now = value; }, get resolutionCount() { return resolutionCount; }, get startCount() { return startCount; } };
 }
 
 test("Free and unavailable Coding Mock access fail before package resolution, preparation, or mutation", async () => {
@@ -138,20 +170,20 @@ test("Coding Mock resume, draft save, and finalization each authorize once befor
   setup.events.length = 0;
   await setup.lifecycle.saveSimulationDraft({ draft: {
     schemaVersion: 1, draftVersion: 1, sessionId: setup.session.id, trackId: TRACK_ID, familyId: "coding_interview",
-    revision: 1, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: NOW,
-  }, expectedPreviousRevision: 0 });
+    revision: 2, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: NOW,
+  }, expectedPreviousRevision: 1 });
   assert.deepEqual(setup.events, ["authorize", "resolve-exact", "validate-draft", "save-draft"]);
 
   setup.events.length = 0;
   await setup.lifecycle.finalizeSimulation();
-  assert.deepEqual(setup.events, ["authorize", "resolve-exact", "finalize-runtime", "finalize"]);
+  assert.deepEqual(setup.events, ["authorize", "resolve-exact", "validate-resume", "validate-resume", "finalize-runtime", "finalize"]);
 });
 
 test("manual and deadline finalizers queue behind an in-flight D save without nesting the session lane", async () => {
   const completedSave = deferred();
   const saveEntered = deferred();
   const manual = await fixture("allowed", TRACK_ID, false, async () => { saveEntered.resolve(); await completedSave.promise; });
-  manual.setActive(manual.session);
+  await manual.setActive(manual.session);
   const occurrenceId = manual.session.itemOrder[0]!.occurrenceId;
   const submitted = { kind: "choice", selectedOptionIds: ["verified-after-save"] } as const;
   const draft = createTrainingSessionDraft({ schemaVersion: 1, draftVersion: 1, sessionId: manual.session.id, trackId: manual.session.trackId, familyId: "coding_interview", revision: 2, responsesByOccurrenceId: { [occurrenceId]: submitted }, flaggedOccurrenceIds: [], updatedAt: NOW });
@@ -170,7 +202,7 @@ test("manual and deadline finalizers queue behind an in-flight D save without ne
   const saveStarted = deferred();
   const unknownSave = deferred();
   const deadline = await fixture("allowed", "object-oriented-design-interview", false, async () => { saveStarted.resolve(); await unknownSave.promise; });
-  deadline.setActive(deadline.session);
+  await deadline.setActive(deadline.session);
   deadline.setNow("2026-09-27T00:46:00.000Z");
   const designOccurrenceId = deadline.session.itemOrder[0]!.occurrenceId;
   const designDraft = createTrainingSessionDraft({ schemaVersion: 1, draftVersion: 1, sessionId: deadline.session.id, trackId: deadline.session.trackId, familyId: "design_interview", revision: 2, responsesByOccurrenceId: { [designOccurrenceId]: "attempted design answer" }, flaggedOccurrenceIds: [], updatedAt: NOW });

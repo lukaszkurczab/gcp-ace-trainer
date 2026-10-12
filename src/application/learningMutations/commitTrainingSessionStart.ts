@@ -1,5 +1,5 @@
 import type { TrainingSession, TrainingSessionDraft } from "../../domain";
-import { canPersistTrainingSessionDraft } from "../../domain";
+import { canPersistTrainingSessionDraft, getTrackRegistration, initialForegroundTimerForSession } from "../../domain";
 import { buildMutationJournal } from "./mutationJournalBuilder";
 import { commitMutation } from "./commitMutation";
 
@@ -14,9 +14,13 @@ export async function commitTrainingSessionStart(input: {
   if (input.draft && (input.draft.sessionId !== input.session.id || input.draft.trackId !== input.session.trackId || Object.keys(input.draft.responsesByOccurrenceId).length !== 0 || input.draft.flaggedOccurrenceIds.length !== 0)) {
     throw new Error("Training session start requires an empty draft in the same session scope.");
   }
+  const initialTimer = initialForegroundTimerForSession(input.session, getTrackRegistration(input.session.trackId).familyId);
   const writes = [
     { kind: "put_session", record: input.session } as const,
     ...(input.draft ? [{ kind: "put_active_session_draft", record: input.draft } as const] : []),
+    ...(initialTimer
+      ? [{ kind: "put_active_foreground_timer", record: initialTimer } as const]
+      : []),
   ];
   await commitMutation(await buildMutationJournal({
     operation: "start_training_session",

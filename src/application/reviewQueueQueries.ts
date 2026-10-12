@@ -10,12 +10,13 @@ import {
 import { getReviewQueueItems, getUnavailableReviewRecords, removeUnavailableReviewEntry, type ContentIdentityUnavailableReviewRecord } from "../storage/repositories";
 import type { StorageIssue } from "../storage/repositories/result";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
+import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
 
 export type ReviewQueueViewItem = { dueAt: string; id: string; isDue: boolean; isManualRequest?: boolean; isOverdue: boolean; kind: "available" | "unavailable"; questionId: string; mistakeTypeRefs: EvidenceRef[]; prompt?: string; reasons: ReviewQueueEntry["reasons"] extends readonly (infer Reason)[] ? Reason[] : never[]; sourceAttemptId: string; taxonomyRefs: EvidenceRef[]; unavailableReason?: string };
 export type ReviewQueueViewModel = { degraded: boolean; dueItems: ReviewQueueViewItem[]; issues: StorageIssue[]; ok: boolean; overdueItems: ReviewQueueViewItem[]; totalItems: number; trackTitle: string; unavailableItems: ReviewQueueViewItem[]; upcomingItems: ReviewQueueViewItem[] };
 
 export async function loadTrackReviewQueueViewModel(input: { now?: string; trackId: TrackId }): Promise<ReviewQueueViewModel> {
-  const [result, unavailableResult] = await Promise.all([getReviewQueueItems(), getUnavailableReviewRecords()]);
+  const [result, unavailableResult] = await Promise.all([getReviewQueueItems(productionTrackAdmissionContext), getUnavailableReviewRecords()]);
   return buildTrackReviewQueueViewModel({
     issues: [...(result.issues ?? []), ...(unavailableResult.issues ?? [])],
     now: input.now,

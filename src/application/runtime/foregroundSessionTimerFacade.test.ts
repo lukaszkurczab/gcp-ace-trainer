@@ -6,7 +6,7 @@ import {
   ForegroundSessionTimerRecoveryError,
   type ForegroundSessionTimerDependencies,
 } from "../trainingLifecycle";
-import { createForegroundTimerState, createTrainingSession, getTrackRegistration, type ForegroundTimerState, type TrainingSession } from "../../domain";
+import { createForegroundTimerState, createTrainingSession, getTrackRegistration, initialForegroundTimerForSession, type ForegroundTimerState, type TrainingSession } from "../../domain";
 import type { TrainingLifecycleUseCases } from "../trainingLifecycle";
 import { simulationTimer } from "../../features/simulation/simulationProjection";
 
@@ -59,8 +59,11 @@ function certificationExamSession(deadlineAt = "2026-07-19T12:00:00.000Z") {
 
 function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown", session?: TrainingSession) {
   let now = 0;
-  let state: ForegroundTimerState | null = null;
   let active = session ?? (kind === "countdown" ? simulationSession(duration) : practiceSession());
+  let state: ForegroundTimerState | null = active.configurationSnapshot.timer === "elapsedForeground" || active.configurationSnapshot.timer === "countdownForeground"
+    ? createForegroundTimerState({ schemaVersion: 1, timerVersion: 1, familyId: getTrackRegistration(active.trackId).familyId, sessionId: active.id, trackId: active.trackId,
+      accumulatedForegroundMs: active.activeForegroundMs, checkpointRevision: 1, lastCheckpointAt: active.startedAt, running: false })
+    : null;
   let scheduled: (() => void) | null = null;
   let cancelCount = 0;
   let saveCount = 0;
@@ -330,6 +333,7 @@ test("reset followed by a new session cannot observe or recreate the prior persi
   await f.timer.runLocalLearningReset(async () => { f.setState(null); });
   const next = createTrainingSession({ ...practiceSession(), id: "practice-2" });
   f.setActiveSession(next);
+  f.setState(initialForegroundTimerForSession(next, getTrackRegistration(next.trackId).familyId));
   await f.timer.initialize(next);
   assert.equal(f.getState()?.sessionId, "practice-2");
   assert.equal(f.getState()?.trackId, next.trackId);
@@ -514,11 +518,25 @@ test("concurrent Finish handoffs share one timer checkpoint and one completion r
 
 test("missing persisted timer on resume is a typed application recovery failure", async () => {
   const f = fixture();
+  f.setState(null);
   await assert.rejects(() => f.timer.restoreForResume(f.session), (error: unknown) => {
     assert.ok(error instanceof ForegroundSessionTimerRecoveryError);
     assert.equal(error.code, "timer_recovery_failure");
     return true;
   });
+});
+
+test("initialize adopts the start-owned timer without resetting its envelope or revision", async () => {
+  const f = fixture(undefined, "elapsed");
+  const progressedSession = createTrainingSession({ ...f.session, activeForegroundMs: 500 });
+  const progressed = createForegroundTimerState({ ...f.getState()!, accumulatedForegroundMs: 500, checkpointRevision: 4, lastCheckpointAt: "2026-07-19T10:00:00.500Z" });
+  f.setActiveSession(progressedSession);
+  f.setState(progressed);
+
+  await f.timer.initialize(progressedSession);
+
+  assert.deepEqual(f.getState(), progressed);
+  assert.equal(f.getSaveCount(), 0);
 });
 
 test("resume repairs a durable timer checkpoint that precedes the session aggregate", async () => {

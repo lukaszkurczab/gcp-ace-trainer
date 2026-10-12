@@ -1,5 +1,6 @@
 import { CanonicalTrainingRuntime } from "./canonical/CanonicalTrainingRuntime";
-import { createCanonicalRuntimeCatalogOwner, isCanonicalSafeIdentity, type CanonicalTrackRuntime, type Question } from "../content/canonical";
+import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime, type Question } from "../content/canonical";
+import { isCanonicalSafeIdentity } from "../domain/identity/canonicalIdentity";
 import { createResolvedContentRef, isArtifactSha256, type ResolvedContentRef, type TrackFamilyId, type TrackId } from "../domain";
 import type { VerifiedNodePackage } from "../content/runtime/nodeContentPackage";
 import { getProductSimulationModeConfig } from "../content/canonical/productModeConfig";
@@ -10,11 +11,13 @@ import { ExactContentArtifactUnavailableError } from "./trainingLifecycle/contra
 import { isRegisteredTrackId } from "../domain/tracks/trackRegistry";
 import type { LearningPlanningPolicy } from "../content/canonical/planningPolicy";
 import type { ContentPlanningPolicyIdentity } from "../content/canonical/contentSuccessorLedger";
+import { NodePackageStorageUnavailableError } from "../content/runtime/nodeContentPackage";
 
 export type ResolvedPackageRuntime = Readonly<{ track: CanonicalTrackRuntime; runtime: CanonicalTrainingRuntime; planningPolicy?: LearningPlanningPolicy; planningPolicyIdentity?: ContentPlanningPolicyIdentity }>;
 type PackageOffer = ReturnType<typeof findPremiumNodeOfferForIdentity>;
 export class ContentPackageRuntimeOwner {
-  private hydration: Readonly<{ scopeKey: string; promise: Promise<void> }> | null = null;
+  private hydration: Readonly<{ scopeKey: string; epoch: number; promise: Promise<void> }> | null = null;
+  private hydrationEpoch = 0;
   private installedScopeKey: string | null = null;
   private scopeInitialized = false;
   constructor(
@@ -95,6 +98,9 @@ export class ContentPackageRuntimeOwner {
   /** Registers verified exact-only node data. It is intentionally absent from discovery and product-mode selection. */
   registerInstalledNodePackage(record: VerifiedNodePackage, scopeKey: string): void {
     if (!scopeKey || this.syncInstalledScope() !== scopeKey) throw new Error("Installed node package profile scope is unavailable or changed.");
+    this.registerInstalledNodePackageInto(record, scopeKey, this.installedExact);
+  }
+  private registerInstalledNodePackageInto(record: VerifiedNodePackage, scopeKey: string, target: Map<string, ResolvedPackageRuntime>): void {
     const { payload, identity } = record;
     const premiumOffer = this.offerForIdentity(identity);
     if (identity.trackId !== payload.trackId || identity.nodeId !== payload.nodeId || identity.contentVersion !== payload.contentVersion || identity.artifactSha256 !== record.manifest.artifactSha256) throw new Error("Installed node package identity is inconsistent.");
@@ -115,11 +121,29 @@ export class ContentPackageRuntimeOwner {
       getPool: (modeId) => { const mode = getMode(modeId); const selection = mode.selection; if (selection.kind !== "node" || selection.nodeId !== identity.nodeId) throw new Error(`Product mode ${identity.trackId}/${modeId} does not own this installed node.`); return questions; },
     });
     const key = runtimeKey(identity.trackId, identity.contentVersion, identity.artifactSha256);
-    if (!this.installedExact.has(key)) this.installedExact.set(key, Object.freeze({ track, runtime: new CanonicalTrainingRuntime(track) }));
+    if (!target.has(key)) target.set(key, Object.freeze({ track, runtime: new CanonicalTrainingRuntime(track) }));
   }
   async resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ResolvedPackageRuntime> { const track = (await this.catalogOwner.load()).getTrack(trackId); assertFamily(track, familyId); const r = this.materialize(track); this.discovered.set(trackId, r); return r; }
   getPreparedDiscovery(trackId: TrackId): ResolvedPackageRuntime { const prepared = this.discovered.get(trackId); if (prepared) return prepared; for (const candidate of this.exact.values()) { if (candidate.track.trackId === trackId) { this.discovered.set(trackId, candidate); return candidate; } } throw new Error(`Canonical discovery is not prepared for ${trackId}.`); }
   async verifyBundledPackages(): Promise<void> { const catalog = await this.catalogOwner.load(); for (const id of catalog.tracks) { const track = catalog.getTrack(id); const runtime = this.materialize(track); this.discovered.set(id, runtime); } }
+  /** Fresh bootstrap check: cache hits and bundled content must not hide a corrupt installed index. */
+  async verifyInstalledPackages(): Promise<void> {
+    const scopeKey = this.syncInstalledScope();
+    if (!scopeKey) throw new NodePackageStorageUnavailableError("inventory_read");
+    const epoch = ++this.hydrationEpoch;
+    this.hydration = null;
+    const records = await this.loadActiveInstalledPackages(scopeKey);
+    if (this.hydrationEpoch !== epoch || this.getInstalledScopeKey() !== scopeKey) {
+      this.syncInstalledScope();
+      throw new NodePackageStorageUnavailableError("inventory_read");
+    }
+    this.syncInstalledScope();
+    const replacement = new Map<string, ResolvedPackageRuntime>();
+    for (const record of records) this.registerInstalledNodePackageInto(record, scopeKey, replacement);
+    this.installedExact.clear();
+    for (const [key, runtime] of replacement) this.installedExact.set(key, runtime);
+    this.hydration = Object.freeze({ scopeKey, epoch, promise: Promise.resolve() });
+  }
   async resolveItem(ref: ResolvedContentRef): Promise<Question> {
     const exactRef = createResolvedContentRef(ref);
     const r = await this.resolveExactArtifact(exactRef);
@@ -133,12 +157,13 @@ export class ContentPackageRuntimeOwner {
   private async hydrateInstalledPackages(scopeKey: string): Promise<void> {
     if (this.getInstalledScopeKey() !== scopeKey) { this.syncInstalledScope(); return; }
     if (!this.hydration || this.hydration.scopeKey !== scopeKey) {
+      const epoch = this.hydrationEpoch;
       const promise = this.loadActiveInstalledPackages(scopeKey).then((records) => {
-        if (this.getInstalledScopeKey() !== scopeKey) return;
+        if (this.hydrationEpoch !== epoch || this.getInstalledScopeKey() !== scopeKey) return;
         this.syncInstalledScope();
         for (const record of records) this.registerInstalledNodePackage(record, scopeKey);
-      }).catch((error) => { if (this.hydration?.scopeKey === scopeKey) this.hydration = null; throw error; });
-      this.hydration = Object.freeze({ scopeKey, promise });
+      }).catch((error) => { if (this.hydration?.epoch === epoch) this.hydration = null; throw error; });
+      this.hydration = Object.freeze({ scopeKey, epoch, promise });
     }
     await this.hydration.promise;
     this.syncInstalledScope();
@@ -146,6 +171,7 @@ export class ContentPackageRuntimeOwner {
   private syncInstalledScope(): string | null {
     const scopeKey = this.getInstalledScopeKey();
     if (!this.scopeInitialized || scopeKey !== this.installedScopeKey) {
+      this.hydrationEpoch += 1;
       this.installedExact.clear();
       this.hydration = null;
       this.installedScopeKey = scopeKey;

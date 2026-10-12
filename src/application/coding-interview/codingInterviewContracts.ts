@@ -1,8 +1,7 @@
 import type { ResolvedContentRef, TrackId } from "../../domain";
 import type { AlgorithmFeedbackMode } from "../../tracks/coding-interview/domain";
-import type { PracticeSessionMode } from "../../features/practice/sessionConfig";
+import type { CanonicalPracticeModeId } from "../practice/practiceModeContract";
 import type { AlgorithmReviewSource, AlgorithmSelectionScope } from "./codingInterviewPreparationRequest";
-export type CanonicalPracticeModeId = PracticeSessionMode;
 export type HomeRecommendationAction =
   | Readonly<{ kind: "resume_active_practice"; sessionId: string; trackId: TrackId; modeId: CanonicalPracticeModeId }>
   | Readonly<{ kind: "start_supported_mode"; trackId: TrackId; modeId: CanonicalPracticeModeId; nodeId?: string; mentalUnitId?: string; evidenceSources?: readonly ("due_queue" | "committed_session_misses")[]; reviewSource?: AlgorithmReviewSource }>

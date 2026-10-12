@@ -8,6 +8,8 @@ import { getTrainingAttempts, getTrainingSessions } from "../../storage/reposito
 import { getCertificationPracticeReviewProjection, openCertificationPracticeSession, submitCertificationPracticeResponse, abandonCertificationSession, retryCertificationAbandonmentCommand } from "./certificationSessionFacade";
 import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
 import { STORAGE_KEYS } from "../../storage/keys";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 test("abandoned GCP diagnostic preserves its one durable answer and cannot produce a completed review", async () => {
   const storage = installMemoryStorage();
@@ -27,9 +29,9 @@ test("abandoned GCP diagnostic preserves its one durable answer and cannot produ
   assert.equal(abandoned.kind, "abandoned");
   if (abandoned.kind !== "abandoned") throw new Error("Expected canonical diagnostic abandonment.");
   assert.equal(abandoned.session.status, "abandoned");
-  const attempts = await getTrainingAttempts();
+  const attempts = await getTrainingAttempts(productionTrackAdmissionContext);
   assert.equal(attempts.value.filter((attempt) => attempt.sessionId === opened.projection.session.id).length, 1);
-  const sessions = await getTrainingSessions();
+  const sessions = await getTrainingSessions(productionTrackAdmissionContext);
   assert.equal(sessions.value.find((session) => session.id === opened.projection.session.id)?.status, "abandoned");
 
   const snapshotAfterAbandon = storage.snapshot();

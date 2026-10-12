@@ -10,9 +10,10 @@ import type { AlgorithmSelectionScope } from "../../application/coding-interview
 import { CERTIFICATION_PRACTICE_MODE_IDS, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { resolveRequiredUnitFocusMode, type ProductModeConfig } from "../../content/canonical";
-import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";
+import { isDesignInterviewModeId } from "../../tracks/design-interview";
 import type { PremiumNodeOffer } from "../../content/application/premiumNodeOffers";
 import { ROUTES } from "../../constants/routes";
+import type { CanonicalPracticeModeId } from "../../application/practice/practiceModeContract";
 
 export type PracticeSessionSource =
   | "home"
@@ -21,7 +22,6 @@ export type PracticeSessionSource =
   | "modeShortcut";
 
 export type CertificationPracticeSessionMode = CertificationPracticeModeId;
-export type PracticeSessionMode = AlgorithmModeId | CertificationPracticeSessionMode | DesignInterviewModeId;
 
 export type PracticeSessionLength = number;
 
@@ -46,7 +46,7 @@ export type PracticeSessionRouteParams = {
   algorithmScope?: AlgorithmSelectionScope;
   competencyId?: string;
   feedbackMode: PracticeFeedbackMode;
-  mode: PracticeSessionMode;
+  mode: CanonicalPracticeModeId;
   mentalUnitId?: string;
   nodeId?: string;
   reviewBehaviorEnabled: boolean;
@@ -354,7 +354,7 @@ function resolveCertificationFeedbackMode(
 }
 
 export function getGeneralPracticeReviewSource(
-  mode: PracticeSessionMode,
+  mode: CanonicalPracticeModeId,
 ): PracticeReviewSource | undefined {
   return mode === ALGORITHM_MODE_IDS.weakAreaReview ? "due_queue" : undefined;
 }

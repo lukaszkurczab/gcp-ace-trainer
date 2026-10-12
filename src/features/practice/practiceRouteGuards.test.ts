@@ -12,7 +12,7 @@ test("practice screens turn unsupported package, topic, and mode reads into exit
   assert.match(hub, /try \{[\s\S]*?getTrackDisplay\(activeTrackId\)[\s\S]*?getCanonicalFreePracticeNodeId\(activeTrack\.id\)[\s\S]*?\} catch \(error\) \{[\s\S]*?renderUnavailable\(/);
   assert.match(roadmap, /try \{[\s\S]*?getTrackDisplay\(activeTrackId\)[\s\S]*?buildTopicRoadmapNodes\([\s\S]*?\} catch \(error\) \{[\s\S]*?renderUnavailable\(/);
   assert.match(roadmap, /if \(route\.params\?\.topicId !== undefined && !topics\.some\(\(topic\) => topic\.id === route\.params\?\.topicId && topic\.status !== "locked"\)\) \{[\s\S]*?return renderUnavailable\(t\("This topic is not included in your free content\."\)\)/);
-  assert.match(setup, /if \(route\.params\?\.topicId !== undefined && route\.params\.topicId !== canonicalNodeId\) \{[\s\S]*?return renderUnavailable\(t\("This topic is not included in your free content\."\)/);
+  assert.match(setup, /if \(route\.params\?\.topicId !== undefined && route\.params\.topicId !== canonicalNodeId && !v3UnitRoute\) \{[\s\S]*?return renderUnavailable\(t\("This topic is not included in your free content\."\)/);
   assert.match(setup, /if \(activeTrack\.familyId === "coding_interview" && !isAlgorithmModeId\(requestedMode\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
   assert.match(setup, /if \(activeTrack\.familyId === "certification" && !isCertificationPracticeModeId\(requestedMode\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
   assert.match(setup, /if \(activeTrack\.familyId === "design_interview" && \(!isDesignInterviewModeId\(requestedMode\) \|\| requestedMode === "design-interview-simulation"\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
@@ -40,7 +40,7 @@ test("all selected Design modes require Premium admission before their canonical
   assert.match(hub, /if \(isDesignInterviewModeId\(resolvedMode\)\)[\s\S]*?authorizePremiumSessionStart\(\)[\s\S]*?case "purchasePremium":[\s\S]*?ROUTES\.PREMIUM_PURCHASE/);
   assert.match(hub, /if \(resolvedMode !== "design-interview-simulation"\)[\s\S]*?ROUTES\.PRACTICE_SETUP[\s\S]*?ROUTES\.DESIGN_INTERVIEW_SIMULATION/);
   assert.match(hub, /setDesignAdmissionMode\(resolvedMode\)[\s\S]*?startSession\(designAdmissionMode\)/);
-  assert.match(hub, /startSession\(primaryMode\.mode as PracticeSessionMode, "practiceHub"\)/);
+  assert.match(hub, /startSession\(primaryMode\.mode as CanonicalPracticeModeId, "practiceHub"\)/);
 });
 
 test("practice route changes cannot submit stale setup controls and preserve track identity", () => {
@@ -56,7 +56,7 @@ test("practice route changes cannot submit stale setup controls and preserve tra
   assert.match(setup, /const configuredSessionLength = resolvePracticeSessionLength\(sessionLength, selectedPackageMode\)/);
   assert.match(setup, /setFeedbackMode\(route\.params\?\.feedbackMode \?\? DEFAULT_FEEDBACK_MODE\)/);
   assert.match(setup, /setReviewBehaviorEnabled\(route\.params\?\.reviewBehaviorEnabled \?\? false\)/);
-  assert.match(setup, /setFocusTopicId\(isCloudTopicId\(route\.params\?\.topicId \?\? ""\)/);
+  assert.match(setup, /setFocusTopicId\(route\.params\?\.topicId \?\? null\)/);
   assert.match(hub, /navigation\.navigate\(ROUTES\.TOPIC_ROADMAP, \{ topicId: topic\.id, trackId: activeTrack\.id \}\)/);
   assert.match(roadmap, /navigation\.navigate\(ROUTES\.PRACTICE_HUB, \{ topicId: resolvedSelectedTopicId \?\? undefined, trackId: activeTrack\.id \}\)/);
   assert.match(roadmap, /<Button onPress=\{returnToPracticeHub\} variant="primary">\{t\("Continue"\)\}<\/Button>/);

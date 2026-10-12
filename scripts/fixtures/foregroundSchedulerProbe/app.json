@@ -1,0 +1,7 @@
+{
+  "expo": {
+    "name": "Patternly foreground scheduler probe",
+    "slug": "patternly-foreground-scheduler-probe",
+    "platforms": ["ios"]
+  }
+}

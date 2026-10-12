@@ -7,9 +7,9 @@ Wyjątek właściciela z 11.10.2026: autoryzowano przed iOS naprawę i publikacj
 
 ## Obowiązujące ustalenia
 
-- Wyjątek właściciela z 11.10 dla FESD N08 zakończony: B01–B08 (19/21/20/20/21/19/20/22 = 162) naprawione, semantic QA PASS, testy i CI odebrane; [źródła i artefakt+lock opublikowane](https://github.com/lukaszkurczab/patternly-content/releases/tag/fesd-n08-2026-10-11). Przypięcie nowej treści w aplikacji pozostaje do osobnego zadania właściciela kontraktu zgodnie z jego decyzją. Q13 i cudza praca poza zakresem. [Raport FESD i mapowanie162](../../fesd-content/docs/evidence/content-audits/2026-10-11-frontend-system-design-interview.md); szerszy audyt1604 pozostałych pytań nadal po iOS.
+- Wyjątek właściciela z 11.10 dla FESD N08 zakończony: B01–B08 (19/21/20/20/21/19/20/22 = 162) naprawione, semantic QA PASS, testy i CI odebrane; [źródła i artefakt+lock opublikowane](https://github.com/lukaszkurczab/patternly-content/releases/tag/fesd-n08-2026-10-11). Przypięcie w aplikacji i exact admission zakończono w skoordynowanej publikacji12.10; [dowody](reports/claude-coordinated-publication-2026-10-12.md). Q13 i cudza praca poza zakresem. [Raport FESD i mapowanie162](../../fesd-content/docs/evidence/content-audits/2026-10-11-frontend-system-design-interview.md); szerszy audyt1604 pozostałych pytań nadal po iOS.
 - Aplikacja ma jednego bieżącego Gościa. Zachować izolację danych Gościa i kont oraz jawne przejęcie albo odrzucenie danych Gościa. Nie dodawać wyboru historycznych Gości.
-- Dziewięć ścieżek korzysta z kanonicznych pakietów, jawnego dopuszczenia treści i exact wersji. Bieżące treści: OOD24 i Claude `ccarp-2026.10.07`. Aktualizacja treści nie przelicza ani nie usuwa historii.
+- Dziewięć ścieżek korzysta z kanonicznych pakietów, jawnego dopuszczenia treści i exact wersji. Bieżący kandydat treści: OOD24, Backend11.10, FESD N08 i Claude918/V3; exact wersje wynikają z locków wydania. Aktualizacja treści nie przelicza ani nie usuwa historii.
 - Cel nauki i zaakceptowany plan są zapisywane razem dla danej ścieżki. Użytkownik rozstrzyga konflikt przy bezpiecznym wejściu, bez przerywania sesji. Przypomnienia pozostają lokalne na urządzeniu i dotyczą bieżącej ścieżki.
 - Data celu oznacza wydarzenie, termin albo punkt kontrolny, zależnie od celu; nauka we własnym tempie nie ma daty. `CompletionRules` należą do wersjonowanego pakietu. Według korekty właściciela z 07.10 ścieżka jest ukończona po ukończeniu wszystkich wymaganych rozdziałów, z osobnymi regułami minimum prób i wyniku. Właściciel zatwierdził minimum 4 × liczba jednostek rozdziału, zaokrąglone w górę do wielokrotności 20, i 16 poprawnych z ostatnich 20 odpowiedzi tego rozdziału. Nie wymagają rozwiązania każdego unikalnego pytania. Brak reguły daje wynik `unknown`, a niedobór dostępnej pracy musi być widoczny.
 - Exam, Coding Mock Interview i cała rodzina Design Interview wymagają potwierdzonego Premium. Wersja Free może pokazywać zablokowaną ofertę i ekran zakupu; Design nie ma darmowego węzła. Testowe uprawnienie potwierdza kontrolę dostępu w aplikacji, nie rzeczywisty zakup.
@@ -72,12 +72,6 @@ Podział zatwierdzony przez właściciela 07.10. Zadania pozostają otwarte, wra
 | [EPIC-09 — ocena treści przez modele](../../patternly-content/docs/planning/EPIC-09-MODEL-BASED-EVALUATION-DRAFT.md) | Odroczone do pracy po wydaniu | Dopracować i wykonać zakres projektowanego narzędzia według jego kontraktu. Sam projekt ani wynik modelu nie potwierdza jakości banku i nie zastępuje indywidualnego przeglądu treści. |
 | [R06 / ANDROID-MANUAL — pełny odbiór Androida](reports/android-sandbox-2026-10-08.md) | Po iOS; instalacja APK blokowana miejscem | Dokończyć instalację aktualnego APK bez utraty danych, świeży ręczny login, aktualizację, Apple/Google i pełną macierz urządzenia/usług. Aktualnie instalację blokuje `INSUFFICIENT_STORAGE`; nie usuwać danych aplikacji ani omijać zabezpieczenia. Pełny odbiór Androida pozostaje po iOS. |
 
-## Plan zgodności Claude z oficjalnym kursem
-
-| Zadanie | Status | Pozostały wynik i zależności |
-| --- | --- | --- |
-| [CC-01–05 — materiały, luki kursowe i pokrycie nauki](specs/engineering/claude-course-alignment.md) | CC-01–05 done lokalnie; release niezatwierdzony | [CC-05 niezależny PASS](reports/claude-local-candidate-acceptance-2026-10-11.md): APP ma 918 pytań / 53 jednostki / V3, oba linki z kontem kursowym i exact nowy pin; historia zachowana bez zaliczenia starego banku. Osiem innych banków i historyczne approvals bez zmian. Cowork poza runtime, partner-only excluded. Sync/check, content boundary, testy i typecheck PASS; formalny kandydat całego wydania ma wcześniejszą niespójność backend bundle, więc release pozostaje zablokowany. Pełny ponowny audyt semantyczny nieukończony; ograniczenie estymaty nowej sesji V3 z CC-04 jawne. Bez publikacji i zmiany kolejności iOS. |
-
 ## Zasady kontynuacji
 
 Wymagania produktu znajdują się w normatywnych dokumentach workspace `docs/00–17` i specyfikacjach BIZQ. Rozbieżności rozstrzygaj na podstawie decyzji właściciela i rzeczywistego kodu. Opis stanu w specyfikacji nie jest nowym dowodem wykonania. Plan, specyfikacje i stan pracy w katalogu głównym workspace są odnośnikami do kanonicznych plików aplikacji.
@@ -89,11 +83,3 @@ Repozytoria przechowują odtwarzalne narzędzia, aktualne wejścia dopuszczenia 
 Ocena tego podziału: zgodność z celem i architekturą 0,96; prostota 0,92; kontrola ryzyka 0,88; utrzymywalność 0,92; minimum 0,88. Przeniesienie audytu contentu i jego poprawek po wydaniu wynika z jawnej decyzji właściciela. Zachowano pełny zakres i dane audytu, a kryteria poprawności oraz wymagane odbiory usług i urządzenia pozostają w swoich zadaniach.
 
 Po odbiorze usuwać wykonane zadania z tego planu. Nie dopisywać tabeli zakończonych prac ani historii commitów; zachować wyłącznie niezakończony zakres, jego zależności i potrzebne decyzje.
-
-## CC-05 — publikacja spójnego wydania, 12.10.2026
-
-Autoryzacja właściciela: Backend z 11.10 oraz Claude 918; scalenie gałęzi utworzonych podczas sesji 11.10 do main/master. Odbiór obejmuje dokładne źródła, artefakty wszystkich dziewięciu banków, zgodność paczki APP, nowe readiness/admission i wymagane CI. Publikacja oznacza Git i przypięcie treści do aplikacji; dystrybucja sklepu pozostaje osobnym etapem.
-
-Kolejność: izolowane checkouty z aktualnych origin → commit źródeł CC → nowy kandydat dziewięciu banków i jawne CC-05 readiness → integracja APP z najnowszym main i synchronizacja → testy i commit APP → exact runtime admission CONTENT → niezależny odbiór → push APP, następnie CONTENT i hosted release gate. Historyczne zatwierdzenia zachowane w historii Git; bez przepisywania ich jako dowodu nowego wydania. Oryginalne niezapisane i niezwiązane zmiany pozostają zachowane. Wycofanie: nowy revert konkretnego wydania, bez resetowania publicznej historii.
-
-Przegląd projektu niezależny: dopasowanie 0,94; prostota 0,84; ryzyko 0,82; utrzymanie 0,84; minimum 0,82. Istniejący protokół kandydata pozostaje kanoniczny. Nowy identyfikator zadania CC-05 wymaga jawnego dopisania do dozwolonych zakresów, bez osłabiania weryfikacji hashy i granic zatwierdzenia. Wyniki i końcowe SHA zostaną zapisane w raporcie publikacji.

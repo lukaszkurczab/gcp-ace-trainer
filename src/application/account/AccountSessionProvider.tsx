@@ -19,7 +19,7 @@ import { createFirebaseAuthClient, firebaseAuthErrorCode, FirebaseAuthClientErro
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, discardGuestDataAndLoadAccount, inspectAccountSyncConflict, loadAccountDataSession, readLocalAccountDataSession, resetAccountLocalLearningHistory, resolveAccountSyncConflict, retryAccountDataSync, retryLearningPlanRecovery, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession, type AccountSyncConflictPreview } from "./accountDataService";
 import { commitLearningStateReset } from "../learningMutations";
-import { activatePreparedProfile, beginAccountIdentityProofBarrier, captureActiveProfileStorageLease, capturePreparedProfileStorageLease, closeActiveProfileStorage, continueAsGuestInNewProfile, getActiveStorageProfile, getActiveStorageProfileOrNull, inspectPreparedProfileState, invalidateActiveAccountIdentityBinding, invalidatePreparedAccountIdentityBinding, isActiveProfileStorageLeaseCurrent, isPreparedProfileStorageLeaseCurrent, notifyProfileStorageReady, prepareProfileStorage, readActiveAccountIdentityBinding, readPreparedAccountIdentityBinding, resolveAccountIdentityProofBarrier, selectAccountProfileAndRestart, selectPreparedAccountProfile, selectPreparedGuestProfile, validatePreparedGuestAccess, writeActiveAccountIdentityBinding, type AccountIdentityBinding, type AccountIdentityBindingRead, type AccountIdentityProofBarrier, type ActiveProfileStorageLease, type PreparedProfileStorageLease } from "../../storage/repositories/profileStorageRepository";
+import { activatePreparedProfile, beginAccountIdentityProofBarrier, captureActiveProfileStorageLease, capturePreparedProfileStorageLease, closeActiveProfileStorage, getActiveStorageProfile, getActiveStorageProfileOrNull, inspectPreparedProfileState, invalidateActiveAccountIdentityBinding, invalidatePreparedAccountIdentityBinding, isActiveProfileStorageLeaseCurrent, isPreparedProfileStorageLeaseCurrent, notifyProfileStorageReady, prepareProfileStorage, readActiveAccountIdentityBinding, readPreparedAccountIdentityBinding, resolveAccountIdentityProofBarrier, selectAccountProfileAndRestart, selectPreparedAccountProfile, selectPreparedGuestProfile, validatePreparedGuestAccess, writeActiveAccountIdentityBinding, type AccountIdentityBinding, type AccountIdentityBindingRead, type AccountIdentityProofBarrier, type ActiveProfileStorageLease, type PreparedProfileStorageLease } from "../../storage/repositories/profileStorageRepository";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
 import { useProfileStoragePreparation } from "./profileStoragePreparationContext";
 import { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, hasVerifiedLocalLogoutReceipt, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, providerCancellationAuthObserverDecision, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
@@ -27,6 +27,7 @@ import { beginAccountSignOut, clearAccountSignOutState, getAccountSignOutState }
 import { getGuestInstallation, markGuestInstallationAdoptionPending } from "../../storage/repositories/guestInstallationRepository";
 import type { LocalLogoutControl, LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
 import { createProviderFirstUseCoordinator } from "./providerFirstUseCoordinator";
+import { accountFinalizationPolicies, executeAccountFinalization, resolveAccountFinalizationBarrier, type AccountFinalizationOptions } from "./accountFinalization";
 import { resolveProviderRegistrationDocuments, type ProviderRegistrationDocumentsResult } from "../../legal/providerRegistrationDocuments";
 import type { TargetLocale } from "../../preferences/localeResolver";
 import { matchesAccountActorIdentity, type AccountActorIdentity, type AccountActorIdentityObservation } from "./accountActorIdentityFence";
@@ -54,7 +55,7 @@ async function invalidateAccountBindingForConfirmedDeletion(input: Readonly<{ ac
   try {
     const lease = captureActiveProfileStorageLease();
     if (!lease || !input.canContinue() || lease.profile.accountId !== input.accountId
-      || (lease.profile.kind !== "account" && lease.profile.kind !== "legacy_owner")) return false;
+      || lease.profile.kind !== "account") return false;
     const binding = await readActiveAccountIdentityBinding(lease);
     if (binding.kind === "verified") {
       if (binding.binding.accountId !== input.accountId || binding.binding.firebaseUid !== input.uid
@@ -90,7 +91,7 @@ async function invalidateAccountBindingAfterIdentityDenial(input: Readonly<{
   verificationRevision?: number;
   canContinue: () => boolean;
 }>): Promise<void> {
-  if (!input.canContinue() || (input.profile.kind !== "account" && input.profile.kind !== "legacy_owner") || !input.profile.accountId) return;
+  if (!input.canContinue() || input.profile.kind !== "account" || !input.profile.accountId) return;
   const lease = input.lease;
   if (lease && (lease.profile.id !== input.profile.id || lease.profile.kind !== input.profile.kind
     || lease.profile.accountId !== input.profile.accountId || !isActiveProfileStorageLeaseCurrent(lease))) return;
@@ -875,7 +876,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       preparedLease = preparedLeaseOverride === undefined ? capturePreparedProfileStorageLease() : preparedLeaseOverride;
       profile = preparedLease?.profile ?? null;
     }
-    if (!profile || (profile.kind !== "account" && profile.kind !== "legacy_owner") || !profile.accountId?.trim()) return null;
+    if (!profile || profile.kind !== "account" || !profile.accountId?.trim()) return null;
     const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid
       && (!lease || isActiveProfileStorageLeaseCurrent(lease))
       && (!preparedLease || isPreparedProfileStorageLeaseCurrent(preparedLease));
@@ -996,14 +997,24 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   resolveIdentityProofBarrierRef.current = resolveIdentityProofBarrier;
   createRecoveryProofScopeRef.current = createRecoveryProofScope;
 
-  const finalizeCurrent = useCallback(async (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, user: FirebaseAuthUserSnapshot | null = auth.getSnapshot(), restart = false, expectedToken?: AccountSessionGenerationToken, preserveGuestScope = false, allowGuestAdoption = false, identityProofBarrier?: AccountIdentityProofBarrierContext | null): Promise<AccountCommandResult> => {
+  const finalizeCurrent = useCallback(async (
+    auth: FirebaseAuthClient,
+    api: ReturnType<typeof createPatternlyApiClient>,
+    user: FirebaseAuthUserSnapshot | null = auth.getSnapshot(),
+    options: AccountFinalizationOptions<AccountSessionGenerationToken, AccountIdentityProofBarrierContext> = Object.freeze({
+      generation: Object.freeze({ kind: "begin" }), profile: "select-account", guestAdoption: "discard", identityProof: Object.freeze({ kind: "capture" }),
+    }),
+  ): Promise<AccountCommandResult> => {
     if (!user || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
-    const token = expectedToken ?? (restart ? sessionCoordinator.restart(user.uid) : sessionCoordinator.begin(user.uid));
+    const token = options.generation.kind === "captured" ? options.generation.token
+      : options.generation.kind === "restart" ? sessionCoordinator.restart(user.uid) : sessionCoordinator.begin(user.uid);
     if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
-    let proofBarrier = identityProofBarrier;
-    if (proofBarrier === undefined) {
-      try { proofBarrier = await beginIdentityProofBarrier(auth, user, token); }
-      catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
+    let proofBarrier: AccountIdentityProofBarrierContext | null;
+    try {
+      proofBarrier = await resolveAccountFinalizationBarrier(options, () => beginIdentityProofBarrier(auth, user, token));
+      if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
+    } catch (error) {
+      return { kind: "failure", failure: classifyAccountFailure(error) };
     }
     if (!await guardRecoveryBeforePreparation(auth, { generation: token, barrier: proofBarrier })) {
       if (proofBarrier && stateRef.current.kind !== "revokedSession") {
@@ -1015,101 +1026,125 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const outcome = await sessionCoordinator.run(token, async () => {
         if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
         try {
-          const identityProof = await runAccountIdentityProof({
-            request: () => getMeWithExchangedSession({
-              api,
-              auth,
-              ...(recoverySessionIdentityRef.current?.firebaseUid === user.uid ? { requiredAuthorizationGeneration: recoverySessionIdentityRef.current.authorizationGeneration } : {}),
-              canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
-              onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
-              user,
-            }),
-            user,
-            generation: token,
-            barrier: proofBarrier,
-            barrierAlreadyCaptured: true,
-            beginBarrier: () => beginIdentityProofBarrier(auth, user, token),
-            resolveBarrier: (barrier) => resolveIdentityProofBarrier(barrier, auth, user, token),
-            matchesProofSubject: (response, barrier) => response.user.id === barrier.previousBinding.accountId
-              && response.user.identity.subject === user.uid && barrier.previousBinding.firebaseUid === user.uid,
-            getCurrentState: () => stateRef.current,
-            getCurrentSdkUid: () => auth.getSnapshot()?.uid ?? null,
-            isCurrentGeneration: sessionCoordinator.isCurrent,
-            isLeaseCurrent: isActiveProfileStorageLeaseCurrent,
-            readBinding: readActiveAccountIdentityBinding,
-            revokeDeniedBinding: async (error) => { await revokeBindingForAuthoritativeIdentityDenial(error, {
-              profile: preparedProfileState.selectedProfile,
-              uid: user.uid,
-              canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
-            }); },
-          });
-          if (identityProof.kind === "failed") return { result: { kind: "failure", failure: identityProof.failure }, state: identityProof.state };
-          const response = identityProof.value;
-          // Keep this guard immediately before local account loading. The data
-          // service may persist state, so stale generations must not enter it.
-          if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
-          if (!preserveGuestScope && await selectAccountProfileAndRestart(response.user.id, () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid, { recoverBoundGuest: true })) {
-            return { result: { kind: "failure", failure: "providerUnavailable" } };
-          }
-          let deletion = getAccountDeletionState();
-          // A completed marker belongs to the account that was deleted. If a
-          // later /me resolves a different account for the same auth subject,
-          // discard only that terminal marker so the new account can start its
-          // own lifecycle. Resumable markers remain untouched on mismatch.
-          if (deletion?.status === "complete" && deletion.accountId !== response.user.id) {
-            clearAccountDeletionState();
-            deletion = null;
-          }
-          const pendingDeletion = deletion?.accountUidHash === sha256Utf8(user.uid) && deletion.accountId === response.user.id
-            ? deletionRecoverySession(deletion)
-            : null;
-          const boundProfile = getActiveStorageProfileOrNull();
-          if (!pendingDeletion && response.user.identity.subject === user.uid
-            && (boundProfile?.kind === "account" || boundProfile?.kind === "legacy_owner") && boundProfile.accountId === response.user.id) {
-            const lease = captureActiveProfileStorageLease();
-            if (lease && lease.profile.id === boundProfile.id && lease.profile.kind === boundProfile.kind && lease.profile.accountId === response.user.id) {
-              try {
-                const initialBinding = await readActiveAccountIdentityBinding(lease);
-                const verifiedBinding = initialBinding.kind === "verified"
-                  && initialBinding.binding.accountId === response.user.id
-                  && initialBinding.binding.firebaseUid === user.uid
-                  && initialBinding.binding.profileId === boundProfile.id
-                  && initialBinding.binding.profileKind === boundProfile.kind
-                  ? initialBinding.binding
-                  : await writeActiveAccountIdentityBinding({ lease, accountId: response.user.id, firebaseUid: user.uid, canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid && isActiveProfileStorageLeaseCurrent(lease) });
-                const cleared = await clearAccountIdentityDenialAfterProof({
-                  accountId: response.user.id,
-                  firebaseUid: user.uid,
-                  canContinue: async () => {
-                    if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid
-                      || !isActiveProfileStorageLeaseCurrent(lease)) return false;
-                    const latest = await readActiveAccountIdentityBinding(lease);
-                    return latest.kind === "verified" && latest.binding.accountId === response.user.id
-                      && latest.binding.firebaseUid === user.uid && latest.binding.profileId === boundProfile.id
-                      && latest.binding.profileKind === boundProfile.kind
-                      && latest.binding.checksum === verifiedBinding.checksum
-                      && latest.binding.verificationRevision === verifiedBinding.verificationRevision
-                      && sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid
-                      && isActiveProfileStorageLeaseCurrent(lease);
-                  },
-                });
-                if (!cleared) return { result: { kind: "failure", failure: "revokedSession" }, state: { kind: "revokedSession", user } };
-              } catch {
-                // A failed durable binding or denial-marker update cannot admit sync/offline data under this identity.
-                return { result: { kind: "failure", failure: "backendUnavailable" }, state: { kind: "backendUnavailable", user } };
+          return await executeAccountFinalization<
+            AccountSessionGenerationToken,
+            AccountIdentityProofBarrierContext,
+            MeResponseDto,
+            Readonly<{ accountId: string; pendingDeletion: AccountDataSession | null }>,
+            AccountDataSession,
+            Readonly<{ result: AccountCommandResult; state?: AccountState }>
+          >({
+            options,
+            barrier: proofBarrier ?? null,
+            canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
+            staleResult: () => ({ result: { kind: "failure", failure: "revokedSession" } as const }),
+            proveIdentity: async (barrier) => {
+              const identityProof = await runAccountIdentityProof({
+                request: () => getMeWithExchangedSession({
+                  api,
+                  auth,
+                  ...(recoverySessionIdentityRef.current?.firebaseUid === user.uid ? { requiredAuthorizationGeneration: recoverySessionIdentityRef.current.authorizationGeneration } : {}),
+                  canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
+                  onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
+                  user,
+                }),
+                user,
+                generation: token,
+                barrier,
+                barrierAlreadyCaptured: true,
+                beginBarrier: () => beginIdentityProofBarrier(auth, user, token),
+                resolveBarrier: (captured) => resolveIdentityProofBarrier(captured, auth, user, token),
+                matchesProofSubject: (response, captured) => response.user.id === captured.previousBinding.accountId
+                  && response.user.identity.subject === user.uid && captured.previousBinding.firebaseUid === user.uid,
+                getCurrentState: () => stateRef.current,
+                getCurrentSdkUid: () => auth.getSnapshot()?.uid ?? null,
+                isCurrentGeneration: sessionCoordinator.isCurrent,
+                isLeaseCurrent: isActiveProfileStorageLeaseCurrent,
+                readBinding: readActiveAccountIdentityBinding,
+                revokeDeniedBinding: async (error) => { await revokeBindingForAuthoritativeIdentityDenial(error, {
+                  profile: preparedProfileState.selectedProfile,
+                  uid: user.uid,
+                  canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
+                }); },
+              });
+              return identityProof.kind === "failed"
+                ? { kind: "return" as const, outcome: { result: { kind: "failure" as const, failure: identityProof.failure }, state: identityProof.state } }
+                : { kind: "continue" as const, value: identityProof.value };
+            },
+            selectAccountProfile: async (response) => await selectAccountProfileAndRestart(response.user.id,
+              () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
+              { recoverBoundGuest: true })
+              ? { kind: "return" as const, outcome: { result: { kind: "failure" as const, failure: "providerUnavailable" as const } } }
+              : { kind: "continue" as const, value: undefined },
+            verifyAccountIdentity: async (response) => {
+              let deletion = getAccountDeletionState();
+              // A completed marker belongs to the account that was deleted. If a
+              // later /me resolves a different account for the same auth subject,
+              // discard only that terminal marker so the new account can start its
+              // own lifecycle. Resumable markers remain untouched on mismatch.
+              if (deletion?.status === "complete" && deletion.accountId !== response.user.id) {
+                clearAccountDeletionState();
+                deletion = null;
               }
-            }
-          }
-          const accountData = pendingDeletion ?? await loadAccountDataSession(api, response.user.id, { guestAdoption: allowGuestAdoption ? "allow" : "discard" });
-          if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
-          if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
-          if (accountData.status === "synced") await reconcileMaterializedAccountReminders().catch(() => undefined);
-          if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
-          revokeGuestAccess();
-          return {
-            result: { kind: "success", next: "authenticated" },
-            state: { kind: "authenticated", backendUser: response.user, user, accountData },
-          };
+              const pendingDeletion = deletion?.accountUidHash === sha256Utf8(user.uid) && deletion.accountId === response.user.id
+                ? deletionRecoverySession(deletion)
+                : null;
+              const boundProfile = getActiveStorageProfileOrNull();
+              if (!pendingDeletion && response.user.identity.subject === user.uid
+                && boundProfile?.kind === "account" && boundProfile.accountId === response.user.id) {
+                const lease = captureActiveProfileStorageLease();
+                if (lease && lease.profile.id === boundProfile.id && lease.profile.kind === boundProfile.kind && lease.profile.accountId === response.user.id) {
+                  try {
+                    const initialBinding = await readActiveAccountIdentityBinding(lease);
+                    const verifiedBinding = initialBinding.kind === "verified"
+                      && initialBinding.binding.accountId === response.user.id
+                      && initialBinding.binding.firebaseUid === user.uid
+                      && initialBinding.binding.profileId === boundProfile.id
+                      && initialBinding.binding.profileKind === boundProfile.kind
+                      ? initialBinding.binding
+                      : await writeActiveAccountIdentityBinding({ lease, accountId: response.user.id, firebaseUid: user.uid, canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid && isActiveProfileStorageLeaseCurrent(lease) });
+                    const cleared = await clearAccountIdentityDenialAfterProof({
+                      accountId: response.user.id,
+                      firebaseUid: user.uid,
+                      canContinue: async () => {
+                        if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid
+                          || !isActiveProfileStorageLeaseCurrent(lease)) return false;
+                        const latest = await readActiveAccountIdentityBinding(lease);
+                        return latest.kind === "verified" && latest.binding.accountId === response.user.id
+                          && latest.binding.firebaseUid === user.uid && latest.binding.profileId === boundProfile.id
+                          && latest.binding.profileKind === boundProfile.kind
+                          && latest.binding.checksum === verifiedBinding.checksum
+                          && latest.binding.verificationRevision === verifiedBinding.verificationRevision
+                          && sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid
+                          && isActiveProfileStorageLeaseCurrent(lease);
+                      },
+                    });
+                    if (!cleared) return { kind: "return", outcome: { result: { kind: "failure", failure: "revokedSession" }, state: { kind: "revokedSession", user } } };
+                  } catch {
+                    // A failed durable binding or denial-marker update cannot admit sync/offline data under this identity.
+                    return { kind: "return", outcome: { result: { kind: "failure", failure: "backendUnavailable" }, state: { kind: "backendUnavailable", user } } };
+                  }
+                }
+              }
+              return { kind: "continue", value: { accountId: response.user.id, pendingDeletion } };
+            },
+            loadAccountData: async (verified, guestAdoption) => ({
+              kind: "continue" as const,
+              value: verified.pendingDeletion ?? await loadAccountDataSession(api, verified.accountId, {
+                guestAdoption,
+                canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
+              }),
+            }),
+            shouldReconcileReminders: (accountData) => accountData.status === "synced",
+            reconcileReminders: reconcileMaterializedAccountReminders,
+            finish: (response, _verified, accountData) => {
+              revokeGuestAccess();
+              return {
+                result: { kind: "success", next: "authenticated" },
+                state: { kind: "authenticated", backendUser: response.user, user, accountData },
+              };
+            },
+          });
         } catch (error) {
           if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
           const deletion = getAccountDeletionState();
@@ -1190,8 +1225,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       startupDiagnostic?.pending("recovery_guard", stateRef.current.kind);
       const activeBeforePreparation = getActiveStorageProfileOrNull();
       const selectedBeforePreparation = preparedProfileState.selectedProfile;
-      if ((activeBeforePreparation?.kind === "account" || activeBeforePreparation?.kind === "legacy_owner")
-        || selectedBeforePreparation.kind === "account" || selectedBeforePreparation.kind === "legacy_owner") {
+      if (activeBeforePreparation?.kind === "account" || selectedBeforePreparation.kind === "account") {
         if (activeBeforePreparation) closeActiveProfileStorage();
         diagnosticStage = "account_profile_prepare";
         startupDiagnostic?.pending(diagnosticStage, stateRef.current.kind);
@@ -1220,11 +1254,11 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       setState({ kind: "loading" });
       let activeProfile = getActiveStorageProfileOrNull();
       const preparedSelection = preparedProfileState.selectedProfile;
-      if (!activeProfile && (preparedSelection.kind === "guest" || preparedSelection.kind === "legacy_guest")) {
+      if (!activeProfile && preparedSelection.kind === "guest") {
         activatePreparedProfile(preparedSelection.id, preparedSelection.kind, { deferReadyNotification: true });
         activeProfile = getActiveStorageProfileOrNull();
       }
-      const guestInstallation = activeProfile?.kind === "guest" || activeProfile?.kind === "legacy_guest"
+      const guestInstallation = activeProfile?.kind === "guest"
         ? await getGuestInstallation()
         : null;
       if (activeProfile && guestInstallation?.bindingState === "adoption_pending") {
@@ -1335,7 +1369,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         && !recoveryOperation.blocksProfilePreparation
         && !legalAcceptancePendingRef.current) {
         const profile = preparedProfileState.selectedProfile;
-        if ((profile.kind === "account" || profile.kind === "legacy_owner") && profile.accountId) {
+        if (profile.kind === "account" && profile.accountId) {
           try {
             const preparedBinding = await readPreparedAccountIdentityBinding(profile.id);
             if (preparedBinding.kind === "verified" && preparedBinding.binding.profileId === profile.id
@@ -1461,7 +1495,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         runtimeMode,
         user,
         async (nextUser) => {
-          reconciliationOutcome.result = await finalizeCurrent(auth, api, nextUser, false, generation, true, attempt.guestAdoption);
+          reconciliationOutcome.result = await finalizeCurrent(auth, api, nextUser,
+            accountFinalizationPolicies.preparedProfile<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation, attempt.guestAdoption ? "allow" : "discard"));
           return reconciliationOutcome.result;
         },
         (nextState) => {
@@ -1557,7 +1592,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         diagnostic.pending(diagnosticStage, stateRef.current.kind);
         const prepared = await inspectPreparedProfileState();
         const selected = prepared.selectedProfile;
-        if (prepared.isFreshInstallation || (selected.kind !== "guest" && selected.kind !== "legacy_guest")) {
+        if (prepared.isFreshInstallation || selected.kind !== "guest") {
           publishEntryState({ kind: "signedOut" });
           diagnostic.ready("signedOut");
           return;
@@ -1605,13 +1640,13 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     };
     const publicEnvironment = readPublicEnvironmentFromRuntime();
     if (!smokeRuntime && publicEnvironment.kind !== "configured") {
-      if (preparedProfileState.selectedProfile.kind === "guest" || preparedProfileState.selectedProfile.kind === "legacy_guest") void prepareSelectedGuest();
+      if (preparedProfileState.selectedProfile.kind === "guest") void prepareSelectedGuest();
       else { publishEntryState({ kind: "unavailable", reason: publicEnvironment.reason === "invalid_public_environment" ? "public_environment_invalid" : "public_environment_unconfigured" }); startupDiagnostic.failed("auth_client_setup", new Error("public_environment_unconfigured"), "unavailable"); }
       return () => { live = false; observerBlockedUidRef.current = null; revokeDeletionAuthorization(); sessionCoordinator.dispose(); };
     }
       const firebaseConfiguration = readFirebaseClientConfiguration();
     if (firebaseConfiguration.kind !== "configured") {
-      if (preparedProfileState.selectedProfile.kind === "guest" || preparedProfileState.selectedProfile.kind === "legacy_guest") void prepareSelectedGuest();
+      if (preparedProfileState.selectedProfile.kind === "guest") void prepareSelectedGuest();
       else { publishEntryState({ kind: "unavailable", reason: "firebase_unconfigured" }); startupDiagnostic.failed("auth_client_setup", new Error("firebase_unconfigured"), "unavailable"); }
       return () => { live = false; observerBlockedUidRef.current = null; revokeDeletionAuthorization(); sessionCoordinator.dispose(); };
     }
@@ -1643,7 +1678,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         ? apiOrigin
         : publicEnvironment.kind === "configured" ? publicEnvironment.value.authActionOrigin : undefined;
       if (!apiOrigin || !authActionOrigin || (smokeRuntime && !authEmulatorOrigin)) {
-        if (preparedProfileState.selectedProfile.kind === "guest" || preparedProfileState.selectedProfile.kind === "legacy_guest") void prepareSelectedGuest();
+        if (preparedProfileState.selectedProfile.kind === "guest") void prepareSelectedGuest();
         else { publishEntryState({ kind: "unavailable", reason: "public_environment_unconfigured" }); startupDiagnostic.failed("auth_client_setup", new Error("public_environment_unconfigured"), "unavailable"); }
         return () => { live = false; observerBlockedUidRef.current = null; revokeDeletionAuthorization(); sessionCoordinator.dispose(); };
       }
@@ -2098,7 +2133,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (registration.registration.created) await markGuestInstallationAdoptionPending();
       const result: Promise<AccountCommandResult> = finalize
         ? (registration.registration.created
-          ? finalizeCurrent(auth, api, user, false, generation, true, true)
+          ? finalizeCurrent(auth, api, user, accountFinalizationPolicies.registrationCreated<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation))
           : finalizeExisting ? finalizeExisting() : finalizeExplicitAuthentication(auth, api, user))
         : Promise.resolve({ kind: "success", next: "authenticated" });
       const resolved = await result;
@@ -2400,7 +2435,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     const uid = current.user.uid;
     const generation = sessionCoordinator.current(uid);
     const profile = getActiveStorageProfileOrNull();
-    if (!generation || !profile || !["account", "legacy_owner"].includes(profile.kind) || profile.accountId !== accountId) return "unavailable" as const;
+    if (!generation || !profile || profile.kind !== "account" || profile.accountId !== accountId) return "unavailable" as const;
     const result = readCachedPremiumAccess({ accountId, entitlement: PREMIUM_ENTITLEMENT, productId: legalVariables.terms.premiumProductIdentifier.en }, Date.now());
     const latest = stateRef.current;
     const latestProfile = getActiveStorageProfileOrNull();
@@ -2417,7 +2452,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     const accountId = current.backendUser.id;
     const profile = getActiveStorageProfileOrNull();
     const generation = sessionCoordinator.current(uid);
-    if (!profile || !["account", "legacy_owner"].includes(profile.kind) || profile.accountId !== accountId || !generation || authClient.getSnapshot()?.uid !== uid) return null;
+    if (!profile || profile.kind !== "account" || profile.accountId !== accountId || !generation || authClient.getSnapshot()?.uid !== uid) return null;
     const expected: AccountActorIdentity = Object.freeze({
       stateKind: "authenticated",
       uid,
@@ -2596,7 +2631,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         return { kind: "failure", failure: "providerUnavailable" };
       }
       const activeProfile = getActiveStorageProfileOrNull();
-      if (activeProfile && (activeProfile.kind === "guest" || activeProfile.kind === "legacy_guest") && hasUnboundGuestInstallation()) {
+      if (activeProfile?.kind === "guest" && hasUnboundGuestInstallation()) {
         grantGuestAccess();
         setState({ kind: "guest" });
         return { kind: "success", next: "guest" };
@@ -2790,7 +2825,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       revokeDeletionAuthorization();
       if (!code.trim()) return { kind: "failure", failure: "invalid" };
       await auth.applyActionCode(code.trim());
-      return finalizeCurrent(auth, api, auth.getSnapshot(), true);
+      return finalizeCurrent(auth, api, auth.getSnapshot(), accountFinalizationPolicies.verification<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>());
     }),
     confirmPasswordReset: (code, password) => runSensitiveWithAuth(async (auth) => {
       revokeDeletionAuthorization();
@@ -2891,8 +2926,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           setState({ kind: "verificationPending", user });
           return { kind: "failure", failure: "unverifiedIdentity" };
         }
-        const token = generation ?? sessionCoordinator.begin(user.uid);
-        return finalizeCurrent(auth, api, user, false, token, false, false, proofBarrier);
+        return finalizeCurrent(auth, api, user, accountFinalizationPolicies.passwordRefresh<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation, proofBarrier));
       } finally {
         if (previousUser && observerBlockedUidRef.current === previousUser.uid) observerBlockedUidRef.current = null;
       }
@@ -2969,7 +3003,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
             if (current.kind === "localOffline") setState({ kind: "revokedSession", user: previousUser });
             return { kind: "failure", failure: "revokedSession" };
           }
-          if (current.kind === "localOffline") return finalizeCurrent(auth, api, user, false, generation, false, false, sdkRefresh.barrier);
+          if (current.kind === "localOffline") return finalizeCurrent(auth, api, user,
+            accountFinalizationPolicies.localOfflineRefresh<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation, sdkRefresh.barrier));
           const identityProof = await runAccountIdentityProof({
             request: () => getMeWithExchangedSession({
               api,
@@ -3095,7 +3130,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (!user) return { kind: "failure", failure: "providerUnavailable" };
       const plan = planPasswordVerificationCommand("resend", runtimeMode, user);
       if (plan.kind === "finalize") {
-        return finalizeCurrent(auth, api, user, true);
+        return finalizeCurrent(auth, api, user, accountFinalizationPolicies.resendVerification<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>());
       }
       await auth.resendVerification();
       return { kind: "success", next: "verificationPending" };
@@ -3518,7 +3553,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (!result) return { kind: "failure", failure: "providerUnavailable" };
         if (!result.ok) {
           if (result.failure === "reauthenticationRequired") {
-            const finalized = await finalizeCurrent(auth, api, user, false, generation);
+            const finalized = await finalizeCurrent(auth, api, user,
+              accountFinalizationPolicies.deletionReauthentication<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation));
             if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
             // A successful finalization publishes an authenticated pending
             // session, where AccountSecurityScreen can collect fresh

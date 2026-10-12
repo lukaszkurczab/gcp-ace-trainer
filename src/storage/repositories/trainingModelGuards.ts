@@ -1,35 +1,23 @@
-import {
-  REVIEW_REASONS,
-  isManualRequestId,
-  createAttemptResult,
-  createTrainingSession,
-  createTrainingSessionDraft,
-  createTrainingSessionResult,
-  createForegroundTimerState,
-  type AttemptResultComponent,
-  isRegisteredTrackId,
-  isArtifactSha256,
-  isResolvedContentRef,
-  REVIEW_CYCLE_STAGES,
-  type ResolvedContentRef,
-  type EvidenceRef,
-  type ReviewQueueEntry,
-  type TrainingAttempt,
-  type TrainingSession,
-  type TrainingSessionDraft,
-  type TrainingSessionDraftResponse,
-  type TrainingSessionResult,
-  type ForegroundTimerState,
-} from "../../domain";
+import { REVIEW_REASONS, REVIEW_CYCLE_STAGES, isManualRequestId, type ReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
+import { createAttemptResult, type AttemptResultComponent } from "../../domain/learning/attemptResult";
+import { createTrainingSession, type TrainingSession } from "../../domain/learning/trainingSession";
+import { createTrainingSessionDraft, type AcceptedSimulationFinalization, type TrainingSessionDraft, type TrainingSessionDraftResponse } from "../../domain/learning/trainingSessionDraft";
+import { createTrainingSessionResult, type TrainingSessionResult } from "../../domain/learning/sessionResult";
+import { createForegroundTimerState, type ForegroundTimerState } from "../../domain/learning/foregroundTimerState";
+import { isArtifactSha256 } from "../../domain/learning/contentItemRef";
+import { isResolvedContentRef, type ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
+import type { EvidenceRef } from "../../domain/learning/reviewEvidence";
+import type { TrainingAttempt } from "../../domain/learning/trainingAttempt";
+import { isTrackAdmitted, type TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 import { resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
 
-export function isTrainingSessionArray(value: unknown): value is TrainingSession[] {
-  return Array.isArray(value) && value.every(isTrainingSession);
+export function isTrainingSessionArray(value: unknown, admission: TrackAdmissionContext): value is TrainingSession[] {
+  return Array.isArray(value) && value.every((entry) => isTrainingSession(entry, admission));
 }
 
-export function isTrainingSessionResult(value: unknown): value is TrainingSessionResult {
+export function isTrainingSessionResult(value: unknown, admission: TrackAdmissionContext): value is TrainingSessionResult {
   if (!isRecord(value) || !hasOnlyKeys(value, ["id", "sessionId", "trackId", "totalOccurrences", "answeredOccurrenceIds", "unansweredOccurrenceIds", "completedAt", "evidence"])) return false;
-  if (!isNonEmptyString(value.id) || !isNonEmptyString(value.sessionId) || typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) ||
+  if (!isNonEmptyString(value.id) || !isNonEmptyString(value.sessionId) || typeof value.trackId !== "string" || !isTrackAdmitted(admission, value.trackId) ||
     typeof value.totalOccurrences !== "number" || !Array.isArray(value.answeredOccurrenceIds) || !value.answeredOccurrenceIds.every(isNonEmptyString) ||
     !Array.isArray(value.unansweredOccurrenceIds) || !value.unansweredOccurrenceIds.every(isNonEmptyString) || !isTimestamp(value.completedAt) || !isRecord(value.evidence)) return false;
   try {
@@ -38,10 +26,10 @@ export function isTrainingSessionResult(value: unknown): value is TrainingSessio
   } catch { return false; }
 }
 
-export function isTrainingSessionDraft(value: unknown): value is TrainingSessionDraft {
+export function isTrainingSessionDraft(value: unknown, admission: TrackAdmissionContext): value is TrainingSessionDraft {
   if (!isRecord(value) || !hasOnlyKeys(value, ["schemaVersion", "familyId", "draftVersion", "revision", "sessionId", "trackId", "responsesByOccurrenceId", "flaggedOccurrenceIds", "updatedAt"])) return false;
   if (value.schemaVersion !== 1 || value.draftVersion !== 1 || !isNonEmptyString(value.familyId) || !Number.isSafeInteger(value.revision) || Number(value.revision) < 0 ||
-    !isNonEmptyString(value.sessionId) || typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) ||
+    !isNonEmptyString(value.sessionId) || typeof value.trackId !== "string" || !isTrackAdmitted(admission, value.trackId) ||
     !isTimestamp(value.updatedAt) || !isDraftResponseRecord(value.responsesByOccurrenceId) || !Array.isArray(value.flaggedOccurrenceIds) || value.flaggedOccurrenceIds.some((occurrenceId) => !isNonEmptyString(occurrenceId)) || new Set(value.flaggedOccurrenceIds).size !== value.flaggedOccurrenceIds.length) return false;
   try {
     createTrainingSessionDraft({
@@ -61,10 +49,37 @@ export function isTrainingSessionDraft(value: unknown): value is TrainingSession
   }
 }
 
-export function isForegroundTimerState(value: unknown): value is ForegroundTimerState {
+export function isAcceptedSimulationFinalization(value: unknown, admission: TrackAdmissionContext): value is AcceptedSimulationFinalization {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["kind", "version", "responseDraft", "acceptance"]) ||
+    value.kind !== "accepted_simulation_finalization" || value.version !== 1 || !isTrainingSessionDraft(value.responseDraft, admission) || !isRecord(value.acceptance) ||
+    !hasOnlyKeys(value.acceptance, ["commandId", "sessionId", "trackId", "familyId", "trigger", "capturedAt", "semanticsVersion", "sessionRevision", "sessionDigest", "priorDraftEnvelopeRevision", "priorDraftEnvelopeDigest", "reviewProofs"])) return false;
+  const acceptance = value.acceptance;
+  if (!isSha256(acceptance.commandId) || !isNonEmptyString(acceptance.sessionId) || typeof acceptance.trackId !== "string" || !isTrackAdmitted(admission, acceptance.trackId) ||
+    !isNonEmptyString(acceptance.familyId) || !["manual", "countdown-expiry", "absolute-deadline"].includes(String(acceptance.trigger)) ||
+    !isTimestamp(acceptance.capturedAt) || acceptance.semanticsVersion !== "simulation-finalization-v1" ||
+    !isPositiveSafeInteger(acceptance.sessionRevision) || !isSha256(acceptance.sessionDigest) ||
+    !isPositiveSafeInteger(acceptance.priorDraftEnvelopeRevision) || !isSha256(acceptance.priorDraftEnvelopeDigest) ||
+    !Array.isArray(acceptance.reviewProofs) || !acceptance.reviewProofs.every(isAcceptedSimulationReviewProof) ||
+    new Set(acceptance.reviewProofs.map((proof) => proof.id)).size !== acceptance.reviewProofs.length ||
+    acceptance.sessionId !== value.responseDraft.sessionId || acceptance.trackId !== value.responseDraft.trackId) return false;
+  return true;
+}
+
+export function isTrainingSessionDraftState(value: unknown, admission: TrackAdmissionContext): value is TrainingSessionDraft | AcceptedSimulationFinalization {
+  return isTrainingSessionDraft(value, admission) || isAcceptedSimulationFinalization(value, admission);
+}
+
+function isAcceptedSimulationReviewProof(value: unknown): value is AcceptedSimulationFinalization["acceptance"]["reviewProofs"][number] {
+  return isRecord(value) && hasOnlyKeys(value, ["id", "revision", "digest"]) && isNonEmptyString(value.id) && isPositiveSafeInteger(value.revision) && isSha256(value.digest);
+}
+
+function isPositiveSafeInteger(value: unknown): value is number { return Number.isSafeInteger(value) && Number(value) > 0; }
+function isSha256(value: unknown): value is string { return typeof value === "string" && /^[a-f0-9]{64}$/u.test(value); }
+
+export function isForegroundTimerState(value: unknown, admission: TrackAdmissionContext): value is ForegroundTimerState {
   if (!isRecord(value) || !hasOnlyKeys(value, ["schemaVersion", "timerVersion", "familyId", "sessionId", "trackId", "accumulatedForegroundMs", "checkpointRevision", "lastCheckpointAt", "running"])) return false;
   if (value.schemaVersion !== 1 || value.timerVersion !== 1 || !isNonEmptyString(value.familyId) || !isNonEmptyString(value.sessionId) ||
-    typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) || !Number.isSafeInteger(value.accumulatedForegroundMs) || Number(value.accumulatedForegroundMs) < 0 ||
+    typeof value.trackId !== "string" || !isTrackAdmitted(admission, value.trackId) || !Number.isSafeInteger(value.accumulatedForegroundMs) || Number(value.accumulatedForegroundMs) < 0 ||
     !Number.isSafeInteger(value.checkpointRevision) || Number(value.checkpointRevision) < 1 || !isTimestamp(value.lastCheckpointAt) || typeof value.running !== "boolean") return false;
   try {
     createForegroundTimerState({
@@ -84,19 +99,19 @@ export function isForegroundTimerState(value: unknown): value is ForegroundTimer
   }
 }
 
-export function isTrainingAttemptArray(value: unknown): value is TrainingAttempt<unknown>[] {
-  return Array.isArray(value) && value.every(isTrainingAttempt);
+export function isTrainingAttemptArray(value: unknown, admission: TrackAdmissionContext): value is TrainingAttempt<unknown>[] {
+  return Array.isArray(value) && value.every((entry) => isTrainingAttempt(entry, admission));
 }
 
-export function isReviewQueueEntryArray(value: unknown): value is ReviewQueueEntry[] {
-  return Array.isArray(value) && value.every(isReviewQueueEntry);
+export function isReviewQueueEntryArray(value: unknown, admission: TrackAdmissionContext): value is ReviewQueueEntry[] {
+  return Array.isArray(value) && value.every((entry) => isReviewQueueEntry(entry, admission));
 }
 
-export function isTrainingSession(value: unknown): value is TrainingSession {
+export function isTrainingSession(value: unknown, admission: TrackAdmissionContext): value is TrainingSession {
   if (!isRecord(value)) return false;
   if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "artifactSha256", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"])) return false;
   if ("itemRefs" in value || value.status === "expired") return false;
-  if (!(isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
+  if (!(isNonEmptyString(value.id) && typeof value.trackId === "string" && isTrackAdmitted(admission, value.trackId) &&
     isNonEmptyString(value.modeId) && isConfigurationSnapshot(value.configurationSnapshot) && typeof value.requestedLength === "number" &&
     typeof value.actualLength === "number" && typeof value.currentItemIndex === "number" && isTimestamp(value.startedAt) &&
     (value.completedAt === undefined || isTimestamp(value.completedAt)) &&
@@ -132,11 +147,11 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
   }
 }
 
-export function isTrainingAttempt(value: unknown): value is TrainingAttempt<unknown> {
+export function isTrainingAttempt(value: unknown, admission: TrackAdmissionContext): value is TrainingAttempt<unknown> {
   if (!isRecord(value) || "confidence" in value || "itemType" in value) return false;
   if (!hasOnlyKeys(value, ["id", "sessionId", "trackId", "modeId", "occurrenceId", "item", "response", "result", "reviewEvidence", "answeredAt", "committedAt", "durationMs"])) return false;
   if (!(isNonEmptyString(value.id) && isNonEmptyString(value.sessionId) && typeof value.trackId === "string" &&
-    isRegisteredTrackId(value.trackId) && isNonEmptyString(value.modeId) && isNonEmptyString(value.occurrenceId) && isResolvedContentRef(value.item) &&
+    isTrackAdmitted(admission, value.trackId) && isNonEmptyString(value.modeId) && isNonEmptyString(value.occurrenceId) && isResolvedContentRef(value.item) &&
     isTimestamp(value.answeredAt) && isTimestamp(value.committedAt) && isJsonValue(value.response) &&
     (value.durationMs === undefined || (Number.isFinite(value.durationMs) && Number(value.durationMs) >= 0)) && isExactReviewEvidence(value.reviewEvidence))) return false;
   if (!isRecord(value.result) ||
@@ -159,11 +174,11 @@ export function isTrainingAttempt(value: unknown): value is TrainingAttempt<unkn
   }
 }
 
-export function isReviewQueueEntry(value: unknown): value is ReviewQueueEntry {
+export function isReviewQueueEntry(value: unknown, admission: TrackAdmissionContext): value is ReviewQueueEntry {
   return isRecord(value) && !("kind" in value) && !("priority" in value) && !("retentionPassedAt" in value) &&
     hasOnlyKeys(value, ["id", "trackId", "sourceAttemptId", "sourceSessionId", "sourceItem", "taxonomyOrSkillRefs", "reasons", "dueAt", "createdAt", "consecutiveAfterDueSuccesses", "persistent", "lastReviewedAt", "policyVersion", "stage", "manualRequestId", "status", "completedAt", "completedByAttemptId"]) &&
     isNonEmptyString(value.id) && typeof value.trackId === "string" &&
-    isRegisteredTrackId(value.trackId) && isNonEmptyString(value.sourceAttemptId) && isNonEmptyString(value.sourceSessionId) &&
+    isTrackAdmitted(admission, value.trackId) && isNonEmptyString(value.sourceAttemptId) && isNonEmptyString(value.sourceSessionId) &&
     isReviewEvidence(value) && Array.isArray(value.reasons) && value.reasons.every((reason) =>
       typeof reason === "string" && (REVIEW_REASONS as readonly string[]).includes(reason)) &&
     isTimestamp(value.createdAt) &&

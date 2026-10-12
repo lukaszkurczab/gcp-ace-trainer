@@ -7,6 +7,7 @@ import type {
   TrainingAttempt,
   TrainingSession,
   TrainingSessionDraft,
+  AcceptedSimulationFinalization,
   TrainingSessionResult,
   JournalOperation,
 } from "../../domain";
@@ -134,6 +135,13 @@ export interface TrainingLifecycleRepositoryPort {
   getAttempts(): Promise<readonly TrainingAttempt<unknown>[]>;
   getReviews(): Promise<readonly ReviewQueueEntry[]>;
   getDraft(sessionId: string): Promise<TrainingSessionDraft | null>;
+  getDraftStateProof?(): Promise<Readonly<{ state: TrainingSessionDraft | AcceptedSimulationFinalization; revision: number; digest: string }> | null>;
+  getSessionEnvelopeProof?(sessionId: string): Promise<Readonly<{ session: TrainingSession; revision: number; digest: string }> | null>;
+  getFinalizationReviews?(refs: readonly ResolvedContentRef[]): Promise<Readonly<{ entries: readonly ReviewQueueEntry[]; proofs: AcceptedSimulationFinalization["acceptance"]["reviewProofs"] }>>;
+  acceptFinalization?(accepted: AcceptedSimulationFinalization, expected: Readonly<{ revision: number; digest: string }>, lease: DraftStorageLeaseHandle | null, reviewRefs: readonly ResolvedContentRef[]): Promise<"verified" | "conflict" | "unknown" | "not_applied">;
+  reconcileAcceptedFinalization?(accepted: AcceptedSimulationFinalization): Promise<"verified" | "not_applied" | "conflict" | "unknown">;
+  verifyAcceptedFinalizationProof?(accepted: AcceptedSimulationFinalization, proof: Readonly<{ state: TrainingSessionDraft | AcceptedSimulationFinalization; revision: number; digest: string }>): boolean;
+  isDraftStorageLeaseCurrent?(lease: DraftStorageLeaseHandle | null): boolean;
   getResult(sessionId: string): Promise<TrainingSessionResult | null>;
   captureDraftStorageLease(): DraftStorageLeaseHandle | null;
   captureDraftWriteReceipt?(attempt: unknown): DraftWriteReceipt | null;
@@ -167,7 +175,7 @@ export interface TrainingMutationCoordinatorPort {
   retryMutationCommand(command: RetryMutationCommandHandle, expectedOperation: RetryableMutationOperation): Promise<void>;
   advance(session: TrainingSession): Promise<void>;
   completeWithResult(input: PracticeFinalization): Promise<void>;
-  finalize(input: SimulationFinalization): Promise<boolean>;
+  finalize(input: SimulationFinalization, acceptedFinalization?: AcceptedSimulationFinalization, lease?: DraftStorageLeaseHandle | null): Promise<boolean>;
   abandon(session: TrainingSession, preflight?: () => Promise<void>): Promise<void>;
   recover(): Promise<void>;
   reset(): Promise<void>;

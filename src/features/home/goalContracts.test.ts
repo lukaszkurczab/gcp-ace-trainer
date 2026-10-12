@@ -1,39 +1,52 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import test, { beforeEach } from "node:test";
 
 import {
-  createDefaultGoal,
+  createDefaultGoal as createDefaultGoalWithPolicy,
   GOAL_DAY_IDS,
-  getTrackGoalTemplates,
-  isGoalRecordShapeForTrack,
-  isGoalRecordForTrack,
-  normalizeGoalRecord,
+  LAUNCH_TRACK_IDS,
+  isGoalRecordShape,
+  isGoalRecordForPolicy as isGoalRecordForPolicyWithPolicy,
+  normalizeGoalRecord as normalizeGoalRecordWithPolicy,
   projectGoalTargetDate,
   TRACK_DENSITY_DESCRIPTORS,
   type GoalDay,
   type GoalRecord,
 } from "../../domain";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
+import { TRACK_GOAL_POLICIES } from "../../domain/tracks/trackGoalPolicies";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { readCanonicalEnvelope, writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { UnsupportedStoredRecordError } from "../../storage/errors";
 import { STORAGE_KEYS } from "../../storage/keys";
-import { getGoal, saveGoal } from "../../storage/repositories";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { getGoal as getGoalWithPolicy, saveGoal as saveGoalWithPolicy } from "../../storage/repositories";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 
 beforeEach(() => installMemoryStorage());
 
 const CODING_TRACK = "coding-interview-dsa-problem-solving" as const;
+const codingPolicy = requireGoalPolicy(CODING_TRACK);
+const createDefaultGoal = (trackId: string) => createDefaultGoalWithPolicy(requireGoalPolicy(trackId));
+const normalizeGoalRecord = (value: GoalRecord) => normalizeGoalRecordWithPolicy(value, requireGoalPolicy(value.trackId));
+const isGoalRecordForTrack = (value: unknown, trackId: string) => isGoalRecordForPolicyWithPolicy(value, requireGoalPolicy(trackId));
+const getGoal = (trackId: string) => getGoalWithPolicy(trackId, requireGoalPolicy(trackId));
+const saveGoal = (goal: GoalRecord) => saveGoalWithPolicy(goal, requireGoalPolicy(goal.trackId));
 
 function goalWithDays(days: readonly GoalDay[], weeklySessionTarget: number): GoalRecord {
   return { ...createDefaultGoal(CODING_TRACK), preferredDays: days, weeklySessionTarget };
 }
 
 test("goal templates are sourced from every canonical track descriptor", () => {
+  assert.deepEqual(TRACK_GOAL_POLICIES.map((policy) => policy.trackId), LAUNCH_TRACK_IDS);
+  assert.deepEqual(TRACK_DENSITY_DESCRIPTORS.map((descriptor) => descriptor.trackId), LAUNCH_TRACK_IDS);
   for (const descriptor of TRACK_DENSITY_DESCRIPTORS) {
-    const templates = getTrackGoalTemplates(descriptor.trackId);
+    const templates = requireGoalPolicy(descriptor.trackId).validGoalTemplateIds;
     assert.deepEqual(templates, descriptor.goalTemplates);
     assert.ok(templates.length >= 4);
   }
+  const descriptorBytes = canonicalSerialize(TRACK_DENSITY_DESCRIPTORS);
+  assert.equal(createHash("sha256").update(descriptorBytes).digest("hex"), "1e042fde65d262ca752c9bf57de4ed906b179b9b5fe4ff8ddee97e6157bbfe63");
 });
 
 test("default goal is valid and keeps optional date unset", () => {
@@ -57,7 +70,7 @@ test("goal persistence guard rejects invalid cadence, date, track template, and 
 test("goal normalizer derives ordered cadence from legacy targets and every day count", () => {
   const goal = createDefaultGoal(CODING_TRACK);
   const legacyTwoTarget = goalWithDays(["sat", "mon", "wed"], 2);
-  assert.equal(isGoalRecordShapeForTrack(legacyTwoTarget, CODING_TRACK), true);
+  assert.equal(isGoalRecordShape(legacyTwoTarget), true);
   assert.deepEqual(normalizeGoalRecord(legacyTwoTarget), {
     ...goal,
     preferredDays: ["mon", "wed", "sat"],

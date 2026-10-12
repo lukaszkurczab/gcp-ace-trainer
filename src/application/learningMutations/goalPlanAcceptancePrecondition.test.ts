@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 import { acceptedTargetFromGoal, createDefaultGoal, createLearningPlanSlotId } from "../../domain";
 import { accountDataRecordFingerprint, accountDataRecordKey, isCanonicalAccountSyncState, setAccountSyncState, type AccountSyncState } from "../../storage/repositories/accountDataRepository";
@@ -9,6 +10,8 @@ import { GoalPlanAcceptanceRecoveryRequiredError, getActiveMutationJournal, pers
 import { readCanonicalEnvelope, withCanonicalWriteLocks, writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { buildMutationJournal } from "./mutationJournalBuilder";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK = "coding-interview-dsa-problem-solving";
 const PROFILE = "guest-pair-precondition-test";
@@ -21,9 +24,9 @@ test("paired precondition returns exact canonical envelopes only when the pair i
   t.after(() => setGoalPlanAcceptanceProfileForTests(null));
   const storage = installMemoryStorage();
   setGoalPlanAcceptanceProfileForTests(PROFILE);
-  assert.deepEqual(readGoalPlanAcceptancePrecondition(TRACK), { goal: null, plan: null });
+  assert.deepEqual(readGoalPlanAcceptancePrecondition(TRACK, requireGoalPolicy(TRACK)), { goal: null, plan: null });
 
-  const goal = createDefaultGoal(TRACK);
+  const goal = createDefaultGoal(requireGoalPolicy(TRACK));
   const goalEnvelope = writeCanonicalJson(STORAGE_KEYS.goal(TRACK), goal, null);
   const plan = {
     schemaVersion: 2 as const,
@@ -46,9 +49,9 @@ test("paired precondition returns exact canonical envelopes only when the pair i
   };
   const planEnvelope = writeCanonicalJson(STORAGE_KEYS.learningPlan(TRACK), plan, null);
   const before = storage.snapshot();
-  assert.deepEqual(readGoalPlanAcceptancePrecondition(TRACK), { goal: goalEnvelope, plan: planEnvelope });
+  assert.deepEqual(readGoalPlanAcceptancePrecondition(TRACK, requireGoalPolicy(TRACK)), { goal: goalEnvelope, plan: planEnvelope });
   assert.throws(
-    () => withCanonicalWriteLocks([STORAGE_KEYS.goal(TRACK)], () => readGoalPlanAcceptancePrecondition(TRACK)),
+    () => withCanonicalWriteLocks([STORAGE_KEYS.goal(TRACK)], () => readGoalPlanAcceptancePrecondition(TRACK, requireGoalPolicy(TRACK))),
     CanonicalWriteConflictError,
   );
   assert.deepEqual(storage.snapshot(), before, "precondition read must not write or change either revision");
@@ -58,7 +61,7 @@ test("paired precondition fails closed for an account-conflict journal without t
   t.after(() => setGoalPlanAcceptanceProfileForTests(null));
   const storage = installMemoryStorage();
   setGoalPlanAcceptanceProfileForTests(PROFILE);
-  const goalPayload = { schemaVersion: 1 as const, revision: 1, record: createDefaultGoal(TRACK) };
+  const goalPayload = { schemaVersion: 1 as const, revision: 1, record: createDefaultGoal(requireGoalPolicy(TRACK)) };
   const baseGoalRecord = { recordId: TRACK, recordType: "goal" as const, state: goalPayload, trackId: TRACK, version: 1 };
   const goalRecord = { ...baseGoalRecord, fingerprint: accountDataRecordFingerprint(baseGoalRecord) };
   const conflict = {
@@ -89,8 +92,8 @@ test("paired precondition fails closed for an account-conflict journal without t
     pendingMutationCount: 1,
     outboxSequence: 1,
     highWatermark: 1,
-  });
-  const beforeSync = readCanonicalEnvelope(STORAGE_KEYS.ACCOUNT_SYNC, (value): value is AccountSyncState => isCanonicalAccountSyncState(value));
+  }, productionLearningDataAdmissionContext);
+  const beforeSync = readCanonicalEnvelope(STORAGE_KEYS.ACCOUNT_SYNC, (value): value is AccountSyncState => isCanonicalAccountSyncState(value, productionLearningDataAdmissionContext));
   assert.ok(beforeSync);
   const afterSyncState = Object.freeze({ ...beforeSyncState, status: "offlinePending" as const, blockingConflictCode: null, syncConflict: null });
   const record = await buildMutationJournal({
@@ -118,14 +121,14 @@ test("paired precondition fails closed for an account-conflict journal without t
       afterSyncState,
     } }],
   });
-  await persistMutationJournal(record);
+  await persistMutationJournal(record, productionLearningDataAdmissionContext);
   const goalBefore = storage.getString(STORAGE_KEYS.goal(TRACK));
   const planBefore = storage.getString(STORAGE_KEYS.learningPlan(TRACK));
   const journalBefore = storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL);
 
-  assert.throws(() => readGoalPlanAcceptancePrecondition(TRACK), GoalPlanAcceptanceRecoveryRequiredError);
+  assert.throws(() => readGoalPlanAcceptancePrecondition(TRACK, requireGoalPolicy(TRACK)), GoalPlanAcceptanceRecoveryRequiredError);
   assert.equal(storage.getString(STORAGE_KEYS.goal(TRACK)), goalBefore);
   assert.equal(storage.getString(STORAGE_KEYS.learningPlan(TRACK)), planBefore);
   assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), journalBefore);
-  assert.equal((await getActiveMutationJournal())?.operation, "resolve_account_sync_conflict");
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext))?.operation, "resolve_account_sync_conflict");
 });

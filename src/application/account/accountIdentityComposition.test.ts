@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
+import { accountFinalizationPolicies, executeAccountFinalization } from "./accountFinalization";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, createPatternlyNativeAppCheckProviderConfiguration, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
@@ -624,10 +625,14 @@ test("registration keeps consent presentation separate from the boolean domain c
   assert.match(provider, /registrationIntentRef[\s\S]*?inFlight\?\.uid === user\.uid[\s\S]*?return inFlight\.promise/u);
   assert.match(provider, /registrationIntentRef\.current = Object\.freeze\(\{ uid: user\.uid, promise \}\)/u);
   assert.match(provider, /const registration = await api\.registerAccount\(evidence\)/u);
-  assert.match(provider, /if \(registration\.registration\.created\) await markGuestInstallationAdoptionPending\(\)/u);
-  assert.match(provider, /registration\.registration\.created[\s\S]*?finalizeCurrent\(auth, api, user, false, generation, true, true\)[\s\S]*?: finalizeExisting \? finalizeExisting\(\) : finalizeExplicitAuthentication\(auth, api, user\)/u);
-  assert.match(provider, /loadAccountDataSession\(api, response\.user\.id, \{ guestAdoption: allowGuestAdoption \? "allow" : "discard" \}\)/u);
-  assert.match(provider, /!activeProfile && \(preparedSelection\.kind === "guest" \|\| preparedSelection\.kind === "legacy_guest"\)[\s\S]*?activatePreparedProfile\(preparedSelection\.id, preparedSelection\.kind, \{ deferReadyNotification: true \}\)/u);
+  const adoptionMarker = provider.indexOf("if (registration.registration.created) await markGuestInstallationAdoptionPending()");
+  const registrationFinalize = provider.indexOf("accountFinalizationPolicies.registrationCreated<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation)");
+  assert.ok(adoptionMarker >= 0 && registrationFinalize > adoptionMarker, "registration adoption is durably marked before the named finalization policy runs");
+  for (const policy of ["preparedProfile", "registrationCreated", "verification", "resendVerification", "passwordRefresh", "localOfflineRefresh", "deletionReauthentication"]) {
+    assert.ok(provider.includes(`accountFinalizationPolicies.${policy}`), `the ${policy} call site selects its named policy`);
+  }
+  assert.doesNotMatch(provider, /finalizeCurrent\(auth, api, user, false,/u, "finalization call sites no longer use positional booleans");
+  assert.match(provider, /!activeProfile && preparedSelection\.kind === "guest"[\s\S]*?activatePreparedProfile\(preparedSelection\.id, preparedSelection\.kind, \{ deferReadyNotification: true \}\)/u);
   assert.match(provider, /guestInstallation\?\.bindingState === "adoption_pending"[\s\S]*?attempt\.guestAdoption = true[\s\S]*?notifyProfileStorageReady\(\)/u);
   assert.match(provider, /register: \(email,[\s\S]*?legalAcceptancePendingRef\.current = true[\s\S]*?auth\.register\([\s\S]*?legalAcceptancePendingRef\.current = false/u);
   assert.match(provider, /signInWithApple: \(locale, appleCredentialDependencies\) => authClient && apiClient \? runProviderFirstUse\(authClient, apiClient, locale, \(\) => authClient\.signInWithApple\(appleCredentialDependencies\)\)/u);
@@ -860,6 +865,37 @@ test("account finalization coordinator drops late results after invalidation and
   await assert.rejects(coordinator.run(disposedToken, async () => "disposed"), /account_session_generation_stale/u);
 });
 
+test("the production coordinator does not publish a stale-UID finalization result", async () => {
+  const publishedStates: string[] = [];
+  const coordinator = createAccountSessionCoordinator<Readonly<{ result: string; state?: string }>>((_token, outcome) => {
+    if (outcome.state) publishedStates.push(outcome.state);
+  });
+  const token = coordinator.begin("account-a");
+  let authUid: string | null = "account-a";
+  let release!: () => void;
+  let entered!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  const arrived = new Promise<void>((resolve) => { entered = resolve; });
+  const pending = coordinator.run(token, () => executeAccountFinalization({
+    options: accountFinalizationPolicies.verification<typeof token, string>(),
+    barrier: null,
+    canContinue: () => coordinator.isCurrent(token) && authUid === token.uid,
+    staleResult: () => ({ result: "revoked" }),
+    proveIdentity: async () => { entered(); await gate; return { kind: "continue", value: "proof" }; },
+    selectAccountProfile: async () => ({ kind: "continue", value: undefined }),
+    verifyAccountIdentity: async () => ({ kind: "continue", value: "binding" }),
+    loadAccountData: async () => ({ kind: "continue", value: "synced" }),
+    shouldReconcileReminders: () => false,
+    reconcileReminders: async () => undefined,
+    finish: () => ({ result: "success", state: "authenticated" }),
+  }));
+  await arrived;
+  authUid = "account-b";
+  release();
+  assert.deepEqual(await pending, { result: "revoked" });
+  assert.deepEqual(publishedStates, [], "the real coordinator callback sees no stale state to publish");
+});
+
 test("read-only generation capture cannot reactivate a session during sign-out", () => {
   const coordinator = createAccountSessionCoordinator<string>(() => undefined);
   const first = coordinator.begin("account-a");
@@ -941,18 +977,8 @@ test("only authoritative identity-proof errors tombstone a binding; App Check an
   assert.match(provider, /const identityDenied = isAuthoritativeIdentityProofDenial\(error\)[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error[\s\S]*?verificationRevision: current\.bindingRevision[\s\S]*?accountSessionFailureState\(failure === "reauthenticationRequired" \? failure : "revokedSession"/u);
 });
 
-test("only exact current /me proof clears a persisted sync-denial marker before account sync loads", () => {
+test("prepared-profile and explicit recovery keep their existing identity-proof barrier owners", () => {
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
-  const finalizeCurrent = provider.slice(provider.indexOf("const finalizeCurrent"), provider.indexOf("const startAuthenticatedProfilePreparation"));
-  assert.match(finalizeCurrent, /matchesProofSubject: \(response, barrier\) => response\.user\.id === barrier\.previousBinding\.accountId[\s\S]*?response\.user\.identity\.subject === user\.uid[\s\S]*?barrier\.previousBinding\.firebaseUid === user\.uid/u);
-  assert.match(finalizeCurrent, /if \(!pendingDeletion && response\.user\.identity\.subject === user\.uid/u);
-  const clearMarker = finalizeCurrent.indexOf("clearAccountIdentityDenialAfterProof(");
-  const loadAccountData = finalizeCurrent.indexOf("loadAccountDataSession(api, response.user.id");
-  assert.ok(clearMarker >= 0 && loadAccountData > clearMarker, "identity marker clear precedes local account loading and sync");
-  const clearBlock = finalizeCurrent.slice(clearMarker, loadAccountData);
-  assert.match(clearBlock, /sessionCoordinator\.isCurrent\(token\)[\s\S]*?auth\.getSnapshot\(\)\?\.uid !== token\.uid[\s\S]*?isActiveProfileStorageLeaseCurrent\(lease\)/u);
-  assert.match(clearBlock, /latest\.binding\.accountId === response\.user\.id[\s\S]*?latest\.binding\.firebaseUid === user\.uid[\s\S]*?latest\.binding\.checksum === verifiedBinding\.checksum[\s\S]*?latest\.binding\.verificationRevision === verifiedBinding\.verificationRevision/u);
-  assert.match(clearBlock, /if \(!cleared\) return \{ result: \{ kind: "failure", failure: "revokedSession" \}/u);
   const preparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
   assert.ok(preparation.indexOf("beginIdentityProofBarrier(auth, user, generation, true)") < preparation.indexOf("guardRecoveryBeforePreparation(auth, { generation, barrier: proofBarrier }"), "startup barrier precedes recovery checks that read Auth generations or exchange tokens");
   const explicitFinalize = provider.slice(provider.indexOf("const finalizeExplicitAuthentication"), provider.indexOf("// Firebase publishes a new credential"));
@@ -1161,7 +1187,8 @@ test("the production identity-proof boundary retains exact localOffline on tempo
     assert.deepEqual(recovered, { kind: "verified", value: me, barrier: null });
     assert.equal(requests, 2);
     const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
-    assert.match(provider, /const identityProof = await runAccountIdentityProof\([\s\S]*?if \(identityProof\.kind === "failed"\) return \{ result: \{ kind: "failure", failure: identityProof\.failure \}, state: identityProof\.state \};[\s\S]*?const response = identityProof\.value;[\s\S]*?state: \{ kind: "authenticated", backendUser: response\.user/u);
+    assert.match(provider, /proveIdentity: async \(barrier\) => \{[\s\S]*?runAccountIdentityProof/u);
+    assert.match(provider, /finish: \(response, _verified, accountData\) => \{[\s\S]*?kind: "authenticated", backendUser: response\.user/u);
   } finally {
     closeActiveProfileStorage();
     setProfileStoragePreparationFactoryForTests(null);

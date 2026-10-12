@@ -9,7 +9,7 @@ import {
   projectCanonicalChoiceFeedbackControls,
 } from "../application/canonical/canonicalInteractionPresentation";
 import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
-import { canonicalSerialize } from "../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../domain/identity/canonicalSerialization";
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import successorLedger from "./generated/canonical-content/content-successor-ledger.json";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";

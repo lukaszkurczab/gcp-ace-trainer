@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const screen = readFileSync("src/features/simulation/AlgorithmsInterviewSimulationScreen.tsx", "utf8");
+const designScreen = readFileSync("src/features/simulation/DesignInterviewSimulationScreens.tsx", "utf8");
 const panel = readFileSync("src/features/simulation/operation/SimulationOperationPanel.tsx", "utf8");
 const lifecycle = readFileSync("src/application/trainingLifecycle/TrainingLifecycleUseCases.ts", "utf8");
 const facade = readFileSync("src/application/coding-interview/codingInterviewSessionFacade.ts", "utf8");
@@ -55,6 +56,16 @@ test("button loading decoration stays outside the accessible busy control", () =
   const button = readFileSync("src/components/Button.tsx", "utf8");
   assert.match(button, /loading \? <ActivityIndicator accessibilityElementsHidden[\s\S]*?importantForAccessibility="no"/);
   assert.match(button, /accessibilityState=\{\{ \.\.\.accessibilityState, busy: loading, disabled: isDisabled \}\}/);
+});
+
+test("accepted Design finalization locks editing and exposes Resume only for an allowed recovery action", () => {
+  assert.match(designScreen, /const acceptedFinalization = \[[^\]]+\]\.includes\(projection\.operation\.kind\)/);
+  assert.match(designScreen, /const editingLocked = uncertainSave \|\| staleConflict \|\| drain\.isBlocked\(\) \|\| acceptedFinalization/);
+  assert.match(designScreen, /editable=\{!editingLocked\}/);
+  assert.match(designScreen, /disabled=\{!complete \|\| saving \|\| editingLocked \|\| !drain\.isSaved\(responses\)\}/);
+  assert.match(designScreen, /finalizationCanResume = projection\.operation\.kind === "frozen" \|\| \("error" in projection\.operation[\s\S]*?\["recover", "reconcile", "retry_same_command"\]\.includes\(projection\.operation\.error\.allowedAction\)/);
+  assert.match(designScreen, /finalizationCanResume \? <Button onPress=\{\(\) => void recoverDesignInterviewSimulationOperation\(\)/);
+  assert.doesNotMatch(designScreen, /acceptedFinalization\s*\?\s*<Button[^>]*>\{t\("Resume finalization"\)\}<\/Button>/);
 });
 
 test("simulation pause/end uses one Figma action sheet and keeps the destructive command reachable", () => {

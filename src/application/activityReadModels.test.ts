@@ -7,6 +7,8 @@ import { addTrainingAttempt, saveTrainingSession } from "../storage/repositories
 import { createContentIdentityArchivalHistoryRecord } from "../storage/repositories/contentIdentityUnavailableRepository";
 import { STORAGE_KEYS } from "../storage/keys";
 import { installMemoryStorage, attempt, session } from "../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
+
 
 beforeEach(() => installMemoryStorage());
 
@@ -16,12 +18,12 @@ test("Activity read model keeps terminal history semantics and includes complete
   const abandonedWithoutAnswers = session("abandoned", "abandoned-without-answers");
   const { completedAt: _completedAt, ...abandonedWithAttempt } = session("abandoned", "abandoned-with-attempt");
 
-  await saveTrainingSession(active);
-  await addTrainingAttempt(attempt("attempt-for-active", active.id));
-  await saveTrainingSession(completedWithoutAnswers);
-  await saveTrainingSession(abandonedWithoutAnswers);
-  await saveTrainingSession(abandonedWithAttempt);
-  await addTrainingAttempt(attempt("attempt-for-abandoned", abandonedWithAttempt.id));
+  await saveTrainingSession(active, productionTrackAdmissionContext);
+  await addTrainingAttempt(attempt("attempt-for-active", active.id), productionTrackAdmissionContext);
+  await saveTrainingSession(completedWithoutAnswers, productionTrackAdmissionContext);
+  await saveTrainingSession(abandonedWithoutAnswers, productionTrackAdmissionContext);
+  await saveTrainingSession(abandonedWithAttempt, productionTrackAdmissionContext);
+  await addTrainingAttempt(attempt("attempt-for-abandoned", abandonedWithAttempt.id), productionTrackAdmissionContext);
 
   const records = await loadActivitySessionRecords();
   const recordsById = new Map(records.map((record) => [record.session.id, record]));
@@ -35,7 +37,7 @@ test("Activity read model keeps terminal history semantics and includes complete
 test("Activity read model surfaces a corrupt canonical result instead of presenting an empty history", async () => {
   const completed = session("completed", "completed-with-corrupt-result");
   const storage = installMemoryStorage();
-  await saveTrainingSession(completed);
+  await saveTrainingSession(completed, productionTrackAdmissionContext);
   storage.setString(STORAGE_KEYS.trainingSessionResult(completed.id), "{");
 
   await assert.rejects(() => loadActivitySessionRecords(), CorruptStoredRecordError);

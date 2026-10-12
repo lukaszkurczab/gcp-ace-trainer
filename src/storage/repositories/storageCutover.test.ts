@@ -9,6 +9,8 @@ import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../inf
 import { STORAGE_KEYS } from "../keys";
 import { getActiveTrackId, getActiveTrainingSessionDraftRevision, getTrainingSessions, saveTrainingSessionDraft, saveTrainingSession, validateStorageMetadata } from "./";
 import { removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+
 
 const files = (directory: string): string[] => readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
   entry.isDirectory()
@@ -52,30 +54,30 @@ test("the atomic track cutover rejects every persisted former track identity wit
     };
     writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [formerSession.id]);
     writeCanonicalJson(STORAGE_KEYS.trainingSession(formerSession.id), formerSession);
-    await assert.rejects(getTrainingSessions(), /Stored record at .* is unsupported/);
+    await assert.rejects(getTrainingSessions(productionTrackAdmissionContext), /Stored record at .* is unsupported/);
   }
 });
 
 test("draft replacement verifies its expected revision", async () => {
   const session = simulation();
-  await saveTrainingSession(session);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
   const draft = { schemaVersion: 1 as const, familyId: "coding_interview", draftVersion: 1 as const, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: session.startedAt } as const;
-  await saveTrainingSessionDraft(draft, null);
-  const revision = await getActiveTrainingSessionDraftRevision();
+  await saveTrainingSessionDraft(draft, null, productionTrackAdmissionContext);
+  const revision = await getActiveTrainingSessionDraftRevision(productionTrackAdmissionContext);
   assert.equal(revision, 1);
-  await saveTrainingSessionDraft({ ...draft, updatedAt: "2026-07-16T00:01:00.000Z" }, revision);
-  await assert.rejects(saveTrainingSessionDraft({ ...draft, updatedAt: "2026-07-16T00:02:00.000Z" }, revision), /expected revision is stale/);
+  await saveTrainingSessionDraft({ ...draft, updatedAt: "2026-07-16T00:01:00.000Z" }, revision, productionTrackAdmissionContext);
+  await assert.rejects(saveTrainingSessionDraft({ ...draft, updatedAt: "2026-07-16T00:02:00.000Z" }, revision, productionTrackAdmissionContext), /expected revision is stale/);
 });
 
 test("bootstrap blocks an inconsistent active-session reference and a missing required draft", async () => {
   const session = simulation();
-  await saveTrainingSession(session);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
   removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
   const inconsistent = await bootstrapApplication(async () => undefined, async () => undefined);
   assert.deepEqual(inconsistent.kind, "blocking");
 
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
-  await saveTrainingSession(session);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
   const missingDraft = await bootstrapApplication(async () => undefined, async () => undefined);
   assert.deepEqual(missingDraft.kind, "blocking");
 });
@@ -88,8 +90,8 @@ test("bootstrap runs resolution only after recovery/content validation and expos
   const blocked = await bootstrapApplication(async () => undefined, async () => { throw new Error("content/profile mismatch"); });
   assert.deepEqual(blocked.kind, "ready");
   const session = simulation();
-  await saveTrainingSession(session);
-  await saveTrainingSessionDraft({ schemaVersion: 1, familyId: "coding_interview", draftVersion: 1, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: session.startedAt }, null);
+  await saveTrainingSession(session, productionTrackAdmissionContext);
+  await saveTrainingSessionDraft({ schemaVersion: 1, familyId: "coding_interview", draftVersion: 1, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: session.startedAt }, null, productionTrackAdmissionContext);
   const mismatch = await bootstrapApplication(async () => undefined, async () => { throw new Error("content/profile mismatch"); });
   assert.deepEqual(mismatch, { kind: "blocking", reason: "Application bootstrap failed. [LOCAL_OPERATION_FAILED]" });
 });

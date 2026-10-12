@@ -1,0 +1,6 @@
+{
+  "name": "patternly-foreground-scheduler-probe",
+  "version": "0.0.0",
+  "private": true,
+  "main": "probe.js"
+}

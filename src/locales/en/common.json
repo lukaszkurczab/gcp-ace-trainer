@@ -791,6 +791,8 @@
   "Feedback was available after each answer, but this report cannot confirm it was read.": "Feedback was available after each answer, but this report cannot confirm it was read.",
   "Learning unit {{number}}": "Learning unit {{number}}",
   "This session is limited to learning unit {{number}} in this chapter.": "This session is limited to learning unit {{number}} in this chapter.",
+  "This required exam topic has {{count}} questions, so this session will use all {{count}}.": "This required exam topic has {{count}} questions, so this session will use all {{count}}.",
+  "This required exam topic needs Premium access.": "This required exam topic needs Premium access.",
   "This recommended learning unit is unavailable in the current content package.": "This recommended learning unit is unavailable in the current content package.",
   "This recommended practice scope is no longer available for the current content package.": "This recommended practice scope is no longer available for the current content package.",
   "This recommended practice scope does not have enough available questions.": "This recommended practice scope does not have enough available questions.",
@@ -805,8 +807,14 @@
   "Documentation": "Documentation",
   "Course module": "Course module",
   "Requires an Anthropic Partner Academy account": "Requires an Anthropic Partner Academy account",
+  "Premium access is currently unavailable. Check your account and try again.": "Premium access is currently unavailable. Check your account and try again.",
   "Premium access is required to continue covering the remaining exam topics.": "To continue practising the remaining exam topics, verify your Premium access.",
   "Review Premium access": "Review Premium access",
   "Required topic questions remaining: {{count}}": "Required topic questions remaining: {{count}}",
-  "Recent accuracy is not yet measurable": "Recent accuracy is not yet measurable"
+  "Recent accuracy is not yet measurable": "Recent accuracy is not yet measurable",
+  "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.": "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.",
+  "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.",
+  "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.",
+  "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.",
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly couldn't read saved Premium content. Try again later."
 }

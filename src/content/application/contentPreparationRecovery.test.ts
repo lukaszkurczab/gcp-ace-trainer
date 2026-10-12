@@ -11,6 +11,15 @@ const homeScreen = readFileSync("src/features/home/HomeScreen.tsx", "utf8");
 const homeTab = readFileSync("src/features/home/tabs/HomeTab.tsx", "utf8");
 const simulationScreen = readFileSync("src/features/simulation/DesignInterviewSimulationScreens.tsx", "utf8");
 
+test("production content preparation strictly verifies the installed package inventory before resuming", () => {
+  const prepareContent = source.slice(source.indexOf("return bootstrapApplication("), source.indexOf("async () => {\n          setPhase(\"resuming-session\")"));
+  assert.match(prepareContent, /await contentPackageRuntimeOwner\.verifyBundledPackages\(\);\s*await contentPackageRuntimeOwner\.verifyInstalledPackages\(\);/);
+});
+
+test("blocking operational reasons are translated while dynamic fallback text remains intact", () => {
+  assert.match(source, /description=\{developmentResetUnavailable \? `\$\{t\(state\.reason\)\} Development reset is unavailable because lifecycle preparation did not complete\.` : t\(state\.reason\)\}/u);
+});
+
 test("lost-key recovery uses the typed failure code and the canonical hold-to-remove operation", () => {
   assert.match(preparationGate, /storageFailureCode === "encrypted_storage_key_missing"/);
   assert.match(preparationGate, /removeUnavailableEncryptedStorage\(\)/);
@@ -117,7 +126,7 @@ test("exact-missing abandonment fences both local Guest and authenticated accoun
   assert.match(accountProvider, /captureCurrentAuthenticatedActorFence,/u);
   assert.match(source, /readGuestInstallation: getGuestInstallation/u);
   assert.match(source, /hasGuestAccess,/u);
-  assert.match(exactMissingActorFence, /\["guest", "legacy_guest"\]/u);
+  assert.match(exactMissingActorFence, /profile\.kind === "guest"/u);
   assert.match(exactMissingActorFence, /currentInstallation|current\.localDatasetId/u);
   assert.match(exactMissingActorFence, /const actorAndScopeAreCurrent = \(\) => input\.currentActorKind\(\) === "guest"[\s\S]*?hasGuestAccess\(\)/u);
   assert.match(exactMissingActorFence, /const current = await readInstallation\(\);\s*return actorAndScopeAreCurrent\(\) && current\?/u);

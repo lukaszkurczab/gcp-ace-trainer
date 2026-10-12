@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test, { afterEach } from "node:test";
 import { acceptedTargetFromGoal, createDefaultGoal, createLearningPlanSlotId, type LearningPlan } from "../../domain";
 import { buildMutationJournal } from "./mutationJournalBuilder";
@@ -14,7 +15,7 @@ import { buildAccountDataSnapshot } from "../../storage/repositories/accountData
 import { AccountDataFailure } from "../../storage/errors";
 import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { STORAGE_KEYS } from "../../storage/keys";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import {
@@ -27,6 +28,8 @@ import {
   prepareProfileStorage,
   setProfileStoragePreparationFactoryForTests,
 } from "../../infrastructure/storage/mmkvClient";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 const TRACK = "coding-interview-dsa-problem-solving";
 const GUEST_ID = "00000000-0000-4000-8000-000000000131";
@@ -66,8 +69,8 @@ test("a pending pair is isolated by the real profile router and resumes in its p
 
   const activeProfile = getActiveStorageProfile();
   const activeStorage = getKeyValueStorage();
-  const beforeGoal = writeCanonicalJson(STORAGE_KEYS.goal(TRACK), createDefaultGoal(TRACK), null);
-  const proposedGoal = { ...createDefaultGoal(TRACK), preferredDays: ["tue" as const], weeklySessionTarget: 1, targetDate: "2026-11-01" };
+  const beforeGoal = writeCanonicalJson(STORAGE_KEYS.goal(TRACK), createDefaultGoal(requireGoalPolicy(TRACK)), null);
+  const proposedGoal = { ...createDefaultGoal(requireGoalPolicy(TRACK)), preferredDays: ["tue" as const], weeklySessionTarget: 1, targetDate: "2026-11-01" };
   const plan: LearningPlan = {
     schemaVersion: 2, minutesPerStudyDay: 25, executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: null, practice: { modeId: "certification-focus-practice", requestedLength: 10 } }, planningPolicyIdentity: { contentVersion: "content-v1", artifactSha256: "a".repeat(64), policyVersion: "patternly-learning-planning-v1" }, planId: "router-plan", trackId: TRACK, goalRevision: 2, status: "accepted",
     timezone: "Europe/Warsaw", contentVersion: "content-v1", artifactSha256: "b".repeat(64), acceptedTarget: acceptedTargetFromGoal(proposedGoal),
@@ -79,7 +82,7 @@ test("a pending pair is isolated by the real profile router and resumes in its p
     writes: [{ kind: "accept_goal_plan", record: { proposalId: "router-proposal", profileId: activeProfile.id, trackId: TRACK, expectedGoalRevision: beforeGoal.revision,
       expectedPlanStorageRevision: null, beforeGoal, beforePlan: null, goal: proposedGoal, plan } }],
   });
-  await persistMutationJournal(record);
+  await persistMutationJournal(record, productionLearningDataAdmissionContext);
   assert.equal(activeStorage.getString(STORAGE_KEYS.ACTIVE_JOURNAL) !== undefined, true);
 
   await router.selectAccount(ACCOUNT_ID);
@@ -91,8 +94,8 @@ test("a pending pair is isolated by the real profile router and resumes in its p
   assert.equal(getActiveStorageProfile().kind, "account");
   assert.notEqual(getActiveStorageProfile().id, activeProfile.id);
   await recoverPendingMutation();
-  assert.equal(readGoalSnapshot(TRACK), null);
-  assert.equal(getLearningPlanSnapshot(TRACK), null);
+  assert.equal(readGoalSnapshot(TRACK, requireGoalPolicy(TRACK)), null);
+  assert.equal(getLearningPlanSnapshot(TRACK, requireGoalPolicy(TRACK)), null);
 
   await router.selectExistingGuest(GUEST_ID);
   router = await openProfileStorageRouter(base, control, { identity });
@@ -101,21 +104,21 @@ test("a pending pair is isolated by the real profile router and resumes in its p
   const returningGuestProfile = await prepareProfileStorage();
   activatePreparedProfile(returningGuestProfile.id, returningGuestProfile.kind);
   await recoverPendingMutation();
-  const goal = readGoalSnapshot(TRACK);
-  const acceptedPlan = getLearningPlanSnapshot(TRACK);
+  const goal = readGoalSnapshot(TRACK, requireGoalPolicy(TRACK));
+  const acceptedPlan = getLearningPlanSnapshot(TRACK, requireGoalPolicy(TRACK));
   assert.equal(goal?.revision, 2);
   assert.equal(goal?.record.targetDate, "2026-11-01");
   assert.equal(acceptedPlan?.plan.goalRevision, goal?.revision);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 
   base.setFailurePlan({ kind: "fail_on_key_write", key: `patternly:profile:v1:${activeProfile.id}:${encodeURIComponent(STORAGE_KEYS.learningPlan(TRACK))}` });
   await assert.rejects(() => transitionGoalPlanStatus(TRACK, "2026-10-08T13:00:00.000Z"), (error: unknown) => error instanceof MutationCommitFailure && error.phase === "materialization");
-  assert.equal((await getActiveMutationJournal())?.operation, "accept_goal_plan");
-  assert.throws(() => readGoalSnapshot(TRACK), GoalPlanAcceptanceRecoveryRequiredError);
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext))?.operation, "accept_goal_plan");
+  assert.throws(() => readGoalSnapshot(TRACK, requireGoalPolicy(TRACK)), GoalPlanAcceptanceRecoveryRequiredError);
   base.setFailurePlan(null);
   await recoverPendingMutation();
-  const pausedGoal = readGoalSnapshot(TRACK);
-  const pausedPlan = getLearningPlanSnapshot(TRACK);
+  const pausedGoal = readGoalSnapshot(TRACK, requireGoalPolicy(TRACK));
+  const pausedPlan = getLearningPlanSnapshot(TRACK, requireGoalPolicy(TRACK));
   assert.equal(pausedGoal?.record.status, "paused");
   assert.equal(pausedPlan?.plan.status, "paused");
   assert.equal(pausedPlan?.plan.goalRevision, pausedGoal?.revision);
@@ -124,7 +127,7 @@ test("a pending pair is isolated by the real profile router and resumes in its p
   assert.equal(resumed.goal.record.status, "active");
   assert.equal(resumed.plan.plan.status, "accepted");
   assert.equal(resumed.plan.plan.goalRevision, resumed.goal.revision);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 });
 
 test("the actual acceptance path can stop after exact Goal readback and recover its durable pair", async () => {
@@ -138,7 +141,7 @@ test("the actual acceptance path can stop after exact Goal readback and recover 
   setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
   const prepared = await prepareProfileStorage();
   activatePreparedProfile(prepared.id, prepared.kind);
-  const proposedGoal = { ...createDefaultGoal(TRACK), preferredDays: ["tue" as const], weeklySessionTarget: 1, targetDate: "2026-11-01" };
+  const proposedGoal = { ...createDefaultGoal(requireGoalPolicy(TRACK)), preferredDays: ["tue" as const], weeklySessionTarget: 1, targetDate: "2026-11-01" };
   const proposedPlan: LearningPlan = {
     schemaVersion: 2, minutesPerStudyDay: 25,
     executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: null, practice: { modeId: "certification-focus-practice", requestedLength: 10 } },
@@ -176,16 +179,16 @@ test("the actual acceptance path can stop after exact Goal readback and recover 
     },
   }), (error: unknown) => error instanceof MutationCommitFailure && error.phase === "materialization" && error.durableState === "journal_durable");
   assert.equal(callbackCount, 1);
-  assert.equal((await getActiveMutationJournal())?.status, "journal_durable");
-  assert.throws(() => readGoalSnapshot(TRACK), GoalPlanAcceptanceRecoveryRequiredError);
-  assert.throws(() => getLearningPlanSnapshot(TRACK), GoalPlanAcceptanceRecoveryRequiredError);
-  await assert.rejects(() => buildAccountDataSnapshot(), (error: unknown) => error instanceof AccountDataFailure && error.code === "journal_recovery_required");
+  assert.equal((await getActiveMutationJournal(productionLearningDataAdmissionContext))?.status, "journal_durable");
+  assert.throws(() => readGoalSnapshot(TRACK, requireGoalPolicy(TRACK)), GoalPlanAcceptanceRecoveryRequiredError);
+  assert.throws(() => getLearningPlanSnapshot(TRACK, requireGoalPolicy(TRACK)), GoalPlanAcceptanceRecoveryRequiredError);
+  await assert.rejects(() => buildAccountDataSnapshot(productionLearningDataAdmissionContext), (error: unknown) => error instanceof AccountDataFailure && error.code === "journal_recovery_required");
   assert.equal(getKeyValueStorage().getString(STORAGE_KEYS.learningPlan(TRACK)), undefined);
   await recoverPendingMutation();
-  const goal = readGoalSnapshot(TRACK);
-  const plan = getLearningPlanSnapshot(TRACK);
+  const goal = readGoalSnapshot(TRACK, requireGoalPolicy(TRACK));
+  const plan = getLearningPlanSnapshot(TRACK, requireGoalPolicy(TRACK));
   assert.deepEqual(goal?.record, proposedGoal);
   assert.deepEqual(plan?.plan, { ...proposedPlan, goalRevision: goal?.revision });
   assert.equal(plan?.plan.goalRevision, goal?.revision);
-  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 });

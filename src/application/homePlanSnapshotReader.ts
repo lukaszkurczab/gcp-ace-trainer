@@ -24,8 +24,9 @@ import {
 } from "../storage/repositories";
 import type { StorageRepositoryResult } from "../storage/repositories/result";
 import { isTrainingSessionArray } from "../storage/repositories/trainingModelGuards";
-import { canonicalSerialize } from "../infrastructure/identity/canonicalSerialization";
+import { canonicalSerialize } from "../domain/identity/canonicalSerialization";
 import { contentPackageRuntimeOwner, type ResolvedPackageRuntime } from "./contentPackageRuntimeOwner";
+import { requireGoalPolicy } from "../domain/tracks/trackGoalPolicies";
 import {
   projectTargetDateGuidance,
   requirePremiumForRemainingCoverage,
@@ -36,6 +37,7 @@ import { ActiveSessionPlanningError } from "./learningPlan/learningPlanModeRecom
 import { CanonicalTrainingRuntime } from "./canonical/CanonicalTrainingRuntime";
 import { getTrainingSessionProgress } from "./trainingSessions/sessionDurability";
 import { getTrackRegistration } from "../domain/tracks/trackRegistry";
+import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
 
 /** Explicit Home failure categories. The Home surface must not invent a fallback. */
 export type HomePlanUnavailableReason =
@@ -125,7 +127,7 @@ type Awaitable<T> = T | Promise<T>;
 type ReadCollection<T> = readonly T[] | StorageRepositoryResult<T[]>;
 
 export type HomePlanSnapshotReaderDependencies = Readonly<{
-  readInputs(trackId: TrackId): LearningPlanInputSnapshot;
+  readInputs(trackId: TrackId, policy: ReturnType<typeof requireGoalPolicy>): LearningPlanInputSnapshot;
   getActiveTrainingSession(): Awaitable<TrainingSession | null>;
   getTrainingSessions(): Awaitable<ReadCollection<TrainingSession>>;
   resolveExactArtifact(identity: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ResolvedPackageRuntime>;
@@ -142,9 +144,9 @@ type HomeReadGeneration = Readonly<{
 }>;
 
 const defaultDependencies: HomePlanSnapshotReaderDependencies = {
-  readInputs: readLearningPlanInputSnapshot,
-  getActiveTrainingSession,
-  getTrainingSessions: async () => (await getTrainingSessions()),
+  readInputs: (trackId) => readLearningPlanInputSnapshot(trackId, requireGoalPolicy(trackId), productionTrackAdmissionContext),
+  getActiveTrainingSession: () => getActiveTrainingSession(productionTrackAdmissionContext),
+  getTrainingSessions: async () => (await getTrainingSessions(productionTrackAdmissionContext)),
   resolveExactArtifact: (identity) => contentPackageRuntimeOwner.resolveExactArtifact(identity),
 };
 
@@ -182,18 +184,19 @@ export class HomePlanSnapshotReader {
   }
 
   private async readGeneration(trackId: TrackId): Promise<HomeReadGeneration> {
-    const inputs = this.dependencies.readInputs(trackId);
+    const policy = requireGoalPolicy(trackId);
+    const inputs = this.dependencies.readInputs(trackId, policy);
     const [activeSession, sessionsRead] = await Promise.all([
       this.dependencies.getActiveTrainingSession(), this.dependencies.getTrainingSessions(),
     ]);
     if (inputs.activeSession !== undefined && canonicalSerialize(inputs.activeSession ?? null) !== canonicalSerialize(activeSession ?? null)) {
       throw new HomePlanReadFailure("concurrent_change", "Home active-session pointer changed during the canonical snapshot.");
     }
-    if (!learningInputsEqual(inputs, this.dependencies.readInputs(trackId))) throw new HomePlanReadFailure("concurrent_change", "Home inputs changed while reading sessions.");
+    if (!learningInputsEqual(inputs, this.dependencies.readInputs(trackId, policy))) throw new HomePlanReadFailure("concurrent_change", "Home inputs changed while reading sessions.");
     return Object.freeze({
       storageScope: inputs.storageScope, goal: inputs.goal, plan: inputs.plan,
       activeSession: activeSession ?? null,
-      sessions: validateCollection(unwrapCollection(sessionsRead, "training sessions"), isTrainingSessionArray, "training sessions"),
+      sessions: validateCollection(unwrapCollection(sessionsRead, "training sessions"), (value) => isTrainingSessionArray(value, productionTrackAdmissionContext), "training sessions"),
       attempts: inputs.attempts, reviews: inputs.reviews,
     });
   }
@@ -357,7 +360,7 @@ export class HomePlanSnapshotReader {
     catch { return unavailable(trackId, "calculation_error"); }
     if (plan.schemaVersion === 1 && day.slot && nextMode.requestedLengths.includes(day.slot.sessionLength)) nextSessionLength = day.slot.sessionLength;
     try {
-      if (!learningInputsEqual(generation, this.dependencies.readInputs(trackId))) return unavailable(trackId, "concurrent_change");
+      if (!learningInputsEqual(generation, this.dependencies.readInputs(trackId, requireGoalPolicy(trackId)))) return unavailable(trackId, "concurrent_change");
     } catch { return unavailable(trackId, "storage_error"); }
     return Object.freeze({
       kind: "ready",
@@ -441,7 +444,7 @@ function validateCollection<T>(value: readonly T[], guard: (candidate: unknown) 
 
 function normalizeGoalSnapshot(value: GoalSnapshot, trackId: TrackId): GoalSnapshot {
   if (!Number.isSafeInteger(value.revision) || value.revision < 1 || value.record.trackId !== trackId) throw new Error("Goal identity is invalid.");
-  return Object.freeze({ record: normalizeGoalRecord(value.record), revision: value.revision });
+  return Object.freeze({ record: normalizeGoalRecord(value.record, requireGoalPolicy(trackId)), revision: value.revision });
 }
 
 function normalizePlanSnapshot(value: LearningPlanSnapshot, trackId: TrackId): LearningPlanSnapshot {

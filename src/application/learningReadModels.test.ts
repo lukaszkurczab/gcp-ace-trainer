@@ -9,6 +9,8 @@ import { bindGuestInstallationToAccount, provisionGuestInstallation } from "../s
 import { loadAccountDataSession } from "./account/accountDataService";
 import type { PatternlyApiClient } from "../infrastructure/clients/PatternlyApiClientAdapter";
 import { loadActiveTrackId, selectActiveTrack } from "./learningReadModels";
+import { productionLearningDataAdmissionContext } from "./tracks/trackAdmissionContext";
+
 
 const ACCOUNT_ID = "55555555-5555-4555-8555-555555555555";
 const INSTALLATION_ID = "66666666-6666-4666-8666-666666666666";
@@ -21,25 +23,25 @@ beforeEach(async () => {
 
 test("selecting a track persists locally and marks a synced account pending", async () => {
   await bindGuestInstallationToAccount(ACCOUNT_ID);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId: ACCOUNT_ID, status: "synced" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: ACCOUNT_ID, status: "synced" }, productionLearningDataAdmissionContext);
 
   await selectActiveTrack(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
 
   assert.equal(await getActiveTrackId(), GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
-  assert.equal((await getAccountSyncState()).status, "offlinePending");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).status, "offlinePending");
 });
 
 test("selecting a track on a guest installation persists locally without account sync", async () => {
   await selectActiveTrack("coding-interview-dsa-problem-solving");
 
   assert.equal(await getActiveTrackId(), "coding-interview-dsa-problem-solving");
-  assert.equal((await getAccountSyncState()).accountId, null);
-  assert.equal((await getAccountSyncState()).status, "initialSyncRequired");
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).accountId, null);
+  assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).status, "initialSyncRequired");
 });
 
 test("track selection waits for earlier account materialization and remains the final local choice", async () => {
   await bindGuestInstallationToAccount(ACCOUNT_ID);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId: ACCOUNT_ID, status: "synced" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: ACCOUNT_ID, status: "synced" }, productionLearningDataAdmissionContext);
 
   let releaseProgress!: () => void;
   let signalProgressStarted!: () => void;
@@ -65,7 +67,7 @@ test("track selection waits for earlier account materialization and remains the 
 
 test("active track read waits for materialization and returns its settled state without side effects", async () => {
   await bindGuestInstallationToAccount(ACCOUNT_ID);
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId: ACCOUNT_ID, status: "synced" });
+  saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId: ACCOUNT_ID, status: "synced" }, productionLearningDataAdmissionContext);
 
   let releaseProgress!: () => void;
   let signalProgressStarted!: () => void;
@@ -93,10 +95,10 @@ test("active track read waits for materialization and returns its settled state 
 
   releaseProgress();
   await materialization;
-  const stateAfterMaterialization = await getAccountSyncState();
+  const stateAfterMaterialization = await getAccountSyncState(productionLearningDataAdmissionContext);
   assert.equal(await read, null);
 
   assert.equal(progressCalls, 1);
   assert.equal(await getActiveTrackId(), null);
-  assert.deepEqual(await getAccountSyncState(), stateAfterMaterialization);
+  assert.deepEqual(await getAccountSyncState(productionLearningDataAdmissionContext), stateAfterMaterialization);
 });

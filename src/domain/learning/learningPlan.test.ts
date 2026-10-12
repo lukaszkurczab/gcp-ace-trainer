@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireGoalPolicy } from "../tracks/trackGoalPolicies";
 import test from "node:test";
 
 import { createDefaultGoal } from "../goals/goalContracts";
@@ -42,8 +43,11 @@ test("LearningPlan v1 guard requires the complete strict shape and canonical slo
   assert.equal(isLearningPlanV1({ ...plan(), acceptedTarget: { meaning: "none", targetDate: "2027-03-15" } }), false);
   assert.equal(isLearningPlanV1({ ...plan(), acceptedTarget: { meaning: "event", targetDate: "2027-02-29" } }), false);
   assert.equal(isLearningPlanV1({ ...plan(), commandId: "" }), false);
-  assert.equal(isLearningPlanV1({ ...plan(), trackId: "unknown-track" }), false);
-  assert.throws(() => normalizeLearningPlan({ ...plan(), trackId: "unknown-track" }), (error: unknown) => error instanceof InvalidLearningPlanError && error.code === "unknown_track");
+  const neutralTrackPlan = plan({ trackId: "fixture-track" });
+  assert.equal(isLearningPlanV1(neutralTrackPlan), true, "the kernel validates an opaque canonical track identity without product admission");
+  assert.equal(normalizeLearningPlan(neutralTrackPlan).trackId, "fixture-track");
+  assert.equal(isLearningPlanV1({ ...plan(), trackId: "" }), false);
+  assert.throws(() => normalizeLearningPlan({ ...plan(), trackId: "" }), (error: unknown) => error instanceof InvalidLearningPlanError && error.code === "invalid_identity");
   assert.equal(isLearningPlanV1({ ...plan(), extra: true }), false);
 });
 
@@ -64,7 +68,7 @@ test("LearningPlan v2 requires explicit positive per-track daily availability wh
 });
 
 test("accepted target snapshot follows T4 goal meaning and canonical null dates", () => {
-  const goal = createDefaultGoal(TRACK_ID);
+  const goal = createDefaultGoal(requireGoalPolicy(TRACK_ID));
   assert.deepEqual(acceptedTargetFromGoal(goal), { meaning: "event", targetDate: null });
   assert.deepEqual(acceptedTargetFromGoal({ ...goal, goalType: "learn_at_own_pace", targetDate: "2027-03-15" }), { meaning: "none", targetDate: null });
   assert.deepEqual(acceptedTargetFromGoal({ ...goal, goalType: "build_foundations", targetDate: "2027-03-15" }), { meaning: "deadline", targetDate: "2027-03-15" });

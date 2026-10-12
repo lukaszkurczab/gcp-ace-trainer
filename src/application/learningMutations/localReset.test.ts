@@ -31,35 +31,38 @@ import { captureLearningStateResetTargetPlan } from "../../storage/repositories/
 import { saveSettings } from "../../storage/repositories/settingsRepository";
 import { installKeyValueStorageForTests, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
 import { attempt, installMemoryStorage, journal, review, session } from "../../testing/journalTestSupport";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+
 
 installLearningStateResetBarrier(async (reset) => reset());
 
 async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
-  return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft())?.revision ?? null);
+  return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft(productionTrackAdmissionContext))?.revision ?? null, productionTrackAdmissionContext);
 }
 
 async function seedResettableLearningState() {
   const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
-  await saveTrainingSession(active);
+  await saveTrainingSession(active, productionTrackAdmissionContext);
   await saveActiveForegroundTimer(createForegroundTimerState({
     schemaVersion: 1, timerVersion: 1, familyId: "reset-test-family", sessionId: active.id,
     trackId: active.trackId, accumulatedForegroundMs: 1_000, checkpointRevision: 1,
     lastCheckpointAt: active.startedAt, running: true,
-  }), null);
+  }), null, productionTrackAdmissionContext);
   await saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: active.startedAt }));
-  await addTrainingAttempt(attempt());
-  await addReviewQueueItems([review()]);
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
+  await addReviewQueueItems([review()], productionTrackAdmissionContext);
 }
 
 async function seedAllResetTargets() {
   await seedResettableLearningState();
   const completed = session("completed", "completed-session");
-  await saveTrainingSession(completed);
+  await saveTrainingSession(completed, productionTrackAdmissionContext);
   await saveTrainingSessionResult(createTrainingSessionResult({
     id: `result:${completed.id}`, sessionId: completed.id, trackId: completed.trackId,
     totalOccurrences: 1, answeredOccurrenceIds: ["occurrence-1"], unansweredOccurrenceIds: [],
     completedAt: completed.completedAt!, evidence: { familyId: "coding-interview", details: {} },
-  }));
+  }), productionTrackAdmissionContext);
   const tombstone = (kind: string, id: string) => ({ kind, trackId: "coding-interview-dsa-problem-solving", questionId: "q1", contentVersion: "old", reason: "unknown_artifact_hash", ...(kind === "unavailable_review" ? { reviewId: id } : { sessionId: id }) });
   await saveArchivalHistoryRecord(createContentIdentityArchivalHistoryRecord({
     schemaVersion: 1, kind: "archival_history", sessionId: "archive-reset",
@@ -83,11 +86,11 @@ test("clear local history is one journaled learning-state mutation", async () =>
 
   await clearPatternlyLocalHistory();
 
-  assert.equal(await getActiveMutationJournal(), null);
-  assert.deepEqual((await getTrainingSessions()).value, []);
-  assert.deepEqual((await getTrainingAttempts()).value, []);
-  assert.deepEqual((await getReviewQueueItems()).value, []);
-  assert.equal(await getActiveTrainingSessionDraft(), null);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, []);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, []);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
+  assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
 });
 
 test("clear local history copy covers progress and review data", () => {
@@ -110,19 +113,19 @@ test("clear local history preserves the one guest installation and local dataset
   await clearPatternlyLocalHistory();
 
   assert.deepEqual(await getGuestInstallation(), guestInstallation);
-  assert.deepEqual((await getTrainingSessions()).value, []);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, []);
 });
 
 test("reset recovers a pending command before deleting its fully materialized learning state", async () => {
   installMemoryStorage();
   const { persistMutationJournal } = await import("../../storage/repositories/mutationJournalRepository");
-  await persistMutationJournal(journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_session", record: session() }]));
+  await persistMutationJournal(journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_session", record: session() }]), productionLearningDataAdmissionContext);
 
   await clearPatternlyLocalHistory();
 
-  assert.equal(await getActiveMutationJournal(), null);
-  assert.deepEqual((await getTrainingSessions()).value, []);
-  assert.deepEqual((await getTrainingAttempts()).value, []);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, []);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, []);
 });
 
 test("durable reset replay keeps latest settings and reminder bytes across a fresh lifecycle", async () => {
@@ -130,7 +133,7 @@ test("durable reset replay keeps latest settings and reminder bytes across a fre
   await seedResettableLearningState();
   await saveSettings({ appearance: "light", language: "en" });
   writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS, { practiceReminder: null });
-  const plan = captureLearningStateResetTargetPlan();
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   const firstTarget = plan.targets[0];
   assert.ok(firstTarget);
   storage.setFailurePlan({ kind: "fail_on_key_remove", key: firstTarget.key });
@@ -166,11 +169,11 @@ test("durable reset replay keeps latest settings and reminder bytes across a fre
   installKeyValueStorageForTests(storage);
   setActiveProfileLeaseForTests(profile);
   await recoverPendingMutation();
-  assert.deepEqual(await getActiveMutationJournal(), null);
+  assert.deepEqual(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.equal(storage.getString(STORAGE_KEYS.SETTINGS), latestSettingsBytes);
   assert.equal(storage.getString(STORAGE_KEYS.NOTIFICATION_SETTINGS), latestReminderBytes);
   assert.deepEqual(storage.getAllKeys().filter((key) => plan.targets.some((target) => target.key === key)), []);
-  assert.deepEqual((await getTrainingSessions()).value, []);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, []);
 });
 
 test("durable reset rejects changed or new physical targets before deleting and keeps journal bytes", async () => {
@@ -205,7 +208,7 @@ test("reset recovers after every physical target deletion boundary across fresh 
   const profile = { id: "guest-test-profile", kind: "guest" as const, accountId: null };
   installMemoryStorage();
   await seedAllResetTargets();
-  const seededPlan = captureLearningStateResetTargetPlan();
+  const seededPlan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   const requiredTargets = [
     STORAGE_KEYS.trainingSession("session-1"), STORAGE_KEYS.trainingSession("completed-session"),
     STORAGE_KEYS.trainingSessionResult("completed-session"), STORAGE_KEYS.TRAINING_SESSION_INDEX,
@@ -227,7 +230,7 @@ test("reset recovers after every physical target deletion boundary across fresh 
   for (const boundary of boundaries) {
     const storage = installMemoryStorage();
     await seedAllResetTargets();
-    const plan = captureLearningStateResetTargetPlan();
+    const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
     const preservedBefore = new Map(plan.preserved.map(({ key }) => [key, storage.snapshot().get(key)]));
     const bytesBeforeAttempt = storage.snapshot();
     storage.setFailurePlan(boundary.failure);
@@ -249,7 +252,7 @@ test("reset recovers after every physical target deletion boundary across fresh 
       setActiveProfileLeaseForTests(profile);
       await recoverPendingMutation();
     }
-    assert.equal(await getActiveMutationJournal(), null, boundary.label);
+    assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null, boundary.label);
     assert.deepEqual(storage.getAllKeys().filter((key) => plan.targets.some((target) => target.key === key)), [], boundary.label);
     for (const [key, value] of preservedBefore) assert.equal(storage.getString(key), value, `${boundary.label}: preserved ${key}`);
   }

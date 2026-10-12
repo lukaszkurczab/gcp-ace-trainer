@@ -2,11 +2,10 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { runIsolatedEmulatorTests } from "../../patternly-backend/scripts/isolated-emulator-test-runner.mjs";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const backendRoot = resolve(appRoot, "../patternly-backend");
+const backendRoot = resolve(process.env.PATTERNLY_BACKEND_ROOT ?? resolve(appRoot, "../patternly-backend"));
 const producerPinsPath = process.env.PATTERNLY_BACKEND_SOURCE_PINS;
 if (!producerPinsPath?.trim()) throw new Error("recovery_integration_backend_source_pins_required");
 const pinsPath = resolve(appRoot, producerPinsPath);
@@ -54,6 +53,7 @@ if (process.env.PATTERNLY_APP_SOURCE_PINS) {
   }
 }
 
+const { runIsolatedEmulatorTests } = await import(pathToFileURL(join(backendRoot, "scripts/isolated-emulator-test-runner.mjs")).href);
 const tsxLoader = join(appRoot, "node_modules/tsx/dist/loader.mjs");
 const testPath = join(appRoot, "scripts/recoveryOperationIntegration.emulator.test.ts");
 const quote = (value) => `'${value.replaceAll("'", "'\\''")}'`;

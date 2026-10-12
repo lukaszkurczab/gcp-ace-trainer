@@ -4,6 +4,7 @@ import {
   moveTrainingSessionToIndex,
   createTrainingSession,
   createTrainingSessionDraft,
+  type AcceptedSimulationFinalization,
   type ResolvedContentRef,
   type TrackId,
   type TrainingSession,
@@ -20,8 +21,8 @@ import {
   type PracticeFinalization,
   type TrainingFamilyRuntime,
   type TrainingLifecyclePorts,
-  type PendingMutationProjection,
   type DraftStorageLeaseHandle,
+  type PendingMutationProjection,
   type DraftWriteReceipt,
 } from "./contracts";
 import { MutationCommitFailure, type MutationCommandProof } from "../mutationBoundary";
@@ -29,6 +30,9 @@ import type { DurableOperationError, DurableOperationState, PracticeDurableOpera
 import { OperationProjectionStore } from "./operationProjectionStore";
 import { requiresPremiumProductMode } from "./premiumProductModePolicy";
 import { CanonicalWriteOutcomeError } from "../../storage/errors";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
+import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
 
 export type SimulationCommandAuthorization = Readonly<{ sessionId: string }>;
 const simulationCommandAuthorizations = new WeakSet<object>();
@@ -37,6 +41,8 @@ const scopedSimulationCommandAuthorizations = new WeakSet<object>();
 export class TrainingLifecycleUseCases {
   private readonly operationStates: OperationProjectionStore;
   private readonly finalizations = new Map<string, Promise<void>>();
+  private readonly uncertainAcceptedFinalizations = new Set<string>();
+  private readonly uncertainAcceptedCommands = new Map<string, AcceptedSimulationFinalization>();
   private readonly practiceCompletions = new Map<string, Promise<PracticeFinalization>>();
   private readonly sessionMutationLanes = new Map<string, Promise<unknown>>();
   private readonly uncertainDraftSaves = new Map<string, DraftWriteReceipt>();
@@ -64,11 +70,21 @@ export class TrainingLifecycleUseCases {
   async reconstructOperationProjection(session: TrainingSession): Promise<DurableOperationState> {
     const pending = await this.pendingFor(session.id);
     const simulationSession = session.configurationSnapshot.submission === "manualOrForegroundTimeout";
+    if (simulationSession && this.uncertainAcceptedFinalizations.has(session.id)) {
+      const retained = simulation("finalization_journal_failed", operationError("simulation_finalization", "unknown", "reconcile"));
+      this.operationStates.reconstruct({ sessionId: session.id, state: retained });
+      return retained;
+    }
     const currentOccurrence = session.itemOrder[session.currentItemIndex];
     const hasMaterializedCurrentPracticeAttempt = !pending && !simulationSession && currentOccurrence
       ? (await this.ports.repositories.getAttempts()).some((attempt) => attempt.sessionId === session.id && attempt.occurrenceId === currentOccurrence.occurrenceId)
       : false;
-    const state = pending
+    const durableDraft = await this.ports.repositories.getDraftStateProof?.();
+    if (durableDraft?.state && "kind" in durableDraft.state && durableDraft.state.kind === "accepted_simulation_finalization" && durableDraft.state.acceptance.sessionId === session.id) {
+      this.operationStates.reconstruct({ sessionId: session.id, state: simulation("frozen") });
+      return simulation("frozen");
+    }
+    const state: DurableOperationState = pending
       ? simulationSession ? simulationPendingFor(pending.status) : pending.operation === "submit_training_outcome" ? practicePendingFor(pending.status) : pending.operation === "complete_training_session" ? practiceCompletionPendingFor(pending.status) : practice("recovery_required", operationError("practice_resume", pending.status, "recover"))
       : simulationSession ? simulation("editable") : hasMaterializedCurrentPracticeAttempt ? practice("feedback") : practice("unanswered");
     return this.operationStates.reconstruct({ sessionId: session.id, state });
@@ -84,7 +100,7 @@ export class TrainingLifecycleUseCases {
       if (this.retryableMutationCommands.has(active.id)) throw new TrainingApplicationFailure("resume_unavailable", "Retry the same frozen command before recovery can continue.");
       const proof = this.uncertainMutationCommands.get(active.id);
       const priorOperation = this.operationStates.get(active.id);
-      if (!proof && priorOperation && "error" in priorOperation && priorOperation.error.durableState === "unknown") {
+      if (!proof && !this.uncertainAcceptedCommands.has(active.id) && priorOperation && "error" in priorOperation && priorOperation.error.durableState === "unknown") {
         throw new TrainingApplicationFailure("resume_unavailable", "The attempted command has no current canonical evidence to reconcile.");
       }
       if (proof) {
@@ -94,6 +110,11 @@ export class TrainingLifecycleUseCases {
       const pending = await this.pendingFor(active.id);
       await this.reconstructOperationProjection(active);
       await this.ports.mutations.recover();
+      const accepted = this.uncertainAcceptedCommands.get(active.id) ?? await this.readAcceptedFinalizationForSession(active.id) ?? null;
+      if (accepted) {
+        await this.finalizeSimulationSnapshot(active, accepted.acceptance.trigger);
+        return;
+      }
       const verified = await this.ports.repositories.getActiveSession();
       if (!verified) {
         this.operationStates.clear(active.id);
@@ -200,6 +221,19 @@ export class TrainingLifecycleUseCases {
   async getSimulationOperationState(session: TrainingSession): Promise<SimulationDurableOperationState> {
     const pending = await this.pendingFor(session.id);
     if (pending?.operation === "finalize_training_session") return simulationPendingFor(pending.status);
+    if (this.uncertainAcceptedFinalizations.has(session.id)) {
+      const retained = this.operationStates.get(session.id);
+      return retained && isSimulationOperation(retained)
+        ? retained
+        : simulation("finalization_journal_failed", operationError("simulation_finalization", "unknown", "reconcile"));
+    }
+    const durableDraft = await this.ports.repositories.getDraftStateProof?.();
+    if (durableDraft && "kind" in durableDraft.state && durableDraft.state.kind === "accepted_simulation_finalization" && durableDraft.state.acceptance.sessionId === session.id) {
+      const current = this.operationStates.get(session.id);
+      if (current && isSimulationOperation(current) && (current.kind === "frozen" || ("error" in current && current.error.operation === "simulation_finalization"))) return current;
+      this.operationStates.reconstruct({ sessionId: session.id, state: simulation("frozen") });
+      return simulation("frozen");
+    }
     const current = this.operationStates.get(session.id);
     if (current && isSimulationOperation(current)) return current;
     return simulation("editable");
@@ -372,6 +406,7 @@ export class TrainingLifecycleUseCases {
 
   private async advancePracticeSessionInLane(): Promise<TrainingSession> {
     const session = await this.requireActive();
+    await this.assertNoAcceptedSimulationFinalization(session.id);
     await this.resolveRuntimeForSession(session);
     this.operationStates.set(session.id, practice("advancing"));
     const next = this.runSync("persistence_failure", () => advanceTrainingSession(session));
@@ -393,6 +428,7 @@ export class TrainingLifecycleUseCases {
     return this.serializeSessionMutation(initial.id, async () => {
     const session = await this.requireActive();
     this.assertDraftSaveResolved(session.id);
+    await this.assertNoAcceptedSimulationFinalization(session.id);
     if (session.configurationSnapshot.navigation !== "free" || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
       throw new TrainingApplicationFailure("invalid_response", "Only a free-navigation simulation can change its active occurrence.");
     }
@@ -418,6 +454,7 @@ export class TrainingLifecycleUseCases {
     const initial = await this.requireActive();
     return this.serializeSessionMutation(initial.id, async () => {
     const session = await this.requireActive();
+    await this.assertNoAcceptedSimulationFinalization(session.id);
     if ((session.configurationSnapshot.timer !== "countdownForeground" && session.configurationSnapshot.timer !== "elapsedForeground") || !Number.isSafeInteger(activeForegroundMs) || activeForegroundMs < session.activeForegroundMs) {
       throw new TrainingApplicationFailure("invalid_response", "Session foreground timer checkpoint is invalid.");
     }
@@ -445,6 +482,7 @@ export class TrainingLifecycleUseCases {
     const active = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
     if (!active) return this.recoverExpectedSessionCompletion(expectedSessionId);
     if (active.id !== expectedSessionId) throw new TrainingApplicationFailure("active_session_conflict", `Active session ${active.id} does not match completion ${expectedSessionId}.`);
+    await this.assertNoAcceptedSimulationFinalization(active.id);
     const session = await this.requireActive();
     if (session.configurationSnapshot.submission !== "perItem" || session.currentItemIndex !== session.actualLength - 1) {
       throw new TrainingApplicationFailure("invalid_response", "Only a durably submitted final practice occurrence can complete this session.");
@@ -483,6 +521,7 @@ export class TrainingLifecycleUseCases {
     const commit = () => this.serializeSessionMutation(initial.id, async () => {
       const session = await this.requireActive();
       if (session.id !== initial.id) throw new TrainingApplicationFailure("active_session_conflict", "The active simulation changed before its draft could be saved.");
+      await this.assertNoAcceptedSimulationFinalization(session.id);
       this.assertDraftSaveResolved(session.id);
       this.operationStates.set(session.id, simulation("saving"));
       this.consumeSimulationAuthorization(authorization, session);
@@ -564,11 +603,11 @@ export class TrainingLifecycleUseCases {
     finally { scopedSimulationCommandAuthorizations.delete(authorization); }
   }
 
-  async finalizeSimulation(authorization?: SimulationCommandAuthorization): Promise<void> {
+  async finalizeSimulation(authorization?: SimulationCommandAuthorization, cause: "manual" | "expiry" = "manual"): Promise<void> {
     const session = await this.requireActive();
     if (authorization) this.consumeSimulationAuthorization(authorization, session);
     else await this.authorizePremiumProductMode(session.modeId);
-    await this.finalizeSimulationFor(session);
+    await this.finalizeSimulationFor(session, cause === "expiry" ? "countdown-expiry" : "manual");
   }
 
   /**
@@ -585,33 +624,91 @@ export class TrainingLifecycleUseCases {
     }
     if (Date.parse(this.ports.clock.now()) < Date.parse(deadline)) return null;
     await this.authorizePremiumProductMode(session.modeId);
-    await this.finalizeSimulationFor(session);
+    await this.finalizeSimulationFor(session, "absolute-deadline");
     return session.id;
   }
 
-  private async finalizeSimulationFor(session: TrainingSession): Promise<void> {
+  private async finalizeSimulationFor(session: TrainingSession, trigger: AcceptedSimulationFinalization["acceptance"]["trigger"]): Promise<void> {
     const inFlight = this.finalizations.get(session.id);
     if (inFlight) return inFlight;
     const operation = this.serializeSessionMutation(session.id, async () => {
       this.assertDraftSaveResolved(session.id);
-      await this.finalizeSimulationSnapshot(session);
+      await this.finalizeSimulationSnapshot(session, trigger);
     });
     this.finalizations.set(session.id, operation);
     try { await operation; }
     finally { this.finalizations.delete(session.id); }
   }
 
-  private async finalizeSimulationSnapshot(session: TrainingSession): Promise<void> {
-    this.operationStates.set(session.id, simulation("frozen"));
-    const runtime = await this.resolveRuntimeForSession(session);
-    const draft = await this.run("resume_unavailable", () => this.ports.repositories.getDraft(session.id));
-    if (!draft) throw new TrainingApplicationFailure("resume_unavailable", "Simulation finalization requires the exact active draft.");
-    const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const outcome = await this.run("persistence_failure", () => runtime.finalizeSimulation({ session, draft, attempts: this.forResolvedContent(attempts, session), reviews: this.forResolvedContent(reviews, session), now: this.ports.clock.now() }));
+  private async finalizeSimulationSnapshot(session: TrainingSession, requestedTrigger: AcceptedSimulationFinalization["acceptance"]["trigger"]): Promise<void> {
+    const lease = this.ports.repositories.captureDraftStorageLease();
+    let sameCallRuntime: TrainingFamilyRuntime | undefined;
+    let accepted = this.uncertainAcceptedCommands.get(session.id) ?? await this.readAcceptedFinalizationForSession(session.id) ?? null;
+    if (!accepted) {
+      const source = await this.captureSimulationFinalizationInputs(session, requestedTrigger);
+      accepted = source.accepted;
+      sameCallRuntime = source.runtime;
+      const result = await this.ports.repositories.acceptFinalization?.(accepted, source.draftProof, lease, source.reviewRefs);
+      if (result === "unknown") {
+        const reconciled = await this.ports.repositories.reconcileAcceptedFinalization?.(accepted) ?? "unknown";
+        if (reconciled === "not_applied") {
+          this.uncertainAcceptedCommands.delete(session.id);
+          this.uncertainAcceptedFinalizations.delete(session.id);
+          this.operationStates.set(session.id, simulation("editable"));
+          throw new TrainingApplicationFailure("persistence_failure", "Finalization acceptance was proven not applied; the saved response remains editable.");
+        }
+        if (reconciled !== "verified") {
+          this.uncertainAcceptedFinalizations.add(session.id);
+          this.uncertainAcceptedCommands.set(session.id, accepted);
+          this.operationStates.set(session.id, simulation("finalization_journal_failed", operationError("simulation_finalization", "unknown", "reconcile")));
+          throw new TrainingApplicationFailure("persistence_failure", "Finalization acceptance is uncertain; editing remains blocked until it is reconciled.");
+        }
+      } else if (result !== "verified") {
+        if (result === "not_applied") {
+          this.operationStates.set(session.id, simulation("editable"));
+          throw new TrainingApplicationFailure("persistence_failure", "Finalization was not accepted; the saved response remains editable.");
+        }
+        this.uncertainAcceptedFinalizations.add(session.id);
+        this.uncertainAcceptedCommands.set(session.id, accepted);
+        this.operationStates.set(session.id, simulation("finalization_journal_failed", operationError("simulation_finalization", "unknown", "reconcile")));
+        throw new TrainingApplicationFailure("persistence_failure", "Finalization acceptance could not be verified; the saved response was preserved.");
+      }
+      this.uncertainAcceptedFinalizations.delete(session.id);
+      this.uncertainAcceptedCommands.delete(session.id);
+      this.operationStates.set(session.id, simulation("frozen"));
+    } else {
+      if (this.uncertainAcceptedCommands.has(session.id)) {
+        const reconciled = await this.ports.repositories.reconcileAcceptedFinalization?.(accepted) ?? "unknown";
+        if (reconciled === "not_applied") {
+          this.uncertainAcceptedCommands.delete(session.id);
+          this.uncertainAcceptedFinalizations.delete(session.id);
+          this.operationStates.set(session.id, simulation("editable"));
+          throw new TrainingApplicationFailure("persistence_failure", "Finalization acceptance was proven not applied; the saved response remains editable.");
+        }
+        if (reconciled !== "verified") throw new TrainingApplicationFailure("persistence_failure", "Finalization acceptance remains uncertain; the original command and profile lease are retained.");
+        this.uncertainAcceptedCommands.delete(session.id);
+        this.uncertainAcceptedFinalizations.delete(session.id);
+      }
+      this.operationStates.set(session.id, simulation("frozen"));
+    }
+    const source = await this.verifyAcceptedFinalizationInputs(session, accepted, sameCallRuntime, lease);
+    if (!this.ports.repositories.isDraftStorageLeaseCurrent || !this.ports.repositories.isDraftStorageLeaseCurrent(lease)) {
+      throw new TrainingApplicationFailure("verification_failure", "The original profile lease changed after finalization acceptance.");
+    }
+    const outcome = await this.run("persistence_failure", () => source.runtime.finalizeSimulation({
+      session: source.session,
+      draft: accepted.responseDraft,
+      attempts: this.forResolvedContent(source.attempts, source.session),
+      reviews: source.reviews,
+      now: accepted!.acceptance.capturedAt,
+    }));
     if (outcome.session.id !== session.id) throw new TrainingApplicationFailure("persistence_failure", "Simulation finalization changed session identity.");
+    if (!this.ports.repositories.isDraftStorageLeaseCurrent || !this.ports.repositories.isDraftStorageLeaseCurrent(lease)) {
+      throw new TrainingApplicationFailure("verification_failure", "The original profile lease changed before finalization could be committed.");
+    }
     try {
       this.operationStates.set(session.id, simulation("finalization_journal_pending", operationError("simulation_finalization", "not_durable", "retry_same_command")));
-      const reviewConflict = await this.ports.mutations.finalize(outcome);
+      const reviewConflict = await this.ports.mutations.finalize(outcome, accepted, lease);
       await this.requireVerifiedSummary(session.id);
       this.operationStates.set(session.id, simulation("completed", undefined, reviewConflict));
     } catch (error) {
@@ -619,6 +716,108 @@ export class TrainingLifecycleUseCases {
       this.operationStates.set(session.id, state);
       throw applicationFailureForSimulationMutation(error);
     }
+  }
+
+  private async captureSimulationFinalizationInputs(session: TrainingSession, trigger: AcceptedSimulationFinalization["acceptance"]["trigger"]): Promise<Readonly<{
+    runtime: TrainingFamilyRuntime; draft: import("../../domain").TrainingSessionDraft;
+    draftProof: Readonly<{ revision: number; digest: string }>;
+    reviewRefs: readonly ResolvedContentRef[];
+    accepted: AcceptedSimulationFinalization;
+  }>> {
+    if (!this.ports.repositories.getDraftStateProof || !this.ports.repositories.getSessionEnvelopeProof || !this.ports.repositories.getFinalizationReviews || !this.ports.repositories.acceptFinalization) {
+      throw new TrainingApplicationFailure("persistence_failure", "Durable simulation finalization acceptance is unavailable.");
+    }
+    const [draftProof, sessionProof, attempts, runtime] = await Promise.all([
+      this.ports.repositories.getDraftStateProof(),
+      this.ports.repositories.getSessionEnvelopeProof(session.id),
+      this.ports.repositories.getAttempts(),
+      this.resolveRuntimeForSession(session),
+    ]);
+    if (!draftProof || "kind" in draftProof.state) throw new TrainingApplicationFailure("resume_unavailable", "The exact editable simulation draft is unavailable.");
+    const draft = draftProof.state;
+    if (!sessionProof || sessionProof.session.id !== session.id || sessionProof.session.status !== "active" ||
+      canonicalSerialize(sessionProof.session) !== canonicalSerialize(session) ||
+      draft.sessionId !== session.id || draft.trackId !== session.trackId) throw new TrainingApplicationFailure("active_session_conflict", "Finalization requires the exact active session and draft.");
+    if (attempts.some((attempt) => attempt.sessionId === session.id)) throw new TrainingApplicationFailure("resume_unavailable", "A simulation with existing session attempts cannot be finalized again.");
+    const refs = answeredContentRefs(session, draft);
+    const reviewState = await this.ports.repositories.getFinalizationReviews(refs);
+    const capturedAt = this.ports.clock.now();
+    if (Date.parse(capturedAt) < Date.parse(draft.updatedAt)) throw new TrainingApplicationFailure("invalid_response", "Finalization time precedes the exact saved response.");
+    const familyId = this.trackRegistration(session.trackId).familyId;
+    const identity = {
+      sessionId: session.id, trackId: session.trackId, familyId, trigger, capturedAt,
+      semanticsVersion: "simulation-finalization-v1" as const,
+      sessionRevision: sessionProof.revision, sessionDigest: sessionProof.digest,
+      priorDraftEnvelopeRevision: draftProof.revision, priorDraftEnvelopeDigest: draftProof.digest,
+      reviewProofs: reviewState.proofs,
+    };
+    const accepted: AcceptedSimulationFinalization = Object.freeze({
+      kind: "accepted_simulation_finalization", version: 1, responseDraft: draft,
+      acceptance: Object.freeze({ ...identity, commandId: sha256Utf8(canonicalSerialize(identity)) }),
+    });
+    await runtime.validateResume({ session, draft });
+    if (this.ports.repositories.getPendingMutation && await this.ports.repositories.getPendingMutation()) {
+      throw new TrainingApplicationFailure("resume_unavailable", "A pending canonical mutation must be recovered before finalization can be accepted.");
+    }
+    return Object.freeze({ runtime, draft, draftProof: Object.freeze({ revision: draftProof.revision, digest: draftProof.digest }), reviewRefs: refs, accepted });
+  }
+
+  private async readAcceptedFinalizationForSession(sessionId: string): Promise<AcceptedSimulationFinalization | null> {
+    const proof = await this.ports.repositories.getDraftStateProof?.();
+    if (!proof || !("kind" in proof.state) || proof.state.kind !== "accepted_simulation_finalization") return null;
+    if (proof.state.acceptance.sessionId !== sessionId) throw new TrainingApplicationFailure("resume_unavailable", "An accepted finalization belongs to a different active session.");
+    return proof.state;
+  }
+
+  private async verifyAcceptedFinalizationInputs(session: TrainingSession, accepted: AcceptedSimulationFinalization, sameCallRuntime?: TrainingFamilyRuntime, lease?: DraftStorageLeaseHandle | null): Promise<Readonly<{
+    session: TrainingSession; runtime: TrainingFamilyRuntime; attempts: readonly import("../../domain").TrainingAttempt<unknown>[]; reviews: readonly import("../../domain").ReviewQueueEntry[];
+  }>> {
+    const repositories = this.ports.repositories;
+    if (!repositories.getDraftStateProof || !repositories.getSessionEnvelopeProof || !repositories.getFinalizationReviews || !repositories.verifyAcceptedFinalizationProof ||
+      !repositories.isDraftStorageLeaseCurrent || !repositories.isDraftStorageLeaseCurrent(lease ?? null)) {
+      throw new TrainingApplicationFailure("persistence_failure", "Accepted finalization inputs cannot be verified.");
+    }
+    const [draftProof, sessionProof, active, attempts] = await Promise.all([
+      repositories.getDraftStateProof(), repositories.getSessionEnvelopeProof(session.id), repositories.getActiveSession(), repositories.getAttempts(),
+    ]);
+    const acceptance = accepted.acceptance;
+    const identity = {
+      sessionId: acceptance.sessionId, trackId: acceptance.trackId, familyId: acceptance.familyId,
+      trigger: acceptance.trigger, capturedAt: acceptance.capturedAt, semanticsVersion: acceptance.semanticsVersion,
+      sessionRevision: acceptance.sessionRevision, sessionDigest: acceptance.sessionDigest,
+      priorDraftEnvelopeRevision: acceptance.priorDraftEnvelopeRevision, priorDraftEnvelopeDigest: acceptance.priorDraftEnvelopeDigest,
+      reviewProofs: acceptance.reviewProofs,
+    };
+    const expectedCommandId = sha256Utf8(canonicalSerialize(identity));
+    const familyId = this.trackRegistration(session.trackId).familyId;
+    const triggerMatchesTimer = acceptance.trigger === "manual" ||
+      (acceptance.trigger === "countdown-expiry" && session.configurationSnapshot.timer === "countdownForeground") ||
+      (acceptance.trigger === "absolute-deadline" && session.configurationSnapshot.timer === "absoluteDeadline");
+    const priorEnvelopeDigest = sha256Utf8(JSON.stringify({
+      schemaIdentity: "patternly:canonical:v1", revision: acceptance.priorDraftEnvelopeRevision, payload: accepted.responseDraft,
+    }));
+    if (!draftProof || !repositories.verifyAcceptedFinalizationProof(accepted, draftProof) || !("kind" in draftProof.state) || draftProof.state.kind !== "accepted_simulation_finalization" || canonicalSerialize(draftProof.state) !== canonicalSerialize(accepted) ||
+      draftProof.revision !== acceptance.priorDraftEnvelopeRevision + 1 || acceptance.priorDraftEnvelopeDigest !== priorEnvelopeDigest ||
+      acceptance.commandId !== expectedCommandId || acceptance.semanticsVersion !== "simulation-finalization-v1" || acceptance.sessionId !== session.id ||
+      acceptance.trackId !== session.trackId || acceptance.familyId !== familyId || !triggerMatchesTimer ||
+      Date.parse(acceptance.capturedAt) < Date.parse(accepted.responseDraft.updatedAt) ||
+      !sessionProof || sessionProof.revision !== acceptance.sessionRevision || sessionProof.digest !== acceptance.sessionDigest ||
+      sessionProof.session.id !== session.id || canonicalSerialize(sessionProof.session) !== canonicalSerialize(session) ||
+      !active || active.id !== session.id || active.status !== "active" || attempts.some((attempt) => attempt.sessionId === session.id)) {
+      throw new TrainingApplicationFailure("verification_failure", "Accepted finalization inputs no longer match their exact durable baseline.");
+    }
+    const reviewState = await repositories.getFinalizationReviews(answeredContentRefs(session, accepted.responseDraft));
+    if (canonicalSerialize(reviewState.proofs) !== canonicalSerialize(acceptance.reviewProofs)) {
+      throw new TrainingApplicationFailure("verification_failure", "Review evidence changed after finalization acceptance; the accepted response remains preserved.");
+    }
+    const runtime = sameCallRuntime ?? await this.resolveRuntimeForSession(session);
+    await runtime.validateResume({ session, draft: accepted.responseDraft });
+    return Object.freeze({ session: sessionProof.session, runtime, attempts, reviews: reviewState.entries });
+  }
+
+  private async assertNoAcceptedSimulationFinalization(sessionId: string): Promise<void> {
+    const accepted = await this.readAcceptedFinalizationForSession(sessionId);
+    if (accepted || this.uncertainAcceptedFinalizations.has(sessionId)) throw new TrainingApplicationFailure("persistence_failure", "The exact saved response has been accepted for finalization and cannot be changed.");
   }
 
   private assertDraftSaveResolved(sessionId: string): void {
@@ -630,7 +829,7 @@ export class TrainingLifecycleUseCases {
     const blockedWithoutRecovery = operation && "error" in operation && operation.error.allowedAction === "none" &&
       ((operation.family === "practice" && operation.kind === "submit_journal_failed") ||
         (operation.family === "simulation" && (operation.kind === "save_failed" || operation.kind === "finalization_journal_failed")));
-    return this.uncertainDraftSaves.has(sessionId) || this.uncertainMutationCommands.has(sessionId) || this.retryableMutationCommands.has(sessionId) ||
+    return this.uncertainDraftSaves.has(sessionId) || this.uncertainAcceptedFinalizations.has(sessionId) || this.uncertainMutationCommands.has(sessionId) || this.retryableMutationCommands.has(sessionId) ||
       Boolean(blockedWithoutRecovery || (operation && "error" in operation && operation.error.durableState === "unknown"));
   }
 
@@ -668,6 +867,7 @@ export class TrainingLifecycleUseCases {
 
   private async abandonUnavailableExactActiveSessionInLane(input: Readonly<{ sessionId: string; identity: ExactArtifactIdentity; isCurrent(): boolean | Promise<boolean> }>): Promise<TrainingSession> {
     const active = await this.requireActive();
+    await this.assertNoAcceptedSimulationFinalization(active.id);
     assertUnavailableSessionIdentity(active, input.sessionId, input.identity);
     if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
     await this.authorizePremiumProductMode(active.modeId);
@@ -726,6 +926,7 @@ export class TrainingLifecycleUseCases {
 
   private async abandonActiveSessionInLane(): Promise<TrainingSession> {
     const active = await this.requireActive();
+    await this.assertNoAcceptedSimulationFinalization(active.id);
     const prior = this.operationStates.get(active.id);
     if (prior?.kind === "abandonment_failed_before_journal" && "error" in prior && prior.error.allowedAction === "none") {
       this.retryableMutationCommands.delete(active.id);
@@ -769,7 +970,13 @@ export class TrainingLifecycleUseCases {
     this.operationStates.set(active.id, isSimulation ? simulation(state, detail) : practice(state, detail));
   }
 
-  async recoverPendingJournal(): Promise<void> { await this.run("persistence_failure", () => this.ports.mutations.recover()); }
+  async recoverPendingJournal(): Promise<void> {
+    await this.run("persistence_failure", () => this.ports.mutations.recover());
+    const active = await this.ports.repositories.getActiveSession();
+    if (!active || active.configurationSnapshot.submission !== "manualOrForegroundTimeout") return;
+    const accepted = await this.readAcceptedFinalizationForSession(active.id);
+    if (accepted) await this.finalizeSimulationFor(active, accepted.acceptance.trigger);
+  }
   async resetLearningState(): Promise<void> { await this.run("persistence_failure", () => this.ports.mutations.reset()); }
 
   /** Development auditability changes the injected clock only; it never writes storage. */
@@ -1006,6 +1213,15 @@ function simulationPendingFor(status: "journal_durable" | "materialized" | "veri
   if (status === "journal_durable") return simulation("materializing");
   if (status === "materialized") return simulation("verifying");
   return simulation("verified_pending_clear", operationError("simulation_finalization", "verified_pending_clear", "recover"));
+}
+
+function answeredContentRefs(session: TrainingSession, draft: TrainingSessionDraft): readonly ResolvedContentRef[] {
+  const refs = new Map<string, ResolvedContentRef>();
+  for (const occurrence of session.itemOrder) {
+    if (!Object.prototype.hasOwnProperty.call(draft.responsesByOccurrenceId, occurrence.occurrenceId)) continue;
+    refs.set(resolvedContentRefKey(occurrence.item), occurrence.item);
+  }
+  return Object.freeze([...refs.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([, ref]) => ref));
 }
 
 function practiceStateForMutationFailure(error: unknown): PracticeDurableOperationState {

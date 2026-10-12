@@ -22,14 +22,16 @@ import {
   saveUnavailableActiveRecord,
   saveUnavailableReviewRecord,
 } from "./contentIdentityUnavailableRepository";
+import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
+
 
 test("reset captures a closed exact physical set and deletes a validated partial prefix", async () => {
   const storage = installMemoryStorage();
-  await addTrainingAttempt(attempt());
-  const plan = captureLearningStateResetTargetPlan();
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   assert.ok(plan.targets.some((entry) => entry.key === STORAGE_KEYS.trainingAttempt("attempt-1")));
   assert.ok(plan.targets.some((entry) => entry.key === STORAGE_KEYS.TRAINING_ATTEMPT_INDEX));
-  assertLearningStateResetPlanBeforeJournal(plan);
+  assertLearningStateResetPlanBeforeJournal(plan, productionTrackAdmissionContext);
 
   const firstTarget = plan.targets[0];
   assert.ok(firstTarget);
@@ -42,11 +44,11 @@ test("reset captures a closed exact physical set and deletes a validated partial
 
 test("new reset rejects corrupt indexed evidence before journal authorization", async () => {
   const storage = installMemoryStorage();
-  await addTrainingAttempt(attempt());
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
   storage.remove(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX);
   const before = storage.snapshot();
 
-  assert.throws(() => captureLearningStateResetTargetPlan());
+  assert.throws(() => captureLearningStateResetTargetPlan(productionTrackAdmissionContext));
   assert.deepEqual(storage.snapshot(), before);
 });
 
@@ -55,7 +57,7 @@ test("new reset rejects malformed active-state pointers and checkpoints without 
     const storage = installMemoryStorage();
     storage.setString(key, "not-json");
     const before = storage.snapshot();
-    assert.throws(() => captureLearningStateResetTargetPlan(), (error: unknown) => error instanceof Error, key);
+    assert.throws(() => captureLearningStateResetTargetPlan(productionTrackAdmissionContext), (error: unknown) => error instanceof Error, key);
     assert.deepEqual(storage.snapshot(), before, `${key} must remain byte-identical after rejection`);
   }
 });
@@ -64,14 +66,14 @@ test("new reset rejects an orphan active-session pointer before authorization", 
   const storage = installMemoryStorage();
   storage.setString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, JSON.stringify({ schemaIdentity: "patternly.canonical-record.v1", revision: 1, payload: "missing-session" }));
   const before = storage.snapshot();
-  assert.throws(() => captureLearningStateResetTargetPlan());
+  assert.throws(() => captureLearningStateResetTargetPlan(productionTrackAdmissionContext));
   assert.deepEqual(storage.snapshot(), before);
 });
 
 test("replay rejects changed or newly appeared physical targets before deleting any other target", async () => {
   const storage = installMemoryStorage();
-  await addTrainingAttempt(attempt());
-  const plan = captureLearningStateResetTargetPlan();
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   storage.setString(STORAGE_KEYS.trainingSession("unexpected"), "unexpected target");
   const before = storage.snapshot();
   assert.throws(() => materializeLearningStateReset(plan));
@@ -86,8 +88,8 @@ test("replay rejects changed or newly appeared physical targets before deleting 
 
 test("reset plan replay ignores historical preserved hashes while preserving the current settings and reminder bytes", async () => {
   const storage = installMemoryStorage();
-  await addTrainingAttempt(attempt());
-  const plan = captureLearningStateResetTargetPlan();
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   await saveSettings({ appearance: "dark", language: "pl" });
   writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS, { practiceReminder: null });
   const settingsBytes = storage.getString(STORAGE_KEYS.SETTINGS);
@@ -105,9 +107,9 @@ test("reset plan replay ignores historical preserved hashes while preserving the
 
 test("one reset invocation detects preserved bytes changed during target deletion", async () => {
   const storage = installMemoryStorage();
-  await addTrainingAttempt(attempt());
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
   await saveSettings({ appearance: "dark", language: "en" });
-  const plan = captureLearningStateResetTargetPlan();
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   const remove = storage.remove.bind(storage);
   let changed = false;
   storage.remove = (key: string) => {
@@ -124,8 +126,8 @@ test("one reset invocation detects preserved bytes changed during target deletio
 
 test("replay is fenced to the captured selected profile identity", async () => {
   const storage = installMemoryStorage();
-  await addTrainingAttempt(attempt());
-  const plan = captureLearningStateResetTargetPlan();
+  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   setActiveProfileLeaseForTests({ id: "other-selected-profile", kind: "guest", accountId: null });
   const before = storage.snapshot();
   assert.throws(() => materializeLearningStateReset(plan));
@@ -148,7 +150,7 @@ test("reset captures and removes every validated retained content-history family
     review: { id: "unavailable-review-1", trackId: "coding-interview-dsa-problem-solving", sourceAttemptId: "a1", sourceSessionId: "s1", sourceItem: tombstone("unavailable_review", "unavailable-review-1"), reasons: ["incorrect"], dueAt: "2026-01-02T00:00:00Z", createdAt: "2026-01-01T00:00:00Z", persistent: true },
   }));
   const storage = getKeyValueStorage() as MemoryKeyValueStorage;
-  const plan = captureLearningStateResetTargetPlan();
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
   assert.ok(plan.targets.some((entry) => entry.key === STORAGE_KEYS.archivalHistory("archive-1")));
   assert.ok(plan.targets.some((entry) => entry.key === STORAGE_KEYS.unavailableActive("unavailable-1")));
   assert.ok(plan.targets.some((entry) => entry.key === STORAGE_KEYS.unavailableReview("unavailable-review-1")));

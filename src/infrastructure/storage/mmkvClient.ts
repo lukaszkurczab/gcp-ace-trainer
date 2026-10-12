@@ -37,6 +37,7 @@ let profileStorageReadyNotified = false;
 let testActiveProfileLease: ActiveProfileStorageLease | null = null;
 let testActiveProfileLeaseGeneration = 0;
 const MODERN_PROFILE_PREFIX = "patternly:profile:v1:";
+const UNSCOPED_CANONICAL_PREFIX = "patternly:canonical:v1:";
 const BIZQ01_CANARY_FAMILY_PREFIX = `${MODERN_PROFILE_PREFIX}bizq01-canary-`;
 const BIZQ01_REMOVED_GUEST_ID_SHA256 = "b880a3a8d1530601f6f1ed2f244078468f09f51f9d68ba5f6d3cec95cfa5e52d";
 
@@ -153,7 +154,7 @@ function guestProfileIdentityInventory(router: ProfileStorageRouter): Readonly<{
   })).sort((left, right) => left.idSha256.localeCompare(right.idSha256));
   return Object.freeze({
     accountProfileCount: identities.filter((profile) => profile.kind === "account").length,
-    guestProfileCount: identities.filter((profile) => profile.kind === "guest" || profile.kind === "legacy_guest").length,
+    guestProfileCount: identities.filter((profile) => profile.kind === "guest").length,
     profileIdentityInventorySha256: sha256Utf8(JSON.stringify(identities)),
   });
 }
@@ -297,7 +298,7 @@ function isQ13PackagePointerKey(key: string): boolean {
 type Q13UnclassifiedScope = "registered_profile" | "unregistered_profile" | "legacy_profile" | "global" | "unscoped";
 const Q13_UNCLASSIFIED_SCOPES: readonly Q13UnclassifiedScope[] = Object.freeze(["registered_profile", "unregistered_profile", "legacy_profile", "global", "unscoped"]);
 
-function q13UnknownKeyFingerprint(key: string, profiles: readonly StorageProfile[], legacyProfileId: string | null): Readonly<{ scope: Q13UnclassifiedScope; keySha256: string }> {
+function q13UnknownKeyFingerprint(key: string, profiles: readonly StorageProfile[]): Readonly<{ scope: Q13UnclassifiedScope; keySha256: string }> {
   let scope: Q13UnclassifiedScope;
   let normalizedKey: string;
   if (key.startsWith(MODERN_PROFILE_PREFIX)) {
@@ -315,8 +316,8 @@ function q13UnknownKeyFingerprint(key: string, profiles: readonly StorageProfile
         normalizedKey = encodeURIComponent(logicalKey) === encodedLogicalKey ? logicalKey : encodedLogicalKey;
       } catch { normalizedKey = encodedLogicalKey; }
     }
-  } else if (key.startsWith("patternly:canonical:v1:") || key.startsWith("patternly.content-node.active.v1.")) {
-    scope = legacyProfileId ? "legacy_profile" : "unscoped";
+  } else if (key.startsWith(UNSCOPED_CANONICAL_PREFIX) || isQ13PackagePointerKey(key)) {
+    scope = "legacy_profile";
     normalizedKey = key;
   } else if (key.startsWith("patternly:premium-cache:") || key.startsWith("patternly:test-runtime:")) {
     scope = "global";
@@ -350,14 +351,22 @@ export async function inspectPreparedQ13StorageInventory(actorUidSha256?: string
   const readiness = inspectPreparedQ13StorageReadiness();
   if (readiness.kind !== "ready" || !current) return Object.freeze({ kind: "unavailable", complete: false, reason: readiness.kind === "unavailable" ? readiness.reason : "prepared_storage_missing" });
   const router = current.router;
-  let keys: string[], values: string[];
+  let keys: string[];
   try {
     keys = [...current.base.getAllKeys()];
+  } catch { return Object.freeze({ kind: "unavailable", complete: false, reason: "physical_key_read_failed" }); }
+  if (keys.some((key) => typeof key !== "string") || new Set(keys).size !== keys.length) return Object.freeze({ kind: "unavailable", complete: false, reason: "physical_key_inventory_invalid" });
+  const unscopedLegacyKeys = keys.filter((key) => key.startsWith(UNSCOPED_CANONICAL_PREFIX) || isQ13PackagePointerKey(key));
+  if (unscopedLegacyKeys.length > 0) {
+    return Object.freeze({ kind: "unavailable", complete: false, reason: "unclassified_key", physicalKeyCount: keys.length,
+      unclassifiedKeys: q13UnclassifiedInventory(unscopedLegacyKeys.map((key) => q13UnknownKeyFingerprint(key, current.router.registry.profiles))) });
+  }
+  let values: string[];
+  try {
     const readValues = keys.map((key) => current.base.getString(key));
     if (readValues.some((value) => value === undefined)) return Object.freeze({ kind: "unavailable", complete: false, reason: "physical_key_read_failed" });
     values = readValues as string[];
   } catch { return Object.freeze({ kind: "unavailable", complete: false, reason: "physical_key_read_failed" }); }
-  if (keys.some((key) => typeof key !== "string") || new Set(keys).size !== keys.length || keys.length !== values.length) return Object.freeze({ kind: "unavailable", complete: false, reason: "physical_key_inventory_invalid" });
   const physicalEntries = keys.map((key, index) => [sha256Utf8(key), sha256Utf8(values[index]!)] as const).sort((a, b) => a[0].localeCompare(b[0]));
   const physicalInventorySha256 = sha256Utf8(JSON.stringify(physicalEntries));
   const profiles = router.registry.profiles;
@@ -370,36 +379,21 @@ export async function inspectPreparedQ13StorageInventory(actorUidSha256?: string
     const key = keys[index]!; const value = values[index]!;
     if (key.startsWith(MODERN_PROFILE_PREFIX)) {
       const rest = key.slice(MODERN_PROFILE_PREFIX.length); const separator = rest.indexOf(":");
-      if (separator <= 0) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+      if (separator <= 0) { unclassified.push(q13UnknownKeyFingerprint(key, profiles)); continue; }
       const id = rest.slice(0, separator); const profile = profiles.find((candidate) => candidate.id === id);
-      if (!profile) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+      if (!profile) { unclassified.push(q13UnknownKeyFingerprint(key, profiles)); continue; }
       let logical: string;
-      try { logical = decodeURIComponent(rest.slice(separator + 1)); } catch { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
-      if (encodeURIComponent(logical) !== rest.slice(separator + 1) || (!isKnownQ13CanonicalKey(logical) && !isQ13PackagePointerKey(logical))) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+      try { logical = decodeURIComponent(rest.slice(separator + 1)); } catch { unclassified.push(q13UnknownKeyFingerprint(key, profiles)); continue; }
+      if (encodeURIComponent(logical) !== rest.slice(separator + 1) || (!isKnownQ13CanonicalKey(logical) && !isQ13PackagePointerKey(logical))) { unclassified.push(q13UnknownKeyFingerprint(key, profiles)); continue; }
       byProfile.get(id)!.push([sha256Utf8(key), sha256Utf8(value)]);
       const category: Q13ProfileCategory | null = isQ13PackagePointerKey(logical) ? "packagePointers" : canonicalQ13Category(logical);
-      if (!category) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+      if (!category) { unclassified.push(q13UnknownKeyFingerprint(key, profiles)); continue; }
       profileCategories.get(id)!.get(category)!.push([sha256Utf8(key), sha256Utf8(value)]);
       if (category === "packagePointers") packageEntries.get(id)!.push(Object.freeze({ key: logical, value }));
       continue;
     }
-    if (isQ13PackagePointerKey(key) && router.registry.legacyProfileId) {
-      const legacyId = router.registry.legacyProfileId;
-      byProfile.get(legacyId)!.push([sha256Utf8(key), sha256Utf8(value)]);
-      profileCategories.get(legacyId)!.get("packagePointers")!.push([sha256Utf8(key), sha256Utf8(value)]);
-      packageEntries.get(legacyId)!.push(Object.freeze({ key, value }));
-      continue;
-    }
-    if (key.startsWith(STORAGE_KEYS.METADATA.slice(0, "patternly:canonical:v1:".length))) {
-      const legacyId = router.registry.legacyProfileId;
-      const category = canonicalQ13Category(key);
-      if (!legacyId || !byProfile.has(legacyId) || !category) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, legacyId)); continue; }
-      byProfile.get(legacyId)!.push([sha256Utf8(key), sha256Utf8(value)]);
-      profileCategories.get(legacyId)!.get(category)!.push([sha256Utf8(key), sha256Utf8(value)]);
-      continue;
-    }
     const category = globalQ13Category(key);
-    if (!category) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+    if (!category) { unclassified.push(q13UnknownKeyFingerprint(key, profiles)); continue; }
     const list = globals.get(category) ?? []; list.push([sha256Utf8(key), sha256Utf8(value)]); globals.set(category, list);
   }
   if (unclassified.length > 0) return Object.freeze({ kind: "unavailable", complete: false, reason: "unclassified_key", physicalKeyCount: keys.length, physicalInventorySha256, unclassifiedKeys: q13UnclassifiedInventory(unclassified) });
@@ -646,8 +640,8 @@ export async function selectPreparedGuestProfile(
   if (client || !canContinue()) throw new Error("profile_transition_cancelled");
   const previous = router.registry.profiles.find((profile) => profile.id === router.registry.selectedProfileId);
   if (!previous) throw new Error("profile_registry_corrupt");
-  const guests = router.registry.profiles.filter((profile) => profile.kind === "guest" || profile.kind === "legacy_guest");
-  const selectedIsGuest = previous.kind === "guest" || previous.kind === "legacy_guest";
+  const guests = router.registry.profiles.filter((profile) => profile.kind === "guest");
+  const selectedIsGuest = previous.kind === "guest";
   let targetId = profileId;
   if (targetId === undefined) {
     if (selectedIsGuest) targetId = previous.id;
@@ -941,7 +935,7 @@ export function inspectBizq01GuestRemoval34Canary(
   const router = profileRouter;
   if (!client || !prepared || !router || prepared.router !== router) return fail("active_profile_unavailable");
   const profile = router.profile;
-  const guests = router.registry.profiles.filter((candidate) => candidate.kind === "guest" || candidate.kind === "legacy_guest");
+  const guests = router.registry.profiles.filter((candidate) => candidate.kind === "guest");
   if (profile.kind !== "guest" || profile.accountId !== null || router.registry.selectedProfileId !== profile.id || guests.length !== 1
     || !router.hasExactUnboundModernGuest(profile.id, expectedInstallationIdSha256, expectedDatasetIdSha256)) {
     return fail("expected_guest_mismatch", { profileTransitionActive });
@@ -1020,7 +1014,7 @@ export function runBizq01GuestRemoval34Canary(
   const router = profileRouter;
   if (!client || !prepared || !router || prepared.router !== router || profileTransitionActive) return guestRemovalCanaryFailure("active_profile_unavailable");
   const profile = router.profile;
-  const guests = router.registry.profiles.filter((candidate) => candidate.kind === "guest" || candidate.kind === "legacy_guest");
+  const guests = router.registry.profiles.filter((candidate) => candidate.kind === "guest");
   if (profile.kind !== "guest" || profile.accountId !== null || router.registry.selectedProfileId !== profile.id || guests.length !== 1
     || !router.hasExactUnboundModernGuest(profile.id, expectedInstallationIdSha256, expectedDatasetIdSha256)) {
     return guestRemovalCanaryFailure("expected_guest_mismatch");
@@ -1073,12 +1067,6 @@ export function runBizq01GuestRemoval34Canary(
 export function onProfileTransitionChanged(listener: () => void): () => void {
   profileTransitionListeners.add(listener);
   return () => { profileTransitionListeners.delete(listener); };
-}
-
-export async function continueAsGuestInNewProfile(): Promise<void> {
-  if (!profileRouter) throw new Error("encrypted_storage_not_initialized");
-  await profileRouter.selectGuest();
-  await reloadForProfileTransition();
 }
 
 export async function selectAccountProfileAndRestart(

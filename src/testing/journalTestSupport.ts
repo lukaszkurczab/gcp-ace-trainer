@@ -1,7 +1,15 @@
-import { createTrainingAttempt, createTrainingSession, type ResolvedContentRef, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../domain";
+import { createTrainingAttempt, createTrainingSession, getTrackRegistration, type AcceptedSimulationFinalization, type ResolvedContentRef, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft } from "../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests, setActiveProfileLeaseForTests } from "../infrastructure/storage/mmkvClient";
-import { captureMutationExpectedRevisions, createMutationPlanFingerprint, type MutationJournalPlan, type TrainingMutationJournalRecord, type TrainingMutationOperation } from "../storage/repositories/mutationJournalRepository";
+import { captureMutationExpectedRevisions, captureMutationPhysicalWrites, createMutationPlanFingerprint, type MutationJournalPlan, type TrainingMutationJournalRecord, type TrainingMutationOperation } from "../storage/repositories/mutationJournalRepository";
 import { initializeStorageMetadata } from "../storage/repositories/storageMetadataRepository";
+import { canonicalSerialize } from "../domain/identity/canonicalSerialization";
+import { sha256Utf8 } from "../infrastructure/identity/sha256";
+import { acceptSimulationFinalization, readActiveTrainingSessionDraftStateProof } from "../storage/repositories/trainingSessionDraftRepository";
+import { readTrainingSessionEnvelopeProof } from "../storage/repositories/trainingSessionRepository";
+import { readReviewQueueFinalizationProofs } from "../storage/repositories/reviewQueueRepository";
+import { captureActiveProfileStorageLease } from "../infrastructure/storage/mmkvClient";
+import { resolvedContentRefKey } from "../domain/learning/resolvedContentRef";
+import { productionTrackAdmissionContext } from "../application/tracks/trackAdmissionContext";
 
 export const timestamp = "2026-07-15T10:00:00.000Z";
 const artifactSha256 = "a".repeat(64);
@@ -35,6 +43,46 @@ export function session(status: TrainingSession["status"] = "active", id = "sess
     startedAt: timestamp,
     ...(status === "active" ? {} : { completedAt: timestamp }),
   });
+}
+
+/** Uses the production D owner to establish the accepted authority required by
+ * new finalization commands in tests that exercise later journal boundaries. */
+export async function acceptSimulationFinalizationForTest(sessionRecord: TrainingSession, draft: TrainingSessionDraft, capturedAt = timestamp): Promise<AcceptedSimulationFinalization> {
+  const draftProof = readActiveTrainingSessionDraftStateProof(productionTrackAdmissionContext);
+  const sessionProof = readTrainingSessionEnvelopeProof(sessionRecord.id, productionTrackAdmissionContext);
+  if (!draftProof || "kind" in draftProof.state || !sessionProof || sessionProof.session.status !== "active") {
+    throw new Error("The exact active session and editable draft must be durable before test acceptance.");
+  }
+  const byKey = new Map(sessionRecord.itemOrder.map((entry) => [resolvedContentRefKey(entry.item), entry.item]));
+  const reviewRefs = [...new Set(Object.keys(draft.responsesByOccurrenceId).map((occurrenceId) => {
+    const occurrence = sessionRecord.itemOrder.find((entry) => entry.occurrenceId === occurrenceId);
+    if (!occurrence) throw new Error("The test draft response is outside its session order.");
+    return resolvedContentRefKey(occurrence.item);
+  }))].map((key) => byKey.get(key)!).sort((a, b) => resolvedContentRefKey(a).localeCompare(resolvedContentRefKey(b)));
+  const reviewProofs = readReviewQueueFinalizationProofs(reviewRefs, productionTrackAdmissionContext).proofs;
+  const familyId = getTrackRegistration(sessionRecord.trackId).familyId;
+  const identity = {
+    sessionId: sessionRecord.id,
+    trackId: sessionRecord.trackId,
+    familyId,
+    trigger: "manual" as const,
+    capturedAt,
+    semanticsVersion: "simulation-finalization-v1" as const,
+    sessionRevision: sessionProof.revision,
+    sessionDigest: sessionProof.digest,
+    priorDraftEnvelopeRevision: draftProof.revision,
+    priorDraftEnvelopeDigest: draftProof.digest,
+    reviewProofs,
+  };
+  const accepted: AcceptedSimulationFinalization = {
+    kind: "accepted_simulation_finalization",
+    version: 1,
+    responseDraft: draft,
+    acceptance: { ...identity, commandId: sha256Utf8(canonicalSerialize(identity)) },
+  };
+  const outcome = await acceptSimulationFinalization(accepted, { revision: draftProof.revision, digest: draftProof.digest }, captureActiveProfileStorageLease(), reviewRefs, productionTrackAdmissionContext);
+  if (outcome.kind !== "verified") throw new Error(`The D owner did not verify test acceptance: ${outcome.kind}.`);
+  return accepted;
 }
 
 export function attempt(id = "attempt-1", sessionId = "session-1"): TrainingAttempt<{ choice: string }> {
@@ -83,6 +131,7 @@ export function journal(writes: TrainingMutationJournalRecord["writes"], operati
     artifactSha256: operation === "reset_learning_state" ? null : artifactSha256,
     commandIdentity: { version: 1, fingerprint: commandFingerprint },
     expectedRevisions: captureMutationExpectedRevisions(writes),
+    physicalWrites: operation === "reset_learning_state" ? [] : captureMutationPhysicalWrites(writes, productionTrackAdmissionContext),
     writes,
   };
   return {
