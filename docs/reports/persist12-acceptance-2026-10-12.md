@@ -1,6 +1,6 @@
 # PERSIST-12 — integralność zainstalowanych pakietów
 
-Status: niezależny bounded source/local QA PASS; pełna bramka lokalna PASS, niezależny full-log review PASS; hosted CI jeszcze niewykonane. Native residual pozostaje PERSIST-13. Jedyna kolejka i stan pozostają w primary. Source base `98ab5b4850ca515a62954cc01a3cf88f8384b5a8`, sole writer persist_writer Luna High; independent design/QA persist_design Luna High, bez dalszych agentów. Root: dokumentacja/Git/runtime. Native file-move durability pozostaje PERSIST-13.
+Status: zakończone — niezależny source/local/exact-CI PASS z ograniczeniami dowodu; native file-move durability pozostaje w odrębnym PERSIST-13. Native residual pozostaje PERSIST-13. Jedyna kolejka i stan pozostają w primary. Source base `98ab5b4850ca515a62954cc01a3cf88f8384b5a8`, sole writer persist_writer Luna High; independent design/QA persist_design Luna High, bez dalszych agentów. Root: dokumentacja/Git/runtime. Native file-move durability pozostaje PERSIST-13.
 
 ## Cel, ustalenia i podejście
 
@@ -81,3 +81,11 @@ Cleanup: usunięto legacy bare-pointer compatibility reader, silent null/skip dl
 Root qa:static exit0 na zamrożonych źródłach:2409total/2405PASS/0FAIL/4SKIP; recovery487source/358testfiles/2295cases, Stage1PASS, TypeScript/content-boundary/runtime-privacy-boundaryPASS. Node22 i clean pinned CONTENT3b0a3e8b / historicalcc3efca8 / BACKEND4d8efbd6. Pełny log zachowany prywatnie `artifacts/private/persist12-20261012/patternly-persist12-fullgate.log`. Wykonanie wydłużone przez współdzielone obciążenie; read-only kontrola procesów potwierdzała postęp, bez zmiany concurrency/heap i bez zatrzymywania cudzych procesów. Niezależny persist_design Luna High przejrzał cały log i źródła/wejścia: **source + complete local qa:static PASS**. Cztery SKIP to istniejące HTTP/backend integration (recovery coordinator, revoke/ACK, concurrent consume, deletion/recovery); brak ukrytych failures. Hosted exact CI jeszcze niewykonane; native13 osobno.
 
 Dostarczenie: przygotowany spójny pakiet20source/test/locale +5własnych dokumentów (w tym final09/10 metadata i przygotowanie11); zwykły commit/push i exact hosted CI są następnym krokiem. Bez danych prywatnych/node_modules/obcych CC lub BESD.
+
+Dostarczono commit `81ec9aa01a904647c55005d8d48c9ccc47020936` zwykłym push main,25files (20source/test/locale +5owndocs). [Exact CI38182954305](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38182954305) w toku. Primary source/obce zmiany/stashe i12profili/Guest zachowane; metadane po CI zostaną przeniesione z kolejnym spójnym pakietem, bez metadata-only push.
+
+## Końcowy odbiór dokładnego CI
+
+[CI38182954305 SUCCESS obu jobs](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38182954305) na81ec9aa01a904647c55005d8d48c9ccc47020936:2409total/2405PASS/0FAIL/4SKIP,recovery487/358/2295,Stage1/TC/platform/content/privacyPASS,contracts3/3. Root oraz niezależny persist_design LunaHigh sprawdzili pełny log, dokładny HEAD i przypięte wejścia: final **source/local/exactCI PASS z ograniczeniami**, bez konkretnego blockera P12. Cztery istniejące HTTP/backend skips nie są dowodem tych scenariuszy. Pełny log zachowany prywatnie `artifacts/private/persist12-20261012/ci-38182954305-full.log`.
+
+Równoległy upstream4e018fd10d62a60a26fa17581ec1d61f3f2989d2 zawiera81ec jako przodka. W czystym sole writer checkout wykonano FF bez primary reset/stash; P12source/test byte-identical i wszystkie P12keys zachowane w7locale. Merge CC05 jest poza dokładnym odbiorem81ec i ma własnego właściciela. Native13 pozostaje oddzielnie; P12 usunięto z jedynej kolejki. Końcowe metadata przenieść przy kolejnym spójnym pakiecie źródeł, bez metadata-only push. Dalej zatwierdzony probe P11; bez GO.
