@@ -1,0 +1,21 @@
+appId: com.lkurczab.patternly
+name: CH-07 existing Guest to ordinary email sign-in form
+---
+- launchApp:
+    clearState: false
+    stopApp: false
+- assertVisible:
+    id: main-tab-bar-settings
+- tapOn:
+    id: main-tab-bar-settings
+    retryTapIfNoChange: true
+- assertVisible:
+    id: settings-account-entry
+- tapOn:
+    id: settings-account-entry
+- assertVisible:
+    id: account-email
+- assertVisible:
+    id: account-password
+- assertVisible:
+    id: account-sign-in-submit

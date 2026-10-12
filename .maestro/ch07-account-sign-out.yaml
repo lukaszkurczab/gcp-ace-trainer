@@ -1,0 +1,23 @@
+appId: com.lkurczab.patternly
+name: CH-07 explicit logout and return to existing Guest
+---
+- launchApp:
+    clearState: false
+    stopApp: false
+- assertVisible:
+    id: main-tab-bar-settings
+- tapOn:
+    id: main-tab-bar-settings
+    retryTapIfNoChange: true
+- scrollUntilVisible:
+    element:
+      id: settings-sign-out
+    direction: DOWN
+- assertVisible:
+    id: settings-sign-out
+- tapOn:
+    id: settings-sign-out
+- extendedWaitUntil:
+    visible:
+      id: account-(guest|sign-in-guest)
+    timeout: 30000

@@ -18,7 +18,7 @@ Wyjątek właściciela z 11.10.2026: autoryzowano przed iOS naprawę i publikacj
 
 ## Plan przed pierwszym wydaniem iOS
 
-**PO wznowił WIP12Oct po zakończonych porządkach i autoryzował zwykłe pushe odebranych pakietów. Historyczny [checkpoint ARCH-02/04](reports/arch02-04-cleanup-checkpoint-2026-10-12.md) pozostaje dowodem punktu startu. ARCH-02/04 CODE_ONLY i WEB WIP zostały odebrane i dostarczone; szczegóły w bieżącym stanie i raporcie odbioru. CH-07 konto smoke przygotowane po zgodzie PO, primary entry potwierdzony przez PERF-01, native oczekuje Guest/login/logout i preservation smoke; PERSIST-11 ścieżki native, limit5s pozostaje otwarty.** Obowiązująca kolejność zależności: 07/05/06 → 01/14 → 09/10 → 11/12 → końcowa macierz13, według [specyfikacji](specs/engineering/persistence.md).
+**PO wznowił WIP12Oct po zakończonych porządkach i autoryzował zwykłe pushe odebranych pakietów. Historyczny [checkpoint ARCH-02/04](reports/arch02-04-cleanup-checkpoint-2026-10-12.md) pozostaje dowodem punktu startu. ARCH-02/04 CODE_ONLY i WEB WIP zostały odebrane i dostarczone; szczegóły w bieżącym stanie i raporcie odbioru. PERSIST-11 ścieżki native, limit5s pozostaje otwarty.** Obowiązująca kolejność zależności: 07/05/06 → 01/14 → 09/10 → 11/12 → końcowa macierz13, według [specyfikacji](specs/engineering/persistence.md).
 
 Pozostałe zadania techniczne i wydania pozostają poniżej. Przed ich implementacją sprawdzić aktualność wskazanego problemu w bieżącym kodzie. Nie przenosić zadania po iOS tylko dlatego, że jest refaktorem, ani nie tworzyć bramki z samej etykiety HIGH; decydują istniejące wymagania i konkretny wpływ na poprawność, bezpieczeństwo lub dane. Utrzymywać jeden główny obszar pracy, z wyjątkiem rzeczywistej zależności, kolizji, decyzji właściciela lub jego polecenia. Bieżąca autoryzacja autonomicznej pracy przed iOS pozostaje w mocy.
 
@@ -28,7 +28,6 @@ Zadanie znika z planu po odbiorze jego pełnego zakresu. Przy zadaniu częściow
 
 | Zadanie | Status | Pozostały wynik, zależności i wymagane decyzje |
 | --- | --- | --- |
-| [CH-07 — natywny odbiór current-only profili](specs/engineering/code-health.md) | Source/local/CI PASS; native do odbioru | Konto smoke utworzone po zgodzie PO i zweryfikowane w lokalnym Auth/backend. Primary ExpoAppEntry/manifest/bundle/start potwierdzone w pomiarze PERF-01; pozostał zwykły Guest/login/logout z kontrolą zachowania profili i danych. |
 | [PERSIST-01 — Recovery przed odczytem active/content](specs/engineering/persistence.md) | Source/local/CI PASS; native residual13 | Production bootstrap recovery i exact double replay odebrane; pozostały natywny kill pointer-clear w PERSIST-13. [Dowody](reports/persist01-14-acceptance-2026-10-11.md). |
 | [PERSIST-09 — Trwały freeze finalizacji](specs/engineering/persistence.md) | Native residual13 | Pozostały natywne przerwania i frozen/error UI w PERSIST-13. Źródła/lokalny gate/exact CI odebrane; [dowody](reports/persist09-10-acceptance-2026-10-11.md). |
 | [PERSIST-10 — Save/manual/timeout](specs/engineering/persistence.md) | Native residual13 | Pozostały native Design overlap/dirty UI i przerwania w PERSIST-13. Źródła/lokalny gate/exact CI odebrane; [dowody](reports/persist09-10-acceptance-2026-10-11.md). |

@@ -21,7 +21,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## CH-07 — jeden sposób adresowania danych profilu, bez legacy namespace
 
-**Bieżący status:** CH-07 ma odebrany zakres source/local/exact CI; otwarty pozostaje native Guest/login/logout smoke z kontrolą profili i danych (AC9). Aktualny status, przygotowanie kandydata i ograniczenia dowodu: [plan](../../PATTERNLY-WORKING-PLAN.md), [raport CH-07](../../reports/ch07-acceptance-2026-10-12.md). Nie oznacza to native acceptance.
+**Bieżący status:** CH-07 odebrany source/local/exact CI oraz natywny Guest/login/logout smoke i preservation (AC9): zachowane12pierwotnychprofili/ten samGuest, jeden dodatkowy profil autoryzowanego nowego smoke account. Dowody i ograniczenia: [plan](../../PATTERNLY-WORKING-PLAN.md), [raport CH-07](../../reports/ch07-acceptance-2026-10-12.md). Nie oznacza to gotowości wydania ani odbioru PERSIST-13.
 
 **Historyczna diagnoza:** Przed zmianą CH-07 router/MMKV obsługiwały `legacy_owner`/`legacy_guest` i bootstrap nieskopowanych kluczy; `continueAsGuestInNewProfile` było eksportowane bez call site. Zmiana usunęła te ścieżki, zachowując journal/registry guards operacji Guest34.
 

@@ -1,0 +1,20 @@
+appId: com.lkurczab.patternly
+name: CH-07 ordinary prepared smoke account sign-in
+---
+- launchApp:
+    clearState: false
+    stopApp: false
+- assertVisible:
+    id: account-email
+- tapOn:
+    id: account-email
+- inputText: "${CH07_EMAIL}"
+- tapOn:
+    id: account-password
+- inputText: "${CH07_PASSWORD}"
+- tapOn:
+    id: account-sign-in-submit
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-settings|patternly:home:select-track:root
+    timeout: 30000

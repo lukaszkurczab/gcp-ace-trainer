@@ -1,0 +1,29 @@
+appId: com.lkurczab.patternly
+name: CH-07 prepared new account default track onboarding
+---
+- launchApp:
+    clearState: false
+    stopApp: false
+- runFlow:
+    when:
+      visible: "Nie teraz"
+    commands:
+      - tapOn: "Nie teraz"
+- runFlow:
+    when:
+      visible: "Not Now"
+    commands:
+      - tapOn: "Not Now"
+- assertVisible:
+    id: patternly:home:select-track:root
+- assertVisible:
+    id: patternly:home:select-track:coding-interview-dsa-problem-solving
+    selected: true
+- assertVisible:
+    id: patternly:home:select-track:continue
+- tapOn:
+    id: patternly:home:select-track:continue
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-settings
+    timeout: 30000

@@ -1,0 +1,19 @@
+appId: com.lkurczab.patternly
+name: CH-07 return from signed out to existing Guest
+---
+- launchApp:
+    clearState: false
+    stopApp: false
+- assertVisible:
+    id: account-(guest|sign-in-guest)
+- tapOn:
+    id: account-(guest|sign-in-guest)
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 30000
+- tapOn:
+    id: main-tab-bar-home
+    retryTapIfNoChange: true
+- assertVisible:
+    id: home-overview
