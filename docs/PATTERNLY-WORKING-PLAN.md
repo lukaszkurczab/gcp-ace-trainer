@@ -76,7 +76,7 @@ Podział zatwierdzony przez właściciela 07.10. Zadania pozostają otwarte, wra
 
 | Zadanie | Status | Pozostały wynik i zależności |
 | --- | --- | --- |
-| [CC-01–05 — materiały, luki kursowe i pokrycie nauki](specs/engineering/claude-course-alignment.md) | CC-01–05 lokalnie odebrane; publikacja w toku | Claude 918 pytań / 53 jednostki / V3; dokumentacja i właściwy moduł kursu w Details z informacją o koncie. Zatwierdzona reguła wymaga pokrycia każdej jednostki egzaminacyjnej. Właściciel 12.10 autoryzował spójne wydanie z Backend 11.10 i scalenie gałęzi sesji 11.10. Trwa nowy kandydat dziewięciu banków, exact admission i CI. Historia bez automatycznego zaliczenia starego pinu. Cowork dodatkowy poza runtime, partner-only excluded. [Plan i dowody publikacji](reports/claude-coordinated-publication-2026-10-12.md); bez publikacji sklepowej. |
+| [CC-01–05 — materiały, luki kursowe i pokrycie nauki](specs/engineering/claude-course-alignment.md) | CC-01–05 zakończone i opublikowane | Claude 918 pytań / 53 jednostki / V3; dokumentacja i właściwy moduł kursu w Details z informacją o koncie. Zatwierdzona reguła wymaga pokrycia każdej jednostki egzaminacyjnej. Właściciel 12.10 autoryzował spójne wydanie z Backend 11.10 i scalenie gałęzi sesji 11.10. Kandydat9a1 dziewięciu banków opublikowany: APP main4e018fd1/CONTENT mastere57f32a, exact runtime admission i trzy hosted CI SUCCESS. Historia bez automatycznego zaliczenia starego pinu. Cowork dodatkowy poza runtime, partner-only excluded. [Plan i dowody publikacji](reports/claude-coordinated-publication-2026-10-12.md); bez publikacji sklepowej. |
 
 ## Zasady kontynuacji
 

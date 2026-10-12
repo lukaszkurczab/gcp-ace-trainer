@@ -1,6 +1,6 @@
 # Patternly — bieżący stan pracy
 
-Aktualizacja: 12.10.2026. Jedyna kolejka: [plan](../docs/PATTERNLY-WORKING-PLAN.md). Aktywna autoryzowana praca w tym wątku: spójna publikacja Backend 11.10 + Claude918 i scalenie gałęzi sesji11.10. Praca w izolowanych worktree, oryginalne niezapisane zmiany zachowane. [Plan i dowody](../docs/reports/claude-coordinated-publication-2026-10-12.md). Nowy kandydat, admission i CI w toku; bez GO wydania sklepowego. Android, EPIC-09 i pełny audyt pytań pozostają po iOS.
+Aktualizacja: 12.10.2026. Jedyna kolejka: [plan](../docs/PATTERNLY-WORKING-PLAN.md). CC-05 i spójna publikacja Backend11.10 + Claude918 zakończone: APP main4e018fd1, CONTENT mastere57f32a; gałęzie sesji11.10 scalone, exact runtime admission i trzy hosted CI SUCCESS. [Wersje, dowody, zakres i ograniczenia](../docs/reports/claude-coordinated-publication-2026-10-12.md). Oryginalne dirty checkouty zachowane; bez publikacji sklepowej/OTA. Pozostała kolejka i praca PERSIST w osobnych zakresach bez zmian.
 
 ## PERSIST-01/14 — dostarczone; native residual w13
 
