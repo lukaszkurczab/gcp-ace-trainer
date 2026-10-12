@@ -1,0 +1,428 @@
+{
+  "before": {
+    "schema": "patternly.mutation-recovery-measurement.v1",
+    "runtime": "v22.22.3",
+    "envelope": "synthetic canonical memory storage; no native MMKV/UI claim",
+    "verifierSha256": "5a199aa95d5d664ae5e2207f4af99626a8b582ddc854610fc8353763b0d28629",
+    "integritySha256": "e042f535beac7dae1a852bb53e0ec2526582bd67cc53cc8b15eca222f03ea7ed",
+    "warmups": 1,
+    "samples": 7,
+    "results": [
+      {
+        "attempts": 100,
+        "sessions": 11,
+        "reviews": 10,
+        "inputSha256": "2b511f0a67ba56592a8993630590203d62c5d4857e004f6b8a48cd850e9a4eb1",
+        "outputSha256": "5a60b60ff26d4bde47fab5073c9eac656c7ceb65dbb2f1ede7451b85ca56887b",
+        "medianMs": 18.10191700000007,
+        "p95Ms": 20.359790999999973,
+        "measurements": [
+          {
+            "elapsedMs": 19.887583999999947,
+            "reads": 934,
+            "readCharacters": 994394,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 20.359790999999973,
+            "reads": 934,
+            "readCharacters": 994394,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 20.315207999999984,
+            "reads": 934,
+            "readCharacters": 994394,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 17.946874999999977,
+            "reads": 934,
+            "readCharacters": 994394,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 18.10191700000007,
+            "reads": 934,
+            "readCharacters": 994394,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 17.487457999999947,
+            "reads": 934,
+            "readCharacters": 994394,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 17.266958000000045,
+            "reads": 934,
+            "readCharacters": 994394,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          }
+        ]
+      },
+      {
+        "attempts": 1000,
+        "sessions": 101,
+        "reviews": 100,
+        "inputSha256": "3258b226242cc8392e23de39cef5b6673bb63ae179d6894e44ec8a3a22ece6dd",
+        "outputSha256": "6e834f56d68e1eafa02f1bd0acca421b6064ed04e8ed79cc89ef602cfd2beaa7",
+        "medianMs": 184.9496660000002,
+        "p95Ms": 188.93483400000002,
+        "measurements": [
+          {
+            "elapsedMs": 188.93483400000002,
+            "reads": 8584,
+            "readCharacters": 9362774,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 185.77429200000006,
+            "reads": 8584,
+            "readCharacters": 9362774,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 183.80708300000015,
+            "reads": 8584,
+            "readCharacters": 9362774,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 185.12824999999998,
+            "reads": 8584,
+            "readCharacters": 9362774,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 184.6814159999999,
+            "reads": 8584,
+            "readCharacters": 9362774,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 184.9496660000002,
+            "reads": 8584,
+            "readCharacters": 9362774,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 184.74391700000024,
+            "reads": 8584,
+            "readCharacters": 9362774,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          }
+        ]
+      },
+      {
+        "attempts": 10000,
+        "sessions": 1001,
+        "reviews": 1000,
+        "inputSha256": "55091dbd15d39a342c75aba80c2b10774a00b51c486079fd94e7266fc1258f50",
+        "outputSha256": "529d19ccb030b07a13b3cd8d7de604defeb59f65c617c77f8eae5be0ea419ed5",
+        "medianMs": 7414.603083999995,
+        "p95Ms": 7488.697625000001,
+        "measurements": [
+          {
+            "elapsedMs": 7390.044082999999,
+            "reads": 85084,
+            "readCharacters": 93816074,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 7408.263625,
+            "reads": 85084,
+            "readCharacters": 93816074,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 7403.134125000004,
+            "reads": 85084,
+            "readCharacters": 93816074,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 7488.697625000001,
+            "reads": 85084,
+            "readCharacters": 93816074,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 7425.155791999998,
+            "reads": 85084,
+            "readCharacters": 93816074,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 7435.6629170000015,
+            "reads": 85084,
+            "readCharacters": 93816074,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          },
+          {
+            "elapsedMs": 7414.603083999995,
+            "reads": 85084,
+            "readCharacters": 93816074,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 14
+          }
+        ]
+      }
+    ]
+  },
+  "after": {
+    "schema": "patternly.mutation-recovery-measurement.v1",
+    "runtime": "v22.22.3",
+    "envelope": "synthetic canonical memory storage; no native MMKV/UI claim",
+    "verifierSha256": "c455ee55ad87a52558791328bd97c4ddd86d18e3325dda32f74c3599807de1d0",
+    "integritySha256": "49d5ae294a9aa22977d3085db59f1b4f6c29634b26d6999dad301dc1630eb02a",
+    "warmups": 1,
+    "samples": 7,
+    "results": [
+      {
+        "attempts": 100,
+        "sessions": 11,
+        "reviews": 10,
+        "inputSha256": "2b511f0a67ba56592a8993630590203d62c5d4857e004f6b8a48cd850e9a4eb1",
+        "outputSha256": "5a60b60ff26d4bde47fab5073c9eac656c7ceb65dbb2f1ede7451b85ca56887b",
+        "medianMs": 15.566416000000004,
+        "p95Ms": 16.51075000000003,
+        "measurements": [
+          {
+            "elapsedMs": 16.51075000000003,
+            "reads": 559,
+            "readCharacters": 611993,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 15.901583000000016,
+            "reads": 559,
+            "readCharacters": 611993,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 15.566416000000004,
+            "reads": 559,
+            "readCharacters": 611993,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 15.519041000000016,
+            "reads": 559,
+            "readCharacters": 611993,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 15.927291000000025,
+            "reads": 559,
+            "readCharacters": 611993,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 14.791042000000004,
+            "reads": 559,
+            "readCharacters": 611993,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 14.731875000000002,
+            "reads": 559,
+            "readCharacters": 611993,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          }
+        ]
+      },
+      {
+        "attempts": 1000,
+        "sessions": 101,
+        "reviews": 100,
+        "inputSha256": "3258b226242cc8392e23de39cef5b6673bb63ae179d6894e44ec8a3a22ece6dd",
+        "outputSha256": "6e834f56d68e1eafa02f1bd0acca421b6064ed04e8ed79cc89ef602cfd2beaa7",
+        "medianMs": 99.91362500000002,
+        "p95Ms": 103.67983400000003,
+        "measurements": [
+          {
+            "elapsedMs": 99.91362500000002,
+            "reads": 4969,
+            "readCharacters": 5565683,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 99.92862500000001,
+            "reads": 4969,
+            "readCharacters": 5565683,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 99.32166699999993,
+            "reads": 4969,
+            "readCharacters": 5565683,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 99.155666,
+            "reads": 4969,
+            "readCharacters": 5565683,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 103.67983400000003,
+            "reads": 4969,
+            "readCharacters": 5565683,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 100.25599999999986,
+            "reads": 4969,
+            "readCharacters": 5565683,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 99.08358300000009,
+            "reads": 4969,
+            "readCharacters": 5565683,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          }
+        ]
+      },
+      {
+        "attempts": 10000,
+        "sessions": 1001,
+        "reviews": 1000,
+        "inputSha256": "55091dbd15d39a342c75aba80c2b10774a00b51c486079fd94e7266fc1258f50",
+        "outputSha256": "529d19ccb030b07a13b3cd8d7de604defeb59f65c617c77f8eae5be0ea419ed5",
+        "medianMs": 1025.8797919999997,
+        "p95Ms": 1044.8162499999999,
+        "measurements": [
+          {
+            "elapsedMs": 1025.0918339999998,
+            "reads": 49069,
+            "readCharacters": 55637183,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 1044.8162499999999,
+            "reads": 49069,
+            "readCharacters": 55637183,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 1027.043667,
+            "reads": 49069,
+            "readCharacters": 55637183,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 1025.8797919999997,
+            "reads": 49069,
+            "readCharacters": 55637183,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 1042.1599580000002,
+            "reads": 49069,
+            "readCharacters": 55637183,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 1018.8796249999996,
+            "reads": 49069,
+            "readCharacters": 55637183,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          },
+          {
+            "elapsedMs": 1014.0728749999998,
+            "reads": 49069,
+            "readCharacters": 55637183,
+            "writes": 6,
+            "removals": 1,
+            "enumerations": 5
+          }
+        ]
+      }
+    ]
+  },
+  "exactInputOutputParity": true,
+  "baselineSource": "58ef26d54dda1d879f2529132e51bcf3b84e2c33"
+}

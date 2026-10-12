@@ -61,12 +61,12 @@ function readIndexedFamily<T extends EvidenceValue>(
   if (new Set(ids).size !== ids.length) integrityFailure();
 
   const indexedIds = new Set(ids);
-  const physicalKeys = namespaceKeys.filter((key) => key.startsWith(family.recordPrefix));
+  const physicalKeys = new Set(namespaceKeys.filter((key) => key.startsWith(family.recordPrefix)));
   const values: T[] = [];
   const revisions: Record<string, number> = {};
   for (const id of ids) {
     const key = family.keyFor(id);
-    if (!physicalKeys.includes(key)) integrityFailure();
+    if (!physicalKeys.has(key)) integrityFailure();
     const envelope = readCanonicalEnvelope(key, (value): value is T => family.guard(value, admission));
     if (!envelope || family.getId(envelope.payload) !== id) integrityFailure();
     values.push(envelope.payload);
@@ -137,17 +137,27 @@ export function readReviewQueueForJournal(targets: readonly ReviewQueueEntry[], 
   return readIndexedFamily(reviewFamily, readCanonicalNamespaceKeys(), admission, allowed).values;
 }
 
-/** Full post-replay/account-materialization gate, including result ownership. */
-export function assertTrainingEvidenceIntegrity(admission: TrackAdmissionContext): void {
+/** Fresh full evidence read, including result ownership; never cached across verification boundaries. */
+export function readTrainingEvidenceSnapshotStrict(admission: TrackAdmissionContext): Readonly<{
+  sessions: readonly TrainingSession[];
+  attempts: readonly TrainingAttempt<unknown>[];
+  reviews: readonly ReviewQueueEntry[];
+}> {
   const keys = readCanonicalNamespaceKeys();
   const sessions = readIndexedFamily(sessionFamily, keys, admission).values;
-  readIndexedFamily(attemptFamily, keys, admission);
-  readIndexedFamily(reviewFamily, keys, admission);
+  const attempts = readIndexedFamily(attemptFamily, keys, admission).values;
+  const reviews = readIndexedFamily(reviewFamily, keys, admission).values;
   const sessionsById = new Map(sessions.map((session) => [session.id, session]));
   for (const result of readResultRecords(keys, admission)) {
     const session = sessionsById.get(result.sessionId);
     if (!session || session.status !== "completed" || session.trackId !== result.trackId) integrityFailure();
   }
+  return Object.freeze({ sessions, attempts, reviews });
+}
+
+/** Full post-replay/account-materialization gate, including result ownership. */
+export function assertTrainingEvidenceIntegrity(admission: TrackAdmissionContext): void {
+  readTrainingEvidenceSnapshotStrict(admission);
 }
 
 /**

@@ -73,3 +73,10 @@ APP full gate sprawdził formalny bundled artefakt918, V3,7rozdziałów/53jednos
 Końcowy zapis dokumentacji zmienia wyłącznie raport, plan i bieżący stan. Kod/runtime, paczki, zależności, konfiguracja i locki pozostają identyczne z odebranym4e018fd1; obowiązuje dowód full CI tego commitu, a admission nadal wskazuje dokładny wykonany runtime. Nowy commit dokumentacji nie jest nowym wydaniem banku.
 
 Końcowy niezależny odbiór trzech pełnych logów hosted: PASS, bez blokujących ustaleń; exact commity/piny, transparentne skipy i granica bez deployment/store potwierdzone.
+
+
+## Sprawdzenie ścieżki Claude po PERF-03
+
+Na polecenie PO po odbiorze PERF-03, APP58ef26d54dda1d879f2529132e51bcf3b84e2c33, ponownie uruchomiono `node --import tsx --test src/content/claudeLocalCandidateAcceptance.test.ts src/application/contentPackageRuntimeOwner.test.ts`: EXIT0,12/12PASS,0skip (Node22). Private log `artifacts/private/perf03-home-20261012/claude-runtime.log`0600. Rzeczywisty bieżący bundle/lock/runtime: Claude918pytań,53requiredunits,7chapters,V3,min260prób; wszystkie53unit-specific focus preparations wybierają właściwy node/unit, validateResume PASS. Wszystkie918pytań mają documentation/course links i jawną informację o wymaganym koncie kursu. Historyczne odpowiedzi zachowują exactidentity, nie dają nowego coverage ani aliasu wznowienia; niedostępny oldartifact jest jawnie odrzucany. Owner tests potwierdzają exactpin/familyadmission i brak podstawiania innych pakietów.
+
+Aktualny pełny local qa:static po PERF03 także PASS (2521PASS/0FAIL/5SKIP); test P01 wszystkich9pakietów obejmuje Claude/Home/proposal/Progress i completion rule. Localgate zawiera odrębne niezacommitowane offlineaccountedits, wykluczone z58ef26d5; powyższeClaude sourcepaths nie są przez nie zmienione. To weryfikacja runtime/composition w Node/MemoryStorage, nie nowy natywny odbiór UI, usług, sklepu ani całej jakości pytań. Nie uruchamiano/nie zmieniano profili na urządzeniu. Piny i dane treści bez zmian. Build EAS i backend deployment są kolejnymi autoryzowanymi krokami po potwierdzeniu konkretnego środowiska.

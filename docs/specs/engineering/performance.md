@@ -38,13 +38,13 @@ AC: mniej powtórnego parsowania/alokacji i czasu przy identycznych outcomes ora
 
 ## PERF-04 — pełny readback journalu
 
-Severity: P2.
+Status: odebrane source/logical/local 12.10.2026, independent Luna High PASS. [Decyzja, pomiary i weryfikacja](../../reports/perf04-journal-readback-2026-10-12.md), [wyniki](../../reports/perf04-journal-readback-2026-10-12.json). Native macierz pozostaje w PERSIST-13; brak twierdzenia o MMKV durability/UI latency. Severity historyczne: P2.
 
 Pliki: `src/application/learningMutations/mutationVerifier.ts`, `src/storage/repositories/{trainingAttemptRepository,trainingSessionRepository,reviewQueueRepository,mutationJournalRepository}.ts` i recovery tests.
 
-Verifier nadal odczytuje wszystkie sessions/attempts/reviews przed sprawdzeniem writes. PERSIST-02/05/06/07 określa wymagane integrity/replay semantics i ma pierwszeństwo przed optymalizacją.
+W baseline verifier po pełnym integrity scan ponownie odczytywał wszystkie sessions/attempts/reviews przed sprawdzeniem writes. PERSIST-02/05/06/07 określa wymagane integrity/replay semantics i ma pierwszeństwo przed optymalizacją.
 
-Pierwszy wynik: poprawny persisted journal fixture i pełny materialize→verify→clear przy A100/1k/10k oraz spójnych sessions/reviews. Rozstrzygnąć konkretną regułę unrelated corruption: obecny pełny scan blokuje na uszkodzonym niezwiązanym rekordzie; targeted read nie może cicho osłabić tego kontraktu. Po review: repository-owned declared-target readback wraz z membership/index integrity i deletion checks, jeżeli spełnia rozstrzygniętą regułę. Nie twierdzić O(1) przy globalnym indeksie; reset wymaga pełnego scope.
+Pierwszy wynik: poprawny persisted journal fixture i pełny materialize→verify→clear przy A100/1k/10k oraz spójnych sessions/reviews. Rozstrzygnąć konkretną regułę unrelated corruption: obecny pełny scan blokuje na uszkodzonym niezwiązanym rekordzie; targeted read nie może cicho osłabić tego kontraktu. Decyzja po review: zachować blokadę na unrelated corruption i użyć jednego repository-owned pełnego validated snapshotu w obrębie każdego wywołania verifiera, także do sprawdzenia declared targets. Assert i verifier współdzielą canonical reader; Set usuwa kwadratowe wyszukiwanie fizycznych kluczy. Targeted-only pomijające unrelated records nie spełnia przyjętej reguły. Nie twierdzić O(1) przy globalnym indeksie; reset wymaga pełnego scope.
 
 AC: mniej dużych unrelated reads przy identycznych postconditions, profile fences, revisions, immutable attempts i journal-first. Wszystkie writes/deletions verified przed clear; fault po write/readback i corrupt declared/unrelated/index daje uzgodniony wynik, zachowując journal przy błędzie. Bez durability debounce.
 
@@ -88,7 +88,7 @@ Audyt02.10: app `200f8504c48df020d19937cad788d3961eb4caf7`, backend `019e48e7d8e
 
 ### PERF-04
 
-- **Dowód/baseline:** `src/application/learningMutations/mutationVerifier.ts:6` bezwarunkowo pobiera wszystkie sessions/attempts/reviews, zanim sprawdzi zadeklarowane writes. Sam `getTrainingAttempts` (`src/storage/repositories/trainingAttemptRepository.ts:7`) dla A=100/1k/10k: **0,78/1,46 → 5,85/6,96 → 64,26/66,35 ms**, **101/1001/10001** synchronicznych odczytów, **111 450 / 1 117 586 / 11 291 369 znaków** envelope/index. Licznik używa JS `.length`, nie rzeczywistych bajtów MMKV. To zmierzony składnik i source-backed zbędne odczyty względem write set; **nie czas całego submit/recovery**. Próba syntetycznego całego verifiera nie przeszła integrity setup; jej czasu nie użyto.
+- **Dowód/baseline:** `src/application/learningMutations/mutationVerifier.ts:6` bezwarunkowo pobiera wszystkie sessions/attempts/reviews, zanim sprawdzi zadeklarowane writes. Sam `getTrainingAttempts` (`src/storage/repositories/trainingAttemptRepository.ts:7`) dla A=100/1k/10k: **0,78/1,46 → 5,85/6,96 → 64,26/66,35 ms**, **101/1001/10001** synchronicznych odczytów, **111 450 / 1 117 586 / 11 291 369 znaków** envelope/index. Licznik używa JS `.length`, nie rzeczywistych bajtów MMKV. To zmierzony składnik i source-backed zbędne odczyty względem write set; **nie czas całego submit/recovery**. Historyczna próba syntetycznego całego verifiera nie przeszła integrity setup; jej czasu nie użyto. Aktualny poprawny persisted-journal baseline i porównanie pełnego recovery z12.10 znajdują się w [raporcie PERF-04](../../reports/perf04-journal-readback-2026-10-12.md); to dowód kodu/codecs nad adapterem pamięciowym, bez native durability/UI claim.
 
 ### PERF-05
 

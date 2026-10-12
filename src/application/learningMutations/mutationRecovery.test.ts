@@ -129,6 +129,49 @@ test("fresh verified-pending-clear read errors retain the journal", async () => 
   }
 });
 
+test("verified session-only recovery rejects unrelated corruption without clearing or rewriting bytes", async () => {
+  const cases = ["attempt", "session", "dangling_index", "orphan_attempt", "duplicate_active_review", "orphan_result", "read_failure"] as const;
+  for (const defect of cases) {
+    const storage = installMemoryStorage();
+    await saveTrainingSession(session(), productionTrackAdmissionContext);
+    const unrelated = attempt("unrelated-attempt", "unrelated-session");
+    writeCanonicalJson(STORAGE_KEYS.trainingAttempt(unrelated.id), unrelated);
+    writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, [unrelated.id]);
+    const historical = session("completed", "unrelated-session");
+    writeCanonicalJson(STORAGE_KEYS.trainingSession(historical.id), historical);
+    writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [session().id, historical.id]);
+    await addReviewQueueItems([review("unrelated-review", unrelated.id)], productionTrackAdmissionContext);
+    // No attempt/review/index target is declared by this session-only journal.
+    const record = journal([{ kind: "put_session", record: { ...session(), activeForegroundMs: 1 } }], "advance_training_session");
+    await reachVerifiedPendingClear(record);
+    if (defect === "attempt") storage.setString(STORAGE_KEYS.trainingAttempt(unrelated.id), "{");
+    if (defect === "session") storage.setString(STORAGE_KEYS.trainingSession(historical.id), "{");
+    if (defect === "dangling_index") writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, [unrelated.id, "missing-unrelated"]);
+    if (defect === "orphan_attempt") writeCanonicalJson(STORAGE_KEYS.trainingAttempt("unindexed"), attempt("unindexed"));
+    if (defect === "duplicate_active_review") {
+      writeCanonicalJson(STORAGE_KEYS.reviewEntry("duplicate-cycle"), review("duplicate-cycle", unrelated.id));
+      writeCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, ["unrelated-review", "duplicate-cycle"]);
+    }
+    if (defect === "orphan_result") writeCanonicalJson(STORAGE_KEYS.trainingSessionResult("missing-parent"), createTrainingSessionResult({
+      id: "orphan-result", sessionId: "missing-parent", trackId: historical.trackId, totalOccurrences: 1,
+      answeredOccurrenceIds: [], unansweredOccurrenceIds: ["occurrence-1"], completedAt: historical.completedAt!, evidence: { familyId: "coding-interview", details: {} },
+    }));
+    const before = storage.snapshot();
+    if (defect === "read_failure") storage.setFailurePlan({ kind: "fail_on_key_read", key: STORAGE_KEYS.trainingAttempt(unrelated.id) });
+    for (let retry = 0; retry < 2; retry++) {
+      await assert.rejects(() => recoverPendingMutation(), (error: unknown) => {
+        if (!(error instanceof MutationCommitFailure) || error.phase !== "journal_clear") return false;
+        if (defect === "read_failure") return error.cause instanceof StorageReadError;
+        if (defect === "duplicate_active_review") return error.cause instanceof Error && error.cause.constructor === Error;
+        return error.cause instanceof JournalVerificationError;
+      }, defect);
+      assert.deepEqual(storage.snapshot(), before, defect);
+    }
+    storage.setFailurePlan(null);
+    assert.equal(getActiveMutationJournal(productionLearningDataAdmissionContext)?.status, "verified_pending_clear", defect);
+  }
+});
+
 test("same payload at a newer canonical revision conflicts before replay and preserves raw bytes and journal", async () => {
   const storage = installMemoryStorage();
   await saveTrainingSession(session(), productionTrackAdmissionContext);

@@ -1,9 +1,10 @@
 import { JournalVerificationError, StorageReadError } from "../../storage/errors";
-import { areMutationPhysicalWritesAfter, getActiveForegroundTimer, getActiveTrainingSessionDraft, getActiveTrainingSessionId, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, getTrainingSessionResult, hasReviewQueueEntryRecord } from "../../storage/repositories";
+import { areMutationPhysicalWritesAfter, getActiveForegroundTimer, getActiveTrainingSessionDraft, getActiveTrainingSessionId, getTrainingSessionResult, hasReviewQueueEntryRecord } from "../../storage/repositories";
 import { assertValidMutationJournal, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
 import { isGoalPlanAcceptanceMaterialized } from "../../storage/repositories/goalPlanAcceptanceRepository";
 import { isAccountSyncConflictResolutionMaterialized } from "../../storage/repositories/accountSyncConflictResolutionRepository";
-import { assertTrainingEvidenceIntegrity } from "../../storage/repositories/trainingEvidenceIntegrityRepository";
+import { readTrainingEvidenceSnapshotStrict } from "../../storage/repositories/trainingEvidenceIntegrityRepository";
+import { validateActiveReviewIdentity } from "../../storage/repositories/reviewQueueRepository";
 import { assertLearningStateResetMaterialized } from "../../storage/repositories/learningStateResetRepository";
 import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
@@ -27,15 +28,17 @@ export async function verifyMutation(record: MutationJournalRecord): Promise<voi
     try { assertLearningStateResetMaterialized(reset.targetPlan); } catch { throw new JournalVerificationError(); }
     return;
   }
+  let evidence: ReturnType<typeof readTrainingEvidenceSnapshotStrict>;
   try {
     if (!areMutationPhysicalWritesAfter(record.physicalWrites)) throw new JournalVerificationError();
-    assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
+    evidence = readTrainingEvidenceSnapshotStrict(productionTrackAdmissionContext);
   } catch (error) {
     if (error instanceof StorageReadError) throw error;
     if (error instanceof JournalVerificationError) throw error;
     throw new JournalVerificationError();
   }
-  const [sessions, attempts, reviews, activeSessionId, activeDraft, timer] = await Promise.all([getTrainingSessions(productionTrackAdmissionContext), getTrainingAttempts(productionTrackAdmissionContext), getReviewQueueItems(productionTrackAdmissionContext), getActiveTrainingSessionId(), getActiveTrainingSessionDraft(productionTrackAdmissionContext), getActiveForegroundTimer(productionTrackAdmissionContext)]);
+  validateActiveReviewIdentity(evidence.reviews);
+  const [activeSessionId, activeDraft, timer] = await Promise.all([getActiveTrainingSessionId(), getActiveTrainingSessionDraft(productionTrackAdmissionContext), getActiveForegroundTimer(productionTrackAdmissionContext)]);
   if (record.operation === "complete_training_session") {
     const completed = record.writes.filter((write) => write.kind === "put_session");
     const results = record.writes.filter((write) => write.kind === "put_session_result");
@@ -45,15 +48,15 @@ export async function verifyMutation(record: MutationJournalRecord): Promise<voi
     switch (write.kind) {
       case "accept_goal_plan": throw new JournalVerificationError();
       case "resolve_account_sync_conflict": throw new JournalVerificationError();
-      case "put_session": if (!equal(sessions.value.find((entry) => entry.id === write.record.id), write.record)) throw new JournalVerificationError(); break;
+      case "put_session": if (!equal(evidence.sessions.find((entry) => entry.id === write.record.id), write.record)) throw new JournalVerificationError(); break;
       case "put_active_foreground_timer": if (!equal(timer, write.record)) throw new JournalVerificationError(); break;
       case "put_session_result": if (!equal(await getTrainingSessionResult(write.record.sessionId, productionTrackAdmissionContext), write.record)) throw new JournalVerificationError(); break;
-      case "put_attempt": if (!equal(attempts.value.find((entry) => entry.id === write.record.id), write.record)) throw new JournalVerificationError(); break;
+      case "put_attempt": if (!equal(evidence.attempts.find((entry) => entry.id === write.record.id), write.record)) throw new JournalVerificationError(); break;
       case "put_review_entry":
       case "put_review_entry_for_attempt":
-      case "update_review_entry": if (!equal(reviews.value.find((entry) => entry.id === write.record.id), write.record)) throw new JournalVerificationError(); break;
+      case "update_review_entry": if (!equal(evidence.reviews.find((entry) => entry.id === write.record.id), write.record)) throw new JournalVerificationError(); break;
       case "delete_review_entry":
-      case "delete_review_entry_for_attempt": if (reviews.value.some((entry) => entry.id === write.record.id) || await hasReviewQueueEntryRecord(write.record.id, productionTrackAdmissionContext)) throw new JournalVerificationError(); break;
+      case "delete_review_entry_for_attempt": if (evidence.reviews.some((entry) => entry.id === write.record.id) || await hasReviewQueueEntryRecord(write.record.id, productionTrackAdmissionContext)) throw new JournalVerificationError(); break;
       case "clear_active_session": if (activeSessionId === write.sessionId || timer !== null) throw new JournalVerificationError(); break;
       case "put_active_session_draft": if (!equal(activeDraft, write.record)) throw new JournalVerificationError(); break;
       case "clear_active_session_draft":

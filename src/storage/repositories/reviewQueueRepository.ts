@@ -97,7 +97,7 @@ export async function removeReviewQueueEntry(id: string, admission: TrackAdmissi
 export async function hasReviewQueueEntryRecord(id: string, admission: TrackAdmissionContext): Promise<boolean> { return readCanonicalJson(STORAGE_KEYS.reviewEntry(id), (value): value is ReviewQueueEntry => isReviewQueueEntry(value, admission)) !== null; }
 export async function clearReviewQueueItems(admission: TrackAdmissionContext): Promise<void> { const ids = readReviewQueueStrict(admission).result.value.map((entry) => entry.id); ids.forEach((id) => removeCanonicalValue(STORAGE_KEYS.reviewEntry(id))); removeCanonicalValue(STORAGE_KEYS.REVIEW_INDEX); }
 
-function validateActiveReviewIdentity(entries: readonly ReviewQueueEntry[]): void {
+export function validateActiveReviewIdentity(entries: readonly ReviewQueueEntry[]): void {
   const active = entries.filter(isActiveReviewQueueEntry);
   const identities = new Set<string>();
   for (const entry of active) {
