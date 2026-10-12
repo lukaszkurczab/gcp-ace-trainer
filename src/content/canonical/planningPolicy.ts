@@ -45,6 +45,16 @@ export function validateLearningPlanningPolicy(
 
   const scopePairs = new Set(questions.map(scopeKey));
   const modeById = new Map(modes.map((mode) => [mode.modeId, mode]));
+  // Scope inventory is immutable during this validation. Resolve lazily at the
+  // original first-use boundary, and never reuse it across validation calls.
+  const selectableByMode = new Map<ProductModeConfig, Set<string>>();
+  const selectableScopes = (mode: ProductModeConfig): Set<string> => {
+    const cached = selectableByMode.get(mode);
+    if (cached !== undefined) return cached;
+    const scopes = getSelectableScopes(mode, questions, completionRule);
+    selectableByMode.set(mode, scopes);
+    return scopes;
+  };
   const estimated = new Map<string, PlanningWorkEstimate>();
   const estimateIds = new Set<string>();
   const workEstimates = policy.workEstimates.map((raw) => {
@@ -58,10 +68,10 @@ export function validateLearningPlanningPolicy(
     const scopeRefs = estimate.scopeRefs.map(validateScopeRef);
     if (new Set(scopeRefs.map(scopeKey)).size !== scopeRefs.length) fail();
     const mode = modeById.get(estimate.modeId)!;
-    const selectableScopes = getSelectableScopes(mode, questions, completionRule);
+    const selectedScopes = selectableScopes(mode);
     for (const scope of scopeRefs) {
       const key = planningPairKey(estimate.modeId, scope);
-      if (!scopePairs.has(scopeKey(scope)) || !selectableScopes.has(scopeKey(scope)) || estimated.has(key)) fail();
+      if (!scopePairs.has(scopeKey(scope)) || !selectedScopes.has(scopeKey(scope)) || estimated.has(key)) fail();
       estimated.set(key, Object.freeze({
         estimateId: estimate.estimateId,
         modeId: estimate.modeId,
@@ -105,8 +115,8 @@ export function validateLearningPlanningPolicy(
     for (const modeId of modeIds) {
       const key = planningPairKey(modeId, scopeRef);
       if (unavailable.has(key) || estimated.has(key)) fail();
-      if (reason === "unknown_runtime_scope" && getSelectableScopes(modeById.get(modeId)!, questions, completionRule).has(scopeKey(scopeRef))) fail();
-      if (reason !== "unknown_runtime_scope" && !getSelectableScopes(modeById.get(modeId)!, questions, completionRule).has(scopeKey(scopeRef))) fail();
+      if (reason === "unknown_runtime_scope" && selectableScopes(modeById.get(modeId)!).has(scopeKey(scopeRef))) fail();
+      if (reason !== "unknown_runtime_scope" && !selectableScopes(modeById.get(modeId)!).has(scopeKey(scopeRef))) fail();
       unavailable.set(key, Object.freeze({ scopeRef, modeIds: Object.freeze([modeId]), reason }));
     }
     return Object.freeze({ scopeRef, modeIds: Object.freeze(modeIds), reason });
@@ -117,7 +127,7 @@ export function validateLearningPlanningPolicy(
   for (const mode of modes) {
     for (const scope of scopePairs) {
       const key = `${mode.modeId}\0${scope}`;
-      const selectable = getSelectableScopes(mode, questions, completionRule).has(scope);
+      const selectable = selectableScopes(mode).has(scope);
       const hasEstimate = estimated.has(key);
       const hasUnavailable = unavailable.has(key);
       if ((selectable && hasEstimate === hasUnavailable) || (!selectable && (hasEstimate || !hasUnavailable))) fail();

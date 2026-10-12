@@ -142,8 +142,14 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
 
 function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): CanonicalTrackRuntime {
   const modes = Object.freeze(configs.filter((config) => config.trackId === catalog.trackId));
-  const planningPolicy = catalog.planningPolicy === undefined ? undefined : validateLearningPlanningPolicy(catalog.planningPolicy, catalog.questions, modes, catalog.completionRule);
-  const pools = new Map(modes.map((mode) => [mode.modeId, resolvePool(catalog, mode)]));
+  markStartup("planning_policy", "begin");
+  let planningPolicy: LearningPlanningPolicy | undefined;
+  try { planningPolicy = catalog.planningPolicy === undefined ? undefined : validateLearningPlanningPolicy(catalog.planningPolicy, catalog.questions, modes, catalog.completionRule); }
+  finally { markStartup("planning_policy", "end"); }
+  markStartup("pool_construction", "begin");
+  let pools: Map<string, readonly Question[]>;
+  try { pools = new Map(modes.map((mode) => [mode.modeId, resolvePool(catalog, mode)])); }
+  finally { markStartup("pool_construction", "end"); }
   return Object.freeze({
     trackId: catalog.trackId,
     contentVersion: catalog.contentVersion,

@@ -72,3 +72,18 @@ Mock CDP tests establish collector guards/cleanup only. Actual Hermes readback i
 required for a native measurement claim. After measurements, stop only the owned
 app/Metro processes after checking identity; retain protected data and private
 receipts. Disable the trace flag for ordinary development/release.
+
+For the measured `catalog_tracks` cost, `planning_policy` and `pool_construction`
+separate its two synchronous components (nine begin/end pairs per startup).
+They remain nested timings. Reproduce the CPU-only validator benchmark from the
+app root with Node22 and the existing tsx dependency:
+
+```sh
+node --import tsx scripts/qa/measureCanonicalPlanningPolicy.mjs
+```
+
+It uses all nine current locked artifacts and actual validated product modes,
+three warmups and fifteen samples. It checks input immutability and stable exact
+output hashes, and reports per-track samples plus total median/p95. Compare
+before/after input and all output hashes. This does not measure Hermes startup,
+storage, heap or native UI, and never writes device data.

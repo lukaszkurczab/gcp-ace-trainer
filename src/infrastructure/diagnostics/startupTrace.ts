@@ -9,6 +9,7 @@ export type StartupTraceStage =
   | "loading" | "ready" | "home_ready_resume_unavailable" | "content_identity_unavailable" | "blocking"
   | "catalog_build" | "artifact_validate" | "artifact_stringify" | "artifact_hash" | "artifact_index"
   | "predecessor_clone_stringify" | "predecessor_hash" | "catalog_projection" | "catalog_tracks"
+  | "planning_policy" | "pool_construction"
   | `recovery:${BootstrapRecoveryPendingStep | "idle"}`
   | `repository:${CanonicalRepositoryBootstrapStep}`
   | `account:${AccountStartupDiagnosticStage}`
