@@ -71,7 +71,7 @@ import { readLearningPlanStorageScope } from "../../storage/repositories/learnin
 import { commitLearningStateReset, preflightLearningStateReset, LearningStateResetPreflightError } from "../learningMutations";
 import type { TrackId } from "../../domain";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
-import { captureActiveProfileStorageLease, getActiveStorageProfileOrNull, isActiveProfileStorageLeaseCurrent, readActiveAccountIdentityBinding } from "../../storage/repositories/profileStorageRepository";
+import { captureActiveProfileStorageLease, getActiveStorageProfileOrNull, isActiveProfileStorageLeaseCurrent, readActiveAccountIdentityBinding, type ActiveProfileStorageLease } from "../../storage/repositories/profileStorageRepository";
 import { getGoalSnapshot } from "../../storage/repositories/goalRepository";
 import { getLearningPlanSnapshot } from "../../storage/repositories/learningPlanRepository";
 import { commitMutationAfterPreflight } from "../learningMutations/commitMutation";
@@ -223,9 +223,50 @@ export function loadSettledActiveTrackSelection(): Promise<TrackId | null> {
 export function loadAccountDataSession(
   api: PatternlyApiClient,
   accountId: string,
-  options: Readonly<{ guestAdoption?: "allow" | "discard" }> = {},
+  options: Readonly<{ guestAdoption?: "allow" | "discard"; canContinue?: () => boolean }> = {},
 ): Promise<AccountDataSession> {
-  return withAccountDataOperation(() => loadAccountDataSessionUnlocked(api, accountId, options));
+  return withAccountDataOperation(async () => {
+    assertAccountDataLoadCanContinue(options);
+    const owner = captureAccountDataLoadOwner();
+    const installation = await getGuestInstallation();
+    const state = await getAccountSyncState();
+    assertAccountDataLoadCanContinue(options);
+    if (!isAccountDataLoadOwnerCurrent(owner)) return explicitFailureSession(null, "account_binding_mismatch", false);
+    if ((installation?.accountId !== null && installation?.accountId !== undefined && installation.accountId !== accountId)
+      || (state.accountId !== null && state.accountId !== accountId)) {
+      return explicitFailureSession(null, "account_binding_mismatch", false);
+    }
+    assertAccountDataLoadCanContinue(options);
+    return loadAccountDataSessionUnlocked(api, accountId, options, owner);
+  });
+}
+
+function assertAccountDataLoadCanContinue(options: Readonly<{ canContinue?: () => boolean }>): void {
+  if (options.canContinue && !options.canContinue()) throw new AccountDataFailure("account_binding_mismatch");
+}
+
+function assertAccountDataLoadOwner(state: AccountSyncState | null, accountId: string): void {
+  if (state?.accountId !== null && state?.accountId !== undefined && state.accountId !== accountId) {
+    throw new AccountDataFailure("account_binding_mismatch");
+  }
+}
+
+type AccountDataLoadOwner = Readonly<{ storageScope: object; lease: ActiveProfileStorageLease | null }>;
+
+function captureAccountDataLoadOwner(): AccountDataLoadOwner {
+  const lease = captureActiveProfileStorageLease();
+  const storageScope = readLearningPlanStorageScope();
+  if (lease && !isActiveProfileStorageLeaseCurrent(lease)) throw new AccountDataFailure("account_binding_mismatch");
+  return Object.freeze({ storageScope, lease });
+}
+
+function isAccountDataLoadOwnerCurrent(owner: AccountDataLoadOwner): boolean {
+  try {
+    if (owner.lease ? !isActiveProfileStorageLeaseCurrent(owner.lease) : captureActiveProfileStorageLease() !== null) return false;
+    return readLearningPlanStorageScope() === owner.storageScope;
+  } catch {
+    return false;
+  }
 }
 
 /** Reads the already-bound local account projection without contacting the API or changing sync state. */
@@ -292,10 +333,13 @@ export function clearAccountIdentityDenialAfterProof(input: Readonly<{
 async function loadAccountDataSessionUnlocked(
   api: PatternlyApiClient,
   accountId: string,
-  options: Readonly<{ guestAdoption?: "allow" | "discard" }> = {},
+  options: Readonly<{ guestAdoption?: "allow" | "discard"; canContinue?: () => boolean }> = {},
+  owner: AccountDataLoadOwner = captureAccountDataLoadOwner(),
 ): Promise<AccountDataSession> {
   try {
     const initialInstallation = await getGuestInstallation();
+    assertAccountDataLoadCanContinue(options);
+    if (!isAccountDataLoadOwnerCurrent(owner)) return explicitFailureSession(null, "account_binding_mismatch", false);
     if (!initialInstallation) throw new AccountDataFailure("guest_installation_required");
     if (initialInstallation.accountId !== null && initialInstallation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
     const completedDeletion = getAccountDeletionState();
@@ -340,10 +384,14 @@ async function loadAccountDataSessionUnlocked(
         return await materializeGuestMergeResult(accountId, executed.records, executed.accountRevision);
       } catch (error) {
         const currentState = await getAccountSyncState();
+        assertAccountDataLoadCanContinue(options);
+        if (!isAccountDataLoadOwnerCurrent(owner)) return explicitFailureSession(null, "account_binding_mismatch", false);
+        assertAccountDataLoadOwner(currentState, accountId);
         if (isStaleAdoptionPreview(error)) {
           const reset = saveAccountSyncState({ ...currentState, accountId: null, status: "initialSyncRequired", blockingConflictCode: null, lastFailureCode: "adoption_conflict", pendingConfirmation: null });
           return failureSession(reset, false);
         }
+        assertAccountDataLoadCanContinue(options);
         return failureSession(await recordFailure(currentState, classifyDataFailure(error)), false);
       }
     }
@@ -361,15 +409,28 @@ async function loadAccountDataSessionUnlocked(
         return Object.freeze({ status: "failed", preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: snapshot.activeSession ? "active_session_adoption_blocked" : "journal_recovery_required", lastFailureCode: null, activeSessionBlocked: snapshot.activeSession, guestAdoptionChoice: state.guestAdoptionChoice });
       }
       try {
+        assertAccountDataLoadCanContinue(options);
+        if (!isAccountDataLoadOwnerCurrent(owner)) return explicitFailureSession(null, "account_binding_mismatch", false);
         const preview = await api.previewAccountAdoption(transportSnapshot);
+        assertAccountDataLoadCanContinue(options);
+        if (!isAccountDataLoadOwnerCurrent(owner)) return explicitFailureSession(null, "account_binding_mismatch", false);
         return Object.freeze({ status: "previewReady", preview, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: preview.plan.conflictRecordIds.length > 0 || preview.preview.goalPlanConflictGroups.length > 0 ? "adoption_conflict" : null, lastFailureCode: null, activeSessionBlocked: false, guestAdoptionChoice: state.guestAdoptionChoice });
       } catch (error) {
+        assertAccountDataLoadCanContinue(options);
+        if (!isAccountDataLoadOwnerCurrent(owner)) return explicitFailureSession(null, "account_binding_mismatch", false);
         return failureSession(await recordFailure(state, classifyDataFailure(error)), false);
       }
     }
     return await synchronizeBoundAccount(api, accountId);
   } catch (error) {
+    assertAccountDataLoadCanContinue(options);
+    if (!isAccountDataLoadOwnerCurrent(owner)) return explicitFailureSession(null, "account_binding_mismatch", false);
     const state = await getAccountSyncState().catch(() => null);
+    assertAccountDataLoadCanContinue(options);
+    if (!isAccountDataLoadOwnerCurrent(owner)) return explicitFailureSession(null, "account_binding_mismatch", false);
+    if (state?.accountId !== null && state?.accountId !== undefined && state.accountId !== accountId) {
+      return explicitFailureSession(null, "account_binding_mismatch", false);
+    }
     if (state?.accountId === accountId && isPersistedIdentityDenial(state.lastFailureCode)) return failureSession(state, false);
     return failureSession(state ? await recordFailure(state, classifyDataFailure(error)) : null, false);
   }

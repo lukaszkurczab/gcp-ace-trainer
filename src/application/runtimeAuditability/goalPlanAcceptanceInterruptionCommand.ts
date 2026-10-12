@@ -100,7 +100,7 @@ export async function handleGoalPlanAcceptanceInterruptionUrl(url: string | null
   const lease = captureActiveProfileStorageLease();
   const profile = getActiveStorageProfileOrNull();
   if (!actorFence || !actorFence.isCurrent() || !actorFence.isCurrentSdkUid(context.firebaseUid) || !lease || !profile ||
-    !isActiveProfileStorageLeaseCurrent(lease) || lease.profile.id !== profile.id || !["account", "legacy_owner"].includes(profile.kind) ||
+    !isActiveProfileStorageLeaseCurrent(lease) || lease.profile.id !== profile.id || profile.kind !== "account" ||
     profile.accountId !== context.accountId || lease.profile.accountId !== context.accountId) return "rejected";
   try {
     const binding = await readActiveAccountIdentityBinding(lease);

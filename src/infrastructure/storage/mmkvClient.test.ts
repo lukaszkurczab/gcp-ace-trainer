@@ -453,35 +453,25 @@ test("Q13 profile categories classify active-track, goal and learning-plan produ
   setProfileStoragePreparationFactoryForTests(null);
 });
 
-test("Q13 full inventory assigns canonical legacy keys to the proven legacy owner", async () => {
+test("Q13 inventory blocks unscoped canonical keys before reading their values", async () => {
   const base = new MemoryKeyValueStorage();
-  base.setString(STORAGE_KEYS.METADATA, "legacy-meta");
-  base.setString(STORAGE_KEYS.ACTIVE_TRACK, "legacy-track");
-  base.setString("patternly:premium-cache:v1", "legacy-cache-state");
-  base.setString(STORAGE_KEYS.GUEST_INSTALLATION, JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision: 1, payload: { installationId: "00000000-0000-4000-8000-000000000022", localDatasetId: GUEST_ID, bindingState: "guest", accountId: null } }));
   const control = new MemoryControlStore();
   const router = await openProfileStorageRouter(base, control, { identity: { async create() { return { installationId: "00000000-0000-4000-8000-000000000022", localDatasetId: GUEST_ID }; } } });
   setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
   await prepareProfileStorage();
+  const unscopedLegacyKey = `${STORAGE_KEYS.METADATA}:legacy-payload`;
+  base.setString(unscopedLegacyKey, "private-legacy-value");
   base.resetCounters();
 
   const snapshot = await inspectPreparedQ13StorageInventory();
 
-  assert.equal(snapshot.kind, "observed");
-  assert.deepEqual(snapshot.profileInventories?.map((profile) => [profile.kind, profile.keyCount]), [["legacy_guest", 3]]);
-  assert.deepEqual(snapshot.profileInventories?.[0]?.categoryInventories.map((entry) => [entry.category, entry.keyCount]), [
-    ["learningProgress", 1], ["settings", 0], ["profileLifecycle", 2], ["packagePointers", 0], ["premiumCache", 0], ["premiumTestRuntime", 0],
-  ]);
-  assert.equal(snapshot.globalInventories?.find((entry) => entry.category === "premium_cache")?.keyCount, 1);
-  assert.deepEqual(base.operations.filter((operation) => operation.kind !== "read"), []);
-  base.setString("patternly:canonical:v1:historical-future-record:private-id", "private-legacy-value");
-  base.resetCounters();
-  const unknownLegacy = await inspectPreparedQ13StorageInventory();
-  assert.equal(unknownLegacy.kind, "unavailable");
-  assert.deepEqual(unknownLegacy.unclassifiedKeys?.scopeCounts.map(({ scope, count }) => [scope, count]), [
+  assert.equal(snapshot.kind, "unavailable");
+  assert.equal(snapshot.reason, "unclassified_key");
+  assert.deepEqual(snapshot.unclassifiedKeys?.scopeCounts.map(({ scope, count }) => [scope, count]), [
     ["registered_profile", 0], ["unregistered_profile", 0], ["legacy_profile", 1], ["global", 0], ["unscoped", 0],
   ]);
-  assert.equal(JSON.stringify(unknownLegacy).includes("private-legacy-value"), false);
+  assert.equal(JSON.stringify(snapshot).includes("private-legacy-value"), false);
+  assert.equal(base.operations.some((operation) => operation.kind === "read" && operation.key === unscopedLegacyKey), false);
   assert.deepEqual(base.operations.filter((operation) => operation.kind !== "read"), []);
   setProfileStoragePreparationFactoryForTests(null);
 });
@@ -681,52 +671,23 @@ test("implicit prepared guest selection fails closed when multiple preserved gue
   setProfileStoragePreparationFactoryForTests(null);
 });
 
-for (const scenario of [
-  { name: "legacy owner", bindingState: "account_bound", accountId: "legacy-account-1", expectedKind: "legacy_owner" },
-  { name: "legacy guest", bindingState: "guest", accountId: null, expectedKind: "legacy_guest" },
-] as const) {
-  test(`prepare for an existing ${scenario.name} reads only migration metadata`, async () => {
-    const base = new MemoryKeyValueStorage();
-    base.setString(STORAGE_KEYS.METADATA, "legacy-metadata-payload");
-    base.setString(STORAGE_KEYS.ACTIVE_TRACK, "legacy-learning-payload");
-    base.setString(STORAGE_KEYS.SETTINGS, "legacy-settings-payload");
-    base.setString(STORAGE_KEYS.ACCOUNT_SYNC, "legacy-account-outbox-payload");
-    base.setString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, "legacy-report-outbox-payload");
-    base.setString(STORAGE_KEYS.GUEST_INSTALLATION, JSON.stringify({
-      schemaIdentity: "patternly:canonical:v1",
-      revision: 1,
-      payload: {
-        installationId: "00000000-0000-4000-8000-000000000022",
-        localDatasetId: GUEST_ID,
-        bindingState: scenario.bindingState,
-        accountId: scenario.accountId,
-      },
-    }));
-    const control = new MemoryControlStore();
-    setProfileStoragePreparationFactoryForTests(async () => ({
-      base,
-      router: await openProfileStorageRouter(base, control, {
-        identity: { async create() { return { installationId: "00000000-0000-4000-8000-000000000022", localDatasetId: GUEST_ID }; } },
-      }),
-    }));
-    base.resetCounters();
+test("Q13 refuses an unscoped canonical key without reading or mutating its payload", async () => {
+  const fixture = await preparedFixture();
+  setProfileStoragePreparationFactoryForTests(async () => fixture);
+  await prepareProfileStorage();
+  const key = "patternly:canonical:v1:private-legacy-record";
+  fixture.base.setString(key, "private-legacy-value");
+  fixture.base.resetCounters();
 
-    const profile = await prepareProfileStorage();
+  const inventory = await inspectPreparedQ13StorageInventory();
 
-    assert.equal(profile.kind, scenario.expectedKind);
-    assert.equal(getActiveStorageProfileOrNull(), null);
-    assert.deepEqual(base.operations.filter((operation) => operation.kind === "read").map((operation) => operation.key), [STORAGE_KEYS.GUEST_INSTALLATION]);
-    const payloadKeys = new Set<string>([
-      STORAGE_KEYS.METADATA,
-      STORAGE_KEYS.ACTIVE_TRACK,
-      STORAGE_KEYS.SETTINGS,
-      STORAGE_KEYS.ACCOUNT_SYNC,
-      STORAGE_KEYS.CONTENT_REPORT_OUTBOX,
-    ]);
-    assert.equal(base.operations.some((operation) => operation.kind === "read" && payloadKeys.has(operation.key)), false);
-    setProfileStoragePreparationFactoryForTests(null);
-  });
-}
+  assert.equal(inventory.kind, "unavailable");
+  assert.equal(inventory.reason, "unclassified_key");
+  assert.equal(fixture.base.operations.some((operation) => operation.kind === "read" && operation.key === key), false);
+  assert.equal(JSON.stringify(inventory).includes("private-legacy-value"), false);
+  assert.deepEqual(fixture.base.operations.filter((operation) => operation.kind !== "read"), []);
+  setProfileStoragePreparationFactoryForTests(null);
+});
 
 test("activation is required and publishes only matching prepared profile metadata", async () => {
   const fixture = await preparedFixture();

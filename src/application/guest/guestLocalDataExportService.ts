@@ -123,15 +123,12 @@ function runtimeDependencies(): GuestLocalDataExportDependencies {
 
 function isActiveGuestLease(lease: NonNullable<ReturnType<typeof captureActiveProfileStorageLease>>, installation: GuestInstallation | null): boolean {
   const profile = lease.profile;
-  return (profile.kind === "guest" || profile.kind === "legacy_guest")
+  return profile.kind === "guest"
     && profile.accountId === null
     && installation !== null
     && installation.bindingState === "guest"
     && installation.accountId === null
-    // Modern profiles are provisioned with matching namespace and dataset IDs.
-    // Earlier guest markers predate that invariant and the router intentionally
-    // preserves their independently generated dataset identity.
-    && (profile.kind === "legacy_guest" || installation.localDatasetId === profile.id);
+    && installation.localDatasetId === profile.id;
 }
 
 function readGuestSource(): CapturedGuestSource {
@@ -334,6 +331,6 @@ export function cleanupOrphanedGuestLocalDataExports(
   files: Pick<ProfileExportFileStore, "listCacheFiles"> = createRuntimeProfileExportFileStore(),
   profile = getActiveStorageProfileOrNull(),
 ): void {
-  if (!profile || (profile.kind !== "guest" && profile.kind !== "legacy_guest")) return;
+  if (!profile || profile.kind !== "guest") return;
   cleanupProfileExportFiles(files, [GUEST_LOCAL_DATA_EXPORT_FILE_PREFIX], profile.id);
 }

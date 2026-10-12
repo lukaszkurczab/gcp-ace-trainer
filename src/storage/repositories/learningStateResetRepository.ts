@@ -101,7 +101,7 @@ export function isLearningStateResetTargetPlan(value: unknown): value is Learnin
     || !Array.isArray(plan.targets) || !Array.isArray(plan.preserved)) return false;
   const profile = plan.profile as Record<string, unknown>;
   if (Object.keys(profile).length !== 3 || typeof profile.id !== "string" || !profile.id.trim()
-    || !["legacy_owner", "legacy_guest", "account", "guest"].includes(profile.kind as string)
+    || !["account", "guest"].includes(profile.kind as string)
     || !(profile.accountId === null || (typeof profile.accountId === "string" && profile.accountId.trim()))) return false;
   const validEntries = (entries: unknown[]): entries is LearningStateResetEntry[] => entries.every((entry) => {
     if (typeof entry !== "object" || entry === null || Array.isArray(entry)) return false;

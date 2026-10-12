@@ -4,7 +4,7 @@ import test from "node:test";
 import type { StorageManifestStore } from "./encryptedStorageBootstrap";
 import { MemoryKeyValueStorage } from "./mmkvClient";
 import { openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError } from "./profileStorageRouter";
-import { STORAGE_KEYS } from "../../storage/keys";
+import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../../storage/keys";
 import { sha256Utf8 } from "../identity/sha256";
 
 const OWNER_ID = "00000000-0000-4000-8000-000000000001";
@@ -108,27 +108,63 @@ function addRegisteredGuest(control: MemoryControlStore, id: string): void {
   control.values.set(target, JSON.stringify({ ...body, checksum: sha256Utf8(JSON.stringify(body)) }));
 }
 
-function legacyOwnerStorage(): MemoryKeyValueStorage {
-  const storage = new MemoryKeyValueStorage();
-  storage.setString(STORAGE_KEYS.METADATA, "owner-metadata-bytes");
-  storage.setString("patternly:canonical:v1:synthetic-owner-record", "owner-record-bytes");
-  storage.setString(STORAGE_KEYS.GUEST_INSTALLATION, JSON.stringify({
-    schemaIdentity: "patternly:canonical:v1",
-    revision: 1,
-    payload: { installationId: OWNER_ID, localDatasetId: DATASET_ID, bindingState: "account_bound", accountId: ACCOUNT_ID },
-  }));
-  return storage;
+function currentEmptyStorage(): MemoryKeyValueStorage { return new MemoryKeyValueStorage(); }
+
+function retiredRegistryRaw(id = GUEST_ID, kind: "legacy_guest" | "legacy_owner" = "legacy_guest", generation = 1): string {
+  const body = {
+    version: 1, generation,
+    profiles: [{ id, kind, accountId: kind === "legacy_owner" ? ACCOUNT_ID : null }],
+    legacyProfileId: id, selectedProfileId: id,
+  };
+  return JSON.stringify({ ...body, checksum: sha256Utf8(JSON.stringify(body)) });
 }
 
-test("legacy owner remains byte-for-byte visible only through its own logical scope", async () => {
-  const base = legacyOwnerStorage();
+function retiredAccountBindingEnvelopeRaw(profileId: string): string {
+  const binding = {
+    schema: "patternly.account-binding.v1", profileId, profileKind: "legacy_owner",
+    accountId: null, firebaseUid: null, verified: false, verificationRevision: 1,
+  };
+  const bindings = [{ ...binding, checksum: sha256Utf8(JSON.stringify(binding)) }];
+  const envelope = { schema: "patternly.account-binding.v1", generation: 3, bindings };
+  return JSON.stringify({ ...envelope, checksum: sha256Utf8(JSON.stringify(envelope)) });
+}
+
+test("unregistered canonical namespace is identified without reading or changing legacy payload", async () => {
+  const base = new MemoryKeyValueStorage();
+  base.setString(STORAGE_KEYS.METADATA, "owner-metadata-bytes");
+  base.setString("patternly:canonical:v1:synthetic-owner-record", "owner-record-bytes");
   const before = base.snapshot();
-  const router = await openProfileStorageRouter(base, new MemoryControlStore(), { identity: identitySequence(DATASET_ID) });
-  assert.equal(router.profile.kind, "legacy_owner");
-  assert.equal(router.profile.accountId, ACCOUNT_ID);
-  assert.equal(router.isFreshInstallation, false);
+  const control = new MemoryControlStore();
+  let identityCalls = 0;
+
+  await assert.rejects(openProfileStorageRouter(base, control, { identity: { async create() { identityCalls += 1; return { installationId: OWNER_ID, localDatasetId: DATASET_ID }; } } }),
+    (error) => error instanceof ProfileStorageError && error.code === "legacy_profile_unidentified");
+
+  assert.equal(identityCalls, 0);
   assert.deepEqual(base.snapshot(), before);
-  assert.deepEqual([...router.storage.getAllKeys()].sort(), [...before.keys()].sort());
+  assert.equal(base.operations.some((operation) => operation.kind === "read" && operation.key.startsWith(STORAGE_NAMESPACE)), false);
+  assert.deepEqual([...control.values], []);
+});
+
+test("checksummed retired profile registries fail closed, including a mixed current and retired pair", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  control.values.set("patternly.profile-root.v1.a", retiredRegistryRaw());
+  const rawBefore = [...control.values];
+  await assert.rejects(openProfileStorageRouter(base, control), (error) => error instanceof ProfileStorageError && error.code === "profile_scope_unavailable");
+  assert.deepEqual([...control.values], rawBefore);
+  assert.deepEqual(base.snapshot(), new Map());
+
+  const mixedBase = new MemoryKeyValueStorage();
+  const mixedControl = new MemoryControlStore();
+  await openProfileStorageRouter(mixedBase, mixedControl, { identity: identitySequence(GUEST_ID) });
+  const currentSlot = [...mixedControl.values.entries()].find(([, raw]) => JSON.parse(raw).legacyProfileId === null)!;
+  const retiredSlot = currentSlot[0] === "patternly.profile-root.v1.a" ? "patternly.profile-root.v1.b" : "patternly.profile-root.v1.a";
+  mixedControl.values.set(retiredSlot, retiredRegistryRaw(uuidAt(777), "legacy_guest", 2));
+  const mixedControlBefore = [...mixedControl.values];
+  await assert.rejects(openProfileStorageRouter(mixedBase, mixedControl), (error) => error instanceof ProfileStorageError && error.code === "profile_scope_unavailable");
+  assert.deepEqual([...mixedControl.values], mixedControlBefore);
+  assert.deepEqual(mixedBase.snapshot(), new Map());
 });
 
 test("an unchosen empty welcome profile stays fresh across restarts until guest markers are written", async () => {
@@ -145,13 +181,34 @@ test("an unchosen empty welcome profile stays fresh across restarts until guest 
   assert.equal(afterChoice.isFreshInstallation, false);
 });
 
-test("an existing storage key prevents missing registry metadata from being classified as fresh", async () => {
-  const base = new MemoryKeyValueStorage();
-  base.setString("patternly:unknown:preserved-data", "existing");
+test("missing registry fails closed on any existing key without reading or changing stored bytes", async (t) => {
+  const cases = [
+    { name: "canonical user data", key: STORAGE_KEYS.METADATA, expected: "legacy_profile_unidentified" },
+    { name: "recognized content package pointer", key: `patternly.content-node.active.v1.${"a".repeat(64)}`, expected: "legacy_profile_unidentified" },
+    { name: "global runtime state", key: "patternly:premium-cache:v1", expected: "profile_scope_unavailable" },
+    { name: "unknown nonempty store", key: "patternly:unknown:preserved-data", expected: "profile_scope_unavailable" },
+    { name: "orphan profile-scoped data", key: `patternly:profile:v1:${GUEST_ID}:orphan`, expected: "profile_scope_unavailable" },
+  ] as const;
 
-  const router = await openProfileStorageRouter(base, new MemoryControlStore(), { identity: identitySequence(GUEST_ID) });
+  for (const entry of cases) {
+    await t.test(entry.name, async () => {
+      const base = new MemoryKeyValueStorage();
+      base.setString(entry.key, "existing-bytes");
+      base.resetCounters();
+      const before = base.snapshot();
+      const control = new MemoryControlStore();
+      let identityCalls = 0;
 
-  assert.equal(router.isFreshInstallation, false);
+      await assert.rejects(openProfileStorageRouter(base, control, {
+        identity: { async create() { identityCalls += 1; return { installationId: OWNER_ID, localDatasetId: GUEST_ID }; } },
+      }), (error) => error instanceof ProfileStorageError && error.code === entry.expected);
+
+      assert.equal(identityCalls, 0);
+      assert.deepEqual(base.operations, [], "classification inspects key names without reading, writing, or removing values");
+      assert.deepEqual(base.snapshot(), before);
+      assert.deepEqual([...control.values], []);
+    });
+  }
 });
 
 test("explicit selection of the initial guest provisions its unbound access markers", async () => {
@@ -190,7 +247,7 @@ test("exact modern-guest preflight requires selected registered identity, exact 
   assert.equal(pending.hasExactUnboundModernGuest(GUEST_ID, installationHash, datasetHash), false);
 });
 
-test("account identity bindings are dual-slot versioned, exact-profile scoped, and never inferred for legacy profiles", async () => {
+test("account identity bindings are current-only, dual-slot versioned, and exact-profile scoped", async () => {
   const base = new MemoryKeyValueStorage();
   const control = new MemoryControlStore();
   let router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID, GUEST_ID) });
@@ -221,6 +278,13 @@ test("account identity bindings are dual-slot versioned, exact-profile scoped, a
   }));
   assert.equal(rejected, undefined);
   assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "verified", binding: second });
+
+  const retiredBindingRaw = retiredAccountBindingEnvelopeRaw(router.profile.id);
+  control.values.set("patternly.account-binding.v1.a", retiredBindingRaw);
+  const beforeRetiredRead = [...control.values];
+  await assert.rejects(router.readSelectedAccountIdentityBinding(),
+    (error) => error instanceof ProfileStorageError && error.code === "profile_scope_unavailable");
+  assert.deepEqual([...control.values], beforeRetiredRead);
 });
 
 test("new account selection binds its marker to the registered profile ID and reuses the exact marker on retry", async () => {
@@ -489,7 +553,7 @@ test("a completed modern guest adoption promotes only its matching account and p
   assert.equal(freshGuest.registry.profiles.filter((profile) => profile.kind === "guest").length, 1);
 });
 
-test("valid adoption-pending legacy guest marker remains readable during profile registry migration", async () => {
+test("raw legacy guest namespace is unavailable without reading, adopting, or rewriting it", async () => {
   const base = new MemoryKeyValueStorage();
   base.setString(STORAGE_KEYS.METADATA, "pending-guest-metadata-bytes");
   base.setString("patternly:canonical:v1:synthetic-pending-record", "pending-guest-record-bytes");
@@ -499,38 +563,26 @@ test("valid adoption-pending legacy guest marker remains readable during profile
     payload: { installationId: OWNER_ID, localDatasetId: DATASET_ID, bindingState: "adoption_pending", accountId: null },
   }));
   const before = base.snapshot();
-  const router = await openProfileStorageRouter(base, new MemoryControlStore(), { identity: identitySequence(DATASET_ID) });
-  assert.equal(router.profile.kind, "legacy_guest");
+  await assert.rejects(openProfileStorageRouter(base, new MemoryControlStore(), { identity: identitySequence(DATASET_ID) }),
+    (error) => error instanceof ProfileStorageError && error.code === "legacy_profile_unidentified");
   assert.deepEqual(base.snapshot(), before);
-  assert.deepEqual([...router.storage.getAllKeys()].sort(), [...before.keys()].sort());
+  assert.equal(base.operations.some((operation) => operation.kind === "read"), false);
 });
 
-test("legacy guest migration keeps the verified marker dataset ID despite a different generated identity", async () => {
+test("a checksummed retired Guest registry is unavailable and preserves its namespace bytes", async () => {
   const base = new MemoryKeyValueStorage();
   base.setString(STORAGE_KEYS.METADATA, "preserved-legacy-guest-metadata");
-  base.setString(STORAGE_KEYS.GUEST_INSTALLATION, JSON.stringify({
-    schemaIdentity: "patternly:canonical:v1",
-    revision: 4,
-    payload: { installationId: OWNER_ID, localDatasetId: DATASET_ID, bindingState: "guest", accountId: null },
-  }));
-  base.setString(STORAGE_KEYS.GUEST_ACCESS, JSON.stringify({
-    schemaIdentity: "patternly:canonical:v1",
-    revision: 2,
-    payload: { mode: "guest" },
-  }));
+  base.setString("patternly:canonical:v1:record", "preserved-payload");
   const before = base.snapshot();
-
-  const router = await openProfileStorageRouter(base, new MemoryControlStore(), { identity: identitySequence(GUEST_ID) });
-
-  assert.equal(router.profile.id, DATASET_ID);
-  assert.notEqual(router.profile.id, GUEST_ID);
-  assert.equal(router.profile.kind, "legacy_guest");
-  assert.equal(router.hasValidGuestAccess(DATASET_ID), true);
-  assert.equal(router.storage.getString(STORAGE_KEYS.METADATA), "preserved-legacy-guest-metadata");
+  const control = new MemoryControlStore();
+  control.values.set("patternly.profile-root.v1.a", retiredRegistryRaw(GUEST_ID));
+  await assert.rejects(openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) }),
+    (error) => error instanceof ProfileStorageError && error.code === "profile_scope_unavailable");
   assert.deepEqual(base.snapshot(), before);
+  assert.deepEqual([...control.values], [["patternly.profile-root.v1.a", retiredRegistryRaw(GUEST_ID)]]);
 });
 
-test("a persisted mismatched legacy guest ID still validates its raw unbound guest markers", async () => {
+test("a malformed retired registry remains corruption rather than being classified as supported migration", async () => {
   const base = new MemoryKeyValueStorage();
   base.setString(STORAGE_KEYS.METADATA, "legacy-guest-data");
   base.setString(STORAGE_KEYS.GUEST_INSTALLATION, JSON.stringify({
@@ -544,33 +596,21 @@ test("a persisted mismatched legacy guest ID still validates its raw unbound gue
     payload: { mode: "guest" },
   }));
   const control = new MemoryControlStore();
-  const registryBody = {
-    version: 1,
-    generation: 1,
-    profiles: [{ id: GUEST_ID, kind: "legacy_guest", accountId: null }],
-    legacyProfileId: GUEST_ID,
-    selectedProfileId: GUEST_ID,
-  };
-  const persistedRegistry = { ...registryBody, checksum: sha256Utf8(JSON.stringify(registryBody)) };
-  control.values.set("patternly.profile-root.v1.b", JSON.stringify(persistedRegistry));
-
-  const router = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
-
-  const selected = await router.selectExistingGuest(GUEST_ID);
-
-  assert.equal(selected.id, GUEST_ID);
-  assert.equal(router.profile.id, GUEST_ID);
-  assert.equal(router.profile.kind, "legacy_guest");
-  assert.equal(router.profile.accountId, null);
-  assert.equal(router.hasValidGuestAccess(GUEST_ID), true);
-  assert.equal(router.storage.getString(STORAGE_KEYS.METADATA), "legacy-guest-data");
+  const raw = retiredRegistryRaw(GUEST_ID).replace(/"checksum":"[a-f0-9]+"/u, `"checksum":"${"0".repeat(64)}"`);
+  control.values.set("patternly.profile-root.v1.b", raw);
+  await assert.rejects(openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) }),
+    (error) => error instanceof ProfileStorageError && error.code === "profile_registry_corrupt");
   assert.equal(base.getAllKeys().some((key) => key.startsWith("patternly:profile:v1:")), false);
 });
 
-test("a selected guest receives an isolated, durable namespace without changing legacy bytes", async () => {
-  const base = legacyOwnerStorage();
-  const ownerBefore = base.snapshot();
+test("a selected current Guest receives an isolated, durable namespace", async () => {
+  const base = currentEmptyStorage();
   const control = new MemoryControlStore();
+  const initial = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  const account = await initial.selectAccount(ACCOUNT_ID);
+  const accountRouter = await openProfileStorageRouter(base, control);
+  accountRouter.storage.setString("account-private", "unchanged-account-bytes");
+  const accountRaw = base.getString(`patternly:profile:v1:${account.id}:${encodeURIComponent("account-private")}`);
   let transitioning = false;
   const router = await openProfileStorageRouter(base, control, {
     identity: identitySequence(GUEST_ID),
@@ -584,8 +624,7 @@ test("a selected guest receives an isolated, durable namespace without changing 
   assert.throws(() => router.storage.getAllKeys(), ProfileTransitionActiveError);
   assert.throws(() => router.storage.getString(STORAGE_KEYS.METADATA), ProfileTransitionActiveError);
   assert.throws(() => router.storage.setString(STORAGE_KEYS.ACTIVE_TRACK, "must-not-write"), ProfileTransitionActiveError);
-  assert.deepEqual(base.snapshot().get(STORAGE_KEYS.GUEST_INSTALLATION), ownerBefore.get(STORAGE_KEYS.GUEST_INSTALLATION));
-  for (const [key, value] of ownerBefore) assert.equal(base.getString(key), value, key);
+  assert.equal(base.getString(`patternly:profile:v1:${account.id}:${encodeURIComponent("account-private")}`), accountRaw);
 
   const restarted = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
   assert.equal(restarted.profile.id, GUEST_ID);
@@ -596,21 +635,24 @@ test("a selected guest receives an isolated, durable namespace without changing 
   assert.equal(restarted.storage.getString(STORAGE_KEYS.ACTIVE_TRACK), "synthetic-guest-track");
   assert.equal(base.getString(STORAGE_KEYS.ACTIVE_TRACK), undefined);
   assert.equal(restarted.storage.getAllKeys().some((key) => key.includes("synthetic-owner")), false);
-  for (const [key, value] of ownerBefore) assert.equal(base.getString(key), value, key);
+  assert.equal(base.getString(`patternly:profile:v1:${account.id}:${encodeURIComponent("account-private")}`), accountRaw);
 });
 
-test("a later exact owner login selects the unchanged legacy scope before local reads", async () => {
-  const base = legacyOwnerStorage();
+test("a later account selection uses only its current profile namespace", async () => {
+  const base = currentEmptyStorage();
   const control = new MemoryControlStore();
-  const router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
+  const router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, DATASET_ID) });
   await router.selectGuest();
-  const guestRouter = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
+  const guestRouter = await openProfileStorageRouter(base, control, { identity: identitySequence(DATASET_ID) });
   const owner = await guestRouter.selectAccount(ACCOUNT_ID);
   assert.equal(owner.id, DATASET_ID);
-  assert.equal(owner.kind, "legacy_owner");
+  assert.equal(owner.kind, "account");
+  const accountRouter = await openProfileStorageRouter(base, control);
+  accountRouter.storage.setString("account-private", "current-account-bytes");
   const restarted = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
   assert.equal(restarted.profile.id, DATASET_ID);
-  assert.equal(restarted.storage.getString("patternly:canonical:v1:synthetic-owner-record"), "owner-record-bytes");
+  assert.equal(restarted.storage.getString("account-private"), "current-account-bytes");
+  assert.equal(base.getString("account-private"), undefined);
 });
 
 test("switching away from a modern account never reads its scoped payload", async () => {
@@ -630,14 +672,14 @@ test("switching away from a modern account never reads its scoped payload", asyn
 });
 
 test("malformed profile registry blocks instead of choosing a storage namespace", async () => {
-  const base = legacyOwnerStorage();
+  const base = currentEmptyStorage();
   const control = new MemoryControlStore();
   control.values.set("patternly.profile-root.v1.a", "not-json");
   await assert.rejects(openProfileStorageRouter(base, control), (error) => error instanceof ProfileStorageError && error.code === "profile_registry_corrupt");
 });
 
 test("concurrent guest selections claim one transition and cannot commit competing profiles", async () => {
-  const base = legacyOwnerStorage();
+  const base = currentEmptyStorage();
   const control = new MemoryControlStore();
   const router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
   const results = await Promise.allSettled([router.selectGuest(), router.selectGuest()]);
@@ -648,7 +690,7 @@ test("concurrent guest selections claim one transition and cannot commit competi
 });
 
 test("selectGuest reuses the selected guest with the same profile ID and stored data", async () => {
-  const base = legacyOwnerStorage();
+  const base = currentEmptyStorage();
   const control = new MemoryControlStore();
   const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
   const originalGuest = await first.selectGuest();
@@ -660,7 +702,7 @@ test("selectGuest reuses the selected guest with the same profile ID and stored 
   const reopened = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
   assert.equal(reopened.profile.id, originalGuest.id);
   assert.equal(reopened.storage.getString("guest-preserved"), "same-profile-data");
-  assert.equal(reopened.registry.profiles.length, 2);
+  assert.equal(reopened.registry.profiles.length, 1);
 });
 
 test("selectGuest fails closed when the selected guest marker cannot be verified", async () => {
@@ -679,7 +721,7 @@ test("selectGuest fails closed when the selected guest marker cannot be verified
 });
 
 test("selectGuest returns a typed ambiguity error without writing when multiple guests are preserved", async () => {
-  const base = legacyOwnerStorage();
+  const base = currentEmptyStorage();
   const control = new MemoryControlStore();
   const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
   await first.selectGuest();
@@ -760,7 +802,7 @@ test("one canonical guest and two account scopes survive restart without cross-s
 
   const restartedGuest = await openProfileStorageRouter(base, control, { identity: ids });
   assert.equal(restartedGuest.profile.id, guest.id);
-  assert.equal(restartedGuest.registry.profiles.filter((profile) => profile.kind === "guest" || profile.kind === "legacy_guest").length, 1);
+  assert.equal(restartedGuest.registry.profiles.filter((profile) => profile.kind === "guest").length, 1);
   assert.equal(restartedGuest.registry.profiles.filter((profile) => profile.accountId === "exact-account-A").length, 1);
   assert.equal(restartedGuest.registry.profiles.filter((profile) => profile.accountId === "exact-account-B").length, 1);
   base.resetCounters();
@@ -789,7 +831,7 @@ test("one canonical guest and two account scopes survive restart without cross-s
 });
 
 test("existing guest reselection rejects non-guest IDs without changing the registry", async () => {
-  const base = legacyOwnerStorage();
+  const base = currentEmptyStorage();
   const control = new MemoryControlStore();
   const router = await openProfileStorageRouter(base, control, { identity: identitySequence(DATASET_ID) });
   const before = [...control.values];
@@ -798,7 +840,7 @@ test("existing guest reselection rejects non-guest IDs without changing the regi
 });
 
 test("failed existing guest registry commit leaves the current scope closed", async () => {
-  const base = legacyOwnerStorage();
+  const base = currentEmptyStorage();
   const control = new MemoryControlStore();
   const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
   const guest = await first.selectGuest();

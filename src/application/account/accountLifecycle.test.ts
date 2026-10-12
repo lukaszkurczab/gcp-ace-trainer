@@ -608,7 +608,7 @@ import { clearTrainingSessions, getActiveTrainingSession, getTrainingSessions, s
 import { addTrainingAttempt, getTrainingAttempts } from "../../storage/repositories/trainingAttemptRepository";
 import { getTrainingSessionResult, saveTrainingSessionResult } from "../../storage/repositories/trainingSessionResultRepository";
 import { clearActiveTrainingSessionDraft, getActiveTrainingSessionDraft, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
-import { accountDataRecordFingerprint, buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, getAccountSyncState, isCanonicalAccountSyncState, saveAccountSyncState, saveGuestAdoptionChoice } from "../../storage/repositories/accountDataRepository";
+import { accountDataRecordFingerprint, buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, getAccountSyncState, isCanonicalAccountSyncState, readAccountSyncStateEnvelope, saveAccountSyncState, saveGuestAdoptionChoice } from "../../storage/repositories/accountDataRepository";
 import { getActiveMutationJournal, persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { getGoalSnapshot, readGoalSnapshot, saveGoal, saveGoalSnapshot } from "../../storage/repositories/goalRepository";
 import { getLearningPlanSnapshot, saveLearningPlanAtomically } from "../../storage/repositories/learningPlanRepository";
@@ -822,6 +822,168 @@ async function activateFreshAccountStorage(account: string): Promise<Readonly<{ 
     setProfileStoragePreparationFactoryForTests(null);
   } });
 }
+
+test("queued account load rechecks its captured owner before entering the unlocked loader", async () => {
+  closeActiveProfileStorage();
+  const base = new MemoryKeyValueStorage();
+  const controlValues = new Map<string, string>();
+  const control: StorageManifestStore = {
+    async get(key) { return controlValues.get(key) ?? null; },
+    async set(key, value) { controlValues.set(key, value); },
+    async remove(key) { controlValues.delete(key); },
+  };
+  let identityIndex = 0;
+  const router = await openProfileStorageRouter(base, control, {
+    identity: { async create() {
+      identityIndex += 1;
+      return { installationId: `00000000-0000-4000-8000-${String(1200 + identityIndex).padStart(12, "0")}`, localDatasetId: `00000000-0000-4000-8000-${String(1100 + identityIndex).padStart(12, "0")}` };
+    } },
+  });
+  setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+  const accountA = "55555555-5555-4555-8555-555555555555";
+  const accountB = "66666666-6666-4666-8666-666666666666";
+  try {
+    await prepareProfileStorage();
+    const selectedA = await selectPreparedAccountProfile(accountA);
+    activatePreparedProfile(selectedA.profile.id, selectedA.profile.kind);
+    await bindGuestInstallationToAccount(accountA);
+    saveAccountSyncState({ ...await getAccountSyncState(), accountId: accountA, status: "synced" });
+
+    let releaseA!: (value: { accountRevision: number; records: never[] }) => void;
+    let enteredA!: () => void;
+    const entered = new Promise<void>((resolve) => { enteredA = resolve; });
+    const response = new Promise<{ accountRevision: number; records: never[] }>((resolve) => { releaseA = resolve; });
+    const apiA = api({ getProgress: () => { enteredA(); return response; } });
+    let accountBReads = 0;
+    const apiB = api({ getProgress: async () => { accountBReads += 1; return { accountRevision: 0, records: [] }; } });
+
+    const laneHolder = loadAccountDataSession(apiA, accountA);
+    await entered;
+    let capturedOwnerCurrent = true;
+    const queuedStale = loadAccountDataSession(apiB, accountA, { canContinue: () => capturedOwnerCurrent });
+    const queuedForeignState = loadAccountDataSession(apiB, accountA, { canContinue: () => true });
+    const queuedLegacyCaller = loadAccountDataSession(apiB, accountA);
+
+    closeActiveProfileStorage();
+    const selectedB = await selectPreparedAccountProfile(accountB);
+    activatePreparedProfile(selectedB.profile.id, selectedB.profile.kind);
+    await bindGuestInstallationToAccount(accountB);
+    saveAccountSyncState({ ...await getAccountSyncState(), accountId: accountB, status: "synced" });
+    const before = readAccountSyncStateEnvelope();
+    assert.ok(before);
+    const beforeRaw = [...base.snapshot()].filter(([key]) => key.startsWith(`patternly:profile:v1:${selectedB.profile.id}:`));
+
+    capturedOwnerCurrent = false;
+    releaseA({ accountRevision: 0, records: [] });
+    await laneHolder;
+    await assert.rejects(queuedStale, (error: unknown) => error instanceof AccountDataFailure && error.code === "account_binding_mismatch");
+    const foreignStateResult = await queuedForeignState;
+    const legacyCallerResult = await queuedLegacyCaller;
+    assert.equal(foreignStateResult.status, "failed");
+    assert.equal(foreignStateResult.lastFailureCode, "account_binding_mismatch");
+    assert.equal(legacyCallerResult.status, "failed");
+    assert.equal(legacyCallerResult.lastFailureCode, "account_binding_mismatch");
+
+    assert.equal(accountBReads, 0, "a queued request for A never starts the unlocked network loader against B");
+    assert.deepEqual(readAccountSyncStateEnvelope(), before, "the current B sync envelope remains exact");
+    assert.deepEqual([...base.snapshot()].filter(([key]) => key.startsWith(`patternly:profile:v1:${selectedB.profile.id}:`)), beforeRaw,
+      "all raw bytes in B's scoped profile remain unchanged");
+  } finally {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+  }
+});
+
+test("a rejected guest-adoption preview cannot persist an old owner's failure into a replacement profile", async () => {
+  const accountB = "66666666-6666-4666-8666-666666666669";
+  for (const [mode, accountA] of [
+    ["current-owner", "55555555-5555-4555-8555-555555555551"],
+    ["stale-callback", "55555555-5555-4555-8555-555555555552"],
+    ["stale-legacy-caller", "55555555-5555-4555-8555-555555555553"],
+  ] as const) {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+    const base = new MemoryKeyValueStorage();
+    const controlValues = new Map<string, string>();
+    const control: StorageManifestStore = {
+      async get(key) { return controlValues.get(key) ?? null; },
+      async set(key, value) { controlValues.set(key, value); },
+      async remove(key) { controlValues.delete(key); },
+    };
+    let identityIndex = 0;
+    const router = await openProfileStorageRouter(base, control, {
+      identity: { async create() {
+        identityIndex += 1;
+        return { installationId: `00000000-0000-4000-8000-${String(1500 + identityIndex).padStart(12, "0")}`, localDatasetId: `00000000-0000-4000-8000-${String(1600 + identityIndex).padStart(12, "0")}` };
+      } },
+    });
+    setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+    try {
+      await prepareProfileStorage();
+      const selectedA = await selectPreparedAccountProfile(accountA);
+      activatePreparedProfile(selectedA.profile.id, selectedA.profile.kind);
+      await bindGuestInstallationToAccount(accountA);
+      await clearGuestAccountBinding();
+      const initialA = await getAccountSyncState();
+      saveAccountSyncState({ ...initialA, accountId: null, status: "initialSyncRequired", lastFailureCode: null });
+
+      let enteredPreview!: () => void;
+      const previewEntered = new Promise<void>((resolve) => { enteredPreview = resolve; });
+      let rejectPreview!: (error: Error) => void;
+      const deferredPreview = new Promise<never>((_resolve, reject) => { rejectPreview = reject; });
+      const client = api({ previewAccountAdoption: async () => { enteredPreview(); return deferredPreview; } });
+      let canContinue = true;
+      const pending = mode === "stale-legacy-caller"
+        ? loadAccountDataSession(client, accountA, { guestAdoption: "allow" })
+        : loadAccountDataSession(client, accountA, { guestAdoption: "allow", canContinue: () => canContinue });
+      await previewEntered;
+
+      let bProfileId: string | null = null;
+      let beforeB: ReturnType<typeof readAccountSyncStateEnvelope> = null;
+      let rawBeforeB: readonly (readonly [string, string])[] = [];
+      if (mode !== "current-owner") {
+        closeActiveProfileStorage();
+        const selectedB = await selectPreparedAccountProfile(accountB);
+        bProfileId = selectedB.profile.id;
+        activatePreparedProfile(selectedB.profile.id, selectedB.profile.kind);
+        await bindGuestInstallationToAccount(accountB);
+        saveAccountSyncState({ ...await getAccountSyncState(), accountId: accountB, status: "synced", lastFailureCode: null });
+        beforeB = readAccountSyncStateEnvelope();
+        assert.equal(beforeB?.payload.accountId, accountB);
+        rawBeforeB = [...base.snapshot()]
+          .filter(([key]) => key.startsWith(`patternly:profile:v1:${bProfileId}:`))
+          .sort(([left], [right]) => left.localeCompare(right));
+        canContinue = false;
+      }
+
+      rejectPreview(new Error("preview unavailable"));
+      if (mode === "stale-callback") {
+        await assert.rejects(pending, (error: unknown) => error instanceof AccountDataFailure && error.code === "account_binding_mismatch");
+      } else {
+        const result = await pending;
+        assert.equal(result.status, "failed");
+        if (mode === "current-owner") {
+          const afterA = readAccountSyncStateEnvelope();
+          assert.equal(afterA?.payload.accountId, null);
+          assert.equal(afterA?.payload.status, "failed", "the current owner's own preview failure remains durable");
+          assert.equal(afterA?.payload.lastFailureCode, "remoteFailure");
+        } else {
+          assert.equal(result.lastFailureCode, "account_binding_mismatch");
+        }
+      }
+      if (mode !== "current-owner") {
+        assert.deepEqual(readAccountSyncStateEnvelope(), beforeB, "the rejected A operation does not rewrite B sync state");
+        const rawAfterB = [...base.snapshot()]
+          .filter(([key]) => key.startsWith(`patternly:profile:v1:${bProfileId}:`))
+          .sort(([left], [right]) => left.localeCompare(right));
+        assert.deepEqual(rawAfterB, rawBeforeB, "all B scoped bytes remain exact after the stale preview rejection");
+      }
+    } finally {
+      closeActiveProfileStorage();
+      setProfileStoragePreparationFactoryForTests(null);
+    }
+  }
+});
 
 async function prepareBoundLearningDatasetWithOutbox() {
   await prepareBoundSyncedAccount();

@@ -8,7 +8,6 @@ export {
   captureActiveProfileStorageLease,
   capturePreparedProfileStorageLease,
   closeActiveProfileStorage,
-  continueAsGuestInNewProfile,
   getActiveStorageProfile,
   getActiveStorageProfileOrNull,
   invalidateActiveAccountIdentityBinding,

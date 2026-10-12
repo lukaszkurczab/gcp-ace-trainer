@@ -1,0 +1,47 @@
+# CH-07 — odbiór current-only profili
+
+Pełny CH07: **BLOCKED — wymagany native smoke nie został wykonany**. Niezależny bounded source/local behavior: **PASS** po korekcie AC4. Pełna lokalna bramka PASS; niezależny odbiór pełnego logu trwa; commit/push/exact CI tego kandydata jeszcze niewykonane. Jedyna kolejka i bieżący stan pozostają w planie głównym i WORKING_STATE.
+
+## Cel, zakres i kryteria
+
+[Przyjęty projekt, pełne AC i ustalenia](ch07-design-2026-10-12.md), [specyfikacja CH07](../specs/engineering/code-health.md). Jeden current-only sposób adresowania account/guest po profileId; brak migracji lub nowego profilu nad niepustym magazynem. Zachować registry checksum/generation/dual slots, wymagane legacyProfileId:null, leases, adoption/discard/logout i GuestRemoval34. Zachować12profili/1Guest, cudze zmiany/stashe/procesy; bez resetu/reinstalacji/newGuest/forcepush.
+
+Root projekt min0,82; niezależny design min0,82; helper origin review min0,90. Jedyny writer persist_writer Luna High, niezależny persist_design Luna High, bez dalszych subagentów. Root odpowiada za dokumentację/Git/runtime. Checkout źródeł `.qa-private/persist0408-exact/patternly`, HEAD108ed921d6a7e1c471f1016df2eb63fabede3974; final frozen diff SHA256bd64bc6fef2e5fc09f4cc9fd55a3f44c0c3c1693749ca582f4f7b8ded45e654d,17tracked files. Ignored env600 i istniejący node_modules link nie są częścią diffu.
+
+Zmiana obejmuje router/MMKV inventory, account provider i identity fences, reset/interruption/export consumers, repo re-export oraz istniejący native readback helper i testy. Usunięto runtime legacy kinds/addressing i nieużywane continueAsGuestInNewProfile. Kontrolne dekodery nadal walidują dawny checksum wyłącznie dla jawnego unsupported; nie udostępniają starego scope. Workspace docs04 AccountBinding.profileKind wyrównano do account-only; backend kod bez zmian.
+
+## Weryfikacja źródeł
+
+Writer: router42/42, MMKV29/29, export19/19, helper11/11, account fence3/3, composition44/44, exact fence7/7, content recovery12/12; TCexit0 i diffcheckPASS. Wyników narrow suites nie sumować z full gate.
+
+Niezależny reviewer wykonał na finalnym freeze: router42/42 (37top+5matrix), MMKV29/29, helper11/11, account+exact fences10/10, composition44/44, export19/19, profile preparation6/6, content recovery12/12, goal interruption3/3, account reset9/9. Wszystkie wyjścia0. Source trace/refscan: current routing/callers, mixed retired/current slots fail closed po integrity validation, raw legacy inventory zatrzymany przed payload read, GuestRemoval34 journal/dual-slot guards zachowane, istniejący jawny unavailable/retry UI contract.
+
+Pierwszy freeze200c0808 nie przeszedł odbioru AC4: bootstrap tworzył identity/registry dla raw pointer/global/unknown nonempty store. Naprawiono branch i test matrix; recognized canonical/pointer→legacy_profile_unidentified, inne nonempty→profile_scope_unavailable, wyłącznie empty→provision. Odrzucenie zero value reads/identity creation/control writes/base mutation; dotychczasowy empty bootstrap i recovery pozostają sprawdzone. To naprawiony defekt, nie pominięty test.
+
+Root full qa:static session32333 na finalnym freeze exit1:2463total/2456PASS/2FAIL/5SKIP. Oba FAIL: contentReleaseCrossRepo wymaga PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA; root pominął ją przy uruchomieniu. Stage1/TC przeszły, recovery488/364/2347. Bez zmian kodu ustawiono dokładny e57f32a743f8b8afbdf7fbddb215322239bceffa, najpierw targeted correction session99654, następnie wymagana pełna bramka. Pierwszego runu nie nazywać PASS. Wejścia: current content e57f32a743f8b8afbdf7fbddb215322239bceffa, historicalcc3efca88be7e01137f10ac69a0643f06b61a350, backend4d8efbd6cab8f8fc31d39970fd8e6abb1a0c45eb. Prywatny log `/private/tmp/patternly-ch07-fullgate.log`,0600. Bez claimu pełnej bramki przed exit0. Installed Expo createExpoFallbackResolver jawnie przekierowuje ../../App z expo/AppEntry do projectRoot/App; symlink zależności nie wymaga dodatkowego entry ani patcha. Realny bundle provenance nadal do sprawdzenia.
+
+## Wymagany native i luka środowiska
+
+AC9 pozostaje materialnie nieweryfikowane: ordinary Guest/login/logout na jednym istniejącym iPhone17, before/after12profiles/1Guest i zachowane dane. Cold-start-only nie zastępuje tej próby.
+
+Read-only preflight: API8080 ready200, Auth19099 recognized config200; zainstalowany Admin SDK getUserByEmail dla prywatnych E2E credentials user-not-found, listUsers0/no page. Firestore18081 właściwego launcher projectpatternly-app-sandbox: accounts/users/identityMappings każda0records. Zero signIn/registration/seed/reset/write; credentials ani identyfikatory nie były drukowane. Wymagana bezpieczna ścieżka istniejącego konta, a następnie konkretna autoryzacja efektów auth/backend po przygotowaniu kandydata.
+
+Kontener istniejącego17:38files bez zmian względem końca zatwierdzonej próby P11, oba MMKV byte-identical. To ciągłość baseline, nie CH07 native PASS. Candidate ignored smoke environment przygotowane600 i walidacja PASS, bez uruchomienia Metro/app/auth. Foreign8081/Auth/Firestore/API zachowane. Helper wymaga jawnego127 origin/port oraz exact app/device/Guest/protocol guards; source-level installed Metro potwierdza budowanie WS URL z request host, real binding jeszcze niewykonane.
+
+Najmniejszy następny krok po lokalnej bramce: odczytać końcowy log, przygotować exact candidate bundle8082 i rozstrzygnąć dostęp do istniejącego konta. CH07 pozostaje w kolejce; bez GO.
+
+Final root full qa:static session69188 exit0:2463total/2458PASS/0FAIL/5SKIP; recovery488active source/364testfiles/2347cases, Stage1/TC/content/privacyPASS. Targeted correction99654 content3/3PASS; final source hash bd64 unchanged. Exact producer SHA podany; pozostałe wejścia jak wyżej. Trzy logi zachowane w ignored artifacts/private/ch07-20261012,0700/files0600. Pięć SKIP (4HTTP+1optionalCC04) nie jest PASS. Niezależny pełny-log odbiór trwa; brak hosted CI/native wykonania.
+
+Niezależny pełny log review potwierdził finalny lokalny gate PASS:2463total/2458PASS/0FAIL/5SKIP, recovery488/364/2347. Wejścia exact zweryfikowano oddzielnym receipt/rev-parse. Native AC9 i hosted CI nadal niewykonane; nie jest to pełny odbiór CH07.
+
+Candidate bundle probe: standard expo/AppEntry przez node_modules symlink rozwiązał primary App/provider, więc odrzucony. Installed resolver fallback nie przechwytuje skutecznego standard resolve; wcześniejsza interpretacja źródła była niewystarczająca. Corrected prywatny ignored .expo/ch07-entry.js dokładnie rejestruje writer ../App przez standard registerRootComponent. Actual source map match8/8 zmienionych production modules oraz writer App exactbytes; freeze bd64 niezmieniony przed capture. Bundle SHA256de31aafae33fe6e8b928884ff0f227abc02bd61c29904a7c6dc4aa0f87bf43d4,67895118bytes. To sourceprovenance, nie runtime/native PASS; entry tymczasowe, nie deliveredtool. Własne Metro77913/78553 zakończone po cwd/portownership; drugi bind127.0.0.1 uzyskano NODE_OPTIONS=--dns-result-order=ipv4first. Zero app/device/auth launches/writes. Private receipts/bundle/map/log ignored artifacts/private/ch07-20261012. Pytanie o istniejącą konfigurację konta zadane po lokalnym odbiorze; bez tworzenia konta.
+
+Independent persist_design LunaHigh source-provenance PASS: samodzielnie porównane8 sourcesContent oraz writerApp/entry, każdy current-only graph pojedynczy; standard graph primary+writer duplikaty potwierdzone. Standard registerRootComponent zawiera Expo.fx sideeffect, private entry równoważne. Granice: statyczny bundle, nie native app execution/storage/profileflow.
+
+## Pozostała zwykła próba native — przygotowany zakres
+
+Po wskazaniu istniejącego lokalnego konta/środowiska, w ramach już zleconego zwykłego smoke: ten sam istniejący binary/iPhone17, izolowany candidate o zweryfikowanym graph, bez reinstall/reset/newGuest. Przed startem prywatny snapshot pięciu kategorii i inventory12/Guest1; nie wymagać whole-MMKV byte equality po legalnych zmianach account/session metadata. Guest readback ma exact Guest hash/lease/registry i jawny Metro origin. Potwierdzić normalny ekran Gościa → zwykły sign-in istniejącego konta z istniejącym lokalnym profilem → jawny logout → powrót tego samego Gościa. Nie wykonywać adopcji, resetu, generowania konta, account-entry-continue ani generic flows z tymi skutkami. Jeżeli pojawi się adoption choice lub brak właściwego profilu, zatrzymać tę ścieżkę i zachować stan.
+
+Po powrocie: exact inventory/Guest identity, canonical learning/settings/content bez nieautoryzowanych zmian; account/session/lifecycle zmiany wyłącznie wynikające z jawnego przejścia i rozliczone przez ownerów. Niewyjaśniony rekord lub zmiana nie daje preservation PASS. Zrzuty/trace prywatne, bez credentials/UID. Ta procedura jest przygotowaniem, nie wykonanym dowodem. Zlecony local smoke nie wymaga ponownej zgody; nowe konto/seed lub skutki w rzeczywistych usługach zewnętrznych wymagają konkretnej autoryzacji. Zgoda PERSIST11 dotyczy wyłącznie wykonanego scheduler probe i nie autoryzuje nowego binary/reinstall/seed.
+
+Readonly nazwy/metadata eksportów emulatora: znaleziony backend .local/admin/data/firebase-export-metadata.json należy według scripts/localAdminEnvironment.mjs/dev-admin.mjs do oddzielnego demo-patternly-admin, nie patternly-app-sandbox. Nie odczytano accounts.json/credentials ani nie importowano snapshotu. To nie ustala istniejącego konta do mobile smoke; pytanie pozostaje aktualne.

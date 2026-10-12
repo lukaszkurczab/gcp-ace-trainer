@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildReadExpression, parseArguments, resolveInitializedOwnerId, __testables } from './nativeGuestExportReadback.mjs';
+import { buildReadExpression, nativeTargetConnectionSettings, parseArguments, parseMetroOrigin, resolveInitializedOwnerId, validateNativeWebSocketEndpoint, __testables } from './nativeGuestExportReadback.mjs';
 
 const guestProfileHash = 'a'.repeat(64);
 const otherGuestProfileHash = 'b'.repeat(64);
@@ -15,18 +15,48 @@ test('native Guest readback requires an explicit expected Guest hash and private
     '--private-root', '/private/tmp/patternly-private',
     '--expected-guest-sha256', guestProfileHash,
     '--output', 'guest-before.json',
+    '--metro-origin', 'http://127.0.0.1:8082',
   ]), {
     privateRoot: '/private/tmp/patternly-private',
     expectedGuestProfileIdSha256: guestProfileHash,
     output: 'guest-before.json',
+    metroOrigin: 'http://127.0.0.1:8082',
   });
   assert.throws(() => parseArguments(['--private-root', '/tmp/a', '--expected-guest-sha256', guestProfileHash]), /input_rejected/u);
   assert.throws(() => parseArguments([
-    '--private-root', '/tmp/a', '--expected-guest-sha256', 'not-a-hash', '--output', 'out.json',
+    '--private-root', '/tmp/a', '--expected-guest-sha256', 'not-a-hash', '--output', 'out.json', '--metro-origin', 'http://127.0.0.1:8082',
   ]), /expected_guest_hash_rejected/u);
   assert.throws(() => parseArguments([
     '--private-root', '/tmp/a', '--expected-guest-sha256', guestProfileHash, '--output', 'out.json', '--unexpected',
   ]), /input_rejected/u);
+  assert.throws(() => parseArguments([
+    '--private-root', '/tmp/a', '--expected-guest-sha256', guestProfileHash, '--output', 'out.json',
+  ]), /input_rejected/u);
+});
+
+test('Metro origin is explicit, canonical IPv4 loopback HTTP with a required usable port', () => {
+  assert.equal(parseMetroOrigin('http://127.0.0.1:8081'), 'http://127.0.0.1:8081');
+  assert.equal(parseMetroOrigin('http://127.0.0.1:8082'), 'http://127.0.0.1:8082');
+  for (const invalid of [
+    'http://localhost:8082', 'http://127.1:8082', 'http://127.0.0.1', 'http://127.0.0.1:80',
+    'http://127.0.0.1:0', 'http://127.0.0.1:65536', 'http://127.0.0.1:08082',
+    'http://user@127.0.0.1:8082', 'http://127.0.0.1:8082/', 'http://127.0.0.1:8082/path',
+    'http://127.0.0.1:8082?x=1', 'http://127.0.0.1:8082#fragment', 'https://127.0.0.1:8082',
+    'http://[::1]:8082',
+  ]) assert.throws(() => parseMetroOrigin(invalid), /metro_origin_rejected/u, invalid);
+});
+
+test('native WebSocket endpoint must use the same explicit loopback Metro port', () => {
+  assert.equal(validateNativeWebSocketEndpoint('ws://127.0.0.1:8082/inspector?device=1', 'http://127.0.0.1:8082').port, '8082');
+  assert.deepEqual(nativeTargetConnectionSettings('ws://127.0.0.1:8082/inspector?device=1', 'http://127.0.0.1:8082'), {
+    listUrl: 'http://127.0.0.1:8082/json/list',
+    webSocketUrl: 'ws://127.0.0.1:8082/inspector?device=1',
+    webSocketOrigin: 'http://127.0.0.1:8082',
+  });
+  for (const endpoint of [
+    'ws://localhost:8082/inspector', 'ws://127.0.0.1:8081/inspector',
+    'wss://127.0.0.1:8082/inspector', 'ws://user@127.0.0.1:8082/inspector',
+  ]) assert.throws(() => validateNativeWebSocketEndpoint(endpoint, 'http://127.0.0.1:8082'), /native_target_rejected/u, endpoint);
 });
 
 test('private output names cannot escape the private directory', () => {
@@ -191,7 +221,7 @@ test('CLI errors expose only a stable category, never supplied private hashes or
   const privatePath = '/private/tmp/secret-controlled-actor-manifest.json';
   const result = spawnSync(process.execPath, [
     fileURLToPath(new URL('./nativeGuestExportReadback.mjs', import.meta.url)),
-    '--private-root', privatePath, '--expected-guest-sha256', guestProfileHash, '--output', 'snapshot.json', '--unexpected',
+    '--private-root', privatePath, '--expected-guest-sha256', guestProfileHash, '--output', 'snapshot.json', '--metro-origin', 'http://127.0.0.1:8082', '--unexpected',
   ], { encoding: 'utf8' });
   assert.equal(result.status, 1);
   assert.equal(result.stdout, '');
@@ -199,4 +229,15 @@ test('CLI errors expose only a stable category, never supplied private hashes or
     stage: 'native_guest_export_readback_stopped', category: 'input_rejected', storageMutationAttempted: false,
   });
   assert.doesNotMatch(result.stderr, /secret-controlled-actor|a{64}/u);
+
+  const badOrigin = spawnSync(process.execPath, [
+    fileURLToPath(new URL('./nativeGuestExportReadback.mjs', import.meta.url)),
+    '--private-root', privatePath, '--expected-guest-sha256', guestProfileHash, '--output', 'snapshot.json', '--metro-origin', 'http://localhost:8082',
+  ], { encoding: 'utf8' });
+  assert.equal(badOrigin.status, 1);
+  assert.equal(badOrigin.stdout, '');
+  assert.deepEqual(JSON.parse(badOrigin.stderr), {
+    stage: 'native_guest_export_readback_stopped', category: 'metro_origin_rejected', storageMutationAttempted: false,
+  });
+  assert.doesNotMatch(badOrigin.stderr, /secret-controlled-actor|localhost/u);
 });

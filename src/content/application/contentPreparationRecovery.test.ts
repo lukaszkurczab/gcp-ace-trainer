@@ -126,7 +126,7 @@ test("exact-missing abandonment fences both local Guest and authenticated accoun
   assert.match(accountProvider, /captureCurrentAuthenticatedActorFence,/u);
   assert.match(source, /readGuestInstallation: getGuestInstallation/u);
   assert.match(source, /hasGuestAccess,/u);
-  assert.match(exactMissingActorFence, /\["guest", "legacy_guest"\]/u);
+  assert.match(exactMissingActorFence, /profile\.kind === "guest"/u);
   assert.match(exactMissingActorFence, /currentInstallation|current\.localDatasetId/u);
   assert.match(exactMissingActorFence, /const actorAndScopeAreCurrent = \(\) => input\.currentActorKind\(\) === "guest"[\s\S]*?hasGuestAccess\(\)/u);
   assert.match(exactMissingActorFence, /const current = await readInstallation\(\);\s*return actorAndScopeAreCurrent\(\) && current\?/u);

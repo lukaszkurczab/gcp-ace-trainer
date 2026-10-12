@@ -25,13 +25,13 @@ export async function captureExactMissingActorAnchor(input: Readonly<{
   const storage = input.storage;
   if (!profile || !storage) return null;
   const anchorProfile = Object.freeze({ id: profile.id, kind: profile.kind, accountId: profile.accountId });
-  if (["guest", "legacy_guest"].includes(profile.kind)) {
+  if (profile.kind === "guest") {
     const guestInstallation = await input.readGuestInstallation();
     if (!guestInstallation || profile.accountId !== null || guestInstallation.accountId !== null
       || guestInstallation.localDatasetId !== profile.id || guestInstallation.bindingState !== "guest" || !input.hasGuestAccess()) return null;
     return Object.freeze({ profile: anchorProfile, storage, guestInstallation: Object.freeze({ ...guestInstallation }) });
   }
-  if (!["account", "legacy_owner"].includes(profile.kind) || !profile.accountId) return null;
+  if (profile.kind !== "account" || !profile.accountId) return null;
   return Object.freeze({ profile: anchorProfile, storage, guestInstallation: null });
 }
 
@@ -51,7 +51,7 @@ export async function captureExactMissingActorFence(input: Readonly<{
   if (input.actorKind === "authenticated") {
     const profile = input.profile;
     const isCurrentAccountActor = input.isCurrentAccountActor;
-    if (!profile || !["account", "legacy_owner"].includes(profile.kind) || !profile.accountId || !isCurrentAccountActor?.()) return null;
+    if (!profile || profile.kind !== "account" || !profile.accountId || !isCurrentAccountActor?.()) return null;
     return Object.freeze({ isCurrent: () => input.currentActorKind() === "authenticated"
       && sameExactMissingProfile(profile, input.currentProfile()) && input.currentStorage() === input.storage && isCurrentAccountActor() });
   }
@@ -59,7 +59,7 @@ export async function captureExactMissingActorFence(input: Readonly<{
   const profile = input.profile;
   const readInstallation = input.readGuestInstallation;
   const hasGuestAccess = input.hasGuestAccess;
-  if (!profile || !["guest", "legacy_guest"].includes(profile.kind) || profile.accountId !== null || !readInstallation || !hasGuestAccess) return null;
+  if (!profile || profile.kind !== "guest" || profile.accountId !== null || !readInstallation || !hasGuestAccess) return null;
   const installation = input.guestInstallationAnchor ?? await readInstallation();
   if (!installation || installation.accountId !== null || installation.localDatasetId !== profile.id || installation.bindingState !== "guest" || !hasGuestAccess()) return null;
   return Object.freeze({ isCurrent: async () => {
@@ -87,7 +87,7 @@ export async function captureExactMissingActorFenceAtConfirmation(input: Readonl
 }>): Promise<ExactMissingActorFence | null> {
   const anchor = input.anchor;
   if (!anchor || !sameExactMissingProfile(anchor.profile, input.currentProfile()) || input.currentStorage() !== anchor.storage) return null;
-  const accountProfile = ["account", "legacy_owner"].includes(anchor.profile.kind);
+  const accountProfile = anchor.profile.kind === "account";
   if (accountProfile) {
     if (input.actorKind !== "authenticated" || !anchor.profile.accountId) return null;
     const accountFence = input.captureCurrentAuthenticatedActorFence?.();

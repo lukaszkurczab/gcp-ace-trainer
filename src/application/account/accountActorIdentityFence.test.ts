@@ -33,7 +33,7 @@ test("account identity fence rejects SDK UID, backend account, generation, profi
     { ...observation, generation: { uid: "firebase-uid", generation: 9 } },
     { ...observation, generationCurrent: false },
     { ...observation, profile: { ...profile, id: "other-profile" } },
-    { ...observation, profile: { ...profile, kind: "legacy_owner" as const } },
+    { ...observation, profile: { ...profile, kind: "legacy_owner" as unknown as typeof profile.kind } },
     { ...observation, profile: { ...profile, accountId: "other-account" } },
     { ...observation, stateKind: "signingOut" },
   ];

@@ -14,8 +14,9 @@ const LOCAL_LOGOUT_CONTROL_KEY = "patternly.local-logout-control.v2";
 const ROOT_VERSION = 1 as const;
 const PROFILE_PREFIX = "patternly:profile:v1:";
 const CANONICAL_ENVELOPE = "patternly:canonical:v1";
+const CONTENT_PACKAGE_POINTER_KEY = /^patternly\.content-node\.active\.v1\.[a-f0-9]{64}$/u;
 
-export type ProfileKind = "legacy_owner" | "legacy_guest" | "account" | "guest";
+export type ProfileKind = "account" | "guest";
 export type StorageProfile = Readonly<{ id: string; kind: ProfileKind; accountId: string | null }>;
 export type ProfileRegistry = Readonly<{
   version: typeof ROOT_VERSION;
@@ -29,7 +30,7 @@ export type ProfileRegistry = Readonly<{
 export type AccountIdentityBinding = Readonly<{
   schema: typeof ACCOUNT_BINDING_SCHEMA;
   profileId: string;
-  profileKind: "account" | "legacy_owner";
+  profileKind: "account";
   accountId: string;
   firebaseUid: string;
   verified: true;
@@ -42,7 +43,7 @@ export type AccountIdentityBindingRead = Readonly<{ kind: "verified"; binding: A
 export type AccountIdentityProofBarrierReceipt = Readonly<{
   schema: "patternly.account-identity-proof-barrier.v1";
   profileId: string;
-  profileKind: "account" | "legacy_owner";
+  profileKind: "account";
   accountId: string;
   firebaseUid: string;
   previousBindingChecksum: string;
@@ -142,34 +143,46 @@ function withChecksum(value: Omit<ProfileRegistry, "checksum">): ProfileRegistry
   return Object.freeze({ ...value, checksum: sha256Utf8(JSON.stringify(bodyOf(value))) });
 }
 
-function parseRegistry(raw: string | null): ProfileRegistry | null {
-  if (raw === null) return null;
+type StoredControlParse<T> = Readonly<{ kind: "absent" | "unsupported" | "corrupt" } | { kind: "current"; value: T }>;
+
+function inspectRegistry(raw: string | null): StoredControlParse<ProfileRegistry> {
+  if (raw === null) return { kind: "absent" };
   try {
     const value = JSON.parse(raw) as Record<string, unknown>;
-    if (Object.keys(value).sort().join(",") !== "checksum,generation,legacyProfileId,profiles,selectedProfileId,version") return null;
+    if (Object.keys(value).sort().join(",") !== "checksum,generation,legacyProfileId,profiles,selectedProfileId,version") return { kind: "corrupt" };
     const { checksum, ...body } = value;
-    if (body.version !== ROOT_VERSION || !Number.isSafeInteger(body.generation) || Number(body.generation) < 1 || typeof checksum !== "string") return null;
-    if (!Array.isArray(body.profiles) || typeof body.selectedProfileId !== "string" || (body.legacyProfileId !== null && typeof body.legacyProfileId !== "string")) return null;
-    const profiles: StorageProfile[] = [];
+    if (body.version !== ROOT_VERSION || !Number.isSafeInteger(body.generation) || Number(body.generation) < 1 || typeof checksum !== "string") return { kind: "corrupt" };
+    if (!Array.isArray(body.profiles) || typeof body.selectedProfileId !== "string" || (body.legacyProfileId !== null && typeof body.legacyProfileId !== "string")) return { kind: "corrupt" };
+    const profiles: Array<StorageProfile | Readonly<{ id: string; kind: "legacy_owner" | "legacy_guest"; accountId: string | null }>> = [];
     const ids = new Set<string>();
+    let hasLegacyKind = false;
     for (const candidate of body.profiles) {
-      if (typeof candidate !== "object" || candidate === null || Array.isArray(candidate)) return null;
+      if (typeof candidate !== "object" || candidate === null || Array.isArray(candidate)) return { kind: "corrupt" };
       const profile = candidate as Record<string, unknown>;
-      if (Object.keys(profile).sort().join(",") !== "accountId,id,kind") return null;
-      if (!uuid(profile.id) || ids.has(profile.id) || !["legacy_owner", "legacy_guest", "account", "guest"].includes(String(profile.kind))) return null;
+      if (Object.keys(profile).sort().join(",") !== "accountId,id,kind") return { kind: "corrupt" };
+      if (!uuid(profile.id) || ids.has(profile.id) || !["legacy_owner", "legacy_guest", "account", "guest"].includes(String(profile.kind))) return { kind: "corrupt" };
+      const legacy = profile.kind === "legacy_owner" || profile.kind === "legacy_guest";
+      hasLegacyKind ||= legacy;
       if (profile.kind === "legacy_owner" || profile.kind === "account") {
-        if (typeof profile.accountId !== "string" || !profile.accountId.trim()) return null;
-      } else if (profile.accountId !== null) return null;
+        if (typeof profile.accountId !== "string" || !profile.accountId.trim()) return { kind: "corrupt" };
+      } else if (profile.accountId !== null) return { kind: "corrupt" };
       ids.add(profile.id);
-      profiles.push(Object.freeze({ id: profile.id, kind: profile.kind as ProfileKind, accountId: profile.accountId as string | null }));
+      profiles.push(Object.freeze({ id: profile.id, kind: profile.kind as ProfileKind | "legacy_owner" | "legacy_guest", accountId: profile.accountId as string | null }));
     }
-    if (!ids.has(body.selectedProfileId) || (body.legacyProfileId !== null && !ids.has(body.legacyProfileId))) return null;
-    if (profiles.filter((profile) => profile.kind.startsWith("legacy_")).length !== (body.legacyProfileId === null ? 0 : 1)) return null;
-    if (body.legacyProfileId !== null && !profiles.some((profile) => profile.id === body.legacyProfileId && profile.kind.startsWith("legacy_"))) return null;
-    const clean = { version: ROOT_VERSION, generation: Number(body.generation), profiles, legacyProfileId: body.legacyProfileId as string | null, selectedProfileId: body.selectedProfileId };
-    const expected = withChecksum(clean);
-    return checksum === expected.checksum ? expected : null;
-  } catch { return null; }
+    if (!ids.has(body.selectedProfileId) || (body.legacyProfileId !== null && !ids.has(body.legacyProfileId))) return { kind: "corrupt" };
+    if (profiles.filter((profile) => profile.kind === "legacy_owner" || profile.kind === "legacy_guest").length !== (body.legacyProfileId === null ? 0 : 1)) return { kind: "corrupt" };
+    if (body.legacyProfileId !== null && !profiles.some((profile) => profile.id === body.legacyProfileId && (profile.kind === "legacy_owner" || profile.kind === "legacy_guest"))) return { kind: "corrupt" };
+    const cleanBody = { version: ROOT_VERSION, generation: Number(body.generation), profiles, legacyProfileId: body.legacyProfileId as string | null, selectedProfileId: body.selectedProfileId };
+    const expectedChecksum = sha256Utf8(JSON.stringify(cleanBody));
+    if (checksum !== expectedChecksum) return { kind: "corrupt" };
+    if (hasLegacyKind || body.legacyProfileId !== null) return { kind: "unsupported" };
+    return { kind: "current", value: Object.freeze({ ...cleanBody, profiles: Object.freeze(profiles as StorageProfile[]), checksum: expectedChecksum }) };
+  } catch { return { kind: "corrupt" }; }
+}
+
+function parseRegistry(raw: string | null): ProfileRegistry | null {
+  const parsed = inspectRegistry(raw);
+  return parsed.kind === "current" ? parsed.value : null;
 }
 
 function bindingBody(value: Omit<AccountIdentityBindingEntry, "checksum">): Omit<AccountIdentityBindingEntry, "checksum"> {
@@ -184,27 +197,29 @@ function withBindingEnvelopeChecksum(value: Omit<AccountIdentityBindingEnvelope,
   return Object.freeze({ ...value, checksum: sha256Utf8(JSON.stringify(value)) });
 }
 
-function parseAccountBindingEnvelope(raw: string | null): AccountIdentityBindingEnvelope | null {
-  if (raw === null) return null;
+function inspectAccountBindingEnvelope(raw: string | null): StoredControlParse<AccountIdentityBindingEnvelope> {
+  if (raw === null) return { kind: "absent" };
   try {
     const value = JSON.parse(raw) as Record<string, unknown>;
     if (Object.keys(value).sort().join(",") !== "bindings,checksum,generation,schema"
       || value.schema !== ACCOUNT_BINDING_SCHEMA || !Number.isSafeInteger(value.generation) || Number(value.generation) < 1
-      || typeof value.checksum !== "string" || !Array.isArray(value.bindings)) return null;
+      || typeof value.checksum !== "string" || !Array.isArray(value.bindings)) return { kind: "corrupt" };
     const ids = new Set<string>();
     const bindings: AccountIdentityBindingEntry[] = [];
+    let hasRetiredEntry = false;
     for (const candidate of value.bindings) {
-      if (typeof candidate !== "object" || candidate === null || Array.isArray(candidate)) return null;
+      if (typeof candidate !== "object" || candidate === null || Array.isArray(candidate)) return { kind: "corrupt" };
       const entry = candidate as Record<string, unknown>;
       if (Object.keys(entry).sort().join(",") !== "accountId,checksum,firebaseUid,profileId,profileKind,schema,verificationRevision,verified"
         || entry.schema !== ACCOUNT_BINDING_SCHEMA || !uuid(entry.profileId) || ids.has(String(entry.profileId))
         || (entry.profileKind !== "account" && entry.profileKind !== "legacy_owner")
         || !Number.isSafeInteger(entry.verificationRevision) || Number(entry.verificationRevision) < 1
-        || typeof entry.verified !== "boolean" || typeof entry.checksum !== "string") return null;
+        || typeof entry.verified !== "boolean" || typeof entry.checksum !== "string") return { kind: "corrupt" };
       ids.add(entry.profileId);
+      hasRetiredEntry ||= entry.profileKind === "legacy_owner";
       const verified = entry.verified === true;
       if (verified ? (typeof entry.accountId !== "string" || !entry.accountId.trim() || typeof entry.firebaseUid !== "string" || !entry.firebaseUid.trim())
-        : (entry.accountId !== null || entry.firebaseUid !== null)) return null;
+        : (entry.accountId !== null || entry.firebaseUid !== null)) return { kind: "corrupt" };
       const profileKind = entry.profileKind as "account" | "legacy_owner";
       const body = {
         schema: ACCOUNT_BINDING_SCHEMA,
@@ -216,12 +231,18 @@ function parseAccountBindingEnvelope(raw: string | null): AccountIdentityBinding
         verificationRevision: Number(entry.verificationRevision),
       };
       const parsed = withBindingChecksum(body);
-      if (parsed.checksum !== entry.checksum) return null;
-      bindings.push(parsed);
+      if (parsed.checksum !== entry.checksum) return { kind: "corrupt" };
+      bindings.push(parsed as AccountIdentityBindingEntry);
     }
     const envelope = withBindingEnvelopeChecksum({ schema: ACCOUNT_BINDING_SCHEMA, generation: Number(value.generation), bindings });
-    return envelope.checksum === value.checksum ? envelope : null;
-  } catch { return null; }
+    if (envelope.checksum !== value.checksum) return { kind: "corrupt" };
+    return hasRetiredEntry ? { kind: "unsupported" } : { kind: "current", value: envelope };
+  } catch { return { kind: "corrupt" }; }
+}
+
+function parseAccountBindingEnvelope(raw: string | null): AccountIdentityBindingEnvelope | null {
+  const parsed = inspectAccountBindingEnvelope(raw);
+  return parsed.kind === "current" ? parsed.value : null;
 }
 
 let bindingMutationTail: Promise<void> = Promise.resolve();
@@ -234,9 +255,10 @@ function serializeBindingMutation<T>(operation: () => Promise<T>): Promise<T> {
 
 async function readAccountBindingSlots(control: StorageManifestStore): Promise<Readonly<{ raw: readonly (string | null)[]; envelope: AccountIdentityBindingEnvelope | null }>> {
   const raw = await Promise.all(ACCOUNT_BINDING_KEYS.map((key) => control.get(key)));
-  const parsed = raw.map(parseAccountBindingEnvelope);
-  if (raw.some((entry, index) => entry !== null && parsed[index] === null)) throw new ProfileStorageError("account_binding_corrupt");
-  const valid = parsed.filter((entry): entry is AccountIdentityBindingEnvelope => entry !== null);
+  const inspected = raw.map(inspectAccountBindingEnvelope);
+  if (inspected.some((entry) => entry.kind === "corrupt")) throw new ProfileStorageError("account_binding_corrupt");
+  if (inspected.some((entry) => entry.kind === "unsupported")) throw new ProfileStorageError("profile_scope_unavailable");
+  const valid = inspected.flatMap((entry) => entry.kind === "current" ? [entry.value] : []);
   if (valid.length === 2 && valid[0]!.generation === valid[1]!.generation) throw new ProfileStorageError("account_binding_ambiguous");
   const envelope = valid.sort((left, right) => right.generation - left.generation)[0] ?? null;
   return Object.freeze({ raw: Object.freeze(raw), envelope });
@@ -293,8 +315,8 @@ function storedGuestInstallation(storage: KeyValueStorage): StoredGuestInstallat
   return parseStoredGuestInstallation(storage.getString(STORAGE_KEYS.GUEST_INSTALLATION));
 }
 
-function physicalKey(profileId: string, key: string, legacy: boolean): string {
-  return legacy ? key : `${PROFILE_PREFIX}${profileId}:${encodeURIComponent(key)}`;
+function physicalKey(profileId: string, key: string): string {
+  return `${PROFILE_PREFIX}${profileId}:${encodeURIComponent(key)}`;
 }
 
 function signRemovalJournal(body: Omit<GuestRemoval34Journal, "checksum">): GuestRemoval34Journal {
@@ -461,8 +483,11 @@ async function advanceRemovalJournal(control: StorageManifestStore, journal: Gue
 
 async function readRegistrySlots(control: StorageManifestStore): Promise<readonly [ProfileRegistry, ProfileRegistry]> {
   const raw = await Promise.all(ROOT_KEYS.map((key) => control.get(key)));
-  const parsed = raw.map(parseRegistry);
-  if (parsed.some((registry) => registry === null) || parsed[0]!.generation === parsed[1]!.generation) throw new ProfileStorageError("profile_registry_corrupt");
+  const inspected = raw.map(inspectRegistry);
+  if (inspected.some((entry) => entry.kind === "corrupt" || entry.kind === "absent")) throw new ProfileStorageError("profile_registry_corrupt");
+  if (inspected.some((entry) => entry.kind === "unsupported")) throw new ProfileStorageError("profile_scope_unavailable");
+  const parsed = inspected.flatMap((entry) => entry.kind === "current" ? [entry.value] : []);
+  if (parsed.length !== 2 || parsed[0]!.generation === parsed[1]!.generation) throw new ProfileStorageError("profile_registry_corrupt");
   return parsed as [ProfileRegistry, ProfileRegistry];
 }
 
@@ -474,7 +499,6 @@ function assertRemovalRegistryMatches(journal: GuestRemoval34Journal, registry: 
   if (registry.legacyProfileId !== null || (target && (registry.generation > journal.originalRegistryGeneration
       || (registry.generation === journal.originalRegistryGeneration && (registry.selectedProfileId !== target.id || registry.checksum !== journal.originalRegistryChecksum))))
     || (replacement && registry.selectedProfileId !== replacement.id)
-    || profiles.some((profile) => profile.kind === "legacy_guest" || profile.kind === "legacy_owner")
     || retained.length !== journal.retainedProfiles.length
     || sha256Utf8(JSON.stringify(retained)) !== sha256Utf8(JSON.stringify(journal.retainedProfiles))
     || (target && (target.kind !== "guest" || target.accountId !== null))
@@ -494,8 +518,8 @@ function createRemovalGuestMarkers(base: KeyValueStorage, journal: GuestRemoval3
   const profile: StorageProfile = Object.freeze({ id: journal.replacementProfileId, kind: "guest", accountId: null });
   const installation = JSON.stringify({ schemaIdentity: CANONICAL_ENVELOPE, revision: 1, payload: { installationId: journal.replacementInstallationId, localDatasetId: journal.replacementProfileId, bindingState: "guest", accountId: null } });
   const access = JSON.stringify({ schemaIdentity: CANONICAL_ENVELOPE, revision: 1, payload: { mode: "guest" } });
-  writeExactValue(base, physicalKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION, false), installation);
-  writeExactValue(base, physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS, false), access);
+  writeExactValue(base, physicalKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION), installation);
+  writeExactValue(base, physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS), access);
 }
 
 async function commitDesiredRemovalRegistry(control: StorageManifestStore, journal: GuestRemoval34Journal, onFirstCommit: () => Promise<void>): Promise<void> {
@@ -537,9 +561,9 @@ async function resumeGuestRemoval34(base: KeyValueStorage, control: StorageManif
     || protectedState.otherProfileStateSha256 !== journal.otherProfileStateSha256 || protectedState.logoutControlSha256 !== journal.logoutControlSha256) throw new ProfileStorageError("profile_removal_recovery_required");
   const slotsBefore = await readRegistrySlots(control);
   for (const registry of slotsBefore) assertRemovalRegistryMatches(journal, registry);
-  const targetInstallationRaw = base.getString(physicalKey(journal.targetProfileId, STORAGE_KEYS.GUEST_INSTALLATION, false));
+  const targetInstallationRaw = base.getString(physicalKey(journal.targetProfileId, STORAGE_KEYS.GUEST_INSTALLATION));
   const targetInstallation = storedGuestInstallation(createProfileScopedStorage(base, { id: journal.targetProfileId, kind: "guest", accountId: null }));
-  const targetAccessRaw = base.getString(physicalKey(journal.targetProfileId, STORAGE_KEYS.GUEST_ACCESS, false));
+  const targetAccessRaw = base.getString(physicalKey(journal.targetProfileId, STORAGE_KEYS.GUEST_ACCESS));
   if ((targetInstallationRaw === undefined || !targetInstallation || targetInstallation.installationId !== journal.targetInstallationId || targetInstallation.localDatasetId !== journal.targetProfileId || targetInstallation.bindingState !== "guest" || targetInstallation.accountId !== null)
     && journal.stage !== "cleanup") throw new ProfileStorageError("profile_removal_recovery_required");
   if ((targetAccessRaw === undefined || !validGuestAccess(targetAccessRaw)) && journal.stage !== "cleanup") throw new ProfileStorageError("profile_removal_recovery_required");
@@ -602,9 +626,9 @@ async function startGuestRemoval34(
     const targetMarker = storedGuestInstallation(createProfileScopedStorage(base, profile));
     if (!targetMarker || targetMarker.installationId === profile.id || targetMarker.localDatasetId !== profile.id || targetMarker.bindingState !== "guest"
       || targetMarker.accountId !== null || sha256Utf8(targetMarker.installationId) !== expected.installationIdSha256
-      || !validGuestAccess(base.getString(physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS, false)))) return failed();
+      || !validGuestAccess(base.getString(physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS)))) return failed();
     const activeKeys = [STORAGE_KEYS.ACTIVE_TRAINING_SESSION, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, STORAGE_KEYS.ACTIVE_JOURNAL];
-    if (activeKeys.some((key) => base.getString(physicalKey(profile.id, key, false)) !== undefined)) { stage = "active_learning_work_present"; return failed(); }
+    if (activeKeys.some((key) => base.getString(physicalKey(profile.id, key)) !== undefined)) { stage = "active_learning_work_present"; return failed(); }
     const currentPrefix = `${PROFILE_PREFIX}${profile.id}:`;
     const targetKeyCount = base.getAllKeys().filter((key) => key.startsWith(currentPrefix)).length;
     if (targetKeyCount !== expected.guestKeyCount) { stage = "guest_baseline_mismatch"; return failed(); }
@@ -662,7 +686,7 @@ function validGuestAccess(raw: string | undefined): boolean {
 }
 
 function ensureGuestAccess(base: KeyValueStorage, profile: StorageProfile): void {
-  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS, profile.kind === "legacy_guest");
+  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS);
   const existing = base.getString(key);
   if (existing !== undefined) {
     if (!validGuestAccess(existing)) throw new ProfileStorageError("profile_scope_unavailable");
@@ -674,7 +698,7 @@ function ensureGuestAccess(base: KeyValueStorage, profile: StorageProfile): void
 }
 
 async function ensureGuestInstallation(base: KeyValueStorage, profile: StorageProfile, identity: GuestInstallationIdentityPort): Promise<void> {
-  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION, profile.kind === "legacy_guest");
+  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION);
   const existing = parseStoredGuestInstallation(base.getString(key));
   if (existing) {
     // Older guest provisioning generated a dataset ID independently of the
@@ -706,7 +730,7 @@ async function ensureAccountInstallation(
   knownInstallationId?: string,
 ): Promise<void> {
   if (profile.kind !== "account" || !profile.accountId) throw new ProfileStorageError("profile_scope_unavailable");
-  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION, false);
+  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION);
   const scoped = createProfileScopedStorage(base, profile);
   const raw = base.getString(key);
   if (raw !== undefined) {
@@ -736,8 +760,7 @@ async function ensureAccountInstallation(
 }
 
 export function createProfileScopedStorage(base: KeyValueStorage, profile: StorageProfile, isTransitionActive: () => boolean = () => false): KeyValueStorage {
-  const legacy = profile.kind === "legacy_owner" || profile.kind === "legacy_guest";
-  const map = (key: string) => physicalKey(profile.id, key, legacy);
+  const map = (key: string) => physicalKey(profile.id, key);
   const check = () => { if (isTransitionActive()) throw new ProfileTransitionActiveError(); };
   return Object.freeze({
     getString(key: string) { check(); return base.getString(map(key)); },
@@ -746,7 +769,6 @@ export function createProfileScopedStorage(base: KeyValueStorage, profile: Stora
     contains(key: string) { check(); return base.contains(map(key)); },
     getAllKeys() {
       check();
-      if (legacy) return Object.freeze(base.getAllKeys().filter((key) => !key.startsWith(PROFILE_PREFIX)));
       const prefix = `${PROFILE_PREFIX}${profile.id}:`;
       return Object.freeze(base.getAllKeys().filter((key) => key.startsWith(prefix)).map((key) => decodeURIComponent(key.slice(prefix.length))));
     },
@@ -784,29 +806,26 @@ export async function openProfileStorageRouter(
   catch { throw new ProfileStorageError("profile_removal_recovery_required"); }
   const readSlots = async () => Promise.all(ROOT_KEYS.map((key) => control.get(key)));
   const raw = await readSlots();
-  const parsed = raw.map(parseRegistry);
+  const inspected = raw.map(inspectRegistry);
   let isFreshInstallation = false;
   let registry: ProfileRegistry;
   if (raw.every((value) => value === null)) {
     const keys = base.getAllKeys();
-    const hasCanonical = keys.some((key) => key.startsWith(STORAGE_NAMESPACE));
-    if (keys.some((key) => key.startsWith(PROFILE_PREFIX))) throw new ProfileStorageError("profile_registry_corrupt");
-    isFreshInstallation = keys.length === 0;
-    if (hasCanonical) {
-      const marker = storedGuestInstallation(base);
-      if (!marker) throw new ProfileStorageError("legacy_profile_unidentified");
-      const profile: StorageProfile = Object.freeze({ id: marker.localDatasetId, kind: marker.bindingState === "account_bound" ? "legacy_owner" : "legacy_guest", accountId: marker.accountId });
-      registry = withChecksum({ version: ROOT_VERSION, generation: 1, profiles: [profile], legacyProfileId: profile.id, selectedProfileId: profile.id });
-    } else {
-      const guest = Object.freeze({ id: (await identity.create()).localDatasetId, kind: "guest" as const, accountId: null });
-      registry = withChecksum({ version: ROOT_VERSION, generation: 1, profiles: [guest], legacyProfileId: null, selectedProfileId: guest.id });
+    if (keys.length > 0) {
+      const hasRecognizedLegacyNamespace = keys.some((key) =>
+        key.startsWith(STORAGE_NAMESPACE) || CONTENT_PACKAGE_POINTER_KEY.test(key));
+      throw new ProfileStorageError(hasRecognizedLegacyNamespace ? "legacy_profile_unidentified" : "profile_scope_unavailable");
     }
+    isFreshInstallation = keys.length === 0;
+    const guest = Object.freeze({ id: (await identity.create()).localDatasetId, kind: "guest" as const, accountId: null });
+    registry = withChecksum({ version: ROOT_VERSION, generation: 1, profiles: [guest], legacyProfileId: null, selectedProfileId: guest.id });
     const key = ROOT_KEYS[registry.generation % 2]!;
     await control.set(key, JSON.stringify(registry));
     if (await control.get(key) !== JSON.stringify(registry) || !parseRegistry(await control.get(key))) throw new ProfileStorageError("profile_registry_corrupt");
   } else {
-    if (raw.some((value, index) => value !== null && !parsed[index])) throw new ProfileStorageError("profile_registry_corrupt");
-    const valid = parsed.filter((value): value is ProfileRegistry => value !== null);
+    if (inspected.some((entry) => entry.kind === "corrupt")) throw new ProfileStorageError("profile_registry_corrupt");
+    if (inspected.some((entry) => entry.kind === "unsupported")) throw new ProfileStorageError("profile_scope_unavailable");
+    const valid = inspected.flatMap((entry) => entry.kind === "current" ? [entry.value] : []);
     if (valid.length === 2 && valid[0]!.generation === valid[1]!.generation) throw new ProfileStorageError("profile_registry_corrupt");
     registry = valid.sort((left, right) => right.generation - left.generation)[0]!;
     if (!registry) throw new ProfileStorageError("profile_registry_corrupt");
@@ -821,19 +840,20 @@ export async function openProfileStorageRouter(
     dependencies.onBeforeProfileCommit?.();
   };
   const assertCurrentSelectedAccountProfile = async (canContinue: () => boolean): Promise<void> => {
-    if (!canContinue() || dependencies.isTransitionActive?.() || (profile.kind !== "account" && profile.kind !== "legacy_owner") || profile.accountId === null) {
+    if (!canContinue() || dependencies.isTransitionActive?.() || profile.kind !== "account" || profile.accountId === null) {
       throw new ProfileStorageError("profile_transition_cancelled");
     }
     const currentRaw = await Promise.all(ROOT_KEYS.map((key) => control.get(key)));
-    const currentParsed = currentRaw.map(parseRegistry);
-    if (currentRaw.some((value, index) => value !== null && currentParsed[index] === null)) throw new ProfileStorageError("profile_registry_corrupt");
-    const current = currentParsed.filter((entry): entry is ProfileRegistry => entry !== null).sort((left, right) => right.generation - left.generation)[0];
+    const currentParsed = currentRaw.map(inspectRegistry);
+    if (currentParsed.some((entry) => entry.kind === "corrupt")) throw new ProfileStorageError("profile_registry_corrupt");
+    if (currentParsed.some((entry) => entry.kind === "unsupported")) throw new ProfileStorageError("profile_scope_unavailable");
+    const current = currentParsed.flatMap((entry) => entry.kind === "current" ? [entry.value] : []).sort((left, right) => right.generation - left.generation)[0];
     if (!current || current.generation !== registry.generation || current.checksum !== registry.checksum || current.selectedProfileId !== profile.id
       || !current.profiles.some((candidate) => candidate.id === profile.id && candidate.kind === profile.kind && candidate.accountId === profile.accountId)
       || !canContinue() || dependencies.isTransitionActive?.()) throw new ProfileStorageError("profile_transition_cancelled");
   };
   const selectExistingGuest = async (profileId: string, canContinue: () => boolean = () => true): Promise<StorageProfile> => {
-    const guest = registry.profiles.find((candidate) => candidate.id === profileId && (candidate.kind === "guest" || candidate.kind === "legacy_guest"));
+    const guest = registry.profiles.find((candidate) => candidate.id === profileId && candidate.kind === "guest");
     if (!guest) throw new ProfileStorageError("profile_scope_unavailable");
     if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
     await ensureGuestInstallation(base, guest, identity);
@@ -844,7 +864,7 @@ export async function openProfileStorageRouter(
     await commitRegistry(control, registry, next);
     return guest;
   };
-  return Object.freeze({
+  const router: ProfileStorageRouter = {
     registry,
     profile,
     isFreshInstallation,
@@ -855,10 +875,9 @@ export async function openProfileStorageRouter(
     hasValidGuestAccess(profileId) {
       if (registry.selectedProfileId !== profileId) return false;
       const candidate = registry.profiles.find((entry) => entry.id === profileId);
-      if (!candidate || (candidate.kind !== "guest" && candidate.kind !== "legacy_guest")) return false;
-      const legacy = candidate.kind === "legacy_guest";
+      if (!candidate || candidate.kind !== "guest") return false;
       const guestInstallation = storedGuestInstallation(createProfileScopedStorage(base, candidate));
-      return validGuestAccess(base.getString(physicalKey(candidate.id, STORAGE_KEYS.GUEST_ACCESS, legacy)))
+      return validGuestAccess(base.getString(physicalKey(candidate.id, STORAGE_KEYS.GUEST_ACCESS)))
         && guestInstallation !== null
         && guestInstallation.accountId === null
         && (guestInstallation.bindingState === "guest" || guestInstallation.bindingState === "adoption_pending");
@@ -875,7 +894,7 @@ export async function openProfileStorageRouter(
         && guestInstallation.localDatasetId === candidate.id
         && sha256Utf8(guestInstallation.installationId) === installationIdSha256
         && sha256Utf8(guestInstallation.localDatasetId) === datasetIdSha256
-        && validGuestAccess(base.getString(physicalKey(candidate.id, STORAGE_KEYS.GUEST_ACCESS, false)));
+        && validGuestAccess(base.getString(physicalKey(candidate.id, STORAGE_KEYS.GUEST_ACCESS)));
     },
     async readSelectedAccountIdentityBinding() {
       await assertCurrentSelectedAccountProfile(() => true);
@@ -884,14 +903,16 @@ export async function openProfileStorageRouter(
       const entry = bindingEntryFor(snapshot.envelope, profile.id);
       if (!entry) return Object.freeze({ kind: "missing" as const });
       if (!entry.verified) return Object.freeze({ kind: "invalidated" as const });
-      if (entry.profileKind !== profile.kind || entry.accountId !== profile.accountId || typeof entry.firebaseUid !== "string") {
+      if (entry.profileKind !== "account" || entry.accountId !== profile.accountId || typeof entry.firebaseUid !== "string") {
         throw new ProfileStorageError("account_binding_corrupt");
       }
       const accountId = entry.accountId;
       const firebaseUid = entry.firebaseUid;
       if (accountId === null) throw new ProfileStorageError("account_binding_corrupt");
-      const { checksum, ...binding } = entry;
-      return Object.freeze({ kind: "verified" as const, binding: Object.freeze({ ...binding, verified: true as const, accountId, firebaseUid, checksum }) });
+      return Object.freeze({ kind: "verified" as const, binding: Object.freeze({
+        schema: ACCOUNT_BINDING_SCHEMA, profileId: entry.profileId, profileKind: "account" as const,
+        accountId, firebaseUid, verified: true as const, verificationRevision: entry.verificationRevision, checksum: entry.checksum,
+      }) });
     },
     async writeVerifiedSelectedAccountIdentityBinding(input) {
       return serializeBindingMutation(async () => {
@@ -903,7 +924,7 @@ export async function openProfileStorageRouter(
         const nextEntry = withBindingChecksum({
           schema: ACCOUNT_BINDING_SCHEMA,
           profileId: profile.id,
-          profileKind: profile.kind as "account" | "legacy_owner",
+          profileKind: "account",
           accountId: input.accountId,
           firebaseUid: input.firebaseUid,
           verified: true,
@@ -917,12 +938,13 @@ export async function openProfileStorageRouter(
         await assertCurrentSelectedAccountProfile(input.canContinue);
         const verify = await readAccountBindingSlots(control);
         const persisted = bindingEntryFor(verify.envelope, profile.id);
-        if (verify.envelope?.generation !== next.generation || persisted?.checksum !== nextEntry.checksum || !persisted?.verified
+        if (verify.envelope?.generation !== next.generation || persisted?.profileKind !== "account" || persisted.checksum !== nextEntry.checksum || !persisted.verified
           || persisted.firebaseUid !== input.firebaseUid || persisted.accountId !== input.accountId || persisted.verificationRevision !== nextEntry.verificationRevision) {
           throw new ProfileStorageError("account_binding_commit_unverified");
         }
-        const { checksum, ...binding } = persisted;
-        return Object.freeze({ ...binding, verified: true as const, accountId: persisted.accountId!, firebaseUid: persisted.firebaseUid!, checksum });
+        return Object.freeze({ schema: ACCOUNT_BINDING_SCHEMA, profileId: persisted.profileId, profileKind: "account" as const,
+          accountId: persisted.accountId!, firebaseUid: persisted.firebaseUid!, verified: true as const,
+          verificationRevision: persisted.verificationRevision, checksum: persisted.checksum });
       });
     },
     async invalidateSelectedAccountIdentityBinding(canContinue) {
@@ -934,7 +956,7 @@ export async function openProfileStorageRouter(
         const tombstone = withBindingChecksum({
           schema: ACCOUNT_BINDING_SCHEMA,
           profileId: profile.id,
-          profileKind: profile.kind as "account" | "legacy_owner",
+          profileKind: "account",
           accountId: null,
           firebaseUid: null,
           verified: false,
@@ -959,13 +981,13 @@ export async function openProfileStorageRouter(
         const existing = bindingEntryFor(previous.envelope, profile.id);
         if (!existing || !existing.verified) return null;
         if (existing.accountId !== input.accountId || existing.firebaseUid !== input.firebaseUid
-          || existing.profileKind !== profile.kind || existing.verificationRevision !== input.verificationRevision) {
+          || existing.profileKind !== "account" || existing.verificationRevision !== input.verificationRevision) {
           throw new ProfileStorageError("account_binding_conflict");
         }
         const tombstone = withBindingChecksum({
           schema: ACCOUNT_BINDING_SCHEMA,
           profileId: profile.id,
-          profileKind: profile.kind as "account" | "legacy_owner",
+          profileKind: "account",
           accountId: null,
           firebaseUid: null,
           verified: false,
@@ -987,7 +1009,7 @@ export async function openProfileStorageRouter(
         return Object.freeze({
           schema: "patternly.account-identity-proof-barrier.v1" as const,
           profileId: profile.id,
-          profileKind: profile.kind as "account" | "legacy_owner",
+          profileKind: "account",
           accountId: input.accountId,
           firebaseUid: input.firebaseUid,
           previousBindingChecksum: existing.checksum,
@@ -1036,11 +1058,12 @@ export async function openProfileStorageRouter(
         const verify = await readAccountBindingSlots(control);
         const persisted = bindingEntryFor(verify.envelope, receipt.profileId);
         if (verify.envelope?.generation !== next.generation || verify.envelope.checksum !== next.checksum
-          || persisted?.checksum !== restored.checksum || !persisted.verified
+          || persisted?.profileKind !== "account" || persisted.checksum !== restored.checksum || !persisted.verified
           || persisted.firebaseUid !== receipt.firebaseUid || persisted.accountId !== receipt.accountId
           || persisted.verificationRevision !== restored.verificationRevision) throw new ProfileStorageError("account_binding_commit_unverified");
-        const { checksum, ...binding } = persisted;
-        return Object.freeze({ ...binding, verified: true as const, accountId: persisted.accountId!, firebaseUid: persisted.firebaseUid!, checksum });
+        return Object.freeze({ schema: ACCOUNT_BINDING_SCHEMA, profileId: persisted.profileId, profileKind: "account" as const,
+          accountId: persisted.accountId!, firebaseUid: persisted.firebaseUid!, verified: true as const,
+          verificationRevision: persisted.verificationRevision, checksum: persisted.checksum });
       });
     },
     async inspectQ13ControlInventory(actorUidSha256?: string | null) {
@@ -1066,13 +1089,13 @@ export async function openProfileStorageRouter(
       if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
       const selected = registry.profiles.find((candidate) => candidate.id === registry.selectedProfileId);
       if (!selected) throw new ProfileStorageError("profile_registry_corrupt");
-      if (selected.kind === "guest" || selected.kind === "legacy_guest") {
+      if (selected.kind === "guest") {
         await ensureGuestInstallation(base, selected, identity);
         ensureGuestAccess(base, selected);
         return selected;
       }
 
-      const guests = registry.profiles.filter((candidate) => candidate.kind === "guest" || candidate.kind === "legacy_guest");
+      const guests = registry.profiles.filter((candidate) => candidate.kind === "guest");
       if (guests.length === 1) return selectExistingGuest(guests[0]!.id, canContinue);
       if (guests.length > 1) throw new ProfileStorageError("prepared_guest_choice_required");
 
@@ -1082,7 +1105,7 @@ export async function openProfileStorageRouter(
       if (registry.profiles.some((candidate) => candidate.id === guest.id)) throw new ProfileStorageError("profile_scope_unavailable");
       claimTransition();
       const next = withChecksum({ ...registryBody(registry, registry.generation + 1), profiles: [...registry.profiles, guest], selectedProfileId: guest.id });
-      const guestKey = physicalKey(guest.id, STORAGE_KEYS.GUEST_INSTALLATION, false);
+      const guestKey = physicalKey(guest.id, STORAGE_KEYS.GUEST_INSTALLATION);
       const installation = JSON.stringify({ schemaIdentity: CANONICAL_ENVELOPE, revision: 1, payload: { installationId: generated.installationId, localDatasetId: guest.id, bindingState: "guest", accountId: null } });
       if (!uuid(generated.installationId) || generated.installationId === guest.id) throw new ProfileStorageError("profile_scope_unavailable");
       base.setString(guestKey, installation);
@@ -1096,13 +1119,13 @@ export async function openProfileStorageRouter(
     async promoteSelectedBoundGuest(accountId: string, canContinue: () => boolean = () => true) {
       if (!accountId.trim() || !canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
       const selected = registry.profiles.find((candidate) => candidate.id === registry.selectedProfileId);
-      if (!selected || (selected.kind !== "guest" && selected.kind !== "legacy_guest")) return null;
+      if (!selected || selected.kind !== "guest") return null;
       const marker = storedGuestInstallation(createProfileScopedStorage(base, selected));
       if (!marker || marker.bindingState !== "account_bound" || marker.accountId !== accountId) return null;
       if (registry.profiles.some((candidate) => candidate.id !== selected.id && candidate.accountId === accountId)) throw new ProfileStorageError("profile_scope_unavailable");
       if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
       claimTransition();
-      const promoted: StorageProfile = Object.freeze({ ...selected, kind: selected.kind === "legacy_guest" ? "legacy_owner" : "account", accountId });
+      const promoted: StorageProfile = Object.freeze({ ...selected, kind: "account", accountId });
       const profiles = registry.profiles.map((candidate) => candidate.id === selected.id ? promoted : candidate);
       const next = withChecksum({ ...registryBody(registry, registry.generation + 1), profiles });
       await commitRegistry(control, registry, next);
@@ -1113,22 +1136,7 @@ export async function openProfileStorageRouter(
       if (!accountId.trim()) throw new ProfileStorageError("profile_scope_unavailable");
       const selectedProfile = registry.profiles.find((candidate) => candidate.id === registry.selectedProfileId);
       if (!selectedProfile) throw new ProfileStorageError("profile_registry_corrupt");
-      // A legacy guest marker can carry an adopted-account identity that is not
-      // yet represented in the registry. Never inspect a selected account scope
-      // or a modern guest scope while switching to another authenticated account.
-      const currentMarker = selectedProfile.kind === "legacy_guest"
-        ? storedGuestInstallation(createProfileScopedStorage(base, selectedProfile))
-        : null;
-      if (currentMarker?.bindingState === "account_bound" && currentMarker.accountId === accountId && selectedProfile.accountId !== accountId) {
-        if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
-        claimTransition();
-        const promoted: StorageProfile = Object.freeze({ ...selectedProfile, kind: selectedProfile.kind === "legacy_guest" ? "legacy_owner" : "account", accountId });
-        const profiles = registry.profiles.map((candidate) => candidate.id === selectedProfile.id ? promoted : candidate);
-        const next = withChecksum({ ...registryBody(registry, registry.generation + 1), profiles });
-        await commitRegistry(control, registry, next);
-        return promoted;
-      }
-      const existing = registry.profiles.find((candidate) => candidate.accountId === accountId && (candidate.kind === "legacy_owner" || candidate.kind === "account"));
+      const existing = registry.profiles.find((candidate) => candidate.accountId === accountId && candidate.kind === "account");
       if (existing?.id === registry.selectedProfileId) {
         if (existing.kind === "account") await ensureAccountInstallation(base, existing, identity);
         if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
@@ -1147,7 +1155,8 @@ export async function openProfileStorageRouter(
       if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
       return account;
     },
-  });
+  };
+  return Object.freeze(router);
 }
 
 export async function commitProfileSelection(control: StorageManifestStore, previous: ProfileRegistry, selectedProfileId: string): Promise<void> {
@@ -1168,8 +1177,10 @@ function isUnchosenFreshGuestRegistry(registry: ProfileRegistry, storageKeys: re
 
 async function commitRegistry(control: StorageManifestStore, previous: ProfileRegistry, next: ProfileRegistry): Promise<void> {
   const slots = await Promise.all(ROOT_KEYS.map((key) => control.get(key)));
-  const parsed = slots.map(parseRegistry);
-  if (slots.some((value, index) => value !== null && !parsed[index])) throw new ProfileStorageError("profile_registry_corrupt");
+  const inspected = slots.map(inspectRegistry);
+  if (inspected.some((entry) => entry.kind === "corrupt")) throw new ProfileStorageError("profile_registry_corrupt");
+  if (inspected.some((entry) => entry.kind === "unsupported")) throw new ProfileStorageError("profile_scope_unavailable");
+  const parsed = inspected.map((entry) => entry.kind === "current" ? entry.value : null);
   if (!parsed.some((entry) => entry?.generation === previous.generation && entry.checksum === previous.checksum)) throw new ProfileStorageError("profile_registry_corrupt");
   const targetIndex = slots.findIndex((value) => value === null || parseRegistry(value)?.generation !== previous.generation);
   if (targetIndex < 0) throw new ProfileStorageError("profile_registry_corrupt");
