@@ -1,0 +1,20 @@
+appId: com.lkurczab.patternly
+name: PERF-06 normal Review read owner and return with existing Guest
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:review:root"
+    timeout: 20000
+- assertVisible: "Review Mistakes"
+- assertVisible: "Review queue"
+- assertVisible: "Coding Interview: DSA & Problem Solving.*"
+- assertVisible: "0 total"
+- assertVisible: "0 due"
+- assertVisible: "0 upcoming"
+- assertVisible: "No review items yet"
+- assertVisible: "Incorrect or partial answers from this track will appear here after they are added to review."
+- takeScreenshot: regular-review-empty
+- tapOn: "Go back"
+- assertVisible: "View activity"
+- assertVisible: "Resume session"
+- takeScreenshot: regular-review-return-home

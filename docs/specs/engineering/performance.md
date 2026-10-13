@@ -62,7 +62,7 @@ Severity: P2.
 
 Pliki: `src/features/home/ActivityScreen.tsx`, `src/features/review/MistakesReviewScreen.tsx`, `src/components/Screen.tsx` i istniejące model/navigation tests.
 
-Current screens nadal mapują wszystkie wiersze wewnątrz ScrollView. To potwierdzone unbounded mounting; nie jest dowodem już zmierzonych dropped frames. Derived model Activity nie był wykazanym bottleneckiem.
+Historyczny baseline mapował wszystkie wiersze wewnątrz ScrollView. Kanoniczne ActivityView i MistakesReviewView używają teraz SectionList bez limitu historii; screen pozostaje właścicielem odczytu i operacji. Source, dopasowane ograniczone pomiary native, scroll/selection/return, normalne Activity/Review i zachowanie danych odebrane niezależnie 13.10.2026. [Dowody i ograniczenia](../../reports/perf06-list-windowing-2026-10-13.md): sampled RSS maxima oraz natywne callback rates, bez twierdzenia o absolute peak/presented frames/hitches. Końcowe dostarczenie helpera podlega standardowej exact-source CI. Derived model Activity nie był wykazanym bottleneckiem.
 
 Poprawka: windowing obecnego presentation layer, bez cap/usuwania historii. AC: mounted rows zależą od viewportu, nie od pełnego datasetu; zachowane date/DST/locale grouping, sort/ties/filter, selected details, scroll/return, due/upcoming/unavailable i semantyczne accessibility props. Na jednym iPhone17 porównać Activity50/500/1000 i Review100/1000: mounted rows/commits, JS long tasks, peak memory i frames. Scroll/remount nie traci stanu. Bez testów VoiceOver zgodnie z PO. Nie wymaga PERF-02/03.
 

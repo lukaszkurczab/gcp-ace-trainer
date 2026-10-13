@@ -1,0 +1,33 @@
+appId: com.lkurczab.patternly
+name: PERF-06 normal runtime existing Guest Activity without learning mutations
+---
+- assertVisible: "View activity"
+- tapOn: "View activity"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:activity:root"
+    timeout: 20000
+- assertVisible: "No activity yet"
+- assertVisible: "Completed sessions and reviews will appear here."
+- assertVisible:
+    id: "patternly:activity:filter"
+- takeScreenshot: regular-activity-empty
+- tapOn:
+    id: "patternly:activity:filter"
+- assertVisible: "Choose which track appears in Activity."
+- scrollUntilVisible:
+    element: "Coding Interview"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Coding Interview"
+- assertVisible: "No activity for this track"
+- assertVisible: "Show all activity"
+- takeScreenshot: regular-activity-filtered
+- tapOn: "Show all activity"
+- assertVisible: "No activity yet"
+- assertVisible:
+    id: "patternly:activity:filter"
+- tapOn: "Go back"
+- assertVisible: "View activity"
+- assertVisible: "Resume session"
+- takeScreenshot: regular-home-return-active-session-preserved

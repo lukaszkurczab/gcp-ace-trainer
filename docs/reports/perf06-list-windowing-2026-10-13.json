@@ -458,6 +458,738 @@
     "imagePermissions": "0600 applied explicitly after capture; simctl server writes0644 despite inherited umask; existing pilot corrected",
     "preservation": "37files/2MMKVbyte-identical/binarysame/5sameclassifieddeltas/0addedremoved/monitorOFF",
     "next": "fresh lifecycle sameinit/order bothsources; verify actual loaded variant, not callerlabel/diskhash alone",
-    "routineFinalCorrection": "Explicit observationsHostEndMs and target-envelope wording; pilot timestamps already record actual bounds."
+    "routineFinalCorrection": "Explicit observationsHostEndMs and target-envelope wording; pilot timestamps already record actual bounds.",
+    "hostedCi": {
+      "commit": "41b5f9220e96790473c172f46bd4f6034ed89b52",
+      "run": 38327566007,
+      "conclusion": "success",
+      "jobs": [
+        "Multi-track content release contract",
+        "Recovery QA gate"
+      ]
+    }
+  },
+  "nativeHostMatchedComparison": {
+    "date": "2026-10-13",
+    "historicalSession": 72957,
+    "windowedSeriesSession": 49647,
+    "windowedLifecycle": "fresh75917/Metro94292/app94333/preflight42043/show49602/hide83759",
+    "historicalLifecycleReceiptSha256": "4b24558b08b230158809231ddfd9666c5cb85db90c0a809d26aa677babd1ae44",
+    "windowedLifecycleReceiptSha256": "18be808f3aa2c0cdd1a1c4a8425a689ff192c0b10ff9d0716bcfac63fb8ab621",
+    "comparison": [
+      {
+        "screen": "activity",
+        "size": 50,
+        "historical": {
+          "receiptSha256": "ea89de8e8dea603be8506af6460ae23fa6727940907f0c1901a9f367daaa2bb8",
+          "mountedRows": 50,
+          "commits": 4,
+          "renderDurationMs": 148.59960404224694,
+          "jsMaxLongTaskMs": 179.454375,
+          "jsMaxRafGapMs": 18.16300000064075,
+          "jsRafSamples": 294,
+          "sampledMaxRSSKiB": 661392,
+          "sampledMaxHeapBytes": 23479432,
+          "hostMeasurementEndMs": 5231.278,
+          "hostObservationsEndMs": 7020.546,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "8489577f807c23ca524b22f92c5f892b40196d87cf2fd1764fe4d0e0d70e3250",
+            "src/features/review/MistakesReviewView.tsx": "e6e6e74370df89e852d22f27f849bc412c55c132fe292f654ad34d5568029e32",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        },
+        "windowed": {
+          "receiptSha256": "660eed22ba140d621a38d5fa773ee1251bcca005e84dfe6222c2d06620886736",
+          "mountedRows": 23,
+          "commits": 7,
+          "renderDurationMs": 104.49413097463548,
+          "jsMaxLongTaskMs": 75.539792,
+          "jsMaxRafGapMs": 25.0027499999851,
+          "jsRafSamples": 298,
+          "sampledMaxRSSKiB": 645824,
+          "sampledMaxHeapBytes": 20272824,
+          "hostMeasurementEndMs": 5221.933,
+          "hostObservationsEndMs": 7022.021,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "c58413dcec38cddbffedddc0e8f4ddcc449a3c99dc3cdcbbd606052c80378ac4",
+            "src/features/review/MistakesReviewView.tsx": "bae24fa7a3b3a920d049761d0a9dd878892d1538d5f374600470dcb730d9627a",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        }
+      },
+      {
+        "screen": "activity",
+        "size": 500,
+        "historical": {
+          "receiptSha256": "e934e6a0a0f800657d07729eca3ab90a72f0ae444b365eb02ede9c91edb75aa4",
+          "mountedRows": 500,
+          "commits": 4,
+          "renderDurationMs": 1037.0117101296782,
+          "jsMaxLongTaskMs": 1326.158791,
+          "jsMaxRafGapMs": 38.14149999991059,
+          "jsRafSamples": 228,
+          "sampledMaxRSSKiB": 882704,
+          "sampledMaxHeapBytes": 68762544,
+          "hostMeasurementEndMs": 5350.086,
+          "hostObservationsEndMs": 7020.828,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "8489577f807c23ca524b22f92c5f892b40196d87cf2fd1764fe4d0e0d70e3250",
+            "src/features/review/MistakesReviewView.tsx": "e6e6e74370df89e852d22f27f849bc412c55c132fe292f654ad34d5568029e32",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        },
+        "windowed": {
+          "receiptSha256": "32db6cba4b4ed93f84f0a34a918c9f99a6fe2a000c73fd6bd0d93ae9fc0d70d0",
+          "mountedRows": 23,
+          "commits": 9,
+          "renderDurationMs": 94.15908098965883,
+          "jsMaxLongTaskMs": 0,
+          "jsMaxRafGapMs": 51.6011250000447,
+          "jsRafSamples": 299,
+          "sampledMaxRSSKiB": 654656,
+          "sampledMaxHeapBytes": 26417888,
+          "hostMeasurementEndMs": 5226.103,
+          "hostObservationsEndMs": 7022.247,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "c58413dcec38cddbffedddc0e8f4ddcc449a3c99dc3cdcbbd606052c80378ac4",
+            "src/features/review/MistakesReviewView.tsx": "bae24fa7a3b3a920d049761d0a9dd878892d1538d5f374600470dcb730d9627a",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        }
+      },
+      {
+        "screen": "activity",
+        "size": 1000,
+        "historical": {
+          "receiptSha256": "4e1e799358d69ed1b4d1a710dd47e461df5412efd000dba0ceba183d7050b03b",
+          "mountedRows": 1000,
+          "commits": 3,
+          "renderDurationMs": 1884.747161384672,
+          "jsMaxLongTaskMs": 2492.439666,
+          "jsMaxRafGapMs": 53.45237500034273,
+          "jsRafSamples": 140,
+          "sampledMaxRSSKiB": 1274912,
+          "sampledMaxHeapBytes": 157655032,
+          "hostMeasurementEndMs": 5139.222,
+          "hostObservationsEndMs": 7021.015,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "8489577f807c23ca524b22f92c5f892b40196d87cf2fd1764fe4d0e0d70e3250",
+            "src/features/review/MistakesReviewView.tsx": "e6e6e74370df89e852d22f27f849bc412c55c132fe292f654ad34d5568029e32",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        },
+        "windowed": {
+          "receiptSha256": "7f7b53bf41eccd88ef50f6a18506436c22b0fd09556a962d2142d67de8174d01",
+          "mountedRows": 23,
+          "commits": 6,
+          "renderDurationMs": 97.46853893063962,
+          "jsMaxLongTaskMs": 70.136333,
+          "jsMaxRafGapMs": 42.261500000953674,
+          "jsRafSamples": 299,
+          "sampledMaxRSSKiB": 657248,
+          "sampledMaxHeapBytes": 21050248,
+          "hostMeasurementEndMs": 5218.132,
+          "hostObservationsEndMs": 7021.309,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "c58413dcec38cddbffedddc0e8f4ddcc449a3c99dc3cdcbbd606052c80378ac4",
+            "src/features/review/MistakesReviewView.tsx": "bae24fa7a3b3a920d049761d0a9dd878892d1538d5f374600470dcb730d9627a",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        }
+      },
+      {
+        "screen": "review-due",
+        "size": 100,
+        "historical": {
+          "receiptSha256": "aea3ce8211230802578a7c13613c66d1a62520c8b4e4ca7d92ad2513d235e437",
+          "mountedRows": 100,
+          "commits": 4,
+          "renderDurationMs": 193.38410699367523,
+          "jsMaxLongTaskMs": 410.565292,
+          "jsMaxRafGapMs": 18.427208999171853,
+          "jsRafSamples": 275,
+          "sampledMaxRSSKiB": 1274528,
+          "sampledMaxHeapBytes": 154365032,
+          "hostMeasurementEndMs": 5228.012,
+          "hostObservationsEndMs": 7020.593,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "8489577f807c23ca524b22f92c5f892b40196d87cf2fd1764fe4d0e0d70e3250",
+            "src/features/review/MistakesReviewView.tsx": "e6e6e74370df89e852d22f27f849bc412c55c132fe292f654ad34d5568029e32",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        },
+        "windowed": {
+          "receiptSha256": "8ed8e6015f610b3a7fcc26f60aaa8a06cb87914734172ab193e1f61b89f7f665",
+          "mountedRows": 20,
+          "commits": 7,
+          "renderDurationMs": 90.05311899632215,
+          "jsMaxLongTaskMs": 80.940667,
+          "jsMaxRafGapMs": 40.34624999947846,
+          "jsRafSamples": 297,
+          "sampledMaxRSSKiB": 661424,
+          "sampledMaxHeapBytes": 23292768,
+          "hostMeasurementEndMs": 5220.994,
+          "hostObservationsEndMs": 7020.692,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "c58413dcec38cddbffedddc0e8f4ddcc449a3c99dc3cdcbbd606052c80378ac4",
+            "src/features/review/MistakesReviewView.tsx": "bae24fa7a3b3a920d049761d0a9dd878892d1538d5f374600470dcb730d9627a",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        }
+      },
+      {
+        "screen": "review-due",
+        "size": 1000,
+        "historical": {
+          "receiptSha256": "d22e0bb8059990de08605b9bc952ee693fad2a2381d0a57da842a4842faf7867",
+          "mountedRows": 1000,
+          "commits": 3,
+          "renderDurationMs": 1358.2368307001889,
+          "jsMaxLongTaskMs": 2102.617,
+          "jsMaxRafGapMs": 19.833666000515223,
+          "jsRafSamples": 181,
+          "sampledMaxRSSKiB": 1408352,
+          "sampledMaxHeapBytes": 180195960,
+          "hostMeasurementEndMs": 5320.931,
+          "hostObservationsEndMs": 7021.463,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "8489577f807c23ca524b22f92c5f892b40196d87cf2fd1764fe4d0e0d70e3250",
+            "src/features/review/MistakesReviewView.tsx": "e6e6e74370df89e852d22f27f849bc412c55c132fe292f654ad34d5568029e32",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        },
+        "windowed": {
+          "receiptSha256": "c2a22799fba6ccdb1b42a4a87cfe5b3de04356101b251aa1a07bce410016127e",
+          "mountedRows": 20,
+          "commits": 7,
+          "renderDurationMs": 83.9921400193125,
+          "jsMaxLongTaskMs": 67.739916,
+          "jsMaxRafGapMs": 36.20183300040662,
+          "jsRafSamples": 299,
+          "sampledMaxRSSKiB": 667008,
+          "sampledMaxHeapBytes": 24858552,
+          "hostMeasurementEndMs": 5219.502,
+          "hostObservationsEndMs": 7020.806,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "c58413dcec38cddbffedddc0e8f4ddcc449a3c99dc3cdcbbd606052c80378ac4",
+            "src/features/review/MistakesReviewView.tsx": "bae24fa7a3b3a920d049761d0a9dd878892d1538d5f374600470dcb730d9627a",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        }
+      },
+      {
+        "screen": "review-upcoming",
+        "size": 100,
+        "historical": {
+          "receiptSha256": "0df3f68703ae6d35f752270c80b8aadeb04a5d8d54c5c09dd770fcab4fa0e0c8",
+          "mountedRows": 100,
+          "commits": 4,
+          "renderDurationMs": 189.0968960095197,
+          "jsMaxLongTaskMs": 346.603542,
+          "jsMaxRafGapMs": 26.371666999533772,
+          "jsRafSamples": 276,
+          "sampledMaxRSSKiB": 1378432,
+          "sampledMaxHeapBytes": 177303488,
+          "hostMeasurementEndMs": 5144.301,
+          "hostObservationsEndMs": 7020.395,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "8489577f807c23ca524b22f92c5f892b40196d87cf2fd1764fe4d0e0d70e3250",
+            "src/features/review/MistakesReviewView.tsx": "e6e6e74370df89e852d22f27f849bc412c55c132fe292f654ad34d5568029e32",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        },
+        "windowed": {
+          "receiptSha256": "e77ab723c06def968671b862f995d035010890e6b299ea96c0051ae22c09ab22",
+          "mountedRows": 20,
+          "commits": 7,
+          "renderDurationMs": 85.44069897569716,
+          "jsMaxLongTaskMs": 67.685125,
+          "jsMaxRafGapMs": 40.04908400028944,
+          "jsRafSamples": 298,
+          "sampledMaxRSSKiB": 669488,
+          "sampledMaxHeapBytes": 21012480,
+          "hostMeasurementEndMs": 5213.385,
+          "hostObservationsEndMs": 7021.007,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "c58413dcec38cddbffedddc0e8f4ddcc449a3c99dc3cdcbbd606052c80378ac4",
+            "src/features/review/MistakesReviewView.tsx": "bae24fa7a3b3a920d049761d0a9dd878892d1538d5f374600470dcb730d9627a",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        }
+      },
+      {
+        "screen": "review-upcoming",
+        "size": 1000,
+        "historical": {
+          "receiptSha256": "3d97fbe7125c0941b545d3be73ac8e3a8d93719e342bb7e8a2927dac8637fbf2",
+          "mountedRows": 1000,
+          "commits": 3,
+          "renderDurationMs": 1360.03196801804,
+          "jsMaxLongTaskMs": 2118.027666,
+          "jsMaxRafGapMs": 25.425791000947356,
+          "jsRafSamples": 180,
+          "sampledMaxRSSKiB": 1458800,
+          "sampledMaxHeapBytes": 150251224,
+          "hostMeasurementEndMs": 5320.404,
+          "hostObservationsEndMs": 7022.414,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "8489577f807c23ca524b22f92c5f892b40196d87cf2fd1764fe4d0e0d70e3250",
+            "src/features/review/MistakesReviewView.tsx": "e6e6e74370df89e852d22f27f849bc412c55c132fe292f654ad34d5568029e32",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        },
+        "windowed": {
+          "receiptSha256": "30e98cefd65acdef638addfd7734efe68e91926b37eb2199f6a16c7688990a59",
+          "mountedRows": 20,
+          "commits": 6,
+          "renderDurationMs": 79.5265419986099,
+          "jsMaxLongTaskMs": 65.791959,
+          "jsMaxRafGapMs": 36.71870799921453,
+          "jsRafSamples": 299,
+          "sampledMaxRSSKiB": 672832,
+          "sampledMaxHeapBytes": 25406136,
+          "hostMeasurementEndMs": 5217.096,
+          "hostObservationsEndMs": 7019.223,
+          "rssSamples": 28,
+          "images": 7,
+          "fixtureSha256": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+          "sourceHashes": {
+            "src/features/home/ActivityView.tsx": "c58413dcec38cddbffedddc0e8f4ddcc449a3c99dc3cdcbbd606052c80378ac4",
+            "src/features/review/MistakesReviewView.tsx": "bae24fa7a3b3a920d049761d0a9dd878892d1538d5f374600470dcb730d9627a",
+            "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af"
+          }
+        }
+      }
+    ],
+    "nativeMonitorReadings": [
+      {
+        "run": "matched-historical-activity50",
+        "valid": 7,
+        "unavailable": 0,
+        "unavailableStages": [],
+        "nativePhysFootprintMB": {
+          "min": 326.26,
+          "max": 344.37
+        },
+        "uiCallbackFPS": {
+          "min": 56,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 50,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-windowed-activity50",
+        "valid": 7,
+        "unavailable": 0,
+        "unavailableStages": [],
+        "nativePhysFootprintMB": {
+          "min": 323.65,
+          "max": 335.77
+        },
+        "uiCallbackFPS": {
+          "min": 60,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 53,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-historical-activity500",
+        "valid": 7,
+        "unavailable": 0,
+        "unavailableStages": [],
+        "nativePhysFootprintMB": {
+          "min": 336.62,
+          "max": 540.6
+        },
+        "uiCallbackFPS": {
+          "min": 26,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 24,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-windowed-activity500",
+        "valid": 7,
+        "unavailable": 0,
+        "unavailableStages": [],
+        "nativePhysFootprintMB": {
+          "min": 329.52,
+          "max": 335.35
+        },
+        "uiCallbackFPS": {
+          "min": 59,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 55,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-historical-activity1000",
+        "valid": 3,
+        "unavailable": 4,
+        "unavailableStages": [
+          "reading"
+        ],
+        "nativePhysFootprintMB": {
+          "min": 528.12,
+          "max": 803.66
+        },
+        "uiCallbackFPS": {
+          "min": 60,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 60,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-windowed-activity1000",
+        "valid": 7,
+        "unavailable": 0,
+        "unavailableStages": [],
+        "nativePhysFootprintMB": {
+          "min": 333.52,
+          "max": 334.16
+        },
+        "uiCallbackFPS": {
+          "min": 59,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 55,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-historical-review-due100",
+        "valid": 4,
+        "unavailable": 3,
+        "unavailableStages": [
+          "labels",
+          "reading"
+        ],
+        "nativePhysFootprintMB": {
+          "min": 618.02,
+          "max": 803.68
+        },
+        "uiCallbackFPS": {
+          "min": 59,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 60,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-windowed-review-due100",
+        "valid": 7,
+        "unavailable": 0,
+        "unavailableStages": [],
+        "nativePhysFootprintMB": {
+          "min": 334.16,
+          "max": 338.87
+        },
+        "uiCallbackFPS": {
+          "min": 59,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 52,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-historical-review-due1000",
+        "valid": 2,
+        "unavailable": 5,
+        "unavailableStages": [
+          "labels",
+          "reading"
+        ],
+        "nativePhysFootprintMB": {
+          "min": 893.45,
+          "max": 893.46
+        },
+        "uiCallbackFPS": {
+          "min": 59,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 60,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-windowed-review-due1000",
+        "valid": 7,
+        "unavailable": 0,
+        "unavailableStages": [],
+        "nativePhysFootprintMB": {
+          "min": 335.13,
+          "max": 340.99
+        },
+        "uiCallbackFPS": {
+          "min": 60,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 54,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-historical-review-upcoming100",
+        "valid": 5,
+        "unavailable": 2,
+        "unavailableStages": [
+          "reading"
+        ],
+        "nativePhysFootprintMB": {
+          "min": 693.99,
+          "max": 893.74
+        },
+        "uiCallbackFPS": {
+          "min": 60,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 60,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-windowed-review-upcoming100",
+        "valid": 7,
+        "unavailable": 0,
+        "unavailableStages": [],
+        "nativePhysFootprintMB": {
+          "min": 336.91,
+          "max": 337.46
+        },
+        "uiCallbackFPS": {
+          "min": 58,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 53,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-historical-review-upcoming1000",
+        "valid": 6,
+        "unavailable": 1,
+        "unavailableStages": [
+          "labels"
+        ],
+        "nativePhysFootprintMB": {
+          "min": 693.99,
+          "max": 949.84
+        },
+        "uiCallbackFPS": {
+          "min": 59,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 60,
+          "max": 60
+        }
+      },
+      {
+        "run": "matched-windowed-review-upcoming1000",
+        "valid": 7,
+        "unavailable": 0,
+        "unavailableStages": [],
+        "nativePhysFootprintMB": {
+          "min": 337.46,
+          "max": 338.71
+        },
+        "uiCallbackFPS": {
+          "min": 60,
+          "max": 60
+        },
+        "jsCallbackFPS": {
+          "min": 55,
+          "max": 60
+        }
+      }
+    ],
+    "conditions": "same existing iPhone17/binary/fixture/envelope; fresh Metro/app pervariant, Activity50preflight monitorOFF then identicalmonitorONflow/500msswipe, sevenconfigs ordered Activity50/500/1000 due100/1000 upcoming100/1000; no other heavy local check",
+    "limits": [
+      "one ordered series pervariant, no median/p95",
+      "RSS250ms samples and MiB phys_footprint from valid OCR only, not absolute process peak",
+      "later configurations include memory retained from earlier configurations",
+      "screenshots about200-260ms observer overhead; identical procedure bothvariants",
+      "seven-second host target around five-second JS window, image0 can precede guardedrun and readings are trailing~1s rates",
+      "15historical OCRimages unavailable, nofallback; all49windowed observed",
+      "callback/JSraf cadence is not presentedframes/hitchcount; first raf callback has no precedinggap and may miss initialrenderstall"
+    ],
+    "preservation": "binarysame/37files/2MMKVbyte-identical/5sameclassifieddeltas/0addedremoved/monitorOFF/exactsourcesrestored; priorlogical13profiles/1Guest/438keys/0unknown reused",
+    "independentReview": "Luna High final PASS WITH GAPS: all14receipts/hash/config/fixture/samplecounts/mounts verified, explicit sampled/coverage/ordered-series limits; no sourceblocker",
+    "fullPerf06": false
+  },
+  "normalRuntimeAcceptance": {
+    "status": "independent_bounded_native_acceptance_pass_exact_source_ci_pending",
+    "activityFlow": ".maestro/perf06-regular-activity.yaml",
+    "firstAttempt": {
+      "session": 53263,
+      "exit": 1,
+      "cause": "Alltracks visible screenshot but button AXlabel Filteractivity; selector corrected to existingID, app/timeouts unchanged"
+    },
+    "finalWholeFlow": {
+      "session": 53503,
+      "exit": 0,
+      "checks": [
+        "Home→Activity ready",
+        "empty title/description",
+        "filterCoding",
+        "filteredempty",
+        "ShowAll",
+        "HomeResumeSessionpreserved"
+      ]
+    },
+    "guestReadback": {
+      "session": 28548,
+      "exit": 0,
+      "profiles": 13,
+      "guests": 1,
+      "sessions": 1,
+      "attempts": 0,
+      "results": 0,
+      "inventoryComplete": true,
+      "identityExport13x6CategoriesGlobalsControlSecureControlEqual": true
+    },
+    "pending": [
+      "required exact-source hosted CI for new helper"
+    ],
+    "conditions": "smoke regularentry/no fixture/no login/no practice/reset/build/install; foreignofflineaccountpatches present and outside sourcepackage acceptance",
+    "reviewFlow": ".maestro/perf06-regular-review.yaml",
+    "reviewWholeFlow": {
+      "session": 89155,
+      "exit": 0,
+      "assertions": "normal Review owner, Coding track, total/due/upcoming 0, expected empty state, native Go back to Home with Resume preserved"
+    },
+    "navigationProbe": {
+      "source": "scripts/qa/openNativeRegularReview.mjs",
+      "stage": "navigation_requested",
+      "visitedFibers": 447,
+      "scope": "fixed test-only navigation into actual normal screen; not proof of an empty-queue UI affordance",
+      "guards": "dev/Hermes/smoke/no fixture, existing ready storage, active expected Guest lease, one Home/current route, <=5000 fibers, one-shot RAM receipt; no retry after uncertain dispatch",
+      "tests": {
+        "pass": 3,
+        "fail": 0
+      }
+    },
+    "finalGuestReadback": {
+      "session": 39416,
+      "exit": 0,
+      "profileCount": 13,
+      "guestCount": 1,
+      "identityPreserved": true,
+      "canonicalExportInputsEqual": true,
+      "rawUserReportsEqual": true,
+      "allProfileInventoriesEqual": true,
+      "globalInventoriesEqual": true,
+      "controlEqual": true,
+      "secureControlEqual": true,
+      "baseline": "CH07 after logical census"
+    },
+    "cleanup": {
+      "allOwnedProcessesStopped": true,
+      "emulatorExportComplete": true,
+      "noArchiveImported": true
+    },
+    "finalPhysicalPreservation": {
+      "binarySame": true,
+      "fileCountBefore": 37,
+      "fileCountAfter": 37,
+      "protectedMmkvByteIdentical": true,
+      "added": 0,
+      "removed": 0,
+      "changed": 5,
+      "categories": [
+        "RN development preferences",
+        "Firebase native heartbeat",
+        "network SQLite cache/WAL/SHM"
+      ],
+      "monitorOff": true
+    },
+    "independentFinalReview": {
+      "reviewer": "gpt-6-luna high",
+      "verdict": "PASS WITH GAPS",
+      "implementationBlockers": 0,
+      "requiredRemaining": "exact-source CI for delivered helper",
+      "limits": "sampled RSS not absolute peak; CADisplayLink callbacks not presented frames/hitches; no empty-queue UI affordance claim"
+    },
+    "localFinalGate": {
+      "session": 60645,
+      "exit": 0,
+      "pass": 2539,
+      "fail": 0,
+      "skip": 5,
+      "includesForeignOfflineTests": 2,
+      "currentContent": "58d7e8b918590abfe3cfa4da2594f1c12653f547",
+      "historicalContent": "cc3efca88be7e01137f10ac69a0643f06b61a350",
+      "firstAttempt": {
+        "session": 94844,
+        "exit": 1,
+        "pass": 2536,
+        "fail": 3,
+        "skip": 5,
+        "cause": "missing explicit historical/current content environment; corrected inputs without source changes"
+      }
+    }
   }
 }
