@@ -1,3 +1,5 @@
+import { createForegroundClockCapability, type ForegroundClockCapability, type ForegroundClockScope, type BoundForegroundClockDriver } from "./foregroundClockCapability";
+import type { HybridObject } from "react-native-nitro-modules";
 import type { EncryptedStoragePlatform, StorageManifestStore, StorageSlot } from "./encryptedStorageBootstrap";
 
 type SecureStoreModule = typeof import("expo-secure-store");
@@ -18,18 +20,67 @@ function base64Url(bytes: Uint8Array): string {
   return output;
 }
 
-function wrap(instance: ReturnType<MmkvModule["createMMKV"]>): StorageSlot {
-  return {
+type NativeForegroundClock = HybridObject<{ ios: "c++" }> & BoundForegroundClockDriver & Readonly<{
+  bind(instance: ReturnType<MmkvModule["createMMKV"]>, physicalKey: string, profileId: string, token: string): void;
+}>;
+const foregroundClockFactories = new WeakMap<StorageSlot, (scope: ForegroundClockScope) => ForegroundClockCapability>();
+
+/** The explicit storage-owner grant. Only the original opened slot is accepted;
+ * no wrapper reflection, second MMKV instance or encryption-key reader. */
+export function claimNativeForegroundClock(storage: StorageSlot, scope: ForegroundClockScope): ForegroundClockCapability {
+  const claim = foregroundClockFactories.get(storage);
+  if (!claim) throw new Error("foreground_clock_storage_owner_unavailable");
+  if (!scope.isCurrent()) throw new Error("foreground_clock_lease_stale");
+  return claim(scope);
+}
+
+function wrap(instance: ReturnType<MmkvModule["createMMKV"]>, createToken: () => string): StorageSlot {
+  let activeCapability: ForegroundClockCapability | null = null;
+  let activePhysicalKey: string | null = null;
+  const assertNoActiveClock = () => { if (activeCapability) throw new Error("foreground_clock_storage_operation_requires_revoke"); };
+  const slot: StorageSlot = {
     id: instance.id,
     get isEncrypted() { return instance.isEncrypted; },
-    getString: (key) => instance.getString(key),
-    setString: (key, value) => { instance.set(key, value); },
-    remove: (key) => { instance.remove(key); },
+    getString: (key) => key === activePhysicalKey ? activeCapability!.read() : instance.getString(key),
+    setString: (key, value) => {
+      if (key === activePhysicalKey) throw new Error("foreground_clock_mutation_requires_owner");
+      instance.set(key, value);
+    },
+    remove: (key) => {
+      if (key === activePhysicalKey) throw new Error("foreground_clock_mutation_requires_owner");
+      instance.remove(key);
+    },
     getAllKeys: () => instance.getAllKeys(),
-    clearAll: () => { instance.clearAll(); },
-    encrypt: (key) => { instance.encrypt(key, "AES-256"); },
+    clearAll: () => { assertNoActiveClock(); instance.clearAll(); },
+    encrypt: (key) => { assertNoActiveClock(); instance.encrypt(key, "AES-256"); },
     trim: () => { instance.trim(); },
   };
+  foregroundClockFactories.set(slot, (scope) => {
+    if (activeCapability) throw new Error("foreground_clock_owner_already_claimed");
+    if (!instance.isEncrypted) throw new Error("foreground_clock_encrypted_storage_required");
+    if (!Number.isSafeInteger(scope.generation) || scope.generation < 0 || !scope.profileId || !scope.physicalKey) throw new Error("foreground_clock_grant_invalid");
+    const { NitroModules } = require("react-native-nitro-modules") as typeof import("react-native-nitro-modules");
+    let native: NativeForegroundClock;
+    try { native = NitroModules.createHybridObject<NativeForegroundClock>("PatternlyForegroundClock"); }
+    catch { throw new Error("foreground_clock_native_owner_unavailable"); }
+    const token = `${scope.generation}:${createToken()}`;
+    native.bind(instance, scope.physicalKey, scope.profileId, token);
+    const bound = createForegroundClockCapability(native, token, scope);
+    let revokeFailed = false;
+    const capability: ForegroundClockCapability = Object.freeze({
+      ...bound,
+      revoke() {
+        if (revokeFailed) throw new Error("foreground_clock_revoke_unknown");
+        try { bound.revoke(); }
+        catch (error) { revokeFailed = true; throw error; }
+        if (activeCapability === capability) { activeCapability = null; activePhysicalKey = null; }
+      },
+    });
+    activeCapability = capability;
+    activePhysicalKey = scope.physicalKey;
+    return capability;
+  });
+  return slot;
 }
 
 export function createNativeEncryptedStoragePlatform(): EncryptedStoragePlatform {
@@ -50,7 +101,7 @@ export function createNativeEncryptedStoragePlatform(): EncryptedStoragePlatform
     manifestStore,
     async createKey() { return base64Url(await crypto.getRandomBytesAsync(24)); },
     exists: (id) => mmkv.existsMMKV(id),
-    open: (id, key) => wrap(mmkv.createMMKV({ id, ...(key ? { encryptionKey: key, encryptionType: "AES-256" as const } : {}), recoveryStrategy: "recover-on-error" })),
+    open: (id, key) => wrap(mmkv.createMMKV({ id, ...(key ? { encryptionKey: key, encryptionType: "AES-256" as const } : {}), recoveryStrategy: "recover-on-error" }), () => crypto.randomUUID()),
     delete: (id) => { if (mmkv.existsMMKV(id) && !mmkv.deleteMMKV(id)) throw new Error(`mmkv_delete_failed:${id}`); },
     bootId: () => currentBootId,
   };

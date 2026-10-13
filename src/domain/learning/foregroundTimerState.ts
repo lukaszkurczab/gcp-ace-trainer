@@ -18,9 +18,6 @@ export type ForegroundTimerState = Readonly<{
   running: boolean;
 }>;
 
-export const FOREGROUND_TIMER_CHECKPOINT_INTERVAL_MS = 15_000;
-export const FOREGROUND_TIMER_MAX_DRIFT_MS = 1_000;
-
 /** Canonical initial timer derived from a new foreground-timed session; deadline sessions have no foreground timer. */
 export function initialForegroundTimerForSession(
   session: Pick<TrainingSession, "id" | "trackId" | "activeForegroundMs" | "startedAt" | "configurationSnapshot">,

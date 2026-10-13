@@ -120,7 +120,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   useEffect(() => {
     if (!projection) return;
     const listener = AppState.addEventListener("change", (state) => {
-      void (state === "active" ? enterCertificationPracticeForeground() : leaveCertificationPracticeForeground())
+      void (state === "active" ? enterCertificationPracticeForeground() : leaveCertificationPracticeForeground("app_background"))
         .then(refresh)
         .catch((cause: unknown) => setError(describeOperationalFailure(cause, t("Cloud practice timer is unavailable."))));
     });

@@ -6,5 +6,4 @@ import type { ForegroundTimerState } from "../../domain";
  */
 export type ForegroundTimerRepositoryPort = Readonly<{
   getActive(): Promise<ForegroundTimerState | null>;
-  save(timer: ForegroundTimerState, expectedPreviousCheckpointRevision: number | null): Promise<ForegroundTimerState>;
 }>;

@@ -1,6 +1,6 @@
-import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, MemoryKeyValueStorage, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
+import { applyActiveForegroundTimerRaw, pauseActiveForegroundClock, captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, MemoryKeyValueStorage, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { CanonicalWriteConflictError, CorruptStoredRecordError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../errors";
-import { STORAGE_NAMESPACE } from "../keys";
+import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 /**
@@ -114,6 +114,7 @@ export function captureCanonicalPhysicalWrite(
     ((before: CanonicalRecordEnvelope<unknown> | null) => Readonly<{ kind: "write"; payload: unknown }> | Readonly<{ kind: "remove" }>),
   retainBeforeEnvelope = false,
 ): CanonicalPhysicalWrite {
+  if (key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) pauseActiveForegroundClock();
   let raw: string | undefined;
   try { raw = getKeyValueStorage().getString(key); } catch (error) { throw new StorageReadError(key, error); }
   const current = parseEnvelope(raw, key);
@@ -139,6 +140,10 @@ export function captureCanonicalPhysicalWrite(
 export function canonicalPhysicalWriteRelation(write: CanonicalPhysicalWrite): "before" | "after" | "conflict" {
   let raw: string | undefined;
   try { raw = getKeyValueStorage().getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
+  return physicalWriteRelationFromRaw(write, raw);
+}
+
+function physicalWriteRelationFromRaw(write: CanonicalPhysicalWrite, raw: string | undefined): "before" | "after" | "conflict" {
   const isBeforeState = (state: CanonicalPhysicalState): boolean => {
     if (state.kind === "absent") return raw === undefined;
     if (raw === undefined || sha256Utf8(raw) !== state.digest) return false;
@@ -177,14 +182,20 @@ export function assertCanonicalPhysicalPrefix(writes: readonly CanonicalPhysical
 /** Apply one exact step. An exact-after state is a no-op and keeps its revision. */
 export function applyCanonicalPhysicalWrite(write: CanonicalPhysicalWrite): void {
   withCanonicalWriteLocks([write.key], () => {
-    const relation = canonicalPhysicalWriteRelation(write);
+    const storage = getKeyValueStorage();
+    let beforeRaw: string | undefined;
+    try { beforeRaw = storage.getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
+    const relation = physicalWriteRelationFromRaw(write, beforeRaw);
     if (samePhysicalStates(write.before, write.after)) {
       if (relation !== "before") throw new CanonicalWriteConflictError(write.key);
       return;
     }
     if (relation === "after") return;
     if (relation !== "before") throw new CanonicalWriteConflictError(write.key);
-    const storage = getKeyValueStorage();
+    if (write.key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) {
+      applyActiveForegroundTimerRaw(beforeRaw, write.after.kind === "absent" ? undefined : JSON.stringify(write.after.envelope));
+      return;
+    }
     if (write.after.kind === "absent") {
       try { storage.remove(write.key); } catch (error) { throw new StorageDeleteError(write.key, error); }
       let observed: string | undefined;
@@ -290,7 +301,10 @@ export function writeCanonicalJsonWithOutcome<T>(key: string, value: T, expected
       if (!isWriteContextCurrent(storage, lease)) return { kind: "provenNotApplied", cause: new Error("Canonical write profile lease changed before write.") } as const;
 
       let writeFailure: unknown;
-      try { storage.setString(key, afterRaw); }
+      try {
+        if (key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) applyActiveForegroundTimerRaw(priorRaw, afterRaw);
+        else storage.setString(key, afterRaw);
+      }
       catch (cause) { writeFailure = cause; }
 
       let observedRaw: string | undefined;
@@ -365,7 +379,9 @@ function isWriteContextCurrent(storage: ReturnType<typeof getKeyValueStorage>, l
  * reentrant write and would make the compound operation impossible.
  */
 export function writeCanonicalJsonUnlocked<T>(key: string, value: T, expectedRevision?: number | null): CanonicalRecordEnvelope<T> {
-  const current = readCanonicalEnvelope(key, (_value): _value is unknown => true);
+  let priorRaw: string | undefined;
+  try { priorRaw = getKeyValueStorage().getString(key); } catch (error) { throw new StorageReadError(key, error); }
+  const current = parseEnvelope(priorRaw, key);
   if (expectedRevision === null) {
     if (current !== null) throw new UnsupportedStoredRecordError(key);
   } else if (expectedRevision !== undefined && current?.revision !== expectedRevision) {
@@ -376,7 +392,10 @@ export function writeCanonicalJsonUnlocked<T>(key: string, value: T, expectedRev
     revision: (current?.revision ?? 0) + 1,
     payload: value,
   };
-  try { getKeyValueStorage().setString(key, JSON.stringify(envelope)); } catch (error) { throw new StorageWriteError(key, error); }
+  try {
+    if (key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) applyActiveForegroundTimerRaw(priorRaw, JSON.stringify(envelope));
+    else getKeyValueStorage().setString(key, JSON.stringify(envelope));
+  } catch (error) { throw new StorageWriteError(key, error); }
   const verified = readCanonicalEnvelope(key, (_value): _value is T => true);
   if (!verified || verified.schemaIdentity !== envelope.schemaIdentity || verified.revision !== envelope.revision || JSON.stringify(verified.payload) !== JSON.stringify(envelope.payload)) {
     throw new StorageWriteError(key, new Error("Canonical record write could not be verified."));
@@ -387,12 +406,18 @@ export function writeCanonicalJsonUnlocked<T>(key: string, value: T, expectedRev
 /** Restores an already validated cloud envelope while the caller owns the key lock. */
 export function restoreCanonicalEnvelopeUnlocked<T>(key: string, envelope: CanonicalRecordEnvelope<T>): CanonicalRecordEnvelope<T> {
   if (envelope.schemaIdentity !== CANONICAL_RECORD_SCHEMA || !Number.isSafeInteger(envelope.revision) || envelope.revision < 1) throw new UnsupportedStoredRecordError(key);
-  try { getKeyValueStorage().setString(key, JSON.stringify(envelope)); } catch (error) { throw new StorageWriteError(key, error); }
+  try {
+    if (key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) applyActiveForegroundTimerRaw(getKeyValueStorage().getString(key), JSON.stringify(envelope));
+    else getKeyValueStorage().setString(key, JSON.stringify(envelope));
+  } catch (error) { throw new StorageWriteError(key, error); }
   const verified = readCanonicalEnvelope(key, (_value): _value is T => true);
   if (!verified || verified.schemaIdentity !== envelope.schemaIdentity || verified.revision !== envelope.revision || JSON.stringify(verified.payload) !== JSON.stringify(envelope.payload)) throw new StorageWriteError(key, new Error("Canonical envelope restore could not be verified."));
   return verified;
 }
 
 export function removeCanonicalValue(key: string): void {
-  try { getKeyValueStorage().remove(key); } catch (error) { throw new StorageDeleteError(key, error); }
+  try {
+    if (key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) applyActiveForegroundTimerRaw(getKeyValueStorage().getString(key), undefined);
+    else getKeyValueStorage().remove(key);
+  } catch (error) { throw new StorageDeleteError(key, error); }
 }

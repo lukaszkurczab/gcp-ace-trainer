@@ -20,6 +20,31 @@ function read() {
   };
 }
 
+// Explicit diagnostic only: constructing an unbound owner never receives a
+// storage handle or calls any clock/storage method. Default readiness does not
+// even load Nitro. Runtime evidence is still required for this SDK boundary.
+function readNativeRegistration() {
+  const result = {
+    protocol: "patternly-native-clock-registration-v1",
+    registered: false,
+    hybridObject: false,
+    methodSurfaceComplete: false,
+    error: null,
+  };
+  try {
+    const { NitroModules } = require("react-native-nitro-modules");
+    result.registered = NitroModules.hasHybridObject("PatternlyForegroundClock");
+    if (!result.registered) return result;
+    const owner = NitroModules.createHybridObject("PatternlyForegroundClock");
+    result.hybridObject = NitroModules.isHybridObject(owner);
+    result.methodSurfaceComplete = ["bind", "read", "apply", "arm", "enter", "checkpoint", "pause", "quiesce", "elapsed", "metrics", "revoke"]
+      .every((method) => typeof owner[method] === "function");
+    return result;
+  } catch {
+    return { ...result, error: "native_clock_probe_failed" };
+  }
+}
+
 function startMeasurement() {
   if (stage !== "ready") return { accepted: false, error: "measurement_already_used" };
   if (!hermes || typeof globalThis.performance?.now !== "function") {
@@ -73,7 +98,7 @@ function startMeasurement() {
   return { accepted: true, stage };
 }
 
-globalThis.__patternlyForegroundSchedulerProbe = { read, startMeasurement };
+globalThis.__patternlyForegroundSchedulerProbe = { read, readNativeRegistration, startMeasurement };
 
 function ProbeApp() {
   return React.createElement(

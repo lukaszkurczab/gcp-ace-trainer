@@ -195,3 +195,9 @@ test("fixture pauses only after the durable reset materialization and exact nati
   assert.match(fixture, /const first = await runProductionBootstrap\(identity\);[\s\S]*?capturePhysicalSnapshot[\s\S]*?const second = await runProductionBootstrap\(identity\);[\s\S]*?arePersist13PhysicalSnapshotsEqual/u);
   assert.match(fixture, /testID="persist13-fixture-stage"/u);
 });
+
+
+test("the raw fixture supplies its explicit timer CAS at the existing preparation boundary", () => {
+  const fixture = readFileSync("src/application/runtimeAuditability/Persist13ResetFixtureRoot.tsx", "utf8");
+  assert.match(fixture, /foregroundTimerCasForTests\(before, after\)[\s\S]*?applySynchronousForegroundTimerRaw\(stores\.base,\s*persist13FixturePhysicalKey\(manifest\.fixtureProfileId, STORAGE_KEYS\.ACTIVE_FOREGROUND_TIMER\), before, after\)/u);
+});

@@ -1,6 +1,6 @@
 import { CanonicalEvidenceIntegrityError } from "../errors";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
-import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
+import { pauseActiveForegroundClock, captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { assertContentIdentityRecordIntegrity } from "./contentIdentityUnavailableRepository";
@@ -120,6 +120,7 @@ export function captureLearningStateResetTargetPlan(admission: TrackAdmissionCon
   const lease = captureActiveProfileStorageLease();
   if (!lease || !isActiveProfileStorageLeaseCurrent(lease)) fail();
   assertLearningStateResetInputIntegrity(admission);
+  pauseActiveForegroundClock();
   const entries = currentEntries();
   const plan: LearningStateResetTargetPlan = Object.freeze({
     schema: "patternly:learning-state-reset-targets.v1",

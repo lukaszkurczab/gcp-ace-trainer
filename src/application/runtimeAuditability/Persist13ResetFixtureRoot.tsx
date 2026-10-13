@@ -1,3 +1,4 @@
+import { applySynchronousForegroundTimerRaw } from "../../infrastructure/storage/foregroundTimerRawCas";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
@@ -85,7 +86,15 @@ async function runPersist13Fixture(entry: Persist13Entry, publish: (receipt: Fix
     assertNoFixtureExportCache(manifest.fixtureProfileId);
     setProfileStoragePreparationFactoryForTests(async () => {
       if (!stores?.base || !stores.router) throw new Error("persist13_fixture_storage_owner_unavailable");
-      return { base: stores.base, router: stores.router };
+      return { base: stores.base, router: stores.router,
+        // Raw fixture clock authority is explicit. It does not claim the iOS
+        // native scheduler or bypass the published profile-generation fence.
+        foregroundTimerCasForTests(before, after) {
+          if (!stores?.base) throw new Error("persist13_fixture_storage_owner_unavailable");
+          applySynchronousForegroundTimerRaw(stores.base,
+            persist13FixturePhysicalKey(manifest.fixtureProfileId, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), before, after);
+        },
+      };
     });
     const profile = await prepareProfileStorage();
     if (profile.id !== manifest.fixtureProfileId || profile.kind !== "guest" || profile.accountId !== null) throw Object.assign(new Error("persist13_profile_identity_mismatch"), { stage: "router_prepare", category: "storage_unavailable" });

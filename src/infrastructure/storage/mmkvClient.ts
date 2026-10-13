@@ -6,14 +6,22 @@ export interface KeyValueStorage {
   getAllKeys(): readonly string[];
 }
 
-import { openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError, type AccountIdentityBinding, type AccountIdentityBindingRead, type AccountIdentityProofBarrierReceipt, type GuestRemoval34ExpectedState, type GuestRemoval34Receipt, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
+import { foregroundTimerPhysicalKey, openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError, type AccountIdentityBinding, type AccountIdentityBindingRead, type AccountIdentityProofBarrierReceipt, type GuestRemoval34ExpectedState, type GuestRemoval34Receipt, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
 import type { StorageManifestStore } from "./encryptedStorageBootstrap";
+import { applySynchronousForegroundTimerRaw } from "./foregroundTimerRawCas";
+import type { ForegroundClockCapability, ForegroundClockScope } from "./foregroundClockCapability";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { sha256Utf8 } from "../identity/sha256";
 
 let client: KeyValueStorage | null = null;
 let profileRouter: ProfileStorageRouter | null = null;
-type OpenedProfileStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter; secureControl?: StorageManifestStore }>;
+let activeForegroundClock: ForegroundClockCapability | null = null;
+let foregroundClockClaim: (() => ForegroundClockCapability) | null = null;
+let foregroundClockRevokeFailed = false;
+type ForegroundTimerTestCas = (before: string | undefined, after: string | undefined) => void;
+let activeForegroundTimerTestCas: ForegroundTimerTestCas | null = null;
+let activeAndroidForegroundTimerCas: ForegroundTimerTestCas | null = null;
+type OpenedProfileStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter; secureControl?: StorageManifestStore; claimForegroundClock?: (scope: ForegroundClockScope) => ForegroundClockCapability; foregroundTimerCasForTests?: ForegroundTimerTestCas; applyAndroidForegroundTimer?: (physicalKey: string, before: string | undefined, after: string | undefined) => void }>;
 type PreparedProfileStorage = OpenedProfileStorage & Readonly<{ generation: number }>;
 export type ActiveProfileStorageLease = Readonly<{ profile: StorageProfile; generation: number }>;
 /** A read-only fence for the already prepared profile while it is not active. */
@@ -207,7 +215,7 @@ function snapshotGuestRemovalReconciliationState(base: KeyValueStorage, router: 
   });
 }
 
-export type PreparedStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>;
+export type PreparedStorage = Pick<OpenedProfileStorage, "base" | "router" | "foregroundTimerCasForTests" | "claimForegroundClock" | "applyAndroidForegroundTimer">;
 export type PreparedProfileState = Readonly<{
   profiles: readonly StorageProfile[];
   selectedProfile: StorageProfile;
@@ -446,7 +454,20 @@ export async function inspectPreparedQ13StorageInventory(actorUidSha256?: string
   });
 }
 
+function revokeForegroundClock(): void {
+  if (foregroundClockRevokeFailed) throw new Error("foreground_clock_revoke_unknown");
+  if (activeForegroundClock) {
+    try { activeForegroundClock.revoke(); }
+    catch (error) { foregroundClockRevokeFailed = true; throw error; }
+    activeForegroundClock = null;
+  }
+  foregroundClockClaim = null;
+  activeForegroundTimerTestCas = null;
+  activeAndroidForegroundTimerCas = null;
+}
+
 function closePublishedProfileStorage(): void {
+  revokeForegroundClock();
   profileStorageGeneration += 1;
   client = null;
   profileRouter = null;
@@ -456,7 +477,7 @@ function closePublishedProfileStorage(): void {
 
 async function openProductionProfileStorage(generation: number): Promise<PreparedProfileStorage> {
   const { openEncryptedStorage, STORAGE_MIGRATION_MARKER_KEY } = await import("./encryptedStorageBootstrap");
-  const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
+  const { createNativeEncryptedStoragePlatform, claimNativeForegroundClock } = await import("./encryptedStorageNative");
   const platform = createNativeEncryptedStoragePlatform();
   const result = await openEncryptedStorage(platform);
   const base: KeyValueStorage = {
@@ -471,7 +492,11 @@ async function openProductionProfileStorage(generation: number): Promise<Prepare
     isTransitionActive: () => profileTransitionActive || profileStorageGeneration !== generation,
     onBeforeProfileCommit: beginProfileTransition,
   });
-  return { base, router, secureControl: platform.manifestStore, generation };
+  const operatingSystem = (require("react-native") as typeof import("react-native")).Platform.OS;
+  if (operatingSystem === "ios") return { base, router, secureControl: platform.manifestStore, generation, claimForegroundClock: (scope) => claimNativeForegroundClock(result.storage, scope) };
+  if (operatingSystem === "android") return { base, router, secureControl: platform.manifestStore, generation,
+    applyAndroidForegroundTimer: (key, before, after) => applySynchronousForegroundTimerRaw(result.storage, key, before, after) };
+  throw new Error("foreground_clock_platform_unsupported");
 }
 
 async function ensurePreparedStorage(): Promise<PreparedProfileStorage> {
@@ -660,6 +685,7 @@ export async function selectPreparedGuestProfile(
 /** Closes published storage and restores its router metadata for another safe decision. */
 export function closeActiveProfileStorage(): void {
   if (!client) return;
+  revokeForegroundClock();
   const retained = activePreparedStorage;
   client = null;
   profileRouter = null;
@@ -678,7 +704,7 @@ export async function removeOriginalGuest34(expected: GuestRemoval34ExpectedStat
     return Object.freeze({ schemaVersion: "bizq01-guest-removal-34-v1", result: "failed", stage: "active_profile_unavailable" });
   }
   let receipt: GuestRemoval34Receipt;
-  try { receipt = await router.removeOriginalGuest34(expected); }
+  try { revokeForegroundClock(); receipt = await router.removeOriginalGuest34(expected); }
   catch { receipt = Object.freeze({ schemaVersion: "bizq01-guest-removal-34-v1", result: "failed", stage: "transaction_unavailable" }); }
   if (receipt.result !== "passed") {
     if (profileTransitionActive) closeActiveProfileStorage();
@@ -729,6 +755,20 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
     contains(key) { checkPublished(); return scopedStorage.contains(key); },
     getAllKeys() { checkPublished(); return scopedStorage.getAllKeys(); },
   };
+  if (prepared.claimForegroundClock && prepared.applyAndroidForegroundTimer) throw new Error("foreground_clock_authority_conflict");
+  if (prepared.foregroundTimerCasForTests) {
+    if (!testPreparationFactory) throw new Error("foreground_clock_test_adapter_forbidden");
+    activeForegroundTimerTestCas = (before, after) => { checkPublished(); prepared.foregroundTimerCasForTests!(before, after); };
+  }
+  if (prepared.applyAndroidForegroundTimer) {
+    activeAndroidForegroundTimerCas = (before, after) => { checkPublished(); prepared.applyAndroidForegroundTimer!(foregroundTimerPhysicalKey(profile.id), before, after); };
+  }
+  if (prepared.claimForegroundClock) {
+    foregroundClockClaim = () => prepared.claimForegroundClock!({
+      physicalKey: foregroundTimerPhysicalKey(profile.id), profileId: profile.id, generation,
+      isCurrent: () => profileStorageGeneration === generation && !profileTransitionActive && client === publishedStorage && activePreparedStorage === prepared,
+    });
+  }
   client = Object.freeze(publishedStorage);
   preparedStorage = null;
   preparation = null;
@@ -918,6 +958,7 @@ export async function resolveAccountIdentityProofBarrier(input: Readonly<{
 export function beginProfileTransition(): void {
   if (profileTransitionActive) return;
   profileTransitionActive = true;
+  revokeForegroundClock();
   for (const listener of profileTransitionListeners) listener();
 }
 
@@ -1112,12 +1153,51 @@ export function getKeyValueStorage(): KeyValueStorage {
   return client;
 }
 
+/** The active profile alone grants the existing native handle to its T owner.
+ * Missing registration/module is an explicit failure, never a JS timer fallback. */
+export function getActiveForegroundClock(): ForegroundClockCapability {
+  if (!client || profileTransitionActive || foregroundClockRevokeFailed) throw new Error("foreground_clock_profile_unavailable");
+  if (!activeForegroundClock) {
+    if (!foregroundClockClaim) throw new Error("foreground_clock_storage_owner_unavailable");
+    activeForegroundClock = foregroundClockClaim();
+  }
+  return activeForegroundClock;
+}
+
+/** Explicit platform/test authority chosen by the opened storage owner.
+ * An unavailable iOS native module never changes this authority to Android. */
+export function getForegroundTimerStorageAuthority(): "ios-native" | "android-js" | "memory-test" {
+  if (!client || profileTransitionActive || foregroundClockRevokeFailed) throw new Error("foreground_clock_profile_unavailable");
+  if (client instanceof MemoryKeyValueStorage || activeForegroundTimerTestCas) return "memory-test";
+  if (activeForegroundClock || foregroundClockClaim) return "ios-native";
+  if (activeAndroidForegroundTimerCas) return "android-js";
+  throw new Error("foreground_clock_storage_owner_unavailable");
+}
+
+/** Atomic physical mutation for T only. Memory storage is an explicitly
+ * installed test adapter; this branch is not available to native storage. */
+export function applyActiveForegroundTimerRaw(before: string | undefined, after: string | undefined): void {
+  if (client instanceof MemoryKeyValueStorage) { client.applyForegroundTimerRaw(before, after); return; }
+  if (activeForegroundTimerTestCas) { activeForegroundTimerTestCas(before, after); return; }
+  if (activeAndroidForegroundTimerCas) { activeAndroidForegroundTimerCas(before, after); return; }
+  const observed = getActiveForegroundClock().apply(before, after);
+  if (observed !== after) throw new Error("foreground_clock_write_unknown");
+}
+
+/** Quiesces an already claimed clock before capturing a journal/reset/backup.
+ * It does not claim or arm a timer merely because a destructive command runs. */
+export function pauseActiveForegroundClock(): void {
+  if (foregroundClockRevokeFailed) throw new Error("foreground_clock_revoke_unknown");
+  if (activeForegroundClock) activeForegroundClock.quiesce();
+}
+
 /** Destructive recovery used only after the user confirms an unrecoverable key loss. */
 export async function removeUnavailableEncryptedStorage(): Promise<void> {
   const { resetUnavailableEncryptedStorage } = await import("./encryptedStorageBootstrap");
   const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
-  await resetUnavailableEncryptedStorage(createNativeEncryptedStoragePlatform());
+  beginProfileTransition();
   closePublishedProfileStorage();
+  await resetUnavailableEncryptedStorage(createNativeEncryptedStoragePlatform());
   preparedStorage = null;
   preparation = null;
   profileTransitionActive = false;
@@ -1134,6 +1214,10 @@ export class MemoryKeyValueStorage implements KeyValueStorage {
   remove(key: string): void { this.removes += 1; this.operations.push({ kind: "remove", key }); this.fail("remove", key, this.removes); this.values.delete(key); }
   contains(key: string): boolean { return this.values.has(key); }
   getAllKeys(): readonly string[] { return [...this.values.keys()]; }
+  /** Explicit test-only synchronous CAS models the native atomic boundary. */
+  applyForegroundTimerRaw(before: string | undefined, after: string | undefined, key: string = STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER): void {
+    applySynchronousForegroundTimerRaw(this, key, before, after);
+  }
   setFailurePlan(plan: FailurePlan | null): void { this.failurePlan = plan; }
   resetCounters(): void { this.reads = 0; this.writes = 0; this.removes = 0; this.operations.length = 0; }
   snapshot(): ReadonlyMap<string, string> { return new Map(this.values); }

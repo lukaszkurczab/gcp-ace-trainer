@@ -146,7 +146,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   useEffect(() => {
     if (state?.kind !== "session") return;
     const listener = AppState.addEventListener("change", (appState) => {
-      void (appState === "active" ? enterAlgorithmsPracticeForeground() : leaveAlgorithmsPracticeForeground())
+      void (appState === "active" ? enterAlgorithmsPracticeForeground() : leaveAlgorithmsPracticeForeground("app_background"))
         .then(refresh)
         .catch(() => undefined);
     });

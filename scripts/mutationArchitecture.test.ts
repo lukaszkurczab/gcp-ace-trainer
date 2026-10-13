@@ -161,7 +161,9 @@ test("one family-neutral foreground timer is bound only in application compositi
   const completionIndex = sharedCompletion.indexOf("const result = await complete()");
   const releaseIndex = sharedCompletion.indexOf("this.releaseAfterTerminalSuccess(session.id)");
   assert.ok(checkpointIndex >= 0 && completionIndex > checkpointIndex && releaseIndex > completionIndex, "shared handoff must freeze time, await verified completion, then release once");
-  assert.match(runtimeTimer, /async checkpointForPracticeCompletion\(\): Promise<ForegroundTimerState> \{ return this\.persist\(false\); \}/);
+  assert.match(runtimeTimer, /async checkpointForPracticeCompletion\(\): Promise<ForegroundTimerState> \{ return this\.port\.pause\(\); \}/);
+  assert.doesNotMatch(runtimeTimer, /this\.persist\(|segmentStartedAt|setInterval|setTimeout/,
+    "the iOS adapter must delegate the clock and durability schedule to its native owner");
   assert.match(timer, /if \(this\.foregroundSessionId !== sessionId\) return;[\s\S]*?checkpointIfDue/);
   assert.match(timer, /private releaseAfterTerminalSuccess\(sessionId: string\)/);
   assert.match(certificationScreen, /AppState\.addEventListener/);

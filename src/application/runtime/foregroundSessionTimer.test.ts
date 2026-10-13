@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ForegroundSessionTimer } from "./ForegroundSessionTimer";
+import { AndroidForegroundSessionTimer as ForegroundSessionTimer } from "./AndroidForegroundSessionTimer";
 import { createForegroundTimerState, type ForegroundTimerState } from "../../domain";
 import { getActiveForegroundTimer, saveActiveForegroundTimer, saveTrainingSession } from "../../storage/repositories";
 import { installMemoryStorage, session } from "../../testing/journalTestSupport";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 
-test("foreground timer checkpoints monotonic segments with an explicit drift bound and never counts closed-app wall time", async () => {
+test("explicit memory timer model preserves checkpoints and excludes closed-app wall time", async () => {
   installMemoryStorage();
   const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
   await saveTrainingSession(active, productionTrackAdmissionContext);

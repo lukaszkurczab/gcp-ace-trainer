@@ -38,7 +38,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   }, [route.params.profileId]));
   useEffect(() => {
     const listener = AppState.addEventListener("change", (state) => {
-      void (state === "active" ? enterAlgorithmsSimulationForeground() : leaveAlgorithmsSimulationForeground()).then(load).catch(load);
+      void (state === "active" ? enterAlgorithmsSimulationForeground() : leaveAlgorithmsSimulationForeground("app_background")).then(load).catch(load);
     });
     return () => listener.remove();
   }, [load]);

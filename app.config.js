@@ -208,6 +208,7 @@ function createExpoConfig(environment = process.env) {
             extraPods: [
               { name: "GoogleUtilities", modular_headers: true },
               { name: "RecaptchaInterop", modular_headers: true },
+              { name: "PatternlyForegroundClock", path: "../native/foreground-clock" },
             ],
           },
           android: { minSdkVersion: 28, targetSdkVersion: 36, compileSdkVersion: 36 },

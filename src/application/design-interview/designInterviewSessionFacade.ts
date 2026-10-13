@@ -1,3 +1,4 @@
+import type { ForegroundTimerLeaveReason } from "../runtime/ForegroundSessionTimer";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import type { AttemptResultKind, TrackId, TrainingSession } from "../../domain";
 import { loadActiveTrainingSession, loadTrainingAttempts } from "../learningReadModels";
@@ -116,7 +117,7 @@ export async function recoverDesignInterviewPracticeOperation(): Promise<void> {
 export function subscribeDesignInterviewPracticeOperation(sessionId: string, listener: (operation: PracticeDurableOperationState) => void): () => void { return getTrainingLifecycleUseCases().subscribeOperationProjection(sessionId, (operation) => { if (operation.family === "practice") listener(operation); }); }
 export function subscribeDesignInterviewPracticeProjectionRefresh(listener: (event: ForegroundSessionTimerEvent) => void): () => void { return getForegroundSessionTimerFacade().subscribe(listener); }
 export async function enterDesignInterviewPracticeForeground(): Promise<ForegroundTimeProjection> { return getForegroundSessionTimerFacade().enterForeground(await requireActiveDesignSession()); }
-export async function leaveDesignInterviewPracticeForeground(): Promise<ForegroundTimeProjection> { return getForegroundSessionTimerFacade().leaveForeground(await requireActiveDesignSession()); }
+export async function leaveDesignInterviewPracticeForeground(reason: ForegroundTimerLeaveReason = "session_exit"): Promise<ForegroundTimeProjection> { return getForegroundSessionTimerFacade().leaveForeground(await requireActiveDesignSession(), reason); }
 
 export async function completeDesignInterviewPracticeSession(): Promise<PracticeCompletionCommandResult<PracticeFinalization>> {
   const session = await requireActiveDesignSession();

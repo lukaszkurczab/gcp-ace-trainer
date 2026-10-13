@@ -1,8 +1,10 @@
+export { getForegroundTimerStorageAuthority } from "../../infrastructure/storage/mmkvClient";
+import { getActiveForegroundClock } from "../../infrastructure/storage/mmkvClient";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { createForegroundTimerState, getTrackRegistration, initialForegroundTimerForSession, type ForegroundTimerState, type TrainingSession } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { applyCanonicalPhysicalWrite, readCanonicalJson, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
-import { getActiveTrainingSession } from "./trainingSessionRepository";
+import { CANONICAL_RECORD_SCHEMA, applyCanonicalPhysicalWrite, readCanonicalJson, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
+import { readActiveTrainingSession, getActiveTrainingSession } from "./trainingSessionRepository";
 import { isAcceptedSimulationFinalization, isForegroundTimerState, isTrainingSession, isTrainingSessionDraftState } from "./trainingModelGuards";
 import type { TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 
@@ -73,4 +75,41 @@ export function materializeStartedForegroundTimerJournalStep(session: TrainingSe
     throw new Error("The initial foreground timer does not match its active session.");
   }
   applyCanonicalPhysicalWrite(step);
+}
+
+/** Grants the admitted active session to the existing profile-native owner.
+ * Returned operations carry no storage handle, key, grant token or raw apply. */
+export function bindActiveForegroundTimerClock(session: TrainingSession, admission: TrackAdmissionContext) {
+  if (!isTrainingSession(session, admission) || session.status !== "active") throw new Error("foreground_clock_session_invalid");
+  const timerKind = session.configurationSnapshot.timer;
+  if (timerKind !== "elapsedForeground" && timerKind !== "countdownForeground") throw new Error("foreground_clock_session_invalid");
+  const active = readActiveTrainingSession(admission);
+  if (!active || active.id !== session.id || active.trackId !== session.trackId) throw new Error("foreground_clock_session_stale");
+  assertNoAcceptedSimulationFinalization(session.id, admission);
+  const familyId = getTrackRegistration(session.trackId).familyId;
+  const decode = (raw: string | undefined): ForegroundTimerState => {
+    let value: unknown;
+    try { value = raw === undefined ? null : JSON.parse(raw); } catch { throw new Error("foreground_clock_record_invalid"); }
+    if (typeof value !== "object" || value === null || Array.isArray(value)) throw new Error("foreground_clock_record_invalid");
+    const envelope = value as Record<string, unknown>;
+    if (Object.keys(envelope).sort().join(",") !== "payload,revision,schemaIdentity" || envelope.schemaIdentity !== CANONICAL_RECORD_SCHEMA
+      || !Number.isSafeInteger(envelope.revision) || Number(envelope.revision) < 1
+      || !isForegroundTimerState(envelope.payload, admission)) throw new Error("foreground_clock_record_invalid");
+    const state = envelope.payload;
+    if (state.familyId !== familyId || state.sessionId !== session.id || state.trackId !== session.trackId
+      || state.accumulatedForegroundMs < session.activeForegroundMs) throw new Error("foreground_clock_scope_invalid");
+    return state;
+  };
+  const clock = getActiveForegroundClock();
+  const raw = clock.read();
+  decode(raw);
+  const duration = session.configurationSnapshot.timerDurationMs;
+  if (timerKind === "countdownForeground" && (typeof duration !== "number" || !Number.isSafeInteger(duration) || duration <= 0)) throw new Error("foreground_clock_countdown_invalid");
+  clock.arm({ expectedRaw: raw!, familyId, sessionId: session.id, trackId: session.trackId,
+    ...(timerKind === "countdownForeground" ? { countdownMs: typeof duration === "number" ? duration : undefined } : {}),
+  });
+  return Object.freeze({
+    readState: () => decode(clock.read()), elapsed: () => clock.elapsed(),
+    enter: () => decode(clock.enter()), checkpoint: () => decode(clock.checkpoint()), pause: () => decode(clock.pause()),
+  });
 }

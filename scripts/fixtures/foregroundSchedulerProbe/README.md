@@ -27,6 +27,27 @@ node scripts/nativeForegroundSchedulerProbe.mjs \
   --device-target "$PATTERNLY_METRO_LOGICAL_DEVICE_ID"
 ```
 
+Optional native registration check on a specifically approved, already installed
+candidate that includes `PatternlyForegroundClock`:
+
+```sh
+node scripts/nativeForegroundSchedulerProbe.mjs \
+  --metro-origin http://127.0.0.1:8082 \
+  --app-id com.lkurczab.patternly \
+  --device-target "$PATTERNLY_METRO_LOGICAL_DEVICE_ID" \
+  --native-registration
+```
+
+This mode uses the pinned Nitro registry and constructs one **unbound** clock
+object to inspect its method surface. It never supplies an MMKV handle, binds
+a profile, calls a clock method or reads/writes storage. Default readiness does
+not load Nitro. Registration and stall modes cannot be combined. Missing or
+invalid registration exits nonzero with a closed error category; no native
+exceptions or registry/target contents are printed. This is not evidence of
+shared-handle identity, timing, IO, preservation or recovery. The protocol tests
+model the SDK boundary; actual Nitro/Hermes execution remains a separate check.
+The flag authorizes no install, launch or process-management action.
+
 Only after explicit permission, request the single bounded measurement:
 
 ```sh

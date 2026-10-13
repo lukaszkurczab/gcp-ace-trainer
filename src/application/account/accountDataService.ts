@@ -37,7 +37,7 @@ import {
   recordAccountMutationAcknowledgements as recordAccountMutationAcknowledgementsWithPolicy,
   reserveLearningPlanRecoveryAttempt as reserveLearningPlanRecoveryAttemptWithPolicy,
   dismissLearningPlanRecovery as dismissPersistedLearningPlanRecovery,
-  restoreGuestOwnedLocalDataBackup,
+  restoreGuestOwnedLocalDataBackup as restoreGuestOwnedLocalDataBackupWithAdmission,
   saveAccountSyncState as saveAccountSyncStateWithPolicy,
   saveGuestAdoptionChoice as saveGuestAdoptionChoiceWithPolicy,
   splitAccountSyncBatches as splitAccountSyncBatchesWithPolicy,
@@ -91,6 +91,7 @@ import { isRegisteredTrackId } from "../../domain";
 
 // The application owner binds the canonical product policy once and passes it
 // explicitly into persistence. Repository validation never discovers policy.
+const restoreGuestOwnedLocalDataBackup = (backup: Parameters<typeof restoreGuestOwnedLocalDataBackupWithAdmission>[0]) => restoreGuestOwnedLocalDataBackupWithAdmission(backup, productionLearningDataAdmissionContext.trackAdmission);
 const getAccountSyncState = () => getAccountSyncStateWithPolicy(productionLearningDataAdmissionContext);
 const readAccountSyncStateEnvelope = () => readAccountSyncStateEnvelopeWithPolicy(productionLearningDataAdmissionContext);
 const saveAccountSyncState = (state: AccountSyncState, expectedRevision?: number | null) => saveAccountSyncStateWithPolicy(state, productionLearningDataAdmissionContext, expectedRevision);

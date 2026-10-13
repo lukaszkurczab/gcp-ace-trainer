@@ -1,3 +1,4 @@
+import type { ForegroundTimerLeaveReason } from "../runtime/ForegroundSessionTimer";
 import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts } from "../learningReadModels";
 import {
   getForegroundSessionTimerFacade,
@@ -592,8 +593,8 @@ export async function enterAlgorithmsSimulationForeground(): Promise<ForegroundT
   return getForegroundSessionTimerFacade().enterForeground(await requireAlgorithmsSession());
 }
 
-export async function leaveAlgorithmsSimulationForeground(): Promise<ForegroundTimeProjection> {
-  return getForegroundSessionTimerFacade().leaveForeground(await requireAlgorithmsSession());
+export async function leaveAlgorithmsSimulationForeground(reason: ForegroundTimerLeaveReason = "session_exit"): Promise<ForegroundTimeProjection> {
+  return getForegroundSessionTimerFacade().leaveForeground(await requireAlgorithmsSession(), reason);
 }
 
 /** Presentation receives application-owned projection refreshes; it never runs a countdown. */
@@ -607,10 +608,10 @@ export async function enterAlgorithmsPracticeForeground(): Promise<ForegroundTim
   return getForegroundSessionTimerFacade().enterForeground(session);
 }
 
-export async function leaveAlgorithmsPracticeForeground(): Promise<ForegroundTimeProjection> {
+export async function leaveAlgorithmsPracticeForeground(reason: ForegroundTimerLeaveReason = "session_exit"): Promise<ForegroundTimeProjection> {
   const session = await requireAlgorithmsSession();
   if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Interview Simulation must use its simulation foreground boundary.");
-  return getForegroundSessionTimerFacade().leaveForeground(session);
+  return getForegroundSessionTimerFacade().leaveForeground(session, reason);
 }
 
 export function subscribeAlgorithmsPracticeProjectionRefresh(listener: (event: ForegroundSessionTimerEvent) => void): () => void {

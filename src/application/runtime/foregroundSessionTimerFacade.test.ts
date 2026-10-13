@@ -1,3 +1,5 @@
+import { ForegroundSessionTimer, type ForegroundSessionClock } from "./ForegroundSessionTimer";
+import { AndroidForegroundSessionTimer as MemoryForegroundSessionTimer } from "./AndroidForegroundSessionTimer";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -57,7 +59,7 @@ function certificationExamSession(deadlineAt = "2026-07-19T12:00:00.000Z") {
   });
 }
 
-function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown", session?: TrainingSession) {
+function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown", session?: TrainingSession, clockFactory?: (state: ForegroundTimerState) => ForegroundSessionClock) {
   let now = 0;
   let active = session ?? (kind === "countdown" ? simulationSession(duration) : practiceSession());
   let state: ForegroundTimerState | null = active.configurationSnapshot.timer === "elapsedForeground" || active.configurationSnapshot.timer === "countdownForeground"
@@ -94,16 +96,20 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
   const dependencies: ForegroundSessionTimerDependencies = {
     repository: {
       async getActive() { return state; },
-      async save(candidate, expected) {
+    },
+    createTimer(initial) {
+      if (clockFactory) return clockFactory(initial);
+      return MemoryForegroundSessionTimer.restore({ state: initial, monotonicClock: { now: () => now }, wallClock: { now: () => startedAt }, port: {
+      save: async (candidate: ForegroundTimerState, expected: number | null) => {
         saveCount += 1;
         assert.equal(expected, state?.checkpointRevision ?? null);
         state = createForegroundTimerState({ ...candidate, checkpointRevision: (state?.checkpointRevision ?? 0) + 1 });
         return state;
       },
+      } });
     },
     lifecycle,
     tracks: { getTrackRegistration },
-    monotonicClock: { now: () => now }, wallClock: { now: () => startedAt },
     schedule(callback) { scheduled = callback; return 0 as unknown as ReturnType<typeof setInterval>; },
     cancel: () => { cancelCount += 1; },
     finalize: async () => lifecycle.finalizeSimulation(),
@@ -112,7 +118,7 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
   };
   const create = () => new ForegroundSessionTimerFacade(dependencies);
   return {
-    session: active, timer: create(), create, checkpoints,
+    session: active, timer: create(), create, checkpoints, dependencies,
     getActiveSession: () => active,
     setNow(value: number) { now = value; },
     getState: () => state,
@@ -339,7 +345,24 @@ test("reset followed by a new session cannot observe or recreate the prior persi
   assert.equal(f.getState()?.trackId, next.trackId);
 });
 
-test("controlled timer refreshes consecutive visible labels without a durable write each second", async () => {
+test("a checkpoint produced before the JS refresh reconciles native T to S exactly once", async () => {
+  let durable: ForegroundTimerState;
+  const f = fixture(undefined, "elapsed", undefined, initial => {
+    durable = initial;
+    return new ForegroundSessionTimer({
+      readState: () => durable, elapsed: () => durable.accumulatedForegroundMs,
+      enter: () => durable, checkpoint: () => durable, pause: () => durable,
+    });
+  });
+  await f.timer.enterForeground(f.session);
+  durable = createForegroundTimerState({ ...durable!, accumulatedForegroundMs: 1000, checkpointRevision: 2 });
+  await f.tick();
+  await f.tick();
+  assert.equal(f.getActiveSession().activeForegroundMs, 1000);
+  assert.deepEqual(f.checkpoints, [0, 1000]);
+});
+
+test("explicit memory facade model refreshes consecutive visible labels", async () => {
   const f = fixture();
   await f.timer.initialize(f.session);
   await f.timer.enterForeground(f.session);
@@ -360,7 +383,7 @@ test("controlled timer refreshes consecutive visible labels without a durable wr
   assert.equal(f.getState()?.checkpointRevision, checkpointRevision);
 });
 
-test("periodic checkpoint uses the declared durable interval with an exact write count", async () => {
+test("explicit memory facade model reconciles each modeled checkpoint once", async () => {
   const f = fixture();
   await f.timer.initialize(f.session);
   await f.timer.enterForeground(f.session);
@@ -381,7 +404,7 @@ test("periodic checkpoint uses the declared durable interval with an exact write
   assert.deepEqual(f.checkpoints, [0, 14_000, 28_000]);
 });
 
-test("force-close immediately before and after the checkpoint boundary resumes within the declared drift", async () => {
+test("memory resume reads the last durable checkpoint without inferring closed time", async () => {
   const before = fixture();
   await before.timer.initialize(before.session);
   await before.timer.enterForeground(before.session);
@@ -411,6 +434,108 @@ test("expiry clamps to zero, checkpoints first, and finalizes exactly once", asy
   assert.equal(f.getState()?.accumulatedForegroundMs, 150);
   assert.equal(f.getDurableAtFinalization()?.accumulatedForegroundMs, 150);
   assert.equal(f.getFinalizations(), 1);
+});
+
+function nativeTerminalFixture(failure?: Error, finalizerGate?: Promise<void>) {
+  // Native SDK cap is measured separately; model its port and terminal clear
+  // while executing the real native adapter and application facade.
+  let durable!: ForegroundTimerState;
+  let cleared = false;
+  let pauses = 0;
+  let calls = 0;
+  const requireNative = () => { calls++; if (cleared) throw Error("native timer was cleared by finalization"); };
+  const f = fixture(60_000, "countdown", undefined, initial => {
+    durable = initial;
+    return new ForegroundSessionTimer({
+      readState() { requireNative(); return durable; }, elapsed() { requireNative(); return durable.accumulatedForegroundMs; },
+      enter() { requireNative(); return durable; },
+      checkpoint() { throw Error("JS must not create a periodic native checkpoint"); },
+      pause() { requireNative(); pauses++; durable = createForegroundTimerState({ ...durable, running: false, checkpointRevision: durable.checkpointRevision + 1 }); f.setState(durable); return durable; },
+    });
+  });
+  const timer = new ForegroundSessionTimerFacade({ ...f.dependencies, finalize: async (...args) => {
+    if (finalizerGate) await finalizerGate;
+    await f.dependencies.finalize(...args); cleared = true; f.setState(null);
+    if (failure) throw failure;
+  } });
+  return { f, timer, calls: () => calls, pauses: () => pauses,
+    setElapsed(elapsed: number) { durable = createForegroundTimerState({ ...durable, accumulatedForegroundMs: elapsed, checkpointRevision: 3, running: false }); f.setState(durable); } };
+}
+
+test("native-port capped durable time reaches S before a single expiry clears T without later native access", async () => {
+  const n = nativeTerminalFixture(); const { f, timer } = n;
+  await timer.enterForeground(f.session); n.setElapsed(60_000);
+  assert.deepEqual(await timer.projection(f.session), { elapsedForegroundMs: 60_000, remainingForegroundMs: 0 });
+  const calls = n.calls();
+  await timer.projection(f.session); await timer.leaveForeground(f.session); await timer.enterForeground(f.session);
+  await timer.initialize(f.session); await timer.restoreForResume(f.session); await timer.finalizeCountdownManually(f.session);
+  let commits = 0;
+  assert.equal(await timer.saveDraftAtResponseBoundary(f.session, { sessionId: f.session.id }, async () => { commits++; }), true);
+  assert.equal(await timer.checkpointForResponseSave(f.session), true);
+  await f.tick();
+  assert.equal(commits, 0); assert.equal(n.calls(), calls); assert.equal(n.pauses(), 1);
+  assert.equal(f.getActiveSession().activeForegroundMs, 60_000);
+  assert.deepEqual(f.checkpoints.filter(value => value === 60_000), [60_000]);
+  assert.equal(f.getDurableAtFinalization()?.accumulatedForegroundMs, 60_000);
+  assert.equal(f.getDurableAtFinalization()?.running, false); assert.equal(f.getFinalizations(), 1);
+  const mismatched = createTrainingSession({ ...f.session, configurationSnapshot: { ...f.session.configurationSnapshot, timerDurationMs: 60_001 } });
+  await assert.rejects(timer.projection(mismatched), /different immutable session configuration/);
+  await timer.runLocalLearningReset(async () => {});
+  await assert.rejects(timer.projection(f.session), /persisted foreground timer is missing/);
+  assert.equal(f.getFinalizations(), 1);
+});
+
+test("an expiry subscriber failure cannot poison completed finalization after T clear", async () => {
+  const n = nativeTerminalFixture(); const { f, timer } = n;
+  let throwingNotifications = 0; let deliveredNotifications = 0;
+  timer.subscribe(event => { if (event.kind === "expired") { throwingNotifications++; throw Error("navigation transition failed"); } });
+  timer.subscribe(event => { if (event.kind === "expired") deliveredNotifications++; });
+  await timer.enterForeground(f.session); n.setElapsed(60_000);
+  const expected = { elapsedForegroundMs: 60_000, remainingForegroundMs: 0 };
+  assert.deepEqual(await timer.projection(f.session), expected);
+  const calls = n.calls();
+  assert.deepEqual(await timer.projection(f.session), expected);
+  await timer.leaveForeground(f.session); await timer.enterForeground(f.session);
+  assert.equal(n.calls(), calls); assert.equal(f.getFinalizations(), 1);
+  assert.equal(throwingNotifications, 1); assert.equal(deliveredNotifications, 1);
+});
+
+test("manual native finalization returns its paused projection after T clear without a second checkpoint", async () => {
+  const n = nativeTerminalFixture(); const { f, timer } = n;
+  await timer.enterForeground(f.session); n.setElapsed(1234);
+  await timer.finalizeCountdownManually(f.session);
+  const calls = n.calls();
+  assert.deepEqual(await timer.projection(f.session), { elapsedForegroundMs: 1234, remainingForegroundMs: 58_766 });
+  await timer.leaveForeground(f.session); await timer.enterForeground(f.session); await timer.finalizeCountdownManually(f.session);
+  assert.equal(n.calls(), calls); assert.equal(n.pauses(), 1); assert.equal(f.getFinalizations(), 1);
+});
+
+test("a refresh queued during native expiry never reads the owner after the finalizer clears T", async () => {
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const n = nativeTerminalFixture(undefined, gate); const { f, timer } = n;
+  await timer.enterForeground(f.session); n.setElapsed(60_000);
+  const expiry = timer.projection(f.session);
+  await f.settle();
+  const calls = n.calls();
+  f.fireScheduled();
+  release();
+  assert.equal((await expiry).remainingForegroundMs, 0);
+  await f.settle();
+  assert.equal(n.calls(), calls); assert.equal(f.getFinalizations(), 1);
+});
+
+test("unknown native finalization after T clear stays a shared failure without cached success or native retry", async () => {
+  const failure = Error("synthetic unknown finalization");
+  const n = nativeTerminalFixture(failure); const { f, timer } = n;
+  await timer.enterForeground(f.session); n.setElapsed(60_000);
+  await assert.rejects(timer.projection(f.session), error => error === failure);
+  const calls = n.calls(); let commits = 0;
+  for (const command of [() => timer.projection(f.session), () => timer.enterForeground(f.session), () => timer.leaveForeground(f.session),
+    () => timer.finalizeCountdownManually(f.session), () => timer.saveDraftAtResponseBoundary(f.session, { sessionId: f.session.id }, async () => { commits++; })]) {
+    await assert.rejects(command(), error => error === failure);
+  }
+  assert.equal(n.calls(), calls); assert.equal(commits, 0); assert.equal(n.pauses(), 1); assert.equal(f.getFinalizations(), 1);
 });
 
 test("a response-save checkpoint that crosses countdown expiry finalizes before any draft save can follow", async () => {
@@ -598,4 +723,22 @@ test("a failed durable timer repair remains a blocking recovery error", async ()
   });
   assert.equal(f.getActiveSession().activeForegroundMs, 0);
   assert.deepEqual(f.checkpoints, []);
+});
+
+
+test("cold receipt sees validated durable T and old S before reconciliation without controlling recovery", async () => {
+  const f = fixture(undefined, "elapsed");
+  const persisted = f.getState()!;
+  f.setState(createForegroundTimerState({ ...persisted, accumulatedForegroundMs: 500 }));
+  const observations: unknown[] = [];
+  const restarted = new ForegroundSessionTimerFacade({ ...f.dependencies,
+    observeRestoreBeforeSync: (timer, session) => {
+      observations.push({ timerMs: timer.accumulatedForegroundMs, sessionMs: session.activeForegroundMs, checkpoints: [...f.checkpoints] });
+      throw new Error("diagnostic unavailable");
+    },
+  });
+  await restarted.restoreForResume(f.getActiveSession());
+  assert.deepEqual(observations, [{ timerMs: 500, sessionMs: 0, checkpoints: [] }]);
+  assert.deepEqual(f.checkpoints, [500]);
+  assert.equal(f.getActiveSession().activeForegroundMs, 500);
 });

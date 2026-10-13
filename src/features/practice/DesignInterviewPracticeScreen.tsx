@@ -142,7 +142,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
   useEffect(() => {
     if (!projection) return;
     const listener = AppState.addEventListener("change", (state) => {
-      void (state === "active" ? enterDesignInterviewPracticeForeground() : leaveDesignInterviewPracticeForeground())
+      void (state === "active" ? enterDesignInterviewPracticeForeground() : leaveDesignInterviewPracticeForeground("app_background"))
         .then(refresh)
         .catch((cause: unknown) => setError(describeOperationalFailure(cause, t("Design Interview timer is unavailable."))));
     });

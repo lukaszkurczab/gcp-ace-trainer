@@ -19,7 +19,7 @@ import {
   setProfileStoragePreparationFactoryForTests,
 } from "../../infrastructure/storage/mmkvClient";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
-import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
+import { foregroundTimerPhysicalKey, openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import { getGoalSnapshot, getReviewQueueItems } from "../../storage/repositories";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
@@ -74,7 +74,9 @@ test("one lifecycle clock drives a real answer due time and proposal, editor, an
   let router = await openProfileStorageRouter(base, control, { identity });
   await router.selectExistingGuest(GUEST_ID);
   router = await openProfileStorageRouter(base, control, { identity });
-  setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+  setProfileStoragePreparationFactoryForTests(async () => ({ base, router,
+    foregroundTimerCasForTests: (before, after) => base.applyForegroundTimerRaw(before, after, foregroundTimerPhysicalKey(GUEST_ID)),
+  }));
   const prepared = await prepareProfileStorage();
   activatePreparedProfile(prepared.id, prepared.kind);
   try {

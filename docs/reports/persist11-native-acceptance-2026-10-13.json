@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "task": "PERSIST-11",
+  "date": "2026-10-13",
+  "scope": "Local iOS on existing iPhone 17 simulator; not physical-device or release acceptance",
+  "status": "PASS_local_iOS",
+  "requirement": {
+    "maximumActiveTimeLossMs": 5000,
+    "checkpointCadenceMs": 1000,
+    "absoluteExamDeadlineUnchanged": true
+  },
+  "binarySha256": "fbf1b359e459c4f26fad887c65206b042a60c2ba2a8bd9d930090ba02b5a111e",
+  "countupEvidence": "persist11-countup-native-2026-10-13.json",
+  "countdown": {
+    "requestedKillDelayMs": 5500,
+    "markerToKillMs": 5810.318666,
+    "killToConfirmedDeathMs": 28.144791999999143,
+    "expectedLowerMs": 5812.318666,
+    "expectedUpperMs": 5849.35975,
+    "recoveredElapsedMs": 5021,
+    "lossLowerMs": 791.3186660000001,
+    "lossUpperMs": 828.3597499999996,
+    "uncertaintyMs": 37.0410839999995,
+    "periodicCheckpointCount": 5
+  },
+  "countdownOffsets": [
+    {
+      "requestedKillDelayMs": 0,
+      "markerToKillMs": 132.57499999999982,
+      "killToConfirmedDeathMs": 27.042417000000114,
+      "expectedLowerMs": 14517.575,
+      "expectedUpperMs": 14551.309542000003,
+      "recoveredElapsedMs": 14383,
+      "lossLowerMs": 134.57500000000073,
+      "lossUpperMs": 168.3095420000027,
+      "uncertaintyMs": 33.734542000001966,
+      "periodicCheckpointCount": 0
+    },
+    {
+      "requestedKillDelayMs": 800,
+      "markerToKillMs": 941.9895000000001,
+      "killToConfirmedDeathMs": 27.236499999999978,
+      "expectedLowerMs": 21348.9895,
+      "expectedUpperMs": 21384.657875,
+      "recoveredElapsedMs": 20405,
+      "lossLowerMs": 943.9894999999997,
+      "lossUpperMs": 979.6578750000008,
+      "uncertaintyMs": 35.668375000001106,
+      "periodicCheckpointCount": 0
+    },
+    {
+      "requestedKillDelayMs": 1000,
+      "markerToKillMs": 1138.5583750000005,
+      "killToConfirmedDeathMs": 27.450041999998575,
+      "expectedLowerMs": 15523.558375000002,
+      "expectedUpperMs": 15557.29775,
+      "recoveredElapsedMs": 15399,
+      "lossLowerMs": 124.55837500000234,
+      "lossUpperMs": 158.29774999999972,
+      "uncertaintyMs": 33.73937499999738,
+      "periodicCheckpointCount": 1
+    },
+    {
+      "requestedKillDelayMs": 4900,
+      "markerToKillMs": 5039.070417000003,
+      "killToConfirmedDeathMs": 26.83770799999911,
+      "expectedLowerMs": 20440.070417,
+      "expectedUpperMs": 20473.122375000006,
+      "recoveredElapsedMs": 20405,
+      "lossLowerMs": 35.070416999999,
+      "lossUpperMs": 68.12237500000629,
+      "uncertaintyMs": 33.05195800000729,
+      "periodicCheckpointCount": 5
+    }
+  ],
+  "countdownCap": {
+    "durableElapsedMs": 60000,
+    "running": false,
+    "periodicCheckpointCount": 1,
+    "purpose": "cap and stopped recovery; saturation is not a loss-bound measurement"
+  },
+  "appState": {
+    "backgroundEventIntervalMs": 8981.3498750031,
+    "backgroundDurationLowerMs": 8599.889918000226,
+    "foregroundWindowUpperMs": 466.1969160000008,
+    "observedResumeElapsedMs": 1,
+    "clockCorrelationWidthMs": 12.143624000251293,
+    "stoppedBackgroundElapsedMs": 14118,
+    "activeElapsedMs": 14119
+  },
+  "nativeOwnerIo": {
+    "casesPassed": 5,
+    "execution": "Actual delivered native owner on simulator, modeled SDK failures; not disk-fault or torn-write SDK proof"
+  },
+  "deadlineDiscontinuity": {
+    "testsPassed": 2,
+    "execution": "Production composition with memory storage; backward/forward wall clock and fresh bootstrap, no device clock changes"
+  },
+  "terminalFinalization": {
+    "targetedTestsPassed": 46,
+    "success": "Single scoped finalization projection remains readable after T deletion; observer failures isolated",
+    "failure": "Uncertain finalization remains latched without retry or fake success"
+  },
+  "preservation": {
+    "profiles": 13,
+    "guestProfiles": 1,
+    "physicalKeys": 438,
+    "authorizedTotalGuestActiveTimeDeltaMs": 5030,
+    "additionalActiveTimeAfterCountupMs": 0,
+    "allLogicalCategoriesExact": true,
+    "unknownRecords": 0,
+    "protectedMmkvFilesIdenticalAfterSyntheticRuns": true,
+    "fixtureFilesRemaining": 0,
+    "postCapAddedFiles": 0,
+    "postCapRemovedFiles": 0,
+    "postCapClassifiedNativeMetadataChanges": 4,
+    "unknownPhysicalChanges": 0
+  },
+  "limitations": [
+    "Finite measured interruption and lifecycle scenarios; no universal scheduling or hardware-fault guarantee inferred.",
+    "Legacy 13999/14000/15000ms JS trigger offsets retargeted to the iOS 1s checkpoint and 5s loss boundaries; Android legacy behavior remains deferred.",
+    "PERSIST-13 native mutation/provider matrix and physical final candidate acceptance remain separate."
+  ],
+  "verification": {
+    "localStaticGate": {
+      "exitCode": 0,
+      "tests": 2612,
+      "passed": 2607,
+      "failed": 0,
+      "skipped": 5,
+      "recovery": true,
+      "typecheck": true,
+      "contentBoundary": true,
+      "privacyBoundary": true
+    },
+    "foreignOfflineAccountTestsIncludedLocally": 2,
+    "foreignOfflineAccountSourceExcludedFromDelivery": true
+  },
+  "independentReview": {
+    "model": "gpt-6-luna",
+    "reasoning": "high",
+    "verdict": "PASS scoped local iOS",
+    "recomputed": [
+      "interruption bounds",
+      "AppState bounds",
+      "logical preservation",
+      "physical classification",
+      "post-terminal static gate"
+    ],
+    "releaseReadinessClaim": false
+  }
+}

@@ -3,7 +3,7 @@ import { isGoalRecordForPolicy, normalizeGoalRecord, type GoalPolicyResolver } f
 import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
 import { canonicalJsonV1, canonicalJsonV1ByteLength, canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { applyActiveForegroundTimerRaw, pauseActiveForegroundClock, getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { CANONICAL_RECORD_SCHEMA, readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, restoreCanonicalEnvelopeUnlocked, withCanonicalWriteLocks, writeCanonicalJson, writeCanonicalJsonUnlocked } from "./canonicalRecordCodec";
 import { getGuestInstallation } from "./guestInstallationRepository";
@@ -15,7 +15,7 @@ import { clearTrainingAttempts, getTrainingAttempts, addTrainingAttempt } from "
 import { getTrainingSessionResult, saveTrainingSessionResult } from "./trainingSessionResultRepository";
 import { assertTrainingEvidenceIntegrity } from "./trainingEvidenceIntegrityRepository";
 import { clearTrainingSessions, getActiveTrainingSessionId, getTrainingSessions, saveTrainingSession } from "./trainingSessionRepository";
-import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionResult } from "./trainingModelGuards";
+import { isForegroundTimerState, isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionResult } from "./trainingModelGuards";
 import { AccountDataFailure } from "../errors";
 import { acceptedTargetFromGoal } from "../../domain/learning/learningPlan";
 import { isTrackAdmitted, type LearningDataAdmissionContext, type TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
@@ -156,6 +156,7 @@ const LEARNING_RECORD_PREFIXES = [
 ] as const;
 
 function clearCanonicalLearningNamespace(includeAccountSync: boolean): void {
+  pauseActiveForegroundClock();
   const fixedKeys: ReadonlySet<string> = new Set(includeAccountSync ? [...LEARNING_FIXED_KEYS, STORAGE_KEYS.ACCOUNT_SYNC] : LEARNING_FIXED_KEYS);
   for (const key of getKeyValueStorage().getAllKeys()) {
     if (fixedKeys.has(key) || LEARNING_RECORD_PREFIXES.some((prefix) => key.startsWith(prefix))) removeCanonicalValue(key);
@@ -988,6 +989,7 @@ export async function markAccountMaterializationPending(operationId: string, pre
 }
 
 export async function buildGuestOwnedLocalDataBackup(): Promise<readonly GuestOwnedLocalDataBackupEntry[]> {
+  pauseActiveForegroundClock();
   const storage = getKeyValueStorage();
   const entries: GuestOwnedLocalDataBackupEntry[] = [];
   for (const key of [...storage.getAllKeys()].filter(isGuestOwnedLearningKey).sort()) {
@@ -997,15 +999,28 @@ export async function buildGuestOwnedLocalDataBackup(): Promise<readonly GuestOw
   return Object.freeze(entries);
 }
 
-export async function restoreGuestOwnedLocalDataBackup(guestBackup: readonly GuestOwnedLocalDataBackupEntry[]): Promise<void> {
+export async function restoreGuestOwnedLocalDataBackup(guestBackup: readonly GuestOwnedLocalDataBackupEntry[], admission: TrackAdmissionContext): Promise<void> {
   if (!Array.isArray(guestBackup) || !guestBackup.every(isGuestOwnedLocalDataBackupEntry)) throw new AccountDataFailure("account_data_records_invalid");
+  // Validate the backup T before any effect and keep its original bytes.
+  for (const entry of guestBackup) {
+    if (entry.key !== STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) continue;
+    let envelope: unknown;
+    try { envelope = JSON.parse(entry.value); } catch { throw new AccountDataFailure("account_data_records_invalid"); }
+    if (!isRecord(envelope) || Object.keys(envelope).sort().join(",") !== "payload,revision,schemaIdentity"
+      || envelope.schemaIdentity !== CANONICAL_RECORD_SCHEMA || !Number.isSafeInteger(envelope.revision) || Number(envelope.revision) < 1
+      || !isForegroundTimerState(envelope.payload, admission)) throw new AccountDataFailure("account_data_records_invalid");
+  }
+  pauseActiveForegroundClock();
   const storage = getKeyValueStorage();
   const currentKeys = [...storage.getAllKeys()].filter(isGuestOwnedLearningKey);
   const lockedKeys = [...new Set([...currentKeys, ...guestBackup.map((entry) => entry.key)])];
   withCanonicalWriteLocks(lockedKeys, () => {
-    for (const entry of guestBackup) storage.setString(entry.key, entry.value);
+    for (const entry of guestBackup) {
+      if (entry.key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) applyActiveForegroundTimerRaw(storage.getString(entry.key), entry.value);
+      else storage.setString(entry.key, entry.value);
+    }
     const backupKeys = new Set(guestBackup.map((entry) => entry.key));
-    for (const key of currentKeys) if (!backupKeys.has(key)) storage.remove(key);
+    for (const key of currentKeys) if (!backupKeys.has(key)) removeCanonicalValue(key);
     if (guestBackup.some((entry) => storage.getString(entry.key) !== entry.value)) throw new AccountDataFailure("account_materialization_verification_failed");
   });
 }

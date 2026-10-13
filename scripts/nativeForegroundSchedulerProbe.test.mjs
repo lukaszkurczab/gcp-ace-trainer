@@ -5,6 +5,8 @@ import { createRequire } from "node:module";
 import { once } from "node:events";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
 import test from "node:test";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -43,7 +45,9 @@ function completedMeasurement(overrides = {}) {
   };
 }
 
-async function createProtocolServer({ scenario = "complete", identity = APP_ID } = {}) {
+async function createProtocolServer({ scenario = "complete", identity = APP_ID, nativeRegistration = {
+  protocol: "patternly-native-clock-registration-v1", registered: true, hybridObject: true, methodSurfaceComplete: true, error: null,
+} } = {}) {
   let origin;
   let targetRequests = 0;
   let readCount = 0;
@@ -79,7 +83,9 @@ async function createProtocolServer({ scenario = "complete", identity = APP_ID }
       const request = JSON.parse(raw.toString());
       let value;
       if (request.method !== "Runtime.evaluate") return;
-      if (request.params.expression.includes("startMeasurement")) {
+      if (request.params.expression.includes("readNativeRegistration")) {
+        value = nativeRegistration;
+      } else if (request.params.expression.includes("startMeasurement")) {
         measurementStarted = true;
         value = { accepted: true, stage: "awaiting_callback" };
       } else if (!measurementStarted) {
@@ -276,4 +282,74 @@ test("measurement requires explicit owner authorization before network access", 
   } finally {
     await mock.close();
   }
+});
+
+test("native registration emits only the closed capability facts", async () => {
+  const mock = await createProtocolServer();
+  try {
+    const result = await runProbe(mock.origin, ["--native-registration"]);
+    assert.equal(result.code, 0);
+    assert.deepEqual(parseOutput(result.stdout), {
+      schema: "patternly-foreground-scheduler-probe-v1", stage: "complete", hermes: true,
+      mode: "native_registration", registered: true, hybridObject: true, methodSurfaceComplete: true,
+    });
+    assert.equal(mock.readCount, 0);
+    assert.doesNotMatch(`${result.stdout}${result.stderr}`, /secret|sensitive|webSocketDebuggerUrl/);
+  } finally { await mock.close(); }
+});
+
+test("missing, failed or malformed native registration cannot become success or expose payloads", async () => {
+  const valid = { protocol: "patternly-native-clock-registration-v1", registered: true, hybridObject: true, methodSurfaceComplete: true, error: null };
+  for (const [nativeRegistration, error] of [
+    [{ ...valid, registered: false, hybridObject: false, methodSurfaceComplete: false }, "native_clock_unregistered"],
+    [{ ...valid, methodSurfaceComplete: false }, "native_clock_registration_invalid"],
+    [{ ...valid, error: "native_clock_probe_failed" }, "native_clock_probe_failed"],
+    [{ ...valid, privateData: "sensitive-payload" }, "native_clock_registration_invalid"],
+  ]) {
+    const mock = await createProtocolServer({ nativeRegistration });
+    try {
+      const result = await runProbe(mock.origin, ["--native-registration"]);
+      assert.notEqual(result.code, 0);
+      assert.equal(parseOutput(result.stderr).error, error);
+      assert.doesNotMatch(`${result.stdout}${result.stderr}`, /secret|sensitive|privateData/);
+    } finally { await mock.close(); }
+  }
+});
+
+test("registration and stall modes cannot be combined", async () => {
+  const mock = await createProtocolServer();
+  try {
+    const result = await runProbe(mock.origin, ["--native-registration", ...authorizedArgs]);
+    assert.notEqual(result.code, 0);
+    assert.equal(parseOutput(result.stderr).error, "arguments_invalid");
+    assert.equal(mock.targetRequests, 0);
+  } finally { await mock.close(); }
+});
+
+test("actual fixture's explicit registration probe constructs only an unbound owner and calls no clock methods", () => {
+  // A modeled SDK contract, not a Nitro/Hermes runtime proof. Execute the actual
+  // fixture body with an owner whose persistent/runtime methods are tripwires.
+  const source = readFileSync(resolve(ROOT, "scripts/fixtures/foregroundSchedulerProbe/probe.js"), "utf8");
+  const imports = source.match(/^import .*;$/gmu);
+  assert.deepEqual(imports, ['import React from "react";', 'import { AppRegistry, Text, View } from "react-native";']);
+  const calls = [];
+  const owner = new Proxy({}, { get(_target, key) { return () => { calls.push(String(key)); throw new Error("clock_method_forbidden"); }; } });
+  const context = vm.createContext({
+    HermesInternal: {}, AppRegistry: { registerComponent() {} },
+    require(name) {
+      assert.equal(name, "react-native-nitro-modules"); calls.push("loadNitro");
+      return { NitroModules: {
+        hasHybridObject(name) { assert.equal(name, "PatternlyForegroundClock"); calls.push("has"); return true; },
+        createHybridObject(name) { assert.equal(name, "PatternlyForegroundClock"); calls.push("create"); return owner; },
+        isHybridObject(value) { assert.equal(value, owner); calls.push("isHybrid"); return true; },
+      } };
+    },
+  });
+  vm.runInContext(source.replace(/^import .*;$/gmu, ""), context);
+  context.__patternlyForegroundSchedulerProbe.read();
+  assert.deepEqual(calls, [], "default readiness must not initialize Nitro");
+  const result = context.__patternlyForegroundSchedulerProbe.readNativeRegistration();
+  assert.equal(result.methodSurfaceComplete, true);
+  assert.equal(result.error, null);
+  assert.deepEqual(calls, ["loadNitro", "has", "create", "isHybrid"]);
 });

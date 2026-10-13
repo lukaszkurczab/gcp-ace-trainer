@@ -2,10 +2,11 @@ import {
   type ForegroundTimerState,
   type TrainingSession,
 } from "../../domain";
-import { ForegroundSessionTimer, type MonotonicClock, type WallClock } from "../runtime/ForegroundSessionTimer";
+import type { ForegroundSessionClock, ForegroundTimerLeaveReason } from "../runtime/ForegroundSessionTimer";
 import type { ForegroundTimerRepositoryPort } from "../runtime/ForegroundTimerRepositoryPort";
 import { TrainingApplicationFailure, type TrackRegistryPort } from "./contracts";
 import type { SimulationCommandAuthorization, TrainingLifecycleUseCases } from "./TrainingLifecycleUseCases";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 
 export class ForegroundSessionTimerRecoveryError extends TrainingApplicationFailure {
   constructor(message: string, readonly cause?: unknown) {
@@ -35,8 +36,8 @@ export type ForegroundSessionTimerDependencies = Readonly<{
   repository: ForegroundTimerRepositoryPort;
   lifecycle: TrainingLifecycleUseCases;
   tracks: TrackRegistryPort;
-  monotonicClock: MonotonicClock;
-  wallClock: WallClock;
+  createTimer(state: ForegroundTimerState, session: TrainingSession): ForegroundSessionClock;
+  observeRestoreBeforeSync?(state: ForegroundTimerState, session: TrainingSession): void;
   schedule(callback: () => void): ReturnType<typeof setInterval>;
   cancel(handle: ReturnType<typeof setInterval>): void;
   finalize(session: TrainingSession, authorization?: SimulationCommandAuthorization, cause?: "manual" | "expiry"): Promise<void>;
@@ -50,11 +51,12 @@ export type ForegroundSessionTimerDependencies = Readonly<{
  * transitions and reads projections.
  */
 export class ForegroundSessionTimerFacade {
-  private readonly timers = new Map<string, ForegroundSessionTimer>();
+  private readonly synchronizedTimerRevisions = new Map<string, number>();
+  private readonly timers = new Map<string, ForegroundSessionClock>();
   private readonly faults = new Map<string, ForegroundSessionTimerRecoveryError>();
   private readonly completionCheckpointFaults = new Set<string>();
   private readonly listeners = new Set<(event: ForegroundSessionTimerEvent) => void>();
-  private readonly finalizations = new Map<string, Promise<void>>();
+  private readonly finalizations = new Map<string, Readonly<{ identity: string; operation: Promise<ForegroundTimeProjection> }>>();
   private readonly practiceCompletions = new Map<string, Promise<unknown>>();
   private readonly operations = new Map<string, Promise<unknown>>();
   private interval: ReturnType<typeof setInterval> | null = null;
@@ -95,7 +97,7 @@ export class ForegroundSessionTimerFacade {
     // hidden finalization/completion lane escaping the reset barrier.
     const inFlight = [
       ...this.operations.values(),
-      ...this.finalizations.values(),
+      ...Array.from(this.finalizations.values(), record => record.operation),
       ...this.practiceCompletions.values(),
     ];
     await Promise.allSettled(inFlight);
@@ -106,6 +108,7 @@ export class ForegroundSessionTimerFacade {
 
   private clearSessionRuntimeState(): void {
     this.timers.clear();
+    this.synchronizedTimerRevisions.clear();
     this.faults.clear();
     this.completionCheckpointFaults.clear();
     this.finalizations.clear();
@@ -116,6 +119,8 @@ export class ForegroundSessionTimerFacade {
   async initialize(session: TrainingSession): Promise<void> {
     return this.serialize(session.id, async () => {
       assertForegroundTimedSession(session);
+      const terminal = this.terminalProjection(session);
+      if (terminal) { await terminal; return; }
       try { await this.restore(session); }
       catch (error) { throw this.fail(session.id, error, "Session timer could not be initialized."); }
     });
@@ -124,6 +129,8 @@ export class ForegroundSessionTimerFacade {
   async restoreForResume(session: TrainingSession): Promise<void> {
     return this.serialize(session.id, async () => {
       assertForegroundTimedSession(session);
+      const terminal = this.terminalProjection(session);
+      if (terminal) { await terminal; return; }
       try { await this.restore(session); }
       catch (error) { throw this.fail(session.id, error, "Session timer recovery is required before this session can continue."); }
     });
@@ -131,20 +138,22 @@ export class ForegroundSessionTimerFacade {
 
   async enterForeground(session: TrainingSession): Promise<ForegroundTimeProjection> {
     return this.serialize(session.id, async () => {
+      const terminal = this.terminalProjection(session);
+      if (terminal) return terminal;
       const timer = await this.requireTimer(session);
       try {
         const state = await timer.enterForeground();
         await this.sync(state);
         this.startPeriodicCheckpoint(session);
         await this.expireIfNeeded(session, timer);
-        return this.publish(session, timer);
+        return await this.publish(session, timer);
       } catch (error) { throw this.fail(session.id, error, "Session timer could not enter foreground."); }
     });
   }
 
-  async leaveForeground(session: TrainingSession): Promise<ForegroundTimeProjection> {
+  async leaveForeground(session: TrainingSession, reason: ForegroundTimerLeaveReason = "session_exit"): Promise<ForegroundTimeProjection> {
     return this.serialize(session.id, async () => {
-      return this.leaveForegroundInLane(session);
+      return this.leaveForegroundInLane(session, reason);
     });
   }
 
@@ -165,6 +174,8 @@ export class ForegroundSessionTimerFacade {
 
   async saveDraftAtResponseBoundary(session: TrainingSession, authorization: SimulationCommandAuthorization, commit: () => Promise<void>): Promise<boolean> {
     return this.serialize(session.id, async () => {
+      const terminal = this.terminalProjection(session);
+      if (terminal) { await terminal; return true; }
       if (session.configurationSnapshot.timer === "absoluteDeadline") {
         return this.saveDraftAtAbsoluteDeadlineBoundary(session, commit);
       }
@@ -209,9 +220,11 @@ export class ForegroundSessionTimerFacade {
 
   async projection(session: TrainingSession, authorization?: SimulationCommandAuthorization): Promise<ForegroundTimeProjection> {
     return this.serialize(session.id, async () => {
+      const terminal = this.terminalProjection(session);
+      if (terminal) return terminal;
       const timer = await this.requireTimer(session);
       await this.expireIfNeeded(session, timer, authorization);
-      return this.project(session, timer);
+      return this.terminalProjection(session) ?? this.project(session, timer);
     });
   }
 
@@ -242,16 +255,19 @@ export class ForegroundSessionTimerFacade {
   async finalizeCountdownManually(session: TrainingSession, authorization?: SimulationCommandAuthorization): Promise<void> {
     return this.serialize(session.id, async () => {
       assertCountdownSession(session);
+      const terminal = this.terminalProjection(session);
+      if (terminal) { await terminal; return; }
       const access = authorization ?? await this.dependencies.lifecycle.authorizeActiveSimulationCommand(session.id);
       const timer = await this.requireTimer(session);
       try {
-        await this.sync(await timer.checkpointForFinalization());
-        await this.finalizeOnce(session, "manual", access);
+        const state = await timer.checkpointForFinalization();
+        await this.sync(state);
+        await this.finalizeOnce(session, "manual", access, this.projectElapsed(session, state.accumulatedForegroundMs));
       } catch (error) { throw this.fail(session.id, error, "Interview Simulation finalization could not be completed."); }
     });
   }
 
-  private async restore(session: TrainingSession): Promise<ForegroundSessionTimer> {
+  private async restore(session: TrainingSession): Promise<ForegroundSessionClock> {
     const familyId = this.dependencies.tracks.getTrackRegistration(session.trackId).familyId;
     const cached = this.timers.get(session.id);
     if (cached) {
@@ -274,32 +290,32 @@ export class ForegroundSessionTimerFacade {
     if (state.accumulatedForegroundMs < session.activeForegroundMs) {
       throw new Error("Persisted foreground timer and session aggregate disagree.");
     }
+    // A missing diagnostic receipt fails its runner, never normal recovery.
+    try { this.dependencies.observeRestoreBeforeSync?.(state, session); } catch { /* non-authoritative observation */ }
     if (state.accumulatedForegroundMs > session.activeForegroundMs) await this.sync(state);
-    const timer = ForegroundSessionTimer.restore({
-      state,
-      port: { save: this.dependencies.repository.save },
-      monotonicClock: this.dependencies.monotonicClock,
-      wallClock: this.dependencies.wallClock,
-    });
+    else this.synchronizedTimerRevisions.set(state.sessionId, state.checkpointRevision);
+    const timer = this.dependencies.createTimer(state, session);
     this.timers.set(session.id, timer);
     return timer;
   }
 
-  private async requireTimer(session: TrainingSession): Promise<ForegroundSessionTimer> {
+  private async requireTimer(session: TrainingSession): Promise<ForegroundSessionClock> {
     const fault = this.faults.get(session.id);
     if (fault) throw fault;
     assertForegroundTimedSession(session);
     return this.restore(session);
   }
 
-  private async leaveForegroundInLane(session: TrainingSession): Promise<ForegroundTimeProjection> {
+  private async leaveForegroundInLane(session: TrainingSession, reason: ForegroundTimerLeaveReason = "session_exit"): Promise<ForegroundTimeProjection> {
+    const terminal = this.terminalProjection(session);
+    if (terminal) return terminal;
     const timer = await this.requireTimer(session);
     try {
-      const state = await timer.leaveForeground();
+      const state = await timer.leaveForeground(reason);
       await this.sync(state);
       this.stopPeriodicCheckpoint(session.id);
       await this.expireIfNeeded(session, timer);
-      return this.publish(session, timer);
+      return await this.publish(session, timer);
     } catch (error) { throw this.fail(session.id, error, "Session timer could not leave foreground."); }
   }
 
@@ -319,6 +335,8 @@ export class ForegroundSessionTimerFacade {
   }
 
   private async responseSaveBoundary(session: TrainingSession, authorization?: SimulationCommandAuthorization): Promise<boolean> {
+    const terminal = this.terminalProjection(session);
+    if (terminal) { await terminal; return true; }
     if (session.configurationSnapshot.timer === "absoluteDeadline") {
       return this.finalizeAbsoluteDeadlineIfDue(session);
     }
@@ -358,10 +376,14 @@ export class ForegroundSessionTimerFacade {
 
   private async sync(state: ForegroundTimerState): Promise<void> {
     await this.dependencies.lifecycle.checkpointForegroundTime(state.accumulatedForegroundMs);
+    this.synchronizedTimerRevisions.set(state.sessionId, state.checkpointRevision);
   }
 
-  private project(session: TrainingSession, timer: ForegroundSessionTimer): ForegroundTimeProjection {
-    const elapsedForegroundMs = timer.getAccumulatedForegroundMs();
+  private project(session: TrainingSession, timer: ForegroundSessionClock): ForegroundTimeProjection {
+    return this.projectElapsed(session, timer.getAccumulatedForegroundMs());
+  }
+
+  private projectElapsed(session: TrainingSession, elapsedForegroundMs: number): ForegroundTimeProjection {
     if (session.configurationSnapshot.timer === "elapsedForeground") {
       return Object.freeze({ elapsedForegroundMs });
     }
@@ -370,39 +392,65 @@ export class ForegroundSessionTimerFacade {
     return Object.freeze({ elapsedForegroundMs, remainingForegroundMs: Math.max(0, duration - elapsedForegroundMs) });
   }
 
-  private publish(session: TrainingSession, timer: ForegroundSessionTimer): ForegroundTimeProjection {
-    const projection = this.project(session, timer);
+  private async publish(session: TrainingSession, timer: ForegroundSessionClock): Promise<ForegroundTimeProjection> {
+    const projection = await (this.terminalProjection(session) ?? this.project(session, timer));
     this.notify({ kind: "projection_refresh", sessionId: session.id });
     return projection;
   }
 
-  private async expireIfNeeded(session: TrainingSession, timer: ForegroundSessionTimer, authorization?: SimulationCommandAuthorization): Promise<boolean> {
+  private async expireIfNeeded(session: TrainingSession, timer: ForegroundSessionClock, authorization?: SimulationCommandAuthorization): Promise<boolean> {
+    const terminal = this.terminalProjection(session);
+    if (terminal) { await terminal; return true; }
     if (session.configurationSnapshot.timer !== "countdownForeground") return false;
     const remaining = this.project(session, timer).remainingForegroundMs;
     if (remaining === undefined || remaining > 0) return false;
     const access = authorization ?? await this.dependencies.lifecycle.authorizeActiveSimulationCommand(session.id);
-    await this.sync(await timer.checkpointForExpiry());
-    await this.finalizeOnce(session, "expiry", access);
+    const state = await timer.checkpointForExpiry();
+    await this.sync(state);
+    await this.finalizeOnce(session, "expiry", access, this.projectElapsed(session, state.accumulatedForegroundMs));
     return true;
   }
 
-  private async finalizeOnce(session: TrainingSession, cause: "manual" | "expiry", authorization: SimulationCommandAuthorization): Promise<void> {
-    const existing = this.finalizations.get(session.id);
-    if (existing) return existing;
-    const operation = this.dependencies.finalize(session, authorization, cause).then(() => {
+  private finalizationIdentity(session: TrainingSession): string {
+    return canonicalSerialize({ trackId: session.trackId, modeId: session.modeId,
+      familyId: this.dependencies.tracks.getTrackRegistration(session.trackId).familyId,
+      configurationSnapshot: session.configurationSnapshot });
+  }
+
+  private terminalProjection(session: TrainingSession): Promise<ForegroundTimeProjection> | undefined {
+    const record = this.finalizations.get(session.id);
+    if (record && record.identity !== this.finalizationIdentity(session)) {
+      throw new ForegroundSessionTimerRecoveryError("Finalized timer belongs to a different immutable session configuration.");
+    }
+    return record?.operation;
+  }
+
+  private async finalizeOnce(session: TrainingSession, cause: "manual" | "expiry", authorization: SimulationCommandAuthorization, projection: ForegroundTimeProjection): Promise<void> {
+    const existing = this.terminalProjection(session);
+    if (existing) { await existing; return; }
+    const identity = this.finalizationIdentity(session);
+    // Publish the scoped shared operation before the finalizer can clear T.
+    // Only verified success resolves its frozen checkpoint projection.
+    const operation = Promise.resolve().then(() => this.dependencies.finalize(session, authorization, cause)).then(() => {
       if (cause === "expiry") this.notify({ kind: "expired", sessionId: session.id });
+      return projection;
     }).finally(() => this.stopPeriodicCheckpoint(session.id));
-    this.finalizations.set(session.id, operation);
-    return operation;
+    this.finalizations.set(session.id, Object.freeze({ identity, operation }));
+    await operation;
   }
 
   private notify(event: ForegroundSessionTimerEvent): void {
-    for (const listener of this.listeners) listener(event);
+    for (const listener of this.listeners) {
+      // Observers cannot turn completed persistence into an uncertain result
+      // or prevent the remaining observers from receiving the event.
+      try { listener(event); } catch { /* Subscriber failure does not change timer state. */ }
+    }
   }
 
   private releaseAfterTerminalSuccess(sessionId: string): void {
     this.stopPeriodicCheckpoint(sessionId);
     this.timers.delete(sessionId);
+    this.synchronizedTimerRevisions.delete(sessionId);
     this.faults.delete(sessionId);
     this.completionCheckpointFaults.delete(sessionId);
     this.finalizations.delete(sessionId);
@@ -429,13 +477,12 @@ export class ForegroundSessionTimerFacade {
       if (this.foregroundSessionId !== sessionId) return;
       const timer = this.timers.get(sessionId);
       if (!timer) return;
-      const revision = timer.getState().checkpointRevision;
       void this.serialize(sessionId, async () => {
-        if (this.timers.get(sessionId) !== timer) return;
+        if (this.foregroundSessionId !== sessionId || this.finalizations.has(sessionId) || this.timers.get(sessionId) !== timer) return;
         const state = await timer.checkpointIfDue();
-        if (state.checkpointRevision !== revision) await this.sync(state);
+        if (state.checkpointRevision !== this.synchronizedTimerRevisions.get(sessionId)) await this.sync(state);
         await this.expireIfNeeded(session, timer);
-        this.publish(session, timer);
+        await this.publish(session, timer);
       }).catch((error: unknown) => { this.fail(sessionId, error, "Periodic foreground timer checkpoint failed."); });
     });
   }

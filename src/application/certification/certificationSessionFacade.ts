@@ -1,3 +1,4 @@
+import type { ForegroundTimerLeaveReason } from "../runtime/ForegroundSessionTimer";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { type AttemptResultKind, type CompletedTrainingSession, type TrackId, type TrainingSession, type TrainingSessionDraft } from "../../domain";
 import { getTrackRegistration } from "../../domain";
@@ -389,8 +390,8 @@ export async function enterCertificationPracticeForeground(): Promise<Foreground
   return getForegroundSessionTimerFacade().enterForeground(await requireCertificationPractice());
 }
 
-export async function leaveCertificationPracticeForeground(): Promise<ForegroundTimeProjection> {
-  return getForegroundSessionTimerFacade().leaveForeground(await requireCertificationPractice());
+export async function leaveCertificationPracticeForeground(reason: ForegroundTimerLeaveReason = "session_exit"): Promise<ForegroundTimeProjection> {
+  return getForegroundSessionTimerFacade().leaveForeground(await requireCertificationPractice(), reason);
 }
 
 export function subscribeCertificationPracticeProjectionRefresh(listener: (event: ForegroundSessionTimerEvent) => void): () => void {

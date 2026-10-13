@@ -3,7 +3,7 @@ import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
 
 import { closeActiveProfileStorage, activatePreparedProfile, prepareProfileStorage, setProfileStoragePreparationFactoryForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
-import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
+import { foregroundTimerPhysicalKey, openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import { CANONICAL_RECORD_SCHEMA } from "../../storage/repositories/canonicalRecordCodec";
 import { STORAGE_KEYS } from "../../storage/keys";
@@ -63,7 +63,7 @@ async function activateGuest(markerDatasetId: string) {
   const profile = router.profile;
   await router.selectExistingGuest(profile.id);
   if (markerDatasetId !== profile.id) base.setString(scopedKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION), envelope({ installationId: INSTALLATION_ID, localDatasetId: markerDatasetId, bindingState: "guest", accountId: null }, 4));
-  setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+  setProfileStoragePreparationFactoryForTests(async () => ({ base, router, foregroundTimerCasForTests: (before, after) => base.applyForegroundTimerRaw(before, after, foregroundTimerPhysicalKey(profile.id)) }));
   const prepared = await prepareProfileStorage();
   activatePreparedProfile(prepared.id, prepared.kind);
   return { base, profile };

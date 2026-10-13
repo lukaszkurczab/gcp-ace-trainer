@@ -1,0 +1,16 @@
+{
+  "name": "PatternlyForegroundClock",
+  "version": "1.0.0",
+  "summary": "Patternly foreground timer owner using the existing encrypted MMKV handle",
+  "homepage": "https://github.com/lukaszkurczab/gcp-ace-trainer",
+  "license": { "type": "Proprietary" },
+  "authors": "Patternly",
+  "source": { "git": "https://github.com/lukaszkurczab/gcp-ace-trainer.git" },
+  "platforms": { "ios": "16.4" },
+  "source_files": "*.{hpp,mm}",
+  "private_header_files": "*.hpp",
+  "frameworks": ["Foundation", "UIKit"],
+  "requires_arc": true,
+  "dependencies": { "NitroModules": ["0.36.1"], "NitroMmkv": ["4.3.2"] },
+  "pod_target_xcconfig": { "CLANG_CXX_LANGUAGE_STANDARD": "c++20", "DEFINES_MODULE": "YES" }
+}

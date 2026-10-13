@@ -315,6 +315,11 @@ function storedGuestInstallation(storage: KeyValueStorage): StoredGuestInstallat
   return parseStoredGuestInstallation(storage.getString(STORAGE_KEYS.GUEST_INSTALLATION));
 }
 
+/** The storage router alone owns physical profile-key encoding. */
+export function foregroundTimerPhysicalKey(profileId: string): string {
+  return physicalKey(profileId, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
+}
+
 function physicalKey(profileId: string, key: string): string {
   return `${PROFILE_PREFIX}${profileId}:${encodeURIComponent(key)}`;
 }
@@ -553,6 +558,9 @@ async function resumeGuestRemoval34(base: KeyValueStorage, control: StorageManif
   if (raw === null) return null;
   const journal = parseRemovalJournal(raw);
   if (!journal) throw new ProfileStorageError("profile_removal_recovery_required");
+  // The removal journal was admitted only with no active timer. Recovery must
+  // never turn an unexpected T into an ordinary physical deletion.
+  if (base.getString(foregroundTimerPhysicalKey(journal.targetProfileId)) !== undefined) throw new ProfileStorageError("profile_removal_recovery_required");
   const logoutRaw = await control.get(LOCAL_LOGOUT_CONTROL_KEY);
   const logout = pendingLogoutInventories(logoutRaw);
   if (!logout || logout.pairsSha256 !== journal.expectedPendingPairInventorySha256 || logout.uidsSha256 !== journal.expectedPendingUidInventorySha256) throw new ProfileStorageError("profile_removal_recovery_required");

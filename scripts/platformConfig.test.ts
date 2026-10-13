@@ -36,6 +36,7 @@ test("Expo platform configuration declares the supported phone-only native matri
     extraPods: [
       { name: "GoogleUtilities", modular_headers: true },
       { name: "RecaptchaInterop", modular_headers: true },
+      { name: "PatternlyForegroundClock", path: "../native/foreground-clock" },
     ],
   });
   assert.deepEqual(properties.android, {

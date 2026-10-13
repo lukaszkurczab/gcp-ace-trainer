@@ -25,6 +25,12 @@ const START_EXPRESSION = `(() => {
     ? marker.startMeasurement()
     : null;
 })()`;
+const NATIVE_REGISTRATION_EXPRESSION = `(() => {
+  const marker = globalThis.__patternlyForegroundSchedulerProbe;
+  return marker && typeof marker.readNativeRegistration === "function"
+    ? marker.readNativeRegistration()
+    : null;
+})()`;
 
 const SAFE_ERRORS = new Set([
   "arguments_invalid",
@@ -44,6 +50,9 @@ const SAFE_ERRORS = new Set([
   "measurement_timeout",
   "measurement_incomplete",
   "measurement_result_invalid",
+  "native_clock_probe_failed",
+  "native_clock_unregistered",
+  "native_clock_registration_invalid",
 ]);
 
 function emit(value, stream = process.stdout) {
@@ -62,10 +71,12 @@ function parseArgs(argv) {
     deviceTarget: null,
     measureStall: false,
     ownerAuthorized: false,
+    nativeRegistration: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--measure-stall") result.measureStall = true;
+    else if (arg === "--native-registration") result.nativeRegistration = true;
     else if (arg === "--owner-authorized") result.ownerAuthorized = true;
     else if (["--metro-origin", "--app-id", "--device-target"].includes(arg)) {
       const value = argv[index + 1];
@@ -82,6 +93,7 @@ function parseArgs(argv) {
     throw new Error("arguments_invalid");
   }
   if (result.ownerAuthorized && !result.measureStall) throw new Error("arguments_invalid");
+  if (result.nativeRegistration && result.measureStall) throw new Error("arguments_invalid");
   if (result.measureStall && !result.ownerAuthorized) throw new Error("measurement_not_authorized");
   return result;
 }
@@ -306,6 +318,19 @@ async function run() {
   try {
     const initial = await evaluate(socket, ++cdpId, MARKER_EXPRESSION, 1_500);
     validateReadyMarker(initial);
+    if (args.nativeRegistration) {
+      const result = await evaluate(socket, ++cdpId, NATIVE_REGISTRATION_EXPRESSION, 1_500);
+      const keys = ["protocol", "registered", "hybridObject", "methodSurfaceComplete", "error"];
+      if (Object.keys(result).length !== keys.length || !keys.every((key) => Object.hasOwn(result, key))
+          || result.protocol !== "patternly-native-clock-registration-v1"
+          || ![result.registered, result.hybridObject, result.methodSurfaceComplete].every((value) => typeof value === "boolean")
+          || ![null, "native_clock_probe_failed"].includes(result.error)) throw new Error("native_clock_registration_invalid");
+      if (result.error) throw new Error("native_clock_probe_failed");
+      if (!result.registered) throw new Error("native_clock_unregistered");
+      if (!result.hybridObject || !result.methodSurfaceComplete) throw new Error("native_clock_registration_invalid");
+      emit({ stage: "complete", hermes: initial.hermes, mode: "native_registration", registered: true, hybridObject: true, methodSurfaceComplete: true });
+      return;
+    }
     if (!args.measureStall) {
       emit({ stage: initial.stage, hermes: initial.hermes, mode: "readiness" });
       return;
