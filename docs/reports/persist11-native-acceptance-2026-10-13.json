@@ -148,5 +148,18 @@
       "post-terminal static gate"
     ],
     "releaseReadinessClaim": false
+  },
+  "delivery": {
+    "sourceCommit": "cd4bc8cf4359b013d588dbda0d813cffb31dc555",
+    "pushedTo": "origin/main",
+    "ciUrl": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38390103754",
+    "ciConclusion": "success",
+    "jobsPassed": 2,
+    "hostedTests": 2610,
+    "hostedPassed": 2604,
+    "hostedFailed": 0,
+    "hostedSkipped": 6,
+    "contentContractTestsPassed": 3,
+    "receiptSavedLocallyWithoutMetadataOnlyPush": true
   }
 }
