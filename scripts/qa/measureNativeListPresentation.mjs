@@ -46,13 +46,17 @@ export async function measureNativeListPresentation(metroUrl, originUrl, screen,
   const heapSamples = [];
   let started = false;
   let id = 0;
+  let stage = "connection";
   try {
     await new Promise((accept, reject) => { socket.once("open", accept); socket.once("error", () => reject(Error("connect_failed"))); });
+    stage = "capability";
     const capability = await evaluate(socket, ++id, `JSON.stringify({hermes:!!globalThis.HermesInternal,fixture:!!globalThis[${KEY}]})`);
     const capabilities = JSON.parse(capability ?? "null");
     if (capabilities?.hermes !== true || capabilities?.fixture !== true) throw Error("fixture_unavailable");
+    stage = "fixture_configuration";
     if (await evaluate(socket, ++id, `globalThis[${KEY}].run(${JSON.stringify(configuration)})`) !== "started") throw Error("fixture_command_failed");
     started = true;
+    stage = "heap_collection";
     const deadline = Date.now() + TIME_WINDOW_MS;
     do {
       const heap = heapResult(await request(socket, ++id, "Runtime.getHeapUsage"));
@@ -60,13 +64,18 @@ export async function measureNativeListPresentation(metroUrl, originUrl, screen,
       heapSamples.push(heap.usedBytes);
       await new Promise((done) => setTimeout(done, 250));
     } while (Date.now() < deadline);
+    stage = "collector_stop";
     await evaluate(socket, ++id, `globalThis[${KEY}].stop()`);
     started = false;
+    stage = "measurement_readback";
     const measurement = validateListMeasurement(JSON.parse(await evaluate(socket, ++id, `JSON.stringify(globalThis[${KEY}].read())`)), configuration);
     const fixtureSource = readFileSync(new URL("../../src/testing/perf06PresentationFixtures.ts", import.meta.url));
     return { schema: "patternly.perf06.native-list-readback.v1", fixtureSourceSha256: createHash("sha256").update(fixtureSource).digest("hex"),
       measurement, heap: { kind: "sampled", samples: heapSamples.length, intervalMs: 250, sampledPeakUsedBytes: Math.max(...heapSamples), finalUsedBytes: heapSamples.at(-1) },
       scope: "isolated synthetic canonical UI on existing native binary; JS callback frames, not native presentation frames; sampled heap can miss peaks during stalls" };
+  } catch (error) {
+    if (error instanceof Error) error.measurementStage = stage;
+    throw error;
   } finally {
     if (started && socket.readyState === WebSocket.OPEN) {
       try { await evaluate(socket, ++id, `globalThis[${KEY}].stop()`); } catch { /* Fixture auto-stops after 20 seconds. */ }
@@ -80,6 +89,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (!metro || !origin || !screen || !rawSize || extra.length) { console.error(JSON.stringify({ error: "arguments_rejected" })); process.exitCode = 1; }
   else measureNativeListPresentation(metro, origin, screen, Number(rawSize)).then((receipt) => console.log(JSON.stringify(receipt))).catch((error) => {
     const categories = new Set(["origin_rejected", "target_rejected", "configuration_rejected", "discovery_failed", "connect_failed", "fixture_unavailable", "fixture_command_failed", "heap_unavailable", "measurement_rejected", "read_timeout", "transport_closed"]);
-    console.error(JSON.stringify({ error: categories.has(error?.message) ? error.message : "measurement_failed" })); process.exitCode = 1;
+    const stages = new Set(["connection", "capability", "fixture_configuration", "heap_collection", "collector_stop", "measurement_readback"]);
+    console.error(JSON.stringify({ error: categories.has(error?.message) ? error.message : "measurement_failed", stage: stages.has(error?.measurementStage) ? error.measurementStage : "configuration_or_discovery" })); process.exitCode = 1;
   });
 }

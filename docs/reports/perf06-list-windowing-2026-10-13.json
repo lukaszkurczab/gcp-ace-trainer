@@ -329,10 +329,11 @@
       "directIdentifiedCellRemountObserved": false
     },
     "review1000Upcoming": {
-      "kind": "final versioned flow running",
+      "kind": "complete final versioned flow",
       "sessionId": 71656,
-      "stage": "started after due terminal success",
-      "exitCode": null
+      "stage": "selection52/details52/endUnavailable995/return2/revisit52 PASS",
+      "exitCode": 0,
+      "directIdentifiedCellRemountObserved": false
     }
   },
   "hostedSourceCi": {
@@ -351,5 +352,34 @@
     "fail": 0,
     "skip": 5,
     "contentContractsPass": 3
+  },
+  "hostedHistoricalToolCi": {
+    "sha": "eb645ec4205c3042208e086495cfed49b54bc4d3",
+    "runId": 38324175544,
+    "conclusion": "success",
+    "pass": 2534,
+    "fail": 0,
+    "skip": 5,
+    "contentContractsPass": 3
+  },
+  "historicalPresenterPreparation": {
+    "independentImportBoundary": "PASS",
+    "typecheckExitCode": 0,
+    "actualAppliedBoundaryExitCode": 0,
+    "canonicalPresentersExactlyRestored": true,
+    "nativeActivity50Probe": {
+      "measurementExitCode": 1,
+      "category": "transport_closed",
+      "measurementAccepted": false
+    },
+    "scope": "historical candidate preparation only; not paired native FPS/memory or identical earlier stage0",
+    "nativeDiagnosticActivity50Probe": {
+      "sessionId": 8840,
+      "measurementExitCode": 1,
+      "category": "transport_closed",
+      "stage": "capability",
+      "fixtureRunReached": false,
+      "canonicalPresentersExactlyRestored": true
+    }
   }
 }
