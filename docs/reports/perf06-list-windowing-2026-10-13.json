@@ -1081,7 +1081,7 @@
     "fullPerf06": false
   },
   "normalRuntimeAcceptance": {
-    "status": "independent_bounded_native_acceptance_pass_exact_source_ci_pending",
+    "status": "accepted_bounded_source_native_and_hosted_ci",
     "activityFlow": ".maestro/perf06-regular-activity.yaml",
     "firstAttempt": {
       "session": 53263,
@@ -1111,9 +1111,7 @@
       "inventoryComplete": true,
       "identityExport13x6CategoriesGlobalsControlSecureControlEqual": true
     },
-    "pending": [
-      "required exact-source hosted CI for new helper"
-    ],
+    "pending": [],
     "conditions": "smoke regularentry/no fixture/no login/no practice/reset/build/install; foreignofflineaccountpatches present and outside sourcepackage acceptance",
     "reviewFlow": ".maestro/perf06-regular-review.yaml",
     "reviewWholeFlow": {
@@ -1190,6 +1188,18 @@
         "skip": 5,
         "cause": "missing explicit historical/current content environment; corrected inputs without source changes"
       }
+    },
+    "hostedFinalCi": {
+      "source": "62e73229f898057e993f4a1a9bf5f160c9736a67",
+      "run": 38330733575,
+      "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38330733575",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        "Recovery QA gate SUCCESS",
+        "Multi-track content release contract SUCCESS"
+      ],
+      "foreignOfflineExcluded": true
     }
   }
 }

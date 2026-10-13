@@ -55,3 +55,82 @@ xcrun clang++ @"$NITRO_MMKV_COMMON_ARGS" \
 ```
 
 This reads the operator-selected Xcode response file and uses the compile settings CocoaPods generated for that dependent pod target. It does not patch Pod files or search paths, build/link the app, install or launch anything, or run the app. Keep response files, compiler logs, derived-data paths, and module caches private; only the source fixture is versioned here. Compile success establishes only that this installed dependent target can compile the handle conversion. It does not prove runtime object identity, profile lease correctness, thread safety, timer semantics, or app wiring, and it is coupled to the installed Nitro/MMKV versions and CocoaPods target setup.
+
+## Static archive registration/link-retention check
+
+`nativeRegistrationLinkProbe.mm` adds a diagnostic hand-written HybridObject and an Objective-C `+load` registration. Its method accepts two existing MMKV handles and compares identity; it does not open, read or write storage. This fixture is never imported by production or installed on a device. Compiling and linking it does not execute the method or prove runtime identity.
+
+First check available disk space and that no other heavy local build is running. Select the actual existing NitroMmkv response file, the corresponding Xcode `XCBuildData/*.xcbuilddata/manifest.json`, and a new private output directory. Do not generate guessed linker flags or alter project/Pod/vendor files. From the repository root:
+
+```sh
+umask 077
+mkdir -m 700 "$PRIVATE_PROBE_OUTPUT"
+xcrun --sdk iphonesimulator clang++ @"$NITRO_MMKV_COMMON_ARGS" \
+  -x objective-c++ -c \
+  -fmodules-cache-path="$PRIVATE_PROBE_OUTPUT/module-cache" \
+  scripts/fixtures/foregroundSchedulerProbe/nativeRegistrationLinkProbe.mm \
+  -o "$PRIVATE_PROBE_OUTPUT/registration.o"
+xcrun ar rcs "$PRIVATE_PROBE_OUTPUT/libPatternlyForegroundRegistrationProbe.a" \
+  "$PRIVATE_PROBE_OUTPUT/registration.o"
+```
+
+Export `PRIVATE_PROBE_OUTPUT` and `NATIVE_APP_BUILD_MANIFEST` for this closed replay. It requires one existing arm64 simulator dynamic-library app link recipe, keeps its library/search/ABI options, redirects every declared output to the private directory, disables ad-hoc signing, and adds the archive through the file list. It never uses the manifest's environment or executes arbitrary build tasks:
+
+```sh
+python3 - <<'PY'
+import json, os, subprocess
+from pathlib import Path
+os.umask(0o077)
+out = Path(os.environ['PRIVATE_PROBE_OUTPUT']).resolve()
+assert out.is_dir() and (out / 'registration.o').is_file()
+manifest = json.loads(Path(os.environ['NATIVE_APP_BUILD_MANIFEST']).read_text())
+matches = [r for r in manifest['commands'].values()
+           if isinstance(r.get('args'), list)
+           and any(x.endswith('/Patternly.LinkFileList') for x in r['args'])]
+assert len(matches) == 1
+recipe = matches[0]
+original = recipe['args']
+assert Path(original[0]).name == 'clang' and '-ObjC' in original and '-dynamiclib' in original
+assert original[original.index('-target') + 1].endswith('-simulator')
+assert original.count('-filelist') == 1
+filelist = Path(original[original.index('-filelist') + 1])
+objects = filelist.read_text().splitlines()
+assert objects and all(Path(x).is_file() for x in objects)
+archive = out / 'libPatternlyForegroundRegistrationProbe.a'
+assert archive.is_file()
+for variant in ['baseline', 'archive']:
+    args = original.copy()
+    for flag, suffix in [('-o', '.debug.dylib'), ('-object_path_lto', '_lto.o'),
+                         ('-dependency_info', '_dependency.dat')]:
+        assert args.count(flag) == 1
+        i = args.index(flag) + 1
+        if args[i] == '-Xlinker': i += 1
+        target = out / (variant + suffix)
+        assert not target.exists()
+        args[i] = str(target)
+    if variant == 'archive':
+        copied = out / 'archive.LinkFileList'
+        copied.write_text('\n'.join(objects + [str(archive)]) + '\n')
+        args[args.index('-filelist') + 1] = str(copied)
+    args += ['-Xlinker', '-map', '-Xlinker', str(out / (variant + '.map')),
+             '-Xlinker', '-no_adhoc_codesign']
+    (out / (variant + '-command.json')).write_text(json.dumps(args, indent=2))
+    with (out / (variant + '-link.log')).open('wb') as log:
+        result = subprocess.run(args, cwd=recipe['working-directory'],
+                                stdout=log, stderr=subprocess.STDOUT, timeout=60)
+    assert result.returncode == 0, variant + '_link_failed'
+symbols = subprocess.run(['xcrun', 'nm', str(out / 'archive.debug.dylib')],
+                         capture_output=True, timeout=30, check=True).stdout
+(out / 'archive-symbols.log').write_bytes(symbols)
+mapping = (out / 'archive.map').read_bytes()  # symbol bytes need not be UTF-8
+assert any(b'libPatternlyForegroundRegistrationProbe.a' in line and b'registration.o' in line
+           for line in mapping.splitlines())
+assert b'_OBJC_CLASS_$_PatternlyForegroundHandleLinkRegistration' in symbols
+assert b'+[PatternlyForegroundHandleLinkRegistration load]' in symbols
+print('baseline_and_static_archive_registration_retention_pass')
+PY
+```
+
+Preserve source/response/manifest hashes, original app object hashes before/after, exit codes, command modifications and output hashes in a private receipt. The 13 October check emitted the object, linked the baseline and archive variants successfully, and retained the registration class, `+load`, and HybridObject method; original app objects were unchanged. The map contained non-UTF-8 symbol bytes, so its fixed ASCII names were inspected as bytes after the completed link, without repeating that effect. No signing, install, launch or storage access occurred.
+
+This establishes only linker/static-archive registration retention with the already verified **NitroMmkv consumer compile settings**. It does not establish public-header settings for a newly generated app-owned pod, Expo/CocoaPods discovery, Hermes execution/shared identity, thread safety, profile/session fences, checkpoint durability or the five-second recovery requirement. Those remain explicit next checks; there is no JS timer fallback or production integration in this fixture.
