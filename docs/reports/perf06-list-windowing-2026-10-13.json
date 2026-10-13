@@ -380,6 +380,45 @@
       "stage": "capability",
       "fixtureRunReached": false,
       "canonicalPresentersExactlyRestored": true
-    }
+    },
+    "nativeCorrectOriginActivity50Probe": {
+      "sessionId": 72653,
+      "measurementExitCode": 0,
+      "mountedRows": 50,
+      "rowMounts": 50,
+      "truncated": false,
+      "canonicalPresentersExactlyRestored": true
+    },
+    "previousDisconnectCause": "Root invocation Originlocalhost mismatched Expo serverBaseUrl127.0.0.1. Existing documented procedure correct; same-process correct-Origin control PASS, then historical native probe PASS. No safeguard or timeout changed."
+  },
+  "hostedDiagnosticCi": {
+    "sha": "c4fea2e388b4f65d79e84bfab159b9f626428eb9",
+    "runId": 38325129787,
+    "conclusion": "success",
+    "pass": 2534,
+    "fail": 0,
+    "skip": 5,
+    "contentContractsPass": 3
+  },
+  "nativeMonitorReader": {
+    "sourceSha256": "200cc89b56c2ddd44672c117e712dbf0d4679108edb4110a654be9bdf704dc9f",
+    "testSourceSha256": "1dba210b92cf1d498c97e15b6f13e89bc03aba61d397937047eb6be1551ccbae",
+    "independentDesignAndSourceQa": "PASS WITH GAPS, reader preparation only",
+    "designMinimum": 0.84,
+    "swiftCompile": "PASS",
+    "parserChecksPass": 9,
+    "actualMonitor": {
+      "nativePhysFootprintMB": 326.07,
+      "uiCallbackFPS": 60,
+      "jsCallbackFPS": 60
+    },
+    "rejectionCases": [
+      "missing_monitor",
+      "wrong_dimensions",
+      "outside_private"
+    ],
+    "headerGuardActualChecksPass": 2,
+    "pairedNativeSeriesPerformed": false,
+    "scope": "OCR reading of existing native monitor screenshots, not presented frames/hitches or process peak"
   }
 }
