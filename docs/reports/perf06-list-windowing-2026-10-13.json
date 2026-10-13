@@ -419,6 +419,45 @@
     ],
     "headerGuardActualChecksPass": 2,
     "pairedNativeSeriesPerformed": false,
-    "scope": "OCR reading of existing native monitor screenshots, not presented frames/hitches or process peak"
+    "scope": "OCR reading of existing native monitor screenshots, not presented frames/hitches or process peak",
+    "hostedCi": {
+      "commit": "ba8a8a250a280d5601f56c2b5d459600cd7546f5",
+      "run": 38326835531,
+      "conclusion": "success",
+      "jobs": [
+        "Multi-track content release contract",
+        "Recovery QA gate"
+      ],
+      "scope": "repository gates; Swift actual gates remain local"
+    }
+  },
+  "nativeHostObservationsPreparation": {
+    "source": "scripts/qa/observeNativeListPresentation.py",
+    "sourceSha256": "d5363b4dcd570c4c2a0d8351032a8f4dfac27c84eebb24d95f757c398a1092eb",
+    "independentReview": "Luna High PASS WITH GAPS; bounded tool only, not matched pair",
+    "pilotConfigurations": [
+      "activity50",
+      "activity500",
+      "activity1000",
+      "review-due100",
+      "review-due1000",
+      "review-upcoming100",
+      "review-upcoming1000"
+    ],
+    "allPilotMeasurementsExit": 0,
+    "perConfiguration": {
+      "rssSamples": 28,
+      "screenshots": 7,
+      "rssTargetIntervalMs": 250,
+      "screenshotsTargetIntervalMs": 1000,
+      "hostEnvelopeMs": 7000
+    },
+    "paired": false,
+    "ocrPilot": "unavailable: visible JS label not recognized; strict reader unchanged",
+    "failedProbe": "relative simctl screenshot paths EXIT4; absolute path verified",
+    "imagePermissions": "0600 applied explicitly after capture; simctl server writes0644 despite inherited umask; existing pilot corrected",
+    "preservation": "37files/2MMKVbyte-identical/binarysame/5sameclassifieddeltas/0addedremoved/monitorOFF",
+    "next": "fresh lifecycle sameinit/order bothsources; verify actual loaded variant, not callerlabel/diskhash alone",
+    "routineFinalCorrection": "Explicit observationsHostEndMs and target-envelope wording; pilot timestamps already record actual bounds."
   }
 }
