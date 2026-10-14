@@ -18,10 +18,13 @@ export default function App() {
     return <Perf06ListFixtureRoot entry={listEntry} />;
   }
   if (entry.kind === "regular") {
-    markStartup("regular_root_module", "begin");
-    const RegularApplicationRoot = (require("./src/RegularApplicationRoot") as { default: () => ReactElement }).default;
-    markStartup("regular_root_module", "end");
-    return <RegularApplicationRoot />;
+    const EnvironmentGate = (require("./src/infrastructure/runtime/EnvironmentGate") as { default: (props: Readonly<{ loadApplication: () => ReactElement }>) => ReactElement }).default;
+    return <EnvironmentGate loadApplication={() => {
+      markStartup("regular_root_module", "begin");
+      const RegularApplicationRoot = (require("./src/RegularApplicationRoot") as { default: () => ReactElement }).default;
+      markStartup("regular_root_module", "end");
+      return <RegularApplicationRoot />;
+    }} />;
   }
   const Persist13ResetFixtureRoot = (require("./src/application/runtimeAuditability/Persist13ResetFixtureRoot") as { default: (props: Readonly<{ entry: Persist13Entry }>) => ReactElement }).default;
   return <Persist13ResetFixtureRoot entry={entry} />;

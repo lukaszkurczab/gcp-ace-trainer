@@ -174,6 +174,9 @@ function updatesConfiguration(runtimeMode) {
 function createExpoConfig(environment = process.env) {
   const runtimeMode = readRuntimeMode(environment);
   const publicEnvironment = assertRuntimeEnvironment(environment, runtimeMode);
+  require("tsx/cjs");
+  const { createEnvironmentIdentity } = require("./src/infrastructure/runtime/environmentIdentity.ts");
+  const environmentIdentity = createEnvironmentIdentity(environment);
   if (runtimeMode === "release") {
     const legalVariables = readReleaseLegalVariables();
     validateReleaseLegalVariables(legalVariables);
@@ -236,6 +239,7 @@ function createExpoConfig(environment = process.env) {
       web: { favicon: "./assets/brand/web/favicon.png", themeColor: "#0C1324", backgroundColor: "#F6F8FB" },
       extra: {
         patternlyRuntime: runtimeMode,
+        patternlyEnvironmentFingerprint: environmentIdentity.fingerprint,
         eas: { projectId: "204d9769-4832-4c4a-b932-6359c4ff9dab" },
       },
       updates: updatesConfiguration(runtimeMode),

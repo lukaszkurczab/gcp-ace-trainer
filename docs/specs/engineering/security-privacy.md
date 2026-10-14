@@ -27,13 +27,73 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## SEC-03 — MEDIUM — Izolacja środowisk w durable state
 
-**Potwierdzenie w bieżącym kodzie:** app.config używa tych samych bundle/package IDs, a durable namespaces nie zawierają environment identity. Potwierdzono brak granicy w kodzie; cross-install A→B→A wymaga opisanej próby, nie jest dowodem cross-account backend access.
+**Stan 14.10.2026 / prompt 07: CODE PASS, całość PARTIAL.** Wdrożono jeden globalny fingerprint przed załadowaniem regular root. Native iOS uruchomił bieżący JS z Metro na istniejącym binary z legacy metadata i potwierdził blokadę; pełna sekwencja A→B→A i compatible overinstall pozostają residualem 07. Android pozostaje po iOS. Brak dowodu cross-account backend access.
 
 - **Exact risk/data:** sekwencyjny compatible-signed overinstall sandbox/release o tym samym bundle/package ID otwiera poprzednie keys/auth/profile/cache. Endpoint różni się bez trwałej granicy storage. Nie dowiedziono cross-account dostępu do backendu.
 - **Pliki/config:** app `app.config.js`, `src/infrastructure/storage/encryptedStorageNative.ts`, `encryptedStorageBootstrap.ts`, `profileStorageRouter.ts`, `src/infrastructure/firebase/secureAuthPersistence.ts`, `src/infrastructure/security/recoveryOperationVault.ts`, package storage i purchases composition; powiązane provider IDs/config i config/storage tests.
 - **Remediation:** jedna kanoniczna tożsamość środowiska; odrębne app/storage/key/auth/cache namespaces lub fail-closed fingerprint przed jakimkolwiek odczytem/użyciem obcego stanu. Wybrać najmniejszy spójny wariant po sprawdzeniu Keychain i provider callback identities. Bez niezależnych heurystyk w poszczególnych repozytoriach i bez kasowania obcych danych.
 - **Test/manual proof i AC:** A→B→A sentinels w MMKV, auth, vault, registry i caches; B nigdy nie odczytuje/wysyła A, A zachowuje własne dane; mismatch jawny przed auth/sync. Test iOS overinstall oraz Android oddzielnie na jednym istniejącym urządzeniu naraz; nie tworzyć duplikatów simulatorów. Dowód config fingerprint dla R03.
 - **Privacy copy:** środowiska nie przenoszą kont/progress mimo instalacji wariantu; brak obietnic wipe przy reinstall. **Platform:** bundle/package/schemes, Keychain i signing mogą wymagać provider config; zaplanować przed zmianą IDs. **Dependencies:** owner configuration, R03/R04/R05/R06; zakończyć przed final proof SEC-01/09.
+
+### Przyjęty kontrakt i dowód 07
+
+Wybrano globalną blokadę, ponieważ namespace własnych repozytoriów nie obejmuje wszystkich lokalizacji SDK RevenueCat. `App.tsx` przekazuje loader do `EnvironmentGate`; regular root jest wymagany dopiero po `ready`. Przed tym punktem nie ładuje się preferencji/i18n, auth, storage, vault, synchronizacji, pakietów ani purchases. Izolowane fixture PERSIST-13/PERF-06 zachowują własne dotychczasowe granice, nie są alternatywnym wejściem do regularnej aplikacji.
+
+`src/infrastructure/runtime/environmentIdentity.ts` jest jedynym właścicielem fingerprintu: SHA256 wersjonowanej tablicy runtime mode, znormalizowanego API origin, smoke Auth Emulator origin, Firebase project/app/auth domain i publicznego klucza aplikacji RevenueCat. Ten sam kod generuje `extra.patternlyEnvironmentFingerprint` w `app.config.js` i fingerprint runtime. Różnica między metadata artefaktu a runtime zatrzymuje start. Hasło/E2E user, numer builda, link pomocy i przełącznik checkout nie są tożsamością. Zmiana związanej konfiguracji świadomie blokuje dostęp; nie ma automatycznego przepisywania znacznika.
+
+Znacznik `patternly.environment-fingerprint.v1` używa service `com.lkurczab.patternly.environment`; na iOS `WHEN_UNLOCKED_THIS_DEVICE_ONLY`. Zapisywane są wyłącznie `version:1` i digest. Adapter nie ma operacji delete. Mismatch/uszkodzenie/niedostępność pozostawia aplikację zamkniętą. Zapis wymaga exact read-back i ponownej inspekcji przed załadowaniem aplikacji. Żaden storage/purchases adapter nie otrzymał osobnej heurystyki środowiska.
+
+**Decyzja właściciela w tej sesji:** brak znacznika wymaga jawnego przypisania istniejących danych do pokazanego środowiska/API/projektu Firebase. Jest to świadome potwierdzenie pochodzenia, nie kryptograficzny dowód dla historycznych danych. Nie przypisywać automatycznie na podstawie bieżącego builda. Właściciel potwierdził, że dane obecnego iPhone17 należą do **smoke**. Istniejącego znacznika nie można zmienić z ekranu przypisania. Utrata znacznika ponownie wymaga tej decyzji; stare buildy bez blokady i zmiana środowiska przez live Fast Refresh nie są objęte gwarancją zimnego startu nowych buildów.
+
+Ocena main: dopasowanie 0,94 / prostota 0,91 / kontrola ryzyka 0,84 / utrzymywalność 0,93, minimum 0,84. Niezależny design review `gpt-6-luna high`: 0,91 / 0,88 / 0,82 / 0,90, minimum 0,82. Main jedynym writerem. Niezależne QA kodu: PASS; pełny lokalny odbiór PASS WITH ISSUES, bez native A→B→A. QA narzędzia wskazało dodatkową precondition zamknięcia wszystkich pięciu chronionych ownerów przed assign; została dodana. Nie zmieniono bundle/package/scheme, podpisu ani provider IDs, więc nie wykonano zmian callbacków/rejestracji.
+
+Rzeczywiste lokalizacje i ograniczenia:
+
+| Dane | Lokalizacja / granica |
+| --- | --- |
+| MMKV, profile/registry, lokalny cache | `Documents/mmkv/patternly-secure-a/b`; manifesty/klucze i registry controls w SecureStore service `com.lkurczab.patternly.encrypted-storage`. Na istniejącym iPhone17 obecny plik slotu a, brak legacy i slotu b. Odczytano tylko istnienie. |
+| Firebase Auth | SecureStore domyślnego service; `patternly.auth.user` i hashed ancillary keys. Bez zmiany opcji auth (SEC-01 osobno). |
+| Recovery vault | `patternly.security.recovery-operation.v1`, service `com.lkurczab.patternly.recovery-operation`. |
+| Pakiety | `Documents/patternly-content-node-packages-v1`, obecny na iPhone17; odczytano tylko istnienie. Pointers w chronionym MMKV. |
+| RevenueCat | Pinned Pod: `UserDefaults+Extensions.swift` wybiera standard defaults przy legacy appUserID albo suite `com.revenuecat.user_defaults`. `DeviceCache` używa też `Library/Caches/{bundleId}.revenuecat/device-cache`; `FileRepository` — `Library/Caches/RevenueCat`; `RemoteConfigDiskCache`/diagnostics używają Application Support, według `DirectoryHelper`. To powód globalnej blokady. Brak native sentinela zakupowego ani konfiguracji SDK w tej próbie. |
+
+Odtwarzalny wąski gate (Node 22.22.3, APP HEAD przed zmianą `ea9e5d924a51f763dee64bd68777cd6782b2fb5f`):
+
+```sh
+node --import tsx --test src/infrastructure/runtime/*.test.ts scripts/buildRuntimeConfiguration.test.ts scripts/platformConfig.test.ts src/infrastructure/storage/encryptedStorageBootstrap.test.ts src/infrastructure/storage/encryptedStorageNative.test.ts src/infrastructure/firebase/secureAuthPersistence.test.ts src/infrastructure/security/recoveryOperationVault.test.ts src/storage/repositories/storageCutover.test.ts src/application/runtimeAuditability/persist13Entry.test.ts
+npm run typecheck
+npm run validate:content-boundary
+npm run validate:runtime-privacy-boundary
+git diff --check
+```
+
+Wynik main: **66/66 PASS, 0 SKIP**, pozostałe cztery kontrole PASS. W tym 10 nowych testów identity/guard/wykonywanego kodu App+Gate: A→B→A model, brak overwrite, błędy/corrupt/no-op/write-then-error/readback, single assignment, parity build/runtime oraz brak require regular root przed kontrolą i potwierdzeniem. Syntetyczny React scheduler/native ports nie dowodzą trwałości SDK/Keychain. QA niezależnie wykonało te 10 testów, typecheck, privacy boundary i diff check: PASS.
+
+Wymagane `npm run qa:static` zatrzymało się na `recovery:check`: `runtime source imports test-only support: src/testing/terminalWireFixture.ts`. Potwierdzono ten sam import `journalTestSupport` w HEAD i brak diffu tego pliku; nie naprawiano poza zakresem. Pełne `npm test` nie zostało uruchomione po zatrzymaniu gate; nie ma claimu pełnego CI ani clean repo gate.
+
+Native próba: jedno istniejące iPhone17 / iOS26.4, UDID `7F315654-3175-4F3C-BB24-B0263F59360C`, jedna istniejąca instalacja `com.lkurczab.patternly`. Lokalny Metro ze smoke profile, bez uruchamiania backendu, zmian usług zewnętrznych, resetu/reinstall/newGuest i przypisania znacznika. Pierwsze uruchomienie Metro w sandboxie: EMFILE; istniejący Watchman działa po uruchomieniu poza sandboxem, bez zmiany repo. Odczyt simctl poza sandboxem rozwiązał odmowę CoreSimulator. Wstępny probe ujawnił względne `verboseName`; wersjonowane narzędzie używa exact unique owner names i nie interpretuje braku ownera jako `false`.
+
+```sh
+node scripts/qa/probeEnvironmentGuardIos.mjs http://127.0.0.1:8081 inspect
+```
+
+Końcowy receipt z rzeczywistego Hermesa: `mode=smoke`, fingerprint `4d8001befde58a6e36643f99ab09bc29c4a6175337d33163105be15dfc69748e`, `configMatches=false`, `state=unassigned`, `rootInitialized=false`; `mmkvClient`, `firebaseAuthClient`, `recoveryOperationVault`, `purchases/index`, `nodePackageStorage` wszystkie `false`. Odczyt zainstalowanego `EXConstants.bundle/app.config` potwierdził **brak** nowego `extra.patternlyEnvironmentFingerprint`. To rzeczywisty dowód zamknięcia bieżącego JS z Metro na istniejącym binary z legacy metadata przed providerami, nie dowód A→B→A/overinstall ani natywnej retencji wszystkich kategorii. Narzędzie `inspect` czyta tylko nowy znacznik, nie otwiera chronionych ownerów; `assign` wymaga osobnej jawnej autoryzacji i exact oczekiwanego digestu, zgodnych metadata oraz wszystkich ownerów zamkniętych. W tej sesji `assign` nie uruchomiono. Własny Metro zatrzymano.
+
+**Residual 07:** przygotować zgodny natywny artefakt bez zmiany IDs/signing, następnie kontrolowane jawne przypisanie smoke i zimne A→B→A/compatible overinstall z kategoriami MMKV/auth/vault/registry/cache/purchases, zachowaniem A i brakiem dostępu/wysyłki w B. Dotychczasowego klienta nie obchodzić podmianą metadata ani kasowaniem danych. Android proof pozostaje po iOS (prompt 54). Odbiór usług/backup/transfer/SEC-01 i wydania pozostaje osobno. Nie commitowano/pushowano częściowego pakietu.
+
+Źródła objęte dowodem (SHA256; po review kodu i poprawce precondition narzędzia):
+
+```text
+4dad9a99a8fa4880f2e55ccd17e4e27e1f72c7106b3a61b5d0dfbce00ec8ef6f App.tsx
+d516599997fee21d2dd1435fc5d921668580d9aafa349d87b830ca82cd27e0d0 app.config.js
+a0c6f52ac3b3b2bd9f188596d4b92dbefa8f16b21f5d76897561f9bf3e06926a src/infrastructure/runtime/EnvironmentGate.tsx
+70eb9d10d0c91e9281ba3971870c77df611bdb5e598affa4f2c9897249695c0c src/infrastructure/runtime/environmentIdentity.ts
+90fcbef072a6c27692e9e8c647b24b5ea0370d0b6f6ea3d8b2adb62fc69a949d src/infrastructure/runtime/environmentGuard.ts
+012a869566ba6ae5f1dc2ce496eb94763843c20699e26c4fe42ef2f724db7921 src/infrastructure/runtime/environmentIdentity.test.ts
+62731801508fa26a9dac1080845b4b00a284ec1d6171e7ef9cded781208ad2ae src/infrastructure/runtime/environmentGuard.test.ts
+7a321e35220c8d8ec095d55397b9f74054d30118008bf39bad1fa3924bc5ddce src/infrastructure/runtime/environmentEntry.test.ts
+c628acb63696432df9c3f077d4b6880d346d73a02b0dc49c7fe7a7507ab8f797 scripts/qa/probeEnvironmentGuardIos.mjs
+```
 
 ## SEC-04 — MEDIUM — App Check na recovery ACK/status
 
