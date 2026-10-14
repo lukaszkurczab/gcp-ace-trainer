@@ -818,5 +818,18 @@
   "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Il contenuto Premium salvato non corrisponde a questo argomento. L’operazione è bloccata e i file salvati sono stati conservati.",
   "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly non è riuscito a verificare il contenuto Premium salvato su questo dispositivo. L’operazione è bloccata e i file salvati sono stati conservati.",
   "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly non è riuscito a confermare lo stato del contenuto Premium salvato. Questa operazione è bloccata; riprova più tardi.",
-  "Patternly couldn't read saved Premium content. Try again later.": "Patternly non è riuscito a leggere il contenuto Premium salvato. Riprova più tardi."
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly non è riuscito a leggere il contenuto Premium salvato. Riprova più tardi.",
+  "Case complete": "Caso completato",
+  "Done for today": "Per oggi finisco",
+  "Compare your decisions": "Confronta le tue decisioni",
+  "Decision {{number}}": "Decisione {{number}}",
+  "After support": "Con supporto",
+  "Independent response": "Risposta autonoma",
+  "One case · {{count}} decisions": "Un caso · {{count}} decisioni",
+  "Another case": "Un altro caso",
+  "Completing a case does not complete the day plan or establish mastery. Later decisions may use feedback from earlier steps.": "Completare un caso non completa il piano del giorno e non dimostra la padronanza. Le decisioni successive possono usare le spiegazioni precedenti.",
+  "The next case is unavailable.": "Il caso successivo non è disponibile.",
+  "Initial estimate: about {{minutes}} min": "Stima iniziale: circa {{minutes}} min",
+  "No performance evidence for this version yet": "Nessun risultato per questa versione dei contenuti",
+  "Earlier activity and reviews remain available.": "Le attività e i ripassi precedenti restano disponibili."
 }

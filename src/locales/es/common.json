@@ -818,5 +818,18 @@
   "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "El contenido Premium guardado no coincide con este tema. La operación está bloqueada y los archivos guardados permanecen intactos.",
   "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly no pudo verificar el contenido Premium guardado en este dispositivo. La operación está bloqueada y los archivos guardados permanecen intactos.",
   "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly no pudo confirmar el estado del contenido Premium guardado. Esta operación está bloqueada; inténtalo más tarde.",
-  "Patternly couldn't read saved Premium content. Try again later.": "Patternly no pudo leer el contenido Premium guardado. Inténtalo más tarde."
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly no pudo leer el contenido Premium guardado. Inténtalo más tarde.",
+  "Case complete": "Caso completado",
+  "Done for today": "Terminar por hoy",
+  "Compare your decisions": "Comparar tus decisiones",
+  "Decision {{number}}": "Decisión {{number}}",
+  "After support": "Con ayuda",
+  "Independent response": "Respuesta independiente",
+  "One case · {{count}} decisions": "Un caso · {{count}} decisiones",
+  "Another case": "Otro caso",
+  "Completing a case does not complete the day plan or establish mastery. Later decisions may use feedback from earlier steps.": "Completar un caso no completa el plan diario ni demuestra dominio. Las decisiones posteriores pueden usar las explicaciones anteriores.",
+  "The next case is unavailable.": "El siguiente caso no está disponible.",
+  "Initial estimate: about {{minutes}} min": "Estimación inicial: unos {{minutes}} min",
+  "No performance evidence for this version yet": "Aún no hay resultados para esta versión del contenido",
+  "Earlier activity and reviews remain available.": "Tu actividad y tus repasos anteriores siguen disponibles."
 }

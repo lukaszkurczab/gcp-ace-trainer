@@ -184,3 +184,30 @@ function resolvePool(catalog: CanonicalQuestionCatalog, mode: ProductModeConfig)
 }
 
 export function getCanonicalModeConfig(trackId: string, modeId: string): ProductModeConfig { return getProductModeConfig(trackId, modeId); }
+
+/** Exact-only historical Claude data, outside the replaced active bundle directory. */
+export async function resolveRetainedClaudeTrack(identity: Readonly<{ trackId: string; contentVersion: string; artifactSha256: string }>, interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): Promise<CanonicalTrackRuntime | null> {
+  if (identity.trackId !== "claude-certified-architect-professional-certification") return null;
+  const retainedPackages = [
+    (await import("../generated/retained-content/claude-pre-qle-v2.json")).default,
+    (await import("../generated/retained-content/claude-qle-v2-first-cases.json")).default,
+    (await import("../generated/retained-content/claude-qle-v2-before-identity.json")).default,
+  ];
+  const retained = retainedPackages.find(({ lock, ledger }) =>
+    (identity.contentVersion === lock.contentVersion && identity.artifactSha256 === lock.sha256) ||
+    (identity.contentVersion === ledger.training.contentVersion && identity.artifactSha256 === ledger.training.artifactSha256));
+  if (!retained) return null;
+  const { artifact, lock, ledger } = retained;
+  if (ledger.trackId !== identity.trackId || ledger.planningPolicy.contentVersion !== artifact.contentVersion || ledger.planningPolicy.policyVersion !== artifact.planningPolicy.policyVersion) throw new Error("Retained Claude policy identity does not match its artifact.");
+  const fullMatch = identity.contentVersion === lock.contentVersion && identity.artifactSha256 === lock.sha256;
+  const trainingMatch = identity.contentVersion === ledger.training.contentVersion && identity.artifactSha256 === ledger.training.artifactSha256;
+  if (!fullMatch && !trainingMatch) return null;
+  const catalog = await createCanonicalQuestionCatalog(artifact, lock, identity.trackId, contentHasher.sha256, interactions);
+  const training = { ...artifact } as Record<string, unknown>;
+  delete training.planningPolicy;
+  training.schemaVersion = "patternly-content-artifact-v1";
+  training.contentVersion = ledger.training.contentVersion;
+  if (ledger.planningPolicy.artifactSha256 !== lock.sha256 || ledger.training.questionCount !== catalog.questions.length || await contentHasher.sha256(JSON.stringify(training)) !== ledger.training.artifactSha256) throw new Error("Retained Claude predecessor does not match its exact ledger.");
+  const exactCatalog = trainingMatch ? await createCanonicalQuestionCatalog(training, { trackId: identity.trackId, contentVersion: ledger.training.contentVersion, sha256: ledger.training.artifactSha256, questionCount: ledger.training.questionCount }, identity.trackId, contentHasher.sha256, interactions) : catalog;
+  return createTrackRuntime(exactCatalog, PRODUCT_MODE_CONFIGS, fullMatch ? ledger : undefined, interactions);
+}

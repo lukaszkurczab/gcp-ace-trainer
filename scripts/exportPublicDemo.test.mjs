@@ -148,7 +148,7 @@ test("local admitted-source parity requires the same exact sample and current Fr
   assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, currentTrack: outsidePool }), /outside the current ordinary Free practice pool/u);
 });
 
-test("current admitted v2 candidate exports while the historical proof remains pinned separately", async () => {
+test("local-only Claude bundle cannot export a public demo; historical admission remains pinned", async () => {
   const releaseLock = readAppJson("integration/contracts/content-release/release.lock.json");
   const admission = readContentJson("evidence/admissions/candidate-admission-v3.json");
   const candidateManifest = readContentJson(admission.candidatePath);
@@ -157,18 +157,8 @@ test("current admitted v2 candidate exports while the historical proof remains p
   assert.equal(candidateManifest.candidateId, admission.candidateId);
   assert.notEqual(candidateManifest.candidateId, HISTORICAL_CANDIDATE_ID);
 
-  const currentCatalog = await createPublicDemoCatalog();
-  assert.equal(currentCatalog.demos.length, 2);
-  assert.deepEqual(currentCatalog.demos.map((demo) => demo.provenance.questionId), contentSelections.map(({ questionId }) => questionId));
-  for (const demo of currentCatalog.demos) {
-    const appTrack = readAppJson("src/content/generated/canonical-content/content-lock.json").tracks.find((entry) => entry.trackId === demo.provenance.trackId);
-    const releaseTrack = releaseLock.artifacts.find((entry) => entry.trackId === demo.provenance.trackId);
-    assert.equal(demo.provenance.candidateId, candidateManifest.candidateId);
-    assert.equal(demo.provenance.artifactSha256, appTrack.sha256);
-    assert.equal(demo.provenance.contentVersion, appTrack.contentVersion);
-    assert.equal(demo.provenance.artifactSha256, releaseTrack.checksumSha256);
-    assert.equal(demo.provenance.contentVersion, releaseTrack.contentVersion);
-  }
+  // QLE is explicitly local-only. Public tooling must continue rejecting it.
+  await assert.rejects(createPublicDemoCatalog(), /outside the existing app admission evidence/u);
 
   const historical = await historicalFixture(contentSelections[0]);
   assert.equal(historical.admission.candidateId, HISTORICAL_CANDIDATE_ID);

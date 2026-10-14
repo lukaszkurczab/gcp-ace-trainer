@@ -818,5 +818,18 @@
   "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Le contenu Premium enregistré ne correspond pas à ce sujet. L’opération est bloquée et les fichiers enregistrés ont été conservés.",
   "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly n’a pas pu vérifier le contenu Premium enregistré sur cet appareil. L’opération est bloquée et les fichiers enregistrés ont été conservés.",
   "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly n’a pas pu confirmer l’état du contenu Premium enregistré. Cette opération est bloquée ; réessayez plus tard.",
-  "Patternly couldn't read saved Premium content. Try again later.": "Patternly n’a pas pu lire le contenu Premium enregistré. Réessayez plus tard."
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly n’a pas pu lire le contenu Premium enregistré. Réessayez plus tard.",
+  "Case complete": "Cas terminé",
+  "Done for today": "J’arrête pour aujourd’hui",
+  "Compare your decisions": "Comparer vos décisions",
+  "Decision {{number}}": "Décision {{number}}",
+  "After support": "Avec aide",
+  "Independent response": "Réponse autonome",
+  "One case · {{count}} decisions": "Un cas · {{count}} décisions",
+  "Another case": "Cas suivant",
+  "Completing a case does not complete the day plan or establish mastery. Later decisions may use feedback from earlier steps.": "Terminer un cas ne signifie pas terminer le plan du jour ni maîtriser le sujet. Les décisions suivantes peuvent s’appuyer sur les explications précédentes.",
+  "The next case is unavailable.": "Le cas suivant est indisponible.",
+  "Initial estimate: about {{minutes}} min": "Estimation initiale : environ {{minutes}} min",
+  "No performance evidence for this version yet": "Pas encore de résultats pour cette version du contenu",
+  "Earlier activity and reviews remain available.": "Votre activité et vos révisions précédentes restent accessibles."
 }

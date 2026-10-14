@@ -1,3 +1,5 @@
+import { indexCaseRecipes } from "../content/canonical/caseRecipe";
+import { resolveRetainedClaudeTrack } from "../content/canonical/runtimeCatalog";
 import { createCanonicalTrainingFamilyComposition } from "./canonicalTrainingFamilyComposition";
 import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime } from "../content/canonical";
 import { isCanonicalSafeIdentity } from "../domain/identity/canonicalIdentity";
@@ -34,17 +36,25 @@ export class ContentPackageRuntimeOwner {
     this.loadActiveInstalledPackages = loadActiveInstalledPackages ?? ((scopeKey) => loadActiveProfileNodePackages(scopeKey, this.interactions));
     this.catalogOwner = createCanonicalRuntimeCatalogOwner({ interactionRegistry: this.interactions });
   }
+  private readonly historicalExact = new Map<string, ResolvedPackageRuntime>();
   private readonly exact = new Map<string, ResolvedPackageRuntime>();
   private readonly installedExact = new Map<string, ResolvedPackageRuntime>();
   private readonly discovered = new Map<string, ResolvedPackageRuntime>();
   private readonly sourceTracks = new Map<string, CanonicalTrackRuntime>();
-  async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string }>): Promise<ResolvedPackageRuntime> {
+  async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string; caseId?: string }>): Promise<ResolvedPackageRuntime> {
     const track = (await this.catalogOwner.load()).getTrack(input.trackId);
     assertFamily(track, input.familyId);
     if (input.modeId === "certification-exam-simulation" || input.modeId === "coding-interview-simulation" || input.modeId === "design-interview-simulation") {
       if (input.nodeId !== undefined) throw new Error("Product simulations do not accept a nodeId.");
       const simulation = getProductSimulationModeConfig(track.trackId, track.simulationProfiles);
       if (simulation.config.modeId !== input.modeId || simulation.config.familyId !== input.familyId) throw new Error("Requested simulation mode does not match its canonical product profile.");
+      return this.materialize(track);
+    }
+    if (input.caseId !== undefined) {
+      const recipe = indexCaseRecipes(track.questions).find(c => c.caseId === input.caseId);
+      const owner = recipe && track.getQuestion(recipe.steps[0]!.questionId);
+      if (!recipe || !owner || input.modeId !== "certification-focus-practice" || !input.nodeId || owner.nodeId !== input.nodeId || recipe.steps.some(step => track.getQuestion(step.questionId)?.nodeId !== owner.nodeId)) throw new Error("The requested whole case is unavailable in this bundle/node.");
+      // Lifecycle admission checks every item against the canonical Free node before start/resume.
       return this.materialize(track);
     }
     if (input.nodeId) {
@@ -87,6 +97,16 @@ export class ContentPackageRuntimeOwner {
     if (catalog.tracks.includes(input.trackId)) {
       const track = catalog.getTrack(input.trackId);
       if (track.trainingIdentity?.contentVersion === input.contentVersion && track.trainingIdentity.artifactSha256 === input.artifactSha256) return this.materialize(track);
+    }
+    const historical = this.historicalExact.get(key);
+    if (historical) return historical;
+    const historicalTrack = await resolveRetainedClaudeTrack(input, this.interactions);
+    if (historicalTrack) {
+      const family = createCanonicalTrainingFamilyComposition(historicalTrack);
+      const resolved = Object.freeze({ track: family.catalog, runtime: family.runtime, presentation: family.presentation });
+      this.sourceTracks.set(key, historicalTrack);
+      this.historicalExact.set(key, resolved);
+      return resolved;
     }
     if (scopeKey) {
       // A corrupt, unreadable, or changing retained-package inventory must

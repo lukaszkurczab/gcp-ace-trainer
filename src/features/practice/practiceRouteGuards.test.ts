@@ -115,7 +115,8 @@ test("Certification and Design unlock actions only after the refreshed projectio
   for (const runner of runners) {
     assert.match(runner, /const actionPending = useRef\(false\)/);
     assert.match(runner, /const pendingActionProjection = useRef<[^>]+ \| null>\(null\)/);
-    assert.match(runner, /useEffect\(\(\) => \{\s*if \(!projection \|\| pendingActionProjection\.current !== projection\) return;\s*pendingActionProjection\.current = null;\s*actionPending\.current = false;\s*\}, \[projection\]\)/);
+    if (runner.includes("hasReachedPracticeActionProjection")) assert.match(runner, /if \(!hasReachedPracticeActionProjection\(pendingActionProjection\.current, projection\)\) return;/);
+    else assert.match(runner, /useEffect\(\(\) => \{\s*if \(!projection \|\| pendingActionProjection\.current !== projection\) return;\s*pendingActionProjection\.current = null;\s*actionPending\.current = false;\s*\}, \[projection\]\)/);
     assert.match(runner, /pendingActionProjection\.current = next;\s*applyProjection\(next\)/);
     assert.match(runner, /pendingActionProjection\.current = null;\s*actionPending\.current = false;\s*setError\(describeOperationalFailure/);
 
@@ -134,4 +135,10 @@ test("Certification and Design unlock actions only after the refreshed projectio
     assert.match(next![1]!, /catch \(cause\) \{ actionPending\.current = false;/);
     assert.doesNotMatch(next![1]!, /finally \{[^}]*actionPending\.current = false/);
   }
+});
+
+ test("Claude practice shows neither optional hints nor key constraints", () => {
+ const runner = source("src/features/practice/CertificationPracticeSessionScreen.tsx");
+ assert.doesNotMatch(runner, /Show hint|caseHint|recordCaseExposure/);
+ assert.match(runner, /constraints: projection.session.trackId === "claude-certified-architect-professional-certification" \? \[\] : questionView.constraints/);
 });

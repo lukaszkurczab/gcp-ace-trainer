@@ -2,6 +2,11 @@
 // functions with controlled hooks and host identities. This is not a React mount,
 // native layout or SDK test.
 import assert from "node:assert/strict";
+import familyModule from "../../application/canonicalTrainingFamilyComposition.ts";
+import caseRecipeModule from "../../content/canonical/caseRecipe.ts";
+import sessionModule from "../../domain/learning/trainingSession.ts";
+import reviewModule from "../../application/certification/certificationPracticeReviewProjection.ts";
+import recommendationModule from "../../application/certification/singleCaseRecommendation.ts";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import vm from "node:vm";
@@ -80,7 +85,24 @@ function createOverview({ locale = "en" } = {}) {
   return Overview;
 }
 
-export async function runActualResultScreen({ projectionFails = false, projectionError = null, genericMode = false, diagnosticReport = null } = {}) {
+async function completedCaseFixture(track) {
+  const family = familyModule.createCanonicalTrainingFamilyComposition(track);
+  const recipe = caseRecipeModule.indexCaseRecipes(track.questions)[0];
+  const now = "2026-10-14T12:00:00.000Z";
+  let session = (await family.runtime.prepare({ trackId: track.trackId, modeId: "certification-focus-practice", request: { sessionId: "result-continuation-test", preset: "single_case", caseId: recipe.caseId, requestedLength: recipe.steps.length }, attempts: [], reviews: [], now })).session;
+  const attempts = [];
+  for (const [index, step] of recipe.steps.entries()) {
+    session = sessionModule.createTrainingSession({ ...session, currentItemIndex: index });
+    const submitted = await family.runtime.submitPractice({ session, response: track.getQuestion(step.questionId).answer, attempts, reviews: [], now });
+    attempts.push(submitted.attempt);
+    session = sessionModule.createTrainingSession({ ...submitted.session, caseState: { ...submitted.session.caseState, solutionExposedStepIds: [...submitted.session.caseState.solutionExposedStepIds, step.stepId] } });
+  }
+  const finalized = await family.runtime.finalizePractice({ session, attempts, now });
+  const projection = await reviewModule.projectCertificationPracticeReview({ session: finalized.session, result: finalized.result, attempts, resolveQuestion: async item => ({ question: family.catalog.getQuestion(item.questionId), interactions: family.presentation }) });
+  return { session: finalized.session, result: finalized.result, attempts, projection };
+}
+
+export async function runActualResultScreen({ projectionFails = false, projectionError = null, genericMode = false, diagnosticReport = null, caseMode = false, continuationGate = null, isFocused = () => true } = {}) {
   const catalog = await loadCanonicalRuntimeCatalog();
   let fixture;
   let track;
@@ -135,18 +157,27 @@ export async function runActualResultScreen({ projectionFails = false, projectio
       evidence: { familyId: "design_interview", details: { correctCount: 1, partialCount: 0, incorrectCount: 1, pointsEarned: correctScore.earnedPoints + wrongScore.earnedPoints, maxPoints: correctScore.maxPoints + wrongScore.maxPoints } },
     };
   } else {
-    fixture = await createCertificationPracticeAnswerFixture();
+    fixture = caseMode ? await completedCaseFixture(catalog.getTrack("claude-certified-architect-professional-certification")) : await createCertificationPracticeAnswerFixture();
     session = fixture.session;
     result = fixture.result;
     track = catalog.getTrack(session.trackId);
   }
   const sessionId = session.id;
-  let state = null;
+  const states = [], refs = [];
+  let stateIndex = 0, refIndex = 0;
   let effectStarted = false;
   const overview = createOverview();
   const Routes = { PRACTICE_HUB: "practice-hub", EXAM_REVIEW: "exam-review", DESIGN_INTERVIEW_SIMULATION_RESULT: "design-simulation-result" };
   const Result = compileFunction("./ResultScreen.tsx", ["ResultScreen", "formatMode", "CloudDiagnosticReportCard", "getCertificationMaximumPoints"], {
-    useState: (initial) => [state ?? (state = initial), (next) => { state = next; }],
+    useState: (initial) => {
+      const index = stateIndex++;
+      if (!(index in states)) states[index] = typeof initial === "function" ? initial() : initial;
+      return [states[index], (next) => { states[index] = typeof next === "function" ? next(states[index]) : next; }];
+    },
+    useRef: (initial) => {
+      const index = refIndex++;
+      return refs[index] ?? (refs[index] = { current: initial });
+    },
     useEffect: (callback) => { if (!effectStarted) { effectStarted = true; callback(); } },
     useTranslation: () => ({ t: (key, parameters) => key.replace(/{{(\w+)}}/g, (_match, name) => String(parameters?.[name] ?? "")) }),
     formatMode: (modeId) => modeId,
@@ -159,7 +190,11 @@ export async function runActualResultScreen({ projectionFails = false, projectio
     Text: "Text", View: "View", Card: "Card", Button: "Button",
     createStyles: () => ({}),
     ExamResultLoadingSkeleton: "ExamResultLoadingSkeleton", useThemedStyles: () => ({}), useSkeletonGlassMotion: () => ({}),
-    ROUTES: { ...Routes, PRACTICE_SETUP: "practice-setup" },
+    ROUTES: { ...Routes, PRACTICE_SETUP: "practice-setup", PRACTICE_SESSION: "practice-session", HOME: "home" },
+    getApplicationCurrentTime: () => "2026-10-14T12:00:00.000Z",
+    selectSingleCase: recommendationModule.selectSingleCase,
+    loadTrainingAttempts: async () => ({ value: fixture.attempts }),
+    loadReviewQueueItems: async () => ({ value: [] }),
     getTrackDisplay: () => ({ title: "Cloud certification" }),
     runtimeSelectors: { summary: { backToPractice: () => "back", configuration: () => "configuration", diagnosticReport: () => "diagnostic-report", diagnosticRecommendation: () => "diagnostic-recommendation", reviewAnswers: () => "review", root: () => "result" } },
     formatSessionTopic: (_trackId, value) => value === "organization_projects_policies_services_quotas_and_assets" ? "Organization, projects, policies, services, quotas and assets" : "Unavailable",
@@ -167,6 +202,7 @@ export async function runActualResultScreen({ projectionFails = false, projectio
     normalizeSessionResultDetails,
     ProfileReadFenceChangedError,
     contentPackageRuntimeOwner: {
+      resolveForDiscovery: async () => { if (continuationGate) await continuationGate(); return { track }; },
       resolveExactArtifact: async ({ trackId, contentVersion, artifactSha256 }) => {
         assert.equal(trackId, track.trackId);
         assert.equal(contentVersion, track.contentVersion);
@@ -194,15 +230,15 @@ export async function runActualResultScreen({ projectionFails = false, projectio
       if (projectionFails) throw new Error("optional exact-points projection unavailable");
       if (projectionError) throw projectionError;
       if (diagnosticReport) return { overallPointsEarned: result.evidence.details.pointsEarned, diagnosticReport };
-      return { overallPointsEarned: fixture.projection.overallPointsEarned };
+      return caseMode ? fixture.projection : { overallPointsEarned: fixture.projection.overallPointsEarned };
     },
     formatDomains: () => "domains",
   });
 
   const navigationCalls = [];
-  const props = { route: { params: { sessionId } }, navigation: { navigate: (...args) => navigationCalls.push(args), replace: (...args) => navigationCalls.push(args) } };
-  Result(props);
-  for (let attempt = 0; attempt < 20 && state?.kind !== "ready" && state?.kind !== "unavailable"; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 0));
-  const screen = Result(props);
-  return { ...renderTree(screen), navigationCalls, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
+  const props = { route: { params: { sessionId } }, navigation: { navigate: (...args) => navigationCalls.push(args), replace: (...args) => navigationCalls.push(args), isFocused } };
+  const render = () => { stateIndex = 0; refIndex = 0; return Result(props); };
+  render();
+  for (let attempt = 0; attempt < 20 && !states.some(state => state?.kind === "ready" || state?.kind === "unavailable"); attempt += 1) await new Promise((resolve) => setTimeout(resolve, 0));
+  return { ...renderTree(render()), rerender: () => renderTree(render()), navigationCalls, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
 }

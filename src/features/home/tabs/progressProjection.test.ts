@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
-import { createTrainingAttempt, type ReviewQueueEntry, type TrainingAttempt } from "../../../domain";
+import { createFamilyEnvelope, createTrainingAttempt, type ReviewQueueEntry, type TrainingAttempt } from "../../../domain";
 import { buildProgressTabModel } from "./progressTabModel";
 
 type Track = ReturnType<typeof contentPackageRuntimeOwner.getPreparedDiscovery>["track"];
@@ -97,4 +98,48 @@ test("facts retain their broader identity predicate while evidence and the actio
   assert.equal(model.algorithmsProgress?.evidenceSummary.currentFocus.responseCount, 0);
   assert.equal(model.reviewQueueCount, 0);
   assert.equal(model.reviewActionEnabled, false);
+});
+
+
+test("Claude Progress counts supported answers as activity without inflating independent performance", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const track = contentPackageRuntimeOwner.getPreparedDiscovery("claude-certified-architect-professional-certification").track;
+  const question = track.questions[0]!;
+  const independent = attempt(track, question.questionId, 0, "incorrect");
+  const base = attempt(track, question.questionId, 1, "correct");
+  const supported = createTrainingAttempt({ ...base, reviewEvidence: { ...base.reviewEvidence, evidence: createFamilyEnvelope({ familyId: "certification", details: {
+    policyVersion: "claude-case-evidence-v1", caseId: "policy-case", caseVersion: "v1", stepId: "contrast", role: "contrast", assistanceBeforeSubmit: true, priorExposure: "known", revealPolicy: "after_durable_submit",
+  } }) } });
+  const before = build(track, [independent]);
+  const after = build(track, [independent, supported]);
+  assert.deepEqual(after.performanceScores, before.performanceScores);
+  assert.equal(after.metrics.find(metric => metric.label === "Answered")?.value, 2);
+  assert.deepEqual(build(track, [supported]).performanceScores, []);
+  const knownIndependent = createTrainingAttempt({ ...supported, reviewEvidence: { ...supported.reviewEvidence, evidence: createFamilyEnvelope({ familyId: "certification", details: { ...supported.reviewEvidence.evidence!.details as Record<string, unknown>, assistanceBeforeSubmit: false } }) } });
+  const known = build(track, [independent, knownIndependent]);
+  assert.equal(known.performanceScores[0]?.percent, 50);
+  assert.equal(known.performanceScores[0]?.total, 2);
+});
+
+
+test("Claude Progress keeps historical due obligations and their exact retained question even when absent from discovery", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const track = contentPackageRuntimeOwner.getPreparedDiscovery("claude-certified-architect-professional-certification").track;
+  const retained = JSON.parse(readFileSync(new URL("../../../content/generated/retained-content/claude-pre-qle-v2.json", import.meta.url), "utf8"));
+  const old = retained.artifact.questions.find((q: { questionId: string }) => !track.getQuestion(q.questionId));
+  assert.ok(old, "actual retained package has a replaced question absent from discovery");
+  const entry: ReviewQueueEntry = { id: "historical-due", trackId: track.trackId as ReviewQueueEntry["trackId"], sourceAttemptId: "historical-attempt", sourceSessionId: "historical-session", sourceItem: { trackId: track.trackId, questionId: old.questionId, contentVersion: retained.lock.contentVersion, artifactSha256: retained.lock.sha256 }, taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], createdAt: "2026-01-01T00:00:00.000Z", dueAt: "2026-01-15T00:00:00.000Z", status: "active", consecutiveAfterDueSuccesses: 0, persistent: false, policyVersion: "bizq04-v1", stage: "retention7" };
+  const buildReviews = (reviews: readonly ReviewQueueEntry[], now = "2026-01-15T00:00:00.000Z") => buildProgressTabModel({ activeTrackId: track.trackId, analytics: {} as never, attempts: [], practiceHistory: [], activityRecords: [], trainingAttempts: [], reviewQueueItems: reviews, now, timezone: "UTC" });
+  const before = JSON.stringify(entry);
+  const model = buildReviews([entry]);
+  assert.equal(model.reviewQueueCount, 1);
+  assert.equal(model.reviewAction?.kind, "canonicalReviewQueue");
+  assert.equal(model.metrics.find(metric => metric.label === "Due review")?.value, 1);
+  const resolved = await contentPackageRuntimeOwner.resolveItem(entry.sourceItem);
+  assert.deepEqual(resolved.question.prompt, old.prompt);
+  assert.equal(JSON.stringify(entry), before);
+  assert.equal(buildReviews([{ ...entry, trackId: "frontend-system-design-interview" }]).reviewQueueCount, 0);
+  assert.equal(buildReviews([{ ...entry, sourceItem: { ...entry.sourceItem, trackId: "frontend-system-design-interview" } }]).reviewQueueCount, 0);
+  assert.equal(buildReviews([{ ...entry, dueAt: "2026-01-15T01:30:00.000+02:00" }]).reviewQueueCount, 1);
+  assert.equal(buildReviews([{ ...entry, dueAt: "2026-01-14T23:30:00.000-02:00" }]).reviewQueueCount, 0);
 });

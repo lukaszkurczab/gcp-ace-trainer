@@ -35,6 +35,7 @@ export type TrainingQuestionSummary = Readonly<{
   constraints?: readonly string[];
   sourceRefs?: readonly string[];
   contentDomainId?: string;
+  caseRecipe?: import("../../content/canonical/caseRecipe").CaseRecipe;
   questionRelation?: Readonly<{ counterpartQuestionId: string; kind: "near_variant" | "condition_contrast"; changedCondition: string; decisionBoundary: string }>;
 }>;
 
@@ -159,7 +160,7 @@ export interface TrainingFamilyRuntime {
   readonly interactions: TrainingInteractionPort;
   /** Lazily requested by planning flows; pure session resume does not need planning roles. */
   getPlanningModeBinding(): FamilyPlanningModeBinding;
-  prepare(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PreparedSession>;
+  prepare(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown; sessions?: readonly TrainingSession[]; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PreparedSession>;
   validateResume(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft | null }>): Promise<void>;
   submitPractice(input: Readonly<{ session: TrainingSession; response: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PracticeSubmission>;
   finalizePractice(input: Readonly<{ session: TrainingSession; attempts: readonly TrainingAttempt<unknown>[]; now: string }>): Promise<PracticeFinalization>;
@@ -188,7 +189,7 @@ export class ExactContentArtifactUnavailableError extends Error {
 
 /** Sole verified package-to-family-runtime authority for preparation, exact resume, review, and discovery. */
 export interface ContentPackageRuntimePort {
-  resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string }>): Promise<ContentPackageRuntimeResolution>;
+  resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string; caseId?: string }>): Promise<ContentPackageRuntimeResolution>;
   resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ContentPackageRuntimeResolution>;
   resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ContentPackageRuntimeResolution>;
 }

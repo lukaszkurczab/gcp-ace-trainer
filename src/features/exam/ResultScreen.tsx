@@ -1,6 +1,9 @@
+import { selectSingleCase } from "../../application/certification/singleCaseRecommendation";
+import { loadTrainingAttempts, loadReviewQueueItems } from "../../application/learningReadModels";
+import { getApplicationCurrentTime } from "../../application/trainingLifecycle";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { getTrainingLifecycleUseCases, simulationHasReviewConflict } from "../../application/trainingLifecycle";
@@ -42,6 +45,9 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
   const { t } = useTranslation("common");
   const styles = useThemedStyles(createStyles);
   const requestKey = route.params.sessionId;
+  const [nextCaseError, setNextCaseError] = useState<string | null>(null);
+  const nextCaseInFlight = useRef(false);
+  const [nextCasePending, setNextCasePending] = useState(false);
   const [readState, setReadState] = useState<ResultReadState>({ kind: "pending", requestKey });
   useEffect(() => {
     const capturedRequestKey = requestKey;
@@ -114,7 +120,7 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
   if (certificationPractice && (!coverageIsConsistent || !certificationCoverageIsExact || summary.certificationMaxPoints === null || normalizedDetails.points === null || normalizedDetails.score === null)) {
     return <Screen><EmptyState title={t("Session summary unavailable")} description={t("The completed session evidence is incomplete.")} /></Screen>;
   }
-  const displayedPoints = certificationExam && summary.certificationExam
+  const displayedPoints = session.caseState ? undefined : certificationExam && summary.certificationExam
     ? { earned: summary.certificationExam.overallPointsEarned, max: summary.certificationExam.maxPoints }
     : certificationPractice && summary.certificationPracticeOverallPoints !== null && summary.certificationPracticeOverallPoints !== undefined && summary.certificationMaxPoints !== null
       ? { earned: summary.certificationPracticeOverallPoints, max: summary.certificationMaxPoints }
@@ -136,12 +142,13 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       {fixtureNotice}
       {summary.reviewConflict ? <ReviewCycleConflictNotice /> : null}
       <SessionResultOverview
-        activeTime={formatElapsed(session.activeForegroundMs)}
+        completionTitle={session.caseState ? "Case complete" : undefined}
+        backLabel={session.caseState ? "Done for today" : undefined}        activeTime={formatElapsed(session.activeForegroundMs)}
         answeredCount={answeredCount}
         backTestID={runtimeSelectors.summary.backToPractice(route.params.sessionId)}
         completion="completed"
         context={{ modeLabel, topicLabel: domainPresentation, trackLabel: t(getTrackDisplay(session.trackId).title) }}
-        onBack={() => onFixtureExit ? onFixtureExit() : navigation.navigate(ROUTES.PRACTICE_HUB)}
+        onBack={() => onFixtureExit ? onFixtureExit() : navigation.navigate(session.caseState ? ROUTES.HOME : ROUTES.PRACTICE_HUB)}
         points={displayedPoints}
         requestedCount={session.requestedLength}
         configurationTestID={certificationPractice ? runtimeSelectors.summary.configuration(route.params.sessionId, session.actualLength, session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "atSessionEnd" : "afterEachAnswer") : undefined}
@@ -154,6 +161,32 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
         totalOccurrences={actualCount}
         unansweredCount={unansweredCount}
       />
+      {(summary.certificationPracticeReview?.caseSummary ? [summary.certificationPracticeReview.caseSummary] : summary.certificationPracticeReview?.caseSummaries ?? []).map((caseSummary, caseIndex) => <Card key={`case-comparison-${caseIndex}`} style={styles.diagnosticCard}>
+        <Text style={styles.diagnosticTitle}>{t("Compare your decisions")}</Text>
+        <Text style={styles.diagnosticTitle}>{caseSummary.title}</Text>
+        {caseSummary.steps.map((step, i) => <View key={step.stepId}>
+          <Text style={styles.diagnosticTitle}>{t("Decision {{number}}", { number: i + 1 })} · {t(step.assisted ? "After support" : "Independent response")}</Text>
+          <Text style={styles.diagnosticBody}>{step.changedCondition}</Text>
+          <Text style={styles.diagnosticBody}>{step.reason}</Text>
+        </View>)}
+      </Card>)}
+      {nextCaseError ? <Card style={styles.diagnosticCard}><Text style={styles.diagnosticBody}>{nextCaseError}</Text><Button variant="secondary" onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)}>{t("Back to practice")}</Button></Card> : null}
+      {session.caseState ? <Card style={styles.diagnosticCard}>
+        <Text style={styles.diagnosticBody}>{t("Completing a case does not complete the day plan or establish mastery. Later decisions may use feedback from earlier steps.")}</Text>
+        <Button variant="secondary" loading={nextCasePending} onPress={() => {
+          if (nextCaseInFlight.current) return;
+          nextCaseInFlight.current = true;
+          setNextCasePending(true);
+          setNextCaseError(null);
+          void (async () => {
+          const exact = await contentPackageRuntimeOwner.resolveForDiscovery(session.trackId, "certification");
+          const [attempts, reviews] = await Promise.all([loadTrainingAttempts(), loadReviewQueueItems()]);
+          const next = selectSingleCase(exact.track, attempts.value, reviews.value, getApplicationCurrentTime());
+          if (!next) throw new Error("No complete case is currently available.");
+          if (!navigation.isFocused()) { nextCaseInFlight.current = false; setNextCasePending(false); return; }
+          navigation.replace(ROUTES.PRACTICE_SESSION, { preset: "single_case", caseId: next.recipe.caseId, mode: "certification-focus-practice", feedbackMode: "afterEachAnswer", reviewBehaviorEnabled: false, sessionLength: next.recipe.steps.length, source: "home", topicId: next.nodeId, nodeId: next.nodeId, trackId: session.trackId });
+        })().catch(cause => { nextCaseInFlight.current = false; setNextCasePending(false); setNextCaseError(describeOperationalFailure(cause, t("The next case is unavailable."))); }); }}>{t("Another case")}</Button>
+      </Card> : null}
       {certificationPractice && summary.certificationPracticeReview?.relatedPracticeLimitation
         ? <Card style={styles.diagnosticCard}>
             <Text style={styles.diagnosticTitle}>{t("Related practice")}</Text>

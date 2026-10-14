@@ -93,3 +93,19 @@ test("Certification route preserves domains and sends an exact Premium node thro
   assert.equal(started.session.artifactSha256, offer.artifactSha256);
   assert.equal(started.session.itemOrder[0]?.item.questionId, "aud04-smoke-fixture-question");
 });
+
+test("unit route omits absent optional content pins but preserves partial and wrong pin rejection", async () => {
+  const owner = new ContentPackageRuntimeOwner(() => null, async () => []);
+  const { runtime } = await owner.resolveForPreparation({ trackId: "claude-certified-architect-professional-certification", familyId: "certification", modeId: "certification-focus-practice" });
+  const input = { trackId: "claude-certified-architect-professional-certification" as const, modeId: "certification-focus-practice" as const, requestedLength: 40, mentalUnitId: "CCARP-D01-O01", expectedContentVersion: undefined, expectedArtifactSha256: undefined };
+  const command = buildCertificationPracticeStartCommand(input);
+  assert.equal("expectedContentVersion" in command.request, false);
+  assert.equal("expectedArtifactSha256" in command.request, false);
+  const prepared = await runtime.prepare({ ...command, request: { ...command.request, sessionId: "qle-unit-route" }, attempts: [], reviews: [], now: "2026-10-14T12:00:00.000Z" });
+  assert.ok(prepared.session.caseStates?.length);
+  await runtime.validateResume({ session: prepared.session, draft: null });
+  for (const pins of [{ expectedContentVersion: "wrong" }, { expectedArtifactSha256: "0".repeat(64) }, { expectedContentVersion: "wrong", expectedArtifactSha256: "0".repeat(64) }]) {
+    const invalid = buildCertificationPracticeStartCommand({ ...input, ...pins });
+    await assert.rejects(runtime.prepare({ ...invalid, request: { ...invalid.request, sessionId: "qle-unit-route-invalid" }, attempts: [], reviews: [], now: "2026-10-14T12:00:00.000Z" }), /exact content identity/u);
+  }
+});

@@ -818,5 +818,18 @@
   "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Salvestatud Premium-sisu ei vasta sellele teemale. Toiming on blokeeritud ja salvestatud failid jäid alles.",
   "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly ei saanud selle seadme salvestatud Premium-sisu kontrollida. Toiming on blokeeritud ja salvestatud failid jäid alles.",
   "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly ei saanud salvestatud Premium-sisu olekut kinnitada. See toiming on blokeeritud; proovi hiljem uuesti.",
-  "Patternly couldn't read saved Premium content. Try again later.": "Patternly ei saanud salvestatud Premium-sisu lugeda. Proovi hiljem uuesti."
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly ei saanud salvestatud Premium-sisu lugeda. Proovi hiljem uuesti.",
+  "Case complete": "Juhtum lõpetatud",
+  "Done for today": "Tänaseks lõpetan",
+  "Compare your decisions": "Võrdle oma otsuseid",
+  "Decision {{number}}": "Otsus {{number}}",
+  "After support": "Abiga",
+  "Independent response": "Iseseisev vastus",
+  "One case · {{count}} decisions": "Üks juhtum · {{count}} otsust",
+  "Another case": "Järgmine juhtum",
+  "Completing a case does not complete the day plan or establish mastery. Later decisions may use feedback from earlier steps.": "Juhtumi lõpetamine ei täida päevaplaani ega tõenda teema valdamist. Hilisemad otsused võivad kasutada varasemaid selgitusi.",
+  "The next case is unavailable.": "Järgmine juhtum pole saadaval.",
+  "Initial estimate: about {{minutes}} min": "Esialgne hinnang: umbes {{minutes}} min",
+  "No performance evidence for this version yet": "Selle sisuversiooni kohta pole veel tulemusi",
+  "Earlier activity and reviews remain available.": "Varasemad tegevused ja kordamised on endiselt saadaval."
 }

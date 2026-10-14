@@ -20,7 +20,9 @@ export const EXPECTED_TRACK_IDS = Object.freeze([
 export const EXPECTED_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_695 });
 export const FROZEN_BASELINE_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 943, questionCount: 16_622 });
 export const CLAUDE_TRACK_ID = "claude-certified-architect-professional-certification";
-export const LOCAL_CLAUDE_INVENTORY = EXPECTED_INVENTORY;
+const PRE_QLE_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_695 });
+const FIRST_CASES_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_704 });
+export const LOCAL_CLAUDE_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_749 });
 export const GENERATED_DIRECTORY = "src/content/generated/canonical-content";
 export const LOCK_FILE_NAME = "content-lock.json";
 export const SUCCESSOR_LEDGER_FILE_NAME = "content-successor-ledger.json";
@@ -53,16 +55,21 @@ const TRACK_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const SAFE_CONTENT_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
 export const LOCAL_CANDIDATE_SCHEMA_VERSION = "patternly-local-content-candidate-acceptance-v1";
 const LOCAL_CLAUDE_EXPECTED = Object.freeze({
-  contentVersion: "ccarp-2026.10.11-capacity-v1-bizq02-v2-bizq03-planning-v2-cc02-v1-cc03-v1-cc04-v3",
-  artifactSha256: "12e6c8637b112af9e48ca870bb80d89f9db6ad7d1949c51efceb37572a6cd0bd",
-  questionCount: 918,
+  contentVersion: "ccarp-2026.10.14-qle-v2-full-path-identity-v2",
+  artifactSha256: "364ead796c19ee378e0ef7a5c47d80da69f0c3af694e2107d58ad6061f3ff80c",
+  questionCount: 972,
   nodeCount: 7,
   mentalUnitCount: 53,
   ruleVersion: 3,
 });
 const LOCAL_REVIEW_EVIDENCE = Object.freeze([
-  Object.freeze({ repository: "patternly", path: "docs/reports/claude-course-alignment-acceptance-2026-10-11.md" }),
-  Object.freeze({ repository: "patternly", path: "docs/reports/claude-unit-coverage-acceptance-2026-10-11.md" }),
+  Object.freeze({ repository: "patternly", path: "integration/contracts/content-release/local-claude/qle-v2-contract.md" }),
+  Object.freeze({ repository: "patternly", path: "src/content/generated/retained-content/claude-pre-qle-v2.json" }),
+  Object.freeze({ repository: "patternly", path: "src/content/generated/retained-content/claude-qle-v2-first-cases.json" }),
+  Object.freeze({ repository: "patternly", path: "src/content/generated/retained-content/claude-qle-v2-before-identity.json" }),
+  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-13-claude-qle-v2-coverage.json" }),
+  Object.freeze({ repository: "patternly", path: "integration/contracts/content-release/local-claude/claude-course-alignment-acceptance-2026-10-11.md" }),
+  Object.freeze({ repository: "patternly", path: "integration/contracts/content-release/local-claude/claude-unit-coverage-acceptance-2026-10-11.md" }),
   Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-claude-course-map.md" }),
   Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-claude-course-map.json" }),
   Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.md" }),
@@ -545,7 +552,7 @@ function validateLocalCandidateDescriptorShape(descriptor) {
   requireExactKeys(descriptor, ["schemaVersion", "scope", "trackId", "sourceFingerprint", "artifact", "base", "reviewEvidence", "releasePins"], "local candidate descriptor");
   if (descriptor.schemaVersion !== "patternly-local-content-candidate-descriptor-v1" || descriptor.scope !== "local_only" || descriptor.trackId !== CLAUDE_TRACK_ID) fail("Local candidate descriptor has an unsupported scope or track");
   requireExactKeys(descriptor.artifact, Object.keys(LOCAL_CLAUDE_EXPECTED), "local Claude artifact identity");
-  if (canonicalJson(descriptor.artifact) !== canonicalJson(LOCAL_CLAUDE_EXPECTED)) fail("Local Claude artifact identity does not match the reviewed CC-05 candidate");
+  if (canonicalJson(descriptor.artifact) !== canonicalJson(LOCAL_CLAUDE_EXPECTED)) fail("Local Claude artifact identity does not match the reviewed QLE-v2 local candidate");
   requireExactKeys(descriptor.sourceFingerprint, ["sha256", "inputs"], "local producer input fingerprint");
   if (!HASH.test(descriptor.sourceFingerprint.sha256) || !Array.isArray(descriptor.sourceFingerprint.inputs) || descriptor.sourceFingerprint.inputs.length < 1) fail("Local producer input fingerprint is invalid");
   let previousPath = "";
@@ -605,18 +612,16 @@ async function buildLocalMergedCandidate({ appRoot, producerRoot, targetDirector
       questionCount: claudeArtifact.questions.length,
     };
     if (!SAFE_CONTENT_VERSION.test(newClaudeTraining.contentVersion)) fail("Local Claude training contentVersion is invalid");
-    const expectedCurrentTraining = {
-      contentVersion: newClaudeTraining.contentVersion,
-      artifactSha256: newClaudeTraining.artifactSha256,
-      questionCount: newClaudeTraining.questionCount,
-    };
-    const alreadyInstalled = canonicalJson(priorClaudeTraining) === canonicalJson(expectedCurrentTraining);
+    const expectedClaudeLedger = { trackId: CLAUDE_TRACK_ID, training: newClaudeTraining, planningPolicy: { contentVersion: claudeArtifact.contentVersion, artifactSha256: claudeEntry.sha256, policyVersion: claudeArtifact.planningPolicy.policyVersion } };
+    const alreadyInstalled = canonicalJson(existingLock.tracks.find(entry => entry.trackId === CLAUDE_TRACK_ID)) === canonicalJson(claudeEntry)
+      && sha256(currentBundle.files.get(`${CLAUDE_TRACK_ID}.json`)) === claudeEntry.sha256
+      && canonicalJson(previousLedger.tracks.find(entry => entry.trackId === CLAUDE_TRACK_ID)) === canonicalJson(expectedClaudeLedger);
     if (baseMatches && canonicalJson(priorClaudeTraining) !== canonicalJson(descriptor.base.priorClaudeTraining)) fail("Current Claude training pin differs from the reviewed predecessor");
     if (!baseMatches && !alreadyInstalled) fail("Current bundle is neither the reviewed base nor the accepted local candidate");
     const ledger = parseSuccessorLedger({
       schemaVersion: SUCCESSOR_LEDGER_SCHEMA_VERSION,
       tracks: previousLedger.tracks.map((entry) => entry.trackId === CLAUDE_TRACK_ID
-        ? { trackId: CLAUDE_TRACK_ID, training: newClaudeTraining, planningPolicy: { contentVersion: claudeArtifact.contentVersion, artifactSha256: claudeEntry.sha256, policyVersion: claudeArtifact.planningPolicy.policyVersion } }
+        ? expectedClaudeLedger
         : entry),
     });
     const mergedFiles = new Map(currentBundle.files);
@@ -642,8 +647,12 @@ async function buildLocalMergedCandidate({ appRoot, producerRoot, targetDirector
 }
 
 async function loadCurrentLocalBundle(targetDirectory) {
+  const preQle = await validateBuiltContent(targetDirectory, { expectedInventory: PRE_QLE_INVENTORY }).then(built => ({ built, inventory: PRE_QLE_INVENTORY })).catch(() => undefined);
+  if (preQle) return { ...preQle, files: preQle.built.files };
   const oldValidation = await validateBuiltContent(targetDirectory, { expectedInventory: FROZEN_BASELINE_INVENTORY }).then((built) => ({ built, inventory: FROZEN_BASELINE_INVENTORY })).catch(() => undefined);
   if (oldValidation) return { ...oldValidation, files: oldValidation.built.files };
+  const firstCases = await validateBuiltContent(targetDirectory, { expectedInventory: FIRST_CASES_INVENTORY }).then(built => ({ built, inventory: FIRST_CASES_INVENTORY })).catch(() => undefined);
+  if (firstCases) return { ...firstCases, files: firstCases.built.files };
   const acceptedValidation = await validateBuiltContent(targetDirectory, { expectedInventory: LOCAL_CLAUDE_INVENTORY }).then((built) => ({ built, inventory: LOCAL_CLAUDE_INVENTORY })).catch((error) => { fail(`Current local bundle is not a valid accepted base or candidate: ${error.message}`); });
   return { ...acceptedValidation, files: acceptedValidation.built.files };
 }

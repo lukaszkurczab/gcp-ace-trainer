@@ -94,3 +94,42 @@ test("diagnostic and focused-unit copy is translated with matching placeholders 
     }
   }
 });
+
+test("actual case continuation ignores concurrent and delayed duplicate presses before state commit", async () => {
+  let release;
+  let calls = 0;
+  const waiting = new Promise(resolve => { release = resolve; });
+  const screen = await runActualResultScreen({ caseMode: true, continuationGate: async () => { calls += 1; await waiting; } });
+  const button = screen.byType("Button").find(node => node.props.children === "Another case");
+  assert.ok(button);
+  button.props.onPress();
+  button.props.onPress(); // Same handler before a React state commit.
+  assert.equal(calls, 1);
+  assert.equal(screen.rerender().byType("Button").find(node => node.props.children === "Another case").props.loading, true);
+  release();
+  for (let index = 0; index < 20 && !screen.navigationCalls.length; index++) await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(screen.navigationCalls.length, 1);
+  assert.equal(screen.navigationCalls[0][0], "practice-session");
+  assert.equal(screen.navigationCalls[0][1].preset, "single_case");
+  button.props.onPress(); // A queued callback after replace cannot navigate again.
+  assert.equal(calls, 1);
+  assert.equal(screen.navigationCalls.length, 1);
+});
+
+test("actual case continuation releases a failed attempt for retry and cancels navigation after leaving", async () => {
+  let calls = 0;
+  let focused = true;
+  const screen = await runActualResultScreen({ caseMode: true, isFocused: () => focused, continuationGate: async () => { if (++calls === 1) throw new Error("controlled discovery failure"); } });
+  const button = screen.byType("Button").find(node => node.props.children === "Another case");
+  button.props.onPress();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const failed = screen.rerender();
+  assert.equal(failed.byType("Button").find(node => node.props.children === "Another case").props.loading, false);
+  assert.match(failed.text, /The next case is unavailable/);
+  focused = false;
+  button.props.onPress();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(calls, 2);
+  assert.equal(screen.navigationCalls.length, 0);
+  assert.equal(screen.rerender().byType("Button").find(node => node.props.children === "Another case").props.loading, false);
+});

@@ -818,5 +818,18 @@
   "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Zapisana zawartość Premium nie pasuje do tego tematu. Operacja jest zablokowana, a zapisane pliki pozostały na urządzeniu.",
   "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly nie może zweryfikować zapisanej zawartości Premium na tym urządzeniu. Operacja jest zablokowana, a zapisane pliki pozostały na urządzeniu.",
   "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly nie może potwierdzić stanu zapisanej zawartości Premium. Ta operacja jest zablokowana; spróbuj ponownie później.",
-  "Patternly couldn't read saved Premium content. Try again later.": "Patternly nie może odczytać zapisanej zawartości Premium. Spróbuj ponownie później."
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly nie może odczytać zapisanej zawartości Premium. Spróbuj ponownie później.",
+  "Case complete": "Przypadek ukończony",
+  "Done for today": "Na dziś kończę",
+  "Compare your decisions": "Porównaj swoje decyzje",
+  "Decision {{number}}": "Decyzja {{number}}",
+  "After support": "Po wsparciu",
+  "Independent response": "Samodzielna odpowiedź",
+  "One case · {{count}} decisions": "Jeden przypadek · {{count}} decyzje",
+  "Another case": "Kolejny przypadek",
+  "Completing a case does not complete the day plan or establish mastery. Later decisions may use feedback from earlier steps.": "Ukończenie przypadku nie oznacza ukończenia planu dnia ani opanowania tematu. Późniejsze decyzje mogą korzystać z wcześniejszych wyjaśnień.",
+  "The next case is unavailable.": "Kolejny przypadek jest niedostępny.",
+  "Initial estimate: about {{minutes}} min": "Wstępnie: około {{minutes}} min",
+  "No performance evidence for this version yet": "Brak wyników dla tej wersji treści",
+  "Earlier activity and reviews remain available.": "Wcześniejsza aktywność i powtórki pozostają dostępne."
 }

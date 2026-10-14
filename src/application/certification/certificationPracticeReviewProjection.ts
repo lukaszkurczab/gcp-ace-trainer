@@ -1,3 +1,6 @@
+import { sessionCaseStates } from "../../domain/learning/caseEvidence";
+import { indexCaseRecipes } from "../../content/canonical/caseRecipe";
+import { isCaseAttemptEvidence } from "../../domain/learning/caseEvidence";
 import { getTrackRegistration, resolvedContentRefsEqual, type AttemptResultKind, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
 import type { CanonicalFeedbackMessage, JsonValue } from "../../content/canonical";
 import { isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../tracks/certification";
@@ -61,6 +64,8 @@ export type CertificationDiagnosticReport = Readonly<{
   recommendation: CertificationDiagnosticRecommendation;
 }>;
 export type CertificationPracticeReviewProjection = Readonly<{
+  caseSummary?: Readonly<{ title: string; steps: readonly Readonly<{ stepId: string; baseStepId?: string; changedCondition: string; reason: string; assisted: boolean; result: AttemptResultKind }>[] }>;
+  caseSummaries?: readonly Readonly<{ caseId: string; title: string; steps: NonNullable<CertificationPracticeReviewProjection["caseSummary"]>["steps"] }>[];
   diagnosticReport?: CertificationDiagnosticReport;
   feedbackMode: "afterEachAnswer" | "atSessionEnd";
   items: readonly CertificationPracticeReviewItem[];
@@ -150,6 +155,21 @@ export async function projectCertificationPracticeReview(input: Readonly<{
   if (!certificationReviewEvidenceMatches(result.evidence.details, sessionAttempts)) {
     return fail("Certification Practice result evidence does not match its committed answers.");
   }
+  const recipes = indexCaseRecipes([...questionById.values()]);
+  const caseSummaries = (session.configurationSnapshot.caseReviewPolicy ? [] : sessionCaseStates(session)).map(state => {
+    const recipe = recipes.find(candidate => candidate.caseId === state.caseId && candidate.version === state.caseVersion);
+    const first = recipe ? items.findIndex(item => item.questionId === recipe.steps[0]!.questionId) : -1;
+    if (!recipe || first < 0 || (session.caseState && recipe.steps.length !== items.length) || recipe.steps.some((step, index) => items[first + index]?.questionId !== step.questionId || !state.solutionExposedStepIds.includes(step.stepId))) return fail("The completed case's recipe or durable exposure is unavailable.");
+    return { caseId: recipe.caseId, title: recipe.title, steps: recipe.steps.map((step, index) => {
+      const item = items[first + index]!;
+      const attempt = attemptByOccurrenceId.get(item.occurrenceId)!;
+      const evidence = attempt.reviewEvidence.evidence?.details;
+      if (!isCaseAttemptEvidence(evidence) || evidence.caseId !== recipe.caseId || evidence.caseVersion !== recipe.version || evidence.stepId !== step.stepId || evidence.role !== step.role) return fail("Case answer evidence does not match the pinned step.");
+      return { stepId: step.stepId, ...(step.baseStepId ? { baseStepId: step.baseStepId } : {}), changedCondition: step.changedCondition, reason: item.reason, assisted: evidence.assistanceBeforeSubmit, result: item.result };
+    }) };
+  });
+  const singleCase = session.caseState ? caseSummaries[0] : undefined;
+  const caseSummary = singleCase ? { title: singleCase.title, steps: singleCase.steps } : undefined;
   const overallPointsEarned = sessionAttempts.reduce((sum, attempt) => sum + overallScoreCredit(attempt.result), 0);
   const diagnosticReport = session.modeId === "certification-diagnostic-baseline"
     ? projectDiagnosticReport({ items, attempts, session, ...(input.diagnosticContext ? { context: input.diagnosticContext } : {}) })
@@ -157,7 +177,7 @@ export async function projectCertificationPracticeReview(input: Readonly<{
   const relatedPracticeLimitation = hasRecordedRelatedQuestionPair({ attempts, items, questionById, session, attemptByOccurrenceId })
     ? "related_question_pair" as const
     : undefined;
-  return Object.freeze({ ...(diagnosticReport ? { diagnosticReport } : {}), feedbackMode, items: Object.freeze(items), modeId: session.modeId, overallPointsEarned, ...(relatedPracticeLimitation ? { relatedPracticeLimitation } : {}), sessionId: session.id, total: session.actualLength });
+  return Object.freeze({ ...(caseSummary ? { caseSummary } : {}), ...(session.configurationSnapshot.caseBlockPolicy ? { caseSummaries: Object.freeze(caseSummaries) } : {}), ...(diagnosticReport ? { diagnosticReport } : {}), feedbackMode, items: Object.freeze(items), modeId: session.modeId, overallPointsEarned, ...(relatedPracticeLimitation ? { relatedPracticeLimitation } : {}), sessionId: session.id, total: session.actualLength });
 }
 
 function hasRecordedRelatedQuestionPair(input: Readonly<{

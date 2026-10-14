@@ -17,7 +17,7 @@ test("fixture readers are optional screen seams and production readers remain th
   assert.match(resultScreenSource, /if \(readSummary\) return readSummary\(capturedRequestKey\)/);
   assert.match(resultScreenSource, /const useCases = getTrainingLifecycleUseCases\(\)/);
   assert.match(resultScreenSource, /<Screen>[\s\S]*?\{fixtureNotice\}[\s\S]*?<SessionResultOverview/);
-  assert.match(resultScreenSource, /onFixtureExit \? onFixtureExit\(\) : navigation\.navigate\(ROUTES\.PRACTICE_HUB\)/);
+  assert.match(resultScreenSource, /onFixtureExit \? onFixtureExit\(\) : navigation\.navigate\(session\.caseState \? ROUTES\.HOME : ROUTES\.PRACTICE_HUB\)/);
   assert.match(reviewScreenSource, /if \(readReview\) return readReview\(capturedRequestKey\)/);
   assert.match(reviewScreenSource, /getCertificationExamReviewProjection\(capturedRequestKey\)/);
   assert.match(reviewScreenSource, /openSource=\{sourceOpener\}/);

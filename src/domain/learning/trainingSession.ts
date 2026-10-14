@@ -1,3 +1,4 @@
+import { isCaseLearningState, freezeCaseLearningState, CASE_BLOCK_POLICY, CASE_REVIEW_POLICY, CASE_TRACK_ID, type CaseLearningState } from "./caseEvidence";
 import { createArtifactSha256 } from "./contentItemRef";
 import { InvalidTrainingSessionError } from "./errors";
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "./resolvedContentRef";
@@ -44,6 +45,8 @@ export type TrainingSession = Readonly<{
   itemOrder: readonly TrainingSessionItemOccurrence[];
   optionOrderByOccurrence: Readonly<Record<string, readonly string[]>>;
   conditionalReinsertSlots?: readonly TrainingSessionConditionalReinsertSlot[];
+  caseState?: CaseLearningState;
+  caseStates?: readonly CaseLearningState[];
   activeForegroundMs: number;
   contentVersion: string;
   artifactSha256: string;
@@ -64,6 +67,14 @@ export function isCompletedTrainingSession(session: TrainingSession): session is
 export function isAbandonedTrainingSession(session: TrainingSession): session is AbandonedTrainingSession { return session.status === "abandoned"; }
 
 export function createTrainingSession(session: TrainingSession): TrainingSession {
+  if (session.configurationSnapshot.preset === "single_case" && (session.trackId !== CASE_TRACK_ID || !session.caseState)) throw new InvalidTrainingSessionError("A single-case session requires its pinned case state.");
+  if (session.caseState !== undefined && (!isCaseLearningState(session.caseState) || session.trackId !== CASE_TRACK_ID || session.configurationSnapshot.preset !== "single_case" || session.configurationSnapshot.caseId !== session.caseState.caseId || session.configurationSnapshot.caseVersion !== session.caseState.caseVersion)) throw new InvalidTrainingSessionError("Case state does not match its pinned session.");
+  const blockPolicy = session.configurationSnapshot.caseBlockPolicy;
+  const reviewPolicy = session.configurationSnapshot.caseReviewPolicy;
+  const validBlocks = blockPolicy === CASE_BLOCK_POLICY && reviewPolicy === undefined && session.modeId === "certification-focus-practice";
+  const validReview = reviewPolicy === CASE_REVIEW_POLICY && blockPolicy === undefined && ["certification-weak-area-review", "certification-quick-review"].includes(session.modeId) && session.itemOrder.every(item => item.reviewSourceSnapshot?.source === "due_queue");
+  if (session.caseStates !== undefined && (!Array.isArray(session.caseStates) || session.caseStates.length === 0 || session.caseStates.length > session.actualLength || session.caseStates.some(state => !isCaseLearningState(state)) || new Set(session.caseStates.map(state => state.caseId)).size !== session.caseStates.length || session.caseState !== undefined || session.trackId !== CASE_TRACK_ID || session.configurationSnapshot.preset !== undefined || (!validBlocks && !validReview))) throw new InvalidTrainingSessionError("Case states do not match their pinned session.");
+  if ((blockPolicy !== undefined || reviewPolicy !== undefined) && (session.trackId !== CASE_TRACK_ID || session.caseState !== undefined || !session.caseStates || (!validBlocks && !validReview))) throw new InvalidTrainingSessionError("Case capability is invalid.");
   if (session.status !== "active" && session.status !== "completed" && session.status !== "abandoned") {
     throw new InvalidTrainingSessionError("Training session status is unsupported.");
   }
@@ -134,6 +145,8 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   return Object.freeze({
     ...session,
     artifactSha256,
+    ...(session.caseState ? { caseState: freezeCaseLearningState(session.caseState) } : {}),
+    ...(session.caseStates ? { caseStates: Object.freeze(session.caseStates.map(freezeCaseLearningState)) } : {}),
     configurationSnapshot: freezeConfigurationSnapshot(session.configurationSnapshot),
     itemOrder: Object.freeze(itemOrder),
     optionOrderByOccurrence: Object.freeze(Object.fromEntries(Object.entries(session.optionOrderByOccurrence).map(([occurrenceId, optionIds]) => [occurrenceId, Object.freeze([...optionIds])]))),

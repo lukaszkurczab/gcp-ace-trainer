@@ -43,6 +43,8 @@ export function buildCodingInterviewSimulationResumeRoute(session: TrainingSessi
 }
 
 export type PracticeSessionRouteParams = {
+  preset?: "single_case";
+  caseId?: string;
   algorithmScope?: AlgorithmSelectionScope;
   competencyId?: string;
   feedbackMode: PracticeFeedbackMode;
@@ -236,6 +238,9 @@ export function buildCertificationPracticeResumeRoute(session: TrainingSession):
   if (getTrackRegistration(session.trackId).familyId !== "certification") throw new Error("Certification Practice resume requires a Certification package.");
   const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(session.trackId).track;
   const packageMode = packageProfile.getMode(session.modeId);
+  if (session.caseState && session.configurationSnapshot.preset === "single_case") {
+    return exactCertificationResumeRoute({ preset: "single_case", caseId: session.caseState.caseId, mode: "certification-focus-practice", feedbackMode: "afterEachAnswer", reviewBehaviorEnabled: false, sessionLength: session.actualLength, source: "home", topicId: packageProfile.getQuestion(session.itemOrder[0]!.item.questionId)?.nodeId ?? "", trackId: session.trackId }, session.id);
+  }
   const feedbackMode = assertOrdinaryCertificationConfiguration(session, packageMode);
 
   if (session.configurationSnapshot.kind !== "practice") {
@@ -255,9 +260,23 @@ export function buildCertificationPracticeResumeRoute(session: TrainingSession):
     if (packageMode.selection.kind !== "node" || !packageMode.selection.nodeId.trim()) {
       throw new Error("Certification Focus Practice resume requires its immutable topic and length.");
     }
-    const focusNodeId = packageMode.selection.nodeId;
     const mentalUnitId = session.configurationSnapshot.mentalUnitId;
-    if (mentalUnitId !== undefined && (typeof mentalUnitId !== "string" || !mentalUnitId.trim() || !packageProfile.getPool(session.modeId).some((question) => question.nodeId === focusNodeId && question.mentalUnitId === mentalUnitId) || session.itemOrder.some((occurrence) => !packageProfile.getPool(session.modeId).some((question) => question.questionId === occurrence.item.questionId && question.mentalUnitId === mentalUnitId)))) {
+    const unitRule = packageProfile.completionRule?.ruleVersion === 3 ? packageProfile.completionRule : undefined;
+    const claudeScoped = session.trackId === "claude-certified-architect-professional-certification" && mentalUnitId !== undefined && unitRule !== undefined;
+    const focusNodeId = claudeScoped
+      ? unitRule?.chapters.find(chapter => chapter.units.some(unit => unit.mentalUnitId === mentalUnitId))?.nodeId
+      : packageMode.selection.nodeId;
+    if (!focusNodeId) throw new Error("Certification Focus Practice resume requires its retained mental unit.");
+    if (claudeScoped) {
+      if (typeof mentalUnitId !== "string" || !mentalUnitId.trim()) throw new Error("Certification Focus Practice resume requires its exact mental unit.");
+      resolveRequiredUnitFocusMode(packageMode, packageProfile.completionRule, focusNodeId, mentalUnitId);
+      const isCurrentPin = (session.contentVersion === packageProfile.contentVersion && session.artifactSha256 === packageProfile.artifactSha256)
+        || (session.contentVersion === packageProfile.trainingIdentity?.contentVersion && session.artifactSha256 === packageProfile.trainingIdentity.artifactSha256);
+      // Historical membership belongs to the exact pinned runtime, never today's discovery pool.
+      if (isCurrentPin && session.itemOrder.some(occurrence => !packageProfile.questions.some(question => question.questionId === occurrence.item.questionId && question.nodeId === focusNodeId && question.mentalUnitId === mentalUnitId))) {
+        throw new Error("Certification Focus Practice resume requires its exact mental unit and prepared questions.");
+      }
+    } else if (mentalUnitId !== undefined && (typeof mentalUnitId !== "string" || !mentalUnitId.trim() || !packageProfile.getPool(session.modeId).some((question) => question.nodeId === focusNodeId && question.mentalUnitId === mentalUnitId) || session.itemOrder.some((occurrence) => !packageProfile.getPool(session.modeId).some((question) => question.questionId === occurrence.item.questionId && question.mentalUnitId === mentalUnitId)))) {
       throw new Error("Certification Focus Practice resume requires its exact mental unit and prepared questions.");
     }
     return exact({ feedbackMode, mode: session.modeId, ...(typeof mentalUnitId === "string" ? { mentalUnitId } : {}), reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: focusNodeId, trackId: session.trackId, ...(typeof mentalUnitId === "string" ? { expectedContentVersion: session.contentVersion, expectedArtifactSha256: session.artifactSha256 } : {}) });

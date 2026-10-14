@@ -19,6 +19,8 @@ export type SessionResultWeightedPoints = Readonly<{
 }>;
 
 export type SessionResultOverviewProps = Readonly<{
+  completionTitle?: string;
+  backLabel?: string;
   activeTime: string;
   answeredCount: number;
   backTestID?: string;
@@ -47,6 +49,8 @@ export type SessionResultOverviewProps = Readonly<{
 
 /** Pure presentation for the durable result shared by every practice family. */
 export function SessionResultOverview({
+  completionTitle,
+  backLabel,
   activeTime,
   answeredCount,
   backTestID,
@@ -67,7 +71,7 @@ export function SessionResultOverview({
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
   const noAnswers = answeredCount === 0;
-  const title = noAnswers ? "Session ended without answers" : completion === "endedEarly" ? "Session ended early" : "Session complete";
+  const title = completionTitle ?? (noAnswers ? "Session ended without answers" : completion === "endedEarly" ? "Session ended early" : "Session complete");
   const scoreStatus = noAnswers ? "No answers were submitted." : score === null ? "Score unavailable." : null;
   const visibleScore = noAnswers ? null : score;
   const showWeightedPoints = visibleScore !== null && points !== undefined && (points.earned !== visibleScore.correctCount || points.max !== totalOccurrences);
@@ -119,7 +123,7 @@ export function SessionResultOverview({
         </View>
       ) : null}
 
-      <Button onPress={onBack} testID={backTestID} variant="secondary">{t("Back to practice")}</Button>
+      <Button onPress={onBack} testID={backTestID} variant="secondary">{t(backLabel ?? "Back to practice")}</Button>
     </View>
   );
 }

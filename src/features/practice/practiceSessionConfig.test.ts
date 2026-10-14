@@ -301,3 +301,36 @@ test("Practice Setup uses the package default until the learner or route selects
   for (const invalid of [0, 9, 30, 100, NaN]) assert.equal(resolvePracticeSessionLength(invalid, coding), 10);
   assert.equal(resolvePracticeSessionLength(20, aws), 20);
 });
+
+
+test("Claude scoped Focus resumes non-default units and retained questions without discovery substitution", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { resolveRetainedClaudeTrack } = await import("../../content/canonical/runtimeCatalog");
+  const catalog = await loadCanonicalRuntimeCatalog();
+  const current = catalog.getTrack("claude-certified-architect-professional-certification");
+  const retained = JSON.parse(readFileSync("src/content/generated/retained-content/claude-pre-qle-v2.json", "utf8"));
+  const old = await resolveRetainedClaudeTrack({ trackId: current.trackId, contentVersion: retained.lock.contentVersion, artifactSha256: retained.lock.sha256 });
+  assert.ok(old);
+  assert.equal(current.completionRule?.ruleVersion, 3);
+  if (current.completionRule?.ruleVersion !== 3 || old.completionRule?.ruleVersion !== 3) throw new Error("Scoped fixture requires v3 unit rules");
+  const units = new Map(current.completionRule.chapters.flatMap(chapter => chapter.units.map(unit => [unit.mentalUnitId, chapter.nodeId] as const)));
+  for (const chapter of old.completionRule.chapters) for (const unit of chapter.units) assert.equal(units.get(unit.mentalUnitId), chapter.nodeId, "retained unit/node identity remains stable");
+  const active = await contentPackageRuntimeOwner.resolveForDiscovery(current.trackId, "certification");
+  for (const { track, runtime } of [{ track: active.track, runtime: active.runtime }, { track: old, runtime: createCanonicalTrainingFamilyRuntime(old) }]) {
+    const prepared = await runtime.prepare({ trackId: track.trackId, modeId: "certification-focus-practice", request: { sessionId: `scoped-resume:${track.contentVersion}`, requestedLength: 40, mentalUnitId: "CCARP-D05-O02" }, attempts: [], reviews: [], now: "2026-10-14T12:00:00.000Z" });
+    const before = JSON.stringify(prepared.session);
+    assert.throws(() => buildCertificationPracticeResumeRoute({ ...prepared.session, configurationSnapshot: { ...prepared.session.configurationSnapshot, mentalUnitId: "missing-unit" } }), /retained mental unit/);
+    if (track === active.track) assert.throws(() => buildCertificationPracticeResumeRoute({ ...prepared.session, itemOrder: prepared.session.itemOrder.map((occurrence, index) => index === 0 ? { ...occurrence, item: { ...occurrence.item, questionId: "not-in-current-unit" } } : occurrence) }), /exact mental unit and prepared questions/);
+    const route = buildCertificationPracticeResumeRoute(prepared.session);
+    assert.equal(route.topicId, units.get("CCARP-D05-O02"));
+    assert.equal(route.expectedSessionId, prepared.session.id);
+    assert.equal(route.expectedContentVersion, prepared.session.contentVersion);
+    assert.equal(route.expectedArtifactSha256, prepared.session.artifactSha256);
+    await runtime.validateResume({ session: prepared.session, draft: null });
+    assert.equal(JSON.stringify(prepared.session), before);
+    if (track === old) assert.ok(prepared.session.itemOrder.some(occurrence => !current.getQuestion(occurrence.item.questionId)), "actual retained session includes a replaced QID");
+    const recommendation: ReturnType<typeof buildHomeTabModel>["recommendations"][number] | undefined = buildHomeTabModel({ activeTrack: getTrackDisplay(track.trackId as TrackId), activeSession: prepared.session, algorithmsDashboard: null, analytics: {} as AnalyticsData, dashboardError: null, trainingAttempts: [] }).recommendations[0];
+    assert.equal(recommendation?.enabled, true);
+    assert.equal(recommendation?.action.kind, "resume_certification_practice");
+  }
+});

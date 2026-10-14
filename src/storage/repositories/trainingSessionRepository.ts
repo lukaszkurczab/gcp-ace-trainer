@@ -1,3 +1,4 @@
+import { caseStatesAreMonotonic, sessionCaseStates } from "../../domain/learning/caseEvidence";
 import type { TrainingSession, TrainingSessionDraftState } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
 import { applyCanonicalPhysicalWrite, readCanonicalEnvelopeProof, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
@@ -73,9 +74,10 @@ async function validateTrainingSessionWrite(session: TrainingSession, requireStr
     if (existing.status !== "active") {
       if (JSON.stringify(existing) !== JSON.stringify(session)) throw new Error(`Terminal session ${session.id} is immutable.`);
     } else {
-      const { currentItemIndex: _existingIndex, activeForegroundMs: _existingTime, status: _existingStatus, completedAt: _existingCompletion, itemOrder: existingOrder, optionOrderByOccurrence: existingOptions, conditionalReinsertSlots: existingSlots, planFingerprint: existingFingerprint, ...immutableExisting } = existing;
-      const { currentItemIndex: _nextIndex, activeForegroundMs: _nextTime, status: _nextStatus, completedAt: _nextCompletion, itemOrder: nextOrder, optionOrderByOccurrence: nextOptions, conditionalReinsertSlots: nextSlots, planFingerprint: nextFingerprint, ...immutableNext } = session;
+      const { currentItemIndex: _existingIndex, activeForegroundMs: _existingTime, status: _existingStatus, completedAt: _existingCompletion, itemOrder: existingOrder, optionOrderByOccurrence: existingOptions, conditionalReinsertSlots: existingSlots, planFingerprint: existingFingerprint, caseState: existingCase, caseStates: existingCases, ...immutableExisting } = existing;
+      const { currentItemIndex: _nextIndex, activeForegroundMs: _nextTime, status: _nextStatus, completedAt: _nextCompletion, itemOrder: nextOrder, optionOrderByOccurrence: nextOptions, conditionalReinsertSlots: nextSlots, planFingerprint: nextFingerprint, caseState: nextCase, caseStates: nextCases, ...immutableNext } = session;
       if (JSON.stringify(immutableExisting) !== JSON.stringify(immutableNext)) throw new Error(`Session ${session.id} has conflicting immutable fields.`);
+      if (Boolean(existingCase) !== Boolean(nextCase) || Boolean(existingCases) !== Boolean(nextCases) || !caseStatesAreMonotonic(sessionCaseStates(existing), sessionCaseStates(session))) throw new Error("Case exposure cannot be removed or reassigned.");
       if (session.activeForegroundMs < existing.activeForegroundMs) throw new Error(`Session ${session.id} foreground time cannot decrease.`);
       if (JSON.stringify(existingOrder) !== JSON.stringify(nextOrder) || JSON.stringify(existingOptions) !== JSON.stringify(nextOptions) || JSON.stringify(existingSlots ?? []) !== JSON.stringify(nextSlots ?? [])) {
         assertConditionalReinsertResolution(existing, session);

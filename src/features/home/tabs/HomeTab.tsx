@@ -1,10 +1,14 @@
+import { markStartup } from "../../../infrastructure/diagnostics/startupTrace";
+import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
+import { selectSingleCase } from "../../../application/certification/singleCaseRecommendation";
+import { getApplicationCurrentTime } from "../../../application/trainingLifecycle";
 import { getTrackIconName } from "../../../components/trackIcon";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Fragment, useState } from "react";
 
 import { Button, Card, Icon, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
-import { FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID } from "../../../domain";
+import { FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID, isActiveReviewQueueEntry } from "../../../domain";
 import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
 import type { GuidanceAction } from "../../../application/learningPlan";
@@ -13,7 +17,7 @@ import type { HomePlanSnapshot } from "../../../application/homePlanSnapshotRead
 import { colorWithOpacity, radius, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { modeLabel } from "./activityPresentation";
-import { buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
+import { hasClaudeDueReview, homePlanPlacement, buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
 import { buildHomeOverviewMetrics } from "./homeOverviewPresentation";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
@@ -154,12 +158,32 @@ export function HomeTab({
     ? actionMeasurements.widths
     : { activity: 0, focus: 0 };
   const actionWidth = Math.max(actionWidths.focus, actionWidths.activity);
-  const model = buildHomeTabModel({ activeSession, activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });
+  let singleCaseRecommendation: import("./homeTabModel").HomeRecommendationModel | null = null;
+  let caseDiscoveryUnavailable = false;
+  let dueReviewRecommendation: import("./homeTabModel").HomeRecommendationModel | null = null;
+  const now = getApplicationCurrentTime();
+  const claudeDue = activeTrack.id === "claude-certified-architect-professional-certification" && hasClaudeDueReview(reviewQueueItems, now);
+  if (!activeSession && activeTrack.id === "claude-certified-architect-professional-certification" && claudeDue) dueReviewRecommendation = { action: { kind: "start_certification_due_review", trackId: activeTrack.id }, title: "Review weak areas", detail: "Review due items before they become stale.", enabled: true, icon: "practice", label: "Start review", primaryLabel: "Start review", tone: "primary" };
+  try {
+    const catalog = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
+    const selected = selectSingleCase(catalog, trainingAttempts, reviewQueueItems, now);
+    const exactDue = catalog.trackId === "claude-certified-architect-professional-certification" ? claudeDue : reviewQueueItems.some(r => isActiveReviewQueueEntry(r) && r.dueAt && r.dueAt <= now && r.sourceItem.trackId === catalog.trackId && r.sourceItem.contentVersion === catalog.contentVersion && r.sourceItem.artifactSha256 === catalog.artifactSha256);
+    caseDiscoveryUnavailable = !selected && !exactDue;
+    if (selected && !exactDue && !activeSession && !(homePlan?.kind === "ready" && homePlan.dueReviewCount > 0 && !selected.due)) singleCaseRecommendation = { action: { kind: "start_single_case", caseId: selected.recipe.caseId, nodeId: selected.nodeId, decisionCount: selected.recipe.steps.length }, title: selected.recipe.title, detail: `${t("One case · {{count}} decisions", { count: selected.recipe.steps.length })} · ${t("Initial estimate: about {{minutes}} min", { minutes: Math.ceil(selected.recipe.initialEstimatedSeconds / 60) })}`, enabled: true, icon: "practice", label: "Start", primaryLabel: "Start", tone: "primary" };
+  } catch { caseDiscoveryUnavailable = true; }
+  if (caseDiscoveryUnavailable && activeTrack.id === "claude-certified-architect-professional-certification" && !activeSession && !singleCaseRecommendation && !dueReviewRecommendation) {
+    const reason = "This practice mode is unavailable.";
+    singleCaseRecommendation = { action: { kind: "unavailable", reason }, title: "Recommendation unavailable", detail: reason, unavailableReason: reason, enabled: false, icon: "alert-triangle", label: "Unavailable", primaryLabel: "Unavailable", tone: "warning" };
+  }
+  const model = buildHomeTabModel({ activeSession, activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts, singleCaseRecommendation, dueReviewRecommendation });
   const recommendation = model.recommendations[0];
   const hasActiveSession = activeSession?.status === "active" && activeSession.trackId === activeTrack.id;
-  const readyHomePlan = !hasActiveSession && homePlan?.kind === "ready" ? homePlan : null;
+  const planPlacement = homePlanPlacement({ hasActiveSession, hasPracticeRecommendation: Boolean(singleCaseRecommendation || dueReviewRecommendation), planKind: homePlan?.kind });
+  const secondaryPlan = planPlacement === "secondary" && homePlan?.kind === "ready" ? homePlan : null;
+  const secondaryPlanPresentation = secondaryPlan ? presentTargetDateGuidance({ guidance: secondaryPlan.guidance, locale: i18n.resolvedLanguage?.toLowerCase().startsWith("pl") ? "pl" : "en", timezone: secondaryPlan.plan.timezone }) : null;
+  const readyHomePlan = planPlacement === "primary" && homePlan?.kind === "ready" ? homePlan : null;
   const homePlanReady = readyHomePlan !== null;
-  const homePlanUnavailable = !hasActiveSession && homePlan?.kind === "unavailable";
+  const homePlanUnavailable = planPlacement === "primary" && homePlan?.kind === "unavailable";
   const homePlanPresentation = homePlanReady
     ? presentTargetDateGuidance({
       guidance: readyHomePlan.guidance,
@@ -286,7 +310,7 @@ export function HomeTab({
           <View style={styles.decisionIconTile}>
             <Icon color={decisionTone === "muted" ? palette.textMuted : palette.accentTeal} name={decisionIcon} size={24} />
           </View>
-          <View style={styles.decisionCopy}>
+          <View style={[styles.decisionCopy, largeText && activeTrack.id === "claude-certified-architect-professional-certification" ? styles.claudeDecisionCopyLargeText : null]}>
             <Text
               maxFontSizeMultiplier={2}
               style={styles.decisionTitle}
@@ -327,6 +351,7 @@ export function HomeTab({
               return;
             }
             if (recommendation) {
+              if (recommendation.action.kind === "start_single_case") markStartup("claude_case_start");
               onRecommendationAction(recommendation.action);
               return;
             }
@@ -353,6 +378,12 @@ export function HomeTab({
           </Pressable>
         )}
       </Card>
+      {secondaryPlan && secondaryPlanPresentation ? <Card style={styles.decisionCard}>
+        <Text maxFontSizeMultiplier={2} style={styles.decisionTitle}>{secondaryPlanPresentation.stateLabel}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.decisionDetail}>{tPlan("homePlan.todayDetail", { area: localizeHomePlanArea(secondaryPlan, t), count: secondaryPlan.session.sessionLength, message: secondaryPlanPresentation.message, reviews: secondaryPlan.dueReviewCount, status: tPlan(`homePlan.day.${secondaryPlan.day.status}`) })}</Text>
+        <Button variant="secondary" onPress={() => onHomePlanAction(secondaryPlan.guidance.home.primary)}>{secondaryPlanPresentation.primaryLabel}</Button>
+      </Card> : null}
+      {planPlacement === "secondary" && homePlan?.kind === "unavailable" ? <Card><Text style={styles.decisionTitle}>{tPlan("Home plan unavailable")}</Text><Text style={styles.decisionDetail}>{tPlan(`homePlan.unavailable.${homePlan.reason}`)}</Text><Button variant="secondary" onPress={onRetryHomePlan}>{tPlan("Try again")}</Button></Card> : null}
       {showGoalInvitation ? (
         <Card style={styles.goalOnboardingCard} testID={runtimeSelectors.goalOnboarding.root()}>
           <View style={[styles.goalOnboardingHeading, largeText ? styles.goalOnboardingHeadingLargeText : null]}>
@@ -666,6 +697,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flex: 1,
     gap: spacing.xxs,
     minWidth: 0,
+  },
+  claudeDecisionCopyLargeText: {
+    alignSelf: "stretch",
+    flex: 0,
+    flexBasis: "auto",
+    flexGrow: 0,
+    flexShrink: 0,
   },
   decisionIconTile: {
     alignItems: "center",

@@ -1,3 +1,6 @@
+import { estimateCaseWork } from "./caseWorkEstimate";
+import { selectCaseBlocks } from "../certification/caseBlockSelector";
+import { CLAUDE_CASE_TRACK } from "../../content/canonical/caseRecipe";
 import type { TrainingAttempt, TrainingSession } from "../../domain";
 import { isActiveReviewQueueEntry } from "../../domain";
 import { estimatePlanningWork, calibrateObservedPlanningTime, type PlanningWorkEstimateResult } from "../../domain";
@@ -52,7 +55,7 @@ export function estimateNextSessionTime(input: Readonly<{
     if (!active || active.status !== "active" || active.trackId !== track.trackId || active.modeId !== mode.modeId ||
       active.requestedLength !== recommendation.continuation.requestedLength || active.contentVersion !== track.contentVersion ||
       active.artifactSha256 !== track.artifactSha256 || active.actualLength !== active.itemOrder.length ||
-      !mode.requestedLengths.includes(active.requestedLength)) return unavailable("invalid_response_count", []);
+      (!mode.requestedLengths.includes(active.requestedLength) && active.configurationSnapshot.preset !== "single_case")) return unavailable("invalid_response_count", []);
     const matchingAttempts = input.attempts.filter((attempt) => attempt.sessionId === active.id);
     if (matchingAttempts.some((attempt) => attempt.committedAt === undefined)) return unavailable("invalid_response_count", []);
     let progress;
@@ -67,6 +70,10 @@ export function estimateNextSessionTime(input: Readonly<{
     });
     if (remainingQuestions.length === 0 || remainingQuestions.some((question) => question === undefined)) return unavailable("invalid_response_count", []);
     const exactRemainingQuestions = remainingQuestions as readonly NonNullable<(typeof remainingQuestions)[number]>[];
+    if (mode.modeId === "certification-focus-practice") {
+      const caseEstimate = estimateCaseWork({ track, policy, planningPolicyIdentity, modeId: mode.modeId, questions: exactRemainingQuestions, sessions: input.sessions, attempts: input.attempts, observedCalibrations });
+      if (caseEstimate) return caseEstimate;
+    }
     const plannedWork = mode.selection.kind === "evidence_conditioned" ? [] : aggregateScopes(exactRemainingQuestions);
     const dueReviews = mode.selection.kind === "evidence_conditioned" ? exactRemainingQuestions.map((question) => ({ nodeId: question.nodeId, mentalUnitId: question.mentalUnitId })) : [];
     if (mode.selection.kind === "evidence_conditioned") {
@@ -108,9 +115,11 @@ export function estimateNextSessionTime(input: Readonly<{
   if (!recommendation.mode.requestedLengths.includes(requestedLength)) return unavailable("invalid_response_count", []);
   const count = Math.min(requestedLength, selected.length);
   if (mode.selection.kind === "node") {
-    selected = selectPracticeQuestions(selected, input.attempts, track, count)
-      .map((question) => track.getQuestion(question.questionId)!)
-      .filter((question): question is NonNullable<typeof question> => Boolean(question));
+    selected = track.trackId === CLAUDE_CASE_TRACK && mode.modeId === "certification-focus-practice"
+      ? selectCaseBlocks({ catalog: track, pool: selected, attempts: input.attempts, requestedLength }).questions
+      : selectPracticeQuestions(selected, input.attempts, track, count)
+        .map((question) => track.getQuestion(question.questionId)!)
+        .filter((question): question is NonNullable<typeof question> => Boolean(question));
   } else {
     // Exact-order and evidence-conditioned modes retain the same canonical ordering
     // used by the registered family runtime when it prepares their session.
@@ -118,6 +127,10 @@ export function estimateNextSessionTime(input: Readonly<{
   }
   if (selected.length < mode.minimumActualLength && mode.selection.kind !== "evidence_conditioned") return unavailable("empty_pool", []);
 
+  if (mode.modeId === "certification-focus-practice") {
+    const caseEstimate = estimateCaseWork({ track, policy, planningPolicyIdentity, modeId: mode.modeId, questions: selected, sessions: input.sessions, attempts: input.attempts, observedCalibrations });
+    if (caseEstimate) return caseEstimate;
+  }
   const plannedWork = recommendation.phase === "review" ? [] : aggregateScopes(selected);
   const dueReviews = recommendation.phase === "review" ? selected.map((question) => ({ nodeId: question.nodeId, mentalUnitId: question.mentalUnitId })) : [];
   return estimatePlanningWork({

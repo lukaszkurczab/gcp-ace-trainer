@@ -1,0 +1,888 @@
+{
+  "schemaVersion": "patternly-local-content-candidate-acceptance-v1",
+  "scope": "local_only",
+  "decision": "accepted_for_local_runtime",
+  "publication": "not_granted",
+  "releaseLockUpdate": false,
+  "candidate": {
+    "schemaVersion": "patternly-local-content-candidate-descriptor-v1",
+    "scope": "local_only",
+    "trackId": "claude-certified-architect-professional-certification",
+    "sourceFingerprint": {
+      "sha256": "0fd381ebaf7c2e67bfd804aea3d87385ffd69aa4022ad0867b4e2b85882a9b44",
+      "inputs": [
+        {
+          "path": "config/bundled-free-node-packages.json",
+          "sha256": "b0019ca40bc3571f08a859ba1d89b63212ce8f52ec65322a34808b63d0bc53b8"
+        },
+        {
+          "path": "config/certification-objective-registries/aws-certified-solutions-architect-associate.json",
+          "sha256": "0b1e60692ec6245b996c24a0954acb193e62ea4e92fa87bbed719f406e43b00a"
+        },
+        {
+          "path": "config/certification-objective-registries/claude-certified-architect-professional-certification.json",
+          "sha256": "2b326c6a60f34acf807b345348c65b27865f367b8d2904852a98b16c7a3b16b9"
+        },
+        {
+          "path": "config/certification-objective-registries/google-cloud-associate-cloud-engineer.json",
+          "sha256": "d38a0b6ee2a6e5fedc0b947743ebcec2a729de874e23709813156abdc31e8c05"
+        },
+        {
+          "path": "config/certification-objective-registries/hashicorp-terraform-associate-004.json",
+          "sha256": "26315090023202f03dd0ed72b9780430f3fd9a4a8ec2ea916b15562d1f59359c"
+        },
+        {
+          "path": "config/certification-objective-registries/kubernetes-cloud-native-associate-kcna.json",
+          "sha256": "ef432f52324ce6f9f605c3b7084a127539bc7b76102199f60707e9542b1c6a9e"
+        },
+        {
+          "path": "config/certification-objective-registries/microsoft-azure-administrator-associate-az-104.json",
+          "sha256": "7728bafa22a5d622ae1f64d14bb3fb5ff3459431c23aaeb82ad1fceaaf0f2476"
+        },
+        {
+          "path": "config/certification-objective-registries/microsoft-azure-ai-fundamentals-ai-901.json",
+          "sha256": "769202258c0e387550b8fc3160aecf06d2ecf3ba3b42e4153a3052b68f4a9d5b"
+        },
+        {
+          "path": "config/certification-source-registries/claude-certified-architect-professional-certification.json",
+          "sha256": "7cc26d93d987bdae0b56232a63fa59378ed001b7a44dc7a3887699265c45f8d1"
+        },
+        {
+          "path": "config/certification-source-registries/microsoft-azure-ai-fundamentals-ai-901.json",
+          "sha256": "060e45383c2753c9500eb86a45df2664f305c43ab53bfd3d51cd05957d98b389"
+        },
+        {
+          "path": "config/curricula/aws-certified-solutions-architect-associate.json",
+          "sha256": "db088c273e0b808aac40c26dd64fe671e538de5f5dffcf85f3769af4e0782823"
+        },
+        {
+          "path": "config/curricula/backend-system-design-interview.json",
+          "sha256": "2c184b571eb520d4ea005210da6d6d7189a668f77eb9126dd9a91ea99d3b8d42"
+        },
+        {
+          "path": "config/curricula/claude-certified-architect-professional-certification.json",
+          "sha256": "009a1d87e703b698562e95489efde9b5cbaec97e7995cd26a14019aeab3d1aca"
+        },
+        {
+          "path": "config/curricula/coding-interview-dsa-problem-solving.json",
+          "sha256": "bd085ae6d4502dc79898a767a1eb1d57c1a2e7d4246809ab34dae56bc1da06f7"
+        },
+        {
+          "path": "config/curricula/frontend-system-design-interview.json",
+          "sha256": "9c995e01157b6c15ee21f88460b1089ba522b7714cacae8d9ee76f5341eb432a"
+        },
+        {
+          "path": "config/curricula/google-cloud-associate-cloud-engineer.json",
+          "sha256": "d6265d2d904069feea6ba8bc88726a5c7f7002c9a7d24a6d935dad82ce60813e"
+        },
+        {
+          "path": "config/curricula/hashicorp-terraform-associate-004.json",
+          "sha256": "aa8c0f92eedec6c9ca2918fd08f9b3149550947f5cc73566110837c7bfee4eca"
+        },
+        {
+          "path": "config/curricula/kubernetes-cloud-native-associate-kcna.json",
+          "sha256": "ca18b2ca75261c5a91dc6179a8fd3b7c25c69f632a2a7d8586df122db069f680"
+        },
+        {
+          "path": "config/curricula/microsoft-azure-administrator-associate-az-104.json",
+          "sha256": "161db6a0ffd90b458ceb2808a15ab3ad5efea0871f44be2cc57efb16772e75a7"
+        },
+        {
+          "path": "config/curricula/microsoft-azure-ai-fundamentals-ai-901.json",
+          "sha256": "d612ca2915d737332d69351b98ceb0e5a83c5868d27f534366473270c47c3f1d"
+        },
+        {
+          "path": "config/curricula/object-oriented-design-interview.json",
+          "sha256": "d6661aff21babcc55bab14162b30e654e707433f25bf06a8d3bcc157e1d8e748"
+        },
+        {
+          "path": "config/design-interview-source-registry.json",
+          "sha256": "ec7bb3265d9adf81de119bdd15c5ff12ef0da51e111e9399f22b5c90dda22db1"
+        },
+        {
+          "path": "config/families/certification.json",
+          "sha256": "8567a6359c7f725b0e68553848732256b61cfe9510bd6c27481a8d84254f6b98"
+        },
+        {
+          "path": "config/families/coding_interview.json",
+          "sha256": "cdcaa3b8c15d776cb24b0f19b647fa1325cbca5c6ac690795f28df44d099359e"
+        },
+        {
+          "path": "config/families/design_interview.json",
+          "sha256": "eabbb7f43a56ce8e775f8f5bf60cf7427e72498c7f891c6964272e532e24c138"
+        },
+        {
+          "path": "config/free-node-experience-profiles/aws-certified-solutions-architect-associate.json",
+          "sha256": "3b49833ec70baeba8a6748b0f5c93f51ab7e87103a73f1bf0d6e90929cff3fec"
+        },
+        {
+          "path": "config/free-node-experience-profiles/backend-system-design-interview.json",
+          "sha256": "aa610548941f8b8b9a7db9e97bcd90f8c2c1f6856a052be416a0361d3058836d"
+        },
+        {
+          "path": "config/free-node-experience-profiles/claude-certified-architect-professional-certification.json",
+          "sha256": "1b322d1f18eac3417f00369c1eaf35858b50b884639cd0b135939d90bead57df"
+        },
+        {
+          "path": "config/free-node-experience-profiles/coding-interview-dsa-problem-solving.json",
+          "sha256": "1b32cfa17e4eac13c395996c9abea12ebc30bba213de439ac6395affbc294cc7"
+        },
+        {
+          "path": "config/free-node-experience-profiles/frontend-system-design-interview.json",
+          "sha256": "aa9246b7724d7e17fedc59266722caa048b030e9d125345b0990c157d2ca4238"
+        },
+        {
+          "path": "config/free-node-experience-profiles/google-cloud-associate-cloud-engineer.json",
+          "sha256": "e286fc9976ce1100130868ae4b56e6831ae9f7b2dea92c5b52e054f25f8cbdf1"
+        },
+        {
+          "path": "config/free-node-experience-profiles/microsoft-azure-administrator-associate-az-104.json",
+          "sha256": "6e7bcb226ab160adb59e74cbded8df2522aafa83fb6f08e112cda502d61a53a6"
+        },
+        {
+          "path": "config/free-node-experience-profiles/microsoft-azure-ai-fundamentals-ai-901.json",
+          "sha256": "8eab35eb9731647f17f00d7c4deed51ec3afbb9bc55bb141d922aab2862393e6"
+        },
+        {
+          "path": "config/free-node-experience-profiles/object-oriented-design-interview.json",
+          "sha256": "53ad0c90cc4e9c23a5d354ba664890c310a051934b9e1b7daaa2c56ad2b2ec31"
+        },
+        {
+          "path": "config/free-node-inventory-pins.json",
+          "sha256": "5ba437fb7250da9f9815d8419a19fb37615032a2ed5c2d55e8e878fda1e19b81"
+        },
+        {
+          "path": "config/primary-strata-readiness.json",
+          "sha256": "a991929c22474918f51c2511b9571e0cbfaf5700d2f81717c5107315b82da9a2"
+        },
+        {
+          "path": "config/simulation-profiles/design-interview.json",
+          "sha256": "8c4ed95619018cc5c52536120526ae50a032e6fbccc05fbf5b4753ab3c4aa0ee"
+        },
+        {
+          "path": "config/taxonomy/aws-certified-solutions-architect-associate.json",
+          "sha256": "32260f6a87587f9df29175a04c3341112e3189254adc41523ade3099bba6ce49"
+        },
+        {
+          "path": "config/taxonomy/claude-certified-architect-professional-certification.json",
+          "sha256": "ba4be9d57668fb646cb60412ef554ccdda140681415ab85c5732a64877d7b65f"
+        },
+        {
+          "path": "config/taxonomy/coding-interview-dsa-problem-solving.json",
+          "sha256": "5893bfaecfc9ed1f38fa21a1642bf0398266adfb5fa069d07ceb7f6e00684365"
+        },
+        {
+          "path": "config/taxonomy/google-cloud-associate-cloud-engineer.json",
+          "sha256": "e01cd11fa2e4360edc67a882b0be5b134e757decc424d4fcb751ca8847300841"
+        },
+        {
+          "path": "config/taxonomy/microsoft-azure-administrator-associate-az-104.json",
+          "sha256": "146590ab60c564b5a7f330cd2ae2b69c75f833b4a67f97d63597d6e3a6a64217"
+        },
+        {
+          "path": "config/taxonomy/microsoft-azure-ai-fundamentals-ai-901.json",
+          "sha256": "7991088c6c5e09c193745a75f23362f5688d0e3707aac3e7de67fa3589f2320e"
+        },
+        {
+          "path": "config/track-runtime-bindings.json",
+          "sha256": "249e22db14bc2eb1f363d784a0cd7a20e3db203728a79ceb173f88d4aedc80e1"
+        },
+        {
+          "path": "config/tracks/aws-certified-solutions-architect-associate.json",
+          "sha256": "1c2561ac56376349d434360d82efa541fac09fd8a3e7d123f2164317cbdb4cf2"
+        },
+        {
+          "path": "config/tracks/claude-certified-architect-professional-certification.json",
+          "sha256": "fd3ab3330a7a6a900daa83f612e07c06249994472c0b41e50e9d4406570e95e4"
+        },
+        {
+          "path": "config/tracks/coding-interview-dsa-problem-solving.json",
+          "sha256": "f699797fd73e8dcffd0de64eb0436ff0cdf94f19c51d38d387b029b114c9e4b0"
+        },
+        {
+          "path": "config/tracks/google-cloud-associate-cloud-engineer.json",
+          "sha256": "1c3b6534473d0ed50a7b3b8c62915bbe0caeecfd89d2f904473a018090c1891b"
+        },
+        {
+          "path": "config/tracks/microsoft-azure-administrator-associate-az-104.json",
+          "sha256": "ad65fe3d3513c200e33b1baf269cac8bd196cb64e83217b02b3a180960c1efa9"
+        },
+        {
+          "path": "config/tracks/microsoft-azure-ai-fundamentals-ai-901.json",
+          "sha256": "815c46dc37944bcf7c824d6eafb14bb602c83aa33c57d459b102abb7b029845c"
+        },
+        {
+          "path": "content/catalog.json",
+          "sha256": "f05d07a729a032521c4aa2eb618487c933cf7c681d640fd85bf41645c6799823"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O01.json",
+          "sha256": "5d5d49a9b5092060695af85ea4ba88ed0e584b47f0f8b0d91374370ce62f9ec6"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O02.json",
+          "sha256": "152db7a2c85e204dfb2708c3980437bac96694e9b64c1f5dccf80291cbd33051"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O03.json",
+          "sha256": "8beddefed7dba7f6192dc04d412da08c68d101f6a90a3489b995174e430563d8"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O04.json",
+          "sha256": "839b3dc906644d4b421c4f8232d4690aea18d248b333e986b72bea85a8fd610d"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O05.json",
+          "sha256": "a324af69c21511640350121de5e043cc6253274750ffff142cbd667a42497fff"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O06.json",
+          "sha256": "60fa14a66818cfb66219dc2b805311b43cb57ebd5bfff730732b67cc0d043742"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O07.json",
+          "sha256": "3bbc8290dc536c649958c2b6dfaa57fa1aa9f554d1c1363b1e15ba0a14f9478f"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O08.json",
+          "sha256": "95a03dbd0e0a7b54156925d9bb380f18c0de264526477c27533c2d80db47141f"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O09.json",
+          "sha256": "6e24a3a1b4c81b6520c340a88aaa04b658f5cad31aa468dbeb1cf83429a1787e"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/enterprise_tools_retrieval_and_integration/CCARP-D03-O10.json",
+          "sha256": "000ebfe6bf25a387999eaffacbd93c29530f534e9893126f518460327580730f"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/evaluation_diagnosis_and_optimization/CCARP-D04-O01.json",
+          "sha256": "464ee6fdd790aa250128ece43cd8c28d69fc9f66db04f71d111131715241bc47"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/evaluation_diagnosis_and_optimization/CCARP-D04-O02.json",
+          "sha256": "0870e753c13f566f0be515b486f8cbaf6367a5983f8433c666b53f66e81390dd"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/evaluation_diagnosis_and_optimization/CCARP-D04-O03.json",
+          "sha256": "653cb39ec1be955a1d021ff59da51945c06a60eed7c22bf648d6fe2ff6855d6a"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/evaluation_diagnosis_and_optimization/CCARP-D04-O04.json",
+          "sha256": "90f5184a9018c6989f6355e4d5757386e724db5248e13493179e86be046249b8"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/evaluation_diagnosis_and_optimization/CCARP-D04-O05.json",
+          "sha256": "f40c2ddf85db15197ba011828e0608f49a0a1564c48f8b5448265097d8b56252"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/evaluation_diagnosis_and_optimization/CCARP-D04-O06.json",
+          "sha256": "3daa96732ead116fc7122163a1047d3a162838d549cb005ad9c66b6ff55fd872"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/evaluation_diagnosis_and_optimization/CCARP-D04-O07.json",
+          "sha256": "0041717b70099966980e19666c940244def3c5d7aa9a4379befe2f2a34103026"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/governance_safety_and_risk_controls/CCARP-D05-O01.json",
+          "sha256": "a4e638221c93b00bb5eab4434d48d086277f70d3034c504e298376fbf0c13efa"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/governance_safety_and_risk_controls/CCARP-D05-O02.json",
+          "sha256": "75f6dcdb1c63ee94cd57226033399474667f5ca0972410db6e097bede0ccadf7"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/governance_safety_and_risk_controls/CCARP-D05-O03.json",
+          "sha256": "7ead9096cd5c4b1ad13cddff51cbcc56c52f17173ce94c708b08a8b3bc6f41af"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/governance_safety_and_risk_controls/CCARP-D05-O04.json",
+          "sha256": "ee1b32b4b5a60f18bb90178d0ffff3f95d1ca47274f01afbc5dcf6f37083dfb4"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/governance_safety_and_risk_controls/CCARP-D05-O05.json",
+          "sha256": "523470110e9ed290fe4ec0e190764586316525c081cfb504473f3e9624cc3764"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/governance_safety_and_risk_controls/CCARP-D05-O06.json",
+          "sha256": "8bac8e60beeab3eb55cd1afb64ee73d5cf71ba58f1e83423d785ce480230dc12"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/governance_safety_and_risk_controls/CCARP-D05-O07.json",
+          "sha256": "434ce44f2a78d336d986220d2e2fc08763d23a829b55a6deb2ddaa25fc0fa38c"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/governance_safety_and_risk_controls/CCARP-D05-O08.json",
+          "sha256": "397877f0b34bae4e1a6491b34c2c9f6f0e8fd5cf60d94934ecdf1763916b7e32"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/governance_safety_and_risk_controls/CCARP-D05-O09.json",
+          "sha256": "fdf05d8ea55b05991a2d4a45d473c6e0ba9ee580767530aa127306a258ff4bdb"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/model_prompt_and_context_decisions/CCARP-D02-O01.json",
+          "sha256": "ca25df3aa15cb6d989a476ad25fb096aaf1500180e8121875f19d9eee1408198"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/model_prompt_and_context_decisions/CCARP-D02-O02.json",
+          "sha256": "db0e1c968ba459a6a7933b37b174811b1b232ee7162f291255b1b9e229a4a2a7"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/model_prompt_and_context_decisions/CCARP-D02-O03.json",
+          "sha256": "8c034a8ccc8c1c199b2ceac4a1ec31062133e48d7db27a56647f104918f85c7b"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/model_prompt_and_context_decisions/CCARP-D02-O04.json",
+          "sha256": "90514f2f3ab31a1bf44cfa67778641ef4352bacea5413aafec1487b7223b9396"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/model_prompt_and_context_decisions/CCARP-D02-O05.json",
+          "sha256": "eea54f13c7f848e41706b81ad11f75599b9f0415dc103f3350c37c5139773cd6"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/solution_design_and_architecture/CCARP-D01-O01.json",
+          "sha256": "dde66ba96c5447c9ec0a6b2c256e146d1e69823c4ee26e8c25d590c2ce25df91"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/solution_design_and_architecture/CCARP-D01-O02.json",
+          "sha256": "6cf4ebdf5abd616a6e475a73dcbd082621b50d53adeb61c6eb6298350f866487"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/solution_design_and_architecture/CCARP-D01-O03.json",
+          "sha256": "6c023bc761eac94cdc520bbbf265f5ae79d9112847a2cf68cd2cad615c4ad651"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/solution_design_and_architecture/CCARP-D01-O04.json",
+          "sha256": "8de18e4ceeba97d37584ff5a74d6f8aedf271184d839744f58f0fe88e3c59722"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/solution_design_and_architecture/CCARP-D01-O05.json",
+          "sha256": "a0dc459d445c628364e7ea2a5b3dcf84540f729e7422840fdd51e73f5f35bc77"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/solution_design_and_architecture/CCARP-D01-O06.json",
+          "sha256": "4342597d64b7af6c93d25fc86af64997c0c7b0380953e09ca44cdc26222a9b1e"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/solution_design_and_architecture/CCARP-D01-O07.json",
+          "sha256": "0c6ac3b55224d27a0daf894ce893217a18b3b7494e8d42ba0532b9b3d7f0936b"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/solution_design_and_architecture/CCARP-D01-O08.json",
+          "sha256": "bc76cee01fa15be7cefa6266fc33854668f6abaccf51925820dd9a80560c8934"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/solution_design_and_architecture/CCARP-D01-O09.json",
+          "sha256": "f96d9a661f71d43c002631112412713cab33c542f99259aec668854699f35740"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/stakeholder_decisions_and_delivery_lifecycle/CCARP-D06-O01.json",
+          "sha256": "76fa3e8ba6b1d2fd1653a5677ec0b1452cb397c8bedfecd667e323b5ec303288"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/stakeholder_decisions_and_delivery_lifecycle/CCARP-D06-O02.json",
+          "sha256": "e8ab3d512e2ebdc7d0a7d54bdfe46938bfa9e97b33a1d58d151f4d5bedb78591"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/stakeholder_decisions_and_delivery_lifecycle/CCARP-D06-O03.json",
+          "sha256": "04a0018c8a51e47dc754d90413aa899c3028e8484534dea4f4df6fae650af548"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/stakeholder_decisions_and_delivery_lifecycle/CCARP-D06-O04.json",
+          "sha256": "6bcf1203ebc1ae421e7d648bfa5bb660b5193e24e50b52e82747df2fda1d05b6"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/stakeholder_decisions_and_delivery_lifecycle/CCARP-D06-O05.json",
+          "sha256": "77d4e51c8923a7dc9812292728554e64f69fedef8ddc49f80b439fcdcc559173"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/stakeholder_decisions_and_delivery_lifecycle/CCARP-D06-O06.json",
+          "sha256": "a5125f45237b9c4c92a214528afd40c843449c02f5dd818c03456b0b426326da"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/stakeholder_decisions_and_delivery_lifecycle/CCARP-D06-O07.json",
+          "sha256": "53a91087702452e6e19303db5ad709b2725812ac34f295c94f8a68483b247f2e"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/team_workflows_and_operational_enablement/CCARP-D07-O01.json",
+          "sha256": "84a58f5c0410b472b488b52d98b31dd7bd2e50c61c533f8ef1e19b323e594cee"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/team_workflows_and_operational_enablement/CCARP-D07-O02.json",
+          "sha256": "253720c95ab653a56830c2efefd79fb5693e2cda159a91cb685dcb0547b1c586"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/team_workflows_and_operational_enablement/CCARP-D07-O03.json",
+          "sha256": "4205e045ab455ea7549d97c0654bacca612c387ea79f43b1c6daf9a1e5003240"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/team_workflows_and_operational_enablement/CCARP-D07-O04.json",
+          "sha256": "f86a5077c2305a869c1ca20d2b11855d6f0373d41e8dd2093759ab7458d27595"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/team_workflows_and_operational_enablement/CCARP-D07-O05.json",
+          "sha256": "e4be445abb861b4d5870489d2de86b9d52220b6ce9c2512cd725ac83ec97ba65"
+        },
+        {
+          "path": "content/claude-certified-architect-professional-certification/team_workflows_and_operational_enablement/CCARP-D07-O06.json",
+          "sha256": "12b15de428b85ecf92722da7f4e8880a87ff07d31ec10640ce1dca06a0b982db"
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "58532bf0b20bce0481618dc3935880fa7937ec8edf0e590e8411bf20fa40bef8"
+        },
+        {
+          "path": "package.json",
+          "sha256": "85ed915215dc2f8817a63fada44fe158918c183cb78d352b95b699267cb85e2b"
+        },
+        {
+          "path": "schemas/authoring/family-authoring-registration.schema.json",
+          "sha256": "2f76e24abc46989dd7f08398d7b4aaac3d4d42e50b94996cf058ea33836e2380"
+        },
+        {
+          "path": "schemas/authoring/track-authoring-registration.schema.json",
+          "sha256": "1aa6ceea8d9669ad1a365c4b9e0ddd276b7529e526fb78fe2e0eee0c5965eef3"
+        },
+        {
+          "path": "schemas/content/question.schema.json",
+          "sha256": "499299012bda4054b712a0a913ccfc3d27b5fa35d7c438438cf7f73067893091"
+        },
+        {
+          "path": "schemas/curriculum/certification-curriculum.schema.json",
+          "sha256": "be97d91a467b5b7b3f9dc686028ae5976fd7e0b6e7b60864d7795b0c7524e695"
+        },
+        {
+          "path": "schemas/curriculum/certification-objective-registry.schema.json",
+          "sha256": "3b9ebc8fa48c55ff6da9ba0ea6c45a9fe3854762e48150198b864f4e6533069c"
+        },
+        {
+          "path": "schemas/curriculum/certification-planned-slot-source-anchors.json",
+          "sha256": "e63df42e385a699ba18d577d3ad581cf0156d8d4a0df5c32813f6786e816aaff"
+        },
+        {
+          "path": "schemas/curriculum/certification-planned-slot-stage03-ai901-trust-root.json",
+          "sha256": "62592c7fe02d469db04d3d426874eba8aac5f27e9ce177e718c1882a76726e2e"
+        },
+        {
+          "path": "schemas/curriculum/certification-planned-slot-stage03-aws-trust-root.json",
+          "sha256": "3d3c2e8a1d5eef78f40cfa74227227856f5af5fad290e3d81cd4589879f57e04"
+        },
+        {
+          "path": "schemas/curriculum/certification-planned-slot-stage03-az104-trust-root.json",
+          "sha256": "3690c532b0474d58b84a7a7876a7846e287ae7fd0c7323ad59da71a22c054f03"
+        },
+        {
+          "path": "schemas/curriculum/certification-planned-slot-stage03-gcp-source-anchors.json",
+          "sha256": "4ea4f7c9f4e31b80e60aba9c331a1bf4df7ac4d4de009495e3c334b3f9bcf020"
+        },
+        {
+          "path": "schemas/curriculum/certification-planned-slot-stage03-kcna-trust-root.json",
+          "sha256": "716e8e119a4fa1b280b2da2e29a4f0ab802c630f6bf28fd802aa29c993c9a2f8"
+        },
+        {
+          "path": "schemas/curriculum/certification-planned-slot-stage03-terraform-source-anchors.json",
+          "sha256": "bc316ca44ee67159764e0b7c0cb0815a1c1ede424f68bf5683d55ddab056dc84"
+        },
+        {
+          "path": "schemas/curriculum/certification-planned-slot.schema.json",
+          "sha256": "72be658eac2f2734657c3b2ce2fb646acf1305453cc0cbf91bdafccdbf3d3f78"
+        },
+        {
+          "path": "schemas/curriculum/curriculum-audit.schema.json",
+          "sha256": "113df3d79b635a545fa5c4cf725ebcaa7f1d89e0185aec44d751cbcc180ecaaf"
+        },
+        {
+          "path": "schemas/curriculum/curriculum-coverage-target.schema.json",
+          "sha256": "d4b9dd9d4dd03811a1f117b48494e600088b3f4f0655439e7accee541683d316"
+        },
+        {
+          "path": "schemas/curriculum/curriculum-learning-block.schema.json",
+          "sha256": "94f9184fb15a34c340ecd738a77a78c551fb3e9597a7dbab6321acad93c88de6"
+        },
+        {
+          "path": "schemas/curriculum/curriculum-mode-pool.schema.json",
+          "sha256": "4570297de96e388a662ef6279dd5f5976de983de280b16f11a61df9a45ed8194"
+        },
+        {
+          "path": "schemas/curriculum/curriculum-node.schema.json",
+          "sha256": "d32ac4c8610bc83dcbfae43c242fd25c831ed8d09cd924556bedb0b375e6ed88"
+        },
+        {
+          "path": "schemas/curriculum/design-interview-curriculum.schema.json",
+          "sha256": "6e7aac5eccede3bfa6402f8247c58aba90c06c2465d8d275d7ed53a3461e48e1"
+        },
+        {
+          "path": "schemas/curriculum/design-interview-source-registry.schema.json",
+          "sha256": "e8ef846f8088c81d6971e33ac1063dae89038ef8c1e287f106185fc2cd42ee32"
+        },
+        {
+          "path": "schemas/curriculum/track-curriculum.schema.json",
+          "sha256": "e5b875d9bd636a8e5ef4e0dc8f97fdc88dd9a2d22dbc3acf66b871b833c4751b"
+        },
+        {
+          "path": "schemas/product/bundled-free-node-packages.schema.json",
+          "sha256": "6274d21825e2c85873f4f2aea6036e9b7b112dc725ffd1d2513f13c4fd194851"
+        },
+        {
+          "path": "schemas/product/bundled-free-node.schema.json",
+          "sha256": "1001c317b68fbdfb4c4a711a631916a603dda7a653db4181ff06e7c4ffd8e2f0"
+        },
+        {
+          "path": "schemas/product/free-node-experience-profile.schema.json",
+          "sha256": "6cf6a34c0852643123d6ebde2e2febe0be19e6ecd22f072466eca9b87d33d34c"
+        },
+        {
+          "path": "schemas/product/free-node-inventory-pins.schema.json",
+          "sha256": "c9e390c5c2d35aa19a5f917beb4cc6b42f831453d81e3332727d6401ccc7996c"
+        },
+        {
+          "path": "schemas/product/free-node-inventory.schema.json",
+          "sha256": "f77e46ecd638ec311c93f0ede27aedf4b33e0ce0c9165a80e6296ca1f39f8d73"
+        },
+        {
+          "path": "schemas/product/track-brief.schema.json",
+          "sha256": "3a39d6da587eb7d79107271f5a8e611b94e2be0b3c50284d703646f0d0dfb8d5"
+        },
+        {
+          "path": "schemas/review/content-acceptance-baseline.schema.json",
+          "sha256": "9ddf4dcfc122cfed9186b81689a8d35a0dcb63b9a0eb5a48ef9ac0920f1b25d5"
+        },
+        {
+          "path": "schemas/review/content-approval-record.schema.json",
+          "sha256": "e2c8ede30ebb95105baaec8731ffa8f7d873b4aea76448c9cdb9035b060de496"
+        },
+        {
+          "path": "schemas/review/content-candidate-decision-v2.schema.json",
+          "sha256": "449e977b7a60d56a6ae1791b1ee74c86f1f3f1366b013a9e511b127ea027bd71"
+        },
+        {
+          "path": "schemas/review/content-candidate-draft-v2.schema.json",
+          "sha256": "cfb32aa4ff7d6a2709749afbbf2c4f4bab0095ce3dc40c0c8ea9bea203d48622"
+        },
+        {
+          "path": "schemas/review/content-candidate-manifest.schema.json",
+          "sha256": "2f649659c3aa38fd317bb563022d56660589e5ad1cbe5a134f1ce67b62eaf87d"
+        },
+        {
+          "path": "schemas/review/content-candidate-readiness-v2.schema.json",
+          "sha256": "c7729629d632079b4b2c0a721fa800f0f8ed665d158a08404a4ed84239a99d28"
+        },
+        {
+          "path": "schemas/review/content-release-envelope-v2.schema.json",
+          "sha256": "db56c62b920aa174b2f03f5b04ece573ee076b8799981730bd7b05ecc50be130"
+        },
+        {
+          "path": "schemas/review/content-review-outcome.schema.json",
+          "sha256": "1a2d02186f2e08a695f7922a99f1d48b689ba0bbf10f4092c5c38dfca4e7aa72"
+        },
+        {
+          "path": "schemas/review/human-content-approval-manifest.schema.json",
+          "sha256": "9e5c0d12bc8a025426a6f5c822bcbab467f1fecf4e8f763340eea3066d9f24f7"
+        },
+        {
+          "path": "scripts/build.mjs",
+          "sha256": "6c20550a3527e9908679f80fd42a0415f31ab0aff5c80ceff56d58f69bbb48c4"
+        },
+        {
+          "path": "scripts/content/add-claude-course-links.mjs",
+          "sha256": "570c9a56a5dbbc989d0b58734e1c89619dac4e4762687b3e1ad1ea746901a5c9"
+        },
+        {
+          "path": "scripts/content/case-recipe.mjs",
+          "sha256": "f4ca678ce008f20673c82ca280e15f442358a0352f08a24d1724f56c87deb09c"
+        },
+        {
+          "path": "scripts/content/planning-policy.mjs",
+          "sha256": "c5744b3ebae51b47bb4410a5e3358d339afb488b2e6dedfe46d4f5b0e1295fb7"
+        },
+        {
+          "path": "scripts/content/question-contract.mjs",
+          "sha256": "f0e5969449188189af20e9e9c6919253cc614172b73997de8c916d519b1da475"
+        },
+        {
+          "path": "scripts/content/track-runtime-bindings.mjs",
+          "sha256": "62a24b005cb8d99b2b60ddcebffff5e055f056f53692a4f59ff6e141f6e23ef0"
+        },
+        {
+          "path": "scripts/content/verify-claude-feedback-presentation.mjs",
+          "sha256": "c901ecc659a65fb948d61ecd1bc7b6e60220cb15286306c9a93e377551783178"
+        },
+        {
+          "path": "scripts/content/verify-claude-runtime-ingress.mjs",
+          "sha256": "474915c1fef53791786b060ae101d065614f87389b39021673bc5e27822022f8"
+        },
+        {
+          "path": "scripts/content/verify-migration.mjs",
+          "sha256": "30b528cd6639a9954fa9a8410a217bad7bc6dd211bd8e2949d20d43f87f7b6d5"
+        },
+        {
+          "path": "scripts/content/verify-primary-strata-readiness.mjs",
+          "sha256": "1ccb7e5120a58e7ba932f7a66c11b295d8103b01288d376b6372f61781a17fa5"
+        },
+        {
+          "path": "scripts/review/candidate-admission-v3.mjs",
+          "sha256": "82dd7fbb2817a3728fe82e79101577b17216ed47e99c0c65c7fd9b85280965ed"
+        },
+        {
+          "path": "scripts/review/candidate-draft-v2.mjs",
+          "sha256": "0098680eb43f1b23e820f8f44efaf7338e588e16d61215cabb3d95546a6eda2f"
+        },
+        {
+          "path": "scripts/review/candidate-manifest.mjs",
+          "sha256": "dbe6934fdb966c30c8b811a6b48805dd22ff66d779299f3558e8b0eade631a3c"
+        },
+        {
+          "path": "scripts/review/candidate-readiness-v2.mjs",
+          "sha256": "eded73ccc887b9ce82e1dda3ab993b3fcbfd21f776b35e31c5ea9a71c52c3e1f"
+        },
+        {
+          "path": "scripts/review/candidate-release-gate-v2.mjs",
+          "sha256": "2bf9f98be4e7c118c885944b54f96bb2c73609402745ea74e14370942a4fbba7"
+        },
+        {
+          "path": "scripts/review/content-acceptance-baseline.mjs",
+          "sha256": "76aec105304a0975d610ab18652536996dd7eef3c7be5305dabadb489732916c"
+        },
+        {
+          "path": "scripts/review/content-approval.mjs",
+          "sha256": "0a0f6e5d86314d9ae846ef25a48ca2c9a0dc808cdd53dc87bf4f84f30c5baf46"
+        },
+        {
+          "path": "scripts/review/content-review-console.mjs",
+          "sha256": "1cb0b4a2b2bf47483bbc1f18ff5d274287cf670273bf2b7b9454ac3cbee16703"
+        },
+        {
+          "path": "scripts/review/historical-artifact-evidence.mjs",
+          "sha256": "9eb6769465e512693524d6d833eb3e051044924f204d0a39389858d964b85b2f"
+        },
+        {
+          "path": "scripts/review/schema-validation.mjs",
+          "sha256": "cf8c1363a4c223396a9b4cd149103e9f638316074a16eaf7e26f9aea5de6c1fd"
+        }
+      ]
+    },
+    "artifact": {
+      "contentVersion": "ccarp-2026.10.14-qle-v2-full-path-identity-v2",
+      "artifactSha256": "364ead796c19ee378e0ef7a5c47d80da69f0c3af694e2107d58ad6061f3ff80c",
+      "questionCount": 972,
+      "nodeCount": 7,
+      "mentalUnitCount": 53,
+      "ruleVersion": 3
+    },
+    "base": {
+      "fileSha256s": {
+        "aws-certified-solutions-architect-associate.json": "350dc44eed14c7087bfdd79196d84d5ca16c606b449536f8c35078b4116a6fc6",
+        "backend-system-design-interview.json": "b583803be9ac81c4e0e4b0b115086177867bad0aaab3b519a01bbbed3261b421",
+        "claude-certified-architect-professional-certification.json": "364ead796c19ee378e0ef7a5c47d80da69f0c3af694e2107d58ad6061f3ff80c",
+        "coding-interview-dsa-problem-solving.json": "73178e6205688aae2e830975fc0fa7eb78197b8f291b0cae0046300f7156b173",
+        "content-lock.json": "4e27acc32ee463f6ee1f61e838d766a3cdb8057c63c5e1aa64a5e4c96c393cb8",
+        "content-successor-ledger.json": "856cb965e1cc7381129dddf40fb09aae2d0b2159dd6ff8f6dddf896a0b097e47",
+        "frontend-system-design-interview.json": "48b295c98c7d7ff18df35e26a30690704d0cb4cdd74989cedc887cdcb62def37",
+        "google-cloud-associate-cloud-engineer.json": "e399212abf92bac30edcfb1aa04b170306469a8b2a1eab57b8f80f1ee7b37d82",
+        "microsoft-azure-administrator-associate-az-104.json": "67fbb6dd4866c21f8e26b98b215ab4a49f099b334e6dbc789e80c6de3c5fb0d8",
+        "microsoft-azure-ai-fundamentals-ai-901.json": "e52b885248eb200f0a60730e36640befad84a62780b9f8e3903377eb30e28172",
+        "object-oriented-design-interview.json": "1a798d2b5a84f5e66898b34db33cde2c8384a254c1630a10889f082d132c6ee1"
+      },
+      "priorClaudeTraining": {
+        "contentVersion": "ccarp-2026.10.14-qle-v2-full-path-identity-v2-training",
+        "artifactSha256": "3701daf8d954cae795401ca05c03dc296928627fcf140256ea2465d49e2ecb43",
+        "questionCount": 972
+      },
+      "preservedLedgerEntries": [
+        {
+          "trackId": "aws-certified-solutions-architect-associate",
+          "training": {
+            "contentVersion": "aws-certified-solutions-architect-associate-authoring-v2026.10.11-saa-fixes-v1-bizq03-planning-v2-training",
+            "artifactSha256": "590d669156c96fad48d8aa139ca53a93473d44bcf9ed8ffb0f8db8ffe78acd9c",
+            "questionCount": 2604
+          },
+          "planningPolicy": {
+            "contentVersion": "aws-certified-solutions-architect-associate-authoring-v2026.10.11-saa-fixes-v1-bizq03-planning-v2",
+            "artifactSha256": "350dc44eed14c7087bfdd79196d84d5ca16c606b449536f8c35078b4116a6fc6",
+            "policyVersion": "bizq03-authored-estimates-v3"
+          }
+        },
+        {
+          "trackId": "backend-system-design-interview",
+          "training": {
+            "contentVersion": "backend-system-design-interview-authoring-v2026.10.11-bizq01-15-bizq02-v2-bizq03-planning-v2",
+            "artifactSha256": "8bcd0856d97fbbd7902461b9e205818e0f806bde7eadf9fb373b339df0469899",
+            "questionCount": 1569
+          },
+          "planningPolicy": {
+            "contentVersion": "backend-system-design-interview-authoring-v2026.10.11-bizq01-15-bizq02-v2-bizq03-planning-v2",
+            "artifactSha256": "b583803be9ac81c4e0e4b0b115086177867bad0aaab3b519a01bbbed3261b421",
+            "policyVersion": "bizq03-authored-estimates-v3"
+          }
+        },
+        {
+          "trackId": "coding-interview-dsa-problem-solving",
+          "training": {
+            "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2",
+            "artifactSha256": "3271bba1a0ad518a365c69c62c610a6a69cb296ee4f453d3b55d06a5fcddede1",
+            "questionCount": 3404
+          },
+          "planningPolicy": {
+            "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2-bizq03-planning-v2",
+            "artifactSha256": "73178e6205688aae2e830975fc0fa7eb78197b8f291b0cae0046300f7156b173",
+            "policyVersion": "bizq03-authored-estimates-v3"
+          }
+        },
+        {
+          "trackId": "frontend-system-design-interview",
+          "training": {
+            "contentVersion": "frontend-system-design-interview-fesd-n08-v2026.10.11-training",
+            "artifactSha256": "4047e2c378c913b06c61960dce8e23c25cd3dc815d72ca4b2de39caca6777f29",
+            "questionCount": 1766
+          },
+          "planningPolicy": {
+            "contentVersion": "frontend-system-design-interview-fesd-n08-v2026.10.11",
+            "artifactSha256": "48b295c98c7d7ff18df35e26a30690704d0cb4cdd74989cedc887cdcb62def37",
+            "policyVersion": "bizq03-authored-estimates-v3"
+          }
+        },
+        {
+          "trackId": "google-cloud-associate-cloud-engineer",
+          "training": {
+            "contentVersion": "google-cloud-associate-cloud-engineer-authoring-v2026.10.08-bizq05-v1",
+            "artifactSha256": "9a14f1d185c3717ec118fc817dee458a3e6a33c1de145805c9d76093c77e2fa5",
+            "questionCount": 2981
+          },
+          "planningPolicy": {
+            "contentVersion": "google-cloud-associate-cloud-engineer-authoring-v2026.10.08-bizq05-v1-bizq03-planning-v2",
+            "artifactSha256": "e399212abf92bac30edcfb1aa04b170306469a8b2a1eab57b8f80f1ee7b37d82",
+            "policyVersion": "bizq03-authored-estimates-v3"
+          }
+        },
+        {
+          "trackId": "microsoft-azure-administrator-associate-az-104",
+          "training": {
+            "contentVersion": "microsoft-azure-administrator-associate-az-104-authoring-v2026.08.15-bizq02-v2",
+            "artifactSha256": "0d0aee05d2ac37a68651cb94753946ab6dc0459f477ce41b619d655d59936ddc",
+            "questionCount": 1288
+          },
+          "planningPolicy": {
+            "contentVersion": "microsoft-azure-administrator-associate-az-104-authoring-v2026.08.15-bizq02-v2-bizq03-planning-v2",
+            "artifactSha256": "67fbb6dd4866c21f8e26b98b215ab4a49f099b334e6dbc789e80c6de3c5fb0d8",
+            "policyVersion": "bizq03-authored-estimates-v3"
+          }
+        },
+        {
+          "trackId": "microsoft-azure-ai-fundamentals-ai-901",
+          "training": {
+            "contentVersion": "microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15-bizq02-v2",
+            "artifactSha256": "7e531fab44d2d27757b67cc407bb0b2ab8ba9bd225d885f805d005ff558614ab",
+            "questionCount": 752
+          },
+          "planningPolicy": {
+            "contentVersion": "microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15-bizq02-v2-bizq03-planning-v2",
+            "artifactSha256": "e52b885248eb200f0a60730e36640befad84a62780b9f8e3903377eb30e28172",
+            "policyVersion": "bizq03-authored-estimates-v3"
+          }
+        },
+        {
+          "trackId": "object-oriented-design-interview",
+          "training": {
+            "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24-bizq02-v2",
+            "artifactSha256": "015e21db498465602857d1461aa84ddd26546e665cd9225997e121eca790efe0",
+            "questionCount": 1413
+          },
+          "planningPolicy": {
+            "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24-bizq02-v2-bizq03-planning-v2",
+            "artifactSha256": "1a798d2b5a84f5e66898b34db33cde2c8384a254c1630a10889f082d132c6ee1",
+            "policyVersion": "bizq03-authored-estimates-v3"
+          }
+        }
+      ]
+    },
+    "reviewEvidence": [
+      {
+        "repository": "patternly",
+        "path": "integration/contracts/content-release/local-claude/qle-v2-contract.md",
+        "sha256": "dc9e56f4c5c552c0a654685edd335af19d3f430ca9666d5798bcd0109f28a233"
+      },
+      {
+        "repository": "patternly",
+        "path": "src/content/generated/retained-content/claude-pre-qle-v2.json",
+        "sha256": "149afda8628dfb79f109eaeb760dc41dfcbacdaa5bd9f59a3c2e7a88bf2151ff"
+      },
+      {
+        "repository": "patternly",
+        "path": "src/content/generated/retained-content/claude-qle-v2-first-cases.json",
+        "sha256": "bd0f5191998108b3d1d651358dd9d4be486543d64e12167d6489adb44fc718cf"
+      },
+      {
+        "repository": "patternly",
+        "path": "src/content/generated/retained-content/claude-qle-v2-before-identity.json",
+        "sha256": "4aec030c921e333adca9dfddb768859a36b06cb2aa4c5f6bd201c9ade27d8bd1"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "docs/evidence/content-audits/2026-10-13-claude-qle-v2-coverage.json",
+        "sha256": "4984da9436c028d92684806861b8d185bcec23f69e50d34e7c16160ca35e9db7"
+      },
+      {
+        "repository": "patternly",
+        "path": "integration/contracts/content-release/local-claude/claude-course-alignment-acceptance-2026-10-11.md",
+        "sha256": "a38fdbcfd77923c1c93abad2a25c08f13fbdec88f0c1d71a137545d7b5dd2080"
+      },
+      {
+        "repository": "patternly",
+        "path": "integration/contracts/content-release/local-claude/claude-unit-coverage-acceptance-2026-10-11.md",
+        "sha256": "b50990a544e6ab0af624e1443107d618bcdb8192da5eb15c6f701d738e33e27d"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "docs/evidence/content-audits/2026-10-11-claude-course-map.md",
+        "sha256": "31954977dbb118ced9deb90eac86d6b75ac283cdf6336577a30e7cd63d0f897a"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "docs/evidence/content-audits/2026-10-11-claude-course-map.json",
+        "sha256": "5024a561aed5dae964d0538daa1ecdaaf2a9a6c47a0c82704b1896acc23c2454"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.md",
+        "sha256": "a4b6a2cdd168963a456e44a0efd1e31253b33d7d6adafe20eef346e97953415a"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.json",
+        "sha256": "08540f2440fd723261cd25b84632452288293b414ca8683776ef7ce2a69f38c6"
+      }
+    ],
+    "releasePins": [
+      {
+        "repository": "patternly",
+        "path": "integration/contracts/content-release/release.lock.json",
+        "sha256": "22f3ef64cb3801bc0345b8d8bf6f8b656bd6579c6a46816b5ce9c0b30f5e8823"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json",
+        "sha256": "5f1e8ee7f95b619adbfba0563defaf2a0c68492079604049f82c2d5ac7d9fe5d"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json",
+        "sha256": "c53d430a1510186a44ead29f8bcba43c2aeecdf2c9278047ebb2481ba1f55799"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "evidence/readiness/current-candidate-readiness-v2.json",
+        "sha256": "8a2b3c584282e22094f22a7fd394c2c9492a0eafffe793caf7f98a462f7455e2"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "evidence/candidate-decisions/current-candidate-decision-v2.json",
+        "sha256": "48199de5c4eb6fd35c96946ff7cfbd3edb8b140f92d609bf5c084412d5c46f6b"
+      },
+      {
+        "repository": "patternly-content",
+        "path": "evidence/admissions/candidate-admission-v3.json",
+        "sha256": "38f266e0b6732532aac09003561f59de894458ab95d20cab3ece080a40a85d0a"
+      }
+    ]
+  }
+}

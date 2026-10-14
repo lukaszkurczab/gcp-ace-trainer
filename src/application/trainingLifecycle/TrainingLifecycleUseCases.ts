@@ -1,3 +1,6 @@
+import { isActiveReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
+import { CASE_TRACK_ID, sessionCaseStates } from "../../domain/learning/caseEvidence";
+import { indexCaseRecipes } from "../../content/canonical/caseRecipe";
 import {
   abandonTrainingSession,
   advanceTrainingSession,
@@ -282,10 +285,18 @@ export class TrainingLifecycleUseCases {
     const request = input.request && typeof input.request === "object" && !Array.isArray(input.request)
       ? { ...input.request, sessionId }
       : { sessionId };
-    const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId, requestedNodeId(request));
+    if ((request as Record<string, unknown>).caseId !== undefined && (request as Record<string, unknown>).preset !== "single_case") throw new TrainingApplicationFailure("invalid_response", "A case identity requires the single-case preset.");
+    const [attempts, reviews, sessions] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews(), input.trackId === "claude-certified-architect-professional-certification" && ["certification-focus-practice", "certification-weak-area-review", "certification-quick-review"].includes(input.modeId) ? this.ports.repositories.getHistory() : Promise.resolve([])]);
+    const dueReview = input.trackId === "claude-certified-architect-professional-certification" && ["certification-weak-area-review", "certification-quick-review"].includes(input.modeId) && ((request as Record<string, unknown>).reviewSource === "due_queue" || (request as Record<string, unknown>).reviewSource === undefined);
+    const now = this.ports.clock.now();
+    const oldestDue = dueReview ? reviews.filter(entry => entry.trackId === input.trackId && entry.sourceItem.trackId === input.trackId && isActiveReviewQueueEntry(entry) && entry.dueAt && Date.parse(entry.dueAt) <= Date.parse(now)).sort((left, right) => Date.parse(left.dueAt!) - Date.parse(right.dueAt!) || (left.id < right.id ? -1 : left.id > right.id ? 1 : 0))[0] : undefined;
+    const resolution = oldestDue
+      ? await this.run("missing_content", () => this.ports.packages.resolveExactArtifact(oldestDue.sourceItem))
+      : await this.resolveRuntimeForPreparation(input.trackId, input.modeId, requestedNodeId(request), typeof (request as Record<string, unknown>).caseId === "string" ? (request as Record<string, unknown>).caseId as string : undefined);
+    if (resolution.track.trackId !== input.trackId || resolution.runtime.familyId !== this.trackRegistration(input.trackId).familyId) throw new TrainingApplicationFailure("unknown_family", "Resolved due content does not own the requested track family.");
+    if (oldestDue && (resolution.track.contentVersion !== oldestDue.sourceItem.contentVersion || resolution.track.artifactSha256 !== oldestDue.sourceItem.artifactSha256)) throw new TrainingApplicationFailure("version_mismatch", "Due Review requires its original exact content artifact.");
     const runtime = resolution.runtime;
-    const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, attempts: this.forResolvedContent(attempts, resolution.track), reviews: this.forResolvedContent(reviews, resolution.track), now: this.ports.clock.now() }));
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, sessions, attempts: this.forResolvedContent(attempts, resolution.track), reviews: this.forResolvedContent(reviews, resolution.track), now }));
     if (prepared.session.id !== sessionId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime changed the lifecycle-owned session identity.");
     if (prepared.session.trackId !== input.trackId || prepared.firstOccurrence.trackId !== input.trackId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime prepared a session outside the requested track.");
     await this.assertSessionPackage(prepared.session, resolution.track);
@@ -311,6 +322,15 @@ export class TrainingLifecycleUseCases {
     }
     if (prior.kind === "commit_pending" || prior.kind === "commit_materialization_failed" || prior.kind === "commit_verification_failed") {
       throw new TrainingApplicationFailure("commit_verification_failed", "A durable practice command must recover before another response can be submitted.");
+    }
+    if (session.trackId === CASE_TRACK_ID && sessionCaseStates(session).length > 0) {
+      const occurrence = session.itemOrder[session.currentItemIndex];
+      const attempts = await this.ports.repositories.getAttempts();
+      if (occurrence && attempts.some(attempt => attempt.sessionId === session.id && attempt.occurrenceId === occurrence.occurrenceId)) {
+        // Immutable first response: a repeated tap must not recompute case evidence or create a journal.
+        if (prior.kind !== "feedback") this.operationStates.set(session.id, practice("feedback"));
+        return;
+      }
     }
     this.operationStates.set(session.id, practice("submitting_before_journal"));
     const runtime = await this.resolveRuntimeForSession(session);
@@ -397,6 +417,33 @@ export class TrainingLifecycleUseCases {
         throw error;
       }
     }, true);
+  }
+
+  async recordCaseExposure(kind: "hint" | "solution"): Promise<TrainingSession> {
+    const initial = await this.requireActive();
+    return this.serializeSessionMutation(initial.id, async () => {
+      const session = await this.requireActive();
+      await this.assertNoAcceptedSimulationFinalization(session.id);
+      await this.resolveRuntimeForSession(session);
+      const resolution = await this.ports.packages.resolveExactArtifact(session);
+      const questionId = session.itemOrder[session.currentItemIndex]?.item.questionId;
+      const recipe = indexCaseRecipes(resolution.track.questions).find(candidate => candidate.steps.some(step => step.questionId === questionId));
+      const step = recipe?.steps.find(candidate => candidate.questionId === questionId);
+      const state = sessionCaseStates(session).find(candidate => candidate.caseId === recipe?.caseId && candidate.caseVersion === recipe.version);
+      if (!recipe || !step || !state) throw new TrainingApplicationFailure("invalid_response", "Case exposure does not match its exact step.");
+      if (kind === "solution" && session.configurationSnapshot.feedbackMode === "atSessionEnd") throw new TrainingApplicationFailure("invalid_response", "Deferred explanations become exposed only with verified completion.");
+      const attempts = await this.ports.repositories.getAttempts();
+      const answered = attempts.some(a => a.sessionId === session.id && a.occurrenceId === session.itemOrder[session.currentItemIndex]!.occurrenceId);
+      if ((kind === "hint" && answered) || (kind === "solution" && !answered)) throw new TrainingApplicationFailure("invalid_response", "Case reveal stage is invalid.");
+      const field = kind === "hint" ? "hintShownStepIds" : "solutionExposedStepIds";
+      if (state[field].includes(step.stepId)) return session;
+      const updated = { ...state, [field]: [...state[field], step.stepId] };
+      const next = createTrainingSession({ ...session, ...(session.caseState ? { caseState: updated } : { caseStates: session.caseStates!.map(candidate => candidate.caseId === state.caseId ? updated : candidate) }) });
+      await this.run("persistence_failure", () => this.ports.mutations.advance(next));
+      const verified = await this.ports.repositories.getActiveSession();
+      if (!verified || verified.id !== next.id || !sessionCaseStates(verified).some(candidate => candidate.caseId === state.caseId && candidate.caseVersion === state.caseVersion && candidate[field].includes(step.stepId))) throw new TrainingApplicationFailure("verification_failure", "Case exposure could not be verified; reveal remains unavailable.");
+      return verified;
+    });
   }
 
   async advancePracticeSession(): Promise<TrainingSession> {
@@ -1056,9 +1103,9 @@ export class TrainingLifecycleUseCases {
     }
   }
 
-  private async resolveRuntimeForPreparation(trackId: TrackId, modeId: string, nodeId?: string) {
+  private async resolveRuntimeForPreparation(trackId: TrackId, modeId: string, nodeId?: string, caseId?: string) {
     const registration = this.trackRegistration(trackId);
-    const resolution = await this.run("missing_content", () => this.ports.packages.resolveForPreparation({ trackId, familyId: registration.familyId, modeId, ...(nodeId ? { nodeId } : {}) }));
+    const resolution = await this.run("missing_content", () => this.ports.packages.resolveForPreparation({ trackId, familyId: registration.familyId, modeId, ...(nodeId ? { nodeId } : {}), ...(caseId ? { caseId } : {}) }));
     if (resolution.runtime.familyId !== registration.familyId || resolution.track.trackId !== trackId) {
       throw new TrainingApplicationFailure("unknown_family", "Resolved content package runtime does not own the requested track family.");
     }
@@ -1072,6 +1119,8 @@ export class TrainingLifecycleUseCases {
       throw new TrainingApplicationFailure("resume_unavailable", "Exact package pin resolved outside the session track family.");
     }
     await this.assertSessionPackage(session, resolution.track);
+    // A device-owned Claude case keeps the node admission granted at durable start.
+    // Fresh starts still authorize every prepared node; product-mode gates remain unchanged.
     return resolution.runtime;
   }
 

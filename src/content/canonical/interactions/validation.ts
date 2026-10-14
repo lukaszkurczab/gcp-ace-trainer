@@ -1,3 +1,4 @@
+import { validateCaseRecipe, CLAUDE_CASE_TRACK } from "../caseRecipe";
 import { hasCanonicalEdgeWhitespace, isCanonicalSafeIdentity } from "../../../domain/identity/canonicalIdentity";
 import type { CanonicalQuestionRelation } from "./shared";
 
@@ -39,11 +40,12 @@ export function json(value: unknown, path: string, errors: string[]): void {
 }
 
 export function validateQuestionBase(value: unknown, type: string, errors: string[]): Record<string, unknown> | null {
-  const common = ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "constraints", "interaction", "answer", "feedback", "difficulty", "sourceRefs", "contentDomainId", "questionRelation"];
+  const common = ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "constraints", "interaction", "answer", "feedback", "difficulty", "sourceRefs", "contentDomainId", "questionRelation", "caseRecipe"];
   if (!exact(value, common, ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "interaction", "answer", "feedback", "difficulty"], "question", errors)) return null;
   for (const key of ["questionId", "trackId", "nodeId", "mentalUnitId"]) safeIdentity(value[key], `question.${key}`, errors);
   if (Object.hasOwn(value, "contentDomainId")) safeIdentity(value.contentDomainId, "question.contentDomainId", errors);
   if (Object.hasOwn(value, "questionRelation")) validateQuestionRelation(value.questionRelation, value.questionId, "question.questionRelation", errors);
+  if (Object.hasOwn(value, "caseRecipe")) { errors.push(...validateCaseRecipe(value.caseRecipe)); if (value.trackId !== CLAUDE_CASE_TRACK) errors.push("caseRecipe: unavailable for this track"); }
   text(value.prompt, "question.prompt", errors);
   if (value.difficulty !== null) id(value.difficulty, "question.difficulty", errors);
   if (Object.hasOwn(value, "constraints")) { if (!Array.isArray(value.constraints)) errors.push("question.constraints: must be an array"); else value.constraints.forEach((entry, i) => text(entry, `question.constraints[${i}]`, errors)); }

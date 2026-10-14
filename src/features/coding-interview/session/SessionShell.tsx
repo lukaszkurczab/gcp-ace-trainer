@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { Screen } from "../../../components";
@@ -22,6 +22,7 @@ type SessionShellProps = Readonly<{
   progress?: number;
   progressTestID?: string;
   rootTestID?: string;
+  scrollFocus?: Readonly<{ key: string; target: RefObject<View | null> }>;
   timer?: SessionMetricPresentation;
   timerTestID?: string;
 }>;
@@ -46,6 +47,7 @@ export function SessionShell({
   progress,
   progressTestID,
   rootTestID,
+  scrollFocus,
   timer,
   timerTestID,
 }: SessionShellProps) {
@@ -64,6 +66,7 @@ export function SessionShell({
   return (
     <Screen
       edges={["top", "bottom"]}
+      scrollFocus={scrollFocus}
       footer={footer}
       footerVariant={layout === "practice" ? "session" : "simulation"}
       header={(

@@ -25,7 +25,7 @@ test("exam response changes persist the canonical choice response before publish
   assert.match(screen, /accessibilityState=\{\{ checked: selected, disabled: actionPending \|\| resolutionRequired \}\}/);
   assert.match(screen, /if \(shouldClearPendingExamWrite\(attempted, refreshed\)\) setPendingExamWrite\(null\)/);
   assert.match(screen, /await retryCertificationExamDraftSave\(\)/);
-  assert.match(screen, /<PracticeQuestionCard question=\{\{ constraints: projection\.question\.constraints, itemId: projection\.question\.questionId, prompt: projection\.question\.prompt \}\} \/>/);
+  assert.match(screen, /<PracticeQuestionCard question=\{\{ constraints: projection\.session\.trackId === "claude-certified-architect-professional-certification" \? \[\] : projection\.question\.constraints, itemId: projection\.question\.questionId, prompt: projection\.question\.prompt \}\} \/>/);
 });
 
 test("an unavailable refresh after an uncertain exam save retains the attempted response until exact confirmation", () => {

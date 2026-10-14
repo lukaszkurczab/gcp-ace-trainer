@@ -9,7 +9,7 @@ export async function commitTrainingSessionAdvance(session: TrainingSession, cre
     operation: "advance_training_session",
     sessionId: session.id,
     trackId: session.trackId,
-    identity: [session.id, session.currentItemIndex, session.activeForegroundMs],
+    identity: [session.id, session.currentItemIndex, session.activeForegroundMs, ...(session.caseState ? [session.caseState] : session.caseStates ? [session.caseStates] : [])],
     writes: [{ kind: "put_session", record: session }],
     createdAt,
   }));

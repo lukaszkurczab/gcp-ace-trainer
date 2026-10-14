@@ -122,20 +122,22 @@ test("current producer remains buildable while app artifacts stay pinned to the 
     const candidateLockApi = await import(pathToFileURL(join(appRoot, "scripts/candidateContentReleaseLock.mjs")).href) as unknown as {
       updateCandidateContentReleaseLock(options: { mode: "check"; appRoot: string; contentRoot: string }): Promise<void>;
     };
-    await candidateLockApi.updateCandidateContentReleaseLock({ mode: "check", appRoot, contentRoot: currentContentRoot });
+    await assert.rejects(candidateLockApi.updateCandidateContentReleaseLock({ mode: "check", appRoot, contentRoot: currentContentRoot }), /[Ii]nventory mismatch|differs from release artifact/u);
     const candidateRelease = JSON.parse(readFileSync(join(currentContentRoot, releaseLock.releaseManifestPath), "utf8")) as {
       artifacts: readonly { trackId: string; contentVersion: string; checksumSha256: string; questionCount: number }[];
     };
-    assert.deepEqual(
-      generatedLock.tracks.map(({ trackId, contentVersion, questionCount, sha256 }) => ({ trackId, contentVersion, questionCount, sha256 })),
-      candidateRelease.artifacts.map(({ trackId, contentVersion, questionCount, checksumSha256 }) => ({
-        trackId,
-        contentVersion,
-        questionCount,
-        sha256: checksumSha256,
-      })),
-      "app artifacts must exactly match all nine artifacts in the active candidate release, including counts",
-    );
+    const generated = generatedLock.tracks.map(({ trackId, contentVersion, questionCount, sha256 }) => ({ trackId, contentVersion, questionCount, sha256 }));
+    const published = candidateRelease.artifacts.map(({ trackId, contentVersion, questionCount, checksumSha256 }) => ({ trackId, contentVersion, questionCount, sha256: checksumSha256 }));
+    const claudeId = "claude-certified-architect-professional-certification";
+    if (generated.find(t => t.trackId === claudeId)?.sha256 !== published.find(t => t.trackId === claudeId)?.sha256) {
+      const acceptancePath = join(appRoot, "integration/contracts/content-release/local-claude/qle-v2-acceptance.json");
+      const acceptance = JSON.parse(readFileSync(acceptancePath, "utf8"));
+      assert.equal(acceptance.scope, "local_only"); assert.equal(acceptance.publication, "not_granted"); assert.equal(acceptance.releaseLockUpdate, false);
+      const sync = await import(pathToFileURL(join(appRoot, "scripts/syncBundledContentRelease.mjs")).href);
+      await sync.syncCanonicalContent({ mode: "check", appRoot, producerRoot: currentContentRoot, localReviewedCandidate: acceptancePath });
+      assert.deepEqual(generated.filter(t => t.trackId !== claudeId), published.filter(t => t.trackId !== claudeId), "eight release artifacts remain exactly pinned");
+      assert.deepEqual(generated.find(t => t.trackId === claudeId), { trackId: claudeId, contentVersion: acceptance.candidate.artifact.contentVersion, questionCount: acceptance.candidate.artifact.questionCount, sha256: acceptance.candidate.artifact.artifactSha256 });
+    } else assert.deepEqual(generated, published, "all nine published artifacts remain exactly pinned");
     for (const entry of generatedLock.tracks) {
       const track = catalog.getTrack(entry.trackId);
       assert.equal(track.artifactSha256, entry.sha256);
@@ -166,7 +168,7 @@ test("current canonical builder adds the planning policy while preserving the ex
         mentalUnits.add(`${question.trackId}\0${question.nodeId}\0${question.mentalUnitId}`);
       }
     }
-    assert.deepEqual({ tracks: built.artifacts.length, nodes: nodes.size, mentalUnits: mentalUnits.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 958, questions: 16_695 });
+    assert.deepEqual({ tracks: built.artifacts.length, nodes: nodes.size, mentalUnits: mentalUnits.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 958, questions: 16_749 });
 
     const aws = built.artifacts.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate")!.artifact;
     const successorLedger = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-successor-ledger.json"), "utf8")) as {

@@ -1,4 +1,7 @@
-import { createTrainingAttempt, createTrainingSessionDraft, createTrainingSessionResult, completeTrainingSession, createFamilyEnvelope, isActiveReviewQueueEntry, createReviewSourceSnapshot, matchesReviewSourceSnapshot, manualRequestIdForEntry, type ReviewMutationCommand, type ReviewQueueEntry, type ReviewSourceSnapshot, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
+import { selectCaseBlocks } from "./caseBlockSelector";
+import { indexCaseRecipes, CASE_EVIDENCE_POLICY, type CaseRecipe } from "../../content/canonical/caseRecipe";
+import { CASE_BLOCK_POLICY, CASE_REVIEW_POLICY, sessionCaseStates, CASE_TRACK_ID, isIndependentCaseAttempt, type CaseLearningState } from "../../domain/learning/caseEvidence";
+import { createTrainingSession, createTrainingAttempt, createTrainingSessionDraft, createTrainingSessionResult, completeTrainingSession, createFamilyEnvelope, isActiveReviewQueueEntry, createReviewSourceSnapshot, matchesReviewSourceSnapshot, manualRequestIdForEntry, type ReviewMutationCommand, type ReviewQueueEntry, type ReviewSourceSnapshot, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime, FamilyPlanningModeBinding, TrainingCatalog, TrainingInteractionPort, TrainingQuestionSummary } from "../trainingLifecycle";
 import { getProductSimulationModeConfig, ProductModeUnavailableError, resolveRequiredUnitFocusMode, type ProductModeConfig } from "../../content/canonical/productModeConfig";
 import { consumeManualRequest, createMaintenanceCycle, createOrUpdateErrorCycle, transitionQualifiedSuccess } from "../../domain/learning/reviewCycleTransition";
@@ -37,6 +40,12 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
       return this.prepareSimulation(input);
     }
     const mode = this.mode(input.modeId);
+    const raw = requestRecord(input.request);
+    if (raw.caseId !== undefined && raw.preset !== "single_case") throw new Error("A case identity requires the single-case preset.");
+    if (raw.preset !== undefined) {
+      if (raw.preset !== "single_case") throw new Error("Unknown Certification preset.");
+      return this.prepareCase(input);
+    }
     const request = parseRequest(input.request, mode.defaultRequestedLength);
     if (!mode.requestedLengths.includes(request.requestedLength)) throw new Error("Requested length is unavailable for this Certification mode.");
     validateEvidenceSource(mode, request.reviewSource);
@@ -46,20 +55,28 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
       if (mode.modeId !== "certification-focus-practice" || request.mentalUnitId === undefined || request.expectedContentVersion !== this.catalog.contentVersion || request.expectedArtifactSha256 !== this.catalog.artifactSha256) throw new Error("Focused-practice exact content identity is unavailable.");
     }
     const reviewSource = request.reviewSource ?? (mode.selection.kind === "evidence_conditioned" && mode.selection.evidenceSources.length === 1 && mode.selection.evidenceSources[0] === "due_queue" ? "due_queue" : undefined);
-    const baseSource = mode.selection.kind === "evidence_conditioned" ? this.eligibleEvidence(mode, input.reviews, input.now, reviewSource) : this.catalog.getPool(mode.modeId);
+    const supportsCaseBlocks = this.catalog.trackId === CASE_TRACK_ID && mode.modeId === "certification-focus-practice" && mode.selection.kind === "node";
+    const caseQuestionIds = new Set(indexCaseRecipes(this.catalog.questions).flatMap(c => c.steps.map(step => step.questionId)));
+    const eligibleStandalone = (questions: readonly TrainingQuestionSummary[]) => questions.filter(q => !caseQuestionIds.has(q.questionId));
+    const baseSource = mode.selection.kind === "evidence_conditioned" ? this.eligibleEvidence(mode, input.reviews, input.now, reviewSource).filter(q => !caseQuestionIds.has(q.questionId) || (reviewSource === "due_queue" && this.usesDueQueueReview(mode.modeId))) : supportsCaseBlocks ? this.catalog.getPool(mode.modeId) : eligibleStandalone(this.catalog.getPool(mode.modeId));
     const selectedNodeId = request.mentalUnitId === undefined ? mode.selection.kind === "node" ? mode.selection.nodeId : undefined
       : this.catalog.completionRule?.ruleVersion === 3 ? requiredUnitNodeId(this.catalog, request.mentalUnitId) : mode.selection.kind === "node" ? mode.selection.nodeId : undefined;
     const v3UnitTarget = request.mentalUnitId !== undefined && isRequiredV3Unit(this.catalog, selectedNodeId, request.mentalUnitId);
     const source = request.mentalUnitId === undefined ? baseSource : selectedNodeId
-      ? Object.freeze((v3UnitTarget ? this.catalog.questions : baseSource).filter((question) => question.nodeId === selectedNodeId && question.mentalUnitId === request.mentalUnitId))
+      ? Object.freeze((v3UnitTarget ? supportsCaseBlocks ? this.catalog.questions : eligibleStandalone(this.catalog.questions) : baseSource).filter((question) => question.nodeId === selectedNodeId && question.mentalUnitId === request.mentalUnitId))
       : (() => { throw new Error("Certification mental-unit scope requires a node-selected mode."); })();
     const coverageTargets = v3UnitTarget ? this.latestUncovered(source, input.attempts) : undefined;
     const scopedMode = v3UnitTarget ? resolveRequiredUnitFocusMode(mode, this.catalog.completionRule, selectedNodeId!, request.mentalUnitId!) : mode;
     const count = Math.min(request.requestedLength, source.length);
     if (count === 0 || (mode.selection.kind !== "evidence_conditioned" && count < scopedMode.minimumActualLength)) throw new Error("Certification mode has insufficient eligible content.");
-    const questions = mode.selection.kind === "node"
-      ? selectPracticeQuestions(source, input.attempts, exactIdentity(this.catalog), count, coverageTargets?.size ? coverageTargets : undefined)
-      : source.slice(0, count);
+    const blocks = supportsCaseBlocks ? selectCaseBlocks({ catalog: this.catalog, pool: source, attempts: input.attempts, requestedLength: request.requestedLength, coverageTargets: coverageTargets?.size ? coverageTargets : undefined }) : null;
+    const questions = blocks?.questions ?? (mode.selection.kind === "node"
+      ? selectPracticeQuestions(source, input.attempts, exactIdentity(this.catalog), count, coverageTargets?.size ? coverageTargets : undefined).map(question => this.catalog.getQuestion(question.questionId)!)
+      : source.slice(0, count));
+    if (!questions.length || (mode.selection.kind !== "evidence_conditioned" && questions.length < scopedMode.minimumActualLength)) throw new Error("Certification mode has insufficient complete eligible content.");
+    const reviewRecipes = this.catalog.trackId === CASE_TRACK_ID && reviewSource === "due_queue" && this.usesDueQueueReview(mode.modeId) ? indexCaseRecipes(this.catalog.questions).filter(recipe => recipe.steps.some(step => questions.some(question => question.questionId === step.questionId))) : [];
+    const selectedRecipes = blocks?.recipes.length ? blocks.recipes : reviewRecipes;
+    const casePolicy: Record<string, string> = blocks?.recipes.length ? { caseBlockPolicy: CASE_BLOCK_POLICY } : reviewRecipes.length ? { caseReviewPolicy: CASE_REVIEW_POLICY } : {};
     const feedbackMode = feedbackModeFor(mode, request.feedbackTiming);
     const usesReviewQueue = mode.selection.kind === "evidence_conditioned" && (reviewSource === "due_queue" || reviewSource === "manual_request");
     const orderedItems = questions.map((question) => {
@@ -71,9 +88,10 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     const sessionId = requireSessionId(input.request);
     const prepared = prepareCanonicalPlanOccurrences(this.catalog, this.interactions, sessionId, orderedItems);
     const slots = this.buildReinsertionSlots(mode, prepared.itemOrder, prepared.optionOrderByOccurrence);
-    const session = await buildCanonicalSessionPlan(this.catalog, { sessionId, modeId: mode.modeId,
-      configurationSnapshot: { kind: "practice", timer: "elapsedForeground", feedbackMode, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect", ...(request.mentalUnitId === undefined ? {} : { mentalUnitId: request.mentalUnitId }) },
-      requestedLength: request.requestedLength, preparedOccurrences: prepared, conditionalReinsertSlots: slots, startedAt: input.now });
+    const planned = await buildCanonicalSessionPlan(this.catalog, { sessionId, modeId: mode.modeId,
+      configurationSnapshot: { kind: "practice", timer: "elapsedForeground", feedbackMode, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect", ...(request.mentalUnitId === undefined ? {} : { mentalUnitId: request.mentalUnitId }), ...casePolicy },
+      requestedLength: request.requestedLength, preparedOccurrences: prepared, conditionalReinsertSlots: slots, startedAt: input.now, ...(selectedRecipes.length ? { caseStates: selectedRecipes.map(recipe => this.newCaseState(recipe, input)) } : {}) });
+    const session = planned;
     return Object.freeze({ session, firstOccurrence: session.itemOrder[0]!.item, draft: null });
   }
 
@@ -81,6 +99,7 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     if (input.session.modeId === "certification-exam-simulation") return this.validateSimulationResume(input);
     if (input.draft) throw new Error("Certification practice has no simulation draft.");
     const session = input.session;
+    if (session.configurationSnapshot.preset === "single_case") { await this.validateCaseSession(session); return; }
     const mode = this.mode(session.modeId);
     if (!mode.requestedLengths.includes(session.requestedLength)) throw new ProductModeUnavailableError("Certification session mode or requested length is unavailable.");
     const rawUnitId = session.configurationSnapshot.mentalUnitId;
@@ -93,13 +112,14 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     const scopedMode = mentalUnitId !== undefined && this.catalog.completionRule?.ruleVersion === 3 ? resolveRequiredUnitFocusMode(mode, this.catalog.completionRule, selectedNodeId!, mentalUnitId) : mode;
     const feedbackMode = session.configurationSnapshot.feedbackMode;
     if (!(mode.feedbackTiming.kind === "fixed" ? ["afterEachAnswer"] : ["afterEachAnswer", "atSessionEnd"]).includes(String(feedbackMode))) throw new Error("Certification session feedback timing is invalid.");
-    const expected = { kind: "practice", timer: "elapsedForeground", feedbackMode, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect", ...(mentalUnitId === undefined ? {} : { mentalUnitId }) };
+    const expected = { kind: "practice", timer: "elapsedForeground", feedbackMode, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect", ...(mentalUnitId === undefined ? {} : { mentalUnitId }), ...(session.configurationSnapshot.caseBlockPolicy ? { caseBlockPolicy: CASE_BLOCK_POLICY } : session.configurationSnapshot.caseReviewPolicy ? { caseReviewPolicy: CASE_REVIEW_POLICY } : {}) };
     if (JSON.stringify(session.configurationSnapshot) !== JSON.stringify(expected)) throw new Error("Certification session configuration snapshot is invalid.");
     if (session.actualLength < (mode.selection.kind === "evidence_conditioned" ? 1 : scopedMode.minimumActualLength) || session.itemOrder.some((occurrence) => {
       const question = this.catalog.getQuestion(occurrence.item.questionId);
       return !question || (mentalUnitId !== undefined && (question.nodeId !== selectedNodeId || question.mentalUnitId !== mentalUnitId));
     })) throw new Error("Certification session scope or minimum length is invalid.");
     if (mode.selection.kind === "exact_ordered_questions" && JSON.stringify(session.itemOrder.map((entry) => entry.item.questionId)) !== JSON.stringify(mode.selection.questionIds.slice(0, session.actualLength))) throw new Error("Certification exact-order session is invalid.");
+    this.validateCaseBlocks(session, selectedNodeId);
     await validateCanonicalSessionPlan(this.catalog, this.interactions, session);
   }
 
@@ -111,12 +131,13 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     if (!evaluation.complete || !evaluation.result) throw new Error("Certification response is incomplete or invalid.");
     const result = evaluation.result;
     const attempt = await createCanonicalAttempt({ session: input.session, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response: input.response, result,
-      reviewEvidence: evidenceFor(question, occurrence.item), answeredAt: input.now, committedAt: input.now });
+      reviewEvidence: this.caseEvidence(input.session, question, occurrence.item, input.attempts), answeredAt: input.now, committedAt: input.now });
+    if (!isIndependentCaseAttempt(attempt) && result.kind === "correct") return Object.freeze({ attempt, session: await this.resolveReinsertions(input.session, [...input.attempts, attempt]), reviewMutations: [], reviewBaseline: input.reviews });
     const matching = input.reviews.filter((entry) => entry.trackId === input.session.trackId && resolvedContentRefsEqual(entry.sourceItem, occurrence.item));
     const prior = matching.find(isActiveReviewQueueEntry);
     const completed = matching.some((entry) => entry.status === "completed");
     const dueSnapshot = occurrence.reviewSourceSnapshot;
-    const usesDueQueue = this.usesDueQueueReview(input.session.modeId);
+    const usesDueQueue = this.usesDueQueueReview(input.session.modeId) || (input.session.caseState !== undefined && dueSnapshot !== undefined);
     const snapshotMatches = dueSnapshot !== undefined && prior !== undefined && matchesReviewSourceSnapshot(dueSnapshot, prior);
     const sourceExpired = result.kind === "correct" && dueSnapshot?.source === "manual_request" && prior?.dueAt !== undefined && Date.parse(attempt.answeredAt) >= Date.parse(prior.dueAt);
     const conflict = usesDueQueue && (!dueSnapshot || !snapshotMatches || sourceExpired);
@@ -136,8 +157,21 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
   async finalizePractice(input: Parameters<TrainingFamilyRuntime["finalizePractice"]>[0]): Promise<PracticeFinalization> {
     await this.validateResume({ session: input.session, draft: null });
     const attempts = input.attempts.filter((attempt) => attempt.sessionId === input.session.id);
+    if (input.session.caseState && this.caseFor(input.session).steps.some(step => !input.session.caseState!.solutionExposedStepIds.includes(step.stepId))) throw new Error("Every required case explanation must be durably exposed before completion.");
     this.assertCompletePracticeAttemptSet(input.session, attempts);
-    const session = completeTrainingSession(input.session, input.now);
+    let completionSession = input.session;
+    if (input.session.caseStates) {
+      if (input.session.configurationSnapshot.feedbackMode === "atSessionEnd") {
+        completionSession = createTrainingSession({ ...input.session, caseStates: input.session.caseStates.map(state => {
+          const recipe = indexCaseRecipes(this.catalog.questions).find(candidate => candidate.caseId === state.caseId && candidate.version === state.caseVersion)!;
+          return { ...state, solutionExposedStepIds: [...new Set([...state.solutionExposedStepIds, ...recipe.steps.map(step => step.stepId)])] };
+        }) });
+      } else if (input.session.caseStates.some(state => {
+        const recipe = indexCaseRecipes(this.catalog.questions).find(candidate => candidate.caseId === state.caseId && candidate.version === state.caseVersion)!;
+        return recipe.steps.filter(step => input.session.itemOrder.some(item => item.item.questionId === step.questionId)).some(step => !state.solutionExposedStepIds.includes(step.stepId));
+      })) throw new Error("Every case-block explanation must be durably exposed before completion.");
+    }
+    const session = completeTrainingSession(completionSession, input.now);
     const result = createTrainingSessionResult({ id: `${session.id}:result`, sessionId: session.id, trackId: session.trackId, totalOccurrences: session.actualLength,
       answeredOccurrenceIds: session.itemOrder.map((occurrence) => occurrence.occurrenceId), unansweredOccurrenceIds: [], completedAt: input.now,
       evidence: createFamilyEnvelope({ familyId: FAMILY, details: aggregateEvidence(session.activeForegroundMs, attempts) }) });
@@ -188,11 +222,91 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
   async queryProgress(input: Parameters<TrainingFamilyRuntime["queryProgress"]>[0]): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); const reviews = scopeReviewsToExactCatalog(input.reviews, this.catalog); return Object.freeze({ trackId: input.trackId, attemptCount: scopeAttemptsToExactCatalog(input.attempts, this.catalog).length, dueReviewCount: reviews.filter((entry) => this.isSelectedReviewEntry(entry, "due_queue", input.now)).length, manualReviewCount: reviews.filter((entry) => this.isSelectedReviewEntry(entry, "manual_request", input.now)).length }); }
   async queryReview(input: Parameters<TrainingFamilyRuntime["queryReview"]>[0]): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); return Object.freeze({ trackId: input.trackId, due: Object.freeze(scopeReviewsToExactCatalog(input.reviews, this.catalog).filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt <= input.now)) }); }
 
+  private caseFor(sessionOrId: TrainingSession | string): CaseRecipe {
+    if (this.catalog.trackId !== CASE_TRACK_ID) throw new Error("Single-case capability is unavailable.");
+    const id = typeof sessionOrId === "string" ? sessionOrId : sessionOrId.configurationSnapshot.caseId;
+    const recipe = indexCaseRecipes(this.catalog.questions).find(c => c.caseId === id);
+    if (!recipe) throw new Error("The pinned case is unavailable.");
+    return recipe;
+  }
+  private async prepareCase(input: Parameters<TrainingFamilyRuntime["prepare"]>[0]): Promise<PreparedSession> {
+    const raw = requestRecord(input.request);
+    if (input.modeId !== "certification-focus-practice" || typeof raw.caseId !== "string" || raw.reviewSource !== undefined || raw.feedbackTiming === "after_session_completion") throw new Error("Single case requires its declared Focus capability and durable step feedback.");
+    const recipe = this.caseFor(raw.caseId);
+    const mode = this.mode(input.modeId);
+    const questions = recipe.steps.map(step => this.catalog.getQuestion(step.questionId)!);
+    const nodeId = questions[0]!.nodeId;
+    if (mode.selection.kind !== "node" || questions.some(q => !q || q.nodeId !== nodeId) || (raw.nodeId !== undefined && raw.nodeId !== questions[0]!.nodeId) || (raw.requestedLength !== undefined && raw.requestedLength !== questions.length)) throw new Error("The entire case is not legal in the admitted node.");
+    const sessionId = requireSessionId(raw);
+    const preparedOccurrences = prepareCanonicalPlanOccurrences(this.catalog, this.interactions, sessionId, questions.map(q => {
+      const item = ref(this.catalog, q);
+      const due = input.reviews.find(entry => resolvedContentRefsEqual(entry.sourceItem, item) && this.isSelectedReviewEntry(entry, "due_queue", input.now));
+      return { item, ...(due ? { reviewSourceSnapshot: createReviewSourceSnapshot(due, "due_queue", input.now) } : {}) };
+    }));
+    const session = await buildCanonicalSessionPlan(this.catalog, { sessionId, modeId: input.modeId, requestedLength: questions.length, preparedOccurrences, conditionalReinsertSlots: [], startedAt: input.now, configurationSnapshot: caseSnapshot(recipe), caseState: this.newCaseState(recipe, input) });
+    return Object.freeze({ session, firstOccurrence: session.itemOrder[0]!.item, draft: null });
+  }
+  private async validateCaseSession(session: TrainingSession): Promise<void> {
+    const recipe = this.caseFor(session);
+    const mode = this.mode(session.modeId);
+    const nodeId = this.catalog.getQuestion(recipe.steps[0]!.questionId)!.nodeId;
+    if (session.modeId !== "certification-focus-practice" || JSON.stringify(session.configurationSnapshot) !== JSON.stringify(caseSnapshot(recipe)) || session.requestedLength !== recipe.steps.length || session.actualLength !== recipe.steps.length || !session.caseState || session.caseState.caseId !== recipe.caseId || session.caseState.caseVersion !== recipe.version || mode.selection.kind !== "node" || session.itemOrder.some((o,i) => o.item.questionId !== recipe.steps[i]?.questionId || this.catalog.getQuestion(o.item.questionId)?.nodeId !== nodeId) || (session.conditionalReinsertSlots?.length ?? 0) !== 0 || [...session.caseState.priorExposedStepIds, ...session.caseState.hintShownStepIds, ...session.caseState.solutionExposedStepIds].some(id => !recipe.steps.some(step => step.stepId === id))) throw new Error("Single-case snapshot, state or order is invalid.");
+    await validateCanonicalSessionPlan(this.catalog, this.interactions, session);
+  }
+  private newCaseState(recipe: CaseRecipe, input: Parameters<TrainingFamilyRuntime["prepare"]>[0]): CaseLearningState {
+    const priorExposedStepIds = [...new Set((input.sessions ?? []).filter(session => session.trackId === this.catalog.trackId && session.contentVersion === this.catalog.contentVersion && session.artifactSha256 === this.catalog.artifactSha256).flatMap(session => sessionCaseStates(session).filter(state => state.caseId === recipe.caseId && state.caseVersion === recipe.version).flatMap(state => [...state.priorExposedStepIds, ...state.hintShownStepIds, ...state.solutionExposedStepIds])))];
+    return { policyVersion: CASE_EVIDENCE_POLICY, caseId: recipe.caseId, caseVersion: recipe.version, priorExposedStepIds, hintShownStepIds: [], solutionExposedStepIds: [] };
+  }
+  private validateCaseBlocks(session: TrainingSession, selectedNodeId: string | undefined): void {
+    if (session.trackId !== CASE_TRACK_ID) return;
+    if (session.configurationSnapshot.caseReviewPolicy === CASE_REVIEW_POLICY) {
+      const recipes = indexCaseRecipes(this.catalog.questions);
+      const planned = session.itemOrder.map(item => item.item.questionId);
+      const selected = recipes.filter(recipe => recipe.steps.some(step => planned.includes(step.questionId)));
+      if (selected.length !== session.caseStates?.length) throw new Error("Review case state membership is invalid.");
+      for (const recipe of selected) {
+        const state = session.caseStates.find(candidate => candidate.caseId === recipe.caseId && candidate.caseVersion === recipe.version);
+        if (!state || state.priorExposedStepIds.some(id => !recipe.steps.some(step => step.stepId === id)) || [...state.hintShownStepIds, ...state.solutionExposedStepIds].some(id => !recipe.steps.some(step => step.stepId === id && planned.includes(step.questionId)))) throw new Error("Review case exposure is outside its exact planned members.");
+      }
+      return;
+    }
+    if (session.modeId !== "certification-focus-practice") return;
+    const recipes = indexCaseRecipes(this.catalog.questions);
+    const ids = session.itemOrder.map(occurrence => occurrence.item.questionId);
+    const selected = recipes.filter(recipe => recipe.steps.some(step => ids.includes(step.questionId)));
+    const states = session.caseStates ?? [];
+    if (selected.length !== states.length) throw new Error("Every standard-session case requires its complete pinned state.");
+    for (const recipe of selected) {
+      if (!selectedNodeId || recipe.steps.some(step => this.catalog.getQuestion(step.questionId)?.nodeId !== selectedNodeId)) throw new Error("A case block is outside its admitted node.");
+      const state = states.find(candidate => candidate.caseId === recipe.caseId && candidate.caseVersion === recipe.version);
+      const start = ids.indexOf(recipe.steps[0]!.questionId);
+      if (!state || start < 0 || recipe.steps.some((step, index) => ids[start + index] !== step.questionId || ids.filter(id => id === step.questionId).length !== 1) || [...state.priorExposedStepIds, ...state.hintShownStepIds, ...state.solutionExposedStepIds].some(id => !recipe.steps.some(step => step.stepId === id))) throw new Error("A case block is split, duplicated, reordered or unavailable.");
+    }
+  }
+  private caseEvidence(session: TrainingSession, question: TrainingQuestionSummary, item: ResolvedContentRef, attempts: readonly TrainingAttempt<unknown>[]): TrainingAttempt<unknown>["reviewEvidence"] {
+    const base = evidenceFor(question, item);
+    const recipe = indexCaseRecipes(this.catalog.questions).find(candidate => candidate.steps.some(step => step.questionId === question.questionId));
+    if (!recipe) return base;
+    const stepIndex = recipe.steps.findIndex(step => step.questionId === question.questionId), step = recipe.steps[stepIndex]!;
+    const state = sessionCaseStates(session).find(candidate => candidate.caseId === recipe.caseId && candidate.caseVersion === recipe.version);
+    if (!state && (!this.usesDueQueueReview(session.modeId) || session.itemOrder[session.currentItemIndex]?.reviewSourceSnapshot?.source !== "due_queue")) return base;
+    const previousAttempt = attempts.some(attempt => attempt.item.questionId === question.questionId && attempt.item.contentVersion === session.contentVersion && attempt.item.artifactSha256 === session.artifactSha256);
+    const knownExposure = previousAttempt || !!state && [state.priorExposedStepIds, state.hintShownStepIds, state.solutionExposedStepIds].some(ids => ids.includes(step.stepId));
+    const assisted = state
+      ? state.hintShownStepIds.includes(step.stepId) || recipe.steps.slice(0, stepIndex).some(prior => state.solutionExposedStepIds.includes(prior.stepId))
+      : session.configurationSnapshot.feedbackMode !== "atSessionEnd" && attempts.some(attempt => attempt.sessionId === session.id && recipe.steps.some(sibling => sibling.questionId === attempt.item.questionId));
+    return { ...base, evidence: createFamilyEnvelope({ familyId: FAMILY, details: { policyVersion: CASE_EVIDENCE_POLICY, caseId: recipe.caseId, caseVersion: recipe.version, stepId: step.stepId, role: step.role, assistanceBeforeSubmit: assisted, priorExposure: knownExposure ? "known" : "unknown", revealPolicy: recipe.revealPolicy } }) };
+  }
+
   private mode(modeId: string): ProductModeConfig { try { return this.catalog.getMode(modeId); } catch { throw new ProductModeUnavailableError(`Certification mode ${this.catalog.trackId}/${modeId} is unavailable.`); } }
   private eligibleEvidence(mode: ProductModeConfig, reviews: readonly ReviewQueueEntry[], now: string, source: string | undefined): readonly TrainingQuestionSummary[] {
     if (mode.selection.kind !== "evidence_conditioned") return this.catalog.getPool(mode.modeId);
     const ids = new Set(scopeReviewsToExactCatalog(reviews, this.catalog).filter((entry) => source === "due_queue" ? this.isSelectedReviewEntry(entry, source, now) : source === "manual_request" ? this.isSelectedReviewEntry(entry, source, now) : false).map((entry) => entry.sourceItem.questionId));
-    return this.catalog.getPool(mode.modeId).filter((question) => ids.has(question.questionId));
+    const pool = this.catalog.getPool(mode.modeId);
+    if (this.catalog.trackId !== CASE_TRACK_ID || source !== "due_queue" || !this.usesDueQueueReview(mode.modeId)) return pool.filter(question => ids.has(question.questionId));
+    // Exact due pins may belong to any Claude node. Lifecycle checks actual-node
+    // entitlement before durable start; selection never substitutes current content.
+    return this.catalog.questions.filter(question => ids.has(question.questionId));
   }
   private latestUncovered(pool: readonly TrainingQuestionSummary[], attempts: readonly TrainingAttempt<unknown>[]): ReadonlySet<string> | undefined {
     if (this.catalog.completionRule?.ruleVersion !== 3) return undefined;
@@ -202,12 +316,14 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
   }
   private buildReinsertionSlots(mode: ProductModeConfig, items: TrainingSession["itemOrder"], orders: TrainingSession["optionOrderByOccurrence"]): NonNullable<TrainingSession["conditionalReinsertSlots"]> {
     if (mode.reinsertPolicy !== "conditional_after_incorrect") return [];
-    return items.slice(0, Math.max(0, items.length - 4)).map((source, index) => {
+    const caseIds = new Set(indexCaseRecipes(this.catalog.questions).flatMap(recipe => recipe.steps.map(step => step.questionId)));
+    return items.slice(0, Math.max(0, items.length - 4)).flatMap((source, index) => {
       const ordinary = items[index + 4]!;
-      return { slotId: `${source.occurrenceId}:conditional:${index + 4}`, sourceOccurrenceId: source.occurrenceId,
+      if (caseIds.has(source.item.questionId) || caseIds.has(ordinary.item.questionId)) return [];
+      return [{ slotId: `${source.occurrenceId}:conditional:${index + 4}`, sourceOccurrenceId: source.occurrenceId,
         ordinaryBranch: { occurrence: ordinary, optionOrder: orders[ordinary.occurrenceId] ?? [] },
         exactSourceBranch: { occurrence: { occurrenceId: `${source.occurrenceId}:conditional:${index + 4}:exact`, item: source.item }, optionOrder: orders[source.occurrenceId] ?? [] },
-        resolutionRule: "incorrect_or_partial_after_three_materialized_submissions" as const };
+        resolutionRule: "incorrect_or_partial_after_three_materialized_submissions" as const }];
     });
   }
   private async resolveReinsertions(session: TrainingSession, attempts: readonly TrainingAttempt<unknown>[]): Promise<TrainingSession> {
@@ -300,3 +416,5 @@ function selectCertificationSimulationQuestions(catalog: TrainingCatalog, profil
   return Object.freeze(selected);
 }
 function certificationSimulationSnapshot(profile: CanonicalProductSimulationProfile, deadline: string): TrainingSession["configurationSnapshot"] { if (profile.familyId !== FAMILY || profile.modeId !== "certification-exam-simulation") throw new ProductModeUnavailableError("Certification simulation profile is invalid."); const config = profile.familyConfig; const policy = config.interactionPolicy; return Object.freeze({ kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: policy.answerChanges === "until_final_submission" ? "untilFinalSubmission" : "none", navigation: policy.navigation, submission: "manualOrForegroundTimeout", timer: policy.timeout === "absolute_deadline" ? "absoluteDeadline" : "elapsedForeground", timerDurationMs: config.durationMinutes * 60_000, timerDeadlineAt: deadline, simulationProfileId: profile.profileId, simulationProfileVersion: profile.profileVersion, simulationPolicyId: policy.policyId, simulationPolicyVersion: policy.policyVersion, flagging: policy.flagging, navigator: policy.navigator, sectionIds: config.blueprint.sections.map((section) => section.id) }); }
+
+function caseSnapshot(recipe: CaseRecipe): TrainingSession["configurationSnapshot"] { return { kind: "practice", timer: "elapsedForeground", feedbackMode: "afterEachAnswer", answerChanges: "none", submission: "perItem", reinsertEnabled: false, preset: "single_case", caseId: recipe.caseId, caseVersion: recipe.version, policyVersion: recipe.policyVersion }; }

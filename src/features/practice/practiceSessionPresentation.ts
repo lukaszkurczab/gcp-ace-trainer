@@ -344,3 +344,8 @@ export function getPracticePrimaryAction(input: Readonly<{
   if (input.phase === "completing") return Object.freeze({ enabled: false, label: "Finishing session…", loading: true });
   return null;
 }
+
+/** Timer refresh can replace an equal projection before React commits the command render. */
+export function hasReachedPracticeActionProjection(pending: Readonly<{ session: { id: string }; occurrenceId: string; operation: { kind: string }; response: unknown }> | null, current: Readonly<{ session: { id: string }; occurrenceId: string; operation: { kind: string }; response: unknown }> | null): boolean {
+  return !!pending && !!current && pending.session.id === current.session.id && pending.occurrenceId === current.occurrenceId && pending.operation.kind === current.operation.kind && Boolean(pending.response) === Boolean(current.response);
+}

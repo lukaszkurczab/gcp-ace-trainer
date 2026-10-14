@@ -1,3 +1,4 @@
+import { isActiveReviewQueueEntry, type ReviewQueueEntry } from "../../../domain";
 import type { IconName } from "../../../components";
 import type { TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
 import type { CodingInterviewDashboard, HomeRecommendationAction as CanonicalHomeRecommendationAction } from "../../../application/coding-interview";
@@ -27,7 +28,7 @@ export type DesignInterviewPracticeResumeAction = Readonly<{
   sessionId: string;
 }>;
 
-export type HomeRecommendationAction = CanonicalHomeRecommendationAction | CertificationPracticeResumeAction | DesignInterviewPracticeResumeAction;
+export type HomeRecommendationAction = Readonly<{ kind: "start_certification_due_review"; trackId: TrackDisplay["id"] }> | Readonly<{ kind: "start_single_case"; caseId: string; nodeId: string; decisionCount: number }> | CanonicalHomeRecommendationAction | CertificationPracticeResumeAction | DesignInterviewPracticeResumeAction;
 
 export type HomeRecommendationModel = {
   detail: string;
@@ -56,13 +57,15 @@ export type BuildHomeTabModelInput = {
   analytics: AnalyticsData;
   algorithmsDashboard: CodingInterviewDashboard | null;
   dashboardError: string | null;
+  dueReviewRecommendation?: HomeRecommendationModel | null;
+  singleCaseRecommendation?: HomeRecommendationModel | null;
   trainingAttempts: readonly TrainingAttempt[];
 };
 
 export function buildHomeTabModel(input: BuildHomeTabModelInput): HomeTabModel {
   const topic = getCurrentPracticeTopic(input.activeTrack, input.trainingAttempts);
   const certificationResume = buildCertificationResumeRecommendation(input);
-  const recommendations = certificationResume ? [certificationResume] : buildAlgorithmsRecommendations(input, topic.id);
+  const recommendations = certificationResume ? [certificationResume] : input.dueReviewRecommendation ? [input.dueReviewRecommendation] : input.singleCaseRecommendation ? [input.singleCaseRecommendation] : buildAlgorithmsRecommendations(input, topic.id);
   const hasProgress = input.trainingAttempts.some((attempt) => attempt.trackId === input.activeTrack.id)
     || (input.activeSession?.status === "active" && input.activeSession.trackId === input.activeTrack.id);
   const learningLabel = hasProgress ? "Continue learning" : "Start learning";
@@ -179,4 +182,15 @@ function buildAlgorithmsRecommendations(input: BuildHomeTabModelInput, currentNo
     detail: "Practice the track's current mental units with guided feedback.",
     enabled: true, icon: "cpu", label: "Recommended", primaryLabel: "Start session", title: "Guided Practice", tone: "info",
   }];
+}
+
+export function homePlanPlacement(input: Readonly<{ hasActiveSession: boolean; hasPracticeRecommendation: boolean; planKind: "ready" | "unavailable" | "none" | undefined }>): "primary" | "secondary" | "hidden" {
+  if (input.hasActiveSession || !input.planKind || input.planKind === "none") return "hidden";
+  return input.hasPracticeRecommendation ? "secondary" : "primary";
+}
+
+/** Historical Claude obligations remain actionable regardless of discovery version. */
+export function hasClaudeDueReview(reviews: readonly ReviewQueueEntry[], now: string): boolean {
+  const trackId = "claude-certified-architect-professional-certification";
+  return reviews.some(entry => entry.trackId === trackId && entry.sourceItem.trackId === trackId && isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && Date.parse(entry.dueAt) <= Date.parse(now));
 }

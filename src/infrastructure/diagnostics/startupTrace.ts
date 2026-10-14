@@ -4,6 +4,7 @@ import type { CanonicalRepositoryBootstrapStep } from "../../storage/repositorie
 export type StartupTraceStage =
   | "app:active" | "app:background" | "app:inactive" | "app:unknown" | "app:extension" | "home_data_commit"
   | "regular_root_module" | "content_gate" | "content_ready_commit"
+  | "claude_case_start" | "claude_prompt_layout"
   | "opening-storage" | "recovering-learning-state" | "verifying-content" | "resuming-session"
   | "bundled_materialization" | "installed_inventory"
   | "loading" | "ready" | "home_ready_resume_unavailable" | "content_identity_unavailable" | "blocking"

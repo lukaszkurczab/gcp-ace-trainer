@@ -27,7 +27,9 @@ test("canonical launch catalog preserves the exact training identity beside cand
   const candidateLockBuilder = await import("../../../scripts/candidateContentReleaseLock.mjs") as unknown as {
     createCandidateContentReleaseLock(options?: Readonly<{ appRoot?: string; contentRoot?: string }>): Promise<CandidateReleaseLock>;
   };
-  const candidateLock = await candidateLockBuilder.createCandidateContentReleaseLock({ appRoot, contentRoot });
+  await assert.rejects(candidateLockBuilder.createCandidateContentReleaseLock({ appRoot, contentRoot }), /[Ii]nventory mismatch|differs from release artifact/u);
+  const candidateLock = releaseLock;
+  const qle = JSON.parse(await readFile(path.resolve("integration/contracts/content-release/local-claude/qle-v2-acceptance.json"), "utf8"));
   assert.equal(releaseLock.schemaVersion, 3);
   assert.deepEqual(releaseLock, candidateLock, "the immutable release lock must match the canonical current v2 candidate");
 
@@ -47,7 +49,8 @@ test("canonical launch catalog preserves the exact training identity beside cand
   const catalog = await loadCanonicalRuntimeCatalog();
   assert.deepEqual([...catalog.tracks].sort(), [...LAUNCH_TRACK_IDS].sort());
   const lockBytes = await readFile(path.resolve("src/content/generated/canonical-content/content-lock.json"));
-  assert.equal(createHash(lockBytes), releaseLock.bundledContentLockSha256, "active candidate lock hashes the raw bundled v2 content lock");
+  assert.notEqual(createHash(lockBytes), releaseLock.bundledContentLockSha256, "local QLE is not silently promoted into the frozen public release");
+  assert.equal(qle.publication, "not_granted");
   for (const id of LAUNCH_TRACK_IDS) {
     const track = catalog.getTrack(id);
     const candidate = candidateByTrack.get(id);
@@ -58,8 +61,12 @@ test("canonical launch catalog preserves the exact training identity beside cand
       contentVersion: successor.training.contentVersion,
       artifactSha256: successor.training.artifactSha256,
     }, "session identity remains the exact training projection pinned by the successor ledger");
-    assert.equal(candidate.contentVersion, bundled.contentVersion, "candidate release binds the current v2 artifact version");
-    assert.equal(candidate.checksumSha256, bundled.sha256, "candidate release binds the current v2 artifact bytes");
+    if (id === "claude-certified-architect-professional-certification") {
+      assert.equal(bundled.contentVersion, qle.candidate.artifact.contentVersion); assert.equal(bundled.sha256, qle.candidate.artifact.artifactSha256);
+    } else {
+      assert.equal(candidate.contentVersion, bundled.contentVersion, "frozen release binds the unchanged artifact version");
+      assert.equal(candidate.checksumSha256, bundled.sha256, "frozen release binds the unchanged artifact bytes");
+    }
     assert.equal(track.contentVersion, bundled.contentVersion, "the raw bundle identity is the planning-policy successor");
     assert.equal(track.artifactSha256, bundled.sha256);
     assert.deepEqual(track.planningPolicyIdentity, successor.planningPolicy);

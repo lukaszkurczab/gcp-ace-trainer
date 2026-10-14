@@ -1,3 +1,4 @@
+import { isIndependentCaseAttempt } from "./caseEvidence";
 import type { TrainingAttempt } from "./trainingAttempt";
 import { createTrainingAttempt } from "./trainingAttempt";
 import { createAttemptResult } from "./attemptResult";
@@ -263,7 +264,7 @@ export function qualifyPackageAttempts(profile: VerifiedPackageCompletionProfile
     if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(attempt)) throw new Error(`Conflicting durable attempts share id ${attempt.id}.`);
     byId.set(attempt.id, attempt);
   }
-  return Object.freeze([...byId.values()].filter((attempt) => attempt.trackId === profile.trackId && isResolvedContentRef(attempt.item) && attempt.item.trackId === profile.trackId && attempt.item.contentVersion === profile.contentVersion && attempt.item.artifactSha256 === profile.artifactSha256).sort((left, right) => left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id)));
+  return Object.freeze([...byId.values()].filter((attempt) => isIndependentCaseAttempt(attempt) && attempt.trackId === profile.trackId && isResolvedContentRef(attempt.item) && attempt.item.trackId === profile.trackId && attempt.item.contentVersion === profile.contentVersion && attempt.item.artifactSha256 === profile.artifactSha256).sort((left, right) => left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id)));
 }
 
 function assertDurableAttempt(attempt: TrainingAttempt<unknown>): void {

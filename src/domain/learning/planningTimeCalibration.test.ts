@@ -34,8 +34,8 @@ function sampleSession(index: number, activeForegroundMs: number, mixedFirst = f
   return { session, attempts };
 }
 
-function calibrate(samples: readonly ReturnType<typeof sampleSession>[], estimateId = ESTIMATE) {
-  return calibrateObservedPlanningTime({ sessions: samples.map(({ session }) => session), attempts: samples.flatMap(({ attempts }) => attempts), questions, policy, estimateId, trackId: TRACK, modeId: "mode", contentVersion: VERSION, artifactSha256: SHA, planningPolicyIdentity: POLICY_IDENTITY });
+function calibrate(samples: readonly ReturnType<typeof sampleSession>[], estimateId = ESTIMATE, caseFormat?: { caseId: string; caseVersion: string }) {
+  return calibrateObservedPlanningTime({ sessions: samples.map(({ session }) => session), attempts: samples.flatMap(({ attempts }) => attempts), questions, policy, estimateId, trackId: TRACK, modeId: "mode", contentVersion: VERSION, artifactSha256: SHA, planningPolicyIdentity: POLICY_IDENTITY, caseFormat });
 }
 
 test("uses authored estimate scope and median foreground time including incorrect responses", () => {
@@ -98,4 +98,32 @@ test("calibrates each authored estimate class independently when recent classes 
   const b = Array.from({ length: 5 }, (_, index) => sampleSession(index, (index + 2) * 4 * 60_000, false, "unit-b"));
   assert.equal(calibrate([...a, ...b], ESTIMATE).kind, "observed");
   assert.equal(calibrate([...a, ...b], "guided-practice-unit-b-v1").kind, "observed");
+});
+
+function caseSample(index: number, caseId = "case-a") {
+  const sample = sampleSession(index, 4 * 60_000);
+  const session: TrainingSession = { ...sample.session, configurationSnapshot: { ...sample.session.configurationSnapshot, preset: "single_case" }, caseState: { policyVersion: "claude-case-evidence-v1", caseId, caseVersion: "1", priorExposedStepIds: [], hintShownStepIds: [], solutionExposedStepIds: [] } };
+  return { ...sample, session };
+}
+
+test("ordinary same-pin sessions cannot unlock whole-case calibration or inherit its rate", () => {
+  const ordinary = Array.from({ length: 5 }, (_, index) => sampleSession(index, 60_000));
+  assert.equal(calibrate(ordinary, ESTIMATE, { caseId: "case-a", caseVersion: "1" }).kind, "unavailable");
+  const cases = Array.from({ length: 5 }, (_, index) => caseSample(index));
+  assert.equal(calibrate(cases).kind, "unavailable");
+  const result = calibrate(cases, ESTIMATE, { caseId: "case-a", caseVersion: "1" });
+  assert.equal(result.kind, "observed");
+  if (result.kind === "observed") { assert.equal(result.sessionCount, 5); assert.equal(result.answerCount, 20); assert.equal(result.medianActiveMinutesPerResponse, 1); }
+  assert.equal(calibrate(cases, ESTIMATE, { caseId: "case-b", caseVersion: "1" }).kind, "unavailable");
+  assert.equal(calibrate(cases, ESTIMATE, { caseId: "case-a", caseVersion: "2" }).kind, "unavailable");
+});
+
+test("mixed case-block timers are not apportioned into standalone response calibration", () => {
+  const samples = Array.from({ length: 5 }, (_, index) => {
+    const sample = caseSample(index);
+    const { caseState, ...session } = sample.session;
+    return { ...sample, session: { ...session, configurationSnapshot: { kind: "practice", caseBlockPolicy: "claude-case-blocks-v1" }, caseStates: [caseState!] } };
+  });
+  assert.equal(calibrate(samples).kind, "unavailable");
+  assert.equal(calibrate(samples, ESTIMATE, { caseId: "case-a", caseVersion: "1" }).kind, "unavailable");
 });

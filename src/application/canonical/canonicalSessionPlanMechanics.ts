@@ -20,6 +20,8 @@ export type CanonicalSessionPlanInput = Readonly<{
   preparedOccurrences: CanonicalPreparedOccurrences;
   conditionalReinsertSlots: NonNullable<TrainingSession["conditionalReinsertSlots"]>;
   startedAt: string;
+  caseState?: TrainingSession["caseState"];
+  caseStates?: TrainingSession["caseStates"];
 }>;
 
 export type CanonicalPreparedOccurrences = Readonly<{
@@ -59,6 +61,8 @@ export async function buildCanonicalSessionPlan(catalog: TrainingCatalog, input:
     trackId: catalog.trackId,
     modeId: input.modeId,
     configurationSnapshot: input.configurationSnapshot,
+    ...(input.caseState ? { caseState: input.caseState } : {}),
+    ...(input.caseStates ? { caseStates: input.caseStates } : {}),
     requestedLength: input.requestedLength,
     actualLength: input.preparedOccurrences.itemOrder.length,
     currentItemIndex: 0,

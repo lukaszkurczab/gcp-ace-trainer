@@ -1,3 +1,4 @@
+import { isCaseAttemptEvidence, sessionCaseStates } from "../../domain/learning/caseEvidence";
 import type { ForegroundTimerLeaveReason } from "../runtime/ForegroundSessionTimer";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { type AttemptResultKind, type CompletedTrainingSession, type TrackId, type TrainingSession, type TrainingSessionDraft } from "../../domain";
@@ -29,7 +30,7 @@ import { captureProfileReadFence } from "../profileReadFence";
 export { certificationReviewEvidenceMatches } from "./certificationPracticeReviewProjection";
 export type { CertificationDiagnosticReport, CertificationPracticeReviewItem, CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
 
-export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; nodeId?: string; mentalUnitId?: string; expectedContentVersion?: string; expectedArtifactSha256?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; reviewSource?: "due_queue" | "manual_request"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
+export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; preset?: "single_case"; caseId?: string; domain?: CertificationDomain; nodeId?: string; mentalUnitId?: string; expectedContentVersion?: string; expectedArtifactSha256?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; reviewSource?: "due_queue" | "manual_request"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationExamResumeResult = Readonly<{ kind: "ready"; projection: CertificationExamProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationAbandonmentResult =
@@ -89,7 +90,8 @@ export class CertificationExamExpiredError extends Error {
 
 export function buildCertificationPracticeStartCommand(input: CertificationPracticeOpenInput) {
   const feedbackTiming = input.feedbackMode === "atSessionEnd" ? "after_session_completion" : input.feedbackMode === "afterEachAnswer" ? "after_each_durable_submit" : undefined;
-  return { trackId: input.trackId ?? "google-cloud-associate-cloud-engineer", modeId: input.modeId, source: input.source, request: { ...input, ...(feedbackTiming ? { feedbackTiming } : {}) } } as const;
+  const { expectedContentVersion, expectedArtifactSha256, ...request } = input;
+  return { trackId: input.trackId ?? "google-cloud-associate-cloud-engineer", modeId: input.modeId, source: input.source, request: { ...request, ...(expectedContentVersion === undefined ? {} : { expectedContentVersion }), ...(expectedArtifactSha256 === undefined ? {} : { expectedArtifactSha256 }), ...(feedbackTiming ? { feedbackTiming } : {}) } } as const;
 }
 
 async function startCertificationPracticeSession(input: CertificationPracticeOpenInput): Promise<PreparedSession> {
@@ -133,7 +135,8 @@ export async function startCertificationExam(source = "practiceHub"): Promise<Pr
   return startTrainingSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-exam-simulation", source, request: {} });
 }
 export async function getCertificationPracticeProjection(): Promise<CertificationPracticeProjection> {
-  const [session, attempts] = await Promise.all([requireActive(), loadTrainingAttempts()]);
+  const [initialSession, attempts] = await Promise.all([requireActive(), loadTrainingAttempts()]);
+  let session = initialSession;
   if (session.modeId === "certification-exam-simulation") throw new Error("The active Cloud session is an exam simulation.");
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("Cloud practice occurrence is unavailable.");
@@ -147,6 +150,8 @@ export async function getCertificationPracticeProjection(): Promise<Certificatio
   const presentation = resolvedQuestion.interactions.present(question.questionId, responseAttempt?.response ?? null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
   const feedbackMode = certificationFeedbackModeFromSession(session);
   const feedback = projectCertificationPracticeFeedback(feedbackMode, materializedAttempt, resolvedQuestion);
+  const caseEvidence = materializedAttempt?.reviewEvidence.evidence?.details;
+  if (feedback && isCaseAttemptEvidence(caseEvidence) && sessionCaseStates(session).some(state => state.caseId === caseEvidence.caseId && state.caseVersion === caseEvidence.caseVersion)) session = await lifecycle.recordCaseExposure("solution");
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
     getForegroundSessionTimerFacade().projection(session),

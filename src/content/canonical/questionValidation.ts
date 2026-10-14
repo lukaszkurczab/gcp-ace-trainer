@@ -1,3 +1,4 @@
+import { validateCaseRecipes } from "./caseRecipe";
 import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 import { hasCanonicalEdgeWhitespace, isCanonicalSafeIdentity } from "../../domain/identity/canonicalIdentity";
 import type { CanonicalArtifact, CanonicalContentLockRecord, Question } from "./questionTypes";
@@ -57,7 +58,7 @@ export function assertValidQuestion(value: unknown, registry: CanonicalInteracti
 }
 
 export function validateQuestionRelations(questions: readonly unknown[]): readonly string[] {
-  const errors: string[] = [];
+  const errors: string[] = [...validateCaseRecipes(questions as Question[])];
   const questionsById = new Map<string, Record<string, unknown>>();
   for (const question of questions) if (record(question) && typeof question.questionId === "string") questionsById.set(question.questionId, question);
   for (const question of questionsById.values()) {

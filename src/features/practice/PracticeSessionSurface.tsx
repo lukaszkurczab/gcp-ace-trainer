@@ -1,3 +1,4 @@
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { PracticeQuestionCard } from "./PracticeQuestionCard";
 import { getPracticeSessionExitCopy } from "./practiceSessionExitCopy";
 import type { ReactNode } from "react";
@@ -93,6 +94,8 @@ export type PracticeSessionSurfaceProps = Readonly<{
  * recovery remain application-owned.
  */
 export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
+  const promptLayoutMeasured = useRef(false);
+  const feedbackAnchor = useRef<View>(null);
   const lastPrimaryActionActivation = useRef<PracticePrimaryActionActivation | null>(null);
   const styles = useThemedStyles(createStyles);
   const editable = props.responseEditable ?? allowsPracticeResponseEditing(props.phase);
@@ -135,6 +138,9 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   return (
     <SessionShell
       actionBar={props.phase === "preparing" ? undefined : props.actionBar ?? <ActionBar {...props} onPrimaryAction={handlePrimaryAction} />}
+      scrollFocus={visibleFeedback && props.feedbackItem && displayedQuestionId && props.runtimeIdentity?.trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID
+        ? { key: `${props.runtimeIdentity.sessionId}:${props.runtimeIdentity.ordinal}:${displayedQuestionId}`, target: feedbackAnchor }
+        : undefined}
       key={displayedQuestionId}
       headerAction={props.headerAction}
       modeTestID={props.runtimeIdentity ? runtimeSelectors.session.mode(props.runtimeIdentity.modeId) : undefined}
@@ -150,12 +156,17 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
       {props.phase === "preparing" ? <PracticeSessionLoadingSkeleton /> : null}
       {props.phase === "completing" ? <CompletingNotice /> : null}
       {props.runtimeIdentity && controls ? (
-        <View testID={runtimeSelectors.session.track(props.runtimeIdentity.trackId)}>
+        <View testID={runtimeSelectors.session.track(props.runtimeIdentity.trackId)} onLayout={() => {
+          if (!promptLayoutMeasured.current && props.runtimeIdentity?.trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID && props.runtimeIdentity.ordinal === 1) {
+            promptLayoutMeasured.current = true;
+            markStartup("claude_prompt_layout");
+          }
+        }}>
           <View style={styles.questionAndResponse} testID={runtimeSelectors.session.roadmapNode(props.runtimeIdentity.roadmapNodeId)}>{controls}</View>
         </View>
       ) : controls ? <View style={styles.questionAndResponse}>{controls}</View> : null}
       {props.notice && props.phase !== "completing" ? <DurabilityNotice notice={props.notice} /> : null}
-      {visibleFeedback && props.feedbackItem && displayedQuestionId ? <PracticeFeedbackBlock feedback={visibleFeedback} item={props.feedbackItem} itemId={displayedQuestionId} reportSurface={{ modeRoute: "practice_feedback_details", trackNode: props.runtimeIdentity?.roadmapNodeId ?? null }} /> : null}
+      {visibleFeedback && props.feedbackItem && displayedQuestionId ? <View ref={feedbackAnchor} collapsable={false}><PracticeFeedbackBlock feedback={visibleFeedback} item={props.feedbackItem} itemId={displayedQuestionId} reportSurface={{ modeRoute: "practice_feedback_details", trackNode: props.runtimeIdentity?.roadmapNodeId ?? null }} /></View> : null}
       {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} sessionId={props.runtimeIdentity?.sessionId} trackId={props.runtimeIdentity?.trackId} /> : null}
     </SessionShell>
   );

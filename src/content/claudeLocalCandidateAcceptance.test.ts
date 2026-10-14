@@ -6,6 +6,8 @@ import { createCanonicalTrainingFamilyRuntime } from "../application/canonicalTr
 import { evaluatePackageCompletion } from "../domain/learning/packageCompletionRule";
 import { createTrainingAttempt } from "../domain/learning/trainingAttempt";
 import type { TrackId } from "../domain/learning/trackIdentity";
+import qleAcceptance from "../../integration/contracts/content-release/local-claude/qle-v2-acceptance.json";
+import retainedClaude from "./generated/retained-content/claude-pre-qle-v2.json";
 import frozenRelease from "../../integration/contracts/content-release/release.lock.json";
 import historicalRelease from "../../integration/contracts/content-release/release.lock.historical-0024.json";
 import { ContentPackageRuntimeOwner } from "../application/contentPackageRuntimeOwner";
@@ -18,13 +20,15 @@ import { productionTrackAdmissionContext } from "../application/tracks/trackAdmi
 const TRACK = "claude-certified-architect-professional-certification";
 const NOW = "2026-10-11T12:00:00.000Z";
 
-test("CC05 formal bundled Claude exposes both learning resources and all 53 required exam units", async () => {
+test("QLE local Claude preserves CC05 resources, all53 units and its separate frozen release pin", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack(TRACK);
-  assert.equal(track.questions.length, 918);
+  assert.equal(track.questions.length, 972);
   const activeReleaseArtifact = frozenRelease.artifacts.find((artifact) => artifact.trackId === TRACK);
   assert.ok(activeReleaseArtifact, "the formal release lock must bind Claude");
-  assert.equal(track.artifactSha256, activeReleaseArtifact.checksumSha256, "runtime pin must match the formal release lock, not the local-only acceptance record");
+  assert.equal(retainedClaude.lock.sha256, activeReleaseArtifact.checksumSha256, "the prior formal release pin remains exact");
+  assert.equal(track.artifactSha256, qleAcceptance.candidate.artifact.artifactSha256);
+  assert.equal(qleAcceptance.publication, "not_granted");
   const rule = track.completionRule;
   assert.equal(rule?.ruleVersion, 3);
   if (rule?.ruleVersion !== 3) throw new Error("The locally accepted Claude package requires unit coverage.");
@@ -34,6 +38,7 @@ test("CC05 formal bundled Claude exposes both learning resources and all 53 requ
   assert.equal(units.length, 53);
   for (const question of track.questions) {
     const links = projectCanonicalSourceLinks(question);
+    if (question.questionId.includes("-qle-v2-")) { assert.equal(links[0]?.role, "documentation"); continue; }
     assert.deepEqual(links.map((link) => link.role), ["documentation", "course"], question.questionId);
     assert.equal(links[1]?.requiresAccount, true);
     assert.equal(new URL(links[1]!.url).hostname, "anthropic-partners.skilljar.com");

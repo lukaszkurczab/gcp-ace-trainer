@@ -51,7 +51,7 @@ test("all current actual multiple-choice items reject every wrong-containing sub
       assert.equal(oracle.scoreQuestion(producerQuestionWithoutDomain(question), response).earnedPoints, 0);
     }
   }
-  assert.deepEqual({ items, subsets }, { items: 441, subsets: 8992 });
+  assert.deepEqual({ items, subsets }, { items: 445, subsets: 9056 });
 });
 
 function producerQuestionWithoutDomain(question: ChoiceMultipleQuestion) {
@@ -64,8 +64,8 @@ test("actual practice runtime writes zero-point incorrect attempt/review, surviv
   const track = (await catalogPromise).getTrack("claude-certified-architect-professional-certification");
   const runtime = createCanonicalTrainingFamilyRuntime(track);
   const mode = track.getMode("certification-focus-practice");
-  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "bizq01-scoring", requestedLength: Math.max(...mode.requestedLengths) }, attempts: [], reviews: [], now: NOW });
-  const question = track.getPool(mode.modeId).find(multiple);
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "bizq01-scoring", requestedLength: Math.max(...mode.requestedLengths), mentalUnitId: "CCARP-D01-O03" }, attempts: [], reviews: [], now: NOW });
+  const question = track.getPool(mode.modeId).filter(q => q.mentalUnitId === "CCARP-D01-O03").find(multiple);
   assert.ok(question, "the actual eligible practice pool must contain multiple-choice content");
   // Explicit reconstructed plan fixture: current automatic selection does not select
   // this item. Keep actual pool membership, refs, configuration and resume validation.

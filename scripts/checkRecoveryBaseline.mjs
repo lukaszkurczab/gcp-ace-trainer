@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { validateBuiltContent, GENERATED_DIRECTORY, EXPECTED_INVENTORY } from "./syncBundledContentRelease.mjs";
+import { validateBuiltContent, GENERATED_DIRECTORY, LOCAL_CLAUDE_INVENTORY } from "./syncBundledContentRelease.mjs";
 
 const root = process.cwd();
 const failures = [];
@@ -136,7 +136,7 @@ const observedTestCount = (testSource.match(/\btest\s*\(\s*["']/g) ?? []).length
 if (observedTestCount === 0) fail("no active test cases are present.");
 
 for (const path of ["src/tracks/coding-interview/content", "src/features/questions/defaultQuestionBank.ts", "data/question-bank"]) if (existsSync(join(root, path))) fail(`production content remains in application: ${path}`);
-try { await validateBuiltContent(join(root, GENERATED_DIRECTORY), { expectedInventory: EXPECTED_INVENTORY }); }
+try { await validateBuiltContent(join(root, GENERATED_DIRECTORY), { expectedInventory: LOCAL_CLAUDE_INVENTORY }); }
 catch (error) { fail(`canonical content parity gate failed: ${error.message}`); }
 for (const pattern of [/algorithmContentGroups/, /defaultQuestionBank/, /HttpContentSource/, /ContentCacheRepository/, /loadTrackContent/]) if (pattern.test(activeSource)) fail(`obsolete content storage path remains: ${pattern}`);
 

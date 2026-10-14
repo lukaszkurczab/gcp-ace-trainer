@@ -1,3 +1,4 @@
+import { CLAUDE_CASE_TRACK, CASE_EVIDENCE_POLICY } from "../../content/canonical/caseRecipe";
 import type { ProductModeConfig } from "../../content/canonical/productModeConfig";
 import type { LearningPlanExecutionPolicy } from "../../domain/learning/learningPlan";
 import type { TrainingSession } from "../../domain/learning/trainingSession";
@@ -70,14 +71,18 @@ export function recommendLearningPlanMode(input: Readonly<{
   if (active && (!activeMode || activeMode.availability !== "immediate" && activeMode.availability !== "evidence_conditioned" || activeMode.timer.kind !== "elapsed_foreground")) {
     throw new ActiveSessionPlanningError("active_session_mode_unavailable");
   }
-  if (active && (!activeMode!.requestedLengths.includes(active.requestedLength) || active.actualLength !== active.itemOrder.length ||
+  const singleCaseContinuation = active?.trackId === CLAUDE_CASE_TRACK && active.modeId === "certification-focus-practice"
+    && active.configurationSnapshot.preset === "single_case" && active.configurationSnapshot.policyVersion === CASE_EVIDENCE_POLICY && active.caseState?.policyVersion === CASE_EVIDENCE_POLICY
+    && active.configurationSnapshot.caseId === active.caseState.caseId && active.configurationSnapshot.caseVersion === active.caseState.caseVersion
+    && active.requestedLength >= 2 && active.requestedLength <= 4 && active.actualLength === active.requestedLength;
+  if (active && ((!activeMode!.requestedLengths.includes(active.requestedLength) && !singleCaseContinuation) || active.actualLength !== active.itemOrder.length ||
     active.actualLength < 1 || active.actualLength > active.requestedLength)) {
     throw new ActiveSessionPlanningError("active_session_length_unavailable");
   }
   const mode = activeMode ?? (diagnosis === "active" ? diagnostic : selectedReview ?? (diagnosis === "scheduled" ? diagnostic : undefined) ?? practice);
   if (!mode) throw new Error("This canonical track has no legal next request.");
   const requestedLength = active?.requestedLength ?? mode.defaultRequestedLength;
-  if (!mode.requestedLengths.includes(requestedLength)) throw new Error("The canonical next request has an unsupported length.");
+  if (!mode.requestedLengths.includes(requestedLength) && !singleCaseContinuation) throw new Error("The canonical next request has an unsupported length.");
   return Object.freeze({
     mode,
     requestedLength,

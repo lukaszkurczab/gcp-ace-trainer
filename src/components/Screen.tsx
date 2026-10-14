@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useCallback, useEffect, useRef, type ReactNode, type RefObject } from "react";
 import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 
@@ -19,13 +19,31 @@ type ScreenProps = {
   footerVariant?: "default" | "review" | "session" | "simulation" | "sticky";
   header?: ReactNode;
   scroll?: boolean;
+  scrollFocus?: Readonly<{ key: string; target: RefObject<View | null> }>;
   style?: StyleProp<ViewStyle>;
 };
 
-export function Screen({ ambient = true, ambientVariant = "default", backgroundColor, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, style }: ScreenProps) {
+export function Screen({ ambient = true, ambientVariant = "default", backgroundColor, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, scrollFocus, style }: ScreenProps) {
   const styles = useThemedStyles(createStyles);
+  const scrollRef = useRef<ScrollView>(null);
+  const contentRef = useRef<View>(null);
+  const focusedKey = useRef<string | null>(null);
+  const focusContent = useCallback(() => {
+    if (!scroll || !scrollFocus || focusedKey.current === scrollFocus.key) return;
+    const contentNode = contentRef.current;
+    if (!contentNode || !scrollFocus.target.current || !scrollRef.current) return;
+    scrollFocus.target.current.measureLayout(contentNode, (_x, y) => {
+      if (focusedKey.current === scrollFocus.key) return;
+      scrollRef.current?.scrollTo({ y: Math.max(0, y), animated: false });
+      focusedKey.current = scrollFocus.key;
+    });
+  }, [scroll, scrollFocus]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(focusContent);
+    return () => cancelAnimationFrame(frame);
+  }, [focusContent]);
   const contentStyle = [styles.content, compact ? styles.contentCompact : null, footer ? styles.contentWithFooter : null, style];
-  const content = <View style={contentStyle}>{children}</View>;
+  const content = <View ref={contentRef} collapsable={scrollFocus ? false : undefined} style={contentStyle}>{children}</View>;
 
   return (
     <SafeAreaView edges={edges} style={[styles.safeArea, backgroundColor ? { backgroundColor } : null, ambient ? styles.ambientSafeArea : null]}>
@@ -33,6 +51,8 @@ export function Screen({ ambient = true, ambientVariant = "default", backgroundC
       {header}
       {scroll ? (
         <ScrollView
+          ref={scrollRef}
+          onContentSizeChange={scrollFocus ? focusContent : undefined}
           contentContainerStyle={[styles.scrollContent, compact ? styles.scrollContentCompact : null]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

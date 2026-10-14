@@ -1,3 +1,4 @@
+import { isCaseAttemptEvidence, CASE_TRACK_ID } from "../../domain/learning/caseEvidence";
 import { REVIEW_REASONS, REVIEW_CYCLE_STAGES, isManualRequestId, type ReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
 import { createAttemptResult, type AttemptResultComponent } from "../../domain/learning/attemptResult";
 import { createTrainingSession, type TrainingSession } from "../../domain/learning/trainingSession";
@@ -109,7 +110,7 @@ export function isReviewQueueEntryArray(value: unknown, admission: TrackAdmissio
 
 export function isTrainingSession(value: unknown, admission: TrackAdmissionContext): value is TrainingSession {
   if (!isRecord(value)) return false;
-  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "artifactSha256", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"])) return false;
+  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "caseState", "caseStates", "activeForegroundMs", "contentVersion", "artifactSha256", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"])) return false;
   if ("itemRefs" in value || value.status === "expired") return false;
   if (!(isNonEmptyString(value.id) && typeof value.trackId === "string" && isTrackAdmitted(admission, value.trackId) &&
     isNonEmptyString(value.modeId) && isConfigurationSnapshot(value.configurationSnapshot) && typeof value.requestedLength === "number" &&
@@ -125,6 +126,8 @@ export function isTrainingSession(value: unknown, admission: TrackAdmissionConte
       id: value.id,
       trackId: value.trackId,
       modeId: value.modeId,
+      ...(value.caseState === undefined ? {} : { caseState: value.caseState as TrainingSession["caseState"] }),
+      ...(value.caseStates === undefined ? {} : { caseStates: value.caseStates as TrainingSession["caseStates"] }),
       configurationSnapshot: value.configurationSnapshot,
       requestedLength: value.requestedLength,
       actualLength: value.actualLength,
@@ -235,7 +238,7 @@ function isValidReviewCycleState(value: Record<string, unknown>): boolean {
 }
 
 function isExactReviewEvidence(value: unknown): value is { sourceItem: ResolvedContentRef; taxonomyOrSkillRefs: EvidenceRef[] } {
-  return isRecord(value) && hasOnlyKeys(value, ["sourceItem", "taxonomyOrSkillRefs"]) && isResolvedContentRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs) && value.taxonomyOrSkillRefs.every(isEvidenceRef);
+  return isRecord(value) && hasOnlyKeys(value, ["sourceItem", "taxonomyOrSkillRefs", "evidence"]) && isResolvedContentRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs) && value.taxonomyOrSkillRefs.every(isEvidenceRef) && (value.evidence === undefined || (value.sourceItem.trackId === CASE_TRACK_ID && isRecord(value.evidence) && hasOnlyKeys(value.evidence, ["familyId", "details"]) && value.evidence.familyId === "certification" && isCaseAttemptEvidence(value.evidence.details)));
 }
 
 function isReviewEvidence(value: unknown): boolean {

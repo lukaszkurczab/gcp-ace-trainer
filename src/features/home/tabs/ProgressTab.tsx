@@ -8,6 +8,7 @@ import type { ActivitySessionRecord } from "../../../application/activityReadMod
 import type { GuidanceAction } from "../../../application/learningPlan";
 import type { HomePlanSnapshot } from "../../../application/homePlanSnapshotReader";
 import { completionCopy } from "../homePlanUiContract";
+import { CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID } from "../../../domain";
 import type { GoalRecord, ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
@@ -196,11 +197,15 @@ export function ProgressTab({
           <View style={styles.emptyProgressIcon}>
             <Text maxFontSizeMultiplier={2} style={styles.emptyProgressGlyph}>⫶</Text>
           </View>
-          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressTitle}>{t("No learning evidence yet")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressDescription}>{t("Complete a Practice session to begin building Progress.")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressTitle}>{t(activeTrack.id === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID ? "No performance evidence for this version yet" : "No learning evidence yet")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressDescription}>{t(activeTrack.id === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID && (trainingAttempts.length > 0 || activityRecords.length > 0 || reviewQueueItems.length > 0) ? "Earlier activity and reviews remain available." : "Complete a Practice session to begin building Progress.")}</Text>
           {model.algorithmsProgress && onProgressAction ? (
             <Button labelStyle={styles.emptyProgressActionLabel} onPress={() => onProgressAction(model.algorithmsProgress!.priority.primaryAction)} style={styles.emptyProgressAction}>
               {t("Open Practice")}
+            </Button>
+          ) : activeTrack.id === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID && model.reviewAction && onProgressAction ? (
+            <Button labelStyle={styles.emptyProgressActionLabel} onPress={() => onProgressAction(model.reviewAction!)} style={styles.emptyProgressAction}>
+              {t(model.reviewActionLabel)}
             </Button>
           ) : onOpenPractice ? (
             <Button labelStyle={styles.emptyProgressActionLabel} onPress={onOpenPractice} style={styles.emptyProgressAction}>

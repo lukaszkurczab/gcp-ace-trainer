@@ -628,15 +628,17 @@ test('current producer remains buildable while app bundle matches the admitted c
   const releaseLock = JSON.parse(await readFile(path.join(APP_ROOT, 'integration/contracts/content-release/release.lock.json'), 'utf8'));
   const candidateRelease = JSON.parse(await readFile(path.join(CONTENT, releaseLock.releaseManifestPath), 'utf8'));
   const candidateLockApi = await import(pathToFileURL(path.join(APP_ROOT, 'scripts/candidateContentReleaseLock.mjs')).href);
-  await candidateLockApi.updateCandidateContentReleaseLock({ mode: 'check', appRoot: APP_ROOT, contentRoot: CONTENT });
+  await assert.rejects(candidateLockApi.updateCandidateContentReleaseLock({ mode: 'check', appRoot: APP_ROOT, contentRoot: CONTENT }), /[Ii]nventory mismatch|differs from release artifact/u);
+  const qleSync = await import(pathToFileURL(path.join(APP_ROOT, 'scripts/syncBundledContentRelease.mjs')).href);
+  await qleSync.syncCanonicalContent({ mode: 'check', appRoot: APP_ROOT, producerRoot: CONTENT, localReviewedCandidate: path.join(APP_ROOT, 'integration/contracts/content-release/local-claude/qle-v2-acceptance.json') });
   assert.equal(built.artifacts.length, 9);
   assert.equal(built.lock.tracks.length, 9);
   assert.deepEqual(
-    bundledLock.tracks.map(({ trackId, contentVersion, questionCount, sha256 }) => ({ trackId, contentVersion, questionCount, sha256 })),
-    candidateRelease.artifacts.map(({ trackId, contentVersion, questionCount, checksumSha256 }) => ({
+    bundledLock.tracks.filter(t => t.trackId !== 'claude-certified-architect-professional-certification').map(({ trackId, contentVersion, questionCount, sha256 }) => ({ trackId, contentVersion, questionCount, sha256 })),
+    candidateRelease.artifacts.filter(t => t.trackId !== 'claude-certified-architect-professional-certification').map(({ trackId, contentVersion, questionCount, checksumSha256 }) => ({
       trackId, contentVersion, questionCount, sha256: checksumSha256,
     })),
-    'all nine app artifacts must match the active candidate release, including counts',
+    'eight frozen artifacts must match the active release; Claude local candidate is separately exact-validated',
   );
   for (const artifact of built.artifacts) {
     const bytes = await readFile(path.join(outputRoot, `${artifact.trackId}.json`), 'utf8');

@@ -61,6 +61,7 @@ export function createTrainingCatalog(track: CanonicalTrackRuntime): TrainingCat
     ...(question.constraints ? { constraints: question.constraints } : {}),
     ...(question.sourceRefs ? { sourceRefs: question.sourceRefs } : {}),
     ...(question.contentDomainId ? { contentDomainId: question.contentDomainId } : {}),
+    ...(question.caseRecipe ? { caseRecipe: question.caseRecipe } : {}),
     ...(question.questionRelation ? { questionRelation: question.questionRelation } : {}),
   });
   const questions = Object.freeze(track.questions.map(summarize));

@@ -35,6 +35,8 @@ export function calibrateObservedPlanningTime(input: Readonly<{
   contentVersion: string;
   artifactSha256: string;
   planningPolicyIdentity: Readonly<{ contentVersion: string; artifactSha256: string; policyVersion: string }>;
+  /** A whole-case timer is comparable only with the same pinned recipe, never a mixed quiz. */
+  caseFormat?: Readonly<{ caseId: string; caseVersion: string }>;
 }>): ObservedTimeCalibration {
   if (!input.trackId.trim() || !input.modeId.trim() || !input.contentVersion.trim() || !/^[a-f0-9]{64}$/u.test(input.artifactSha256) || !input.policy.policyVersion.trim() || !input.planningPolicyIdentity.contentVersion.trim() || !/^[a-f0-9]{64}$/u.test(input.planningPolicyIdentity.artifactSha256) || input.planningPolicyIdentity.policyVersion !== input.policy.policyVersion) return unavailable("invalid_input");
   const questionById = new Map(input.questions.map((question) => [question.questionId, question]));
@@ -44,6 +46,14 @@ export function calibrateObservedPlanningTime(input: Readonly<{
   const attemptsBySession = groupAttempts(input.attempts);
   const eligible: Array<{ session: TrainingSession; estimateId: string; answerCount: number; minutesPerResponse: number }> = [];
   for (const session of input.sessions) {
+    const isCaseFormat = session.configurationSnapshot.preset === "single_case" && session.caseState !== undefined;
+    if (input.caseFormat) {
+      if (!isCaseFormat || session.caseState!.caseId !== input.caseFormat.caseId || session.caseState!.caseVersion !== input.caseFormat.caseVersion) continue;
+    } else if (isCaseFormat || session.caseState || session.caseStates?.length || session.configurationSnapshot.caseBlockPolicy || session.configurationSnapshot.caseReviewPolicy) {
+      // One aggregate timer cannot apportion shared context, standalone responses
+      // and case feedback. Keep authored rates until comparable observations exist.
+      continue;
+    }
     if (session.status !== "completed" || !session.completedAt || !Number.isFinite(Date.parse(session.completedAt)) ||
       session.trackId !== input.trackId || session.modeId !== input.modeId || session.contentVersion !== input.contentVersion ||
       session.artifactSha256 !== input.artifactSha256 || !Number.isFinite(session.activeForegroundMs) || session.activeForegroundMs <= 0) continue;

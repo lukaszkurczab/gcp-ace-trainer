@@ -746,14 +746,14 @@ test("Claude Focus persists selectable feedback, scores single and multi-select,
   const prepare = (sessionId: string, feedbackTiming?: "after_each_durable_submit" | "after_session_completion") => runtime.prepare({
     trackId: track.trackId,
     modeId: "certification-focus-practice",
-    request: { sessionId, requestedLength: 40, ...(feedbackTiming ? { feedbackTiming } : {}) },
+    request: { sessionId, requestedLength: 40, mentalUnitId: "CCARP-D01-O03", ...(feedbackTiming ? { feedbackTiming } : {}) },
     attempts: [],
     reviews: [],
     now: NOW,
   });
   const immediate = await prepare("claude-focus-immediate", "after_each_durable_submit");
   let deferred = await prepare("claude-focus-deferred", "after_session_completion");
-  const multiSelect = track.getPool("certification-focus-practice").find((question) => question.interaction.type === "choice_multiple");
+  const multiSelect = track.getPool("certification-focus-practice").find((question) => question.interaction.type === "choice_multiple" && question.mentalUnitId === "CCARP-D01-O03");
   if (multiSelect && !deferred.session.itemOrder.some((entry) => entry.item.questionId === multiSelect.questionId)) {
     const singleIndex = deferred.session.itemOrder.findIndex((entry) => track.getQuestion(entry.item.questionId)?.interaction.type === "choice_single");
     if (singleIndex >= 0) {

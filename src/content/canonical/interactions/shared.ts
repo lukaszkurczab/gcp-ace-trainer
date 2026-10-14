@@ -38,6 +38,7 @@ export type QuestionBase<T extends string = string> = Readonly<{
   sourceRefs?: readonly string[];
   contentDomainId?: string;
   questionRelation?: CanonicalQuestionRelation;
+  caseRecipe?: import("../caseRecipe").CaseRecipe;
   feedback: CanonicalFeedback<T>;
 }>;
 

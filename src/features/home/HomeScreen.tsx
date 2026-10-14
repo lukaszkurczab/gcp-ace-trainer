@@ -308,6 +308,15 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   async function handleRecommendationAction(action: HomeRecommendationAction) {
     if (action.kind === "unavailable") return;
     try {
+      if (action.kind === "start_certification_due_review") {
+        navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: "certification-weak-area-review", reviewSource: "due_queue", source: "home", topicId: "", trackId: action.trackId }));
+        return;
+      }
+      if (action.kind === "start_single_case") {
+        if (!activeTrackId) throw new Error("Choose a track before starting a case.");
+        navigation.navigate(ROUTES.PRACTICE_SESSION, { preset: "single_case", caseId: action.caseId, mode: "certification-focus-practice", feedbackMode: "afterEachAnswer", reviewBehaviorEnabled: false, sessionLength: action.decisionCount, source: "home", topicId: action.nodeId, nodeId: action.nodeId, trackId: activeTrackId });
+        return;
+      }
       if (action.kind === "resume_certification_practice") {
         const session = await resumeActiveTrainingSession();
         if (!action.trackId && (session.id !== action.sessionId || session.trackId !== "google-cloud-associate-cloud-engineer" || session.modeId !== action.modeId)) {

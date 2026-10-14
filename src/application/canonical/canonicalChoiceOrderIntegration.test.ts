@@ -97,7 +97,7 @@ test("all current actual items preserve control membership, ID answers and non-c
       assert.deepEqual(model.accessibility.controls.map((control) => control.id), order);
     }
   }
-  assert.deepEqual({ choiceCount, nonChoiceCount }, { choiceCount: 15036, nonChoiceCount: 1659 });
+  assert.deepEqual({ choiceCount, nonChoiceCount }, { choiceCount: 15090, nonChoiceCount: 1659 });
 });
 
 test("all real 29 practice modes and canonical simulation profiles prepare valid frozen orders with unchanged question selection", async () => {

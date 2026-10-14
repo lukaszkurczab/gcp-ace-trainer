@@ -818,5 +818,18 @@
   "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.",
   "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.",
   "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.",
-  "Patternly couldn't read saved Premium content. Try again later.": "Patternly couldn't read saved Premium content. Try again later."
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly couldn't read saved Premium content. Try again later.",
+  "Case complete": "Case complete",
+  "Done for today": "Done for today",
+  "Compare your decisions": "Compare your decisions",
+  "Decision {{number}}": "Decision {{number}}",
+  "After support": "After support",
+  "Independent response": "Independent response",
+  "One case · {{count}} decisions": "One case · {{count}} decisions",
+  "Another case": "Another case",
+  "Completing a case does not complete the day plan or establish mastery. Later decisions may use feedback from earlier steps.": "Completing a case does not complete the day plan or establish mastery. Later decisions may use feedback from earlier steps.",
+  "The next case is unavailable.": "The next case is unavailable.",
+  "Initial estimate: about {{minutes}} min": "Initial estimate: about {{minutes}} min",
+  "No performance evidence for this version yet": "No performance evidence for this version yet",
+  "Earlier activity and reviews remain available.": "Earlier activity and reviews remain available."
 }

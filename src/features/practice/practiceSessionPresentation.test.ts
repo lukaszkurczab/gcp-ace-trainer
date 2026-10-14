@@ -1,3 +1,4 @@
+import { hasReachedPracticeActionProjection } from "./practiceSessionPresentation";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -320,4 +321,12 @@ test("Practice checked semantics include only answers the learner selected", asy
   assert.equal(practiceOptionIsSelected("selected"), true);
   assert.equal(practiceOptionIsSelected("correct"), true);
   assert.equal(practiceOptionIsSelected("incorrect"), true);
+});
+
+test("an equivalent timer refresh releases the action lock without accepting a stale occurrence or response", () => {
+  const pending = { session: { id: "case-1" }, occurrenceId: "step-b", operation: { kind: "feedback" }, response: { value: "b" } };
+  assert.equal(hasReachedPracticeActionProjection(pending, structuredClone(pending)), true);
+  assert.equal(hasReachedPracticeActionProjection(pending, { ...pending, occurrenceId: "step-a" }), false);
+  assert.equal(hasReachedPracticeActionProjection(pending, { ...pending, response: null }), false);
+  assert.equal(hasReachedPracticeActionProjection(pending, { ...pending, operation: { kind: "submitting" } }), false);
 });

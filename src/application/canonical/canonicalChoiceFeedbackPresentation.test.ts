@@ -223,7 +223,9 @@ test("38 reviewed Claude items score and present exact selected-option feedback 
     }
   }
   const capacity = track.getQuestion("CCARP-D02-O04-expansion-14") as ChoiceSingleQuestion;
-  assert.match(capacity.interaction.options.find(option => option.optionId === "a")!.text, /authorized, meaning-preserving reduction/);
-  assert.match(capacity.interaction.options.find(option => option.optionId === "a")!.text, /explicit capacity failure or use an already approved alternate route/);
+  assert.match(capacity.interaction.options.find(option => option.optionId === "a")!.text, /recount authorized reductions/);
+  assert.match(capacity.interaction.options.find(option => option.optionId === "a")!.text, /fail or use an approved route if still over/);
   assert.match(capacity.feedback.reason, /Do not silently discard mandatory instructions, evidence, or output capacity/);
+  assert.match(capacity.feedback.reason, /19,300 input tokens exceeds the 18,000 input allowance/);
+  assert.match(capacity.feedback.reason, /authorized contract-preserving reduction/);
 });

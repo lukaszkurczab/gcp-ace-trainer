@@ -261,7 +261,7 @@ async function fixture() {
   await writeFile(path.join(producerRoot, "scripts", "build.mjs"), "// fixture\n");
   await mkdir(path.join(producerRoot, "scripts", "content"), { recursive: true });
   await mkdir(path.join(producerRoot, "config"), { recursive: true });
-  await Promise.all(["question-contract.mjs", "planning-policy.mjs", "track-runtime-bindings.mjs"].map((name) => cp(
+  await Promise.all(["question-contract.mjs", "case-recipe.mjs", "planning-policy.mjs", "track-runtime-bindings.mjs"].map((name) => cp(
     path.join(contractRoot, "scripts", "content", name),
     path.join(producerRoot, "scripts", "content", name),
   )));
@@ -299,8 +299,8 @@ test("historical local Claude acceptance is not silently retargeted after produc
     await writeFile(path.join(targetDirectory, name), bytes);
   }
   const appEvidencePaths = [
-    "docs/reports/claude-course-alignment-acceptance-2026-10-11.md",
-    "docs/reports/claude-unit-coverage-acceptance-2026-10-11.md",
+    "integration/contracts/content-release/local-claude/claude-course-alignment-acceptance-2026-10-11.md",
+    "integration/contracts/content-release/local-claude/claude-unit-coverage-acceptance-2026-10-11.md",
     "integration/contracts/content-release/release.lock.json",
   ];
   for (const relativePath of appEvidencePaths) {
@@ -323,10 +323,10 @@ test("historical local Claude acceptance is not silently retargeted after produc
 
   const before = Object.fromEntries(await snapshot(targetDirectory));
   const acceptancePath = path.join(root, "local-acceptance.json");
-  await cp(path.join(realAppRoot, "docs/reports/claude-local-candidate-2026-10-11.json"), acceptancePath);
+  await cp(path.join(realAppRoot, "integration/contracts/content-release/local-claude/claude-local-candidate-2026-10-11.json"), acceptancePath);
   await assert.rejects(
     syncCanonicalContent({ appRoot, producerRoot, targetDirectory, localReviewedCandidate: acceptancePath }),
-    /acceptance record is stale for current producer inputs/u,
+    /acceptance record is stale for current producer inputs|artifact identity does not match the reviewed QLE-v2/u,
     "the immutable CC-05 evidence must not be silently retargeted to changed producer bytes",
   );
   assert.deepEqual(Object.fromEntries(await snapshot(targetDirectory)), before, "changed candidate bytes must be rejected before changing the bundle");

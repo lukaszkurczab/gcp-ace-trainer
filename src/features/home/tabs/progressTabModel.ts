@@ -1,3 +1,4 @@
+import { qualifyPackageAttempts } from "../../../domain/learning/packageCompletionRule";
 import {
   CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID,
   CODING_INTERVIEW_TRACK_ID,
@@ -220,18 +221,24 @@ function buildInstalledPackageProgressTabModel(
     attempt.item.artifactSha256 === packageResolution.track.artifactSha256 &&
     itemById.has(attempt.item.questionId),
   );
-  const currentReviews = reviewQueueItems.filter((entry) =>
+  const claude = trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID;
+  const scopedReviews = reviewQueueItems.filter((entry) =>
     entry.trackId === trackId &&
     entry.sourceItem.trackId === trackId &&
-    entry.sourceItem.contentVersion === packageResolution.track.contentVersion &&
-    entry.sourceItem.artifactSha256 === packageResolution.track.artifactSha256 &&
-    itemById.has(entry.sourceItem.questionId),
+    (claude || (entry.sourceItem.contentVersion === packageResolution.track.contentVersion &&
+      entry.sourceItem.artifactSha256 === packageResolution.track.artifactSha256 &&
+      itemById.has(entry.sourceItem.questionId))),
   );
-  const dueReviewCount = currentReviews.filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt <= now).length;
-  const manualReviewCount = currentReviews.filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt > now && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined).length;
+  const isDue = (entry: ReviewQueueEntry) => entry.dueAt !== undefined && (claude ? Date.parse(entry.dueAt) <= Date.parse(now) : entry.dueAt <= now);
+  const isFuture = (entry: ReviewQueueEntry) => entry.dueAt !== undefined && (claude ? Date.parse(entry.dueAt) > Date.parse(now) : entry.dueAt > now);
+  const dueReviewCount = scopedReviews.filter((entry) => isActiveReviewQueueEntry(entry) && isDue(entry)).length;
+  const manualReviewCount = scopedReviews.filter((entry) => isActiveReviewQueueEntry(entry) && isFuture(entry) && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined).length;
   const scores = new Map<string, { correct: number; earned: number; max: number; total: number }>();
 
-  for (const attempt of currentAttempts) {
+  const performanceAttempts = trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID
+    ? qualifyPackageAttempts(packageResolution.track, currentAttempts)
+    : currentAttempts;
+  for (const attempt of performanceAttempts) {
     const nodeId = itemById.get(attempt.item.questionId)!.nodeId;
     const score = scores.get(nodeId) ?? { correct: 0, earned: 0, max: 0, total: 0 };
     scores.set(nodeId, {
@@ -249,7 +256,7 @@ function buildInstalledPackageProgressTabModel(
       { label: "Answered", tone: "info", value: currentAttempts.length },
       { label: "Due review", tone: dueReviewCount > 0 ? "warning" : "neutral", value: dueReviewCount },
       { label: "Manual review ready", tone: manualReviewCount > 0 ? "primary" : "neutral", value: manualReviewCount },
-      { label: "Saved review", tone: "primary", value: currentReviews.length },
+      { label: "Saved review", tone: "primary", value: scopedReviews.length },
     ],
     performanceScores: [...scores.entries()].map(([nodeId, score]) => {
       const metadata = resolveInstalledPackageDomainMetadata(trackId, nodeId);
@@ -268,7 +275,7 @@ function buildInstalledPackageProgressTabModel(
     reviewActionEnabled: dueReviewCount + manualReviewCount > 0,
     reviewActionLabel: "Open review queue",
     reviewQueueCount: dueReviewCount + manualReviewCount,
-    reviewQueueCopy: formatCanonicalReviewQueueCopy(dueReviewCount, currentReviews.filter((entry) => entry.reasons.includes("repeated_mistake")).length, currentReviews.length, manualReviewCount),
+    reviewQueueCopy: formatCanonicalReviewQueueCopy(dueReviewCount, scopedReviews.filter((entry) => entry.reasons.includes("repeated_mistake")).length, scopedReviews.length, manualReviewCount),
     ...(dueReviewCount > 0 && manualReviewCount > 0 ? { reviewQueueCopyParams: { dueCount: dueReviewCount, manualCount: manualReviewCount } } : {}),
     ...(dueReviewCount === 0 && manualReviewCount > 0 ? { reviewQueueCopyParams: { count: manualReviewCount } } : {}),
   };

@@ -318,7 +318,7 @@ test("Certification route handoffs use exact resume intent and cannot hide failu
   assert.match(homeModel, /session\.trackId !== input\.activeTrack\.id/);
   assert.match(homeModel, /buildDesignInterviewPracticeResumeRoute\(session\)/);
   assert.equal((homeTab.match(/runtimeSelectors\.resume\.card/g) ?? []).length, 1);
-  assert.equal((homeTab.match(/styles\.decisionCard/g) ?? []).length, 1);
+  assert.equal((homeTab.match(/styles\.decisionCard/g) ?? []).length, 2, "primary recommendation and preserved secondary plan");
   assert.doesNotMatch(facade, /catch\([^)]*\)[^{]*\{[^}]*return null|catch\([^)]*\)[^{]*\{[^}]*startCertificationSession/);
 });
 
