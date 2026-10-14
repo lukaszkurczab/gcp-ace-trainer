@@ -104,3 +104,20 @@ test("uninitialized, unavailable or invalid native status remains explicit unava
     if (overrides.nativeInitialized === false) assert.equal(fixture.nativeReads(), 0);
   }
 });
+
+test("isolated dependency prefix selects exact owners without suffix fallback", async () => {
+  const prefix = "../../../../../Users/test/patternly/node_modules/";
+  const fixture = runtime({ state: "unassigned", rootInitialized: false, allProtectedClosed: true });
+  for (const module of fixture.context.__r.getModules().values()) {
+    if (module.verboseName.startsWith("node_modules/")) module.verboseName = prefix + module.verboseName.slice(13);
+  }
+  const receipt = await vm.runInNewContext(buildEnvironmentProbeExpression("inspect", undefined, isolatedAppId, prefix), fixture.context);
+  assert.equal(receipt.state, "unassigned");
+  assert.throws(() => buildEnvironmentProbeExpression("inspect", undefined, "com.lkurczab.patternly", prefix), /arguments_rejected/);
+  assert.throws(() => buildEnvironmentProbeExpression("inspect", undefined, isolatedAppId, prefix + "../"), /arguments_rejected/);
+  await assert.rejects(vm.runInNewContext(buildEnvironmentProbeExpression("inspect", undefined, isolatedAppId, prefix.replace("patternly", "sibling")), fixture.context), /owner_unavailable/);
+  const modules = fixture.context.__r.getModules();
+  const constants = [...modules.values()].find(v => v.verboseName.endsWith("/expo-constants/build/Constants.js"));
+  modules.set(modules.size, { ...constants });
+  await assert.rejects(vm.runInNewContext(buildEnvironmentProbeExpression("inspect", undefined, isolatedAppId, prefix), fixture.context), /owner_unavailable/);
+});

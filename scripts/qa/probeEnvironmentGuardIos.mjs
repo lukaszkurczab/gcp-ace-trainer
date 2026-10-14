@@ -1,18 +1,20 @@
 import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { resolve } from "node:path";
+import { resolve, relative } from "node:path";
+import { realpathSync } from "node:fs";
 import { parseOrigin, request, selectTarget } from "./readNativeStartupTrace.mjs";
 
-export function buildEnvironmentProbeExpression(action = "inspect", expectedFingerprint, expectedAppId = "com.lkurczab.patternly") {
+export function buildEnvironmentProbeExpression(action = "inspect", expectedFingerprint, expectedAppId = "com.lkurczab.patternly", dependencyModulePrefix = "node_modules/") {
   if (!["inspect", "assign", "inventory", "sdk-status"].includes(action)
     || !["com.lkurczab.patternly", "com.lkurczab.patternly.sec03"].includes(expectedAppId)
     || (action === "sdk-status" && expectedAppId !== "com.lkurczab.patternly.sec03")
     || (action !== "inspect" && !/^[a-f0-9]{64}$/u.test(expectedFingerprint ?? ""))) throw Error("arguments_rejected");
+  if (dependencyModulePrefix !== "node_modules/" && (expectedAppId !== "com.lkurczab.patternly.sec03" || !/^(?:\.\.\/)*[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*\/node_modules\/$/u.test(dependencyModulePrefix))) throw Error("arguments_rejected");
   return `(async()=>{
       if(!globalThis.HermesInternal || typeof __DEV__==='undefined' || !__DEV__)throw Error('controlled_runtime_required');
       const modules=Array.from(__r.getModules().entries());
-      const owner=path=>{const found=modules.filter(([,v])=>v.verboseName===path);if(found.length!==1)throw Error('owner_unavailable');return found[0];};
+      const owner=path=>{const found=modules.filter(([,v])=>v.verboseName===(path.startsWith('node_modules/')?${JSON.stringify(dependencyModulePrefix)}+path.slice(13):path));if(found.length!==1)throw Error('owner_unavailable');return found[0];};
       const initialized=path=>owner(path)[1].isInitialized;
       const load=path=>{const [id,module]=owner(path);if(!module.isInitialized)throw Error('owner_closed');return __r(id);};
       const identity=load('src/infrastructure/runtime/environmentIdentity.ts').readEnvironmentIdentity();
@@ -66,8 +68,8 @@ export function buildEnvironmentProbeExpression(action = "inspect", expectedFing
  * assign is an explicit owner-authorized enrollment, never a fixture reset.
  * sdk-status only reads native singleton presence in the explicitly selected
  * isolated blocked bundle. It never configures SDKs or opens their identity caches. */
-export async function probeEnvironmentGuardIos(originValue, action = "inspect", expectedFingerprint, expectedAppId = "com.lkurczab.patternly") {
-  const expression = buildEnvironmentProbeExpression(action, expectedFingerprint, expectedAppId);
+export async function probeEnvironmentGuardIos(originValue, action = "inspect", expectedFingerprint, expectedAppId = "com.lkurczab.patternly", dependencyModulePrefix = "node_modules/") {
+  const expression = buildEnvironmentProbeExpression(action, expectedFingerprint, expectedAppId, dependencyModulePrefix);
   const origin = parseOrigin(originValue);
   const targets = await (await fetch(new URL("/json/list", origin), { signal: AbortSignal.timeout(5000) })).json();
   const endpoint = selectTarget(targets, origin, expectedAppId);
@@ -98,10 +100,20 @@ export async function probeEnvironmentGuardIos(originValue, action = "inspect", 
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [origin, action = "inspect", fingerprint, appId = "com.lkurczab.patternly", ...extra] = process.argv.slice(2);
+  const [origin, action = "inspect", fingerprint, appId = "com.lkurczab.patternly", isolatedProjectRoot, ...extra] = process.argv.slice(2);
   const categories = new Set(["arguments_rejected", "origin_rejected", "target_rejected", "connect_failed", "native_evaluation_rejected", "native_probe_rejected", "native_probe_timeout", "transport_closed", "read_timeout", "inventory_precondition_rejected", "inventory_unavailable", "inventory_changed", "owner_closed", "owner_unavailable", "assignment_precondition_rejected", "sdk_status_precondition_rejected", "native_sdk_status_unavailable"]);
   if (!origin || extra.length) { console.error(JSON.stringify({ stage: "environment_probe", category: "arguments_rejected" })); process.exitCode = 1; }
-  else probeEnvironmentGuardIos(origin, action, fingerprint, appId).then((receipt) => console.log(JSON.stringify(receipt))).catch((error) => {
+  else Promise.resolve().then(() => {
+    let prefix = "node_modules/";
+    if (isolatedProjectRoot) {
+      const project = realpathSync(isolatedProjectRoot);
+      const canonicalDependencies = realpathSync(new URL("../../node_modules", import.meta.url));
+      if (appId !== "com.lkurczab.patternly.sec03" || !/^\/private\/tmp\/patternly-sec03-isolated-[A-Za-z0-9]+\/attempt-[0-9]+\/project$/u.test(project)
+        || realpathSync(resolve(project, "node_modules")) !== canonicalDependencies) throw Error("arguments_rejected");
+      prefix = `${relative(project, canonicalDependencies)}/`;
+    }
+    return probeEnvironmentGuardIos(origin, action, fingerprint, appId, prefix);
+  }).then((receipt) => console.log(JSON.stringify(receipt))).catch((error) => {
     console.error(JSON.stringify({ stage: "environment_probe", category: categories.has(error?.message) ? error.message : "native_probe_unavailable" })); process.exitCode = 1;
   });
 }
