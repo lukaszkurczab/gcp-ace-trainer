@@ -476,10 +476,12 @@ test("client accepts canonical identity lengths supported by content", async () 
     calls.push(JSON.parse(String(init?.body)));
     return new Response(JSON.stringify({ accountRevision: 1, applied: [], duplicates: [], conflicts: [] }), { status: 200 });
   } });
+  const item = { trackId: longTrackId, questionId: longQuestionId, contentVersion: "release", artifactSha256: FINGERPRINT };
   await client.syncProgress(canonicalSyncRequest(activeTrackMutation({
-    trackId: longTrackId,
-    targetId: longQuestionId,
-    state: { identity: { kind: "resolved", ref: { trackId: longTrackId, questionId: longQuestionId, contentVersion: "release", artifactSha256: FINGERPRINT } } },
+    kind: "item", recordType: "training_attempt", trackId: longTrackId, targetId: longQuestionId,
+    state: { id: longQuestionId, sessionId: "session", trackId: longTrackId, modeId: "mode", occurrenceId: "occurrence", item,
+      response: { type: "choice_single", optionId: "a" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
+      reviewEvidence: { sourceItem: { ...item }, taxonomyOrSkillRefs: [] }, answeredAt: "2026-10-14T10:00:00.000Z", committedAt: "2026-10-14T10:00:00.000Z" },
   })));
   assert.equal(calls.length, 1);
 });
@@ -503,7 +505,7 @@ test("client turns removed identity metadata in a response into a schema conflic
 test("progress sweep preserves opaque tokens and returns only the complete dataset", async () => {
   const record = { ...activeTrackMutation(), version: 1, lastMutationId: "mutation-canonical-0001", updatedAt: "2026-10-12T00:00:00.000Z" };
   const { mutationId: _mutationId, expectedVersion: _expectedVersion, ...first } = record;
-  const second = { ...first, targetId: "other-current" };
+  const second = { ...first, trackId: "backend-system-design-interview", state: { trackId: "backend-system-design-interview" } };
   const urls: string[] = [];
   const opaque = "cursor/+?=";
   const client = createTestClient({ fetchImplementation: async (url) => {

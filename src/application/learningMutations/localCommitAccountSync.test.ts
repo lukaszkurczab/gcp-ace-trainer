@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { commitMutation } from "./commitMutation";
 import { recoverPendingMutation } from "./recoverPendingMutation";
-import { attempt, installMemoryStorage, journal, session } from "../../testing/journalTestSupport";
+import { attempt as baseAttempt, installMemoryStorage, journal, session } from "../../testing/journalTestSupport";
 import { bindGuestInstallationToAccount, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 import { ensureAccountOutboxFromLocalDataset, getAccountSyncState, saveAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import { getActiveMutationJournal } from "../../storage/repositories/mutationJournalRepository";
@@ -11,6 +11,8 @@ import { STORAGE_KEYS } from "../../storage/keys";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
+
+const attempt = () => ({ ...baseAttempt(), response: { type: "choice_single", optionId: "a" } });
 
 async function setup() {
   const storage = installMemoryStorage();

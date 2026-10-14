@@ -614,7 +614,7 @@ import { getActiveMutationJournal, persistMutationJournal } from "../../storage/
 import { getGoalSnapshot, readGoalSnapshot, saveGoal, saveGoalSnapshot } from "../../storage/repositories/goalRepository";
 import { getLearningPlanSnapshot, saveLearningPlanAtomically } from "../../storage/repositories/learningPlanRepository";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
-import { attempt as journalAttempt, journal as makeJournal, session as journalSession } from "../../testing/journalTestSupport";
+import { attempt as baseJournalAttempt, journal as makeJournal, session as journalSession } from "../../testing/journalTestSupport";
 import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import type { Question } from "../../content/canonical/questionTypes";
@@ -626,6 +626,17 @@ import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext
 
 
 const guestTrack = "coding-interview-dsa-problem-solving" as const;
+const journalAttempt = (...args: Parameters<typeof baseJournalAttempt>) => ({ ...baseJournalAttempt(...args), response: { type: "choice_single", optionId: "a" } });
+const terminalAggregate = { activeForegroundMs: 0, correctCount: 1, partialCount: 0, incorrectCount: 0, pointsEarned: 1, maxPoints: 1 };
+// Closed v1 wire shape, rejected by domain because it has no study slots.
+// Unsupported schema versions now fail at the wire boundary, before quarantine.
+function invalidRecoverablePlanState() {
+  return { schemaVersion: 1, revision: 4, plan: { schemaVersion: 1, planId: "invalid-plan", trackId: guestTrack, goalRevision: 1,
+    status: "accepted", timezone: "Europe/Warsaw", contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256,
+    acceptedTarget: { meaning: "none", targetDate: null }, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
+    planRevision: 1, commandId: "invalid-plan-command", slots: [] } };
+}
+
 async function persistDeletionFixtureSession(id: string) {
   const session = createTrainingSession({
     id, trackId: guestTrack, modeId: "guided", configurationSnapshot: { kind: "practice" },
@@ -653,7 +664,7 @@ function completedGuestResult(session: ReturnType<typeof completedGuestSession>)
     id: `${session.id}:result`, sessionId: session.id, trackId: session.trackId,
     totalOccurrences: session.actualLength, answeredOccurrenceIds: session.itemOrder.map((occurrence) => occurrence.occurrenceId),
     unansweredOccurrenceIds: [], completedAt: session.completedAt!,
-    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { source: "account-lifecycle-test" } }),
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: terminalAggregate }),
   });
 }
 
@@ -1043,7 +1054,7 @@ async function commitTerminalLearningOutcome() {
     answeredOccurrenceIds: completed.itemOrder.map((occurrence) => occurrence.occurrenceId),
     unansweredOccurrenceIds: [],
     completedAt: completed.completedAt!,
-    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { source: "account-lifecycle-test" } }),
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: terminalAggregate }),
   });
   await commitSessionCompletion(completed, result, completed.completedAt!);
   return { active, completed, result };
@@ -1434,7 +1445,7 @@ async function assertConcurrentLocalSessionStartKeepsHomeSyncRetryable(phase: "u
     answeredOccurrenceIds: completed.itemOrder.map((occurrence) => occurrence.occurrenceId),
     unansweredOccurrenceIds: [],
     completedAt: completed.completedAt!,
-    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { source: "concurrent-session-test" } }),
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: terminalAggregate }),
   }), completed.completedAt!);
 
   let resumedApplied: ProgressRecordDto[] = [];
@@ -1525,7 +1536,7 @@ test("bound sync keeps session, goal, and plan commits made during GET and carri
     answeredOccurrenceIds: completed.itemOrder.map((occurrence) => occurrence.occurrenceId),
     unansweredOccurrenceIds: [],
     completedAt: completed.completedAt!,
-    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { source: "p18-get-race" } }),
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: terminalAggregate }),
   });
   await commitSessionCompletion(completed, result, completed.completedAt!);
 
@@ -1974,7 +1985,7 @@ test("one separable invalid remote plan restores Home data, quarantines its vers
   await bindGuestInstallationToAccount(accountId);
   saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
   const homeRecords = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
-  const invalidPlanState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
+  const invalidPlanState = invalidRecoverablePlanState();
   const invalidPlan = {
     kind: "node" as const,
     recordType: "learning_plan" as const,
@@ -2096,7 +2107,7 @@ test("learning plan recovery reserves before a read and commits the replacement 
   await bindGuestInstallationToAccount(accountId);
   saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
   const home = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
-  const invalidState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
+  const invalidState = invalidRecoverablePlanState();
   const invalidRecord = { kind: "node" as const, recordType: "learning_plan" as const, recordId: guestTrack, targetId: guestTrack, trackId: guestTrack, version: 7, fingerprint: accountDataRecordFingerprint({ recordId: guestTrack, recordType: "learning_plan", state: invalidState, trackId: guestTrack }), state: invalidState, lastMutationId: "invalid-plan", updatedAt: "2026-01-01T00:02:00.000Z" };
   const initial = await loadAccountDataSession(apiWithAppliedUpload(async () => ({ accountRevision: 10, generation: 4, records: [...home, invalidRecord] })), accountId);
   const incident = initial.learningPlanRecovery!;
@@ -2137,7 +2148,7 @@ test("learning plan recovery persists failed attempts and respects the durable d
   await bindGuestInstallationToAccount(accountId);
   saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
   const home = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
-  const invalidState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
+  const invalidState = invalidRecoverablePlanState();
   const invalidRecord = { kind: "node" as const, recordType: "learning_plan" as const, recordId: guestTrack, targetId: guestTrack, trackId: guestTrack, version: 7, fingerprint: accountDataRecordFingerprint({ recordId: guestTrack, recordType: "learning_plan", state: invalidState, trackId: guestTrack }), state: invalidState, lastMutationId: "invalid-plan", updatedAt: "2026-01-01T00:02:00.000Z" };
   await loadAccountDataSession(apiWithAppliedUpload(async () => ({ accountRevision: 10, generation: 4, records: [...home, invalidRecord] })), accountId);
   let reads = 0;
@@ -2171,7 +2182,7 @@ test("learning plan recovery drops stale responses after a generation, incident,
     await bindGuestInstallationToAccount(accountId);
     saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
     const home = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
-    const invalidState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
+    const invalidState = invalidRecoverablePlanState();
     const invalidRecord = { kind: "node" as const, recordType: "learning_plan" as const, recordId: guestTrack, targetId: guestTrack, trackId: guestTrack, version: 7, fingerprint: accountDataRecordFingerprint({ recordId: guestTrack, recordType: "learning_plan", state: invalidState, trackId: guestTrack }), state: invalidState, lastMutationId: "invalid-plan", updatedAt: "2026-01-01T00:02:00.000Z" };
     const initial = await loadAccountDataSession(apiWithAppliedUpload(async () => ({ accountRevision: 10, generation: 4, records: [...home, invalidRecord] })), accountId);
     let finishRead!: (value: { accountRevision: number; generation: number; records: [] }) => void;
@@ -2207,7 +2218,7 @@ test("invalid plan recovery fails closed on bad envelope, duplicate identity, un
     await bindGuestInstallationToAccount(accountId);
     saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
     const validHomeRecords = remoteRecords(await buildAccountDataSnapshot(productionLearningDataAdmissionContext)).map((record) => ({ ...record, version: 2 }));
-    const planState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
+    const planState = invalidRecoverablePlanState();
     const invalidPlan = {
       kind: "node" as const,
       recordType: "learning_plan" as const,
@@ -2298,7 +2309,7 @@ test("guest adoption quarantines one invalid plan while materializing its goal a
   await saveGuestAdoptionChoice("transfer", productionLearningDataAdmissionContext);
   await saveGoal(createDefaultGoal(requireGoalPolicy(guestTrack)), requireGoalPolicy(guestTrack));
   const guestSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
-  const invalidPlanState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
+  const invalidPlanState = invalidRecoverablePlanState();
   const guestMergeRecords = [
     ...guestSnapshot.records.map(({ fingerprint, recordId, recordType, state, trackId, version }) => ({ fingerprint, recordId, recordType, state, trackId, version })),
     {

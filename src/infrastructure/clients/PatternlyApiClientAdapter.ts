@@ -1,3 +1,4 @@
+import { isAccountWireState } from "../../domain/account/accountWireState";
 /**
  * Synchronized with patternly-backend/openapi/patternly-v1.json.
  * Backend CI verifies that every versioned API path is represented here.
@@ -181,7 +182,7 @@ function assertStringArray(value: unknown, max: number): value is string[] {
   return Array.isArray(value) && value.length <= max && value.every(isNonEmptyString);
 }
 
-function validateProgressRecord(value: unknown): value is ProgressRecordDto {
+export function validateProgressRecord(value: unknown): value is ProgressRecordDto {
   if (!isPlainRecord(value) || !hasExactKeys(value, ["kind", "recordType", "trackId", "targetId", "version", "fingerprint", "state", "lastMutationId", "updatedAt"])) return invalidResponse();
   if (value.kind !== "node" && value.kind !== "item") return invalidResponse();
   if (typeof value.recordType !== "string" || !PROGRESS_RECORD_TYPES.has(value.recordType)) return invalidResponse();
@@ -190,6 +191,7 @@ function validateProgressRecord(value: unknown): value is ProgressRecordDto {
   if (!isNonEmptyString(value.trackId) || !isNonEmptyString(value.targetId) || !isFiniteNonNegativeInteger(value.version)
     || !isSha256(value.fingerprint) || !isBoundedString(value.lastMutationId, 16, 128) || !isIsoDate(value.updatedAt)) return invalidResponse();
   assertState(value.state);
+  if (!isAccountWireState(value.recordType, value.targetId, value.trackId, value.state)) return invalidResponse();
   return true;
 }
 
@@ -198,6 +200,7 @@ function validateGuestMergeRecord(value: unknown): value is GuestMergeRecordDto 
   if (!isSha256(value.fingerprint) || !isNonEmptyString(value.recordId) || typeof value.recordType !== "string" || !PROGRESS_RECORD_TYPES.has(value.recordType)
     || !isNonEmptyString(value.trackId) || !isFiniteNonNegativeInteger(value.version)) return invalidResponse();
   assertState(value.state);
+  if (!isAccountWireState(value.recordType, value.recordId, value.trackId, value.state)) return invalidResponse();
   return true;
 }
 
@@ -210,6 +213,7 @@ function validateMutation(value: unknown): value is ProgressMutationDto {
     || !isNonEmptyString(value.trackId) || !isNonEmptyString(value.targetId)
     || !(value.expectedVersion === null || isFiniteNonNegativeInteger(value.expectedVersion)) || !isSha256(value.fingerprint)) return invalidResponse();
   assertState(value.state);
+  if (!isAccountWireState(value.recordType, value.targetId, value.trackId, value.state)) return invalidResponse();
   return true;
 }
 

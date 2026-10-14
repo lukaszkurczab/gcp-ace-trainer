@@ -1,8 +1,11 @@
+import { isAccountWireState } from "../../domain/account/accountWireState";
+import { projectTerminalSession, materializeTerminalSession } from "../contracts/terminalSessionWire";
 import { isContentIdentityResolution, isContentIdentityTombstone, isLearningPlanV1ForTrack, isResolvedContentRef, normalizeLearningPlan, type GoalRecord, type LearningPlan, type TrainingAttempt, type TrainingSession, type TrainingSessionResult, type ReviewQueueEntry } from "../../domain";
 import { isGoalRecordForPolicy, normalizeGoalRecord, type GoalPolicyResolver } from "../../domain/goals/goalContracts";
 import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
 import { canonicalJsonV1, canonicalJsonV1ByteLength, canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
+import { recordFingerprintPayload } from "../../domain/identity/recordFingerprint";
 import { applyActiveForegroundTimerRaw, pauseActiveForegroundClock, getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { CANONICAL_RECORD_SCHEMA, readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, restoreCanonicalEnvelopeUnlocked, withCanonicalWriteLocks, writeCanonicalJson, writeCanonicalJsonUnlocked } from "./canonicalRecordCodec";
@@ -15,7 +18,7 @@ import { clearTrainingAttempts, getTrainingAttempts, addTrainingAttempt } from "
 import { getTrainingSessionResult, saveTrainingSessionResult } from "./trainingSessionResultRepository";
 import { assertTrainingEvidenceIntegrity } from "./trainingEvidenceIntegrityRepository";
 import { clearTrainingSessions, getActiveTrainingSessionId, getTrainingSessions, saveTrainingSession } from "./trainingSessionRepository";
-import { isForegroundTimerState, isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionResult } from "./trainingModelGuards";
+import { isForegroundTimerState, isReviewQueueEntry, isTrainingAttempt, isTrainingSessionResult } from "./trainingModelGuards";
 import { AccountDataFailure } from "../errors";
 import { acceptedTargetFromGoal } from "../../domain/learning/learningPlan";
 import { isTrackAdmitted, type LearningDataAdmissionContext, type TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
@@ -308,7 +311,7 @@ function isCanonicalAccountDataRecord(value: unknown, admission: TrackAdmissionC
   if (!isAccountDataRecord(value) || (exact && !hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version"])) || value.recordId.trim().length === 0 || !isTrackAdmitted(admission, value.trackId)) return false;
   try {
     assertCanonicalContentIdentityState(value.state);
-    return accountDataRecordFingerprint(value) === value.fingerprint;
+    return isAccountWireState(value.recordType, value.recordId, value.trackId, value.state) && accountDataRecordFingerprint(value) === value.fingerprint;
   } catch {
     return false;
   }
@@ -389,7 +392,7 @@ export function accountDataRecordKey(record: AccountDataRecordIdentity): string 
   return canonicalJsonV1({ recordId: record.recordId, recordType: record.recordType, trackId: record.trackId });
 }
 export function accountDataRecordFingerprint(record: Readonly<{ recordId: string; recordType: SyncableRecordType; state: Readonly<Record<string, unknown>>; trackId: string }>): string {
-  return sha256Utf8(canonicalSerialize({ recordId: record.recordId, recordType: record.recordType, state: record.state, trackId: record.trackId }));
+  return sha256Utf8(recordFingerprintPayload(record));
 }
 export function isDeletedAccountDataRecord(record: Pick<AccountDataRecord, "state">): boolean { return record.state.deleted === true; }
 
@@ -782,7 +785,7 @@ async function readLocalAccountDataRecords(state: AccountSyncState, context: Lea
   const activeTrack = await getActiveTrackId();
   if (activeTrack) records.push(makeRecord("active_track", "current", activeTrack, { trackId: activeTrack }, state));
   const sessions = (await getTrainingSessions(context.trackAdmission)).value;
-  for (const session of sessions.filter((candidate) => candidate.status !== "active")) records.push(makeRecord("training_session_summary", session.id, session.trackId, session, state));
+  for (const session of sessions.filter((candidate) => candidate.status !== "active")) records.push(makeRecord("training_session_summary", session.id, session.trackId, projectTerminalSession(session), state));
   const results = await Promise.all(sessions.filter((session) => session.status !== "active").map((session) => getTrainingSessionResult(session.id, context.trackAdmission)));
   for (const result of results.filter((candidate): candidate is TrainingSessionResult => candidate !== null)) records.push(makeRecord("training_session_result", result.id, result.trackId, result, state));
   for (const attempt of (await getTrainingAttempts(context.trackAdmission)).value) records.push(makeRecord("training_attempt", attempt.id, attempt.trackId, attempt, state));
@@ -1058,7 +1061,7 @@ export function assertValidAccountDataRecords(records: unknown, context: Learnin
     const state = record.state;
     if (record.recordType !== "goal" && record.recordType !== "learning_plan" && state.trackId !== record.trackId) throw new AccountDataFailure("account_data_track_invalid");
     if (record.recordType === "active_track" && record.recordId !== "current") throw new AccountDataFailure("account_data_track_invalid");
-    if (record.recordType === "training_session_summary" && (!isTrainingSession(state, context.trackAdmission) || state.status === "active" || state.id !== record.recordId)) throw new AccountDataFailure("account_data_session_invalid");
+    if (record.recordType === "training_session_summary" && (!materializeTerminalSession(state, context.trackAdmission) || state.id !== record.recordId)) throw new AccountDataFailure("account_data_session_invalid");
     if (record.recordType === "training_session_result" && (!isTrainingSessionResult(state, context.trackAdmission) || state.id !== record.recordId)) throw new AccountDataFailure("account_data_result_invalid");
     if (record.recordType === "training_attempt" && (!isTrainingAttempt(state, context.trackAdmission) || state.id !== record.recordId)) throw new AccountDataFailure("account_data_attempt_invalid");
     if (record.recordType === "review_queue_entry" && (!isReviewQueueEntry(state, context.trackAdmission) || state.id !== record.recordId)) throw new AccountDataFailure("account_data_review_invalid");
@@ -1201,8 +1204,9 @@ export async function applyRemoteAccountData(records: readonly AccountDataRecord
       await saveActiveTrackId(trackId);
     }
     if (record.recordType === "training_session_summary") {
-      if (!isTrainingSession(record.state, context.trackAdmission)) throw new AccountDataFailure("account_data_session_invalid");
-      await saveTrainingSession(record.state, context.trackAdmission);
+      const session = materializeTerminalSession(record.state, context.trackAdmission);
+      if (!session) throw new AccountDataFailure("account_data_session_invalid");
+      await saveTrainingSession(session, context.trackAdmission);
     }
     if (record.recordType === "training_session_result") {
       if (!isTrainingSessionResult(record.state, context.trackAdmission)) throw new AccountDataFailure("account_data_result_invalid");

@@ -1,0 +1,85 @@
+{
+  "profile": "record-fingerprint-json-utf8-v1",
+  "cases": [
+    {
+      "name": "ascii",
+      "record": {
+        "recordId": "result-ascii",
+        "recordType": "training_session_result",
+        "trackId": "backend-system-design-interview",
+        "state": {
+          "text": "API \"quote\"\\path\n",
+          "ok": true,
+          "missing": null,
+          "list": [
+            "first",
+            "second"
+          ]
+        }
+      },
+      "payload": "{\"recordId\":\"result-ascii\",\"recordType\":\"training_session_result\",\"state\":{\"list\":[\"first\",\"second\"],\"missing\":null,\"ok\":true,\"text\":\"API \\\"quote\\\"\\\\path\\n\"},\"trackId\":\"backend-system-design-interview\"}",
+      "sha256": "c640f31783675af9e3b94aec14465ae08ef9dc834179c14a239783511e13bedb"
+    },
+    {
+      "name": "unicode-nfc",
+      "record": {
+        "recordId": "result-ascii",
+        "recordType": "training_session_result",
+        "trackId": "backend-system-design-interview",
+        "state": {
+          "text": "Café users need a stable API. 🙂"
+        }
+      },
+      "payload": "{\"recordId\":\"result-ascii\",\"recordType\":\"training_session_result\",\"state\":{\"text\":\"Café users need a stable API. 🙂\"},\"trackId\":\"backend-system-design-interview\"}",
+      "sha256": "4657a79f23fa72e76986cec8af096ac8183a2e734714f7f5c485d2ad3facba20"
+    },
+    {
+      "name": "unicode-nfd",
+      "record": {
+        "recordId": "result-ascii",
+        "recordType": "training_session_result",
+        "trackId": "backend-system-design-interview",
+        "state": {
+          "text": "Café users need a stable API. 🙂"
+        }
+      },
+      "payload": "{\"recordId\":\"result-ascii\",\"recordType\":\"training_session_result\",\"state\":{\"text\":\"Café users need a stable API. 🙂\"},\"trackId\":\"backend-system-design-interview\"}",
+      "sha256": "a76a3dcb4435bd233c6ecbe36e182a277c6e23fa800c65d5f191ddeaebf68d5b"
+    },
+    {
+      "name": "raw-key-order",
+      "record": {
+        "recordId": "result-ascii",
+        "recordType": "training_session_result",
+        "trackId": "backend-system-design-interview",
+        "state": {
+          "é": "NFC",
+          "a": 2,
+          "éx": "NFD key",
+          "𝄞": "music",
+          "": "BMP"
+        }
+      },
+      "payload": "{\"recordId\":\"result-ascii\",\"recordType\":\"training_session_result\",\"state\":{\"a\":2,\"éx\":\"NFD key\",\"é\":\"NFC\",\"𝄞\":\"music\",\"\":\"BMP\"},\"trackId\":\"backend-system-design-interview\"}",
+      "sha256": "47aa8c354a940f8ea735ab5c8fa23afc2b7039c5282d62f96aa95ba068548471"
+    },
+    {
+      "name": "numbers",
+      "record": {
+        "recordId": "result-ascii",
+        "recordType": "training_session_result",
+        "trackId": "backend-system-design-interview",
+        "state": {
+          "zero": 0,
+          "small": 1e-7,
+          "large": 1e+21,
+          "fraction": 0.125,
+          "integer": 9007199254740991,
+          "negative": -42
+        }
+      },
+      "payload": "{\"recordId\":\"result-ascii\",\"recordType\":\"training_session_result\",\"state\":{\"fraction\":0.125,\"integer\":9007199254740991,\"large\":1e+21,\"negative\":-42,\"small\":1e-7,\"zero\":0},\"trackId\":\"backend-system-design-interview\"}",
+      "sha256": "415bd04685745b05d9f84f3a718fb89790c505acde18e10ac8f4dd88f66ee15b"
+    }
+  ]
+}

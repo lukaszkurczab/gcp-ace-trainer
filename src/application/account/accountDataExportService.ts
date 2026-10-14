@@ -1,3 +1,4 @@
+import { validateProgressRecord } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import type { AccountDataExportDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { getActiveStorageProfileOrNull } from "../../storage/repositories/profileStorageRepository";
 import { cleanupProfileExportFiles, createRuntimeProfileExportFileStore, type ProfileExportFile } from "./profileExportFileStore";
@@ -37,6 +38,7 @@ export function isValidAccountDataExport(value: unknown): value is AccountDataEx
   const identity = value.portable.profile.identity;
   if (!isString(identity.provider) || (identity.email !== null && !isString(identity.email)) || typeof identity.emailVerified !== "boolean") return false;
   if (!isRecordArray(value.portable.progress) || !isRecordArray(value.portable.linkedContentReports)) return false;
+  try { if (!value.portable.progress.every(validateProgressRecord)) return false; } catch { return false; }
   if (!isRecord(value.accountContext) || !isRecordArray(value.accountContext.trackAccess) || !isRecordArray(value.accountContext.entitlements) || !isRecordArray(value.accountContext.legalAcceptances) || !isRecordArray(value.accountContext.purchaseConfirmations) || !isRecordArray(value.accountContext.consumerCases) || !isRecordArray(value.accountContext.devices) || !isRecord(value.accountContext.syncMetadata) || !isRecordArray(value.accountContext.exportHistory)) return false;
   if (!isRecord(value.manifest) || !Array.isArray(value.manifest.included) || !value.manifest.included.every(isString) || !isRecordArray(value.manifest.omitted)) return false;
   return value.manifest.omitted.every((entry) => isString(entry.category) && isString(entry.reason));

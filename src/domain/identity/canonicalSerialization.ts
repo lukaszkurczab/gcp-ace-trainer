@@ -43,7 +43,7 @@ export function canonicalJsonV1ByteLength(value: unknown): number {
   return new TextEncoder().encode(canonicalJsonV1(value)).byteLength;
 }
 
-/** The only byte representation permitted as an input to a durable identity. */
+/** Versioned preimage for session and learning mutation identities; account records use recordFingerprintPayload. */
 export function canonicalFingerprintPayload(value: unknown): string {
   return canonicalSerialize({ serializerVersion: CANONICAL_SERIALIZER_VERSION, value });
 }
