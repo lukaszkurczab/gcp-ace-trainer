@@ -1,0 +1,16 @@
+appId: com.lkurczab.patternly.sec03
+---
+# Existing iPhone 17, pending recovery issue, Auth/API unavailable. No reset or install.
+- extendedWaitUntil:
+    visible:
+      id: recovery-operation-unavailable
+    timeout: 20000
+- tapOn:
+    id: recovery-operation-retry
+- extendedWaitUntil:
+    visible:
+      id: recovery-operation-unavailable
+    timeout: 20000
+- assertVisible:
+    id: recovery-operation-retry
+- assertVisible: ".*Connect to verify your identity.*"

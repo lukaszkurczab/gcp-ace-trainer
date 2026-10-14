@@ -166,7 +166,9 @@
   "recoveryOperationTitle": "Taastamistoiming",
   "recoveryOperationLoading": "Kontrollime salvestatud taastamistaotlust.",
   "recoveryOperationUnavailableTitle": "Taasteteave pole saadaval",
+  "recoveryOperationIdentityUnavailableTitle": "Loo ühendus oma identiteedi kinnitamiseks",
   "recoveryOperationUnavailable": {
+    "identity_unavailable": "Sinu identiteeti ei saanud kinnitada. Kontrolli ühendust ja proovi uuesti.",
     "vault_corrupt": "Salvestatud taasteteavet ei õnnestunud selles seadmes lugeda.",
     "operation_unavailable": "Taastamisandmeid ei õnnestunud turvaliselt lugeda. Enne jätkamist võta ühendust kasutajatoega.",
     "vault_unavailable": "Taastamisandmed pole selles seadmes saadaval."

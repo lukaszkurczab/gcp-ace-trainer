@@ -166,7 +166,9 @@
   "recoveryOperationTitle": "Operación de recuperación",
   "recoveryOperationLoading": "Estamos comprobando la solicitud de recuperación guardada.",
   "recoveryOperationUnavailableTitle": "La información de recuperación no está disponible",
+  "recoveryOperationIdentityUnavailableTitle": "Conéctate para verificar tu identidad",
   "recoveryOperationUnavailable": {
+    "identity_unavailable": "No pudimos verificar tu identidad. Comprueba la conexión e inténtalo de nuevo.",
     "vault_corrupt": "No se pudo leer en este dispositivo la información de recuperación guardada.",
     "operation_unavailable": "No se pudieron leer los datos de recuperación de forma segura. Contacta con asistencia antes de continuar.",
     "vault_unavailable": "Los datos de recuperación no están disponibles en este dispositivo."

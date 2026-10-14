@@ -913,8 +913,69 @@ test("account restore has a bounded initialization recovery path", () => {
   assert.equal(AUTH_INITIALIZATION_TIMEOUT_MS, 15_000);
   assert.match(provider, /reason: "auth_restore_timeout"/);
   assert.match(provider, /retrySessionRestore/);
-  assert.match(provider, /detachObserver\(\);[\s\S]*?setState\(\{ kind: "unavailable", reason: "auth_restore_timeout" \}\)/);
+  const timeout = provider.slice(provider.indexOf("initializationTimeout = setTimeout(() => {"), provider.indexOf("}, AUTH_INITIALIZATION_TIMEOUT_MS);"));
+  assert.match(timeout, /if \(!live \|\| observerResolved\) return;/);
+  assert.doesNotMatch(timeout, /detachObserver\(\)|unsubscribe/);
+  assert.match(timeout, /setState\(\{ kind: "unavailable", reason: "auth_restore_timeout" \}\)/);
+  const observer = provider.slice(provider.indexOf("unsubscribe = configuredAuth.onUserChanged((restoredUser) => {"));
+  assert.match(observer, /if \(!live \|\| observerDetached \|\| recoveryCommandInFlightRef\.current/);
+  assert.match(observer, /if \(!live \|\| observerDetached \|\| eventRevision !== authObserverRevision\) return;/);
+  assert.match(observer, /const user = configuredAuth\.getSnapshot\(\);/);
+  assert.match(observer, /return \(\) => \{[\s\S]*?live = false;[\s\S]*?detachObserver\(\);/);
   assert.doesNotMatch(provider, /auth\.signOut\(\);[\s\S]*?auth_restore_timeout/);
+});
+
+test("restore Retry synchronously fences delivered and in-flight callbacks before effect cleanup", async () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const detach = provider.slice(provider.indexOf("const detachObserver = () => {"), provider.indexOf("    detachAuthObserverRef.current = detachObserver;"));
+  const retry = provider.match(/const retrySessionRestore = useCallback\((\(\) => \{[\s\S]*?\n  \}), \[/)?.[1];
+  const initialGuard = provider.match(/if \(!live \|\| observerDetached \|\| recoveryCommandInFlightRef\.current[^\n]+return;/)?.[0];
+  const resumedGuard = provider.match(/if \(!live \|\| observerDetached \|\| eventRevision !== authObserverRevision\) return;/)?.[0];
+  assert.ok(retry && initialGuard && resumedGuard);
+  // Execute the production detach/retry bodies and callback eligibility guards.
+  // The deferred barrier models recovery preparation, not Firebase SDK timing.
+  for (const alreadyWaiting of [false, true]) {
+    let resolveBarrier!: () => void;
+    const effects: string[] = [];
+    const scope = {
+      live: true, authObserverRevision: 1, eventRevision: 1,
+      recoveryCommandInFlightRef: { current: false }, recoverySnapshot: { kind: "idle" },
+      providerCancellationUidRef: { current: null }, observerBlockedUidRef: { current: null },
+      detachAuthObserverRef: { current: null as null | (() => void) },
+      initializationTimeout: undefined, unsubscribe: () => effects.push("unsubscribe"),
+      clearTimeout: () => effects.push("clearTimeout"),
+      sessionCoordinator: { invalidate: () => effects.push("invalidate") },
+      revokeDeletionAuthorization: () => effects.push("revoke"),
+      setState: () => effects.push("state"), setAuthInitializationRevision: () => effects.push("revision"),
+      barrier: new Promise<void>((resolve) => { resolveBarrier = resolve; }),
+      effects,
+    };
+    const owner = new Function("scope", `with (scope) {
+      let observerDetached = false;
+      ${detach}
+      detachAuthObserverRef.current = detachObserver;
+      return { retry: ${retry}, cleanup: detachObserver, deliver: async () => {
+        ${initialGuard}
+        effects.push("recovery");
+        await barrier;
+        ${resumedGuard}
+        effects.push("profile");
+      }};
+    }`)(scope) as { retry: () => void; cleanup: () => void; deliver: () => Promise<void> };
+    const pending = alreadyWaiting ? owner.deliver() : undefined;
+    owner.retry();
+    assert.ok(effects.indexOf("unsubscribe") < effects.indexOf("invalidate"));
+    const delivered = pending ?? owner.deliver();
+    resolveBarrier();
+    await delivered;
+    assert.equal(effects.filter((effect) => effect === "recovery").length, alreadyWaiting ? 1 : 0);
+    assert.equal(effects.includes("profile"), false);
+    const newerDetach = () => undefined;
+    scope.detachAuthObserverRef.current = newerDetach;
+    owner.cleanup();
+    assert.equal(scope.detachAuthObserverRef.current, newerDetach, "old cleanup cannot detach a replacement owner");
+    assert.equal(effects.filter((effect) => effect === "unsubscribe").length, 1);
+  }
 });
 
 test("App Check has an explicit unavailable state and never fabricates a token", async () => {

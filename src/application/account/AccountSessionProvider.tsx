@@ -8,7 +8,7 @@ import { clearPremiumCache, clearPremiumCacheForAccountInProfile, clearPremiumCa
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
 import { ensureAccountSessionGeneration, ensureRecoveryIssueSignInSession, getMeWithExchangedSession } from "./accountSessionExchange";
-import { createRecoveryOperationCoordinator, type RecoveryOperationSnapshot } from "./recoveryOperationCoordinator";
+import { createRecoveryOperationCoordinator, isRecoveryIdentityUnavailable, type RecoveryOperationSnapshot } from "./recoveryOperationCoordinator";
 import { createRecoveryIssuePublicationGate, readRecoveryIssueCommandIdentity } from "./recoveryIssueCommandGuard";
 import { createSecureRecoveryOperationVault, type RecoveryOperationVault } from "../../infrastructure/security/recoveryOperationVault";
 import { createPendingSessionRevocationDrain, drainPendingSessionRevocations } from "./pendingSessionRevocation";
@@ -608,6 +608,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   stateRef.current = state;
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
   const authInitializationResolvedRef = useRef(false);
+  const detachAuthObserverRef = useRef<(() => void) | null>(null);
   const guestCommandLockRef = useRef(createGuestTransitionLock());
   const [apiClient, setApiClient] = useState<ReturnType<typeof createPatternlyApiClient> | null>(null);
   const [recoveryOperation, setRecoveryOperation] = useState<RecoveryOperationSnapshot>({ kind: "loading", blocksProfilePreparation: true });
@@ -851,7 +852,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     } catch (error) {
       if (await revokeDeniedIdentity(error, auth?.getSnapshot() ?? null)) return false;
       if (proofScopeRef.current) await proofScopeRef.current.restoreAfterNonDenial(error);
-      setRecoveryOperation({ kind: "unavailable", reason: "operation_unavailable", blocksProfilePreparation: true });
+      setRecoveryOperation({ kind: "unavailable", reason: isRecoveryIdentityUnavailable(error) ? "identity_unavailable" : "operation_unavailable", blocksProfilePreparation: true });
     }
     setAccountEntryMode("login");
     setState({ kind: "recoveryPending" });
@@ -1542,6 +1543,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   }), [apiClient, authClient, finalizeCurrent, recoveryOperation.blocksProfilePreparation, runtimeMode, sessionCoordinator]);
 
   const retrySessionRestore = useCallback(() => {
+    detachAuthObserverRef.current?.();
     sessionCoordinator.invalidate();
     revokeDeletionAuthorization();
     observerBlockedUidRef.current = null;
@@ -1572,7 +1574,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (initializationTimeout !== undefined) clearTimeout(initializationTimeout);
       unsubscribe?.();
       unsubscribe = undefined;
+      if (detachAuthObserverRef.current === detachObserver) detachAuthObserverRef.current = null;
     };
+    detachAuthObserverRef.current = detachObserver;
     const publish = (nextState: AccountState) => {
       if (live && !observerDetached) setState(nextState);
     };
@@ -1715,7 +1719,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       setApiClient(client);
       initializationTimeout = setTimeout(() => {
         if (!live || observerResolved) return;
-        detachObserver();
+        // The deadline exposes recovery UI; a genuine late SDK restore still belongs
+        // to this live effect. Retry/cleanup detach it, and normal identity fences remain.
         setState({ kind: "unavailable", reason: "auth_restore_timeout" });
         startupDiagnostic.failed("auth_observer_wait", new Error("auth_restore_timeout"), "unavailable");
       }, AUTH_INITIALIZATION_TIMEOUT_MS);

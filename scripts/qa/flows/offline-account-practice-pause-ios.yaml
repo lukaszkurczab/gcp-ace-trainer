@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly.sec03
+---
+# Existing iPhone17 portrait fixture; dismiss its visible development warning toast.
+- tapOn:
+    point: '92%,93%'
+- tapOn:
+    id: 'patternly:session:leave:.*'
+- extendedWaitUntil:
+    visible: 'Pause and resume later'
+    timeout: 10000
+- tapOn: 'Pause and resume later'

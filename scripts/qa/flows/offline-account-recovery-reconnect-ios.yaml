@@ -1,0 +1,9 @@
+appId: com.lkurczab.patternly.sec03
+---
+# Restore the same retained local Auth/Firestore/API fixture first. No new issue or ACK.
+- tapOn:
+    id: recovery-operation-retry
+- extendedWaitUntil:
+    visible:
+      id: recovery-operation-saved-ack
+    timeout: 20000

@@ -166,7 +166,9 @@
   "recoveryOperationTitle": "Operacja odzyskiwania",
   "recoveryOperationLoading": "Sprawdzamy zapisaną prośbę o odzyskiwanie.",
   "recoveryOperationUnavailableTitle": "Informacje o odzyskiwaniu są niedostępne",
+  "recoveryOperationIdentityUnavailableTitle": "Połącz się, aby potwierdzić tożsamość",
   "recoveryOperationUnavailable": {
+    "identity_unavailable": "Nie udało się potwierdzić Twojej tożsamości. Sprawdź połączenie i spróbuj ponownie.",
     "vault_corrupt": "Nie udało się odczytać informacji o odzyskiwaniu na tym urządzeniu.",
     "operation_unavailable": "Nie udało się bezpiecznie odczytać danych odzyskiwania. Skontaktuj się z pomocą przed kontynuowaniem.",
     "vault_unavailable": "Dane odzyskiwania są niedostępne na tym urządzeniu."

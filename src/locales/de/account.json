@@ -166,7 +166,9 @@
   "recoveryOperationTitle": "Wiederherstellungsvorgang",
   "recoveryOperationLoading": "Deine gespeicherte Wiederherstellungsanfrage wird überprüft.",
   "recoveryOperationUnavailableTitle": "Wiederherstellungsdaten sind nicht verfügbar",
+  "recoveryOperationIdentityUnavailableTitle": "Verbinden, um deine Identität zu bestätigen",
   "recoveryOperationUnavailable": {
+    "identity_unavailable": "Deine Identität konnte nicht bestätigt werden. Prüfe die Verbindung und versuche es erneut.",
     "vault_corrupt": "Die gespeicherten Wiederherstellungsdaten konnten auf diesem Gerät nicht gelesen werden.",
     "operation_unavailable": "Die Wiederherstellungsdaten konnten nicht sicher gelesen werden. Wende dich an den Support, bevor du fortfährst.",
     "vault_unavailable": "Wiederherstellungsdaten sind auf diesem Gerät nicht verfügbar."

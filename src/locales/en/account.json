@@ -166,7 +166,9 @@
   "recoveryOperationTitle": "Recovery operation",
   "recoveryOperationLoading": "We’re checking your saved recovery request.",
   "recoveryOperationUnavailableTitle": "Recovery information is unavailable",
+  "recoveryOperationIdentityUnavailableTitle": "Connect to verify your identity",
   "recoveryOperationUnavailable": {
+    "identity_unavailable": "We could not verify your identity. Check your connection and retry.",
     "vault_corrupt": "Saved recovery information could not be read on this device.",
     "operation_unavailable": "Recovery data could not be read safely. Contact support before continuing.",
     "vault_unavailable": "Recovery data is unavailable on this device."

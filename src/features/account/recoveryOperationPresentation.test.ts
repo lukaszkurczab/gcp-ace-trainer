@@ -135,23 +135,27 @@ test("loading or unavailable vault state blocks code issuance until recovery sta
   for (const snapshot of [
     { kind: "loading", blocksProfilePreparation: true },
     { kind: "unavailable", reason: "vault_unavailable", blocksProfilePreparation: true },
+    { kind: "unavailable", reason: "identity_unavailable", blocksProfilePreparation: true },
   ] as const satisfies readonly RecoveryOperationSnapshot[]) {
     const presentation = getRecoveryOperationPresentation(snapshot);
     assert.equal(presentation.showPanel, true);
     assert.equal(presentation.issueBlocksReplacement, true);
+    assert.equal(presentation.showRetry, true);
+    assert.equal(presentation.showCodes, false);
   }
 });
 
 test("all account locales provide the recovery operation states and explicit mismatch actions", () => {
   const locales = ["en", "pl", "de", "fr", "es", "it", "et"].map((locale) => JSON.parse(readFileSync(`src/locales/${locale}/account.json`, "utf8")) as Record<string, unknown>);
   for (const locale of locales) {
-    for (const key of ["recoveryOperationTitle", "recoveryOperationLoading", "recoveryOperationUnavailableTitle", "recoveryOperationPendingTitle", "recoveryOperationResume", "recoveryOperationResumeIssue", "recoveryOperationContinue", "recoveryOperationDeliveryUnconfirmed", "recoveryOperationMismatchDescription", "recoveryOperationIssueMismatchDescription", "recoveryOperationContinueCurrent", "recoveryOperationDeferredTitle", "recoveryOperationDeferredDescription", "recoveryOperationGenerationMissingDescription", "recoveryOperationCodesHidden", "recoveryOperationCodesShow"]) {
+    for (const key of ["recoveryOperationTitle", "recoveryOperationLoading", "recoveryOperationUnavailableTitle", "recoveryOperationIdentityUnavailableTitle", "recoveryOperationPendingTitle", "recoveryOperationResume", "recoveryOperationResumeIssue", "recoveryOperationContinue", "recoveryOperationDeliveryUnconfirmed", "recoveryOperationMismatchDescription", "recoveryOperationIssueMismatchDescription", "recoveryOperationContinueCurrent", "recoveryOperationDeferredTitle", "recoveryOperationDeferredDescription", "recoveryOperationGenerationMissingDescription", "recoveryOperationCodesHidden", "recoveryOperationCodesShow"]) {
       assert.equal(typeof locale[key], "string", `${key} must be translated`);
     }
     for (const group of ["recoveryOperationStatus", "recoveryOperationConsumeStatus", "recoveryOperationFailure", "recoveryOperationUnavailable"]) {
       assert.equal(typeof locale[group], "object", `${group} must be translated`);
     }
     assert.equal(Object.keys(locale.recoveryOperationConsumeStatus as object).length, 7);
+    assert.equal(typeof (locale.recoveryOperationUnavailable as Record<string, unknown>).identity_unavailable, "string");
   }
 });
 

@@ -1,0 +1,19 @@
+appId: com.lkurczab.patternly.sec03
+---
+# Retained paused offline09 session. End only this test session; saved answers remain.
+- tapOn:
+    id: 'patternly:resume:continue:.*'
+- extendedWaitUntil:
+    visible:
+      id: 'patternly:session:feedback:.*'
+    timeout: 20000
+- tapOn:
+    point: '92%,93%'
+- tapOn:
+    id: 'patternly:session:leave:.*'
+- tapOn:
+    id: 'patternly:session:abandon:.*'
+- extendedWaitUntil:
+    notVisible:
+      id: 'patternly:session:root:.*'
+    timeout: 20000

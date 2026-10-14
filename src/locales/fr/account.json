@@ -166,7 +166,9 @@
   "recoveryOperationTitle": "Opération de récupération",
   "recoveryOperationLoading": "Nous vérifions votre demande de récupération enregistrée.",
   "recoveryOperationUnavailableTitle": "Informations de récupération indisponibles",
+  "recoveryOperationIdentityUnavailableTitle": "Connectez-vous pour vérifier votre identité",
   "recoveryOperationUnavailable": {
+    "identity_unavailable": "Votre identité n’a pas pu être vérifiée. Vérifiez votre connexion et réessayez.",
     "vault_corrupt": "Impossible de lire les informations de récupération enregistrées sur cet appareil.",
     "operation_unavailable": "Impossible de lire les données de récupération en toute sécurité. Contactez l’assistance avant de continuer.",
     "vault_unavailable": "Les données de récupération sont indisponibles sur cet appareil."

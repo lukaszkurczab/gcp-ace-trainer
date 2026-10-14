@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   createRecoveryOperationCoordinator,
+  isRecoveryIdentityUnavailable,
   type RecoveryConsumeResponse,
   type RecoveryIssueResponse,
   type RecoveryOperationApi,
@@ -23,6 +24,7 @@ function harness() {
   let afterSave: (() => void) | null = null;
   let identity: { uid: string } | null = null;
   let generation: number | null = null;
+  let generationError: unknown = null;
   let generatedOperationId = operationId;
   let issueResponder: ((id: string) => Promise<RecoveryIssueResponse>) | null = null;
   let issueStatusResponder: ((id: string) => Promise<RecoveryIssueResponse>) | null = null;
@@ -44,7 +46,7 @@ function harness() {
     api,
     auth: {
       getSnapshot: () => identity,
-      getAuthorizationGeneration: async () => generation,
+      getAuthorizationGeneration: async () => { if (generationError) throw generationError; return generation; },
       signInWithRecoveryToken: async (token) => { calls.signIn += 1; events.push("auth.signIn"); assert.equal(token, "secret-custom-token"); identity = { uid: "restored-user" }; generation = 8; return identity; },
     },
     newOperationId: () => generatedOperationId,
@@ -54,6 +56,7 @@ function harness() {
     coordinator, events, calls, storedValues,
     serialized: () => serialized,
     setIdentity: (uid: string | null, authGeneration: number | null) => { identity = uid ? { uid } : null; generation = authGeneration; },
+    setGenerationError: (error: unknown) => { generationError = error; },
     setOperationId: (id: string) => { generatedOperationId = id; },
     setFailWrites: (next: boolean) => { failWrites = next; },
     setAfterSave: (callback: (() => void) | null) => { afterSave = callback; },
@@ -62,6 +65,77 @@ function harness() {
     seed: async (record: unknown) => { serialized = JSON.stringify(record); },
   };
 }
+
+test("only temporary Firebase claim failures identify an unavailable identity", () => {
+  for (const code of ["auth/network-request-failed", "auth/timeout"]) assert.equal(isRecoveryIdentityUnavailable({ code }), true);
+  for (const error of [null, new Error("unknown"), { code: "auth/uid-changed" }, { code: "auth/user-token-expired" }, { code: "auth/user-disabled" }, { code: "auth/authorization-generation-invalid" }, { code: "recovery_operation_vault_unavailable" }, { code: "app_check_unavailable" }, { status: 401 }, { status: 403 }, { status: 503 }, { code: "auth/network-request-failed", status: 401 }, { code: "auth/timeout", status: 503 }]) assert.equal(isRecoveryIdentityUnavailable(error), false);
+});
+
+for (const code of ["auth/network-request-failed", "auth/timeout"]) {
+  test(`offline retry keeps the exact pending issue and recovers the same operation after ${code}`, async () => {
+    const state = harness();
+    state.setIdentity("issue-user", 4);
+    await state.seed({ version: 1, kind: "issue", operationId, firebaseUid: "issue-user", authorizationGeneration: 4, status: "result_available", generationId: "generation-4", codes: issueCodes, savedIntent: false });
+    const original = state.serialized();
+    await state.coordinator.load();
+    state.setGenerationError({ code });
+    for (let retry = 0; retry < 2; retry++) {
+      assert.deepEqual(await state.coordinator.retryRecoveryOperation(), { kind: "unavailable", reason: "identity_unavailable", blocksProfilePreparation: true });
+      assert.equal(state.serialized(), original);
+      assert.equal(state.calls.issueStatus, 0);
+      assert.equal(state.calls.issueAck, 0);
+    }
+    state.setGenerationError(null);
+    const resumed = await state.coordinator.retryRecoveryOperation();
+    assert.equal(resumed.kind, "issue");
+    if (resumed.kind !== "issue") return;
+    assert.equal(resumed.operationId, operationId);
+    assert.equal(resumed.needsAccountResolution, false);
+    assert.equal(resumed.blocksProfilePreparation, true);
+    assert.deepEqual(resumed.codes, issueCodes);
+    assert.equal(state.serialized(), original);
+    assert.deepEqual(state.calls.issueStatusIds, [operationId]);
+    assert.equal(state.calls.issue, 0);
+    assert.equal(state.calls.issueAck, 0);
+    assert.equal((await state.coordinator.confirmRecoveryCodesSaved()).kind, "terminal");
+  });
+}
+
+test("claim failure after a status response retains that durable response behind the identity gate", async () => {
+  const state = harness();
+  state.setIdentity("issue-user", 4);
+  await state.seed({ version: 1, kind: "issue", operationId, firebaseUid: "issue-user", authorizationGeneration: 4, status: "in_progress", generationId: null, codes: null, savedIntent: false });
+  await state.coordinator.load();
+  state.setAfterSave(() => state.setGenerationError({ code: "auth/network-request-failed" }));
+  assert.deepEqual(await state.coordinator.retryRecoveryOperation(), { kind: "unavailable", reason: "identity_unavailable", blocksProfilePreparation: true });
+  const durable = JSON.parse(state.serialized()!);
+  assert.equal(durable.operationId, operationId);
+  assert.equal(durable.status, "result_available");
+  assert.deepEqual(durable.codes, issueCodes);
+  assert.equal(durable.savedIntent, false);
+  assert.equal(state.calls.issueAck, 0);
+  state.setAfterSave(null);
+  state.setGenerationError(null);
+  const resumed = await state.coordinator.retryRecoveryOperation();
+  assert.equal(resumed.kind, "issue");
+  if (resumed.kind === "issue") assert.equal(resumed.needsAccountResolution, false);
+});
+
+test("deferred recovery identity refresh remains retryable without changing its owner", async () => {
+  const state = harness();
+  state.setIdentity("other-user", 9);
+  await state.seed({ version: 1, kind: "issue", operationId, firebaseUid: "issue-user", authorizationGeneration: 4, status: "result_available", generationId: "generation-4", codes: issueCodes, savedIntent: false, deferredFor: { firebaseUid: "other-user", authorizationGeneration: 9 } });
+  const original = state.serialized();
+  await state.coordinator.load();
+  state.setGenerationError({ code: "auth/network-request-failed" });
+  assert.deepEqual(await state.coordinator.retryRecoveryOperation(), { kind: "unavailable", reason: "identity_unavailable", blocksProfilePreparation: true });
+  assert.equal(state.serialized(), original);
+  state.setGenerationError(null);
+  const resumed = await state.coordinator.retryRecoveryOperation();
+  assert.equal(resumed.kind, "issue");
+  if (resumed.kind === "issue") assert.equal(resumed.blocksProfilePreparation, false);
+  assert.equal(state.calls.issueStatus, 0);
+});
 
 function consumeResult(id: string): RecoveryConsumeResponse {
   return { operationId: id, status: "result_available", firebaseUid: "restored-user", authorizationGeneration: 8, customToken: "secret-custom-token" };

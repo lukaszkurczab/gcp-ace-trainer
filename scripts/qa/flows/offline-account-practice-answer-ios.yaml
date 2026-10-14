@@ -1,0 +1,7 @@
+appId: com.lkurczab.patternly.sec03
+---
+# Retained offline09 fixture: the first amortized-complexity question is already open.
+- tapOn: '.*For every allowed operation sequence.*'
+- tapOn: 'Check answer'
+- assertVisible:
+    id: 'patternly:session:feedback:.*'

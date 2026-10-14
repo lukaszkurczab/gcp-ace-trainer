@@ -1,0 +1,9 @@
+appId: com.lkurczab.patternly.sec03
+---
+# Force-quit/launch externally while the same owned API/Auth PIDs are suspended.
+# This is an observation bound, not a change to the app's 15-second error deadline.
+- extendedWaitUntil:
+    visible:
+      id: 'patternly:(home:primary-action|resume:continue:.*)'
+    timeout: 180000
+- assertVisible: "Home"

@@ -23,7 +23,7 @@ export type RecoveryOperationFailure = "offline" | "unauthorized" | "conflict" |
 
 export type RecoveryOperationSnapshot =
   | Readonly<{ kind: "loading"; blocksProfilePreparation: true }>
-  | Readonly<{ kind: "unavailable"; reason: "vault_unavailable" | "vault_corrupt" | "operation_unavailable"; blocksProfilePreparation: true }>
+  | Readonly<{ kind: "unavailable"; reason: "vault_unavailable" | "vault_corrupt" | "operation_unavailable" | "identity_unavailable"; blocksProfilePreparation: true }>
   | Readonly<{ kind: "idle"; blocksProfilePreparation: false }>
   | Readonly<{
       kind: "issue";
@@ -98,6 +98,14 @@ export type RecoveryOperationCoordinator = Readonly<{
 
 class RecoveryOperationProtocolError extends Error {
   public constructor() { super("recovery_operation_response_invalid"); this.name = "RecoveryOperationProtocolError"; }
+}
+
+class RecoveryIdentityUnavailableError extends Error {}
+
+/** A failed fresh identity read is neither a mismatched identity nor unreadable recovery data. */
+export function isRecoveryIdentityUnavailable(error: unknown): boolean {
+  return isRecord(error) && error.status === undefined
+    && (error.code === "auth/network-request-failed" || error.code === "auth/timeout");
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -198,13 +206,16 @@ export function createRecoveryOperationCoordinator(dependencies: RecoveryOperati
     return snapshot;
   };
 
-  const enqueue = <T>(operation: () => Promise<T>): Promise<T> => {
-    const current = lane.then(operation, operation);
+  const enqueue = (operation: () => Promise<RecoveryOperationSnapshot>): Promise<RecoveryOperationSnapshot> => {
+    const current = lane.then(operation, operation).catch((error: unknown) => {
+      if (error instanceof RecoveryIdentityUnavailableError) return unavailable("identity_unavailable");
+      throw error;
+    });
     lane = current.then(() => undefined, () => undefined);
     return current;
   };
 
-  const unavailable = (reason: "vault_unavailable" | "vault_corrupt" | "operation_unavailable"): RecoveryOperationSnapshot => publish({ kind: "unavailable", reason, blocksProfilePreparation: true });
+  const unavailable = (reason: Extract<RecoveryOperationSnapshot, { kind: "unavailable" }>["reason"]): RecoveryOperationSnapshot => publish({ kind: "unavailable", reason, blocksProfilePreparation: true });
 
   const issueSnapshot = (value: RecoveryIssueVaultRecord, needsAccountResolution: boolean, failure: RecoveryOperationFailure | null = null, accountResolution: Extract<RecoveryOperationSnapshot, { kind: "issue" }>["accountResolution"] = null, previousIssueOperationId?: string): RecoveryOperationSnapshot => publish({
     kind: "issue",
@@ -269,7 +280,10 @@ export function createRecoveryOperationCoordinator(dependencies: RecoveryOperati
     try {
       const generation = await dependencies.auth.getAuthorizationGeneration();
       return dependencies.auth.getSnapshot()?.uid === identity.firebaseUid && generation === identity.authorizationGeneration;
-    } catch { return false; }
+    } catch (error) {
+      if (isRecoveryIdentityUnavailable(error)) throw new RecoveryIdentityUnavailableError();
+      return false;
+    }
   };
 
   const persistIssueResponse = async (current: RecoveryIssueVaultRecord, responseValue: unknown): Promise<RecoveryOperationSnapshot> => {
@@ -552,7 +566,10 @@ export function createRecoveryOperationCoordinator(dependencies: RecoveryOperati
       return dependencies.auth.getSnapshot()?.uid === current.uid
         ? Object.freeze({ firebaseUid: current.uid, authorizationGeneration: isGeneration(authorizationGeneration) ? authorizationGeneration : null })
         : Object.freeze({ firebaseUid: current.uid, authorizationGeneration: null });
-    } catch { return Object.freeze({ firebaseUid: current.uid, authorizationGeneration: null }); }
+    } catch (error) {
+      if (isRecoveryIdentityUnavailable(error)) throw new RecoveryIdentityUnavailableError();
+      return Object.freeze({ firebaseUid: current.uid, authorizationGeneration: null });
+    }
   };
 
   return Object.freeze({
