@@ -4,8 +4,11 @@ import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { parseOrigin, request, selectTarget } from "./readNativeStartupTrace.mjs";
 
-export function buildEnvironmentProbeExpression(action = "inspect", expectedFingerprint) {
-  if (!["inspect", "assign", "inventory"].includes(action) || (action !== "inspect" && !/^[a-f0-9]{64}$/u.test(expectedFingerprint ?? ""))) throw Error("arguments_rejected");
+export function buildEnvironmentProbeExpression(action = "inspect", expectedFingerprint, expectedAppId = "com.lkurczab.patternly") {
+  if (!["inspect", "assign", "inventory", "sdk-status"].includes(action)
+    || !["com.lkurczab.patternly", "com.lkurczab.patternly.sec03"].includes(expectedAppId)
+    || (action === "sdk-status" && expectedAppId !== "com.lkurczab.patternly.sec03")
+    || (action !== "inspect" && !/^[a-f0-9]{64}$/u.test(expectedFingerprint ?? ""))) throw Error("arguments_rejected");
   return `(async()=>{
       if(!globalThis.HermesInternal || typeof __DEV__==='undefined' || !__DEV__)throw Error('controlled_runtime_required');
       const modules=Array.from(__r.getModules().entries());
@@ -26,6 +29,19 @@ export function buildEnvironmentProbeExpression(action = "inspect", expectedFing
         state=await guard.assign();
       }
       let inventory;
+      let nativeSDKStatus;
+      if(${JSON.stringify(action)}==='sdk-status'){
+        if(identity.fingerprint!==${JSON.stringify(expectedFingerprint ?? null)} || !configMatches || constants.expoConfig?.ios?.bundleIdentifier!=='com.lkurczab.patternly.sec03' || state!=='mismatch' || rootInitialized || Object.values(protectedModules).some(Boolean))throw Error('sdk_status_precondition_rejected');
+        // Pinned native isConfigured reads only singleton presence. Do not load
+        // the JS purchases owner or call any identity/customer/cache accessor.
+        let bridge;
+        try{bridge=load('node_modules/react-native/Libraries/BatchedBridge/NativeModules.js').default?.RNPurchases;}catch{throw Error('native_sdk_status_unavailable');}
+        if(typeof bridge?.isConfigured!=='function')throw Error('native_sdk_status_unavailable');
+        let configured;
+        try{configured=await bridge.isConfigured();}catch{throw Error('native_sdk_status_unavailable');}
+        if(typeof configured!=='boolean')throw Error('native_sdk_status_unavailable');
+        nativeSDKStatus={revenueCatConfigured:configured};
+      }
       if(${JSON.stringify(action)}==='inventory'){
         if(identity.fingerprint!==${JSON.stringify(expectedFingerprint ?? null)} || !configMatches || !rootInitialized || state!=='ready')throw Error('inventory_precondition_rejected');
         // Only production owners that normal startup has already initialized.
@@ -42,18 +58,19 @@ export function buildEnvironmentProbeExpression(action = "inspect", expectedFing
         inventory={storage:sanitizedStorage,packages,auth,vault,purchases:{kind:'unavailable',reason:'native_sdk_cache_not_enumerated'}};
       }
       return {schema:'patternly.environment-native-probe.v1',action:${JSON.stringify(action)},hermes:true,mode:identity.mode,fingerprint:identity.fingerprint,configMatches,state,rootInitialized,
-        protectedModules,...(inventory?{inventory}:{})};
+        protectedModules,...(inventory?{inventory}:{}),...(nativeSDKStatus?{nativeSDKStatus}:{})};
     })()`;
 }
 
 /** Uses only initialized owners in the one existing iPhone 17 Hermes target.
  * assign is an explicit owner-authorized enrollment, never a fixture reset.
- * Does not import/open protected stores or SDKs merely to inspect a blocked build. */
-export async function probeEnvironmentGuardIos(originValue, action = "inspect", expectedFingerprint) {
-  const expression = buildEnvironmentProbeExpression(action, expectedFingerprint);
+ * sdk-status only reads native singleton presence in the explicitly selected
+ * isolated blocked bundle. It never configures SDKs or opens their identity caches. */
+export async function probeEnvironmentGuardIos(originValue, action = "inspect", expectedFingerprint, expectedAppId = "com.lkurczab.patternly") {
+  const expression = buildEnvironmentProbeExpression(action, expectedFingerprint, expectedAppId);
   const origin = parseOrigin(originValue);
   const targets = await (await fetch(new URL("/json/list", origin), { signal: AbortSignal.timeout(5000) })).json();
-  const endpoint = selectTarget(targets, origin);
+  const endpoint = selectTarget(targets, origin, expectedAppId);
   const require = createRequire(new URL("../../node_modules/@react-native/dev-middleware/package.json", import.meta.url));
   const WebSocket = require("ws");
   const socket = new WebSocket(endpoint, { origin: origin.origin, handshakeTimeout: 5000, maxPayload: 128 * 1024, followRedirects: false });
@@ -66,7 +83,7 @@ export async function probeEnvironmentGuardIos(originValue, action = "inspect", 
   };
   try {
     await new Promise((accept, reject) => { socket.once("open", accept); socket.once("error", () => reject(Error("connect_failed"))); });
-    await evaluate(`(()=>{const key=${JSON.stringify(key)};if(Object.hasOwn(globalThis,key))throw Error('probe_busy');globalThis[key]={kind:'pending'};Promise.resolve().then(()=>${expression}).then(value=>globalThis[key]={kind:'done',value}).catch(error=>{const allowed=['inventory_precondition_rejected','inventory_unavailable','inventory_changed','owner_closed','owner_unavailable','assignment_precondition_rejected'];globalThis[key]={kind:'failed',category:allowed.includes(error?.message)?error.message:'native_probe_rejected'};});return 'started';})()`);
+    await evaluate(`(()=>{const key=${JSON.stringify(key)};if(Object.hasOwn(globalThis,key))throw Error('probe_busy');globalThis[key]={kind:'pending'};Promise.resolve().then(()=>${expression}).then(value=>globalThis[key]={kind:'done',value}).catch(error=>{const allowed=['inventory_precondition_rejected','inventory_unavailable','inventory_changed','owner_closed','owner_unavailable','assignment_precondition_rejected','sdk_status_precondition_rejected','native_sdk_status_unavailable'];globalThis[key]={kind:'failed',category:allowed.includes(error?.message)?error.message:'native_probe_rejected'};});return 'started';})()`);
     for (let attempt = 0; attempt < 40; attempt++) {
       const value = JSON.parse(await evaluate(`JSON.stringify(globalThis[${JSON.stringify(key)}])`));
       if (value.kind === "done") return value.value;
@@ -81,10 +98,10 @@ export async function probeEnvironmentGuardIos(originValue, action = "inspect", 
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [origin, action = "inspect", fingerprint, ...extra] = process.argv.slice(2);
-  const categories = new Set(["arguments_rejected", "origin_rejected", "target_rejected", "connect_failed", "native_evaluation_rejected", "native_probe_rejected", "native_probe_timeout", "transport_closed", "read_timeout", "inventory_precondition_rejected", "inventory_unavailable", "inventory_changed", "owner_closed", "owner_unavailable", "assignment_precondition_rejected"]);
+  const [origin, action = "inspect", fingerprint, appId = "com.lkurczab.patternly", ...extra] = process.argv.slice(2);
+  const categories = new Set(["arguments_rejected", "origin_rejected", "target_rejected", "connect_failed", "native_evaluation_rejected", "native_probe_rejected", "native_probe_timeout", "transport_closed", "read_timeout", "inventory_precondition_rejected", "inventory_unavailable", "inventory_changed", "owner_closed", "owner_unavailable", "assignment_precondition_rejected", "sdk_status_precondition_rejected", "native_sdk_status_unavailable"]);
   if (!origin || extra.length) { console.error(JSON.stringify({ stage: "environment_probe", category: "arguments_rejected" })); process.exitCode = 1; }
-  else probeEnvironmentGuardIos(origin, action, fingerprint).then((receipt) => console.log(JSON.stringify(receipt))).catch((error) => {
+  else probeEnvironmentGuardIos(origin, action, fingerprint, appId).then((receipt) => console.log(JSON.stringify(receipt))).catch((error) => {
     console.error(JSON.stringify({ stage: "environment_probe", category: categories.has(error?.message) ? error.message : "native_probe_unavailable" })); process.exitCode = 1;
   });
 }

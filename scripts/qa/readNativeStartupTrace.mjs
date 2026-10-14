@@ -12,10 +12,11 @@ export function parseOrigin(value) {
   return origin;
 }
 
-export function selectTarget(targets, metroOrigin) {
-  if (!Array.isArray(targets) || targets.length !== 1) throw Error("target_rejected");
+export function selectTarget(targets, metroOrigin, expectedAppId = "com.lkurczab.patternly") {
+  if (!["com.lkurczab.patternly", "com.lkurczab.patternly.sec03"].includes(expectedAppId)
+    || !Array.isArray(targets) || targets.length !== 1) throw Error("target_rejected");
   const target = targets[0];
-  if (target.type !== "node" || target.appId !== "com.lkurczab.patternly" || target.deviceName !== "iPhone 17") throw Error("target_rejected");
+  if (target.type !== "node" || target.appId !== expectedAppId || target.deviceName !== "iPhone 17") throw Error("target_rejected");
   const url = new URL(target.webSocketDebuggerUrl);
   if (url.protocol !== "ws:" || url.host !== metroOrigin.host || url.pathname !== "/inspector/debug"
     || url.username || url.password || url.hash || [...url.searchParams].length !== 2

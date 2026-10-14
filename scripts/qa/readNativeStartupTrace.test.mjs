@@ -14,6 +14,17 @@ test("target is exact and rejects ambiguity, other devices and cross-origin sock
   assert.equal(selectTarget([target], origin), target.webSocketDebuggerUrl);
   for (const values of [[], [target, target], [{ ...target, deviceName: "iPhone 16" }], [{ ...target, webSocketDebuggerUrl: "ws://remote.test:8082/inspector/debug?device=local&page=1" }], [{ ...target, id: "wrong" }]]) assert.throws(() => selectTarget(values, origin));
 });
+test("isolated SEC03 target requires an explicit exact allowlisted app ID with no fallback", () => {
+  const origin = parseOrigin("http://localhost:8082");
+  const testId = "com.lkurczab.patternly.sec03";
+  const isolated = { ...target, appId: testId };
+  assert.throws(() => selectTarget([isolated], origin), /target_rejected/);
+  assert.throws(() => selectTarget([target], origin, testId), /target_rejected/);
+  assert.throws(() => selectTarget([isolated, target], origin, testId), /target_rejected/);
+  assert.throws(() => selectTarget([{ ...isolated, deviceName: "iPhone 16" }], origin, testId), /target_rejected/);
+  assert.throws(() => selectTarget([isolated], origin, "another.app"), /target_rejected/);
+  assert.equal(selectTarget([isolated], origin, testId), isolated.webSocketDebuggerUrl);
+});
 const trace = { hermes: true, trace: { schema: "patternly.startup-trace.v1", truncated: false, events: [{ stage: "content_gate", edge: "begin", atMs: 12, span: 1 }] } };
 test("trace rejects missing runtime, payloads, invalid clocks and unbounded buffers", () => {
   assert.equal(validateTrace(trace), trace.trace);
