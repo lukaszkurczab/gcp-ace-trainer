@@ -125,6 +125,12 @@ export function isTemporaryIdentityProofUnavailable(error: unknown): boolean {
   return ["auth/network-request-failed", "auth/timeout"].includes(firebaseAuthErrorCode(error));
 }
 
+/** Local attestation unavailability cannot invalidate a previously verified local account. */
+export function isLocalAccountStartupUnavailable(error: unknown): boolean {
+  return classifyAccountFailure(error) === "offline"
+    || (error instanceof PatternlyApiClientError && error.code === "app_check_unavailable" && error.status === undefined);
+}
+
 export type AccountIdentityProofBarrierContext = Readonly<{
   receipt: AccountIdentityProofBarrier;
   lease: ActiveProfileStorageLease | null;
@@ -1363,7 +1369,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         : classifyAccountFailure(error);
       const failureState = accountSessionFailureState(failure, user);
       startupDiagnostic?.failed(diagnosticStage, error, failureState.kind);
-      if (ownsPreparation && failure === "offline" && canContinue()
+      if (ownsPreparation && isLocalAccountStartupUnavailable(error) && canContinue()
         && !findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid)
         && !findMatchingLocalLogoutBlock(logoutControlSnapshotRef.current, user.uid)
         && !recoveryOperation.blocksProfilePreparation

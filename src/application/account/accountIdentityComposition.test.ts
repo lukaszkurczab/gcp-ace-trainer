@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountState } from "./AccountSessionProvider";
+import { accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, isLocalAccountStartupUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { accountFinalizationPolicies, executeAccountFinalization } from "./accountFinalization";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
@@ -1087,7 +1087,27 @@ test("recovery proof scope accepts only exact operation identity or witnessed co
   assert.equal(recoveryOperationTransitionIsAllowed(original, { kind: "terminal", operationId: replacementId, status: "acknowledged", blocksProfilePreparation: false }, actorUid), false, "a terminal result cannot clear a different accepted operation");
 });
 
-test("the production identity-proof boundary retains exact localOffline on temporary failure and admits a later verified response", async () => {
+test("cold account startup admits local attestation unavailability without admitting server or identity denials", () => {
+  for (const error of [new PatternlyApiClientError("request_timeout"), new PatternlyApiClientError("transport_failed"), new PatternlyApiClientError("app_check_unavailable"), { code: "auth/network-request-failed" }]) {
+    assert.equal(isLocalAccountStartupUnavailable(error), true);
+  }
+  for (const error of [
+    new PatternlyApiClientError("server_error", 503),
+    new PatternlyApiClientError("server_error", 503, "app_check_not_configured"),
+    ...["app_check_invalid", "app_check_required", "app_check_not_configured", "account_deleted", "authentication_required"].map((code) => new PatternlyApiClientError("server_error", 401, code)),
+    new PatternlyApiClientError("server_error", 404, "account_not_found"),
+    new PatternlyApiClientError("app_check_unavailable", 503),
+    new PatternlyApiClientError("authentication_required"),
+    new PatternlyApiClientError("invalid_response"),
+    { code: "auth/user-token-expired" },
+    new Error("unknown failure"),
+  ]) assert.equal(isLocalAccountStartupUnavailable(error), false);
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  assert.match(provider, /if \(ownsPreparation && isLocalAccountStartupUnavailable\(error\) && canContinue\(\)/u);
+});
+
+for (const failureCode of ["request_timeout", "app_check_unavailable"] as const) {
+test(`the production identity-proof boundary retains exact localOffline on ${failureCode} and admits a later verified response`, async () => {
   assert.equal(isTemporaryIdentityProofUnavailable(new PatternlyApiClientError("request_timeout")), true);
   assert.equal(isTemporaryIdentityProofUnavailable(new PatternlyApiClientError("transport_failed")), true);
   assert.equal(isTemporaryIdentityProofUnavailable(new PatternlyApiClientError("server_error", 503)), true);
@@ -1134,7 +1154,7 @@ test("the production identity-proof boundary retains exact localOffline on tempo
     let requests = 0;
     const failed = await coordinator.run(generation, async () => {
       const proof = await runAccountIdentityProof<Readonly<{ user: Readonly<{ id: string }> }> >({
-        request: async () => { requests += 1; throw new PatternlyApiClientError("request_timeout"); },
+        request: async () => { requests += 1; throw new PatternlyApiClientError(failureCode); },
         user, generation, getCurrentState: () => currentState, getCurrentSdkUid: () => uid,
         beginBarrier: async () => {
           const receipt = await beginAccountIdentityProofBarrier({ profileId: profile.id, accountId, firebaseUid: uid, verificationRevision: binding.verificationRevision, lease, canContinue: () => coordinator.isCurrent(generation) });
@@ -1150,7 +1170,7 @@ test("the production identity-proof boundary retains exact localOffline on tempo
       if (proof.kind === "failed") return { result: { kind: "failure", failure: proof.failure }, state: proof.state };
       return { result: { kind: "failure", failure: "test_unexpected_success" }, state: currentState };
     });
-    assert.deepEqual(failed.result, { kind: "failure", failure: "offline" });
+    assert.deepEqual(failed.result, { kind: "failure", failure: failureCode === "request_timeout" ? "offline" : "backendUnavailable" });
     assert.equal(requests, 1);
     assert.equal(currentState.kind, "localOffline");
     if (currentState.kind === "localOffline") {
@@ -1194,6 +1214,8 @@ test("the production identity-proof boundary retains exact localOffline on tempo
     setProfileStoragePreparationFactoryForTests(null);
   }
 });
+
+}
 
 test("a lost tombstone readback prevents every identity proof call and leaves the cold binding invalidated", async () => {
   const accountId = "identity-barrier-readback-account";
