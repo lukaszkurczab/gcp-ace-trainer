@@ -717,6 +717,7 @@ test("a guest transition resets navigation into the application session", () => 
 test("secure auth persistence stores only a Firebase refresh-token-shaped record", async () => {
   const stored = new Map<string, string>();
   const Persistence = createSecureAuthPersistence({
+    WHEN_UNLOCKED_THIS_DEVICE_ONLY: 7,
     deleteItemAsync: async (key) => { stored.delete(key); },
     getItemAsync: async (key) => stored.get(key) ?? null,
     setItemAsync: async (key, value) => { stored.set(key, value); },
@@ -753,6 +754,7 @@ test("secure auth persistence stores only a Firebase refresh-token-shaped record
 test("secure auth persistence isolates Firebase metadata from the saved auth user", async () => {
   const stored = new Map<string, string>();
   const Persistence = createSecureAuthPersistence({
+    WHEN_UNLOCKED_THIS_DEVICE_ONLY: 7,
     deleteItemAsync: async (key) => { stored.delete(key); },
     getItemAsync: async (key) => stored.get(key) ?? null,
     setItemAsync: async (key, value) => { stored.set(key, value); },

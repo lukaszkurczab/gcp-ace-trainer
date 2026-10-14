@@ -202,7 +202,7 @@ function createExpoConfig(environment = process.env) {
         }],
         ["@react-native-firebase/app", { ios: { disableSPM: true } }],
         "@react-native-firebase/app-check",
-        ["expo-secure-store", { configureAndroidBackup: false }],
+        ["expo-secure-store", { configureAndroidBackup: false, faceIDPermission: false }],
         ["expo-build-properties", {
           ios: {
             deploymentTarget: "16.4",

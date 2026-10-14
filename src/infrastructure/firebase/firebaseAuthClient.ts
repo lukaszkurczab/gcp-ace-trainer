@@ -222,7 +222,7 @@ export async function createAppleCredential(
   const { apple } = dependencies;
   if (!(await apple.isAvailableAsync())) throw new FirebaseAuthClientError("auth/apple-unavailable");
   const rawNonce = dependencies.createRawNonce();
-  const credential = await apple.signInAsync({ nonce: sha256Utf8(rawNonce), requestedScopes: [apple.AppleAuthenticationScope.EMAIL, apple.AppleAuthenticationScope.FULL_NAME] });
+  const credential = await apple.signInAsync({ nonce: sha256Utf8(rawNonce), requestedScopes: [apple.AppleAuthenticationScope.EMAIL] });
   if (!credential.identityToken) throw new FirebaseAuthClientError("auth/provider-unavailable");
   const createCredential = dependencies.createCredential
     ?? ((identityToken: string, nonce: string) => new OAuthProvider("apple.com").credential({ idToken: identityToken, rawNonce: nonce }));

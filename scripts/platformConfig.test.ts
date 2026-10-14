@@ -47,6 +47,6 @@ test("Expo platform configuration declares the supported phone-only native matri
 
   assert.deepEqual(
     app.plugins.find((plugin: unknown) => Array.isArray(plugin) && plugin[0] === "expo-secure-store"),
-    ["expo-secure-store", { configureAndroidBackup: false }],
+    ["expo-secure-store", { configureAndroidBackup: false, faceIDPermission: false }],
   );
 });

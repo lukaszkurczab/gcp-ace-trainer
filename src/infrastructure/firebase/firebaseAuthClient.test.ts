@@ -10,12 +10,14 @@ import { sha256Utf8 } from "../identity/sha256";
 test("Apple nonce boundary hashes the Expo request and preserves the Firebase raw nonce", async () => {
   const rawNonce = "raw-apple-nonce-for-boundary-test";
   let expoNonce: string | undefined;
+  let requestedScopes: readonly number[] | undefined;
   const dependencies: AppleCredentialDependencies = {
     apple: {
       AppleAuthenticationScope: { EMAIL: 1, FULL_NAME: 0 },
       isAvailableAsync: async () => true,
       signInAsync: async (options) => {
         expoNonce = options?.nonce;
+        requestedScopes = options?.requestedScopes;
         return { identityToken: "apple-identity-token" } as Awaited<ReturnType<AppleCredentialDependencies["apple"]["signInAsync"]>>;
       },
     } as AppleCredentialDependencies["apple"],
@@ -27,6 +29,7 @@ test("Apple nonce boundary hashes the Expo request and preserves the Firebase ra
   const serialized = credential.toJSON() as Readonly<{ idToken?: string; nonce?: string }>;
 
   assert.equal(expoNonce, sha256Utf8(rawNonce));
+  assert.deepEqual(requestedScopes, [dependencies.apple.AppleAuthenticationScope.EMAIL]);
   assert.equal(serialized.idToken, "apple-identity-token");
   assert.equal(serialized.nonce, rawNonce);
   assert.notEqual(expoNonce, rawNonce);
@@ -66,6 +69,7 @@ test("authorization generation refresh rejects a result after the Firebase ident
 test("local Firebase sign-out retries and verifies persisted-user removal after SDK persistence rejection", async () => {
   const stored = new Map([[AUTH_USER_STORAGE_KEY, "persisted-refresh-token"]]);
   const secureStore = {
+    WHEN_UNLOCKED_THIS_DEVICE_ONLY: 7,
     deleteItemAsync: async (key: string) => { stored.delete(key); },
     getItemAsync: async (key: string) => stored.get(key) ?? null,
     setItemAsync: async (key: string, value: string) => { stored.set(key, value); },

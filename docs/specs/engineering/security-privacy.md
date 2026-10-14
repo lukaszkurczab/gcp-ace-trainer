@@ -7,23 +7,64 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## SEC-01 — MEDIUM — Device-only auth persistence
 
-**Potwierdzenie w bieżącym kodzie:** SecureAuthPersistence nadal wywołuje SecureStore get/set/delete bez jawnej device-only accessibility, obecnej w encryptedStorageNative. Kod do poprawki jest ustalony; actual restore/transfer proof należy do native acceptance.
+**Stan 14.10.2026 / 08:** lokalna implementacja używa iOS `WHEN_UNLOCKED_THIS_DEVICE_ONLY` oraz `requireAuthentication:false` we wszystkich get/set/delete, ancillary, verified clear oraz inspect. Android zachowuje opcje Keystore bez iOS-only constant. Zachowuje domyślny service z SEC-03 (iOS `app`, Android `key_v1`), bez zmiany kluczy/migratora. [Dowód i granice 08](#przyjęty-kontrakt-i-dowód-08); rzeczywisty atrybut Keychain i restore/transfer pozostają R05.
 
 - **Exact risk/data:** po iOS backup/transfer durable Firebase refresh token, UID/email/provider metadata mogą być przeniesione do innej instalacji, wbrew docs08/09. Wymaga dostępu do backup/restore; nie jest zdalnym auth bypass.
-- **Pliki/config:** app `src/infrastructure/firebase/secureAuthPersistence.ts` (get/set/delete bez opcji), `src/infrastructure/firebase/firebaseAuthClient.ts`, `src/application/account/accountIdentityComposition.test.ts`, `src/infrastructure/firebase/firebaseAuthClient.test.ts`; wzorzec device-only w `src/infrastructure/storage/encryptedStorageNative.ts`.
+- **Pliki/config:** app `src/infrastructure/firebase/secureAuthPersistence.ts`, `src/infrastructure/firebase/firebaseAuthClient.ts`, ich adapter/SDK tests, `src/application/account/accountIdentityComposition.test.ts`; wzorzec device-only w `src/infrastructure/storage/encryptedStorageNative.ts`.
 - **Remediation:** jeden jawny device-only service/accessibility contract dla wszystkich auth reads/writes/deletes; uzgodnić namespace z SEC-03. Bez migratora nieopublikowanych historycznych instalacji. Zachować potrzebny refresh token i verified clear.
 - **Test/manual proof i AC:** rekord używa native non-migrating accessibility; restart odtwarza bieżącą sesję, signout/deletion usuwa i weryfikuje brak; restore na innym urządzeniu nie odtwarza credential. Unit adapter options i lifecycle nie zastępują native item attribute/restore proof. Zwykły reset historii nie wylogowuje.
 - **Privacy copy:** twierdzenie o wykluczeniu credentials z transferu zgodne z dowodem; bez obietnicy secure erase/wymazania starych backupów. **Platform:** iOS; sprawdzić brak regresji Android SecureStore. **Dependencies:** SEC-03 dla końcowych nazw, SEC-09B Android policy; native/provider dowód R04/R05.
 
 ## SEC-02 — MEDIUM — Minimalne provider profile
 
-**Potwierdzenie w bieżącym kodzie:** firebaseAuthClient nadal żąda Apple FULL_NAME; persisted user/provider DTO zawiera displayName/photoURL/phoneNumber. Przed usunięciem sprawdzić konieczne Firebase restore/link/re-auth consumers; pola nie są automatycznie potrzebne dlatego, że zwrócił je SDK.
+**Stan 14.10.2026 / 08:** Apple żąda wyłącznie EMAIL; jeden persisted DTO odrzuca top/provider displayName/photoURL/phoneNumber. Restore/re-auth/link/unlink sprawdzono na rzeczywistym zainstalowanym SDK z testowym HTTP. Google Expo provider nadal wymusza profile scopes, więc manifest zachowuje Name; nie zastąpiono jego OAuth flow. [Dowód i granice 08](#przyjęty-kontrakt-i-dowód-08).
 
 - **Exact risk/data:** Apple FULL_NAME i persisted displayName/photoURL/phoneNumber bez launch use case zwiększają zakres lokalnego profilu. Pole zwrócone przez providera nie staje się automatycznie potrzebnym rekordem produktu.
 - **Pliki/config:** app `src/infrastructure/firebase/firebaseAuthClient.ts`, `src/infrastructure/firebase/secureAuthPersistence.ts`, ich identity tests, `plugins/withPrivacyBoundary.js` (Name declaration), właściwe privacy locale/template consumers z R01.
 - **Remediation:** usunąć unused Apple scope i zbędne profile fields także w providerData; ustalić minimum na rzeczywistym Firebase restore/link/re-auth. Nie usuwać koniecznych UID/email/provider IDs/timestamps tylko na podstawie nazwy pola. Jeden persisted DTO, bez równoległego pełnego profilu.
 - **Test/manual proof i AC:** synthetic provider z dodatkowymi polami nie utrwala ich; accepted serialized shape zamknięty; sign-in→restart→link/unlink/re-auth działa w R04. Brak przypadkowej utraty credentials i user-visible identity.
 - **Privacy copy:** deklarować faktycznie przetwarzane identity fields; Name w manifest usunąć po potwierdzeniu braku innych konsumentów, nie samą zmianą etykiety maskować zbieranie. **Platform:** iOS/Android auth; bez nowego permission. **Dependencies:** wspólny adapter SEC-01, R01/R04.
+
+### Przyjęty kontrakt i dowód 08
+
+Zakres sesji: wyłącznie SEC-01/02/10. Punkt startu APP `f79d2fb0`, czysty Git; kod 07 był już w HEAD i nie został powtórnie implementowany. Bieżące polecenie właściciela dopuszcza ten niezależny lokalny wycinek mimo otwartego native residualu 07. Nie zmieniono globalnej blokady środowisk, provider IDs, signing, treści ani pinów.
+
+Main jedynym writerem. Ocena podejścia: dopasowanie 0,95 / prostota 0,94 / kontrola ryzyka 0,87 / utrzymywalność 0,94, minimum 0,87. Niezależny design review `gpt-6-luna high`: przyjęty, oceny 0,92 / 0,90 / 0,82 / 0,86, **minimum 0,82**. Zachowany service zapobiega odcięciu istniejących credentials; opcje dotyczą dostępności, nie przeniesienia do nowego namespace. Bez biometrics i bez nowej abstrakcji providera. Pierwsze QA wykryło brak eksportu stałej Keychain na Androidzie: globalny numeric guard blokował auth. Poprawiono go na iOS-only; Android nie dostaje keychainAccessible, zawsze dostaje requireAuthentication:false. Testy wykonują rzeczywisty default loader z natywnym kształtem modułów obu platform, a brak stałej iOS nadal zamyka auth. To dowód adaptera, nie test urządzenia Android. Po korekcie powtórzono 12 testów auth/platform i typecheck; pozostałe 68+15 zachowują aktualność (nie zmieniono ich implementacji, zależności ani konfiguracji wykonania).
+
+Jeden DTO nadal zachowuje UID, email, emailVerified, isAnonymous, providerData (providerId/uid/email), createdAt/lastLoginAt i refreshToken z expirationTime=0. Nie utrwala ID/access tokenów ani name/photo/phone, także po SDK merge linkowania. Lokalny SDK RN `@firebase/auth@1.13.4` `_fromJSON` przyjmuje brak tych trzech pól; aplikacja używa UID/email/provider IDs, nie profilu. `expo-auth-session` Google `minimumScopes` wymusza openid/userinfo.profile/userinfo.email przez `applyRequiredScopes`; samo podanie scopes nie usuwa profile. Dlatego `plugins/withPrivacyBoundary.js` i deklaracja Name pozostały bez zmian. Niemiecki szkic prywatności skorygowano wyłącznie w zdaniu o Apple EMAIL.
+
+Weryfikacja 14.10.2026 (APP, Node 22.22.3):
+
+```sh
+node --import tsx --test src/infrastructure/firebase/secureAuthPersistence.test.ts src/infrastructure/firebase/secureAuthPersistenceSdk.test.ts src/infrastructure/firebase/firebaseAuthClient.test.ts scripts/platformConfig.test.ts
+npm run typecheck
+node --import tsx --test src/application/account/accountIdentityComposition.test.ts scripts/nativePrivacyBoundary.test.ts scripts/buildRuntimeConfiguration.test.ts src/infrastructure/storage/encryptedStorageNative.test.ts
+node --import tsx --test src/infrastructure/security/recoveryOperationVault.test.ts src/legal/legalDocumentMap.test.ts src/legal/providerRegistrationDocuments.test.ts
+node scripts/qa/checkAuthPrivacyPrebuild.mjs
+npm run qa:static
+npm run validate:content-boundary
+npm run validate:runtime-privacy-boundary
+git diff --check
+```
+
+**95/95 testów PASS, 0 SKIP** (12 auth/platform, 68 composition/config/privacy/storage wrapper, 15 vault/legal). Typecheck, content boundary, runtime privacy boundary i diff check PASS. SDK test korzysta z rzeczywistego Firebase: sign-in → zimne odtworzenie instancji i refresh bez trwałego ID tokena → re-auth → link → restart → unlink → signout → restart bez konta → sign-in → deletion. Zamknięty JSON sprawdzany po operacjach; transport HTTP i port SecureStore są testowe. Przed budową testu mały rzeczywisty probe SDK ustalił dwa endpointy restore (`token`, `accounts:lookup`), zamiast zakładać kontrakt mocka.
+
+**Clean prebuild PASS:** wersjonowane `scripts/qa/checkAuthPrivacyPrebuild.mjs` generuje smoke iOS przez aktualny `createExpoConfig` i pluginy, `--no-install --clean --platform ios`, w katalogu tymczasowym; nie modyfikuje workspace `ios`. Końcowy `/tmp/patternly-auth-prebuild-UC429F/ios/Patternly/Info.plist` nie zawiera `NSFaceIDUsageDescription`, SHA256 `e0602c9762ecf2d79652258254810e72328a1636fd6326086ccc45817a0f4a68`. PrivacyInfo nadal ma Name, entitlements bez remote notification. To wygenerowany projekt smoke, nie skompilowany/frozen kandydat wydania; finalny artifact proof pozostaje R03/R05. Nie instalowano aplikacji, nie otwierano/resetowano simulatora, bez reinstall/newGuest i Androida.
+
+**Granica repo gate:** `qa:static` zatrzymuje się na recovery inventory: istniejący `src/testing/terminalWireFixture.ts:2` importuje `journalTestSupport`. Import potwierdzono w bazowym HEAD, plik bez diffu. Pełnego npm test ani hosted CI nie uruchomiono; brak clean repo gate. Nie naprawiano obcego zakresu.
+
+**Granice odbioru:** opcje adaptera i SDK lifecycle nie dowodzą atrybutu istniejącego Keychain item, transferu/backup restore ani działania rzeczywistych Apple/Google usług. Native residual 07 pozostaje osobno; R04 zachowuje provider sign-in/link/re-auth, **R05 przejmuje rzeczywiste Keychain attributes, device restore/transfer oraz frozen plist**. Android native proof według etapu po iOS. Brak obietnicy usunięcia dawnych backupów. Niezależny acceptance QA `gpt-6-luna high`: **PASS dla AC code/local**, **PASS WITH ISSUES** dla code/local slice z jawną nieodebraną bramką repo (wcześniejszy recovery inventory failure). QA powtórzyło focused 12, typecheck, diff; wcześniejsze 52 composition/platform/privacy i clean prebuild zachowują aktualność. Końcowy review planu/stanu/dowodów bez istotnych niespójności. R04/R05 są osobnymi odbiorami, nie domniemanym PASS.
+
+Hashe implementacji i narzędzi przy powyższej weryfikacji:
+
+```text
+df9a7c1116e4d2cf683e227592a6d2515ecafc71c25980c8ea54e0e8087349c4 src/infrastructure/firebase/secureAuthPersistence.ts
+6096cce8c2a897851451a39b7222a0ef38f592dd21787e59f527536cb3c8ac86 src/infrastructure/firebase/firebaseAuthClient.ts
+b68ce2a8ba195e03dc88e4edf81d18c027f22cf74552950ddc1b8914f35c7fe1 app.config.js
+4be5bdeb2af209d98da3b40c9fb51cc91e1e174adf2972140135cf30bf7b48fb plugins/withPrivacyBoundary.js (bez zmian)
+a0968234b27dfaaf1cd994d48428b6157f2279d2674625e0bc327f5e8ad06123 src/infrastructure/firebase/secureAuthPersistenceSdk.test.ts
+f11993ff14b19932b6aad0e43ed7024bf578a36ebe56982f8d27b553a5edc0fd scripts/qa/checkAuthPrivacyPrebuild.mjs
+```
 
 ## SEC-03 — MEDIUM — Izolacja środowisk w durable state
 
@@ -171,7 +212,7 @@ c628acb63696432df9c3f077d4b6880d346d73a02b0dc49c7fe7a7507ab8f797 scripts/qa/prob
 
 ## SEC-10 — LOW — Niepotrzebny Face ID purpose string
 
-**Potwierdzenie w bieżącym kodzie:** SecureStore plugin config nie wyłącza faceIDPermission. Pierwszy konkretny dowód to clean prebuild/frozen Info.plist; usunięcie klucza dopiero po wspieranej konfiguracji, bez nowego biometrics flow.
+**Stan 14.10.2026 / 08:** wspierane `faceIDPermission:false` w SecureStore plugin; clean prebuild smoke potwierdza końcowy Info.plist bez klucza, bez custom plist workaround. [Dowód i granice 08](#przyjęty-kontrakt-i-dowód-08); frozen release artifact osobno R03/R05.
 
 - **Exact risk/data:** wygenerowany Info.plist zawiera domyślny NSFaceIDUsageDescription mimo braku requireAuthentication/use case. String nie uruchamia promptu i nie dowodzi pobrania biometrics.
 - **Pliki/config:** app `app.config.js` SecureStore plugin, config validation/prebuild assertion, wynikowy iOS Info.plist.

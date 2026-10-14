@@ -25,7 +25,7 @@ Lokale Lerndaten werden durch die von Patternly verwendeten Speichermechanismen 
 
 Für ein Konto verarbeitet Patternly Firebase- und Patternly-Nutzerkennungen, die E-Mail-Adresse, den Verifizierungsstatus, den Authentifizierungsanbieter und Sicherheitszeitstempel, um das Konto einzurichten und zu schützen, Anfragen zu authentifizieren, unterstützte Daten zu synchronisieren, den Zugang wiederherzustellen und Missbrauch zu verhindern. Rechtsgrundlagen sind die Erfüllung des Dienstvertrags und das berechtigte Interesse des Verantwortlichen an der Dienstsicherheit; Aufbewahrungspflichten gelten, soweit Aufzeichnungen gesetzlich vorgeschrieben sind.
 
-Apple, Google und Firebase können Authentifizierungs- und Geräteattestierungsdaten nach ihren eigenen Bedingungen verarbeiten. Im Sinne von Artikel 14 DSGVO sind sie auch Quellen, von denen Patternly Identitäts- und Anbieterkennungen, eine zurückgemeldete E-Mail-Adresse und einen Namen sowie Geräteattestierungs- oder Sicherheitssignale erhalten kann. Patternly fordert beim Apple-Login E-Mail- und Namensberechtigungen an und verwendet nur die für Authentifizierung und Kontobetrieb zurückgegebenen Felder.
+Apple, Google und Firebase können Authentifizierungs- und Geräteattestierungsdaten nach ihren eigenen Bedingungen verarbeiten. Im Sinne von Artikel 14 DSGVO sind sie auch Quellen, von denen Patternly Identitäts- und Anbieterkennungen, eine zurückgemeldete E-Mail-Adresse und einen Namen sowie Geräteattestierungs- oder Sicherheitssignale erhalten kann. Patternly fordert beim Apple-Login die E-Mail-Berechtigung an und verwendet nur die für Authentifizierung und Kontobetrieb zurückgegebenen Felder.
 
 5. Lern- und Synchronisierungsdaten
 

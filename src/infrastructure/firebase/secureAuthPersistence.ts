@@ -1,23 +1,36 @@
 import type { Persistence } from "firebase/auth";
+import type { SecureStoreOptions } from "expo-secure-store";
 import { sha256Utf8 } from "../identity/sha256";
 
 const AUTH_USER_STORAGE_KEY = "patternly.auth.user";
 const AUTH_PERSISTENCE_STORAGE_PREFIX = "patternly.auth.persistence.";
 
 export type SecureAuthPersistenceStore = Readonly<{
-  deleteItemAsync: (key: string) => Promise<void>;
-  getItemAsync: (key: string) => Promise<string | null>;
-  setItemAsync: (key: string, value: string) => Promise<void>;
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY?: number;
+  deleteItemAsync: (key: string, options: SecureStoreOptions) => Promise<void>;
+  getItemAsync: (key: string, options: SecureStoreOptions) => Promise<string | null>;
+  setItemAsync: (key: string, value: string, options: SecureStoreOptions) => Promise<void>;
 }>;
 
 type PersistedBlob = Record<string, unknown>;
 
 function getSecureStore(): SecureAuthPersistenceStore {
   const module = require("expo-secure-store") as Partial<SecureAuthPersistenceStore>;
-  if (typeof module.getItemAsync !== "function" || typeof module.setItemAsync !== "function" || typeof module.deleteItemAsync !== "function") {
+  const { Platform } = require("react-native") as typeof import("react-native");
+  if ((Platform.OS === "ios" && typeof module.WHEN_UNLOCKED_THIS_DEVICE_ONLY !== "number") || typeof module.getItemAsync !== "function" || typeof module.setItemAsync !== "function" || typeof module.deleteItemAsync !== "function") {
     throw new Error("secure_store_unavailable");
   }
   return module as SecureAuthPersistenceStore;
+}
+
+function authStoreOptions(store: SecureAuthPersistenceStore): SecureStoreOptions {
+  // Preserve SEC-03's existing default service (iOS: app, Android: key_v1).
+  // Changing it would hide existing credentials; this is an accessibility change.
+  // Android has no Keychain accessibility constant; its existing Keystore policy applies.
+  return Object.freeze({
+    ...(typeof store.WHEN_UNLOCKED_THIS_DEVICE_ONLY === "number" ? { keychainAccessible: store.WHEN_UNLOCKED_THIS_DEVICE_ONLY } : {}),
+    requireAuthentication: false,
+  });
 }
 
 function isRecord(value: unknown): value is PersistedBlob {
@@ -26,8 +39,8 @@ function isRecord(value: unknown): value is PersistedBlob {
 
 /**
  * Firebase Auth expects to persist a user-shaped record. Only its refresh token
- * is durable here; the short-lived Firebase ID/access token is deliberately
- * removed before SecureStore receives the payload.
+ * and identity fields needed for restore/account operations are durable here.
+ * Short-lived tokens and unused provider profile fields never reach SecureStore.
  */
 export function redactPersistedAuthUser(value: unknown): PersistedBlob | null {
   if (!isRecord(value) || typeof value.uid !== "string" || typeof value.emailVerified !== "boolean" || typeof value.isAnonymous !== "boolean" || !isRecord(value.stsTokenManager)) return null;
@@ -39,10 +52,7 @@ export function redactPersistedAuthUser(value: unknown): PersistedBlob | null {
       .map((provider) => ({
         ...(typeof provider.providerId === "string" ? { providerId: provider.providerId } : {}),
         ...(typeof provider.uid === "string" ? { uid: provider.uid } : {}),
-        ...(typeof provider.displayName === "string" ? { displayName: provider.displayName } : {}),
         ...(typeof provider.email === "string" ? { email: provider.email } : {}),
-        ...(typeof provider.phoneNumber === "string" ? { phoneNumber: provider.phoneNumber } : {}),
-        ...(typeof provider.photoURL === "string" ? { photoURL: provider.photoURL } : {}),
       }))
       .filter((provider) => Object.keys(provider).length > 0)
     : [];
@@ -51,9 +61,6 @@ export function redactPersistedAuthUser(value: unknown): PersistedBlob | null {
     ...(typeof value.email === "string" ? { email: value.email } : {}),
     emailVerified: value.emailVerified,
     isAnonymous: value.isAnonymous,
-    ...(typeof value.displayName === "string" ? { displayName: value.displayName } : {}),
-    ...(typeof value.photoURL === "string" ? { photoURL: value.photoURL } : {}),
-    ...(typeof value.phoneNumber === "string" ? { phoneNumber: value.phoneNumber } : {}),
     providerData,
     ...(typeof value.createdAt === "string" ? { createdAt: value.createdAt } : {}),
     ...(typeof value.lastLoginAt === "string" ? { lastLoginAt: value.lastLoginAt } : {}),
@@ -84,6 +91,7 @@ type SecureAuthPersistenceConstructor = {
 export function createSecureAuthPersistence(
   store: SecureAuthPersistenceStore = getSecureStore(),
 ): SecureAuthPersistenceConstructor {
+  const options = authStoreOptions(store);
   const isFirebaseAuthUserKey = (key: string): boolean => /^firebase:authUser(?::|$)/u.test(key);
   const storageKeyForFirebaseKey = (key: string): string => `${AUTH_PERSISTENCE_STORAGE_PREFIX}${sha256Utf8(key)}`;
 
@@ -106,57 +114,57 @@ export function createSecureAuthPersistence(
       if (isFirebaseAuthUserKey(key)) {
         const redacted = redactPersistedAuthUser(value);
         if (!redacted) {
-          await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+          await store.deleteItemAsync(AUTH_USER_STORAGE_KEY, options);
           return;
         }
-        await store.setItemAsync(AUTH_USER_STORAGE_KEY, JSON.stringify(redacted));
+        await store.setItemAsync(AUTH_USER_STORAGE_KEY, JSON.stringify(redacted), options);
         return;
       }
       const storageKey = storageKeyForFirebaseKey(key);
       if (value === undefined || value === null) {
-        await store.deleteItemAsync(storageKey);
+        await store.deleteItemAsync(storageKey, options);
         return;
       }
-      await store.setItemAsync(storageKey, JSON.stringify(persistableAncillaryValue(value)));
+      await store.setItemAsync(storageKey, JSON.stringify(persistableAncillaryValue(value)), options);
     }
 
     async _get<T = unknown>(key: string): Promise<T | null> {
       if (isFirebaseAuthUserKey(key)) {
-        const stored = await store.getItemAsync(AUTH_USER_STORAGE_KEY);
+        const stored = await store.getItemAsync(AUTH_USER_STORAGE_KEY, options);
         if (!stored) return null;
         try {
           const parsed: unknown = JSON.parse(stored);
           return (redactPersistedAuthUser(parsed) ?? null) as T | null;
         } catch {
-          await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+          await store.deleteItemAsync(AUTH_USER_STORAGE_KEY, options);
           return null;
         }
       }
-      const stored = await store.getItemAsync(storageKeyForFirebaseKey(key));
+      const stored = await store.getItemAsync(storageKeyForFirebaseKey(key), options);
       if (!stored) return null;
       try {
         const parsed: unknown = JSON.parse(stored);
         if (isRecord(parsed)) {
           const redacted = redactPersistedAuthUser(parsed);
           if (!redacted) {
-            await store.deleteItemAsync(storageKeyForFirebaseKey(key));
+            await store.deleteItemAsync(storageKeyForFirebaseKey(key), options);
             return null;
           }
           return redacted as T;
         }
         return parsed as T;
       } catch {
-        await store.deleteItemAsync(storageKeyForFirebaseKey(key));
+        await store.deleteItemAsync(storageKeyForFirebaseKey(key), options);
         return null;
       }
     }
 
     async _remove(key: string): Promise<void> {
       if (isFirebaseAuthUserKey(key)) {
-        await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+        await store.deleteItemAsync(AUTH_USER_STORAGE_KEY, options);
         return;
       }
-      await store.deleteItemAsync(storageKeyForFirebaseKey(key));
+      await store.deleteItemAsync(storageKeyForFirebaseKey(key), options);
     }
 
     _addListener(_key: string, _listener: (value: unknown) => void): void {
@@ -171,8 +179,9 @@ export function createSecureAuthPersistence(
 
 /** Removes the durable Firebase user record and verifies that it is gone. */
 export async function clearPersistedFirebaseAuthUser(store: SecureAuthPersistenceStore = getSecureStore()): Promise<void> {
-  await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
-  if (await store.getItemAsync(AUTH_USER_STORAGE_KEY) !== null) throw new Error("firebase_auth_persistence_clear_failed");
+  const options = authStoreOptions(store);
+  await store.deleteItemAsync(AUTH_USER_STORAGE_KEY, options);
+  if (await store.getItemAsync(AUTH_USER_STORAGE_KEY, options) !== null) throw new Error("firebase_auth_persistence_clear_failed");
 }
 
 export { AUTH_USER_STORAGE_KEY };
@@ -180,7 +189,8 @@ export { AUTH_USER_STORAGE_KEY };
 /** Reads only the owned Firebase user slot; the dynamic hashed Firebase namespace is not enumerable. */
 export async function inspectQ13SecureAuthPersistence(store?: SecureAuthPersistenceStore, isCurrentSdkUid?: (uid: string) => boolean): Promise<Readonly<{ kind: "observed"; userRecord: "absent" | "present"; userRecordSha256: string | null; userRecordAffinity: "not_checked" | "absent" | "matches_current_sdk_uid" | "different_or_unavailable"; dynamicFirebaseNamespace: "unavailable" } | { kind: "unavailable" }>> {
   try {
-    const value = await (store ?? getSecureStore()).getItemAsync(AUTH_USER_STORAGE_KEY);
+    const secureStore = store ?? getSecureStore();
+    const value = await secureStore.getItemAsync(AUTH_USER_STORAGE_KEY, authStoreOptions(secureStore));
     let affinity: "not_checked" | "absent" | "matches_current_sdk_uid" | "different_or_unavailable" = isCurrentSdkUid ? "absent" : "not_checked";
     if (value !== null && isCurrentSdkUid) {
       try {
