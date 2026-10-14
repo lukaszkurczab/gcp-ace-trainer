@@ -19,7 +19,7 @@ const RECOVERY_OPERATION_PROGRESS_STATUSES = new Set(["in_progress", "acknowledg
 const PROGRESS_RECORD_TYPES = new Set(["active_track", "training_session_summary", "training_session_result", "training_attempt", "review_queue_entry", "goal", "learning_plan"]);
 const ADOPTION_CASES = new Set(["emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "divergentRecord", "blocked"]);
 const BLOCKING_REASONS = new Set(["active_session", "journal_recovery"]);
-const CONFLICT_CODES = new Set(["version_conflict", "content_identity_schema_conflict"]);
+const SYNC_CONFLICT_CODES = new Set(["version_conflict", "content_identity_schema_conflict", "mutation_id_reuse", "progress_generation_conflict", "authorization_generation_conflict"]);
 
 function contentIdentitySchemaConflict(): never {
   throw new PatternlyApiClientError("server_error", 409, "content_identity_schema_conflict");
@@ -235,22 +235,29 @@ function parseProgressPage(value: unknown): ProgressResponseDto {
   return value as ProgressResponseDto;
 }
 
-function parseSyncConflict(value: unknown): SyncConflictDto {
-  if (!isPlainRecord(value) || !hasExactKeys(value, ["mutationId", "code", "current"]) || !isMutationId(value.mutationId) || typeof value.code !== "string" || !CONFLICT_CODES.has(value.code) || !(value.current === null || isPlainRecord(value.current))) return invalidResponse();
-  if (value.current !== null) validateProgressRecord(value.current);
-  return value as SyncConflictDto;
+/** Sync conflicts are errors. Resolution reads fresh progress rather than a stale record in the rejection. */
+function parseSyncConflictError(value: unknown): Readonly<{ code: string; details?: SyncConflictDetails }> {
+  if (!hasExactKeys(value, ["error"]) || !isPlainRecord(value.error)) return invalidResponse();
+  const error = value.error;
+  if (error.code === "account_revision_conflict") {
+    if (!hasExactKeys(error, ["code", "currentAccountRevision"]) || !isFiniteNonNegativeInteger(error.currentAccountRevision)) return invalidResponse();
+    return { code: error.code, details: { currentAccountRevision: error.currentAccountRevision } };
+  }
+  if (typeof error.code !== "string" || !SYNC_CONFLICT_CODES.has(error.code)) return invalidResponse();
+  if (error.code === "content_identity_schema_conflict" && hasExactKeys(error, ["code", "issues"])) {
+    if (!Array.isArray(error.issues) || !error.issues.every((issue) => typeof issue === "string")) return invalidResponse();
+    return { code: error.code, details: { issues: Object.freeze(error.issues.slice()) } };
+  }
+  if (!hasExactKeys(error, ["code"])) return invalidResponse();
+  return { code: error.code };
 }
 
 function parseSyncResponse(value: unknown): SyncResponseDto {
-  if (!isPlainRecord(value) || !hasOneOfExactKeys(value, [["accountRevision", "applied", "duplicates", "conflicts"], ["accountRevision", "applied", "duplicates", "conflicts", "accountRevisionConflict"]])) return invalidResponse();
+  if (!hasExactKeys(value, ["accountRevision", "applied", "duplicates", "conflicts"])) return invalidResponse();
   if (!isFiniteNonNegativeInteger(value.accountRevision) || !Array.isArray(value.applied) || value.applied.length > 100
-    || !Array.isArray(value.duplicates) || value.duplicates.length > 100 || !Array.isArray(value.conflicts) || value.conflicts.length > 100) return invalidResponse();
+    || !Array.isArray(value.duplicates) || value.duplicates.length > 100 || !Array.isArray(value.conflicts) || value.conflicts.length !== 0) return invalidResponse();
   value.applied.forEach((record) => validateProgressRecord(record));
   if (!value.duplicates.every(isMutationId)) return invalidResponse();
-  value.conflicts.forEach((conflict) => parseSyncConflict(conflict));
-  if (value.accountRevisionConflict !== undefined && value.accountRevisionConflict !== null) {
-    if (!isPlainRecord(value.accountRevisionConflict) || !hasExactKeys(value.accountRevisionConflict, ["code", "currentAccountRevision"]) || value.accountRevisionConflict.code !== "account_revision_conflict" || !isFiniteNonNegativeInteger(value.accountRevisionConflict.currentAccountRevision)) return invalidResponse();
-  }
   return value as SyncResponseDto;
 }
 
@@ -463,8 +470,8 @@ export type PrivacyRequestResponseDto = Readonly<{ request: PrivacyRequestListIt
 export type LegalRequestKindDto = "complaint" | "withdrawal" | "data_recovery" | "suspension_appeal";
 export type LegalRequestStatusDto = "received" | "in_review" | "answered" | "closed";
 export type LegalRequestDto = Readonly<{ requestId: string; kind: LegalRequestKindDto; status: LegalRequestStatusDto; receivedAt: string; responseDueAt: string | null; answeredAt: string | null; retentionUntil: string | null; response: string | null }>;
-export type SyncConflictDto = Readonly<{ mutationId: string; code: "version_conflict" | "content_identity_schema_conflict"; current: ProgressRecordDto | null }>;
-export type SyncResponseDto = Readonly<{ accountRevision: number; applied: readonly ProgressRecordDto[]; duplicates: readonly string[]; conflicts: readonly SyncConflictDto[]; accountRevisionConflict?: Readonly<{ code: "account_revision_conflict"; currentAccountRevision: number }> }>;
+export type SyncConflictDetails = Readonly<{ currentAccountRevision?: number; issues?: readonly string[] }>;
+export type SyncResponseDto = Readonly<{ accountRevision: number; applied: readonly ProgressRecordDto[]; duplicates: readonly string[]; conflicts: readonly never[] }>;
 export type GuestMergeRecordDto = Readonly<{ fingerprint: string; recordId: string; recordType: ProgressMutationDto["recordType"]; state: Readonly<Record<string, unknown>>; trackId: string; version: number }>;
 export type GuestMergeSnapshotRequestDto = Readonly<{ guestSnapshotVersion: number; guestUserId: string; records: readonly GuestMergeRecordDto[]; activeSession: boolean; pendingJournal: boolean }>;
 export type GoalPlanConflictGroupDto = Readonly<{ groupId: string; trackId: string; localRecordIds: readonly string[]; accountRecordIds: readonly string[] }>;
@@ -598,7 +605,7 @@ function parseDeletionOperationStatus(value: unknown, expectedOperationId: strin
 }
 
 export class PatternlyApiClientError extends Error {
-  public constructor(readonly code: PatternlyApiClientErrorCode, readonly status?: number, readonly serverCode?: string, readonly retryAfterSeconds?: number) {
+  public constructor(readonly code: PatternlyApiClientErrorCode, readonly status?: number, readonly serverCode?: string, readonly retryAfterSeconds?: number, readonly details?: SyncConflictDetails) {
     super(code);
     this.name = "PatternlyApiClientError";
   }
@@ -730,11 +737,8 @@ export function createPatternlyApiClient(input: Readonly<{
         throw new PatternlyApiClientError("invalid_response", response.status);
       }
       if (!response.ok) {
-        const serverCode = isRecord(payload) && isRecord(payload.error) && typeof payload.error.code === "string"
-          ? payload.error.code
-          : isRecord(payload) && Array.isArray(payload.conflicts) && isRecord(payload.conflicts[0]) && typeof payload.conflicts[0].code === "string"
-            ? payload.conflicts[0].code
-            : undefined;
+        const syncConflict = path === "/v1/progress/sync" && response.status === 409 ? parseSyncConflictError(payload) : undefined;
+        const serverCode = syncConflict?.code ?? (isRecord(payload) && isRecord(payload.error) && typeof payload.error.code === "string" ? payload.error.code : undefined);
         const retryAfterHeader = response.headers.get("retry-after");
         const parsedRetryAfter = retryAfterHeader !== null && /^[1-9][0-9]*$/u.test(retryAfterHeader)
           ? Number.parseInt(retryAfterHeader, 10)
@@ -742,7 +746,7 @@ export function createPatternlyApiClient(input: Readonly<{
         const retryAfterSeconds = parsedRetryAfter !== undefined && Number.isSafeInteger(parsedRetryAfter)
           ? parsedRetryAfter
           : undefined;
-        throw new PatternlyApiClientError("server_error", response.status, serverCode, retryAfterSeconds);
+        throw new PatternlyApiClientError("server_error", response.status, serverCode, retryAfterSeconds, syncConflict?.details);
       }
       return payload as T;
     } finally {

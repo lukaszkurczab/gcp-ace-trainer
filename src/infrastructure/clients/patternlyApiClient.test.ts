@@ -531,3 +531,54 @@ test("progress sweep rejects a later-page conflict instead of returning partial 
     assert.equal(pages, 2);
   }
 });
+
+test("sync 409 uses one error envelope and preserves revision and schema issues", async () => {
+  const bodies = [
+    { code: "version_conflict" },
+    { code: "account_revision_conflict", currentAccountRevision: 8 },
+    { code: "content_identity_schema_conflict" },
+    { code: "content_identity_schema_conflict", issues: ["mutations.0.state"] },
+    { code: "mutation_id_reuse" },
+    { code: "progress_generation_conflict" },
+    { code: "authorization_generation_conflict" },
+  ];
+  for (const body of bodies) {
+    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ error: body }), { status: 409 }) });
+    await assert.rejects(client.syncProgress(canonicalSyncRequest()), (error: unknown) => {
+      assert.ok(error instanceof PatternlyApiClientError);
+      assert.equal(error.code, "server_error");
+      assert.equal(error.status, 409);
+      assert.equal(error.serverCode, body.code);
+      assert.equal(error.details?.currentAccountRevision, body.currentAccountRevision);
+      assert.deepEqual(error.details?.issues, body.issues);
+      return true;
+    });
+  }
+});
+
+test("sync rejects legacy, malformed, ambiguous and disguised-success conflict payloads", async () => {
+  const rawConflict = { accountRevision: 1, applied: [], duplicates: [], conflicts: [{ mutationId: "mutation-canonical-0001", code: "version_conflict", current: null }] };
+  const cases = [
+    { status: 409, body: rawConflict },
+    { status: 409, body: { error: { code: "account_revision_conflict" } } },
+    { status: 409, body: { error: { code: "account_revision_conflict", currentAccountRevision: -1 } } },
+    { status: 409, body: { error: { code: "account_revision_conflict", currentAccountRevision: "8" } } },
+    { status: 409, body: { error: { code: "account_revision_conflict", currentAccountRevision: 1.5 } } },
+    { status: 409, body: { error: { code: "account_revision_conflict", currentAccountRevision: Number.MAX_SAFE_INTEGER + 1 } } },
+    { status: 409, body: { error: { code: "version_conflict", current: null } } },
+    { status: 409, body: { error: { code: "version_conflict", currentAccountRevision: 8 } } },
+    { status: 409, body: { error: { code: "content_identity_schema_conflict", issues: [1] } } },
+    { status: 409, body: { error: { code: "unknown_conflict" } } },
+    { status: 409, body: { error: { code: "version_conflict" }, ...rawConflict } },
+    { status: 409, body: null },
+    { status: 200, body: rawConflict },
+    { status: 200, body: { accountRevision: 1, applied: [], duplicates: [], conflicts: [], accountRevisionConflict: { code: "account_revision_conflict", currentAccountRevision: 8 } } },
+    { status: 200, body: { error: { code: "version_conflict" } } },
+  ];
+  for (const { status, body } of cases) {
+    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(body), { status }) });
+    await assert.rejects(client.syncProgress(canonicalSyncRequest()), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response", JSON.stringify({ status, body }));
+  }
+  const malformedJson = createTestClient({ fetchImplementation: async () => new Response("{", { status: 409 }) });
+  await assert.rejects(malformedJson.syncProgress(canonicalSyncRequest()), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});

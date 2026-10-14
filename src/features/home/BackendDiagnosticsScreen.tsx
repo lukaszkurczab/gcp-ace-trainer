@@ -97,7 +97,7 @@ export function BackendDiagnosticsScreen() {
         const syncRequest = (expectedAccountRevision: number, requestMutation: ProgressMutationDto = mutation, attempt: "apply" | "duplicate" | "conflict" = "apply") => ({ canonicalVersion: "canonical-json-v1" as const, expectedAccountRevision, deviceId: "00000000-0000-4000-8000-000000000000", sessionId: "ios-simulator-backend", batchId: `ios-simulator-backend:${attempt}:${requestMutation.mutationId}`, highWatermark: 1, mutations: [requestMutation] });
         await run("sync-apply", text.syncApply, async () => {
           const response = await client.syncProgress(syncRequest(beforeSync.accountRevision, mutation, "apply"));
-          if (response.applied.length !== 1 || response.duplicates.length !== 0 || response.conflicts.length !== 0) throw new PatternlyApiClientError("invalid_response");
+          if (response.applied.length !== 1 || response.duplicates.length !== 0) throw new PatternlyApiClientError("invalid_response");
         });
         await run("sync-duplicate", text.syncDuplicate, async () => {
           const response = await client.syncProgress(syncRequest(beforeSync.accountRevision, mutation, "duplicate"));

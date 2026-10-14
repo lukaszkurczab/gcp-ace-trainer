@@ -813,6 +813,13 @@ async function prepareBoundSyncedAccount(): Promise<void> {
   saveAccountSyncState({ ...await getAccountSyncState(productionLearningDataAdmissionContext), accountId, status: "synced" }, productionLearningDataAdmissionContext);
 }
 
+function conflictTransport(currentAccountRevision: number): PatternlyApiClient {
+  return createPatternlyApiClient({
+    apiOrigin: "https://sync-conflict.test.invalid", getIdToken: async () => "fixture-token", getAppCheckToken: async () => "fixture-app-check",
+    fetchImplementation: async () => new Response(JSON.stringify({ error: { code: "account_revision_conflict", currentAccountRevision } }), { status: 409 }),
+  });
+}
+
 async function activateFreshAccountStorage(account: string): Promise<Readonly<{ base: MemoryKeyValueStorage; profileId: string; restore(): void }>> {
   const base = new MemoryKeyValueStorage();
   const controlValues = new Map<string, string>();
@@ -1181,16 +1188,7 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   let uploads = 0;
   let downloads = 0;
   const result = await retryPendingAccountDataSync(api({
-    syncProgress: async () => {
-      uploads++;
-      return {
-        accountRevision: 7,
-        applied: [],
-        duplicates: [],
-        conflicts: [],
-        accountRevisionConflict: { code: "account_revision_conflict", currentAccountRevision: 8 },
-      };
-    },
+    syncProgress: async (request) => { uploads++; return conflictTransport(8).syncProgress(request); },
     getProgress: async () => { downloads++; throw new Error("account revision conflict must stop before GET"); },
   }), accountId);
 
@@ -1251,7 +1249,7 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   assert.equal((await getAccountSyncState(productionLearningDataAdmissionContext)).remoteAccountRevision, 8);
 
   const second409 = await retryPendingAccountDataSync(api({
-    syncProgress: async () => ({ accountRevision: 8, applied: [], duplicates: [], conflicts: [], accountRevisionConflict: { code: "account_revision_conflict", currentAccountRevision: 10 } }),
+    syncProgress: conflictTransport(10).syncProgress,
     getProgress: async () => { throw new Error("confirmed 409 must stop before its explicit review action"); },
   }), accountId);
   assert.equal(second409?.syncConflict?.expectedAccountRevision, 8);
@@ -1286,7 +1284,7 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   assert.deepEqual((await getAccountSyncState(productionLearningDataAdmissionContext)).outbox.filter((entry) => entry.trackId !== guestTrack || (entry.recordType !== "goal" && entry.recordType !== "learning_plan")).map((entry) => entry.mutationId).sort(), unrelatedPendingIds);
 
   const third409 = await retryPendingAccountDataSync(api({
-    syncProgress: async () => ({ accountRevision: 10, applied: [], duplicates: [], conflicts: [], accountRevisionConflict: { code: "account_revision_conflict", currentAccountRevision: 11 } }),
+    syncProgress: conflictTransport(11).syncProgress,
     getProgress: async () => { throw new Error("second confirmed 409 must stop before its explicit review action"); },
   }), accountId);
   assert.equal(third409?.syncConflict?.expectedAccountRevision, 10);

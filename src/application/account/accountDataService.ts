@@ -1169,15 +1169,6 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
           if (conflictCode) confirmedConflict = buildConfirmedSyncConflict({ code: conflictCode, request, planId: plan.planId, batchId, batchIndex, batch });
           throw error;
         }
-        if (response.accountRevisionConflict) {
-          confirmedConflict = buildConfirmedSyncConflict({ code: response.accountRevisionConflict.code, request, planId: plan.planId, batchId, batchIndex, batch });
-          throw new PatternlyApiClientError("server_error", 409, response.accountRevisionConflict.code);
-        }
-        if (response.conflicts.length > 0) {
-          const conflictCode = response.conflicts[0]?.code ?? "version_conflict";
-          confirmedConflict = buildConfirmedSyncConflict({ code: conflictCode, request, planId: plan.planId, batchId, batchIndex, batch });
-          throw new PatternlyApiClientError("server_error", 409, conflictCode);
-        }
         const batchMutationIds = new Set(batch.map((entry) => entry.mutationId));
         if (response.applied.some((record) => !batchMutationIds.has(record.lastMutationId))
           || response.duplicates.some((mutationId) => !batchMutationIds.has(mutationId))

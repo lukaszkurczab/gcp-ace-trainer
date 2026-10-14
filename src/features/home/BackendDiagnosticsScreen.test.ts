@@ -20,7 +20,6 @@ test("successful backend diagnostics still verify sync apply, deduplication, con
   }
   assert.match(source, /response\.applied\.length !== 1/);
   assert.match(source, /response\.duplicates\[0\] !== mutationId/);
-  assert.match(source, /response\.conflicts\.length !== 0/);
   assert.match(source, /record\.targetId === targetId && record\.version === 1/);
   assert.match(source, /batchId: `ios-simulator-backend:\$\{attempt\}:\$\{requestMutation\.mutationId\}`/);
   assert.match(source, /run\("sync-apply"[\s\S]*?syncRequest\(beforeSync\.accountRevision, mutation, "apply"\)/);
