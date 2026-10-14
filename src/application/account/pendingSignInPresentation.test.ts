@@ -7,11 +7,10 @@ test("automatic session revocation keeps sign-in on loading and exposes pending 
   const start = source.indexOf("if (pendingRevocations.length > 0)");
   assert.notEqual(start, -1);
   const branch = source.slice(start, source.indexOf("const matchingLogoutBlock", start));
-  const pending = branch.slice(0, branch.indexOf("void (async () =>"));
+  const pending = branch.slice(0, branch.indexOf(".catch(() => {"));
   assert.match(pending, /closeActiveProfileStorage\(\)/u);
   assert.match(pending, /setState\(\{ kind: "loading" \}\)/u);
   assert.doesNotMatch(pending, /kind: "signOutPending"/u);
-  const failure = branch.slice(branch.indexOf("} catch {"), branch.indexOf("} finally {"));
-  assert.match(failure, /if \(canContinue\(\)\) \{\s*setState\(\{ kind: "signOutPending"[\s\S]*?\}\);\s*eventDiagnostic\.failed\("recovery_guard"[\s\S]*?\);\s*\}/u);
-  assert.match(branch, /startAuthenticatedProfilePreparation\(configuredAuth, client, currentUser, generation, eventDiagnostic\)/u);
+  assert.match(branch, /\.catch\(\(\) => \{\s*if \(!canContinue\(\)\) return;[\s\S]*?setState\(\{ kind: "signOutPending"[\s\S]*?eventDiagnostic\.failed\("recovery_guard"/u);
+  assert.match(branch, /admitAuthenticatedBootstrap\(configuredAuth, client, user, generation, eventDiagnostic, canContinue\)/u);
 });

@@ -5,6 +5,7 @@ import test from "node:test";
 import { accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, isLocalAccountStartupUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { accountFinalizationPolicies, executeAccountFinalization } from "./accountFinalization";
+import { completeAccountBootstrap, prepareAuthenticatedAccountBootstrap } from "../bootstrap/accountBootstrap";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, createPatternlyNativeAppCheckProviderConfiguration, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
@@ -381,11 +382,14 @@ test("explicit login and registration Auth mutations serialize with local sign-o
 
 test("restored matching logout block closes scope and remains pending until manual retry", () => {
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
-  const pendingPreparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
-  assert.match(pendingPreparation, /findPendingSessionRevocation\(logoutControlSnapshotRef\.current, user\.uid\)[\s\S]*?finishPendingSignOut\(pendingRevoke\.operationId, "signOutPending", false\)[\s\S]*?findMatchingLocalLogoutBlock/u);
+  const bootstrap = readFileSync("src/application/bootstrap/accountBootstrap.ts", "utf8");
+  assert.match(bootstrap, /findPendingSessionRevocation\(logoutControlSnapshotRef\.current, user\.uid\)[\s\S]*?finishPendingSignOut\(pendingRevoke\.operationId, "signOutPending", false\)[\s\S]*?findMatchingLocalLogoutBlock/u);
   const authObserver = provider.slice(provider.indexOf('configuredAuth.onUserChanged'), provider.indexOf('useEffect(() => {\n    if (state.kind === "guest"'));
-  assert.match(authObserver, /drainPendingSessionRevocations\([\s\S]*?executor: pendingSessionRevocationDrainRef\.current![\s\S]*?generation: generation\.generation[\s\S]*?onSnapshot:[\s\S]*?canContinue\(\)/);
-  assert.match(authObserver, /sessionCoordinator\.isCurrent\(generation\) && sessionExchangeUidRef\.current === user\.uid/u);
+  assert.match(bootstrap, /await input\.drainPendingRevocations\(\)[\s\S]*?const prepared = await input\.prepareProfile\(\)/u);
+  assert.match(provider, /const admitAuthenticatedBootstrap = useCallback\([\s\S]*?admitAccountBootstrap\([\s\S]*?pendingSessionRevocationDrainRef/u);
+  assert.match(bootstrap, /export function admitAccountBootstrap\([\s\S]*?drainPendingRevocations: async \(\) => \{[\s\S]*?drainPendingSessionRevocations\([\s\S]*?executor: pendingSessionRevocationDrainRef\.current![\s\S]*?generation: generation\.generation[\s\S]*?onSnapshot:[\s\S]*?isCurrent\(\)/u);
+  assert.match(authObserver, /admitAuthenticatedBootstrap\(configuredAuth, client, user, generation/u);
+  assert.match(bootstrap, /sessionCoordinator\.isCurrent\(generation\) && sessionExchangeUidRef\.current === user\.uid/u);
   assert.match(authObserver, /findMatchingLocalLogoutBlock\(logoutControlSnapshotRef\.current, user\.uid\)/);
   assert.match(authObserver, /if \(matchingLogoutBlock\) \{[\s\S]*?closeActiveProfileStorage\(\);[\s\S]*?setState\(\{ kind: "signOutPending", user \}\);[\s\S]*?return;/);
   assert.match(authObserver, /clearBlockForAuth\(previousObservedUid, logoutBlock\.operationId, canClearLogoutBlock\)/);
@@ -395,12 +399,10 @@ test("restored matching logout block closes scope and remains pending until manu
   assert.ok(nullAuthBranch.indexOf("closeProfileStorage: closeActiveProfileStorage") < nullAuthBranch.indexOf("clearBlockForAuth"));
   assert.match(nullAuthBranch, /logoutControlSnapshotRef\.current\.blocked[\s\S]*?clearBlockForAuth\(previousObservedUid, logoutBlock\.operationId, canClearLogoutBlock\)/);
   const explicitFinalize = provider.slice(provider.indexOf("const finalizeExplicitAuthentication"), provider.indexOf("// Firebase publishes a new credential"));
-  assert.ok(explicitFinalize.indexOf("drainPendingSessionRevocations(") < explicitFinalize.indexOf("startAuthenticatedProfilePreparation("));
-  assert.match(explicitFinalize, /sessionCoordinator\.isCurrent\(generation\) && sessionExchangeUidRef\.current === user\.uid/u);
-  const preparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
-  assert.match(preparation, /activatePreparedProfile\(profile\.id, profile\.kind, \{ deferReadyNotification: true \}\)/);
-  assert.match(preparation, /guardAuthenticatedScopeAgainstIncompleteSignOut\([\s\S]*?readScopedSignOut: getAccountSignOutState/);
-  assert.match(preparation, /guardAuthenticatedScopeAgainstIncompleteSignOut\([\s\S]*?if \(logoutGuard === "blocked"\)[\s\S]*?return attempt;[\s\S]*?notifyProfileStorageReady\(\);[\s\S]*?setState\(\{ kind: "profilePreparing"/);
+  assert.match(explicitFinalize, /admitAuthenticatedBootstrap\(auth, api, user, generation/u);
+  assert.match(bootstrap, /activatePreparedProfile\(profile\.id, profile\.kind, \{ deferReadyNotification: true \}\)/);
+  assert.match(bootstrap, /guardAuthenticatedScopeAgainstIncompleteSignOut\([\s\S]*?readScopedSignOut: getAccountSignOutState/);
+  assert.match(bootstrap, /guardAuthenticatedScopeAgainstIncompleteSignOut\([\s\S]*?if \(logoutGuard === "blocked"\)[\s\S]*?return attempt;[\s\S]*?notifyProfileStorageReady\(\);[\s\S]*?setState\(\{ kind: "profilePreparing"/);
   assert.doesNotMatch(provider.slice(provider.indexOf("async function reconcileAuthenticatedUser"), provider.indexOf("export async function completeUnrecognizedPersistedAuthSignOut")), /getAccountSignOutState|shouldLockForIncompleteScopedSignOut/u);
 });
 
@@ -622,6 +624,7 @@ test("registration keeps consent presentation separate from the boolean domain c
   assert.match(screen, /ROUTES\.TERMS_OF_SERVICE/gu);
   assert.match(screen, /ROUTES\.PRIVACY_POLICY/gu);
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const bootstrap = readFileSync("src/application/bootstrap/accountBootstrap.ts", "utf8");
   assert.match(provider, /registrationIntentRef[\s\S]*?inFlight\?\.uid === user\.uid[\s\S]*?return inFlight\.promise/u);
   assert.match(provider, /registrationIntentRef\.current = Object\.freeze\(\{ uid: user\.uid, promise \}\)/u);
   assert.match(provider, /const registration = await api\.registerAccount\(evidence\)/u);
@@ -629,11 +632,11 @@ test("registration keeps consent presentation separate from the boolean domain c
   const registrationFinalize = provider.indexOf("accountFinalizationPolicies.registrationCreated<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation)");
   assert.ok(adoptionMarker >= 0 && registrationFinalize > adoptionMarker, "registration adoption is durably marked before the named finalization policy runs");
   for (const policy of ["preparedProfile", "registrationCreated", "verification", "resendVerification", "passwordRefresh", "localOfflineRefresh", "deletionReauthentication"]) {
-    assert.ok(provider.includes(`accountFinalizationPolicies.${policy}`), `the ${policy} call site selects its named policy`);
+    assert.ok(provider.includes(`accountFinalizationPolicies.${policy}`) || bootstrap.includes(`accountFinalizationPolicies.${policy}`), `the ${policy} call site selects its named policy`);
   }
   assert.doesNotMatch(provider, /finalizeCurrent\(auth, api, user, false,/u, "finalization call sites no longer use positional booleans");
-  assert.match(provider, /!activeProfile && preparedSelection\.kind === "guest"[\s\S]*?activatePreparedProfile\(preparedSelection\.id, preparedSelection\.kind, \{ deferReadyNotification: true \}\)/u);
-  assert.match(provider, /guestInstallation\?\.bindingState === "adoption_pending"[\s\S]*?attempt\.guestAdoption = true[\s\S]*?notifyProfileStorageReady\(\)/u);
+  assert.match(bootstrap, /!activeProfile && preparedSelection\.kind === "guest"[\s\S]*?activatePreparedProfile\(preparedSelection\.id, preparedSelection\.kind, \{ deferReadyNotification: true \}\)/u);
+  assert.match(bootstrap, /guestInstallation\?\.bindingState === "adoption_pending"[\s\S]*?attempt\.guestAdoption = true[\s\S]*?notifyProfileStorageReady\(\)/u);
   assert.match(provider, /register: \(email,[\s\S]*?legalAcceptancePendingRef\.current = true[\s\S]*?auth\.register\([\s\S]*?legalAcceptancePendingRef\.current = false/u);
   assert.match(provider, /signInWithApple: \(locale, appleCredentialDependencies\) => authClient && apiClient \? runProviderFirstUse\(authClient, apiClient, locale, \(\) => authClient\.signInWithApple\(appleCredentialDependencies\)\)/u);
   assert.match(provider, /signInWithGoogle: \(idToken, locale\) => authClient && apiClient \? runProviderFirstUse\(authClient, apiClient, locale, \(\) => authClient\.signInWithGoogle\(idToken\)\)/u);
@@ -820,10 +823,11 @@ test("startup waits for persisted auth resolution before choosing the entry scre
 
 test("the five ready profile preparation paths publish one opaque attempt handoff to the content gate", () => {
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const bootstrap = readFileSync("src/application/bootstrap/accountBootstrap.ts", "utf8");
   const app = readFileSync("src/RegularApplicationRoot.tsx", "utf8");
   const gate = readFileSync("src/content/application/ContentPreparationGate.tsx", "utf8");
-  assert.equal((provider.match(/handoffToken: profilePreparationHandoffRef\.current!\.begin\(\)/gu) ?? []).length, 3);
-  assert.equal((provider.match(/attempt\.handoffReady = true;\s*(?:setState|publish)\(\{ kind: "profilePreparing"/gu) ?? []).length, 5);
+  assert.equal((provider + bootstrap).match(/handoffToken: profilePreparationHandoffRef\.current!\.begin\(\)/gu)?.length, 3);
+  assert.equal((provider + bootstrap).match(/attempt\.handoffReady = true;\s*(?:setState|publish)\(\{ kind: "profilePreparing"/gu)?.length, 5);
   assert.match(provider, /state\.kind === "profilePreparing"[\s\S]*?currentProfilePreparation\?\.handoffReady[\s\S]*?currentProfilePreparation\.profile\.id === state\.profile\.id[\s\S]*?currentProfilePreparation\.handoffToken/u);
   assert.match(app, /handoffToken=\{profilePreparationHandoffToken\}/u);
   assert.match(gate, /if \(handoffToken\) lastHandoffTokenRef\.current = handoffToken/u);
@@ -1034,15 +1038,17 @@ test("only authoritative identity-proof errors tombstone a binding; App Check an
   assert.equal(isAuthoritativeIdentityProofDenial(new PatternlyApiClientError("transport_failed")), false);
 
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const bootstrap = readFileSync("src/application/bootstrap/accountBootstrap.ts", "utf8");
   assert.match(provider, /async function invalidateAccountBindingAfterIdentityDenial[\s\S]*?readActiveAccountIdentityBinding\(lease\)[\s\S]*?readPreparedAccountIdentityBinding\(input\.profile\.id\)[\s\S]*?binding\.binding\.firebaseUid !== input\.uid[\s\S]*?invalidateActiveAccountIdentityBinding\(\{ lease[\s\S]*?invalidatePreparedAccountIdentityBinding\(\{ profileId: input\.profile\.id/u);
-  assert.match(provider, /getMe: async \(\) => \{[\s\S]*?getMeWithExchangedSession[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error/u);
-  assert.match(provider, /const identityProof = await runAccountIdentityProof\([\s\S]*?request: \(\) => getMeWithExchangedSession[\s\S]*?revokeDeniedBinding: async \(error\) => \{ await revokeBindingForAuthoritativeIdentityDenial\(error/u);
+  assert.match(bootstrap, /getMe: async \(\) => \{[\s\S]*?getMeWithExchangedSession[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error/u);
+  assert.match(bootstrap, /const identityProof = await runAccountIdentityProof\([\s\S]*?request: \(\) => getMeWithExchangedSession[\s\S]*?revokeDeniedBinding: async \(error\) => \{ await revokeBindingForAuthoritativeIdentityDenial\(error/u);
   assert.match(provider, /const identityDenied = isAuthoritativeIdentityProofDenial\(error\)[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error[\s\S]*?verificationRevision: current\.bindingRevision[\s\S]*?accountSessionFailureState\(failure === "reauthenticationRequired" \? failure : "revokedSession"/u);
 });
 
 test("prepared-profile and explicit recovery keep their existing identity-proof barrier owners", () => {
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
-  const preparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
+  const bootstrap = readFileSync("src/application/bootstrap/accountBootstrap.ts", "utf8");
+  const preparation = bootstrap.slice(bootstrap.indexOf("export async function prepareAuthenticatedAccountBootstrap"), bootstrap.indexOf("export function completeAccountBootstrap"));
   assert.ok(preparation.indexOf("beginIdentityProofBarrier(auth, user, generation, true)") < preparation.indexOf("guardRecoveryBeforePreparation(auth, { generation, barrier: proofBarrier }"), "startup barrier precedes recovery checks that read Auth generations or exchange tokens");
   const explicitFinalize = provider.slice(provider.indexOf("const finalizeExplicitAuthentication"), provider.indexOf("// Firebase publishes a new credential"));
   assert.doesNotMatch(explicitFinalize, /guardRecoveryBeforePreparation\(auth\)/u, "explicit login delegates proof ordering to the barrier-first profile preparation path");
@@ -1166,7 +1172,8 @@ test("cold account startup admits local attestation unavailability without admit
     new Error("unknown failure"),
   ]) assert.equal(isLocalAccountStartupUnavailable(error), false);
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
-  assert.match(provider, /if \(ownsPreparation && isLocalAccountStartupUnavailable\(error\) && canContinue\(\)/u);
+  const bootstrap = readFileSync("src/application/bootstrap/accountBootstrap.ts", "utf8");
+  assert.match(bootstrap, /if \(ownsPreparation && isLocalAccountStartupUnavailable\(error\) && canContinue\(\)/u);
 });
 
 for (const failureCode of ["request_timeout", "app_check_unavailable"] as const) {
