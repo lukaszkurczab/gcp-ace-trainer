@@ -6,6 +6,9 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { createExpoConfig, updatesConfiguration } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: Record<string, any> }; updatesConfiguration: (mode: string) => Record<string, unknown> };
 const app = createExpoConfig({
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID: "demo-patternly-eas-config",
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_APP_ID: "1:1:ios:eas-config",
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_DOMAIN: "demo-patternly-eas-config.firebaseapp.com",
   EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug",
   EXPO_PUBLIC_PATTERNLY_BACKEND_E2E: "true", EXPO_PUBLIC_PATTERNLY_API_ORIGIN: "http://127.0.0.1:8080",
   EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN: "http://127.0.0.1:19099",

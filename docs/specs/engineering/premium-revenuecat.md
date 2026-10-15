@@ -1,6 +1,6 @@
 # Premium i RevenueCat — połączenie oraz pełny przebieg zakupu
 
-Status: projekt16, backend17 i APP18 lokalnie odebrane; pozostały19–20 oraz odbiór usług/wydania. Źródło: prośba właściciela z 13.10.2026 o sprawdzenie Apple/Google i dodanie zadania integracji. Priorytet: prostota rozwoju i utrzymania przez jedną osobę. Kolejka i termin: [plan](../../../../docs/PATTERNLY-WORKING-PLAN.md). Historyczny audyt solo z 13.10 jest niedostępny po porządkach; aktualne dowody i decyzja wycinka16 znajdują się poniżej.
+Status: projekt16, backend17, APP18 i transport/oferta/native19 lokalnie odebrane; **20 PASS po zmianie zakresu właściciela15.10** (readback i przygotowany diff); wykonanie pozostałych usług przeniesione do **Post internal testing**, odbiór wydania nadal osobno. [Readback, dokładny diff i braki20](../../reports/premium-rc20-2026-10-15.md). Źródło: prośba właściciela z 13.10.2026 o sprawdzenie Apple/Google i dodanie zadania integracji. Priorytet: prostota rozwoju i utrzymania przez jedną osobę. Kolejka i termin: [plan](../../../../docs/PATTERNLY-WORKING-PLAN.md). Historyczny audyt solo z 13.10 jest niedostępny po porządkach; aktualne dowody i decyzja wycinka16 znajdują się poniżej.
 
 ## Cel i granice
 
@@ -21,6 +21,14 @@ Połączyć istniejącą implementację z istniejącym projektem RevenueCat i do
 | Checkout | `config/public-legal.release.json` ma `premiumCheckoutEnabled=false`; występują jeszcze wartości do uzupełnienia. Jest to zabezpieczenie, nie ukończona integracja. |
 
 Odczyty: [aplikacje RC](https://app.revenuecat.com/projects/8ae78267/apps), [produkty](https://app.revenuecat.com/projects/8ae78267/product-catalog/products), [uprawnienia](https://app.revenuecat.com/projects/8ae78267/product-catalog/entitlements), [oferty](https://app.revenuecat.com/projects/8ae78267/product-catalog/offerings), [webhooki](https://app.revenuecat.com/projects/8ae78267/integrations/webhooks). To snapshot odczytu administracyjnego, nie dowód transakcji.
+
+## Prompt20 PASS / usługi Post internal testing — 15.10.2026
+
+Właściciel po readbacku polecił: najpierw testy wewnętrzne aplikacji, potem zakup członkostw/licencji Apple i Google, przygotowanie kluczy i domknięcie usług. Prompt20 zamknięty jako PASS w tym zmienionym zakresie. Poniższe braki nie blokują rozpoczęcia testów wewnętrznych; pozostają wymagane przed rzeczywistym Premium. Zakup członkostw i zmiany usług wymagają odrębnej autoryzacji.
+
+Mapowanie projektu/app/SKU/premium/current default/$rc_monthly potwierdzone ponownie. ASC i In-App Purchase validation oraz live store-state probe422: klucze nieustawione; właściciel potwierdził, że nie są jeszcze przygotowane. EAS preview ma właściwy Apple SDK key; production nie ma go ani w project-scope, ani account-scope. Sandbox Cloud Run ma starszy obraz, poprawne app/SKU/premium/SANDBOX oraz sekrety RC v1 w Secret Manager, ale brak projectId i konfiguracji treści. Rzeczywisty aktualny reader po jednorazowej zgodzie właściciela zwrócił `expired` dla istniejącego klienta; value readera jest publicznym kluczem Apple, więc wąski sukces API v1 nie dowodzi docelowego oddzielnego server secret ani paid lifecycle. Nie zmieniano sekretów.
+
+Lista RC webhooków nadal pusta. Zdalna trasa odmawia bez auth i dla złego headera401; brak pozytywnego delivery. Starsze `/ready=200` nie ma kontroli contentPackages i nie potwierdza wdrożenia19. Nie ma prywatnego bucketa Premium; object/pointer/IAM/signing/download i scoped backend deployment pozostają w etapie Post internal testing / PREMIUM-RC-01. Production Cloud Run/Secret Manager API disabled. Bez zmian usług i checkoutu; pełny sandbox lifecycle pozostaje późniejszym R04/ODK. Szczegóły, diff i zakres dowodu w [raporcie20](../../reports/premium-rc20-2026-10-15.md). Nie tworzyć drugiej authority przez Test Store/patternly_pro ani odtwarzać odebranych17–19.
 
 ## Wymagania sklepów a stan aplikacji
 
