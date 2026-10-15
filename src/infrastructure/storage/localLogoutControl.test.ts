@@ -109,7 +109,7 @@ test("duplicate UID and operation ID remains one pending entry and verified stat
   assert.equal((JSON.parse(store.values.get(KEY)!).pending as unknown[]).length, 1);
 });
 
-test("operation IDs must be UUIDv4 both on writes and when loading persisted records", async () => {
+test("unsupported UUID versions are rejected on writes and when loading persisted records", async () => {
   const store = memoryStore();
   const control = createLocalLogoutControl(store);
   await assert.rejects(control.blockAndQueueRevoke("uid-A", "not-a-uuid"), (error: unknown) => error instanceof LocalLogoutControlError && error.code === "local_logout_control_unavailable");
@@ -117,8 +117,9 @@ test("operation IDs must be UUIDv4 both on writes and when loading persisted rec
 
   store.values.set(KEY, JSON.stringify({
     blocked: null,
+    completed: [],
     pending: [{ uid: "uid-A", operationId: "00000000-0000-1000-8000-000000000001" }],
-    version: 1,
+    version: 2,
   }));
   await assert.rejects(control.read(), (error: unknown) => error instanceof LocalLogoutControlError && error.code === "local_logout_control_corrupt");
 });
@@ -387,4 +388,91 @@ test("transactions serialize across control instances in the JavaScript runtime"
     { uid: "uid-A", operationId: "00000000-0000-4000-8000-00000000000a" },
     { uid: "uid-B", operationId: "00000000-0000-4000-8000-00000000000b" },
   ]));
+});
+
+test("v7 round-trips blocked, pending, clear and completed without rewriting saved v4 IDs", async () => {
+  const store = memoryStore();
+  const control = createLocalLogoutControl(store);
+  const v4 = "00000000-0000-4000-8000-000000000001";
+  const v7 = "019e6000-0000-7000-8000-000000000002";
+  await control.blockAndQueueRevoke("uid-A", v4);
+  const original = store.values.get(KEY);
+  assert.deepEqual(await createLocalLogoutControl(store).read(), await control.read());
+  assert.equal(store.values.get(KEY), original);
+  await control.blockAndQueueRevoke("uid-B", v7);
+  const restored = createLocalLogoutControl(store);
+  assert.deepEqual((await restored.read()).pending, [{ uid: "uid-A", operationId: v4 }, { uid: "uid-B", operationId: v7 }]);
+  await restored.clearBlockForAuth("uid-B", v7);
+  assert.equal((await restored.read()).blocked, null);
+  await restored.completePendingRevoke("uid-B", v7);
+  const completed = await createLocalLogoutControl(store).read();
+  assert.deepEqual(completed.completed, [{ uid: "uid-B", operationId: v7 }]);
+  assert.deepEqual(completed.pending, [{ uid: "uid-A", operationId: v4 }]);
+});
+
+test("explicit expired-ID restart replaces exactly one pending pair without claiming old success", async () => {
+  const store = memoryStore();
+  const old = "00000000-0000-4000-8000-000000000001";
+  const fresh = "019e6000-0000-7000-8000-000000000002";
+  const other = "00000000-0000-4000-8000-000000000003";
+  const receipt = { uid: "uid-C", operationId: "00000000-0000-4000-8000-000000000004" };
+  store.values.set(KEY, JSON.stringify({ version: 2, blocked: { uid: "uid-A", operationId: old }, pending: [{ uid: "uid-A", operationId: old }, { uid: "uid-B", operationId: other }], completed: [receipt] }));
+  store.values.set("learning-data", "preserved");
+  const control = createLocalLogoutControl(store);
+  const before = await control.read();
+  for (const work of [
+    () => control.replaceExpiredPendingRevoke("wrong-uid", old, fresh),
+    () => control.replaceExpiredPendingRevoke("uid-A", other, fresh),
+    () => control.replaceExpiredPendingRevoke("uid-A", old, other),
+    () => control.replaceExpiredPendingRevoke("uid-A", old, fresh, () => false),
+  ]) { await assert.rejects(work()); assert.deepEqual(await control.read(), before); }
+  const after = await control.replaceExpiredPendingRevoke("uid-A", old, fresh);
+  assert.deepEqual(after.blocked, { uid: "uid-A", operationId: fresh });
+  assert.deepEqual(after.pending, [{ uid: "uid-A", operationId: fresh }, { uid: "uid-B", operationId: other }]);
+  assert.deepEqual(after.completed, [receipt]);
+  assert.equal(store.values.get("learning-data"), "preserved");
+  await assert.rejects(control.replaceExpiredPendingRevoke("uid-A", old, fresh));
+  assert.deepEqual(await control.read(), after);
+});
+
+test("expired-ID replacement with failed persistence does not clear the old marker", async () => {
+  const store = new MemoryManifestStore();
+  const control = createLocalLogoutControl(store);
+  const old = "00000000-0000-4000-8000-000000000001";
+  await control.blockAndQueueRevoke("uid-A", old);
+  const before = await control.read();
+  store.failSet = true;
+  await assert.rejects(control.replaceExpiredPendingRevoke("uid-A", old, "019e6000-0000-7000-8000-000000000002"));
+  assert.deepEqual(await control.read(), before);
+});
+
+test("persist-then-throw restart confirms exact new pair and can continue without a second ID", async () => {
+  const store = new MemoryManifestStore();
+  const control = createLocalLogoutControl(store);
+  const old = "00000000-0000-4000-8000-000000000001";
+  const fresh = "019e6000-0000-7000-8000-000000000002";
+  await control.blockAndQueueRevoke("uid-A", old);
+  store.persistThenFailSet = true;
+  const confirmed = await control.replaceExpiredPendingRevoke("uid-A", old, fresh);
+  assert.deepEqual(confirmed.pending, [{ uid: "uid-A", operationId: fresh }]);
+  assert.deepEqual(confirmed.blocked, { uid: "uid-A", operationId: fresh });
+  assert.deepEqual(confirmed.completed, []);
+});
+
+test("unconfirmed replacement leaves one recoverable durable pair for restore, never fake completion", async () => {
+  const store = memoryStore();
+  const base = createLocalLogoutControl(store);
+  const old = "00000000-0000-4000-8000-000000000001";
+  const fresh = "019e6000-0000-7000-8000-000000000002";
+  await base.blockAndQueueRevoke("uid-A", old);
+  let writeStarted = false;
+  const control = createLocalLogoutControl({
+    get: async (key) => { if (writeStarted) throw new Error("confirmation_read_failed"); return store.get(key); },
+    set: async (key, value) => { await store.set(key, value); writeStarted = true; },
+    remove: (key) => store.remove(key),
+  });
+  await assert.rejects(control.replaceExpiredPendingRevoke("uid-A", old, fresh));
+  const restored = await createLocalLogoutControl(store).read();
+  assert.deepEqual(restored.pending, [{ uid: "uid-A", operationId: fresh }]);
+  assert.deepEqual(restored.completed, []);
 });

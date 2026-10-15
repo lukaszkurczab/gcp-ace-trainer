@@ -3,7 +3,7 @@ import { sha256Utf8 } from "../identity/sha256";
 
 const CONTROL_KEY = "patternly.local-logout-control.v2";
 const CONTROL_VERSION = 2 as const;
-const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const REVOKE_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type PendingRevoke = Readonly<{ operationId: string; uid: string }>;
 export type LocalLogoutControlSnapshot = Readonly<{
@@ -31,7 +31,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function validIdentity(value: unknown): value is PendingRevoke {
   if (!isRecord(value) || Object.keys(value).sort().join(",") !== "operationId,uid") return false;
   return typeof value.uid === "string" && value.uid.trim().length > 0
-    && typeof value.operationId === "string" && UUID_V4_PATTERN.test(value.operationId);
+    && typeof value.operationId === "string" && REVOKE_ID_PATTERN.test(value.operationId);
 }
 
 function pairKey(value: PendingRevoke): string {
@@ -153,12 +153,13 @@ async function writeVerified(store: StorageManifestStore, snapshot: LocalLogoutC
 export type LocalLogoutControl = Readonly<{
   read(): Promise<LocalLogoutControlSnapshot>;
   blockAndQueueRevoke(uid: string, operationId: string): Promise<LocalLogoutControlSnapshot>;
+  replaceExpiredPendingRevoke(uid: string, oldOperationId: string, newOperationId: string, canReplace?: () => boolean): Promise<LocalLogoutControlSnapshot>;
   clearBlockForAuth(authUid: string | null, operationId: string, canClear?: () => boolean): Promise<LocalLogoutControlSnapshot>;
   completePendingRevoke(uid: string, operationId: string, canComplete?: () => boolean): Promise<LocalLogoutControlSnapshot>;
 }>;
 
 function requireIdentity(uid: string, operationId: string): void {
-  if (!uid.trim() || !UUID_V4_PATTERN.test(operationId)) fail("local_logout_control_unavailable");
+  if (!uid.trim() || !REVOKE_ID_PATTERN.test(operationId)) fail("local_logout_control_unavailable");
 }
 
 /**
@@ -179,9 +180,35 @@ export function createLocalLogoutControl(store: StorageManifestStore): LocalLogo
       // already-settled operations, keeping the control record bounded.
       return writeVerified(store, freezeSnapshot(pair, [...pending.values()].sort(comparePairs), []));
     }),
+    replaceExpiredPendingRevoke: (uid: string, oldOperationId: string, newOperationId: string, canReplace: () => boolean = () => true) => serialized(async () => {
+      requireIdentity(uid, oldOperationId);
+      requireIdentity(uid, newOperationId);
+      if (newOperationId[14] !== "7" || oldOperationId === newOperationId) fail("local_logout_control_unavailable");
+      const current = await readFrom(store);
+      if (!canReplace()) fail("local_logout_control_unavailable");
+      const oldKey = pairKey({ uid, operationId: oldOperationId });
+      const replacement = freezePair({ uid, operationId: newOperationId });
+      if (!current.pending.some((entry) => pairKey(entry) === oldKey)
+        || [...current.pending, ...current.completed].some((entry) => pairKey(entry) === pairKey(replacement))) fail("local_logout_control_unavailable");
+      const pending = current.pending.map((entry) => pairKey(entry) === oldKey ? replacement : entry).sort(comparePairs);
+      const blocked = current.blocked && pairKey(current.blocked) === oldKey ? replacement : current.blocked;
+      // Explicit user restart only. No success receipt for the rejected request.
+      const next = freezeSnapshot(blocked, pending, current.completed);
+      try {
+        return await writeVerified(store, next);
+      } catch (error) {
+        // A set may persist then throw. Continue only after confirming this
+        // exact replacement, never generate another operation to hide ambiguity.
+        try {
+          const observed = await readFrom(store);
+          if (serialize(observed) === serialize(next)) return observed;
+        } catch { /* The Auth restore owner must re-read the durable state. */ }
+        throw error;
+      }
+    }),
     clearBlockForAuth: (authUid: string | null, operationId: string, canClear: () => boolean = () => true) => serialized(async () => {
       if (!canClear()) return readFrom(store);
-      if (!UUID_V4_PATTERN.test(operationId)) fail("local_logout_control_unavailable");
+      if (!REVOKE_ID_PATTERN.test(operationId)) fail("local_logout_control_unavailable");
       const current = await readFrom(store);
       const blocked = current.blocked;
       if (!blocked || blocked.operationId !== operationId || (authUid !== null && blocked.uid !== authUid)) return current;

@@ -1,3 +1,4 @@
+import { createSessionRevocationOperationId } from "../../infrastructure/identity/sessionRevocationOperationId";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
@@ -21,7 +22,7 @@ export type AccountDeletionState = Readonly<{
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 const isUuid = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value);
-const isSignOutState = (value: unknown): value is AccountSignOutState => isRecord(value) && typeof value.accountId === "string" && isUuid(value.operationId) && ["pending", "remoteRevoked", "localCleanupPending"].includes(String(value.status)) && (value.lastFailureCode === null || typeof value.lastFailureCode === "string");
+const isSignOutState = (value: unknown): value is AccountSignOutState => isRecord(value) && typeof value.accountId === "string" && typeof value.operationId === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value.operationId) && ["pending", "remoteRevoked", "localCleanupPending"].includes(String(value.status)) && (value.lastFailureCode === null || typeof value.lastFailureCode === "string");
 const isDeletionState = (value: unknown): value is AccountDeletionState => isRecord(value) && typeof value.accountId === "string" && typeof value.accountUidHash === "string" && isUuid(value.operationId) && typeof value.operationSecret === "string" && /^[0-9a-f]{64}$/iu.test(value.operationSecret) && ["remotePending", "remoteDeleted", "localCleanupPending", "complete", "failed"].includes(String(value.status)) && (value.proofId === null || typeof value.proofId === "string") && (value.lastFailureCode === null || typeof value.lastFailureCode === "string");
 
 function operationId(): string {
@@ -46,7 +47,7 @@ function operationSecret(): string {
 
 export function getAccountSignOutState(): AccountSignOutState | null { return readCanonicalJson(STORAGE_KEYS.ACCOUNT_SIGN_OUT, isSignOutState); }
 export function beginAccountSignOut(accountId: string): AccountSignOutState {
-  const state: AccountSignOutState = { accountId, operationId: operationId(), status: "pending", lastFailureCode: null };
+  const state: AccountSignOutState = { accountId, operationId: createSessionRevocationOperationId(), status: "pending", lastFailureCode: null };
   writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SIGN_OUT, state);
   return state;
 }

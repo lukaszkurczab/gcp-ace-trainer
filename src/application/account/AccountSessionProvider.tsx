@@ -1,3 +1,4 @@
+import { createSessionRevocationOperationId } from "../../infrastructure/identity/sessionRevocationOperationId";
 import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -11,7 +12,7 @@ import { ensureAccountSessionGeneration, ensureRecoveryIssueSignInSession, getMe
 import { createRecoveryOperationCoordinator, isRecoveryIdentityUnavailable, type RecoveryOperationSnapshot } from "./recoveryOperationCoordinator";
 import { createRecoveryIssuePublicationGate, readRecoveryIssueCommandIdentity } from "./recoveryIssueCommandGuard";
 import { createSecureRecoveryOperationVault, type RecoveryOperationVault } from "../../infrastructure/security/recoveryOperationVault";
-import { createPendingSessionRevocationDrain } from "./pendingSessionRevocation";
+import { SessionRevocationExpiredError, createPendingSessionRevocationDrain } from "./pendingSessionRevocation";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
@@ -328,7 +329,7 @@ export type AccountState =
   | Readonly<{ kind: "localOffline"; accountId: string; accountData: AccountDataSession; bindingRevision: number; generation: AccountSessionGenerationToken; profile: StorageProfile; profileLease: ActiveProfileStorageLease; user: FirebaseAuthUserSnapshot }>
   | Readonly<{ kind: "deletionPending"; user: FirebaseAuthUserSnapshot; accountId: string; status: "remoteDeletionPending" | "localCleanupPending"; failure: AccountFailure }>
   | Readonly<{ kind: "signingOut"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
-  | Readonly<{ kind: "signOutPending"; user: FirebaseAuthUserSnapshot; operationId?: string; provisional?: true }>
+  | Readonly<{ kind: "signOutPending"; user: FirebaseAuthUserSnapshot; operationId?: string; provisional?: true; remoteRevokeExpired?: true }>
   | Readonly<{ kind: "deleting"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "backendUnavailable" | "reauthenticationRequired" | "revokedSession"; user: FirebaseAuthUserSnapshot }>;
 
@@ -395,6 +396,7 @@ export type AccountSessionContextValue = Readonly<{
   requestRecoveryCodeReplacement: () => Promise<AccountCommandResult>;
   recoveryOperation: RecoveryOperationSnapshot;
   discardGuestData: () => Promise<AccountCommandResult>;
+  restartExpiredSessionRevocation: () => Promise<AccountCommandResult>;
   signOut: () => Promise<AccountCommandResult>;
   pendingRemoteRevokeCount: number;
   captureCurrentAuthenticatedActorFence: () => Readonly<{ accountIdSha256: string; profileIdSha256: string; uidSha256: string; isCurrent: () => boolean; isCurrentSdkUid: (uid: string) => boolean }> | null;
@@ -538,7 +540,7 @@ export function publishRefreshedAuthenticatedState(latest: AccountState, input: 
   };
 }
 
-function createSignOutOperationId(): string {
+function createRecoveryOperationId(): string {
   if (typeof globalThis.crypto?.randomUUID === "function") return globalThis.crypto.randomUUID();
   try {
     const crypto = require("expo-crypto") as typeof import("expo-crypto");
@@ -546,6 +548,13 @@ function createSignOutOperationId(): string {
   } catch {
     throw new Error("secure_operation_id_unavailable");
   }
+}
+
+export function pendingRevokeFailureState(user: FirebaseAuthUserSnapshot, error: unknown, snapshot: LocalLogoutControlSnapshot): Extract<AccountState, { kind: "signOutPending" }> {
+  const expired = error instanceof SessionRevocationExpiredError && error.pending.uid === user.uid
+    && snapshot.pending.some((entry) => entry.uid === user.uid && entry.operationId === error.pending.operationId) ? error.pending : null;
+  const pending = expired ?? findPendingSessionRevocation(snapshot, user.uid);
+  return { kind: "signOutPending", user, ...(pending ? { operationId: pending.operationId } : {}), ...(expired ? { remoteRevokeExpired: true as const } : {}) };
 }
 
 function deletionRecoverySession(state: ReturnType<typeof getAccountDeletionState>): AccountDataSession | null {
@@ -1375,7 +1384,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         vault: getRecoveryVault(),
         api: client,
         auth: configuredAuth,
-        newOperationId: createSignOutOperationId,
+        newOperationId: createRecoveryOperationId,
       });
       recoveryCoordinatorRef.current = recoveryCoordinator;
       const unsubscribeRecovery = recoveryCoordinator.subscribe((snapshot) => {
@@ -1490,10 +1499,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           closeActiveProfileStorage();
           setAccountEntryMode("login");
           setState({ kind: "loading" });
-          void admitAuthenticatedBootstrap(configuredAuth, client, user, generation, eventDiagnostic, canContinue).catch(() => {
+          void admitAuthenticatedBootstrap(configuredAuth, client, user, generation, eventDiagnostic, canContinue).catch((error: unknown) => {
               if (!canContinue()) return;
-              const pending = findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid) ?? pendingRevocations[0]!;
-              setState({ kind: "signOutPending", user, operationId: pending.operationId });
+              setState(pendingRevokeFailureState(user, error, logoutControlSnapshotRef.current));
               eventDiagnostic.failed("recovery_guard", new Error("session_revocation_pending"), "signOutPending");
           });
           return;
@@ -1543,11 +1551,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
             setAccountEntryMode("login");
             setState({ kind: "signedOut" });
           }
-        }).catch(() => {
+        }).catch((error: unknown) => {
           if (!isCurrentObserver()) return;
-          const pending = findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid);
           setAccountEntryMode("login");
-          setState({ kind: "signOutPending", user, ...(pending ? { operationId: pending.operationId } : {}) });
+          setState(pendingRevokeFailureState(user, error, logoutControlSnapshotRef.current));
           eventDiagnostic.failed("recovery_guard", new Error("session_revocation_pending"), "signOutPending");
         });
         })().catch(() => {
@@ -1623,13 +1630,12 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         return { kind: "failure", failure: latest.kind === "revokedSession" ? "revokedSession" : latest.kind === "backendUnavailable" ? "backendUnavailable" : "providerUnavailable" };
       }
       return attempt.completion;
-    } catch {
+    } catch (error) {
       if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
-      const pending = findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid);
       if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
       observerBlockedUidRef.current = user.uid;
       setAccountEntryMode("login");
-      setState({ kind: "signOutPending", user, ...(pending ? { operationId: pending.operationId } : {}) });
+      setState(pendingRevokeFailureState(user, error, logoutControlSnapshotRef.current));
       return { kind: "failure", failure: "signOutPending" };
     }
   }, [admitAuthenticatedBootstrap, logoutControl, sessionCoordinator]);
@@ -2874,6 +2880,27 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       setState({ ...after, accountData: next });
       return { kind: "success", next: "authenticated" };
     }),
+    restartExpiredSessionRevocation: () => runAuthMutationWithAuth(async (auth, api) => {
+      const current = stateRef.current;
+      const user = auth.getSnapshot();
+      if (!user || current.kind !== "signOutPending" || current.provisional || !current.remoteRevokeExpired
+        || current.user.uid !== user.uid || !current.operationId) return { kind: "failure", failure: "conflict" };
+      const generation = sessionCoordinator.restart(user.uid);
+      const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
+      try {
+        const snapshot = await logoutControl.replaceExpiredPendingRevoke(user.uid, current.operationId, createSessionRevocationOperationId(), canContinue);
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        logoutControlSnapshotRef.current = snapshot;
+        setLogoutControlSnapshot(snapshot);
+        return finalizeExplicitAuthentication(auth, api, user);
+      } catch {
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        // An unconfirmed write may contain the old or the new durable pair.
+        // Existing restore re-reads it before draining; never reuse stale UI IDs.
+        retrySessionRestore();
+        return { kind: "failure", failure: "localCleanupFailure" };
+      }
+    }),
     signOut: () => runAuthMutationWithAuth(async (auth) => {
       const user = auth.getSnapshot();
       if (!user) return { kind: "failure", failure: "providerUnavailable" };
@@ -2937,7 +2964,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
               else operationId = beginAccountSignOut(accountId).operationId;
               durableOperation = true;
             } else {
-              operationId = createSignOutOperationId();
+              operationId = createSessionRevocationOperationId();
             }
           }
         } catch {
@@ -2961,7 +2988,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
             isCurrent: canContinue,
             retainAuthOnFailedControlWrite: scopedOperationRecovered,
             persistFallbackControlPair: async () => {
-              operationId ??= createSignOutOperationId();
+              operationId ??= createSessionRevocationOperationId();
               const snapshot = await logoutControl.blockAndQueueRevoke(user.uid, operationId);
               logoutControlSnapshotRef.current = snapshot;
               setLogoutControlSnapshot(snapshot);

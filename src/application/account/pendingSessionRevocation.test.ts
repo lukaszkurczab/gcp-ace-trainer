@@ -322,3 +322,21 @@ test("a failed exact-operation replay retains its pending marker", async () => {
   assert.deepEqual(snapshot.pending, [pending]);
   assert.equal(completionCalls, 0);
 });
+
+test("expired revoke keeps exact durable ID and never signs in, clears or automatically starts a new operation", async () => {
+  const { PatternlyApiClientError } = await import("../../infrastructure/clients/PatternlyApiClientAdapter");
+  const { SessionRevocationExpiredError } = await import("./pendingSessionRevocation");
+  const calls: string[] = [];
+  for (const code of ["session_revocation_operation_expired", "session_revocation_operation_invalid"]) {
+    await assert.rejects(resumePendingSessionRevocation({
+      api: { exchangeAccountSession: async () => { throw new Error("unexpected-exchange"); }, revokeSessions: async (id) => { calls.push(id); throw new PatternlyApiClientError("server_error", 409, code); } },
+      auth: { getAuthorizationGeneration: async () => 1, getSnapshot: () => user, signInWithSessionToken: async () => { throw new Error("unexpected-sign-in"); } },
+      canContinue: () => true,
+      control: { completePendingRevoke: async () => { throw new Error("unexpected-completion"); } },
+      onSessionTokenSignIn: () => { throw new Error("unexpected-sign-in"); }, pending, user,
+    }), (error: unknown) => code === "session_revocation_operation_expired"
+      ? error instanceof SessionRevocationExpiredError && error.pending === pending
+      : error instanceof PatternlyApiClientError && !(error instanceof SessionRevocationExpiredError));
+  }
+  assert.deepEqual(calls, [pending.operationId, pending.operationId]);
+});

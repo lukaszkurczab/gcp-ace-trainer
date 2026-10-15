@@ -143,6 +143,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   signOut: t("signOut"),
   signOutPending: t("signOutPending"),
   signOutPendingDescription: t("signOutPendingDescription"),
+  sessionRevocationExpired: t("sessionRevocationExpired"),
+  sessionRevocationExpiredDescription: t("sessionRevocationExpiredDescription"),
+  restartSessionRevocation: t("restartSessionRevocation"),
   deleteAccount: t("deleteAccount"),
   deleting: t("deleting"),
   deletionPending: t("deletionPending"),
@@ -486,11 +489,13 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   if (account.state.kind === "signOutPending")
     return (
       <AuthStatusScreen
-        action={{ label: text.signOut, onPress: () => void (account.state.kind === "signOutPending" && account.state.provisional ? account.cancelProviderRegistration() : account.signOut()), testID: "account-sign-out-retry" }}
+        action={account.state.remoteRevokeExpired
+          ? { label: text.restartSessionRevocation, onPress: () => void account.restartExpiredSessionRevocation(), testID: "account-revoke-restart" }
+          : { label: text.signOut, onPress: () => void (account.state.kind === "signOutPending" && account.state.provisional ? account.cancelProviderRegistration() : account.signOut()), testID: "account-sign-out-retry" }}
         backAction={backAction}
-        body={text.signOutPendingDescription}
+        body={account.state.remoteRevokeExpired ? text.sessionRevocationExpiredDescription : text.signOutPendingDescription}
         testID="account-sign-out-pending"
-        title={text.signOutPending}
+        title={account.state.remoteRevokeExpired ? text.sessionRevocationExpired : text.signOutPending}
       />
     );
   if (account.state.kind === "deleting")

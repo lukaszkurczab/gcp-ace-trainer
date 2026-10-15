@@ -1,3 +1,4 @@
+import { beginAccountSignOut, getAccountSignOutState, beginAccountDeletion, getAccountDeletionState } from "./accountLifecycleRepository";
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
@@ -329,4 +330,20 @@ test("canonical repository bootstrap isolates a throwing step observer without w
     (cause: unknown) => cause === error,
   );
   assert.deepEqual(steps, [...CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER]);
+});
+
+
+test("session revoke sign-out repository creates v7 and reads legacy v4 while deletion remains v4", () => {
+  const before = Date.now();
+  const fresh = beginAccountSignOut("account-sec07");
+  assert.match(fresh.operationId, /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u);
+  const issuedAt = Number.parseInt(fresh.operationId.replaceAll("-", "").slice(0, 12), 16);
+  assert.ok(issuedAt >= before && issuedAt <= Date.now());
+  assert.deepEqual(getAccountSignOutState(), fresh);
+  const legacy = { ...fresh, operationId: "00000000-0000-4000-8000-000000000001" };
+  writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SIGN_OUT, legacy);
+  assert.deepEqual(getAccountSignOutState(), legacy);
+  const deletion = beginAccountDeletion("account-sec07", "uid-sec07");
+  assert.match(deletion.operationId, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u);
+  assert.deepEqual(getAccountDeletionState(), deletion);
 });

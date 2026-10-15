@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, isLocalAccountStartupUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountState } from "./AccountSessionProvider";
+import { pendingRevokeFailureState, accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, isLocalAccountStartupUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { accountFinalizationPolicies, executeAccountFinalization } from "./accountFinalization";
 import { completeAccountBootstrap, prepareAuthenticatedAccountBootstrap } from "../bootstrap/accountBootstrap";
@@ -1493,4 +1493,31 @@ test("privacy requests expose App Check failures as unavailable", () => {
   assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("server_error", 401, "app_check_invalid")), "appCheckUnavailable");
   assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("server_error", 503, "app_check_not_configured")), "appCheckUnavailable");
   assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("server_error", 401, "authentication_required")), "authenticationRequired");
+});
+
+
+test("expired-revoke presentation belongs only to the exact durable UID/ID and explicit restart", async () => {
+  const { SessionRevocationExpiredError } = await import("./pendingSessionRevocation");
+  const user = { uid: "uid-expired", email: null, emailVerified: true, providers: ["password"] as const };
+  const old = { uid: user.uid, operationId: "00000000-0000-4000-8000-000000000001" };
+  const other = { uid: user.uid, operationId: "00000000-0000-4000-8000-000000000002" };
+  const snapshot = { version: 2 as const, blocked: old, pending: [other, old], completed: [] };
+  assert.deepEqual(pendingRevokeFailureState(user, new SessionRevocationExpiredError(old), snapshot), {
+    kind: "signOutPending", user, operationId: old.operationId, remoteRevokeExpired: true,
+  });
+  for (const error of [new Error("session_revocation_operation_expired"), new PatternlyApiClientError("server_error", 409, "session_revocation_operation_invalid"), new SessionRevocationExpiredError({ ...old, uid: "foreign" })]) {
+    assert.equal(pendingRevokeFailureState(user, error, snapshot).remoteRevokeExpired, undefined);
+  }
+  assert.equal(pendingRevokeFailureState(user, new SessionRevocationExpiredError(old), { ...snapshot, blocked: null, pending: [other] }).remoteRevokeExpired, undefined);
+  const provider = readFileSync(new URL("./AccountSessionProvider.tsx", import.meta.url), "utf8");
+  const restart = provider.slice(provider.indexOf("restartExpiredSessionRevocation: () => runAuthMutationWithAuth"), provider.indexOf("signOut: () => runAuthMutationWithAuth"));
+  assert.match(restart, /current\.provisional[\s\S]*?!current\.remoteRevokeExpired[\s\S]*?current\.user\.uid !== user\.uid/u);
+  assert.match(restart, /await logoutControl\.replaceExpiredPendingRevoke[\s\S]*?logoutControlSnapshotRef\.current = snapshot[\s\S]*?return finalizeExplicitAuthentication/u);
+  assert.match(restart, /catch[\s\S]*?if \(!canContinue\(\)\)[\s\S]*?retrySessionRestore\(\)/u);
+  const screen = readFileSync(new URL("../../features/account/AccountEntryScreen.tsx", import.meta.url), "utf8");
+  assert.match(screen, /account\.state\.remoteRevokeExpired[\s\S]*?text\.restartSessionRevocation[\s\S]*?account\.restartExpiredSessionRevocation\(\)/u);
+  for (const locale of ["en", "pl", "de", "es", "fr", "it", "et"]) {
+    const copy = JSON.parse(readFileSync(new URL(`../../locales/${locale}/account.json`, import.meta.url), "utf8"));
+    for (const key of ["sessionRevocationExpired", "sessionRevocationExpiredDescription", "restartSessionRevocation"]) assert.ok(copy[key].length > 5);
+  }
 });

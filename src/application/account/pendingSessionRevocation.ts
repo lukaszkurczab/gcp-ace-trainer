@@ -1,8 +1,15 @@
-import type { PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { PatternlyApiClientError, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { FirebaseAuthClientError, type FirebaseAuthClient, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import type { LocalLogoutControl, LocalLogoutControlSnapshot, PendingRevoke } from "../../infrastructure/storage/localLogoutControl";
 import { ensureAccountSessionGeneration } from "./accountSessionExchange";
 import { AccountSessionGenerationStaleError } from "./profileStartupCoordination";
+
+export class SessionRevocationExpiredError extends Error {
+  public constructor(public readonly pending: PendingRevoke) {
+    super("session_revocation_operation_expired");
+    this.name = "SessionRevocationExpiredError";
+  }
+}
 
 /**
  * Serializes drains that mutate the singleton Firebase Auth client. Identical
@@ -66,7 +73,12 @@ export async function resumePendingSessionRevocation(input: Readonly<{
     user: input.user,
   });
   if (!input.canContinue()) throw new AccountSessionGenerationStaleError();
-  const response = await input.api.revokeSessions(input.pending.operationId);
+  const response = await input.api.revokeSessions(input.pending.operationId).catch((error: unknown) => {
+    if (error instanceof PatternlyApiClientError && error.serverCode === "session_revocation_operation_expired") {
+      throw new SessionRevocationExpiredError(input.pending);
+    }
+    throw error;
+  });
   if (!input.canContinue() || response.operationId !== input.pending.operationId) throw new AccountSessionGenerationStaleError();
   input.onSessionTokenSignIn();
   const replacementUser = await input.auth.signInWithSessionToken(response.customToken);

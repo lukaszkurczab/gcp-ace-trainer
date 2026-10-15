@@ -273,15 +273,15 @@ a0c6f52ac3b3b2bd9f188596d4b92dbefa8f16b21f5d76897561f9bf3e06926a src/infrastruct
 c628acb63696432df9c3f077d4b6880d346d73a02b0dc49c7fe7a7507ab8f797 scripts/qa/probeEnvironmentGuardIos.mjs
 ```
 
-## SEC-04 — MEDIUM — App Check na recovery ACK/status
+## SEC-04 — App Check na recovery ACK/status — lokalnie odebrane
 
-**Potwierdzenie w bieżącym kodzie:** Backend recovery issue/status, issue/saved-ack i consume/ack nadal używa bearer zamiast wymaganej App Check+bearer bramki. Consume/status ma oddzielny App Check-only guard; nie dodawać go omyłkowo do listy trzech wyjątków.
+**14.10.2026 / prompt 11: PASS kodu i lokalnego kontraktu HTTP; niezależne QA Luna High PASS.** [Zakres plików, kontrakt, testy i granice dowodu](../../../../patternly-backend/docs/sec04-recovery-app-check.md).
 
-- **Exact risk/data:** posiadacz ważnego bearer/operation ID wywołuje protected mobile recovery ACK/status bez poprawnej attestation. Trzy wyjątki naruszają mandatory gate docs09; Firebase auth i generation nadal obowiązują.
-- **Pliki/config:** backend `src/api/app.ts` routes consume/ack, issue/status, issue/saved-ack i bearer guard; `src/api/openapi.ts`; `tests/openapiContracts.test.ts`; odpowiednie lifecycle route tests.
-- **Remediation:** wspólny protected-mobile guard na wszystkich trzech routes; popraw OpenAPI i behavioral probe expectations. Nie osłabiać reauthentication, ownership, generation ani no-store.
-- **Test/manual proof i AC:** missing/invalid/unavailable App Check × poprawny/niepoprawny bearer; odrzucenie przed store effect, valid tuple dochodzi do właściwego handlera; private/no-store dla status i błędów. Obecny synthetic test pozwalający 503 bez App Check nie jest pozytywnym security proof. Real provider pass/fail/unavailable w R04.
-- **Privacy copy:** bez nowej deklaracji danych; unavailable/retry nie udaje sukcesu. **Platform:** backend, mobile iOS/Android clients; WWW nie otrzymuje nowego prywatnego kanału. **Dependencies:** brak dla local fix; R04 kończy provider proof.
+Trzy trasy `issue/status`, `issue/saved-ack`, `consume/ack` korzystają z istniejącego wspólnego `app_check_bearer`. App Check poprzedza bearer, resolver konta, limiter i lifecycle; brak/invalid/niekonfigurowany verifier/wyjątek weryfikatora odrzuca bez efektu store. Zachowane bearer, ownership, generation, pierwotny issue reauth i `private, no-store`, również na błędach. Źródło i wygenerowany OpenAPI wymagają obu zabezpieczeń, dokumentując App Check 401/503. Odrębny publiczny `consume/status` pozostaje App Check-only.
+
+Odbiór niezależny: **51/51** route/OpenAPI/observability, typecheck, lint, OpenAPI parity **76 operacji**, diff-check PASS. Owner dodatkowo build, frontend inventory **54 operacje** i istniejący mobilny test transportu **1/1** PASS. Testy wykonują prawdziwe trasy Fastify z doubles verifier/store; źródłowe ownership/generation sprawdzone, bez nowego odbioru transakcji Firestore. **Real provider pass/fail/unavailable pozostaje R04 / APPCHK-03/04 / ODK-E2E-084**; lokalny PASS nie dowodzi atestacji produkcyjnej ani gotowości wydania. Usługi i urządzenia nietknięte.
+
+---
 
 ## SEC-05 — Compact terminal sync i zamknięty nested state — lokalnie odebrane
 
@@ -305,17 +305,19 @@ c628acb63696432df9c3f077d4b6880d346d73a02b0dc49c7fe7a7507ab8f797 scripts/qa/prob
 
 ## SEC-07 — LOW — Retencja metadanych unieważniania sesji
 
-**Potwierdzenie w bieżącym kodzie:** rekordy `sessionRevocationOperations` nie mają terminu wygaśnięcia. API przyjmuje UUID klienta. Rekord ze statusem `revoked` pozwala ponowić wydanie sesji zastępczej, gdy poprzednia próba wydania tokenu nie powiodła się. Po usunięciu rekordu ten sam UUID może zostać potraktowany jako nowa operacja i ponownie wywołać unieważnienie. Status `failed` jest obecnie ponawialny.
+**14.10.2026 / prompt 13: PASS kodu i lokalnego emulatora** — wdrożono [odebrany projekt UUIDv7](../../../../patternly-backend/docs/sec07-session-revocation-replay-design.md). [Implementacja, testy, niezależny QA i granice dowodu](../../../../patternly-backend/docs/sec07-session-revocation-implementation.md). Chmurowy TTL i inventory legacy pozostają ODK-E2E-082/R04; bez cloud apply, native smoke ani odbioru wydania.
+
+**Potwierdzenie w bieżącym kodzie:** istniejący owner nadaje `revoked` niezmienne `terminalAt` i `expiresAt = terminalAt + 30 × 24 h`. Mint retry nie powtarza revoke ani nie przedłuża retencji; od expiry odmawia także przed fizycznym TTL delete. Brak dokumentu pozwala tylko na v7 w oknie pierwszego użycia 29 dni / +5 min, więc stare ID po delete nie odtwarza operacji. `pending`/`failed` zachowują retry bez TTL. Zweryfikowany legacy `revoked` otrzymuje pola z dawnego `updatedAt`, uszkodzony kształt odmawia. Klient tworzy v7 w obu wejściach wylogowania, czyta v4/v7 i pokazuje jawny restart starego żądania; nowe ID powstaje wyłącznie po świadomej akcji. Niepewny zapis odtwarza z trwałej kolejki, bez automatycznego generowania kolejnych ID.
 
 **Decyzja właściciela z 07.10.2026:** metadane operacji, której unieważnienie zostało potwierdzone jako zakończone, przechowywać przez 30 × 24 godziny od niezmiennego czasu zakończenia. Ponowienie nie przedłuża terminu. Operacje aktywne i nadal wymagające ponowienia nie wygasają arbitralnie. Jest to okres historii operacji; nie zmienia skuteczności unieważnienia ani okresu ważności tokenów. Decyzja nie jest potwierdzeniem implementacji ani zgodą na zastosowanie konfiguracji w chmurze.
 
 - **Ryzyko i dane:** obecnie identyfikatory użytkownika, konta i operacji, generacja, status, czas i kod awarii mogą pozostawać przez cały okres istnienia konta. Nie wykazano wycieku tokenów ani masowego zdalnego ataku odmowy usługi. Usunięcie historii bez ochrony przed powtórzeniem starego żądania może wywołać nowy skutek zamiast zwrócić wynik dawnej operacji.
 - **Pliki:** backend `src/modules/account-lifecycle/store.ts`, `contracts.ts`, `src/infrastructure/firestore/paths.ts`, `config/firestore-ttl.json`, `docs/retention-runbook.md` oraz testy cyklu konta i retencji w emulatorze.
 - **Wymagana zmiana:** precyzyjnie sklasyfikować stany. `failed` pozostaje ponawialny i nie otrzymuje arbitralnego TTL. Dla potwierdzonego zakończenia utrwalić jednokrotnie `terminalAt` i `expiresAt = terminalAt + 30 × 24 godziny`. Przed wygaśnięciem zachować bezpieczne ponowienie wyniku, w tym wydanie sesji zastępczej po awarii wydania tokenu. Ponowienie nie zmienia czasu zakończenia ani terminu retencji.
-- **Wymagana ochrona po usunięciu historii:** stary identyfikator nie może uruchomić operacji jako nowej ani automatycznie wydać dostępu. Wybrać i niezależnie przejrzeć najmniejszy spójny mechanizm rozpoznawania starych żądań po fizycznym usunięciu rekordu. Samo sprawdzanie `expiresAt` i TTL jest niewystarczające dla obecnego UUID. Wybór algorytmu pozostaje pracą wykonawczą; przechowywanie dodatkowych identyfikatorów dłużej niż 30 dni wymaga jawnego rozstrzygnięcia retencji tych danych. Nie dodawać przy okazji ograniczania częstości żądań ani drugiego właściciela operacji.
+- **Ochrona po usunięciu historii (wdrożona):** stary identyfikator nie może uruchomić operacji jako nowej ani automatycznie wydać dostępu. Odebrany mechanizm UUIDv7 sprawdza wiek wyłącznie przy braku dokumentu; samo `expiresAt`/TTL nie jest ochroną replay. Nie dodano dodatkowego indeksu identyfikatorów, ograniczania częstości żądań ani drugiego właściciela operacji. Nowy świadomy restart tworzy nowy v7, retry zachowuje stare ID.
 - **Testy i kryteria odbioru:** aktywna lub ponawialna operacja pozostaje; ponowienie przed wygaśnięciem jest idempotentne; błąd wydania tokenu po potwierdzonym unieważnieniu nie powtarza unieważnienia. Sprawdzić granicę 30 dni zarówno przy istniejącym wygasłym rekordzie, jak i po jego usunięciu. W obu przypadkach stare żądanie nie wykonuje nowego skutku, nie przywraca dostępu ani starej generacji. Nowa świadoma operacja jest odrębna od ponowienia starej. Ponowienia nie odsuwają retencji, a usunięcie konta obejmuje wymagane rekordy.
 - **Prywatność i platforma:** zaktualizować harmonogram retencji i opis kopii PITR zgodnie z rzeczywistą konfiguracją. Termin logicznego wygaśnięcia i późniejsze fizyczne usunięcie przez Firestore TTL mają osobne dowody; nie obiecywać natychmiastowego bezpowrotnego wymazania. Testy w emulatorze, a rzeczywista konfiguracja chmurowa w R04.
-- **Zależności:** okres został zatwierdzony. Przed wdrożeniem potrzebny jest projekt i niezależny przegląd ochrony starych identyfikatorów; korzystać z istniejącego właściciela retencji. Odbiór konfiguracji zewnętrznej pozostaje w R04.
+- **Zależności:** okres zatwierdzony; projekt i niezależny review odebrane w prompt 12, implementacja istniejącego ownera i lokalny emulator w prompt 13. Inventory legacy i odbiór konfiguracji zewnętrznej pozostają ODK-E2E-082/R04.
 
 ## SEC-08 — LOW — RevenueCat production logs
 
