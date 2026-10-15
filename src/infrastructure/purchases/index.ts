@@ -27,6 +27,22 @@ export type RevenueCatGateway = Readonly<{
 
 // One native SDK and one lane across every account adapter, including a store sheet.
 let nativeGateway: RevenueCatGateway | null = null;
+export type RevenueCatLogCategory = "debug" | "info" | "warning" | "error" | "unknown";
+let lastLogCategory: RevenueCatLogCategory | null = null;
+
+/** RAM-only, bounded diagnostic. SDK text, customers and transactions are never retained. */
+export function readRevenueCatLogCategory(): RevenueCatLogCategory | null { return lastLogCategory; }
+
+function sanitizeRevenueCatLog(level: unknown): void {
+  switch (level) {
+    case "DEBUG": lastLogCategory = "debug"; break;
+    case "INFO": lastLogCategory = "info"; break;
+    case "WARN": lastLogCategory = "warning"; break;
+    case "ERROR": lastLogCategory = "error"; break;
+    default: lastLogCategory = "unknown";
+  }
+}
+
 let sdkTail: Promise<void> = Promise.resolve();
 function inSdkLane<T>(work: () => Promise<T>): Promise<T> {
   const result = sdkTail.then(work, work);
@@ -39,6 +55,8 @@ export function createRevenueCatGateway(): RevenueCatGateway {
   if (nativeGateway) return nativeGateway;
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const Purchases = (require("react-native-purchases") as typeof import("react-native-purchases")).default;
+  // Install before any SDK call. configure otherwise installs its raw console handler.
+  Purchases.setLogHandler(sanitizeRevenueCatLog);
   nativeGateway = {
     configure: async (config) => {
       if (!await Purchases.isConfigured()) Purchases.configure(config);

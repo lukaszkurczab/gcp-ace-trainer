@@ -1,0 +1,438 @@
+{
+  "schema": "patternly.privacy21-native-evidence.v2",
+  "date": "2026-10-15",
+  "acceptance": "PASS code/local iOS; independent QA PASS WITH ISSUES; services/release/R04/R05 remain separate",
+  "ownerAuthorization": "Owner explicitly authorized reinstall during this chat; used in-place same-bundle install only, no uninstall/reset/newGuest.",
+  "device": "existing iPhone 17 / 7F315654-3175-4F3C-BB24-B0263F59360C",
+  "pinnedChain": {
+    "react-native-purchases": "10.9.0",
+    "PurchasesHybridCommon": "18.33.1",
+    "RevenueCat": "5.87.1"
+  },
+  "sourceSha256": {
+    "src/infrastructure/purchases/index.ts": "1ca1c88db50c1b260dbf5a8a66105411f0919eadef2ff98158e271dd641a3637",
+    "plugins/withPrivacyBoundary.js": "beaa4329636b0518653a0f2e0ce7be2e9ad950fc7dcb7059faa00aa7718bdad1",
+    "scripts/qa/privacy21Fixture.tsx": "a73a2ac6e9c139fe7fab4158432e1365e7e5c3b07bf629cd48c5ea3c57c4459e",
+    "scripts/qa/checkPrivacy21Preservation.py": "8531d6071284004e5c975275f73b298b40b012b4975bb1c761acfcf929dc43a8",
+    "scripts/qa/checkPrivacy21LogCapture.py": "1fcf68650f782adfaf55e410cb562c16d9a16e5a7ec0e2115a6336841c61c945",
+    "scripts/qa/checkIosStorageBackupPolicy.mjs": "79917842b96cab0dc5d9db50de0ed308cdf4369284ec0fe30f85141da57e05d7",
+    "scripts/qa/content19FixtureCommand.mjs": "da92ade0baea7ac2ce0a4bd4a1bd7258bca43a0831564ea0c0684b62b54a2512",
+    "scripts/qa/startContent19Fixture.mjs": "cfff3aad5a7a03e53304f4e1eb67be7a1e4fc864ca57108ecd4d32824dd50bf7"
+  },
+  "finalNativePolicySha256": "88b4cc2f3341c7d9eafe32a0f02012272b79983968940dd1a98305843da5fe79",
+  "exactProductionHelperInAppDelegateAndProbe": true,
+  "nativeBuild": {
+    "codesignVerify": "PASS",
+    "bundleIdentityMatches": true,
+    "simulatedKeychainIdentityMatches": true,
+    "signingMatches": true,
+    "fingerprint": "3e5de394f227e8c43b51e2b38af4fc7d2407e1346c21f181b36749b31560db4b",
+    "artifactSha256": {
+      "Patternly": "06a94e65cbd0e1e06039f24e66086c21d524fc6f56794f0aa4ec3d07129efa55",
+      "Patternly.debug.dylib": "491176b5b22d37b8d84e7c40279e309a7a5e472fe7a1c4ebfbd178cb2fff41b0",
+      "EXConstants.bundle/app.config": "1191d6f405e33f5b2ff66d193d6f5d719064e5dc400475da049d03437b7c5793",
+      "Info.plist": "a16c5678b6bbf12491bb5adf8fb69e52f453bebf5836a296ed69d61fbfbcec18"
+    },
+    "originalArtifactSha256": {
+      "Patternly": "3854aee575939b2b8b3a2e7c9c24d6e28f9dfd95fdc71148d5baaf14007288f7",
+      "Patternly.debug.dylib": "cede0fc12cdb045b0fc955f511728c80c481deb9b642f49bbd6c62a03db8440b",
+      "EXConstants.bundle/app.config": "1191d6f405e33f5b2ff66d193d6f5d719064e5dc400475da049d03437b7c5793",
+      "Info.plist": "ee6caf23a3253c642a40c7c71295c4e5d82a6478a56bda0f36feb83b3030f864"
+    },
+    "appDelegateSha256": "f5f21123db6783a9239ba1a8b50dd60613de6d2f572bb97dd4933f3a05c08006",
+    "nativePodLockSha256": "d94545acffb8951438786743a4ef96fa16d4de3d7c65f475cf63ac21ee3bf266",
+    "nativePinsUnchanged": true,
+    "configuration": "Debug, Xcode ad hoc signed, iOS Simulator arm64, jobs2",
+    "installedArtifactMatchesVerifiedCandidate": true
+  },
+  "initialStandalone": {
+    "nativePolicySha256": "3a87fdacf035744215f929d7b7b1bea3cc51fe41d74cd13bb6e1e46e98fb6fce",
+    "observations": [
+      {
+        "bundleId": "com.lkurczab.patternly.sec03",
+        "contentsPreserved": true,
+        "limits": "Standalone iOS Foundation process on existing closed app data. Parent containment is distinct from file attributes. No app restart, backup, transfer, StoreKit or entitlement proof.",
+        "mode": "inspect",
+        "schema": "patternly.ios-backup-policy.v1",
+        "selectedContentsSha256": "13f1473cf91f9a069a3332ee9f55ab06db7d82cbe94a85f2b741a42a0ef114b6",
+        "targets": [
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": true,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 2,
+            "location": "Documents/mmkv"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": false,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 0,
+            "location": "Documents/patternly-content-node-packages-v1"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": false,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 0,
+            "location": "Library/Preferences"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": false,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 0,
+            "location": "Library/Application Support/com.lkurczab.patternly.sec03.revenuecat"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": false,
+            "exists": true,
+            "fileCount": 6,
+            "filesContainedByExcludedDirectory": 0,
+            "location": "Library/Caches/com.lkurczab.patternly.sec03.revenuecat"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": false,
+            "exists": true,
+            "fileCount": 0,
+            "filesContainedByExcludedDirectory": 0,
+            "location": "Library/Caches/RevenueCat"
+          }
+        ]
+      },
+      {
+        "bundleId": "com.lkurczab.patternly.sec03",
+        "contentsPreserved": true,
+        "limits": "Standalone iOS Foundation process on existing closed app data. Parent containment is distinct from file attributes. No app restart, backup, transfer, StoreKit or entitlement proof.",
+        "mode": "apply",
+        "schema": "patternly.ios-backup-policy.v1",
+        "selectedContentsSha256": "13f1473cf91f9a069a3332ee9f55ab06db7d82cbe94a85f2b741a42a0ef114b6",
+        "targets": [
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": true,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 2,
+            "location": "Documents/mmkv"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": true,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 2,
+            "location": "Documents/patternly-content-node-packages-v1"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": true,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 2,
+            "location": "Library/Preferences"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": true,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 2,
+            "location": "Library/Application Support/com.lkurczab.patternly.sec03.revenuecat"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": false,
+            "exists": true,
+            "fileCount": 6,
+            "filesContainedByExcludedDirectory": 0,
+            "location": "Library/Caches/com.lkurczab.patternly.sec03.revenuecat"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": false,
+            "exists": true,
+            "fileCount": 0,
+            "filesContainedByExcludedDirectory": 0,
+            "location": "Library/Caches/RevenueCat"
+          }
+        ]
+      },
+      {
+        "bundleId": "com.lkurczab.patternly.sec03",
+        "contentsPreserved": true,
+        "limits": "Standalone iOS Foundation process on existing closed app data. Parent containment is distinct from file attributes. No app restart, backup, transfer, StoreKit or entitlement proof.",
+        "mode": "inspect",
+        "schema": "patternly.ios-backup-policy.v1",
+        "selectedContentsSha256": "13f1473cf91f9a069a3332ee9f55ab06db7d82cbe94a85f2b741a42a0ef114b6",
+        "targets": [
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": true,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 2,
+            "location": "Documents/mmkv"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": true,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 2,
+            "location": "Documents/patternly-content-node-packages-v1"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": true,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 2,
+            "location": "Library/Preferences"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": true,
+            "exists": true,
+            "fileCount": 2,
+            "filesContainedByExcludedDirectory": 2,
+            "location": "Library/Application Support/com.lkurczab.patternly.sec03.revenuecat"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": false,
+            "exists": true,
+            "fileCount": 6,
+            "filesContainedByExcludedDirectory": 0,
+            "location": "Library/Caches/com.lkurczab.patternly.sec03.revenuecat"
+          },
+          {
+            "directlyExcludedFileCount": 0,
+            "directoryExcluded": false,
+            "exists": true,
+            "fileCount": 0,
+            "filesContainedByExcludedDirectory": 0,
+            "location": "Library/Caches/RevenueCat"
+          }
+        ]
+      }
+    ]
+  },
+  "beforeEventStoreCorrection": {
+    "bundleId": "com.lkurczab.patternly.sec03",
+    "contentsPreserved": true,
+    "limits": "Standalone iOS Foundation process on existing closed app data. Parent containment is distinct from file attributes. No app restart, backup, transfer, StoreKit or entitlement proof.",
+    "mode": "inspect",
+    "schema": "patternly.ios-backup-policy.v1",
+    "selectedContentsSha256": "f96b9b5f997d909b2720736c7f9f278c714a2a8382e33774767714c00c30d658",
+    "targets": [
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": true,
+        "exists": true,
+        "fileCount": 2,
+        "filesContainedByExcludedDirectory": 2,
+        "location": "Documents/mmkv"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": true,
+        "exists": true,
+        "fileCount": 2,
+        "filesContainedByExcludedDirectory": 2,
+        "location": "Documents/patternly-content-node-packages-v1"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": true,
+        "exists": true,
+        "fileCount": 2,
+        "filesContainedByExcludedDirectory": 2,
+        "location": "Library/Preferences"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": true,
+        "exists": true,
+        "fileCount": 2,
+        "filesContainedByExcludedDirectory": 2,
+        "location": "Library/Application Support/com.lkurczab.patternly.sec03.revenuecat"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": false,
+        "exists": true,
+        "fileCount": 7,
+        "filesContainedByExcludedDirectory": 0,
+        "location": "Library/Caches/com.lkurczab.patternly.sec03.revenuecat"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": false,
+        "exists": true,
+        "fileCount": 0,
+        "filesContainedByExcludedDirectory": 0,
+        "location": "Library/Caches/RevenueCat"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": false,
+        "exists": true,
+        "fileCount": 2,
+        "filesContainedByExcludedDirectory": 0,
+        "location": "Library/Application Support/revenuecat"
+      }
+    ],
+    "receipt": "/private/tmp/patternly21-native/receipt-inspect-1792070634301.json"
+  },
+  "afterFinalColdRestart": {
+    "bundleId": "com.lkurczab.patternly.sec03",
+    "contentsPreserved": true,
+    "limits": "Standalone iOS Foundation process on existing closed app data. Parent containment is distinct from file attributes. No app restart, backup, transfer, StoreKit or entitlement proof.",
+    "mode": "inspect",
+    "schema": "patternly.ios-backup-policy.v1",
+    "selectedContentsSha256": "09c2a2619b0d5bf02ee3c043160cb394460458ca803e00528f8870a704eb370e",
+    "targets": [
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": true,
+        "exists": true,
+        "fileCount": 2,
+        "filesContainedByExcludedDirectory": 2,
+        "location": "Documents/mmkv"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": true,
+        "exists": true,
+        "fileCount": 4,
+        "filesContainedByExcludedDirectory": 4,
+        "location": "Documents/patternly-content-node-packages-v1"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": true,
+        "exists": true,
+        "fileCount": 2,
+        "filesContainedByExcludedDirectory": 2,
+        "location": "Library/Preferences"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": true,
+        "exists": true,
+        "fileCount": 2,
+        "filesContainedByExcludedDirectory": 2,
+        "location": "Library/Application Support/com.lkurczab.patternly.sec03.revenuecat"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": false,
+        "exists": true,
+        "fileCount": 7,
+        "filesContainedByExcludedDirectory": 0,
+        "location": "Library/Caches/com.lkurczab.patternly.sec03.revenuecat"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": false,
+        "exists": true,
+        "fileCount": 0,
+        "filesContainedByExcludedDirectory": 0,
+        "location": "Library/Caches/RevenueCat"
+      },
+      {
+        "directlyExcludedFileCount": 0,
+        "directoryExcluded": true,
+        "exists": true,
+        "fileCount": 2,
+        "filesContainedByExcludedDirectory": 2,
+        "location": "Library/Application Support/revenuecat"
+      }
+    ],
+    "receipt": "/private/tmp/patternly21-native/receipt-inspect-1792071071633.json"
+  },
+  "application": {
+    "installAndRead": {
+      "fixture": "privacy21",
+      "result": "PASS",
+      "installedItems": 123,
+      "sessionItems": 10,
+      "actualDocumentsRoot": true,
+      "revenueCat": {
+        "status": "success",
+        "hasActiveSubscription": false,
+        "category": "debug",
+        "identityMatches": true
+      }
+    },
+    "coldRestartAndRead": {
+      "fixture": "privacy21",
+      "result": "PASS",
+      "restartExact": true,
+      "sessionItems": 10,
+      "revenueCat": {
+        "status": "success",
+        "hasActiveSubscription": false,
+        "category": "debug",
+        "identityMatches": true
+      }
+    },
+    "cleanup": {
+      "fixture": "privacy21",
+      "result": "PASS",
+      "cleanup": true,
+      "removedOwnFiles": 2
+    }
+  },
+  "preservation": {
+    "schema": "patternly.privacy21-preservation.v1",
+    "result": "PASS",
+    "profileStorageFiles": 2,
+    "originalPackageFiles": 2,
+    "protectedBytesUnchanged": true,
+    "rcIdentityPreserved": true,
+    "classifiedPreferenceChanges": 4,
+    "httpLogicalMetadataEqual": true,
+    "fixtureRemoved": true,
+    "unclassifiedChanges": 0,
+    "limits": "Closed container files and known preferences; HTTP logical public connection metadata only. No Keychain export or physical transfer proof. RC caches, StoreKit check timestamps, heartbeat and OS UI snapshots may change."
+  },
+  "logCapture": {
+    "schema": "patternly.privacy21-log-capture.v2",
+    "result": "PASS_APP_OWNED_WITH_SYSTEM_LOG_LIMIT",
+    "nativeEventsPerFile": {
+      "native-log.jsonl": 8970,
+      "native-log-eventstore.jsonl": 8837
+    },
+    "nativeRawCustomerOccurrences": 66,
+    "classifiedSystemDefaultsOccurrences": 66,
+    "classifiedSystemDefaultsMessages": 58,
+    "unclassifiedCustomerOccurrences": 0,
+    "appMetroCustomerOccurrences": 0,
+    "testStoreKeyOccurrences": 0,
+    "scope": "Signed Debug app startup, existing Test Store customer-info reads and cold restarts; no release purchase/restore/error capture",
+    "limits": "CoreFoundation com.apple.defaults/User Defaults Debug outputs RC cache/identity preference operations containing the account ID. These system messages are present and are not controlled by the RC log handler. No all-system-log privacy claim."
+  },
+  "negativeGuards": {
+    "schema": "patternly.privacy21-negative-guards.v1",
+    "wrongRcIdentityRefusedBeforeDispatch": true,
+    "changedProtectedFileRejected": true,
+    "appOwnedCustomerLogRejected": true,
+    "runtimeOrServiceMutation": false
+  },
+  "limits": [
+    "Scoped production package/purchases owners and real new AppDelegate; no full regular UI/auth bootstrap acceptance.",
+    "RC existing Test Store customer returned success with no active subscription; no paid lifecycle or production store proof.",
+    "Signed Debug native/log capture is not later release purchase/restore/error/warning capture R04.",
+    "CoreFoundation system Debug User Defaults logs contain ID; no all-system-log redaction claim.",
+    "Parent directory exclusion/readback is distinct from per-file xattrs and physical backup/restore/transfer R05.",
+    "App/container backup does not export or prove actual Keychain access/transfer."
+  ]
+}

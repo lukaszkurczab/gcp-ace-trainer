@@ -9,6 +9,7 @@ const plist = require("@expo/plist").default;
 const normalized = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const {
   injectIosBackupPolicy,
+  iosBackupPolicySwift,
   privacyInfoXcPrivacy,
   withAndroidBackupPolicy,
   withoutRemoteNotificationBackgroundMode,
@@ -95,6 +96,19 @@ class AppDelegate: ExpoAppDelegate {
   assert.match(transformed, /values\.isExcludedFromBackup = true/);
   assert.match(transformed, /fatalError\("Patternly cannot establish its local-storage backup policy\./);
   assert.equal(injectIosBackupPolicy(transformed), transformed);
+  for (const directory of ["mmkv", "patternly-content-node-packages-v1", "Preferences", "Application Support", "revenuecat"]) {
+    assert.ok(transformed.includes(`appendingPathComponent("${directory}", isDirectory: true)`));
+  }
+  assert.ok(transformed.includes('appendingPathComponent("\\(bundleIdentifier).revenuecat", isDirectory: true)'));
+  assert.ok(transformed.includes(".resourceValues(forKeys: [.isExcludedFromBackupKey])"));
+  assert.ok(transformed.indexOf("    configureCanonicalStorageBackupPolicy()") < transformed.indexOf("return super.application"));
+  assert.ok(transformed.includes(iosBackupPolicySwift()));
+  const legacy = appDelegate.replace("  // Linking API", `  private func configureCanonicalStorageBackupPolicy() {\n    // legacy MMKV-only policy\n  }\n\n  // Linking API`)
+    .replace("    return super.application", "    configureCanonicalStorageBackupPolicy()\n\n    return super.application");
+  assert.equal(injectIosBackupPolicy(legacy), transformed, "existing generated native projects receive the new policy");
+  assert.throws(() => injectIosBackupPolicy(appDelegate.replace("  // Linking API\n", "")), /anchors were not found/);
+  assert.throws(() => injectIosBackupPolicy(appDelegate.replaceAll("didFinishLaunchingWithOptions", "unexpectedLaunch")), /anchors were not found/);
+  assert.throws(() => injectIosBackupPolicy(appDelegate + "configureCanonicalStorageBackupPolicy"), /unsupported backup policy/);
 });
 
 test("clean iOS output declares current data collection without tracking or remote notifications", () => {

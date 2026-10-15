@@ -150,14 +150,68 @@ function withAndroidBackupPolicy(config) {
   return config;
 }
 
+// Also compiled by the native acceptance probe; this is the sole policy implementation.
+function iosBackupPolicySwift() {
+  return `  private func applyPatternlyStorageBackupPolicy(documents: URL, library: URL, bundleIdentifier: String) throws {
+    // RC 5.87.1 uses either standard defaults (legacy) or its own suite. Exclude
+    // their containing directory so atomic plist replacements remain contained.
+    // All Patternly preferences intentionally stay local to this installation.
+    let directories = [
+      documents.appendingPathComponent("mmkv", isDirectory: true),
+      documents.appendingPathComponent("patternly-content-node-packages-v1", isDirectory: true),
+      library.appendingPathComponent("Preferences", isDirectory: true),
+      library.appendingPathComponent("Application Support", isDirectory: true)
+        .appendingPathComponent("\\(bundleIdentifier).revenuecat", isDirectory: true),
+      // Pinned feature/ad event stores use the raw support base, without bundle suffix.
+      library.appendingPathComponent("Application Support", isDirectory: true)
+        .appendingPathComponent("revenuecat", isDirectory: true)
+    ]
+    for directory in directories {
+      try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+      var target = directory
+      var values = URLResourceValues()
+      values.isExcludedFromBackup = true
+      try target.setResourceValues(values)
+      target.removeAllCachedResourceValues()
+      guard try target.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup == true else {
+        throw NSError(domain: "PatternlyBackupPolicy", code: 1)
+      }
+    }
+  }
+
+`;
+}
+
 function injectIosBackupPolicy(source) {
-  if (source.includes("configureCanonicalStorageBackupPolicy()")) return source;
-  const withImport = source.includes("import Foundation") ? source : `import Foundation\n${source}`;
+  // Replace our previous generated helper rather than silently retaining stale policy.
+  let next = source.replace(/  private func configureCanonicalStorageBackupPolicy\(\) \{[\s\S]*?\n  \}\n\n/g, "")
+    .replace(/  private func applyPatternlyStorageBackupPolicy\(documents: URL, library: URL, bundleIdentifier: String\) throws \{[\s\S]*?\n  \}\n\n/g, "")
+    .replace(/    configureCanonicalStorageBackupPolicy\(\)\n\n/g, "");
+  if (next.includes("configureCanonicalStorageBackupPolicy") || next.includes("applyPatternlyStorageBackupPolicy")) {
+    throw new Error("Patternly AppDelegate contains an unsupported backup policy helper.");
+  }
+  if (!next.includes("import Foundation")) next = `import Foundation\n${next}`;
   const launchStart = "  ) -> Bool {\n";
-  const launchIndex = withImport.indexOf(launchStart, withImport.indexOf("didFinishLaunchingWithOptions"));
-  if (launchIndex < 0) throw new Error("Patternly AppDelegate launch method was not found.");
-  const helper = `  private func configureCanonicalStorageBackupPolicy() {\n    guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {\n      fatalError("Patternly cannot locate its canonical storage directory.")\n    }\n\n    var mmkvDirectory = documentsDirectory.appendingPathComponent("mmkv", isDirectory: true)\n    do {\n      try FileManager.default.createDirectory(at: mmkvDirectory, withIntermediateDirectories: true)\n      var values = URLResourceValues()\n      values.isExcludedFromBackup = true\n      try mmkvDirectory.setResourceValues(values)\n    } catch {\n      fatalError("Patternly cannot establish its local-storage backup policy.")\n    }\n  }\n\n`;
-  const withLaunchCall = `${withImport.slice(0, launchIndex + launchStart.length)}    configureCanonicalStorageBackupPolicy()\n\n${withImport.slice(launchIndex + launchStart.length)}`;
+  const launchMethodIndex = next.indexOf("didFinishLaunchingWithOptions");
+  const launchIndex = next.indexOf(launchStart, launchMethodIndex);
+  if (launchMethodIndex < 0 || launchIndex < 0 || next.split("  // Linking API\n").length !== 2) {
+    throw new Error("Patternly AppDelegate backup policy anchors were not found.");
+  }
+  const helper = `  private func configureCanonicalStorageBackupPolicy() {
+    guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first,
+          let library = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first,
+          let bundleIdentifier = Bundle.main.bundleIdentifier else {
+      fatalError("Patternly cannot locate its canonical storage directory.")
+    }
+    do {
+      try applyPatternlyStorageBackupPolicy(documents: documents, library: library, bundleIdentifier: bundleIdentifier)
+    } catch {
+      fatalError("Patternly cannot establish its local-storage backup policy.")
+    }
+  }
+
+` + iosBackupPolicySwift();
+  const withLaunchCall = `${next.slice(0, launchIndex + launchStart.length)}    configureCanonicalStorageBackupPolicy()\n\n${next.slice(launchIndex + launchStart.length)}`;
   return withLaunchCall.replace("  // Linking API\n", `${helper}  // Linking API\n`);
 }
 
@@ -185,3 +239,4 @@ module.exports.withAndroidBackupPolicy = withAndroidBackupPolicy;
 module.exports.privacyInfoXcPrivacy = privacyInfoXcPrivacy;
 module.exports.withoutRemoteNotificationEntitlement = withoutRemoteNotificationEntitlement;
 module.exports.withoutRemoteNotificationBackgroundMode = withoutRemoteNotificationBackgroundMode;
+module.exports.iosBackupPolicySwift = iosBackupPolicySwift;
