@@ -58,6 +58,7 @@ import {
   beginAccountDeletion,
   clearAccountDeletionState,
   getAccountDeletionState,
+  getPreparedAccountDeletionState,
   markAccountDeletionComplete,
   updateAccountDeletionState,
 } from "../../storage/repositories/accountLifecycleRepository";
@@ -71,7 +72,7 @@ import { readLearningPlanStorageScope } from "../../storage/repositories/learnin
 import { commitLearningStateReset, preflightLearningStateReset, LearningStateResetPreflightError } from "../learningMutations";
 import type { TrackId } from "../../domain";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
-import { captureActiveProfileStorageLease, getActiveStorageProfileOrNull, isActiveProfileStorageLeaseCurrent, readActiveAccountIdentityBinding, type ActiveProfileStorageLease } from "../../storage/repositories/profileStorageRepository";
+import { activatePreparedProfile, captureActiveProfileStorageLease, capturePreparedProfileStorageLease, closeActiveProfileStorage, getActiveStorageProfileOrNull, invalidateActiveAccountIdentityBinding, isActiveProfileStorageLeaseCurrent, isPreparedProfileStorageLeaseCurrent, readActiveAccountIdentityBinding, readPreparedAccountIdentityBinding, type ActiveProfileStorageLease } from "../../storage/repositories/profileStorageRepository";
 import { getGoalSnapshot } from "../../storage/repositories/goalRepository";
 import { getLearningPlanSnapshot } from "../../storage/repositories/learningPlanRepository";
 import { commitMutationAfterPreflight } from "../learningMutations/commitMutation";
@@ -881,6 +882,65 @@ async function retryPendingAccountDeletionUnlocked(api: PatternlyApiClient, acco
 
 type DeletionRemoteResolution = Readonly<{ pending: NonNullable<ReturnType<typeof getAccountDeletionState>>; proofId: string | null }>;
 
+export type SignedOutDeletionResolution = Readonly<{ accountId: string; result: AccountDeletionResult }>;
+
+/** Proof-only recovery after Firebase has removed its user. Never starts a remote deletion or selects a profile. */
+export function resumeSelectedAccountDeletionWithoutAuth(
+  api: Pick<PatternlyApiClient, "getDeletionOperationStatus" | "getDeletionProof">,
+  prepareLocalState: PrepareAccountDeletionLocalState,
+  canContinue: () => boolean,
+): Promise<SignedOutDeletionResolution | null> {
+  return withAccountDataOperation(async () => {
+    const prepared = capturePreparedProfileStorageLease();
+    if (!prepared || prepared.profile.kind !== "account" || !prepared.profile.accountId || !canContinue()) return null;
+    const accountId = prepared.profile.accountId;
+    const pendingResult = (failure: Extract<AccountDeletionResult, { ok: false }>["failure"] = "remoteDeletionPending"): SignedOutDeletionResolution => ({ accountId, result: { ok: false, failure } });
+    let active: ActiveProfileStorageLease | null = null;
+    let pending: ReturnType<typeof getAccountDeletionState> = null;
+    const preparedCurrent = () => canContinue() && isPreparedProfileStorageLeaseCurrent(prepared);
+    try {
+      pending = getPreparedAccountDeletionState(prepared.profile.id);
+      if (!pending || !isResumableDeletionState(pending)) return null;
+      if (pending.accountId !== accountId) return pendingResult("conflict");
+      const exact = JSON.stringify(pending);
+      const status = await api.getDeletionOperationStatus(pending.operationId, pending.operationSecret);
+      if (!preparedCurrent()) return pendingResult("conflict");
+      if (status.operationId !== pending.operationId || !["remote_deleted", "complete"].includes(status.status) || !status.proofId) return pendingResult();
+      const proof = await api.getDeletionProof(status.proofId);
+      if (!preparedCurrent()) return pendingResult("conflict");
+      if (proof.status !== "deleted" || proof.operationId !== pending.operationId || proof.proofId !== status.proofId) return pendingResult();
+      const binding = await readPreparedAccountIdentityBinding(prepared.profile.id);
+      if (!preparedCurrent() || JSON.stringify(getPreparedAccountDeletionState(prepared.profile.id)) !== exact) return pendingResult("conflict");
+      if (binding.kind === "verified" && (binding.binding.profileId !== prepared.profile.id || binding.binding.accountId !== accountId
+        || sha256Utf8(binding.binding.firebaseUid) !== pending.accountUidHash)) return pendingResult("conflict");
+
+      // Only verified remote deletion grants this short-lived cleanup scope.
+      // Ready listeners and ordinary authenticated account state remain closed.
+      activatePreparedProfile(prepared.profile.id, "account", { deferReadyNotification: true });
+      active = captureActiveProfileStorageLease();
+      const activeCurrent = () => canContinue() && active !== null && isActiveProfileStorageLeaseCurrent(active);
+      if (!activeCurrent() || JSON.stringify(getAccountDeletionState()) !== exact) return pendingResult("conflict");
+      pending = updateAccountDeletionState(pending, { status: "remoteDeleted", proofId: status.proofId, lastFailureCode: null });
+      await invalidateActiveAccountIdentityBinding({ lease: active!, canContinue: activeCurrent });
+      if (!activeCurrent()) return pendingResult("conflict");
+      if (!(await prepareLocalState())) throw new AccountDataFailure("account_deletion_local_preparation_failed");
+      if (!activeCurrent()) return pendingResult("conflict");
+      await clearDeletionOwnedLocalDataAndBinding(accountId);
+      if (!activeCurrent()) return pendingResult("conflict");
+      markAccountDeletionComplete(pending);
+      return { accountId, result: { ok: true, proofId: status.proofId } };
+    } catch {
+      if (active && canContinue() && isActiveProfileStorageLeaseCurrent(active) && pending?.proofId) {
+        try { updateAccountDeletionState(pending, { status: "localCleanupPending", lastFailureCode: "local_cleanup_failure" }); } catch { /* Retain the last durable marker on uncertain writes. */ }
+        return pendingResult("localCleanupFailure");
+      }
+      return pendingResult();
+    } finally {
+      if (active && isActiveProfileStorageLeaseCurrent(active)) closeActiveProfileStorage();
+    }
+  });
+}
+
 function isResumableDeletionState(state: NonNullable<ReturnType<typeof getAccountDeletionState>>): boolean {
   return state.status === "remotePending" || state.status === "remoteDeleted" || state.status === "localCleanupPending";
 }
@@ -901,6 +961,9 @@ function shouldResolveDeletionStatus(failure: string): boolean {
     || failure === "server_error"
     || failure === "internal_error"
     || failure === "backend_unavailable"
+    // A previous request may have reserved deletion before its response was lost.
+    // Resolve that exact operation; conflict is not permission to forget it.
+    || failure === "account_deletion_conflict"
     || failure === "remote_deletion_pending";
 }
 

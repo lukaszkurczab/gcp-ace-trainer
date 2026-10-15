@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { createSessionRevocationOperationId } from "../src/infrastructure/identity/sessionRevocationOperationId";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
 import { createRecoveryOperationCoordinator } from "../src/application/account/recoveryOperationCoordinator";
-import { ensureRecoveryIssueSignInSession } from "../src/application/account/accountSessionExchange";
+import { ensureRecoveryIssueSignInSession, prepareRecoveryIssueSession } from "../src/application/account/accountSessionExchange";
 import { createPatternlyApiClient, PatternlyApiClientError } from "../src/infrastructure/clients/PatternlyApiClientAdapter";
 import { createRecoveryOperationVault, RECOVERY_OPERATION_VAULT_KEY } from "../src/infrastructure/security/recoveryOperationVault";
 
@@ -735,6 +736,10 @@ test("mobile recovery coordinator, secure-store fixture and adapter complete rea
         const claims = (await firebaseAuth.getIdTokenResult(user, true)).claims;
         return typeof claims.authorizationGeneration === "number" ? claims.authorizationGeneration : null;
       },
+      reauthenticateWithCredential: async () => {
+        await firebaseAuth.reauthenticateWithCredential(clientAuth!.currentUser!, firebaseAuth.EmailAuthProvider.credential(email, password));
+        return Object.freeze({ uid: createdFirebaseUid, email, emailVerified: false, providers: Object.freeze(["password"] as const) });
+      },
       signInWithSessionToken: async (token: string) => {
         const signedIn = await firebaseAuth.signInWithCustomToken(clientAuth!, token);
         return Object.freeze({
@@ -747,16 +752,14 @@ test("mobile recovery coordinator, secure-store fixture and adapter complete rea
     });
     const sessionExchangeCountBeforeRestore = actualRequests.filter((request) => request.path === "/v1/account/session/exchange").length;
     const attemptedSessionExchangesBeforeRestore = attemptedRequests.filter((request) => request.path === "/v1/account/session/exchange").length;
-    const restoredGeneration = await ensureRecoveryIssueSignInSession({
+    const restoredGeneration = await prepareRecoveryIssueSession({
       api: client,
       auth: recoveryIssueAuth,
+      credentials: { kind: "password", password },
+      pending: { kind: "idle", blocksProfilePreparation: false },
       canContinue: () => clientAuth?.currentUser?.uid === issueSignInIntent.firebaseUid,
-      isExplicitSignInCurrent: () => currentIssueSignInIntent === issueSignInIntent
-        && currentIssueSignInIntent.firebaseUid === issueSignInIntent.firebaseUid
-        && currentIssueSignInIntent.authorizationGeneration === issueSignInIntent.authorizationGeneration,
       onExchangeStarting: () => { exchangeStartingUid = clientAuth?.currentUser?.uid ?? null; },
       user: Object.freeze({ uid: createdFirebaseUid, email, emailVerified: false, providers: Object.freeze(["password"] as const) }),
-      requiredAuthorizationGeneration: 1,
     });
     assert.equal(restoredGeneration, 1);
     assert.equal(exchangeStartingUid, createdFirebaseUid);
@@ -765,7 +768,7 @@ test("mobile recovery coordinator, secure-store fixture and adapter complete rea
     assert.equal(restoredClaims.claims.authorizationGeneration, 1);
     assert.equal(actualRequests.filter((request) => request.path === "/v1/account/session/exchange").length, sessionExchangeCountBeforeRestore + 1);
     assert.equal(attemptedRequests.filter((request) => request.path === "/v1/account/session/exchange").length, attemptedSessionExchangesBeforeRestore + 1);
-    context.diagnostic("ensureRecoveryIssueSignInSession restored the exact generation via real adapter exchange and Firebase custom-token sign-in after SDK credential reauth");
+    context.diagnostic("prepareRecoveryIssueSession accepts an initially missing claim, performs real credential reauth and canonical HTTP/SDK exchange before ISSUE");
 
     const exchangeCountBeforeWrongGeneration = actualRequests.filter((request) => request.path === "/v1/account/session/exchange").length;
     const issuePostCountBeforeWrongGeneration = attemptedRequests.filter((request) => request.method === "POST" && request.path === "/v1/account/recovery-codes").length;
@@ -1595,7 +1598,7 @@ test("HTTP session revoke conflicts with an unacknowledged recovery result and s
     assert.ok(slotBeforeConflict.operationId === consumeId, "recovery operation must own the account slot");
     assert.equal(revokeRefreshTokensCalls, 0);
 
-    const conflictRevokeId = randomUUID();
+    const conflictRevokeId = createSessionRevocationOperationId();
     operationIds.add(conflictRevokeId);
     await assert.rejects(client.revokeSessions(conflictRevokeId), (error: unknown) =>
       error instanceof PatternlyApiClientError
@@ -1618,7 +1621,7 @@ test("HTTP session revoke conflicts with an unacknowledged recovery result and s
     assert.equal((await userRef.get()).get("securityOperation"), undefined);
     assert.equal((await userRef.get()).get("authorizationGeneration"), 2);
 
-    const revokeId = randomUUID();
+    const revokeId = createSessionRevocationOperationId();
     operationIds.add(revokeId);
     const revoked = await client.revokeSessions(revokeId);
     assert.equal(revoked.status, "revoked");

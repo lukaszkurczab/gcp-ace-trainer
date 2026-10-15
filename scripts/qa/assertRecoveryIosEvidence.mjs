@@ -1,0 +1,85 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+const [directory, ...extra] = process.argv.slice(2);
+if (!directory || extra.length) throw Error('arguments_rejected');
+const read = async name => JSON.parse(await readFile(resolve(directory, `${name}.json`), 'utf8'));
+try {
+  const before = await read('baseline-native'), after = await read('acceptance-after');
+  assert.equal(before.inventory.complete, true);
+  assert.equal(after.inventory.complete, true);
+  assert.equal(before.uidSha256, after.uidSha256);
+  assert.equal(before.accountIdSha256, after.accountIdSha256);
+  assert.deepEqual(before.profile, after.profile);
+  assert.deepEqual(before.learning, after.learning);
+  assert.deepEqual(before.sync, after.sync);
+  assert.equal(before.inventory.registryChecksumSha256, after.inventory.registryChecksumSha256);
+  assert.deepEqual(before.inventory.secureControl, after.inventory.secureControl);
+  assert.deepEqual(before.inventory.globalInventories, after.inventory.globalInventories);
+  for (const prior of before.inventory.profileInventories) {
+    const current = after.inventory.profileInventories.find(x => x.profileIdSha256 === prior.profileIdSha256);
+    assert.ok(current);
+    if (prior.kind === 'guest') assert.deepEqual(prior, current);
+    for (const category of prior.categoryInventories) {
+      if (['profileLifecycle', 'premiumCache'].includes(category.category)) continue;
+      assert.deepEqual(category, current.categoryInventories.find(x => x.category === category.category));
+    }
+  }
+  const issue = await read('final-issue-before-cold'), restoredIssue = await read('issue-result-after-cold');
+  assert.notEqual(issue.pidMarker, restoredIssue.pidMarker);
+  assert.equal(issue.vault.kind, 'issue');
+  assert.equal(issue.vault.savedIntent, false);
+  assert.deepEqual(issue.vault, restoredIssue.vault);
+  assert.equal(issue.vault.codeCount, 10);
+  const saved = await read('issue-saved-intent-before-cold'), savedCold = await read('issue-ack-after-cold');
+  assert.equal(saved.vault.operationIdSha256, issue.vault.operationIdSha256);
+  assert.equal(saved.vault.savedIntent, true);
+  assert.equal(saved.vault.codesSha256, issue.vault.codesSha256);
+  assert.ok(saved.fault.hits.some(x => x.stage === 'after-http-success' && x.status === 200));
+  assert.notEqual(saved.pidMarker, savedCold.pidMarker);
+  assert.equal(savedCold.vault, null);
+  assert.equal(savedCold.recovery.status, 'acknowledged');
+  const lost = await read('consume-intent-before-cold'), result = await read('consume-result-after-cold');
+  assert.equal(lost.vault.kind, 'consume');
+  assert.equal(lost.vault.status, 'in_progress');
+  assert.equal(lost.vault.authorizationGeneration, null);
+  assert.ok(lost.fault.hits.some(x => x.stage === 'after-http-success' && x.status === 200));
+  assert.notEqual(lost.pidMarker, result.pidMarker);
+  assert.equal(result.vault.operationIdSha256, lost.vault.operationIdSha256);
+  assert.equal(result.vault.codeSha256, lost.vault.codeSha256);
+  assert.equal(result.uidSha256, null);
+  assert.equal(result.vault.status, 'result_available');
+  assert.equal(result.vault.expectedUidSha256, before.uidSha256);
+  assert.equal(result.vault.authorizationGeneration, issue.authorizationGeneration + 1);
+  const sdk = await read('consume-sdk-before-ack-cold'), completed = await read('consume-ack-after-cold');
+  assert.deepEqual(sdk.vault, result.vault);
+  assert.equal(sdk.authorizationGeneration, issue.authorizationGeneration + 1);
+  assert.equal(sdk.uidSha256, before.uidSha256);
+  assert.ok(sdk.fault.hits.some(x => x.stage === 'before-send' && x.path.endsWith('/consume/ack')));
+  assert.notEqual(sdk.pidMarker, completed.pidMarker);
+  assert.equal(completed.authorizationGeneration, sdk.authorizationGeneration);
+  assert.equal(completed.recovery.status, 'acknowledged');
+  assert.equal(completed.vault, null);
+  assert.equal(completed.uidSha256, before.uidSha256);
+  const remoteLost = await read('remote-consume-response-lost'), remote = await read('remote-consume-ack-after-cold');
+  const opLost = remoteLost.operations.find(x => x.operationIdSha256 === lost.vault.operationIdSha256);
+  const op = remote.operations.find(x => x.operationIdSha256 === lost.vault.operationIdSha256);
+  assert.equal(opLost.status, 'result_available');
+  assert.equal(opLost.resultExists, true);
+  assert.equal(op.status, 'acknowledged');
+  assert.equal(op.resultExists, false);
+  assert.equal(remote.securityOperation, null);
+  assert.equal(remote.authorizationGeneration, remoteLost.authorizationGeneration);
+  assert.equal(remote.recoveryCodeIndices.filter(x => x.used).length, 1);
+  assert.equal(after.state, 'authenticated');
+  const denied = await read('negative-issue'), deniedState = await read('negative-issue-preserved'), deniedInventory = await read('negative-issue-inventory');
+  assert.equal(denied.kind, 'failure');
+  assert.equal(denied.failure, 'invalidCredential');
+  assert.equal(deniedState.state, 'authenticated');
+  assert.equal(deniedState.vault, null);
+  assert.deepEqual(deniedInventory.profile, after.profile);
+  assert.deepEqual(deniedInventory.learning, after.learning);
+  assert.deepEqual(deniedInventory.sync, after.sync);
+  console.log(JSON.stringify({ result: 'PASS', nativeRestarts: 4, sameIssueResult: true, consumeIntentResultSessionAck: true,
+    learningAndSettingsPreserved: true, guestPreserved: true, accountLifecycleAndPremiumCache: 'allowed-refresh-not-byte-equality' }));
+} catch { console.error(JSON.stringify({ stage: 'recovery_ios_evidence', category: 'assertion_failed' })); process.exitCode = 1; }

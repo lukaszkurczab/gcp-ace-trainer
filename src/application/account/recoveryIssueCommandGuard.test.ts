@@ -69,3 +69,34 @@ test("provider gates subscription and closes scoped access before releasing reje
   assert.match(command, /liveUser \? \{ kind: "reauthenticationRequired", user: liveUser \} : \{ kind: "signedOut" \}/u);
   assert.ok(command.indexOf("if (!finalIdentityCurrent)") < command.indexOf("return finishRecoveryCommand"));
 });
+
+test("a failed new ISSUE preserves its observed session without allowing missing-claim code publication", async () => {
+  const { prepareRecoveryIssueSession } = await import("./accountSessionExchange");
+  for (const observed of [null, 7]) {
+    let captured: number | null = null;
+    let didCapture = false;
+    let exchanges = 0;
+    await assert.rejects(prepareRecoveryIssueSession({
+      user, pending: { kind: "idle", blocksProfilePreparation: false },
+      credentials: { kind: "password", password: "wrong-password" }, canContinue: () => true,
+      onExchangeStarting: () => { throw Error("unexpected_signin"); },
+      onGenerationCaptured: generation => { captured = generation; didCapture = true; },
+      api: { exchangeAccountSession: async () => { exchanges += 1; return { customToken: "unused" }; } },
+      auth: {
+        getSnapshot: () => user, getAuthorizationGeneration: async () => observed,
+        reauthenticateWithCredential: async () => { throw Error("wrong_password"); },
+        signInWithSessionToken: async () => { throw Error("unexpected_signin"); },
+      },
+    }), /wrong_password/u);
+    assert.equal(didCapture, true);
+    assert.equal(captured, observed);
+    assert.equal(exchanges, 0);
+    const input = {
+      auth: { getSnapshot: () => user, getAuthorizationGeneration: async () => observed },
+      firebaseUid: user.uid, authorizationGeneration: captured, isRevisionCurrent: () => true,
+    };
+    assert.equal((await readRecoveryIssueCommandIdentity(input)).current, observed !== null);
+    assert.equal((await readRecoveryIssueCommandIdentity({ ...input, allowUnexchangedIdentity: true })).current, true);
+    assert.equal((await readRecoveryIssueCommandIdentity({ ...input, allowUnexchangedIdentity: true, auth: { ...input.auth, getSnapshot: () => ({ ...user, uid: "foreign" }) } })).current, false);
+  }
+});

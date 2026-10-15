@@ -11,6 +11,7 @@ import { PatternlyApiClientError, type PatternlyApiClient } from "../../infrastr
 import { accountFinalizationPolicies } from "../account/accountFinalization";
 import { createProfilePreparationHandoffOwner } from "../account/profilePreparationHandoff";
 import { createPendingSessionRevocationDrain } from "../account/pendingSessionRevocation";
+import type { LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
 import { AccountBootstrapStaleError, admitAccountBootstrap, completeAccountBootstrap, createAccountBootstrapCoordinator, prepareAuthenticatedAccountBootstrap, type AccountBootstrapCompletionPorts, type AccountBootstrapPreparationPorts, type ProfilePreparationAttempt } from "./accountBootstrap";
 
 test.afterEach(() => {
@@ -137,7 +138,7 @@ test("a failed recovery drain releases admission so the same generation can retr
   assert.equal(drains, 2);
 });
 
-test("admission reads fresh logout control after closing scope, and a join does not close the prepared profile", async () => {
+test("same-UID admission drains a freshly discovered revoke before preparation, and joins preserve the prepared profile", async () => {
   const user = { uid: "admission-order-uid", email: "person@example.test", emailVerified: true, providers: ["password"] } as const;
   const fixture = await createBootstrapFixture("admission-account");
   await prepareProfileStorage();
@@ -151,7 +152,13 @@ test("admission reads fresh logout control after closing scope, and a join does 
   const handoff = createProfilePreparationHandoffOwner<void>();
   const profilePreparationRef: { current: ProfilePreparationAttempt | null } = { current: null };
   const accountBootstrapRef = { current: createAccountBootstrapCoordinator<ProfilePreparationAttempt | null>() };
-  const emptySnapshot = { blocked: null, completed: [], pending: [], version: 2 } as const;
+  const emptySnapshot: LocalLogoutControlSnapshot = { blocked: null, completed: [], pending: [], version: 2 };
+  const pending = { uid: user.uid, operationId: "0199aabb-ccdd-7000-8000-000000000001" };
+  const pendingSnapshot: LocalLogoutControlSnapshot = { ...emptySnapshot, blocked: pending, pending: [pending] };
+  const completedSnapshot: LocalLogoutControlSnapshot = { ...emptySnapshot, completed: [pending] };
+  const sdkReached = deferred<void>();
+  const sdkRelease = deferred<void>();
+  const calls: string[] = [];
   let reads = 0;
   const ports = {
     accountBootstrapRef,
@@ -162,15 +169,22 @@ test("admission reads fresh logout control after closing scope, and a join does 
       async read() {
         reads += 1;
         assert.equal(getActiveStorageProfileOrNull(), null, "the prior account scope closes before reading fresh revoke state");
-        return emptySnapshot;
+        return pendingSnapshot;
       },
-      async completePendingRevoke() { return emptySnapshot; },
+      async completePendingRevoke(uid: string, operationId: string) {
+        assert.deepEqual({ uid, operationId }, pending);
+        assert.equal(getActiveStorageProfileOrNull(), null);
+        calls.push("complete-exact");
+        return completedSnapshot;
+      },
     },
     pendingSessionRevocationDrainRef: { current: createPendingSessionRevocationDrain() },
     logoutControlSnapshotRef: { current: emptySnapshot },
     setLogoutControlSnapshot: () => undefined,
     sessionExchangeUidRef: { current: null },
     async startAuthenticatedProfilePreparation() {
+      assert.deepEqual(calls, ["exchange", "sdk:initial", "revoke-exact", "sdk:replacement", "complete-exact"]);
+      calls.push("prepare");
       await prepareProfileStorage();
       activatePreparedProfile(fixture.selected.id, fixture.selected.kind);
       const attempt = {
@@ -189,13 +203,27 @@ test("admission reads fresh logout control after closing scope, and a join does 
       return attempt;
     },
   };
+  let authorizationGeneration: number | null = null;
   const auth = {
     getSnapshot: () => user,
-    getAuthorizationGeneration: async () => 1,
-    signInWithSessionToken: async () => user,
+    getAuthorizationGeneration: async () => authorizationGeneration,
+    signInWithSessionToken: async (token: string) => {
+      calls.push(`sdk:${token}`);
+      if (token === "replacement") { sdkReached.resolve(); await sdkRelease.promise; }
+      authorizationGeneration = 1;
+      return user;
+    },
   };
-  const api = {} as PatternlyApiClient;
+  const api = {
+    exchangeAccountSession: async () => { calls.push("exchange"); return { customToken: "initial" }; },
+    revokeSessions: async (operationId: string) => { assert.equal(operationId, pending.operationId); calls.push("revoke-exact"); return { operationId, status: "revoked", customToken: "replacement" }; },
+  } as unknown as PatternlyApiClient;
   const first = admitAccountBootstrap(ports, auth as never, api, user, generation);
+  await sdkReached.promise;
+  assert.equal(profilePreparationRef.current, null, "same UID cannot prepare a profile before SDK replacement and exact local completion");
+  assert.equal(getActiveStorageProfileOrNull(), null);
+  assert.equal(admitAccountBootstrap(ports, auth as never, api, user, generation), first);
+  sdkRelease.resolve();
   await preparationStarted.promise;
   assert.equal(reads, 1);
   assert.equal(getActiveStorageProfileOrNull()?.accountId, "admission-account");

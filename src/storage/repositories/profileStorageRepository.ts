@@ -23,6 +23,7 @@ export {
   isPreparedProfileStorageLeaseCurrent,
   readActiveAccountIdentityBinding,
   readPreparedAccountIdentityBinding,
+  readPreparedAccountDeletionRecord,
   prepareProfileStorage,
   removeUnavailableEncryptedStorage,
   resolveAccountIdentityProofBarrier,

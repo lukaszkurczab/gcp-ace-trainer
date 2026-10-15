@@ -290,7 +290,7 @@ function canonicalQ13Category(key: string): Exclude<Q13ProfileCategory, "package
   if (settings.includes(key)) return "settings";
   const profileLifecycle: readonly string[] = [
     STORAGE_KEYS.METADATA, STORAGE_KEYS.GUEST_INSTALLATION, STORAGE_KEYS.GUEST_ACCESS, STORAGE_KEYS.ACTIVE_JOURNAL,
-    STORAGE_KEYS.ACCOUNT_SYNC, STORAGE_KEYS.ACCOUNT_SIGN_OUT, STORAGE_KEYS.ACCOUNT_DELETION, STORAGE_KEYS.CONTENT_REPORT_OUTBOX,
+    STORAGE_KEYS.ACCOUNT_SYNC, STORAGE_KEYS.ACCOUNT_SIGN_OUT, STORAGE_KEYS.ACCOUNT_DELETION, STORAGE_KEYS.CONTENT_REPORT_OUTBOX, STORAGE_KEYS.PREMIUM_PURCHASE_ATTEMPT,
   ];
   if (profileLifecycle.includes(key)) return "profileLifecycle";
   const cacheCategory = globalQ13Category(key);
@@ -845,6 +845,15 @@ export async function readPreparedAccountIdentityBinding(profileId: string): Pro
     throw new ProfileStorageError("profile_transition_cancelled");
   }
   return value;
+}
+
+/** Reads only the selected account's deletion marker while scoped storage stays closed. */
+export function readPreparedAccountDeletionRecord(profileId: string): string | undefined {
+  const lease = capturePreparedProfileStorageLease();
+  if (!lease || lease.profile.id !== profileId || lease.profile.kind !== "account" || !lease.profile.accountId) throw new ProfileStorageError("profile_transition_cancelled");
+  const raw = preparedStorage!.router.storage.getString(STORAGE_KEYS.ACCOUNT_DELETION);
+  if (!isPreparedProfileStorageLeaseCurrent(lease)) throw new ProfileStorageError("profile_transition_cancelled");
+  return raw;
 }
 
 export async function invalidatePreparedAccountIdentityBinding(input: Readonly<{ profileId: string; canContinue: () => boolean }>): Promise<void> {

@@ -99,8 +99,8 @@
       "pl": "[DO UZUPEŁNIENIA: premiumRenewalPriceIncludingTaxes]"
     },
     "premiumServiceScope": {
-      "en": "[TO BE COMPLETED: premiumServiceScope]",
-      "pl": "[DO UZUPEŁNIENIA: premiumServiceScope]"
+      "en": "The first nodes in each learning track are free. Premium unlocks the remaining nodes.",
+      "pl": "Początkowe węzły każdej ścieżki są dostępne bezpłatnie. Premium odblokowuje pozostałe węzły."
     },
     "supportCommitment": {
       "en": "[TO BE COMPLETED: supportCommitment]",

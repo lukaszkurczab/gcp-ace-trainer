@@ -1,8 +1,9 @@
 import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { useEffect, useRef } from "react";
-import { AppState, type AppStateStatus } from "react-native";
+import { AppState, Platform, type AppStateStatus } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 
+import { createRevenueCatGateway, readPurchaseConfig } from "../../infrastructure/purchases";
 import { usePatternlyAccount, type AccountSessionContextValue, type AccountState } from "./AccountSessionProvider";
 import { createAccountForegroundRefreshScheduler, type AccountForegroundRefreshIntent } from "./accountForegroundRefresh";
 import { claimLocalOfflineInitialRefresh, observeReachability } from "./accountReconnect";
@@ -54,6 +55,18 @@ export function AccountForegroundRefreshSidecar() {
     }).catch(() => undefined);
     return () => { live = false; };
   }, [account.state.kind, currentUid]);
+
+  useEffect(() => {
+    if (Platform.OS !== "ios") return;
+    const current = accountRef.current.state;
+    if (current.kind !== "authenticated" || !readPurchaseConfig(process.env, current.backendUser.id)) return;
+    const actor = accountRef.current.capturePremiumPurchaseActor();
+    if (!actor) return;
+    // No CustomerInfo payload enters the entitlement cache or the candidate journal.
+    return createRevenueCatGateway().subscribe?.(() => {
+      if (actor.isCurrent()) void actor.refresh().catch(() => undefined);
+    });
+  }, [account.state]);
 
   useEffect(() => {
     let previousReachability: boolean | null = null;

@@ -279,3 +279,21 @@ test("backend package admission failures keep their typed status and code", asyn
   }
   assert.deepEqual(await store.listActive(), []);
 });
+
+
+test("profile change during download or verification leaves the old pointer and runtime unchanged", async () => {
+  for (const stage of ["download", "verify"] as const) {
+    const store = createMemoryNodePackageStore();
+    const oldResponse = response(source("old-profile-version"));
+    const old = await installNodePackage({ trackId: TRACK, nodeId: NODE, appVersion: "0.1.0", transport: { getNodePackage: async () => oldResponse }, hash, store, activateRuntime: () => {} });
+    let current = true, activations = 0, writes = 0;
+    const pending = response(source("new-profile-version"));
+    await assert.rejects(installNodePackage({ trackId: TRACK, nodeId: NODE, appVersion: "0.1.0", store: { ...store, writeImmutable: async (value) => { writes++; await store.writeImmutable(value); } },
+      hash: { sha256Bytes: async (bytes) => { const result = await hash.sha256Bytes(bytes); if (stage === "verify") current = false; return result; } },
+      transport: { getNodePackage: async () => { if (stage === "download") current = false; return pending; } },
+      assertActivationAllowed: () => { if (!current) throw new NodePackageError("profile_changed"); }, activateRuntime: () => { activations++; },
+    }), (error: unknown) => error instanceof NodePackageError && error.code === "profile_changed");
+    assert.deepEqual(await store.getActive(TRACK, NODE), old.identity);
+    assert.equal(writes, 0); assert.equal(activations, 0);
+  }
+});

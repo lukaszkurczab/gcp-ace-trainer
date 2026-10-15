@@ -1,0 +1,20 @@
+appId: com.lkurczab.patternly.sec03
+---
+- scrollUntilVisible:
+    element: { id: "premium-terms" }
+    direction: DOWN
+    timeout: 10000
+    centerElement: true
+- tapOn: { id: "premium-terms" }
+- assertVisible: "Warunki korzystania"
+- takeScreenshot: "${EVIDENCE_DIR}/terms"
+- tapOn: "Wróć"
+- scrollUntilVisible:
+    element: { id: "premium-privacy" }
+    direction: DOWN
+    timeout: 10000
+    centerElement: true
+- tapOn: { id: "premium-privacy" }
+- assertVisible: "Polityka prywatności"
+- takeScreenshot: "${EVIDENCE_DIR}/privacy"
+- tapOn: "Wróć"

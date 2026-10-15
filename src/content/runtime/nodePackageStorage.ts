@@ -117,7 +117,7 @@ export interface NodePackagePointerPort { getString(key: string): string | undef
 export interface NodePackageStorageIds { createId(): string; }
 type ActivePointer = Readonly<{ schemaVersion: 1; current: NodePackageIdentity; retained: readonly NodePackageIdentity[] }>;
 
-export function createNodePackageStore(input: Readonly<{ files: NodePackageFilePort; pointers: NodePackagePointerPort; ids: NodePackageStorageIds; interactionRegistry?: CanonicalInteractionRegistry }>): NodePackageStore {
+export function createNodePackageStore(input: Readonly<{ files: NodePackageFilePort; pointers: NodePackagePointerPort; ids: NodePackageStorageIds; interactionRegistry?: CanonicalInteractionRegistry; assertActivationAllowed?: () => void }>): NodePackageStore {
   const interactionRegistry = input.interactionRegistry ?? canonicalInteractionRegistry;
   const artifactPath = (identity: NodePackageIdentity) => `artifacts/${recordKey(identity)}.bin`;
   const manifestPath = (identity: NodePackageIdentity) => `manifests/${recordKey(identity)}.json`;
@@ -206,6 +206,7 @@ export function createNodePackageStore(input: Readonly<{ files: NodePackageFileP
       try { currentBeforeWrite = input.pointers.getString(key); }
       catch { throw new NodePackageStorageUnavailableError("pointer_readback", "unknown"); }
       if (currentBeforeWrite !== previous) throw new NodePackageStorageUnavailableError("pointer_readback", "unknown");
+      input.assertActivationAllowed?.();
       let writeFailed = false;
       try {
         input.pointers.setString(key, next);

@@ -13,6 +13,7 @@ export function describePremiumNodeOfferFailure(error: unknown): PremiumNodeOffe
     : Object.freeze({ message: "Patternly couldn't read saved Premium content. Try again later.", retry: true, freeAlternative: false });
   if (!(error instanceof NodePackageError)) return Object.freeze({ message: "We couldn't prepare this Premium topic. Try again later.", retry: true, freeAlternative: false });
   switch (error.code) {
+    case "profile_changed": return Object.freeze({ message: "Your profile changed while preparing this topic. Open the topic again in your current profile.", retry: false, freeAlternative: false });
     case "entitlement_required": return Object.freeze({ message: "Premium access is required for this topic. Choose a free topic or check your subscription.", retry: false, freeAlternative: true });
     case "entitlement_unavailable": return Object.freeze({ message: "We couldn't verify Premium access. Check your connection and try again.", retry: true, freeAlternative: false });
     case "not_found": return Object.freeze({ message: "This Premium topic isn't available yet. Choose a free topic to continue.", retry: false, freeAlternative: true });

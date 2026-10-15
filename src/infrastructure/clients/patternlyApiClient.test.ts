@@ -398,24 +398,76 @@ test("recovery calls preserve typed server failures and Retry-After", async () =
     && error.code === "server_error" && error.status === 503 && error.serverCode === "recovery_operation_pending" && error.retryAfterSeconds === 12);
 });
 
-test("content package transport uses the authenticated App Check API and returns binary response headers", async () => {
-  let request: { url: string; headers: Headers } | undefined;
+function packageDescriptor(trackId = "coding-interview-dsa-problem-solving", nodeId = "package-test-node") {
+  const now = Math.floor(Date.now() / 1000) * 1000;
+  const path = `packages/${trackId}/${nodeId}/${"a".repeat(64)}.gzip`;
+  const params = new URLSearchParams({ generation: "12345678901234567", "X-Goog-Algorithm": "GOOG4-RSA-SHA256", "X-Goog-Date": new Date(now).toISOString().replace(/[-:]/gu, "").replace(".000", ""), "X-Goog-Expires": "60", "X-Goog-Signature": "fixture" });
+  return { schemaVersion: "patternly-content-download-v1", manifest: { schemaVersion: "patternly-content-node-package-v1", trackId, nodeId, contentVersion: "v1", artifactSha256: "b".repeat(64), packageSha256: "a".repeat(64), contentReleaseId: "release-1", minimumAppVersion: "0.1.0", packageFormat: "gzip", compressedSizeBytes: 3, artifactSizeBytes: 10, packagePath: path }, object: { bucket: "patternly-contract", path, generation: "12345678901234567" }, downloadUrl: `https://storage.googleapis.com/patternly-contract/${path}?${params}`, expiresAt: new Date(now + 60000).toISOString() };
+}
+
+test("content package descriptor authenticates only the API; object GET has no credentials and preserves verification metadata", async () => {
+  const calls: { url: string; init: RequestInit | undefined }[] = [];
+  const descriptor = packageDescriptor();
   const client = createTestClient({ fetchImplementation: async (url, init) => {
-    request = { url: String(url), headers: new Headers(init?.headers) };
-    return new Response(new Uint8Array([0x1f, 0x8b, 0x00]), { status: 200, headers: { "content-type": "application/gzip", "content-length": "3" } });
+    calls.push({ url: String(url), init });
+    return calls.length === 1 ? Response.json(descriptor) : new Response(new Uint8Array([0x1f, 0x8b, 0x00]), { headers: { "content-type": "application/gzip" } });
   } });
   const response = await client.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node");
-  assert.equal(request?.url, `${API_ORIGIN}/v1/content/packages/coding-interview-dsa-problem-solving/package-test-node`);
-  assert.equal(request?.headers.get("authorization"), "Bearer id-token");
-  assert.equal(request?.headers.get("x-firebase-appcheck"), "app-check-token");
+  assert.equal(calls[0]?.url, `${API_ORIGIN}/v1/content/packages/coding-interview-dsa-problem-solving/package-test-node`);
+  assert.equal(new Headers(calls[0]?.init?.headers).get("authorization"), "Bearer id-token");
+  assert.equal(new Headers(calls[0]?.init?.headers).get("x-firebase-appcheck"), "app-check-token");
+  assert.equal(calls[1]?.url, descriptor.downloadUrl);
+  assert.equal(calls[1]?.init?.headers, undefined);
+  assert.equal(calls[1]?.init?.credentials, "omit");
+  assert.equal(calls[1]?.init?.redirect, "error");
   assert.deepEqual([...response.bytes], [0x1f, 0x8b, 0x00]);
-  assert.equal(response.headers.get("content-type"), "application/gzip");
+  assert.equal(response.headers.get("x-content-package-sha256"), "a".repeat(64));
   await assert.rejects(client.getContentPackage("track", "../escape"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
-test("content package transport caps streamed response bodies at two MiB", async () => {
-  const client = createTestClient({ fetchImplementation: async () => new Response(new Uint8Array(2 * 1024 * 1024 + 1), { status: 200 }) });
-  await assert.rejects(client.getContentPackage("track", "node"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+test("content package transport caps descriptor and downloaded bytes and rejects transformed objects", async () => {
+  for (const mode of ["descriptor", "bytes", "encoding", "redirect", "expired_object", "offline"] as const) {
+    let calls = 0;
+    const client = createTestClient({ fetchImplementation: async () => {
+      if (++calls === 1) return mode === "descriptor" ? new Response(new Uint8Array(16 * 1024 + 1)) : Response.json(packageDescriptor());
+      if (mode === "offline") throw new Error("offline");
+      if (mode === "expired_object") return new Response("expired", { status: 403 });
+      const response = new Response(new Uint8Array(mode === "bytes" ? 2 * 1024 * 1024 + 1 : 3), { headers: { "content-type": "application/gzip", ...(mode === "encoding" ? { "content-encoding": "gzip" } : {}) } });
+      if (mode === "redirect") Object.defineProperty(response, "redirected", { value: true });
+      return response;
+    } });
+    await assert.rejects(client.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node"), (error: unknown) => error instanceof PatternlyApiClientError && ["invalid_response", "transport_failed"].includes(error.code), mode);
+  }
+});
+
+test("invalid descriptor identity, URL, expiry and legacy stream never dispatch an object request", async () => {
+  for (const change of [
+    (v: ReturnType<typeof packageDescriptor>) => { v.downloadUrl = v.downloadUrl.replace("storage.googleapis.com", "attacker.example"); },
+    (v: ReturnType<typeof packageDescriptor>) => { v.object.generation = "7"; },
+    (v: ReturnType<typeof packageDescriptor>) => { v.manifest.nodeId = "other-node"; },
+    (v: ReturnType<typeof packageDescriptor>) => { v.expiresAt = "2000-01-01T00:00:00.000Z"; },
+    (v: ReturnType<typeof packageDescriptor>) => { v.downloadUrl += "#fragment"; },
+    (v: ReturnType<typeof packageDescriptor>) => { v.manifest.compressedSizeBytes = 2097153; },
+  ]) {
+    let calls = 0; const descriptor = packageDescriptor(); change(descriptor);
+    const client = createTestClient({ fetchImplementation: async () => { calls++; return Response.json(descriptor); } });
+    await assert.rejects(client.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+    assert.equal(calls, 1);
+  }
+  const legacy = createTestClient({ fetchImplementation: async () => new Response(new Uint8Array([31,139]), { headers: { "content-type": "application/gzip" } }) });
+  await assert.rejects(legacy.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});
+
+test("profile guard cancels after credentials, descriptor or object await with no stale success", async () => {
+  for (const stage of ["token", "descriptor", "object"] as const) {
+    let current = true, calls = 0;
+    const client = createTestClient({ getIdToken: async () => { if (stage === "token") current = false; return "id-token"; }, fetchImplementation: async () => {
+      calls++; if (stage === "descriptor" || stage === "object" && calls === 2) current = false;
+      return calls === 1 ? Response.json(packageDescriptor()) : new Response(new Uint8Array(3), { headers: { "content-type": "application/gzip" } });
+    } });
+    await assert.rejects(client.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node", () => current), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "profile_changed");
+    assert.equal(calls, stage === "token" ? 0 : stage === "descriptor" ? 1 : 2);
+  }
 });
 
 test("content package transport preserves typed backend admission codes", async () => {
@@ -581,4 +633,51 @@ test("sync rejects legacy, malformed, ambiguous and disguised-success conflict p
   }
   const malformedJson = createTestClient({ fetchImplementation: async () => new Response("{", { status: 409 }) });
   await assert.rejects(malformedJson.syncProgress(canonicalSyncRequest()), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});
+
+test("purchase attempt transport validates exact ID, claim permission and bounded case state", async () => {
+  const attemptId = RECOVERY_OPERATION_ID;
+  const attempt = { attemptId, outcome: "initiated", acceptedAt: "2026-10-15T10:00:00.000Z", startExpiresAt: "2026-10-15T10:15:00.000Z", initiatedAt: "2026-10-15T10:01:00.000Z", transactionKey: null, resolutionReason: null, dispatchAllowed: true };
+  let body: unknown = { attempt };
+  const requests: Array<{ path: string; method: string }> = [];
+  const client = createTestClient({ fetchImplementation: async (url, init) => { requests.push({ path: String(url), method: String(init?.method) }); return new Response(JSON.stringify(body), { status: 200 }); } });
+  assert.equal((await client.commandPurchaseAttempt(attemptId, { action: "claim" })).attempt.dispatchAllowed, true);
+  for (const invalid of [{ ...attempt, attemptId: DELETION_OPERATION_ID }, { ...attempt, outcome: "bound" }, { ...attempt, initiatedAt: attempt.startExpiresAt }, { ...attempt, outcome: "fake_success" }]) {
+    body = { attempt: invalid };
+    await assert.rejects(client.getPurchaseAttempt(attemptId), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  }
+  body = { items: [{ transactionKey: "a".repeat(64), revision: 1, status: "reconciliation_required", resolutionReason: "outside_confirmation_window", confirmationId: null, receiptId: null }], truncated: false };
+  assert.equal((await client.getPurchaseCases()).items[0]?.resolutionReason, "outside_confirmation_window");
+  body = { items: [], truncated: "false" };
+  await assert.rejects(client.getPurchaseCases(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  assert.equal(requests[0]?.method, "POST"); assert.match(requests[0]!.path, /purchase-attempts/);
+});
+
+
+test("package descriptor and object requests share a bounded deadline with no automatic retry", async () => {
+  for (const stage of ["descriptor", "object"] as const) {
+    let calls = 0;
+    const client = createTestClient({ timeoutMs: 15, fetchImplementation: async () => {
+      calls++;
+      if (stage === "descriptor" || calls === 2) return new Promise<Response>(() => {});
+      return Response.json(packageDescriptor());
+    } });
+    await assert.rejects(client.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "request_timeout");
+    assert.equal(calls, stage === "descriptor" ? 1 : 2);
+  }
+});
+
+
+test("profile change wins over rejected credential or network awaits before failure classification", async () => {
+  for (const stage of ["token", "appcheck", "descriptor", "object"] as const) {
+    let current = true, calls = 0;
+    const rejectStale = () => { current = false; throw new Error("offline"); };
+    const client = createTestClient({ getIdToken: async () => stage === "token" ? rejectStale() : "id-token", getAppCheckToken: async () => stage === "appcheck" ? rejectStale() : "app-check-token", fetchImplementation: async () => {
+      calls++;
+      if (stage === "descriptor" || stage === "object" && calls === 2) return rejectStale();
+      return Response.json(packageDescriptor());
+    } });
+    await assert.rejects(client.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node", () => current), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "profile_changed", stage);
+    assert.equal(calls, stage === "token" || stage === "appcheck" ? 0 : stage === "descriptor" ? 1 : 2);
+  }
 });

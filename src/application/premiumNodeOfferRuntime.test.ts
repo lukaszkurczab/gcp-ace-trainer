@@ -2,13 +2,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { ContentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 import { PREMIUM_NODE_OFFERS as smokeOffers } from "../content/application/premiumNodeOffers.smoke";
-import { PREMIUM_NODE_OFFERS as releaseOffers } from "../content/application/premiumNodeOffers.disabled";
+import { PREMIUM_NODE_OFFERS as releaseOffers } from "../content/application/premiumNodeOffers.release";
 import { getLocalSmokePremiumNodePackageTransport } from "../content/application/premiumNodeOffers.smoke";
 import { contentHasher } from "../infrastructure/identity/contentHasher";
 import { createMemoryNodePackageStore, installNodePackage } from "../content/runtime/nodeContentPackage";
 
-test("release offer map is empty and the local smoke offer is explicit and isolated", () => {
-  assert.deepEqual(releaseOffers, []);
+test("release map contains the admitted AWS metadata and the local smoke offer remains isolated", () => {
+  assert.equal(releaseOffers.length, 1);
+  assert.equal(releaseOffers[0]?.nodeId, "identity_federation_and_root_access");
+  assert.equal(releaseOffers[0]?.source, "authenticated_backend");
+  assert.deepEqual(releaseOffers[0]?.mode.requestedLengths, [10,20,40]);
+  assert.equal(releaseOffers[0]?.mode.minimumActualLength, 10);
   assert.equal(smokeOffers.length, 1);
   assert.equal(smokeOffers[0]?.offerId, "aud-04-local-smoke-package-fixture");
   assert.equal(smokeOffers[0]?.source, "local_smoke_fixture");

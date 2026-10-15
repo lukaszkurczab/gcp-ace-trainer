@@ -7,9 +7,9 @@ const smokeRuntime = process.env.PATTERNLY_RUNTIME_MODE === "smoke";
 const disableWatchman = process.env.PATTERNLY_METRO_DISABLE_WATCHMAN === "1";
 const buildOnlyModules = new Map([
   ["./src/testing/Perf06ListFixtureRoot", smokeRuntime ? "src/testing/Perf06ListFixtureRoot.smoke.tsx" : "src/testing/Perf06ListFixtureRoot.disabled.tsx"],
-  ["../content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
-  ["./premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
-  ["../../src/content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
+  ["../content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.release.ts"],
+  ["./premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.release.ts"],
+  ["../../src/content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.release.ts"],
   ["../features/home/learningPlanProposalFixtureRuntime", smokeRuntime ? "src/features/home/learningPlanProposalFixtureRuntime.smoke.ts" : "src/features/home/learningPlanProposalFixtureRuntime.disabled.ts"],
   ["../features/exam/certificationExamReviewFixtureRuntime", smokeRuntime ? "src/features/exam/certificationExamReviewFixtureRuntime.smoke.ts" : "src/features/exam/certificationExamReviewFixtureRuntime.disabled.ts"],
   ["../../infrastructure/firebase/providerAuthFixtureRuntime", smokeRuntime ? "src/infrastructure/firebase/providerAuthFixtureRuntime.smoke.ts" : "src/infrastructure/firebase/providerAuthFixtureRuntime.disabled.ts"],

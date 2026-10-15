@@ -1,0 +1,19 @@
+appId: com.lkurczab.patternly.sec03
+---
+- scrollUntilVisible:
+    element: { id: "premium-purchase" }
+    direction: DOWN
+    timeout: 10000
+    centerElement: false
+    visibilityPercentage: 50
+- assertVisible: { id: "premium-purchase", enabled: false }
+- assertNotVisible: { id: "premium-active" }
+- scrollUntilVisible:
+    element: { id: "premium-manage" }
+    direction: DOWN
+    timeout: 10000
+    centerElement: false
+    visibilityPercentage: 50
+- assertVisible: { id: "premium-restore", enabled: true }
+- assertVisible: { id: "premium-manage", enabled: true }
+- takeScreenshot: "${EVIDENCE_FILE}"

@@ -27,13 +27,16 @@ function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
   return {
     availability: "available",
     getHealth: async () => ({ status: "ok", service: "patternly-backend" }),
-    getReady: async () => ({ status: "ready", checks: { database: true, authentication: true, providerReader: true } }),
+    getReady: async () => ({ status: "ready", checks: { database: true, authentication: true, providerReader: true, contentPackages: true } }),
     getOpenApi: async () => ({ openapi: "3.0.3", paths: {} }),
     getMe: async () => ({ user: { id: accountId, createdAt: "2026-01-01T00:00:00.000Z", acceptedTermsVersion: "1", identity: { provider: "firebase", subject: uid, email: null, emailVerified: true } } }),
     exchangeAccountSession: async () => ({ customToken: "custom-token-fixture" }),
     registerAccount: async () => ({ registration: { created: true, user: { id: accountId, createdAt: "2026-01-01T00:00:00.000Z", acceptedTermsVersion: "1", identity: { provider: "firebase", subject: uid, email: null, emailVerified: true } }, acceptance: null } }),
     recordLegalAcceptance: async (termsVersion) => ({ acceptance: { termsVersion, acceptedAt: "2026-01-01T00:00:00.000Z" } }),
-    recordPurchaseConfirmation: async (input) => ({ confirmation: { confirmationId: input.confirmationId, acceptedAt: "2026-01-01T00:00:00.000Z" } }),
+    recordPurchaseConfirmation: async (input) => ({ confirmation: { confirmationId: input.confirmationId, acceptedAt: "2026-01-01T00:00:00.000Z", attemptExpiresAt: "2026-01-01T00:15:00.000Z" } }),
+    getPurchaseAttempt: async () => { throw new Error("unused"); },
+    commandPurchaseAttempt: async () => { throw new Error("unused"); },
+    getPurchaseCases: async () => ({ items: [], truncated: false }),
     getEntitlements: async () => ({ serverObservedAt: "2026-09-21T00:00:00.000Z", entitlements: [] }),
     getProgress: async () => ({ accountRevision: 0, records: [] }),
     getContentPackage: async () => ({ status: 404, headers: new Headers(), bytes: new Uint8Array() }),
@@ -437,6 +440,50 @@ test("response loss resolves a matching remote operation and rejects mismatched 
   assert.equal(mismatchStorage.contains(mismatchKey), true);
   assert.notEqual(getAccountDeletionState()?.status, "complete");
 });
+
+for (const statusCase of ["pending", "complete", "mismatch", "unavailable"] as const) {
+  test(`existing deletion conflict resolves ${statusCase} without forgetting its durable identity`, async () => {
+    const marker = beginAccountDeletion(accountId, uid);
+    const storage = getKeyValueStorage() as MemoryKeyValueStorage;
+    const learningKey = STORAGE_KEYS.goal("conflict-preserved-goal");
+    storage.setString(learningKey, "must-remain-until-proof");
+    const proofId = "proof_fixture_12345678901234567890";
+    let posts = 0;
+    let statuses = 0;
+    let proofs = 0;
+    let preparations = 0;
+    const client = api({
+      deleteAccount: async (id, secret) => {
+        posts++;
+        assert.equal(id, marker.operationId);
+        assert.equal(secret, marker.operationSecret);
+        throw new PatternlyApiClientError("server_error", 409, "account_deletion_conflict");
+      },
+      getDeletionOperationStatus: async (id, secret) => {
+        statuses++;
+        assert.equal(id, marker.operationId);
+        assert.equal(secret, marker.operationSecret);
+        if (statusCase === "unavailable") throw new PatternlyApiClientError("server_error", 404, "not_found");
+        return { status: statusCase === "pending" ? "pending" : "complete", operationId: statusCase === "mismatch" ? "different-operation" : id, proofId: statusCase === "pending" ? null : proofId };
+      },
+      getDeletionProof: async (id) => { proofs++; return { status: "deleted", operationId: marker.operationId, proofId: id }; },
+    });
+    const results = await Promise.all([0, 1].map(() => retryPendingAccountDeletion(client, accountId, uid, async () => { preparations++; return true; })));
+    assert.deepEqual(results, statusCase === "complete"
+      ? [{ ok: true, proofId }, null]
+      : [{ ok: false, failure: "remoteDeletionPending" }, { ok: false, failure: "remoteDeletionPending" }]);
+    assert.equal(posts, statusCase === "complete" ? 1 : 2);
+    assert.equal(statuses, posts);
+    assert.equal(proofs, statusCase === "complete" ? 1 : 0);
+    assert.equal(preparations, proofs);
+    assert.equal(storage.contains(learningKey), statusCase !== "complete");
+    const after = getAccountDeletionState();
+    assert.equal(after?.operationId, marker.operationId);
+    assert.equal(after?.operationSecret, marker.operationSecret);
+    assert.equal(after?.status, statusCase === "complete" ? "complete" : "remotePending");
+    assert.equal((await getGuestInstallation())?.accountId, statusCase === "complete" ? null : accountId);
+  });
+}
 
 test("local deletion cleanup resumes after a failed key removal without issuing another remote delete", async () => {
   await prepareBoundSyncedAccount();

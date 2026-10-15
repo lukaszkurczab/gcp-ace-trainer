@@ -17,10 +17,10 @@ function resolveBuildOnly(mode, request) {
   return config.resolver.resolveRequest({ resolveRequest() { throw new Error(`Expected a build-only implementation for ${request}`); } }, request, "ios");
 }
 
-test("Premium node offers and their local fixture transport share one smoke-only Metro module", () => {
+test("Metro selects admitted release metadata or the explicit smoke fixture", () => {
   assert.equal(resolveBuildOnly("smoke", offerRequest).filePath, resolve(root, "src/content/application/premiumNodeOffers.smoke.ts"));
   for (const mode of ["sandbox", "release", "invalid"]) {
-    assert.equal(resolveBuildOnly(mode, offerRequest).filePath, resolve(root, "src/content/application/premiumNodeOffers.disabled.ts"));
+    assert.equal(resolveBuildOnly(mode, offerRequest).filePath, resolve(root, "src/content/application/premiumNodeOffers.release.ts"));
   }
 });
 

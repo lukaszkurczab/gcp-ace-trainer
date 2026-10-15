@@ -22,6 +22,7 @@ export const STORAGE_KEYS = {
   NOTIFICATION_SETTINGS: `${PREFIX}notification-settings`,
   NOTIFICATION_SETTINGS_JOURNAL: `${PREFIX}notification-settings-journal`,
   ACTIVE_JOURNAL: `${PREFIX}journal:active`,
+  PREMIUM_PURCHASE_ATTEMPT: `${PREFIX}premium-purchase-attempt`,
   ACCOUNT_SYNC: `${PREFIX}account-sync`,
   ACCOUNT_SIGN_OUT: `${PREFIX}account-sign-out`,
   ACCOUNT_DELETION: `${PREFIX}account-deletion`,

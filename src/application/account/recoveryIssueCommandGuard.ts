@@ -17,7 +17,9 @@ export function createRecoveryIssuePublicationGate() {
 export async function readRecoveryIssueCommandIdentity(input: Readonly<{
   auth: Pick<FirebaseAuthClient, "getSnapshot" | "getAuthorizationGeneration">;
   firebaseUid: string;
-  authorizationGeneration: number;
+  authorizationGeneration: number | null;
+  /** Only preserve a failed new command with no result; never authorize code publication. */
+  allowUnexchangedIdentity?: boolean;
   isRevisionCurrent: () => boolean;
 }>): Promise<Readonly<{ current: boolean; user: FirebaseAuthUserSnapshot | null }>> {
   let generation: number | null = null;
@@ -30,7 +32,8 @@ export async function readRecoveryIssueCommandIdentity(input: Readonly<{
   } catch { /* Failed forced-token reads close access rather than restore a session. */ }
   const user = input.auth.getSnapshot();
   return Object.freeze({
-    current: readable && user?.uid === input.firebaseUid && generation === input.authorizationGeneration && input.isRevisionCurrent(),
+    current: readable && user?.uid === input.firebaseUid && generation === input.authorizationGeneration
+      && (generation !== null || input.allowUnexchangedIdentity === true) && input.isRevisionCurrent(),
     user,
   });
 }

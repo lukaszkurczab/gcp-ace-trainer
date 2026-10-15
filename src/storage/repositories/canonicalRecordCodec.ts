@@ -362,6 +362,8 @@ function parseEnvelope(raw: string | undefined, key: string): CanonicalRecordEnv
   return value;
 }
 
+export { parseEnvelope as parseCanonicalRecordEnvelope };
+
 function isWriteContextCurrent(storage: ReturnType<typeof getKeyValueStorage>, lease: ActiveProfileStorageLease | null): boolean {
   try {
     if (getKeyValueStorage() !== storage) return false;

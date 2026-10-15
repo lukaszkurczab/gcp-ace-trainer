@@ -33,7 +33,7 @@ export const legalVariablesLocalFixture = {
     premiumProductIdentifier: { en: "com.lkurczab.patternly.premium.monthly", pl: "com.lkurczab.patternly.premium.monthly" },
     premiumProductName: { en: "Patternly Premium", pl: "Patternly Premium" },
     premiumRenewalPriceIncludingTaxes: { en: "[TO BE COMPLETED: premiumRenewalPriceIncludingTaxes]", pl: "[DO UZUPEŁNIENIA: premiumRenewalPriceIncludingTaxes]" },
-    premiumServiceScope: { en: "[TO BE COMPLETED: premiumServiceScope]", pl: "[DO UZUPEŁNIENIA: premiumServiceScope]" },
+    premiumServiceScope: { en: "The first nodes in each learning track are free. Premium unlocks the remaining nodes.", pl: "Początkowe węzły każdej ścieżki są dostępne bezpłatnie. Premium odblokowuje pozostałe węzły." },
     supportCommitment: { en: "[TO BE COMPLETED: supportCommitment]", pl: "[DO UZUPEŁNIENIA: supportCommitment]" },
     technicalRequirements: { en: "[TO BE COMPLETED: technicalRequirements]", pl: "[DO UZUPEŁNIENIA: technicalRequirements]" },
     withdrawalEmail: { en: "[TO BE COMPLETED: withdrawalEmail]", pl: "[DO UZUPEŁNIENIA: withdrawalEmail]" },

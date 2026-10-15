@@ -1,7 +1,9 @@
 import { createSessionRevocationOperationId } from "../../infrastructure/identity/sessionRevocationOperationId";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { parseCanonicalRecordEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { readPreparedAccountDeletionRecord } from "./profileStorageRepository";
+import { UnsupportedStoredRecordError } from "../errors";
 
 export type AccountSignOutState = Readonly<{
   accountId: string;
@@ -53,6 +55,12 @@ export function beginAccountSignOut(accountId: string): AccountSignOutState {
 }
 export function clearAccountSignOutState(): void { removeCanonicalValue(STORAGE_KEYS.ACCOUNT_SIGN_OUT); }
 export function getAccountDeletionState(): AccountDeletionState | null { return readCanonicalJson(STORAGE_KEYS.ACCOUNT_DELETION, isDeletionState); }
+export function getPreparedAccountDeletionState(profileId: string): AccountDeletionState | null {
+  const envelope = parseCanonicalRecordEnvelope(readPreparedAccountDeletionRecord(profileId), STORAGE_KEYS.ACCOUNT_DELETION);
+  if (!envelope) return null;
+  if (!isDeletionState(envelope.payload)) throw new UnsupportedStoredRecordError(STORAGE_KEYS.ACCOUNT_DELETION);
+  return envelope.payload;
+}
 export function beginAccountDeletion(accountId: string, uid: string): AccountDeletionState {
   const state: AccountDeletionState = { accountId, accountUidHash: sha256Utf8(uid), operationId: operationId(), operationSecret: operationSecret(), status: "remotePending", proofId: null, lastFailureCode: null };
   writeCanonicalJson(STORAGE_KEYS.ACCOUNT_DELETION, state);

@@ -416,3 +416,13 @@ test("installed pointer format and identity mismatches are explicit and preserve
   assert.equal(setup.pointers.get(key), expectedEnvelope);
   assert.equal(setup.pointers.get(alienKey), expectedEnvelope);
 });
+
+
+test("profile fence is rechecked after async artifact read immediately before the pointer write", async () => {
+  const setup = ports(), next = await record("profile-race");
+  await setup.store.writeImmutable(next);
+  let current = true;
+  const guarded = createNodePackageStore({ files: { ...setup.files, read: async (path) => { const bytes = await setup.files.read(path); current = false; return bytes; } }, pointers: setup.pointerPort, ids: { createId: () => "unused" }, assertActivationAllowed: () => { if (!current) throw new Error("profile_changed"); } });
+  await assert.rejects(guarded.activate(TRACK, NODE, next.identity), /profile_changed/u);
+  assert.equal(setup.pointers.size, 0);
+});

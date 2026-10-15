@@ -27,7 +27,7 @@ export type NodePackageManifest = NodePackageIdentity & Readonly<{
 }>;
 export type VerifiedNodePackage = Readonly<{ identity: NodePackageIdentity; payload: NodeContentPayload; manifest: NodePackageManifest; artifactBytes: Uint8Array }>;
 
-export type NodePackageFailureCode = "invalid_response" | "package_unavailable" | "package_identity_mismatch" | "package_corrupt" | "minimum_app_version" | "package_storage_failed" | "entitlement_required" | "entitlement_unavailable" | "not_found" | "authentication_required" | "app_check_unavailable" | "reauthentication_required";
+export type NodePackageFailureCode = "profile_changed" | "invalid_response" | "package_unavailable" | "package_identity_mismatch" | "package_corrupt" | "minimum_app_version" | "package_storage_failed" | "entitlement_required" | "entitlement_unavailable" | "not_found" | "authentication_required" | "app_check_unavailable" | "reauthentication_required";
 
 export type NodePackageStorageIntegrityCode = "corrupt" | "unsupported" | "identity_mismatch";
 export type NodePackageStorageStage = "pointer_read" | "pointer_decode" | "pointer_identity" | "inventory_read" | "package_read" | "manifest_decode" | "artifact_verify" | "package_write" | "package_readback" | "artifact_move" | "manifest_move" | "pointer_write" | "pointer_readback";
@@ -141,17 +141,21 @@ export async function installNodePackage(input: Readonly<{ trackId: string; node
   if (input.expectedContentVersion !== undefined && input.expectedArtifactSha256 !== undefined) {
     await input.store.read({ trackId: input.trackId, nodeId: input.nodeId, contentVersion: input.expectedContentVersion, artifactSha256: input.expectedArtifactSha256 });
   }
+  input.assertActivationAllowed?.();
   let response: BinaryPackageResponse;
   try { response = await input.transport.getNodePackage(input.trackId, input.nodeId); } catch (error) { throw mapTransportFailure(error); }
+  input.assertActivationAllowed?.();
   if (response.status !== 200) throw mapPackageResponseFailure(response.status, response.serverCode);
   const verified = await verifyNodePackage({ trackId: input.trackId, nodeId: input.nodeId, packageBytes: response.bytes, headers: response.headers, appVersion: input.appVersion, hash: input.hash, interactionRegistry: input.interactionRegistry });
   if ((input.expectedContentVersion !== undefined && verified.identity.contentVersion !== input.expectedContentVersion) || (input.expectedArtifactSha256 !== undefined && verified.identity.artifactSha256 !== input.expectedArtifactSha256)) throw new NodePackageError("package_identity_mismatch");
   try {
+    input.assertActivationAllowed?.();
     await input.store.writeImmutable(verified);
     const stored = await input.store.read(verified.identity);
     if (!stored || await input.hash.sha256Bytes(stored.artifactBytes) !== verified.manifest.artifactSha256 || !sameBytes(stored.artifactBytes, verified.artifactBytes)) throw new NodePackageError("package_storage_failed");
     input.assertActivationAllowed?.();
     await input.store.activate(input.trackId, input.nodeId, verified.identity);
+    input.assertActivationAllowed?.();
     input.activateRuntime(stored);
     return stored;
   } catch (error) {
@@ -163,6 +167,7 @@ export async function installNodePackage(input: Readonly<{ trackId: string; node
 function mapTransportFailure(error: unknown): NodePackageError {
   if (error instanceof NodePackageError) return error;
   const value = error && typeof error === "object" ? error as Record<string, unknown> : {};
+  if (value.code === "profile_changed") return new NodePackageError("profile_changed", error);
   if (value.code === "app_check_unavailable") return new NodePackageError("app_check_unavailable", error);
   if (value.code === "authentication_required") return new NodePackageError("authentication_required", error);
   if (value.code === "server_error" && typeof value.status === "number") return mapPackageResponseFailure(value.status, typeof value.serverCode === "string" ? value.serverCode : undefined);

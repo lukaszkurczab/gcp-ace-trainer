@@ -1,0 +1,40 @@
+appId: com.lkurczab.patternly.sec03
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "94%,93%"
+- scrollUntilVisible:
+    element: { id: "premium-purchase" }
+    direction: DOWN
+    timeout: 10000
+    centerElement: true
+    visibilityPercentage: 100
+- assertVisible: { id: "premium-purchase", enabled: false }
+- scrollUntilVisible:
+    element: { id: "premium-instant-start-checkbox" }
+    direction: UP
+    timeout: 10000
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn: { id: "premium-instant-start-checkbox" }
+- scrollUntilVisible:
+    element: { id: "premium-purchase" }
+    direction: DOWN
+    timeout: 10000
+    centerElement: true
+    visibilityPercentage: 100
+- assertVisible: { id: "premium-purchase", enabled: true }
+- tapOn: { id: "premium-purchase" }
+- takeScreenshot: "purchase-after-tap"
+- scrollUntilVisible:
+    element: { id: "premium-active" }
+    direction: UP
+    timeout: 10000
+    centerElement: true
+    visibilityPercentage: 50
+- assertVisible: { id: "premium-active" }
+- assertNotVisible: { id: "premium-purchase" }
+- takeScreenshot: "purchase-verified-pl"

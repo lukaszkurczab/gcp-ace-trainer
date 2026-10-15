@@ -6,6 +6,7 @@ import { NodePackageError, NodePackageStorageIntegrityError, NodePackageStorageU
 
 test("Premium package errors have distinct localized-copy keys and actionable recovery policy", () => {
   const entries = [
+    ["profile_changed", "Your profile changed while preparing this topic. Open the topic again in your current profile.", false, false],
     ["entitlement_required", "Premium access is required for this topic. Choose a free topic or check your subscription.", false, true],
     ["entitlement_unavailable", "We couldn't verify Premium access. Check your connection and try again.", true, false],
     ["not_found", "This Premium topic isn't available yet. Choose a free topic to continue.", false, true],
@@ -39,6 +40,7 @@ test("stored integrity and uncertain write outcomes block unsafe retry and free 
 test("safe stored-package failure copy is available in every supported locale", () => {
   const locales = ["en", "et", "es", "fr", "de", "it", "pl"] as const;
   const errors = [
+    new NodePackageError("profile_changed"),
     new NodePackageStorageIntegrityError("unsupported", "pointer_decode"),
     new NodePackageStorageIntegrityError("identity_mismatch", "pointer_identity"),
     new NodePackageStorageIntegrityError("corrupt", "manifest_decode"),

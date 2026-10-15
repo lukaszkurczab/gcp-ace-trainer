@@ -1,0 +1,16 @@
+appId: com.lkurczab.patternly.sec03
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "94%,93%"
+- scrollUntilVisible:
+    element: { id: "premium-offer-summary" }
+    direction: UP
+    timeout: 10000
+    centerElement: true
+    visibilityPercentage: 50
+- assertVisible: { id: "premium-storefront-price" }
+- takeScreenshot: "offer-pl"

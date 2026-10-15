@@ -831,5 +831,6 @@
   "The next case is unavailable.": "El siguiente caso no está disponible.",
   "Initial estimate: about {{minutes}} min": "Estimación inicial: unos {{minutes}} min",
   "No performance evidence for this version yet": "Aún no hay resultados para esta versión del contenido",
-  "Earlier activity and reviews remain available.": "Tu actividad y tus repasos anteriores siguen disponibles."
+  "Earlier activity and reviews remain available.": "Tu actividad y tus repasos anteriores siguen disponibles.",
+  "Your profile changed while preparing this topic. Open the topic again in your current profile.": "Tu perfil cambió mientras se preparaba este tema. Abre el tema de nuevo en tu perfil actual."
 }

@@ -1051,6 +1051,8 @@ test("prepared-profile and explicit recovery keep their existing identity-proof 
   const preparation = bootstrap.slice(bootstrap.indexOf("export async function prepareAuthenticatedAccountBootstrap"), bootstrap.indexOf("export function completeAccountBootstrap"));
   assert.ok(preparation.indexOf("beginIdentityProofBarrier(auth, user, generation, true)") < preparation.indexOf("guardRecoveryBeforePreparation(auth, { generation, barrier: proofBarrier }"), "startup barrier precedes recovery checks that read Auth generations or exchange tokens");
   const explicitFinalize = provider.slice(provider.indexOf("const finalizeExplicitAuthentication"), provider.indexOf("// Firebase publishes a new credential"));
+  assert.match(explicitFinalize, /await admitAuthenticatedBootstrap\(auth, api, user/u);
+  assert.doesNotMatch(explicitFinalize.slice(0, explicitFinalize.indexOf("await admitAuthenticatedBootstrap")), /return \{ kind: "success"/u, "same-UID sign-in must not bypass the fresh durable revoke drain");
   assert.doesNotMatch(explicitFinalize, /guardRecoveryBeforePreparation\(auth\)/u, "explicit login delegates proof ordering to the barrier-first profile preparation path");
   const recoveryTransition = provider.slice(provider.indexOf("const completeExplicitRecoveryAccountTransition"), provider.indexOf("// Firebase publishes a new credential"));
   assert.ok(recoveryTransition.indexOf("beginIdentityProofBarrier(auth, user, generation)") < recoveryTransition.indexOf("getMeWithExchangedSession("));
@@ -1074,8 +1076,12 @@ test("recovery claim denials keep the durable barrier while local generation met
   assert.match(guard, /scope\.acceptRecoveryOperation\(resumed, \{\s*kind: "issueResume",[\s\S]*?deferredFor: pending\.deferredFor/u);
 
   const issueCodes = provider.slice(provider.indexOf("issueRecoveryCodes: (credentials) =>"), provider.indexOf("consumeRecoveryCode: (code) =>"));
-  assert.ok(issueCodes.indexOf("createRecoveryProofScopeRef.current(auth, user") < issueCodes.indexOf("await auth.getAuthorizationGeneration()"));
-  assert.ok(issueCodes.indexOf("proofScope.assertCurrent();", issueCodes.indexOf("await auth.getAuthorizationGeneration()")) > issueCodes.indexOf("await auth.getAuthorizationGeneration()"));
+  const prepareIssueSession = issueCodes.indexOf("await prepareRecoveryIssueSession({");
+  assert.ok(prepareIssueSession > issueCodes.indexOf("createRecoveryProofScopeRef.current(auth, user"));
+  assert.match(issueCodes, /prepareRecoveryIssueSession\(\{[\s\S]*?canContinue: isCurrent/u);
+  const exchange = readFileSync("src/application/account/accountSessionExchange.ts", "utf8");
+  const preparation = exchange.slice(exchange.indexOf("export async function prepareRecoveryIssueSession"), exchange.indexOf("/** Read /me"));
+  assert.match(preparation, /await input\.auth\.getAuthorizationGeneration\(\);\s*if \(!current\(\)\)/u);
   const replacementRequestStart = provider.lastIndexOf("requestRecoveryCodeReplacement: () =>");
   const replacementRequest = provider.slice(replacementRequestStart, provider.indexOf("resumePendingRecovery: () =>", replacementRequestStart));
   assert.ok(replacementRequest.indexOf("createRecoveryProofScopeRef.current(auth, current)") < replacementRequest.indexOf("await auth.getAuthorizationGeneration()"));

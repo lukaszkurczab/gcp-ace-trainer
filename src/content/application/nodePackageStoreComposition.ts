@@ -6,8 +6,8 @@ import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from 
 let stageIdSequence = 0;
 
 /** Profile-scoped composition for the single installed-node package store. */
-export function createProfileNodePackageStore(ids: NodePackageStorageIds = { createId: () => `${Date.now().toString(36)}-${(++stageIdSequence).toString(36)}` }, interactionRegistry: CanonicalInteractionRegistry = canonicalInteractionRegistry): NodePackageStore {
-  return createNodePackageStore({ files: createExpoNodePackageFilePort(), pointers: getKeyValueStorage(), ids, interactionRegistry });
+export function createProfileNodePackageStore(ids: NodePackageStorageIds = { createId: () => `${Date.now().toString(36)}-${(++stageIdSequence).toString(36)}` }, interactionRegistry: CanonicalInteractionRegistry = canonicalInteractionRegistry, assertActivationAllowed?: () => void): NodePackageStore {
+  return createNodePackageStore({ files: createExpoNodePackageFilePort(), pointers: getKeyValueStorage(), ids, interactionRegistry, assertActivationAllowed });
 }
 
 /** Cheap in-memory profile scope check; null means profile storage is closed. */

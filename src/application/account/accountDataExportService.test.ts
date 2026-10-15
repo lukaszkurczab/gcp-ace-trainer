@@ -143,3 +143,9 @@ test("profile cleanup leaves legacy unscoped exports because their owner cannot 
   ] }, { id: "guest-profile", kind: "guest", accountId: null });
   assert.deepEqual(deleted, [`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}guest-profile-export.json`]);
 });
+
+test("v1 purchase history is preserved while existing exported files remain readable", () => {
+  assert.equal(isValidAccountDataExport(validExport), true);
+  assert.equal(isValidAccountDataExport({ ...validExport, accountContext: { ...validExport.accountContext, purchaseHistory: [{ kind: "transaction", status: "reconciliation_required" }] } }), true);
+  assert.equal(isValidAccountDataExport({ ...validExport, accountContext: { ...validExport.accountContext, purchaseHistory: [null] } }), false);
+});

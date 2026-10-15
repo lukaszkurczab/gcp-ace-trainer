@@ -118,7 +118,7 @@ test("read-only cached access distinguishes policy denial from unavailable evide
 
 test("Premium distinguishes an account waiting for online verification from Guest or signed-out access", () => {
   const screen = readFileSync("src/features/premium/PremiumPurchaseScreen.tsx", "utf8");
-  assert.match(screen, /const isLocalOfflineAccount = account\.state\.kind === "localOffline"/u);
+  assert.match(screen, /const isLocalOfflineAccount = accountKind === "localOffline"/u);
   assert.match(screen, /isLocalOfflineAccount \? "premiumOfflineAccountRequiredDetail" : "premiumAccountRequiredDetail"/u);
   assert.match(screen, /isLocalOfflineAccount \? "premiumOfflineAccountRequired" : "premiumAccountRequired"/u);
 

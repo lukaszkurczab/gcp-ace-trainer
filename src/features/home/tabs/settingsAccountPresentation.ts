@@ -60,7 +60,7 @@ export function getSettingsAccountPresentation(state: AccountState): SettingsAcc
     case "providerRegistrationRequired":
       return { accountDataStatus: null, canOpenAccount: false, canManageAccount: false, canSignOut: false, email: state.user.email, status: "busy" };
     case "deletionPending":
-      return { accountDataStatus: state.status, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: state.user.email, status: "unavailable" };
+      return { accountDataStatus: state.status, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: state.user?.email ?? null, status: "unavailable" };
     case "recoveryPending":
       return { accountDataStatus: null, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: null, status: "unavailable" };
     case "verificationPending":

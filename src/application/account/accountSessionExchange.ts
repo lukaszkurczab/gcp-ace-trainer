@@ -1,6 +1,37 @@
 import { FirebaseAuthClientError, type FirebaseAuthClient, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import type { MeResponseDto, PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { AccountSessionGenerationStaleError } from "./profileStartupCoordination";
+import type { RecoveryOperationSnapshot } from "./recoveryOperationCoordinator";
+
+/** Explicit ISSUE may repair a missing claim; an existing issue keeps its vault pin. */
+export async function prepareRecoveryIssueSession(input: Readonly<{
+  api: Pick<PatternlyApiClient, "exchangeAccountSession">;
+  auth: Pick<FirebaseAuthClient, "getAuthorizationGeneration" | "getSnapshot" | "signInWithSessionToken" | "reauthenticateWithCredential">;
+  credentials: Parameters<FirebaseAuthClient["reauthenticateWithCredential"]>[0];
+  pending: RecoveryOperationSnapshot;
+  canContinue: () => boolean;
+  onExchangeStarting: () => void;
+  onGenerationCaptured?: (generation: number | null) => void;
+  user: FirebaseAuthUserSnapshot;
+}>): Promise<number> {
+  const current = () => input.canContinue() && input.auth.getSnapshot()?.uid === input.user.uid;
+  const { pending } = input;
+  if (!current()) throw new AccountSessionGenerationStaleError();
+  if (pending.kind !== "idle" && pending.kind !== "terminal" && pending.kind !== "issue") throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
+  if (pending.kind === "issue" && (pending.firebaseUid !== input.user.uid || pending.deferredFor)) throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
+  const observed = await input.auth.getAuthorizationGeneration();
+  if (!current()) throw new AccountSessionGenerationStaleError();
+  if (observed !== null && (!Number.isSafeInteger(observed) || observed < 1)) throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
+  const required = pending.kind === "issue" ? pending.authorizationGeneration : observed;
+  if (pending.kind === "issue" && observed !== null && observed !== required) throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
+  input.onGenerationCaptured?.(required);
+  await input.auth.reauthenticateWithCredential(input.credentials);
+  if (!current()) throw new AccountSessionGenerationStaleError();
+  const sessionInput = { ...input, canContinue: current };
+  return required === null
+    ? ensureAccountSessionGeneration(sessionInput)
+    : ensureRecoveryIssueSignInSession({ ...sessionInput, isExplicitSignInCurrent: current, requiredAuthorizationGeneration: required });
+}
 
 /** Read /me only after an ordinary Firebase identity has entered a pinned app session. */
 export async function getMeWithExchangedSession(input: Readonly<{

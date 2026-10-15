@@ -275,3 +275,87 @@ test("a recovery sign-in returning another generation fails before ACK or /me", 
   await assert.rejects(runRecoveryRead(), (error: unknown) => error instanceof FirebaseAuthClientError && error.code === "auth/authorization-generation-invalid");
   assert.deepEqual(calls, ["read-generation", "read-generation", "exchange", "block-observer", "sign-in-session-token", "read-generation"]);
 });
+
+test("explicit new ISSUE repairs a missing claim after password reauth before durable intent and POST", async () => {
+  const { prepareRecoveryIssueSession } = await import("./accountSessionExchange");
+  const { createRecoveryOperationCoordinator } = await import("./recoveryOperationCoordinator");
+  const { createRecoveryOperationVault } = await import("../../infrastructure/security/recoveryOperationVault");
+  const calls: string[] = [];
+  let generation: number | null = null;
+  let stored: string | null = null;
+  const vault = createRecoveryOperationVault({
+    getItemAsync: async () => stored,
+    setItemAsync: async (_key, value) => { calls.push("persist-intent"); stored = value; },
+    deleteItemAsync: async () => { stored = null; },
+  });
+  const auth = {
+    getSnapshot: () => user,
+    getAuthorizationGeneration: async () => generation,
+    reauthenticateWithCredential: async () => { calls.push("reauth"); generation = null; return user; },
+    signInWithSessionToken: async () => { calls.push("session-sign-in"); generation = 3; return user; },
+    signInWithRecoveryToken: async () => user,
+  };
+  const prepared = await prepareRecoveryIssueSession({
+    auth, api: { exchangeAccountSession: async () => { calls.push("exchange"); return { customToken: "fixture-token" }; } },
+    user, credentials: { kind: "password", password: "fixture-password" },
+    pending: { kind: "idle", blocksProfilePreparation: false }, canContinue: () => true,
+    onExchangeStarting: () => calls.push("block-observer"),
+  });
+  assert.equal(prepared, 3);
+  const operationId = "12345678-1234-4234-8234-123456789012";
+  const coordinator = createRecoveryOperationCoordinator({
+    auth, vault, newOperationId: () => operationId,
+    api: {
+      issueRecoveryCodes: async (id) => {
+        calls.push("issue-post");
+        const durable = await vault.load();
+        assert.equal(durable?.operationId, id);
+        assert.equal(durable?.kind === "issue" && durable.authorizationGeneration, 3);
+        throw Object.assign(new Error("response_lost"), { status: 0 });
+      },
+      getRecoveryCodeIssueStatus: async id => ({ operationId: id, status: "provider_retryable" }),
+      acknowledgeRecoveryCodesSaved: async () => { throw Error("unexpected_ack"); },
+      consumeRecoveryCode: async () => { throw Error("unexpected_consume"); },
+      getRecoveryCodeConsumeStatus: async () => { throw Error("unexpected_consume_status"); },
+      acknowledgeRecoveryCodeConsumption: async () => { throw Error("unexpected_consume_ack"); },
+    },
+  });
+  const result = await coordinator.startIssue({ firebaseUid: user.uid, authorizationGeneration: prepared });
+  assert.equal(result.kind, "issue");
+  assert.equal(result.kind === "issue" && result.operationId, operationId);
+  assert.deepEqual(calls, ["reauth", "exchange", "block-observer", "session-sign-in", "persist-intent", "issue-post"]);
+});
+
+test("explicit ISSUE preserves an existing vault generation and denies foreign or consume operations", async t => {
+  const { prepareRecoveryIssueSession } = await import("./accountSessionExchange");
+  const pending = {
+    kind: "issue", operationId: "12345678-1234-4234-8234-123456789012", firebaseUid: user.uid,
+    authorizationGeneration: 7, status: "in_progress", generationId: null, codes: null,
+    savedIntent: false, replacementPending: false, deferredFor: null, accountResolution: null,
+    needsAccountResolution: true, failure: null, blocksProfilePreparation: true,
+  } as const;
+  for (const scenario of ["exact", "new-generation", "foreign", "consume", "deferred", "stale-after-reauth"] as const) {
+    await t.test(scenario, async () => {
+      const calls: string[] = [];
+      let generation: number | null = null;
+      let current = true;
+      const operation = scenario === "foreign" ? { ...pending, firebaseUid: "other-uid" }
+        : scenario === "deferred" ? { ...pending, deferredFor: { firebaseUid: user.uid, authorizationGeneration: 8 } }
+        : scenario === "consume" ? { kind: "consume", operationId: pending.operationId, status: "in_progress", expectedFirebaseUid: null, expectedAuthorizationGeneration: null, needsAccountResolution: true, signInInFlight: false, failure: null, blocksProfilePreparation: true } as const
+        : pending;
+      const run = prepareRecoveryIssueSession({
+        pending: operation, user, credentials: { kind: "password", password: "fixture-password" },
+        canContinue: () => current, onExchangeStarting: () => calls.push("block-observer"),
+        api: { exchangeAccountSession: async () => { calls.push("exchange"); return { customToken: "fixture-token" }; } },
+        auth: {
+          getSnapshot: () => user, getAuthorizationGeneration: async () => generation,
+          reauthenticateWithCredential: async () => { calls.push("reauth"); if (scenario === "stale-after-reauth") current = false; return user; },
+          signInWithSessionToken: async () => { calls.push("session-sign-in"); generation = scenario === "new-generation" ? 8 : 7; return user; },
+        },
+      });
+      if (scenario === "exact") assert.equal(await run, 7);
+      else await assert.rejects(run, scenario === "stale-after-reauth" ? AccountSessionGenerationStaleError : FirebaseAuthClientError);
+      assert.deepEqual(calls, ["foreign", "consume", "deferred"].includes(scenario) ? [] : scenario === "stale-after-reauth" ? ["reauth"] : ["reauth", "exchange", "block-observer", "session-sign-in"]);
+    });
+  }
+});

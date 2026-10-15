@@ -1,3 +1,4 @@
+import { parseContentPackageDescriptor } from "./contentPackageDescriptor";
 import { isAccountWireState } from "../../domain/account/accountWireState";
 /**
  * Synchronized with patternly-backend/openapi/patternly-v1.json.
@@ -454,6 +455,7 @@ export type AccountDataExportDto = Readonly<{
     entitlements: readonly Readonly<Record<string, unknown>>[];
     legalAcceptances: readonly Readonly<Record<string, unknown>>[];
     purchaseConfirmations: readonly Readonly<Record<string, unknown>>[];
+    purchaseHistory?: readonly Readonly<Record<string, unknown>>[];
     devices: readonly Readonly<Record<string, unknown>>[];
     syncMetadata: Readonly<Record<string, unknown>>;
     exportHistory: readonly Readonly<Record<string, unknown>>[];
@@ -491,10 +493,10 @@ export type CreateContentReportResponseDto = Readonly<{ report: ContentReportDto
 export type AdminContentReportsResponseDto = Readonly<{ reports: readonly ContentReportDto[] }>;
 export type TransitionContentReportResponseDto = Readonly<{ report: ContentReportDto; duplicate: boolean }>;
 export type HealthResponseDto = Readonly<{ status: "ok"; service: "patternly-backend" }>;
-export type ReadyResponseDto = Readonly<{ status: "ready" | "not_ready"; checks: Readonly<{ database: boolean; authentication: boolean; providerReader: boolean }> }>;
+export type ReadyResponseDto = Readonly<{ status: "ready" | "not_ready"; checks: Readonly<{ database: boolean; authentication: boolean; providerReader: boolean; contentPackages: boolean }> }>;
 export type OpenApiResponseDto = Readonly<{ openapi: string; paths: Readonly<Record<string, unknown>> }>;
 
-export type PatternlyApiClientErrorCode = "client_unconfigured" | "authentication_required" | "app_check_unavailable" | "transport_failed" | "invalid_response" | "server_error" | "request_timeout";
+export type PatternlyApiClientErrorCode = "profile_changed" | "client_unconfigured" | "authentication_required" | "app_check_unavailable" | "transport_failed" | "invalid_response" | "server_error" | "request_timeout";
 export type AccountRegistrationInputDto = Readonly<{
   termsVersion: string;
   termsLocale: "en" | "pl";
@@ -604,6 +606,32 @@ function parseDeletionOperationStatus(value: unknown, expectedOperationId: strin
   return Object.freeze({ status: value.status as DeletionOperationStatusDto["status"], operationId: value.operationId, proofId: value.proofId });
 }
 
+export type PurchaseAttemptDto = Readonly<{ attemptId: string; outcome: "accepted" | "initiated" | "pending" | "reconciliation_required" | "bound" | "cancelled" | "closed_unresolved" | "expired_unresolved"; acceptedAt: string; startExpiresAt: string; initiatedAt: string | null; transactionKey: string | null; resolutionReason: string | null; dispatchAllowed?: boolean }>;
+export type PurchaseCaseDto = Readonly<{ transactionKey: string; revision: number; status: "bound" | "reconciliation_required" | "closed_unresolved" | "expired_unresolved"; resolutionReason: string | null; confirmationId: string | null; receiptId: string | null }>;
+export type PurchaseAttemptCommandDto = Readonly<{ action: "claim" | "pending" }> | Readonly<{ action: "candidate"; transactionId: string }> | Readonly<{ action: "cancelled"; source: "original_sdk_operation" }>;
+
+export function parsePurchaseAttempt(value: unknown, expectedId: string): Readonly<{ attempt: PurchaseAttemptDto }> {
+  if (!isRecord(value) || !isRecord(value.attempt)) return invalidResponse();
+  const a = value.attempt;
+  if (a.attemptId !== expectedId || !isUuid(a.attemptId) || !["accepted", "initiated", "pending", "reconciliation_required", "bound", "cancelled", "closed_unresolved", "expired_unresolved"].includes(String(a.outcome))
+    || !isIsoDate(a.acceptedAt) || !isIsoDate(a.startExpiresAt) || Date.parse(a.startExpiresAt) <= Date.parse(a.acceptedAt)
+    || !(a.initiatedAt === null || isIsoDate(a.initiatedAt)) || !(a.transactionKey === null || (typeof a.transactionKey === "string" && SHA256_PATTERN.test(a.transactionKey)))
+    || !(a.resolutionReason === null || typeof a.resolutionReason === "string") || !(a.dispatchAllowed === undefined || typeof a.dispatchAllowed === "boolean")
+    || (a.dispatchAllowed === true && (a.outcome !== "initiated" || a.initiatedAt === null || Date.parse(String(a.initiatedAt)) < Date.parse(a.acceptedAt) || Date.parse(String(a.initiatedAt)) >= Date.parse(a.startExpiresAt)))
+    || (a.outcome === "bound" && a.transactionKey === null)) return invalidResponse();
+  return Object.freeze({ attempt: Object.freeze({ attemptId: a.attemptId, outcome: a.outcome as PurchaseAttemptDto["outcome"], acceptedAt: a.acceptedAt, startExpiresAt: a.startExpiresAt, initiatedAt: a.initiatedAt as string | null, transactionKey: a.transactionKey as string | null, resolutionReason: a.resolutionReason as string | null, ...(a.dispatchAllowed === undefined ? {} : { dispatchAllowed: a.dispatchAllowed }) }) });
+}
+function parsePurchaseCases(value: unknown): Readonly<{ items: readonly PurchaseCaseDto[]; truncated: boolean }> {
+  if (!isRecord(value) || !Array.isArray(value.items) || value.items.length > 100 || typeof value.truncated !== "boolean") return invalidResponse();
+  const items = value.items.map((item: unknown) => {
+    if (!isRecord(item) || typeof item.transactionKey !== "string" || !/^(event-|attempt-)?[a-f0-9]{64}$/u.test(item.transactionKey) || !isFiniteNonNegativeInteger(item.revision)
+      || !["bound", "reconciliation_required", "closed_unresolved", "expired_unresolved"].includes(String(item.status)) || !(item.resolutionReason === null || typeof item.resolutionReason === "string")
+      || !(item.confirmationId === null || isUuid(item.confirmationId)) || !(item.receiptId === null || (typeof item.receiptId === "string" && SHA256_PATTERN.test(item.receiptId)))) return invalidResponse();
+    return Object.freeze({ transactionKey: item.transactionKey, revision: item.revision, status: item.status as PurchaseCaseDto["status"], resolutionReason: item.resolutionReason as string | null, confirmationId: item.confirmationId as string | null, receiptId: item.receiptId as string | null });
+  });
+  return Object.freeze({ items: Object.freeze(items), truncated: value.truncated });
+}
+
 export class PatternlyApiClientError extends Error {
   public constructor(readonly code: PatternlyApiClientErrorCode, readonly status?: number, readonly serverCode?: string, readonly retryAfterSeconds?: number, readonly details?: SyncConflictDetails) {
     super(code);
@@ -621,8 +649,11 @@ export type PatternlyApiClient = Readonly<{
   exchangeAccountSession: () => Promise<Readonly<{ customToken: string }>>;
   registerAccount: (input: AccountRegistrationInputDto) => Promise<AccountRegistrationResponseDto>;
   recordLegalAcceptance: (termsVersion: string) => Promise<Readonly<{ acceptance: Readonly<{ termsVersion: string; acceptedAt: string }> }>>;
-  recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>) => Promise<Readonly<{ confirmation: Readonly<{ confirmationId: string; acceptedAt: string }> }>>;
-  getEntitlements: () => Promise<EntitlementsResponseDto>;
+  recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>, isCurrent?: () => boolean) => Promise<Readonly<{ confirmation: Readonly<{ confirmationId: string; acceptedAt: string; attemptExpiresAt: string }> }>>;
+  getPurchaseAttempt: (attemptId: string, isCurrent?: () => boolean) => Promise<Readonly<{ attempt: PurchaseAttemptDto }>>;
+  commandPurchaseAttempt: (attemptId: string, command: PurchaseAttemptCommandDto, isCurrent?: () => boolean) => Promise<Readonly<{ attempt: PurchaseAttemptDto }>>;
+  getPurchaseCases: (isCurrent?: () => boolean) => Promise<Readonly<{ items: readonly PurchaseCaseDto[]; truncated: boolean }>>;
+  getEntitlements: (isCurrent?: () => boolean) => Promise<EntitlementsResponseDto>;
   getProgress: () => Promise<ProgressResponseDto>;
   exportAccountData: () => Promise<AccountDataExportDto>;
   createPrivacyRequest: (right: PrivacyRequestRightDto, narrative?: string) => Promise<Readonly<{ request: PrivacyRequestListItemDto }>>;
@@ -651,7 +682,7 @@ export type PatternlyApiClient = Readonly<{
   getDeletionOperationStatus: (operationId: string, operationSecret: string) => Promise<DeletionOperationStatusDto>;
   getTracks: () => Promise<TracksResponseDto>;
   getContentVersions: () => Promise<ContentVersionsResponseDto>;
-  getContentPackage: (trackId: string, nodeId: string) => Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array; serverCode?: string }>>;
+  getContentPackage: (trackId: string, nodeId: string, isCurrent?: () => boolean) => Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array; serverCode?: string }>>;
   createContentReport: (input: CreateContentReportDto, appCheckToken: string) => Promise<CreateContentReportResponseDto>;
   getAdminContentReports: () => Promise<AdminContentReportsResponseDto>;
   transitionAdminContentReport: (clientSubmissionId: string, status: ContentReportStatusDto) => Promise<TransitionContentReportResponseDto>;
@@ -678,7 +709,8 @@ export function createPatternlyApiClient(input: Readonly<{
   const timeoutMs = input.timeoutMs ?? 10_000;
 
   type AuthenticationMode = "none" | "optional" | "required";
-  async function requestJson<T>(path: string, method: "GET" | "POST" | "PATCH", body?: unknown, authentication: AuthenticationMode = "required", extraHeaders: Readonly<Record<string, string>> = {}): Promise<T> {
+  async function requestJson<T>(path: string, method: "GET" | "POST" | "PATCH", body?: unknown, authentication: AuthenticationMode = "required", extraHeaders: Readonly<Record<string, string>> = {}, isCurrent: () => boolean = () => true): Promise<T> {
+    if (!isCurrent()) throw new PatternlyApiClientError("authentication_required");
     const url = new URL(path, origin);
     const publicPath = path === "/health" || path === "/ready" || path === "/openapi.json";
     if (url.origin !== origin.origin || (!path.startsWith("/v1/") && !publicPath)) throw new PatternlyApiClientError("client_unconfigured");
@@ -716,6 +748,8 @@ export function createPatternlyApiClient(input: Readonly<{
       }
       let response: Response;
       try {
+        // Token/App Check awaits must not dispatch an old actor’s command with a new account token.
+        if (!isCurrent()) throw new PatternlyApiClientError("authentication_required");
         response = await withinDeadline(fetchImplementation(url, {
           method,
           signal: controller.signal,
@@ -754,7 +788,9 @@ export function createPatternlyApiClient(input: Readonly<{
     }
   }
 
-  async function requestContentPackage(trackId: string, nodeId: string): Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array; serverCode?: string }>> {
+  async function requestContentPackage(trackId: string, nodeId: string, isCurrent: () => boolean = () => true): Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array; serverCode?: string }>> {
+    const assertCurrent = () => { if (!isCurrent()) throw new PatternlyApiClientError("profile_changed"); };
+    assertCurrent();
     if (!isSafePathIdentity(trackId) || !isSafePathIdentity(nodeId)) throw new PatternlyApiClientError("invalid_response");
     const path = `/v1/content/packages/${encodeURIComponent(trackId)}/${encodeURIComponent(nodeId)}`;
     const url = new URL(path, origin);
@@ -765,22 +801,28 @@ export function createPatternlyApiClient(input: Readonly<{
     try {
       let token: string | null;
       try { token = await withinDeadline(input.getIdToken()); }
-      catch (error) { if (error instanceof PatternlyApiClientError) throw error; throw new PatternlyApiClientError("transport_failed"); }
+      catch (error) { assertCurrent(); if (error instanceof PatternlyApiClientError) throw error; throw new PatternlyApiClientError("transport_failed"); }
+      assertCurrent();
       if (!token) throw new PatternlyApiClientError("authentication_required");
       let appCheckToken: string | null;
       try { appCheckToken = await withinDeadline(getAppCheckToken()); }
-      catch { throw new PatternlyApiClientError("app_check_unavailable"); }
+      catch (error) { assertCurrent(); if (error instanceof PatternlyApiClientError) throw error; throw new PatternlyApiClientError("app_check_unavailable"); }
+      assertCurrent();
       if (!appCheckToken?.trim()) throw new PatternlyApiClientError("app_check_unavailable");
       let response: Response;
-      try { response = await withinDeadline(fetchImplementation(url, { method: "GET", signal: controller.signal, headers: { authorization: `Bearer ${token}`, "x-firebase-appcheck": appCheckToken } })); }
-      catch (error) { if (error instanceof PatternlyApiClientError) throw error; throw new PatternlyApiClientError("transport_failed"); }
+      try { response = await withinDeadline(fetchImplementation(url, { method: "GET", signal: controller.signal, redirect: "error", credentials: "omit", headers: { authorization: `Bearer ${token}`, "x-firebase-appcheck": appCheckToken } })); }
+      catch (error) { assertCurrent(); if (error instanceof PatternlyApiClientError) throw error; throw new PatternlyApiClientError("transport_failed"); }
+      assertCurrent();
+      if (response.redirected) throw new PatternlyApiClientError("invalid_response");
       let bytes: Uint8Array;
-      try { bytes = await withinDeadline(readBoundedBytes(response, 2 * 1024 * 1024)); }
+      try { bytes = await withinDeadline(readBoundedBytes(response, 16 * 1024)); }
       catch (error) {
+        assertCurrent();
         if (error instanceof PatternlyApiClientError) throw error;
         if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
         throw new PatternlyApiClientError("transport_failed");
       }
+      assertCurrent();
       if (!response.ok) {
         let serverCode: string | undefined;
         try {
@@ -789,7 +831,21 @@ export function createPatternlyApiClient(input: Readonly<{
         } catch { /* The status remains actionable even when the server error body is malformed. */ }
         throw new PatternlyApiClientError("server_error", response.status, serverCode);
       }
-      return Object.freeze({ status: response.status, headers: response.headers, bytes });
+      if (response.status !== 200 || response.headers.get("content-type")?.split(";", 1)[0]?.trim() !== "application/json") throw new PatternlyApiClientError("invalid_response");
+      let descriptor: ReturnType<typeof parseContentPackageDescriptor>;
+      try { descriptor = parseContentPackageDescriptor(JSON.parse(new TextDecoder().decode(bytes)), trackId, nodeId); }
+      catch { throw new PatternlyApiClientError("invalid_response"); }
+      assertCurrent();
+      let download: Response;
+      try { download = await withinDeadline(fetchImplementation(descriptor.url, { method: "GET", signal: controller.signal, redirect: "error", credentials: "omit" })); }
+      catch (error) { assertCurrent(); if (error instanceof PatternlyApiClientError) throw error; throw new PatternlyApiClientError("transport_failed"); }
+      assertCurrent();
+      if (!download.ok) throw new PatternlyApiClientError("transport_failed");
+      if (download.redirected || download.status !== 200 || download.headers.get("content-type") !== "application/gzip" || download.headers.get("content-encoding")) throw new PatternlyApiClientError("invalid_response");
+      try { bytes = await withinDeadline(readBoundedBytes(download, 2 * 1024 * 1024)); }
+      catch (error) { assertCurrent(); if (error instanceof PatternlyApiClientError) throw error; throw new PatternlyApiClientError("transport_failed"); }
+      assertCurrent();
+      return Object.freeze({ status: 200, headers: descriptor.headers, bytes });
     } finally { if (timeoutId !== undefined) clearTimeout(timeoutId); }
   }
 
@@ -808,8 +864,15 @@ export function createPatternlyApiClient(input: Readonly<{
     },
     registerAccount: async (body) => parseAccountRegistrationResponse(await requestJson<unknown>("/v1/account/registration", "POST", body)),
     recordLegalAcceptance: (termsVersion) => requestJson("/v1/legal-acceptances", "POST", { termsVersion, minimumAgeConfirmed: 18 }),
-    recordPurchaseConfirmation: (body) => requestJson("/v1/purchase-confirmations", "POST", body),
-    getEntitlements: () => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET"),
+    recordPurchaseConfirmation: async (body, isCurrent) => {
+      const response = await requestJson<unknown>("/v1/purchase-confirmations", "POST", body, "required", {}, isCurrent);
+      if (!isRecord(response) || !isRecord(response.confirmation) || response.confirmation.confirmationId !== body.confirmationId || !isIsoDate(response.confirmation.acceptedAt) || !isIsoDate(response.confirmation.attemptExpiresAt) || Date.parse(response.confirmation.attemptExpiresAt) <= Date.parse(response.confirmation.acceptedAt)) return invalidResponse();
+      return Object.freeze({ confirmation: Object.freeze({ confirmationId: body.confirmationId, acceptedAt: response.confirmation.acceptedAt, attemptExpiresAt: response.confirmation.attemptExpiresAt }) });
+    },
+    getPurchaseAttempt: async (attemptId, isCurrent) => { if (!isUuid(attemptId)) return invalidResponse(); return parsePurchaseAttempt(await requestJson<unknown>(`/v1/purchase-attempts/${encodeURIComponent(attemptId)}`, "GET", undefined, "required", {}, isCurrent), attemptId); },
+    commandPurchaseAttempt: async (attemptId, body, isCurrent) => { if (!isUuid(attemptId)) return invalidResponse(); return parsePurchaseAttempt(await requestJson<unknown>(`/v1/purchase-attempts/${encodeURIComponent(attemptId)}`, "POST", body, "required", {}, isCurrent), attemptId); },
+    getPurchaseCases: async (isCurrent) => parsePurchaseCases(await requestJson<unknown>("/v1/purchase-cases", "GET", undefined, "required", {}, isCurrent)),
+    getEntitlements: (isCurrent) => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET", undefined, "required", {}, isCurrent),
     getProgress: async () => {
       const records: ProgressRecordDto[] = [];
       let pageToken: string | null = null;

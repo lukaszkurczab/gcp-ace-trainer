@@ -1,0 +1,15 @@
+appId: com.lkurczab.patternly.sec03
+---
+- pressKey: Home
+- launchApp:
+    clearState: false
+    stopApp: false
+- scrollUntilVisible:
+    element: { id: "premium-active" }
+    direction: UP
+    timeout: 10000
+    centerElement: true
+    visibilityPercentage: 50
+- assertVisible: { id: "premium-active" }
+- assertNotVisible: { id: "premium-purchase" }
+- takeScreenshot: "${EVIDENCE_FILE}"

@@ -1,8 +1,9 @@
+import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent } from "../../infrastructure/storage/mmkvClient";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import type { PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { createProfileNodePackageStore, getActiveNodePackageScopeKey } from "./nodePackageStoreComposition";
-import { installNodePackage } from "../runtime/nodeContentPackage";
+import { installNodePackage, NodePackageError } from "../runtime/nodeContentPackage";
 import { findPremiumNodeOfferForIdentity, getLocalSmokePremiumNodePackageTransport } from "./premiumNodeOffers";
 import { getAvailablePremiumNodeOffer } from "./premiumNodeOfferAccess";
 
@@ -13,13 +14,17 @@ export async function installPremiumNodeOffer(input: Readonly<{ api: Pick<Patter
   if (offer.source === "local_smoke_fixture" && !localTransport) throw new Error("local_smoke_package_transport_unavailable");
   const scopeKey = getActiveNodePackageScopeKey();
   if (!scopeKey) throw new Error("encrypted_storage_not_initialized");
-  const store = createProfileNodePackageStore();
+  const lease = captureActiveProfileStorageLease();
+  if (!lease) throw new NodePackageError("profile_changed");
+  const isCurrent = () => isActiveProfileStorageLeaseCurrent(lease) && getActiveNodePackageScopeKey() === scopeKey;
+  const assertCurrent = () => { if (!isCurrent()) throw new NodePackageError("profile_changed"); input.assertActivationAllowed?.(); };
+  const store = createProfileNodePackageStore(undefined, undefined, assertCurrent);
   await store.listActive();
   const active = await store.getActive(offer.trackId, offer.nodeId);
   if (active?.contentVersion === offer.contentVersion && active.artifactSha256 === offer.artifactSha256) {
     const installed = await store.read(active);
     if (installed) {
-      if (getActiveNodePackageScopeKey() !== scopeKey) throw new Error("node_package_profile_scope_changed");
+      assertCurrent();
       contentPackageRuntimeOwner.registerInstalledNodePackage(installed, scopeKey);
       return installed;
     }
@@ -30,8 +35,8 @@ export async function installPremiumNodeOffer(input: Readonly<{ api: Pick<Patter
     appVersion: input.appVersion,
     expectedContentVersion: offer.contentVersion,
     expectedArtifactSha256: offer.artifactSha256,
-    assertActivationAllowed: () => { if (getActiveNodePackageScopeKey() !== scopeKey) throw new Error("node_package_profile_scope_changed"); input.assertActivationAllowed?.(); },
-    transport: localTransport ?? { getNodePackage: (trackId, nodeId) => input.api.getContentPackage(trackId, nodeId) },
+    assertActivationAllowed: assertCurrent,
+    transport: localTransport ?? { getNodePackage: (trackId, nodeId) => input.api.getContentPackage(trackId, nodeId, isCurrent) },
     hash: contentHasher,
     store,
     activateRuntime: (record) => {

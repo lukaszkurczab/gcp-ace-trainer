@@ -1,0 +1,49 @@
+{
+  "schema": "patternly.recovery14-evidence.v1",
+  "result": "PASS_SCOPE14",
+  "appBaseline": "830c1bc1daf1e49a44cb79c72cf2d1ae95ab1c29",
+  "backendHead": "32b409384b68f83a18972d2a4e145d202712bd6f",
+  "appFiles": {
+    "scripts/qa/assertRecoveryIosEvidence.mjs": "f1cf793294deb03c25bbdd5e2324476727e863e0b21d75c40ff9fcdacddffdbe",
+    "scripts/qa/readRecoveryRemote.mjs": "7cb0caa531ca9a65ff983175f8108a0a00d48390c65955fb10c38fb64a0ea2a9",
+    "scripts/qa/recoveryAccountIos.mjs": "56d5afdd9ad97b19f50dcba2f79e3ad10f020c82a96b6a37268b8f64971ddba2",
+    "scripts/qa/recoveryNativeFault.cjs": "649d5633c2347200a1a9dde521955e00977af7f5e623848f2528715907b8c6f1",
+    "scripts/recoveryOperationIntegration.emulator.test.ts": "3e6def43d145b0e7d0774c7506d82c96d07d150f3b5129308e0c3c4f8fb26d7c",
+    "src/application/account/AccountSessionProvider.tsx": "aeb1a0d56d5128143a546e589ce14df9bc9734e5975376ce0bbb613d28b27235",
+    "src/application/account/accountIdentityComposition.test.ts": "de14692f17e020488094e28bc0be1deeb6d5686e1201133582d1771424189ede",
+    "src/application/account/accountSessionExchange.test.ts": "f3edb646c8cac94d0fc3d892080e7dee17a9a54efd83487bfc4fa2ef72ae1b42",
+    "src/application/account/accountSessionExchange.ts": "0d956c993bde377be628ba6b84da642373875465d0f91f990a02ffb080b27d0f",
+    "src/application/account/recoveryIssueCommandGuard.test.ts": "cb1466f9135375700ae363cf5a142b1d74757322f489e97c73702389122cdca7",
+    "src/application/account/recoveryIssueCommandGuard.ts": "4630254cdc98f7594530981ae3fb74f5502a93c45259fec07179b9d5d998f239"
+  },
+  "nativeRuntimeSourceCopy": {
+    "files": 707,
+    "differences": []
+  },
+  "evidenceHashes": {
+    "integration.log": "2dd6faff1bb1f2bbb06b74d399477be6c306c9f67248da36f0c5a0bdf459611d",
+    "revoke-rerun.log": "cb3eec644d8a0ab1eb2f4df8531e1f5f10bb083cde6ad5cc2d913c1da3c8e7e3",
+    "targeted-final.tap": "adde4f0c92f763f3b7736e23d0706c7dbf3acdeae9ee2d981ca709b8db89c4ed",
+    "typecheck-final.log": "22c83f1ac25b854ee6b451e80ec133d2e6b804f4f4a61055e5624328bff86ab3",
+    "native-assertions.json": "bcc554fc01077c8a823b727c98a0cfe02a3528d7727f1e7b225c2b500fc28585",
+    "content-boundary.log": "b53b6b76837ae0f573e69c69856be2930ca32f2381e7602b1f603e30fa43f938",
+    "privacy-boundary.log": "bcb4b78593b6751177c7facf707db4f73a2da89f45bfd01153c277cea6945197",
+    "recovery-check.log": "1a16a2c8cbddfb58fd60c88ea435f637c2ee78b133582ead3fbdc00cdb6c4048"
+  },
+  "nativeAssertions": {
+    "result": "PASS",
+    "nativeRestarts": 4,
+    "sameIssueResult": true,
+    "consumeIntentResultSessionAck": true,
+    "learningAndSettingsPreserved": true,
+    "guestPreserved": true,
+    "accountLifecycleAndPremiumCache": "allowed-refresh-not-byte-equality"
+  },
+  "limits": [
+    "Native ISSUE POST response loss covered by HTTP/SDK, not native",
+    "Empty guest fixture",
+    "Context commands via debugger, not full UI taps",
+    "Existing recovery-check baseline failure",
+    "No cloud/provider/physical/release acceptance"
+  ]
+}

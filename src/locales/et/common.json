@@ -831,5 +831,6 @@
   "The next case is unavailable.": "Järgmine juhtum pole saadaval.",
   "Initial estimate: about {{minutes}} min": "Esialgne hinnang: umbes {{minutes}} min",
   "No performance evidence for this version yet": "Selle sisuversiooni kohta pole veel tulemusi",
-  "Earlier activity and reviews remain available.": "Varasemad tegevused ja kordamised on endiselt saadaval."
+  "Earlier activity and reviews remain available.": "Varasemad tegevused ja kordamised on endiselt saadaval.",
+  "Your profile changed while preparing this topic. Open the topic again in your current profile.": "Sinu profiil muutus selle teema ettevalmistamise ajal. Ava teema uuesti oma praeguses profiilis."
 }
