@@ -5,11 +5,10 @@ import {
   CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID,
   GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
 } from "../../../domain";
-import {
-  CLAUDE_PROGRESS_DOMAIN_IDS,
-  GOOGLE_CLOUD_PROGRESS_DOMAIN_IDS,
-  resolveCloudProgressDomainMetadata,
-} from "./cloudProgressDomainMetadata";
+import { findTrackDescriptor, resolveTrackDomainMetadata } from "../../../domain/tracks/trackAdmission";
+const CLAUDE_PROGRESS_DOMAIN_IDS = findTrackDescriptor(CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID)!.presentation.progressDomains.map(value => value.id);
+const GOOGLE_CLOUD_PROGRESS_DOMAIN_IDS = findTrackDescriptor(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID)!.presentation.progressDomains.map(value => value.id);
+function resolveCloudProgressDomainMetadata(trackId: string, id: string) { return resolveTrackDomainMetadata(findTrackDescriptor(trackId), id); }
 import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
 import { buildProgressTabModel } from "./progressTabModel";
 
@@ -116,10 +115,7 @@ test("Claude Progress with zero attempts stays empty without inventing a score",
   const model = buildProgressTabModel({
     activeTrackId: CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID,
     activityRecords: [],
-    analytics: {} as never,
-    attempts: [],
     now: "2026-09-21T00:00:00.000Z",
-    practiceHistory: [],
     reviewQueueItems: [],
     trainingAttempts: [],
   });
@@ -128,4 +124,36 @@ test("Claude Progress with zero attempts stays empty without inventing a score",
   assert.deepEqual(model.performanceScores, []);
   assert.equal(model.weeklyActivity.kind, "ready");
   if (model.weeklyActivity.kind === "ready") assert.equal(model.weeklyActivity.completedSessionCount, 0);
+});
+
+test("all nine track Progress projections publish metadata before the shared UI", async () => {
+  const { TRACK_DENSITY_DESCRIPTORS } = await import("../../../domain/tracks/trackAdmission");
+  const { createTrainingAttempt } = await import("../../../domain");
+  const { projectProgressEvidence } = await import("../../../application/learningPlan/progressReadProjection");
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  for (const descriptor of TRACK_DENSITY_DESCRIPTORS) {
+    const track = contentPackageRuntimeOwner.getPreparedDiscovery(descriptor.trackId).track;
+    const question = track.questions[0]!;
+    const item = { trackId: track.trackId, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
+    const attempt = createTrainingAttempt({
+      id: `metadata:${track.trackId}`, sessionId: "metadata-session", trackId: track.trackId,
+      modeId: track.modes[0]!.modeId, occurrenceId: "metadata-occurrence", item, response: {},
+      result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
+      reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [
+        { axisId: "node", nodeId: question.nodeId, role: "primary" },
+        ...(question.contentDomainId ? [{ axisId: "cloud-domain", nodeId: question.contentDomainId, role: "primary" as const }] : []),
+      ] }, answeredAt: "2026-10-15T09:00:00.000Z", committedAt: "2026-10-15T09:00:00.000Z",
+    });
+    const input = { activeTrackId: descriptor.trackId, activityRecords: [], trainingAttempts: [attempt], reviewQueueItems: [], now: "2026-10-15T12:00:00.000Z", timezone: "UTC" };
+    const evidence = projectProgressEvidence(input);
+    const model = buildProgressTabModel(input);
+    assert.deepEqual(model.performanceScores, evidence.performanceScores, "UI must preserve the application metadata");
+    assert.ok(evidence.hasData, descriptor.trackId);
+    for (const score of evidence.performanceScores) {
+      const resolution = resolveTrackDomainMetadata(descriptor, score.id);
+      assert.equal(score.label, resolution.kind === "available" ? resolution.metadata.title : "Domain metadata unavailable");
+      if (resolution.kind === "unavailable") assert.equal(score.description, "Domain metadata is unavailable for this evidence.");
+    }
+    if (descriptor.internalFamily !== "coding_interview") assert.ok(evidence.performanceScores.length > 0, descriptor.trackId);
+  }
 });

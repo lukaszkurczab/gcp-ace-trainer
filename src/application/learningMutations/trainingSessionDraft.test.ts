@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createTrainingSession, createTrainingSessionDraft, getTrackRegistration, initialForegroundTimerForSession, type AcceptedSimulationFinalization, type TrainingSessionDraft } from "../../domain";
-import { clearPatternlyLocalHistory } from "../../features/home/localReset";
-import { installLearningStateResetBarrier } from "./commitLearningStateReset";
+import { commitLearningStateReset, installLearningStateResetBarrier } from "./commitLearningStateReset";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { CanonicalWriteOutcomeError } from "../../storage/errors";
 import {
@@ -366,7 +365,7 @@ test("clear local history removes the resumable draft", async () => {
   const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
   await saveTrainingSession(active, productionTrackAdmissionContext);
   await saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp }));
-  await clearPatternlyLocalHistory();
+  await commitLearningStateReset(new Date().toISOString());
   assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
 });
 

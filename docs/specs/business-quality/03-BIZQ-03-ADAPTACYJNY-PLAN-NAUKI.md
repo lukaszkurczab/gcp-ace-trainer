@@ -468,7 +468,7 @@ pozostają osobno autoryzowane. Historyczne exact pakiety i aktywne sesje zachow
 identity; nowe piny nie zastępują utrwalonego occurrence/item/option order.
 Odbiór będzie obejmował actual producer output → APP oraz przerwania journalu;
 same mocki/typecheck nie zamykają kryteriów. Bieżące dowody i następny krok
-są w [jedynym stanie](../../../.agent/WORKING_STATE.md).
+są w [jedynym stanie](/Users/lukaszkurczab/Desktop/Projects/Patternly/.agent/WORKING_STATE.md).
 
 ### Doprecyzowanie native probe i zegara — 09.10
 

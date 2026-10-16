@@ -3,6 +3,7 @@ import type { CanonicalRepositoryBootstrapStep } from "../../storage/repositorie
 
 export type StartupTraceStage =
   | "app:active" | "app:background" | "app:inactive" | "app:unknown" | "app:extension" | "home_data_commit"
+  | "home_usable_layout" | "resume_action" | "practice_usable_layout"
   | "regular_root_module" | "content_gate" | "content_ready_commit"
   | "claude_case_start" | "claude_prompt_layout"
   | "opening-storage" | "recovering-learning-state" | "verifying-content" | "resuming-session"
@@ -11,6 +12,7 @@ export type StartupTraceStage =
   | "catalog_build" | "artifact_validate" | "artifact_stringify" | "artifact_hash" | "artifact_index"
   | "predecessor_clone_stringify" | "predecessor_hash" | "catalog_projection" | "catalog_tracks"
   | "planning_policy" | "pool_construction"
+  | "mode_artifact_questions"
   | `recovery:${BootstrapRecoveryPendingStep | "idle"}`
   | `repository:${CanonicalRepositoryBootstrapStep}`
   | `account:${AccountStartupDiagnosticStage}`

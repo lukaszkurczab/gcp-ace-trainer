@@ -39,7 +39,7 @@ export type CertificationExamReviewProjection = Readonly<{
   profileVersion: string;
   score: Readonly<{ correctCount: number; incorrectCount: number; partialCount: number }>;
   sessionId: string;
-  total: 50;
+  total: number;
   unansweredCount: number;
 }>;
 
@@ -55,11 +55,12 @@ export async function projectCertificationExamReview(input: Readonly<{
   const { attempts, profile, questionsById, resolveItem, result, session } = input;
   const fail = (message: string): never => { throw new TrainingApplicationFailure("summary_unavailable", message); };
   const details = result.evidence.details;
+  const targetCount = profile.familyConfig.questionCount.minimum;
   if (session.id !== result.sessionId || result.id !== `${session.id}:result` || session.status !== "completed" || !session.completedAt || result.completedAt !== session.completedAt ||
-    session.trackId !== "google-cloud-associate-cloud-engineer" || result.trackId !== session.trackId || session.modeId !== "certification-exam-simulation" || result.evidence.familyId !== "certification" ||
-    session.actualLength !== 50 || session.requestedLength !== 50 || session.itemOrder.length !== 50 || !session.planFingerprint ||
+    result.trackId !== session.trackId || session.modeId !== "certification-exam-simulation" || result.evidence.familyId !== "certification" ||
+    session.actualLength !== targetCount || session.requestedLength !== targetCount || session.itemOrder.length !== targetCount || !session.planFingerprint ||
     session.contentVersion.trim().length === 0 || !/^[a-f0-9]{64}$/.test(session.artifactSha256) || !session.taxonomyVersion?.trim() ||
-    profile.profileId !== "google-cloud-associate-cloud-engineer-certification-exam-v1" || profile.profileVersion !== "1" || profile.modeId !== session.modeId || profile.familyId !== "certification" ||
+    profile.familyConfig.nodeDomainMapEvidence.artifactPath !== `artifacts/tracks/${session.trackId}/${profile.familyConfig.nodeDomainMapEvidence.contentVersion}/track-artifact.json` || profile.modeId !== session.modeId || profile.familyId !== "certification" ||
     session.configurationSnapshot.kind !== "certificationSimulation" || session.configurationSnapshot.simulationProfileId !== profile.profileId || session.configurationSnapshot.simulationProfileVersion !== profile.profileVersion) {
     return fail("Certification Exam result does not match its completed session and simulation profile.");
   }
@@ -71,20 +72,20 @@ export async function projectCertificationExamReview(input: Readonly<{
   const occurrenceIdSet = new Set(occurrenceIds);
   const answeredSet = new Set(result.answeredOccurrenceIds);
   const unansweredSet = new Set(result.unansweredOccurrenceIds);
-  if (occurrenceIdSet.size !== 50 || result.totalOccurrences !== 50 || answeredSet.size !== result.answeredOccurrenceIds.length || unansweredSet.size !== result.unansweredOccurrenceIds.length ||
-    [...answeredSet].some((id) => unansweredSet.has(id)) || answeredSet.size + unansweredSet.size !== 50 ||
+  if (occurrenceIdSet.size !== targetCount || result.totalOccurrences !== targetCount || answeredSet.size !== result.answeredOccurrenceIds.length || unansweredSet.size !== result.unansweredOccurrenceIds.length ||
+    [...answeredSet].some((id) => unansweredSet.has(id)) || answeredSet.size + unansweredSet.size !== targetCount ||
     JSON.stringify(result.answeredOccurrenceIds) !== JSON.stringify(occurrenceIds.filter((id) => answeredSet.has(id))) ||
     JSON.stringify(result.unansweredOccurrenceIds) !== JSON.stringify(occurrenceIds.filter((id) => unansweredSet.has(id)))) {
-    return fail("Certification Exam answer coverage is not an exact ordered partition of its 50-item plan.");
+    return fail("Certification Exam answer coverage is not an exact ordered partition of its configured plan.");
   }
 
   const config = profile.familyConfig;
-  if (config.questionCount.minimum !== 50 || config.questionCount.maximum < 50 || config.blueprint.kind !== "weighted_sections") {
-    return fail("Certification Exam profile does not describe its validated 50-item blueprint.");
+  if (!Number.isSafeInteger(targetCount) || targetCount <= 0 || !Number.isSafeInteger(config.questionCount.maximum) || config.questionCount.maximum < targetCount || config.blueprint.kind !== "weighted_sections" || !Number.isSafeInteger(config.durationMinutes) || config.durationMinutes <= 0 || !Number.isSafeInteger(config.durationMinutes * 60_000)) {
+    return fail("Certification Exam profile does not describe its configured blueprint.");
   }
   let quotas: ReturnType<typeof allocateWeightedBlueprintQuotas>;
   try {
-    quotas = allocateWeightedBlueprintQuotas(50, config.blueprint.sections);
+    quotas = allocateWeightedBlueprintQuotas(targetCount, config.blueprint.sections);
   } catch {
     return fail("Certification Exam profile has invalid weighted quotas.");
   }
@@ -107,7 +108,7 @@ export async function projectCertificationExamReview(input: Readonly<{
     }
     return question;
   });
-  if (new Set(planQuestions.map((question) => question.questionId)).size !== 50) return fail("Certification Exam plan contains duplicate content items.");
+  if (new Set(planQuestions.map((question) => question.questionId)).size !== targetCount) return fail("Certification Exam plan contains duplicate content items.");
   const domainCounts = new Map<string, number>();
   for (const question of planQuestions) domainCounts.set(question.contentDomainId!, (domainCounts.get(question.contentDomainId!) ?? 0) + 1);
   if ([...expectedDomainCounts].some(([domain, count]) => domainCounts.get(domain) !== count)) return fail("Certification Exam plan does not match its weighted profile quotas.");
@@ -116,7 +117,7 @@ export async function projectCertificationExamReview(input: Readonly<{
     .sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0)
     .slice(0, expectedDomainCounts.get(section.contentDomainId))
     .map((question) => question.questionId));
-  if (JSON.stringify(planQuestions.map((question) => question.questionId)) !== JSON.stringify(expectedQuestionIds)) return fail("Certification Exam item order does not match the immutable canonical 50-item selection.");
+  if (JSON.stringify(planQuestions.map((question) => question.questionId)) !== JSON.stringify(expectedQuestionIds)) return fail("Certification Exam item order does not match the immutable canonical configured selection.");
 
   const sessionAttempts = attempts.filter((attempt) => attempt.sessionId === session.id);
   const attemptByOccurrence = new Map(sessionAttempts.map((attempt) => [attempt.occurrenceId, attempt]));
@@ -213,7 +214,7 @@ export async function projectCertificationExamReview(input: Readonly<{
     profileVersion: profile.profileVersion,
     score: Object.freeze({ correctCount, incorrectCount, partialCount }),
     sessionId: session.id,
-    total: 50,
+    total: targetCount,
     unansweredCount: unansweredSet.size,
   });
 }

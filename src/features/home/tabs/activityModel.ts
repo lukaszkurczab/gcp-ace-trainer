@@ -1,10 +1,9 @@
 import type { IconName } from "../../../components";
 import { getTrackDisplay, type TrackId } from "../../../domain";
-import type { CertificationDomain } from "../../../tracks/certification/domain/certificationModes";
 import type { ActivityRecord, ActivitySessionRecord, ActivityUnavailableSessionRecord } from "../../../application/activityReadModels";
 import { activityTimestamp } from "../../../application/activityReadModels";
 import { calendarDayDifference, isSameCalendarWeek, modeLabel, type ActivityDateLabel } from "./activityPresentation";
-import { getDomainLabel } from "../../../utils";
+import { findTrackDescriptor, resolveTrackDomainMetadata } from "../../../domain/tracks/trackAdmission";
 import { getTrackRoadmapCatalog } from "../../practice/trackRoadmapCatalog";
 
 import { ALL_ACTIVITY_TRACKS } from "./activityPresentation";
@@ -142,7 +141,10 @@ function activityScopeLabel(record: ActivitySessionRecord, trackFamily: string):
     return getTrackRoadmapCatalog(record.session.trackId).find((node) => node.id === roadmapNodeIds[0])?.title ?? null;
   }
   const domainIds = uniqueScopeNodeIds(record, "cloud-domain");
-  if (trackFamily === "certification" && domainIds.length === 1) return getDomainLabel(domainIds[0] as CertificationDomain);
+  if (trackFamily === "certification" && domainIds.length === 1) {
+    const resolution = resolveTrackDomainMetadata(findTrackDescriptor(record.session.trackId), domainIds[0]!);
+    return resolution.kind === "available" ? resolution.metadata.title : "Domain metadata unavailable";
+  }
   return null;
 }
 

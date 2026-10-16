@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { checkRepository, formatViolations } from "../../../scripts/architecture/checkBoundaries";
 
 import { formatSessionTopic } from "../../features/exam/sessionResultPresentation";
 import { getTrackRoadmapCatalog } from "../../features/practice/trackRoadmapCatalog";
@@ -12,7 +13,8 @@ test("Certification result keeps truthful session metrics and routes Focus domai
   assert.match(source, /Promise\.all\(\[useCases\.loadSummary\(capturedRequestKey\), useCases\.loadSessionRecord\(capturedRequestKey\)\]\)/);
   assert.match(source, /<SessionResultOverview/);
   assert.match(source, /normalizeSessionResultDetails\(result\.evidence\.details, answeredCount, summary\.certificationMaxPoints \?\? undefined\)/);
-  assert.match(source, /item\.interactions\.controlIds\(item\.question\.questionId\)\.length/);
+  assert.match(source, /certificationExam\?\.maxPoints \?\? certificationPracticeReview\?\.maxPoints/);
+
   assert.match(source, /session\.requestedLength/);
   assert.match(source, /session\.actualLength/);
   assert.match(source, /answeredCount/);
@@ -30,4 +32,11 @@ test("Certification Focus domain formatter resolves only a canonical roadmap nod
   assert.equal(formatSessionTopic(trackId, node.id, identity), node.title);
   assert.equal(formatSessionTopic(trackId, undefined, identity), "Unavailable");
   assert.equal(formatSessionTopic(trackId, "gcp-ace-standard-domain-1", identity), "Unavailable");
+});
+
+
+test("Certification result resolves dependencies through the application projection boundary", () => {
+  const { violations } = checkRepository(process.cwd(), "typescript");
+  const resultViolations = violations.filter((violation) => violation.path[0] === "src/features/exam/ResultScreen.tsx");
+  assert.deepEqual(resultViolations, [], formatViolations(resultViolations));
 });

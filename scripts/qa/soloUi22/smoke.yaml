@@ -1,0 +1,27 @@
+# Precondition: startSoloUi22Fixture.mjs served in existing SEC03 dev client.
+# No launch/reset/install/storage/service operations. UI-only read fixtures.
+appId: com.lkurczab.patternly.sec03
+---
+- assertVisible: "On track"
+- takeScreenshot: 01-home-primary-en
+- tapOn: "Locale en"
+- assertVisible: "Im Plan"
+- takeScreenshot: 02-home-primary-de
+- tapOn: "secondary"
+- assertVisible: "Im Plan"
+- takeScreenshot: 03-home-secondary-de
+- tapOn: "Locale de"
+- tapOn: "review"
+- assertVisible: "Review queue is unavailable"
+- assertVisible: "Try again"
+- takeScreenshot: 04-review-error
+- tapOn: "Try again"
+- assertVisible: "No review items yet"
+- takeScreenshot: 05-review-success
+- tapOn: "cadence"
+- assertVisible: "Goal unavailable"
+- assertVisible: "Try again"
+- takeScreenshot: 06-cadence-error
+- tapOn: "Try again"
+- assertVisible: "Set learning rhythm for this track"
+- takeScreenshot: 07-cadence-success

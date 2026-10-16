@@ -56,8 +56,6 @@
   "reminders": "Meeldetuletused",
   "remindersDetail": "Seadista treeningumeeldetuletused.",
   "version": "Versioon",
-  "storageDegraded": "Kohalike andmetega on probleem",
-  "storageStatus": "Salvestusruumi olek",
   "preferencesSecurity": "Eelistused ja turvalisus",
   "guestIdentity": "Külaline",
   "recoveryCodes": "Taastamiskoodid",

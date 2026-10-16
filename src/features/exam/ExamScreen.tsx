@@ -76,7 +76,9 @@ export function ExamScreen({ navigation, route }: Props) {
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
   const styles = useThemedStyles(createStyles);
-  const requestKey = route.params?.expectedSessionId ?? "new-exam";
+  const requestKey = `${route.params.trackId}:${route.params?.expectedSessionId ?? "new-exam"}`;
+  const trackIdRef = useRef(route.params.trackId);
+  trackIdRef.current = route.params.trackId;
   const [readState, setReadState] = useState<ExamReadState>({ kind: "pending", requestKey });
   const [operationError, setOperationError] = useState<string | null>(null);
   const [actionPending, setActionPending] = useState(false);
@@ -90,9 +92,9 @@ export function ExamScreen({ navigation, route }: Props) {
   if (!readOwnerRef.current) {
     readOwnerRef.current = createExamReadOwner({
       expiredSessionId: (cause) => cause instanceof CertificationExamExpiredError ? cause.sessionId : null,
-      getProjection: getCertificationExamProjection,
-      resumeExpected: resumeExpectedCertificationExam,
-      start: startCertificationExam,
+      getProjection: () => getCertificationExamProjection(trackIdRef.current),
+      resumeExpected: (sessionId) => resumeExpectedCertificationExam(trackIdRef.current, sessionId),
+      start: () => startCertificationExam(trackIdRef.current),
     });
   }
   if (!actionLaneRef.current) actionLaneRef.current = createExamActionLane();
@@ -435,7 +437,7 @@ export function ExamScreen({ navigation, route }: Props) {
         {projection.operation.kind === "save_failed" && projection.operation.error.allowedAction === "retry_same_command" && pendingExamWrite ? <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{t("Couldn't save this response. Your current answer is still here.")}</Text><Button disabled={actionPending} onPress={() => void retryExamSave()} variant="secondary">{t("Retry save")}</Button></View> : null}
         {!isExamOperationUnconfirmed(projection) && resolutionRequired ? <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{t("The saved exam action needs to be restored before continuing.")}</Text><Button disabled={actionPending} onPress={() => void recoverExamOperation()} variant="secondary">{t("Restore saved exam action")}</Button></View> : null}
         {operationError && !saveUnconfirmed ? <View accessible accessibilityLabel={operationError} accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{operationError}</Text></View> : null}
-        <PracticeQuestionCard question={{ constraints: projection.session.trackId === "claude-certified-architect-professional-certification" ? [] : projection.question.constraints, itemId: projection.question.questionId, prompt: projection.question.prompt }} />
+        <PracticeQuestionCard question={{ constraints: projection.question.constraints, itemId: projection.question.questionId, prompt: projection.question.prompt }} />
         <View style={styles.options}>
           {renderer.options.map((option, index) => {
             const selected = selectedOptionId === option.id;

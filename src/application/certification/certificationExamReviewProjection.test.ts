@@ -24,7 +24,7 @@ test("completed exam review projects answered and unanswered items across the co
   assert.equal(projection.items[2]?.result, "unanswered");
   assert.ok(projection.items[2]?.correctOptionIds.length);
   assert.ok(projection.items[2]?.reason);
-  assert.ok(projection.maxPoints > 0);
+  assert.ok(projection.maxPoints > attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0), "full pinned plan maximum includes unanswered questions");
   assert.equal(projection.overallPointsEarned, attempts.filter((attempt) => attempt.result.kind === "correct").reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0));
   assert.ok(projection.pointsEarned >= projection.overallPointsEarned);
 });

@@ -1,5 +1,5 @@
 import {
-  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
+  getTrackRegistration,
   isActiveReviewQueueEntry,
   retainReviewQueueEntryIdentity,
   resolvedContentRefsEqual,
@@ -24,19 +24,19 @@ export async function setQuestionNeedsReview(
   const assertCurrentProfile = captureProfileReadFence();
   const now = new Date().toISOString();
   const { sourceItem, sourceSessionId } = input;
-  if (sourceItem.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID || !sourceSessionId.trim()) {
+  if (getTrackRegistration(sourceItem.trackId).familyId !== "certification" || !sourceSessionId.trim()) {
     throw new Error("Certification review source does not match the reviewed answer identity.");
   }
   const exactQuestion = await contentPackageRuntimeOwner.resolveItem(sourceItem);
   assertCurrentProfile();
-  if (exactQuestion.question.questionId !== sourceItem.questionId) {
+  if (exactQuestion.question.questionId !== sourceItem.questionId || exactQuestion.question.trackId !== sourceItem.trackId) {
     throw new Error("Certification review question does not match its exact content artifact.");
   }
 
   await commitReviewEntryChange(async () => {
     const snapshot = (await getReviewQueueSnapshot(productionTrackAdmissionContext)).value;
     assertCurrentProfile();
-    const existing = snapshot.entries.find((entry) => entry.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID &&
+    const existing = snapshot.entries.find((entry) => entry.trackId === sourceItem.trackId &&
       resolvedContentRefsEqual(entry.sourceItem, sourceItem) && isActiveReviewQueueEntry(entry));
     const expectedRevisionOverrides = (id: string) => [
       { target: `review:${id}`, revision: snapshot.revisions[id] ?? null },
@@ -83,7 +83,7 @@ export async function setQuestionNeedsReview(
     const id = `review:manual:${nonce}`;
     const record: ReviewQueueEntry = {
       id,
-      trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
+      trackId: sourceItem.trackId,
       sourceAttemptId: input.sourceAttemptId ?? `manual-mark:${sourceSessionId}:${exactQuestion.question.questionId}:${now}`,
       sourceSessionId,
       reasons: ["manual_mark"],

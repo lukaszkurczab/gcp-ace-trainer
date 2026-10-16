@@ -1,6 +1,5 @@
 {
   "Back to results": "Back to results",
-  "Home": "Home",
   "Practice": "Practice",
   "Progress": "Progress",
   "Settings": "Settings",
@@ -669,7 +668,7 @@
   "Restoring your active session…": "Restoring your active session…",
   "Loading topic roadmap": "Loading topic roadmap",
   "Loading practice setup": "Loading practice setup",
-  "Loading Home": "Loading Home",
+  "Loading Today": "Loading Today",
   "Loading progress": "Loading progress",
   "Loading settings": "Loading settings",
   "Answer could not be saved.": "Answer could not be saved.",

@@ -1,6 +1,5 @@
 {
   "Back to results": "Zurück zu den Ergebnissen",
-  "Home": "Startseite",
   "Practice": "Üben",
   "Progress": "Lernfortschritt",
   "Settings": "Einstellungen",
@@ -667,7 +666,7 @@
   "Restoring your active session…": "Deine aktive Einheit wird wiederhergestellt …",
   "Loading topic roadmap": "Themenübersicht wird geladen",
   "Loading practice setup": "Übung wird eingerichtet",
-  "Loading Home": "Startseite wird geladen",
+  "Loading Today": "Heute wird geladen",
   "Loading progress": "Lernfortschritt wird geladen",
   "Loading settings": "Einstellungen werden geladen",
   "Answer could not be saved.": "Die Antwort konnte nicht gespeichert werden.",

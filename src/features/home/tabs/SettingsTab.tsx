@@ -4,8 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button, Icon, IconTile, InfoBlock, ListRow, ScreenHeader, SettingsGroup, SkeletonShape, useSkeletonGlassMotion, type IconName } from "../../../components";
 import type { AccountCommandResult } from "../../../application/account/AccountSessionProvider";
-import type { StorageIssue } from "../../../application/learningReadModels";
-import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
+import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../../theme";
 import { hasPremiumTestingAccess, setPremiumTestingAccess } from "../../../application/premiumTesting";
 import { isPatternlyBackendE2eConfigured } from "../../../infrastructure/clients/patternlyBackendRuntime";
@@ -28,7 +27,6 @@ type SettingsTabProps = {
   onOpenPremium: () => void;
   onOpenYourData: () => void;
   onSignOut: () => Promise<AccountCommandResult>;
-  storageIssues: readonly StorageIssue[];
 };
 
 export function SettingsLoadingSkeleton() {
@@ -99,10 +97,9 @@ export function SettingsTab({
   onOpenPremium,
   onOpenYourData,
   onSignOut,
-  storageIssues,
 }: SettingsTabProps) {
   const styles = useThemedStyles(createStyles);
-  const { appearance, language, locale } = useAppPreferences();
+  const { appearance, language } = useAppPreferences();
   const { t } = useTranslation("settings");
   const { t: tAccount } = useTranslation("account");
   const { t: tAppearance } = useTranslation("appearance");
@@ -151,11 +148,8 @@ export function SettingsTab({
     legalDetail: t("legalDetail"),
     reminders: t("reminders"),
     remindersDetail: t("remindersDetail"),
-    storageDegraded: t("storageDegraded"),
-    storageStatus: t("storageStatus"),
     version: t("version"),
   };
-  const latestStorageIssue = storageIssues[0] ?? null;
   const backendDiagnosticsConfigured = isPatternlyBackendE2eConfigured();
   const premiumTestingAvailable = isPatternlyPremiumTestingRuntime();
   const [premiumTestingEnabled, setPremiumTestingEnabled] = useState(false);
@@ -232,17 +226,6 @@ export function SettingsTab({
         <InfoBlock accessibilityAlert body={tAccount("resumeRequiredDescription")} title={tAccount("resumeRequired")} testID="settings-sign-out-resume-required" tone="warning" />
       ) : (
         <InfoBlock accessibilityAlert body={tAccount(signOutFailure)} title={text.signOutErrorTitle} testID="settings-sign-out-error" tone="warning" />
-      ) : null}
-
-      {latestStorageIssue ? (
-        <SettingsGroup dividers title={text.storageStatus} titleGap={spacing.md}>
-          <ListRow
-            detail={formatStorageIssue(latestStorageIssue, locale)}
-            leading={<IconTile name="alert-triangle" tone="warning" />}
-            title={text.storageDegraded}
-            variant="grouped"
-          />
-        </SettingsGroup>
       ) : null}
 
       <View style={styles.content}>
@@ -365,12 +348,6 @@ function SettingsNavigationRow({ detail, disabled = false, icon, loading = false
 function appMetadata(versionLabel: string): string | null {
   const version = typeof packageJson.version === "string" ? packageJson.version.trim() : "";
   return version ? `${versionLabel} ${version}` : null;
-}
-
-function formatStorageIssue(issue: StorageIssue, locale: AppLocale): string {
-  const action = { parse: "read", read: "read", remove: "clear", write: "save" }[issue.operation];
-  if (locale === "pl") return `Nie udało się wykonać operacji „${action}” na danych lokalnych [LOCAL_OPERATION_FAILED].`;
-  return `Could not ${action} local data [LOCAL_OPERATION_FAILED].`;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

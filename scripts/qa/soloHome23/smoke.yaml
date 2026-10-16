@@ -1,0 +1,33 @@
+# Precondition: startSoloHome23Fixture served in existing SEC03 dev client.
+# No launch/reset/install, profile writes or service calls.
+appId: com.lkurczab.patternly.sec03
+---
+- tapOn:
+    id: solo23-Home
+- assertVisible: "Start learning"
+- takeScreenshot: 01-home
+- tapOn:
+    id: solo23-Progress
+- assertVisible: "This week"
+- assertVisible:
+    id: patternly:progress:goal
+- takeScreenshot: 02-progress
+- tapOn:
+    id: solo23-Settings
+- assertVisible:
+    id: settings-appearance
+- assertVisible:
+    id: settings-language
+- assertVisible:
+    id: settings-account-entry
+- assertNotVisible: "Storage status"
+- takeScreenshot: 03-settings
+- scrollUntilVisible:
+    element:
+      id: settings-your-data
+    direction: DOWN
+    timeout: 10000
+- takeScreenshot: 04-settings-data
+- tapOn:
+    id: solo23-Home
+- assertVisible: "Start learning"

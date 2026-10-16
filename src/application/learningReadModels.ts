@@ -1,6 +1,7 @@
-import type { GoalRecord, GoalSnapshot, TrackId } from "../domain";
+import { projectLearningEvidence } from "./learningPlan/learningEvidenceProjection";
+import { LearningProjectionUnavailableError } from "./learningProjectionFailure";
+import type { GoalRecord, GoalSnapshot, TrackId, TrainingAttempt, ReviewQueueEntry, TrainingSession } from "../domain";
 import { requireGoalPolicy } from "../domain/tracks/trackGoalPolicies";
-import { getTrainingLifecycleUseCases } from "./trainingLifecycle";
 import type { CodingInterviewDashboard } from "./coding-interview/codingInterviewContracts";
 import {
   getCodingInterviewDeclaredScopeOptions,
@@ -22,10 +23,6 @@ import {
 import { commitActiveTrackSelection, loadSettledActiveTrackSelection } from "./account/accountDataService";
 import { getAttempts, getPracticeHistory } from "../storage/queries";
 import type { StorageIssue } from "../storage/repositories/result";
-import {
-  buildCloudCertificationProgressViewModel,
-  type CloudCertificationProgressViewModel,
-} from "../tracks/certification";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 import { transitionGoalPlanStatus } from "./learningPlan/goalPlanLifecycle";
 import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
@@ -51,26 +48,16 @@ export async function loadTrainingSession(sessionId: string) { return (await get
 export async function loadTrainingSessionResult(sessionId: string) { return getTrainingSessionResult(sessionId, productionTrackAdmissionContext); }
 
 /** Typed Home read. Presentation receives the family dashboard, never its runtime or repositories. */
-export async function loadCodingInterviewDashboard(): Promise<CodingInterviewDashboard> {
-  const dashboard = await getTrainingLifecycleUseCases().queryDashboard("coding-interview-dsa-problem-solving");
-  if (!isCodingInterviewDashboard(dashboard)) throw new Error("Algorithms dashboard returned an unsupported projection.");
+export async function loadCodingInterviewDashboard(input: Readonly<{ attempts: readonly TrainingAttempt[]; reviews: readonly ReviewQueueEntry[]; activeSession: TrainingSession | null; now: string }>): Promise<CodingInterviewDashboard> {
+  const resolved = contentPackageRuntimeOwner.getPreparedDiscovery("coding-interview-dsa-problem-solving");
+  const evidence = projectLearningEvidence({ profile: resolved.track, attempts: input.attempts, reviews: input.reviews, now: input.now });
+  const dashboard = await resolved.runtime.queryDashboard({ trackId: "coding-interview-dsa-problem-solving", attempts: evidence.attempts, reviews: evidence.reviews, activeSession: input.activeSession, now: input.now });
+  if (!isCodingInterviewDashboard(dashboard)) throw new LearningProjectionUnavailableError("coding_dashboard");
   return dashboard;
 }
 
 export async function loadAlgorithmsDeclaredScopeOptions(input: Readonly<{ modeId: AlgorithmsDeclaredScopeMode; targetMentalUnitId?: string }>) {
   return getCodingInterviewDeclaredScopeOptions(input);
-}
-
-export async function loadCloudCertificationProgress(input: { now?: string; recentAttemptCount?: number } = {}): Promise<CloudCertificationProgressViewModel> {
-  const [attempts, reviews] = await Promise.all([getTrainingAttempts(productionTrackAdmissionContext), getReviewQueueItems(productionTrackAdmissionContext)]);
-  return buildCloudCertificationProgressViewModel({
-    attempts: attempts.value,
-    issues: [...(attempts.issues ?? []), ...(reviews.issues ?? [])],
-    now: input.now,
-    artifactSha256: contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer").track.artifactSha256,
-    recentAttemptCount: input.recentAttemptCount,
-    reviewQueueItems: reviews.value,
-  });
 }
 
 function isCodingInterviewDashboard(value: unknown): value is CodingInterviewDashboard {

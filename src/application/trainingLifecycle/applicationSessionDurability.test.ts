@@ -6,16 +6,7 @@ import {
   createTrainingSession,
   type TrainingSession,
 } from "../../domain";
-import {
-  TrainingSessionStartError,
-  TrainingSessionOptionPlanError,
-  advanceTrainingSessionDurably,
-  assertTrainingSessionOptionPlan,
-  getTrainingSessionProgress,
-  persistTrainingSessionForegroundTime,
-  startOrResumeTrainingSession,
-  type TrainingSessionPersistenceBoundary,
-} from "../trainingSessions";
+import { getTrainingSessionProgress } from "../trainingSessions";
 
 const ARTIFACT_SHA256 = "a".repeat(64);
 
@@ -38,41 +29,13 @@ function session(overrides: Partial<TrainingSession> = {}): TrainingSession {
   });
 }
 
-function boundary(input: { active?: TrainingSession | null; save?: (value: TrainingSession) => Promise<void> } = {}): TrainingSessionPersistenceBoundary {
-  return { getActive: async () => input.active ?? null, save: input.save ?? (async () => undefined) };
-}
-
-test("configuration snapshot is validated, frozen, and preserved for deterministic resume", async () => {
+test("configuration snapshot is validated and frozen for deterministic resume", () => {
   const configured = session();
   assert.deepEqual(configured.configurationSnapshot, {
     feedbackMode: "afterEachAnswer", kind: "practice", mode: "coding-interview-learn-approach", timer: "elapsedForeground", topicId: "arrays",
   });
   assert.ok(Object.isFrozen(configured.configurationSnapshot));
-  const active = session({ currentItemIndex: 1 });
-  const resumed = await startOrResumeTrainingSession(session(), boundary({ active }));
-  assert.equal(resumed, active);
-  assert.deepEqual(resumed.configurationSnapshot, active.configurationSnapshot);
-  assert.ok(Object.isFrozen(resumed.configurationSnapshot));
   assert.throws(() => createTrainingSession({ ...session(), configurationSnapshot: {} }), InvalidTrainingSessionError);
-  await assert.rejects(
-    startOrResumeTrainingSession(session({ configurationSnapshot: { kind: "practice", mode: "coding-interview-guided-practice" } }), boundary({ active })),
-    TrainingSessionStartError,
-  );
-});
-
-test("resume rejects a different mode or durable item and option plan", async () => {
-  const active = session();
-  await assert.rejects(startOrResumeTrainingSession(session({ modeId: "coding-interview-weak-area-review" }), boundary({ active })), /mode/);
-  await assert.rejects(startOrResumeTrainingSession(session({ itemOrder: [...active.itemOrder].reverse() }), boundary({ active })), /item and option plan/);
-  await assert.rejects(startOrResumeTrainingSession(session({ optionOrderByOccurrence: { ...active.optionOrderByOccurrence, "occurrence-one": ["a", "b"] } }), boundary({ active })), /item and option plan/);
-});
-
-test("content validation rejects missing, duplicate, and unknown durable option IDs", () => {
-  const expected = { "occurrence-one": ["a", "b"], "occurrence-two": ["c", "d"] };
-  assert.doesNotThrow(() => assertTrainingSessionOptionPlan(session(), expected));
-  assert.throws(() => assertTrainingSessionOptionPlan(session({ optionOrderByOccurrence: { "occurrence-one": ["a"], "occurrence-two": ["c", "d"] } }), expected), TrainingSessionOptionPlanError);
-  assert.throws(() => assertTrainingSessionOptionPlan(session({ optionOrderByOccurrence: { "occurrence-one": ["a", "x"], "occurrence-two": ["c", "d"] } }), expected), TrainingSessionOptionPlanError);
-  assert.throws(() => assertTrainingSessionOptionPlan({ ...session(), optionOrderByOccurrence: { "occurrence-one": ["a", "a"], "occurrence-two": ["c", "d"] } }, expected), TrainingSessionOptionPlanError);
 });
 
 test("durable progress hydrates prior attempts and the answered current item in plan order", () => {
@@ -105,34 +68,4 @@ test("duplicate exact content items are distinct through immutable occurrence id
   assert.throws(() => createTrainingSession({ ...duplicatePlan, itemOrder: [duplicatePlan.itemOrder[0]!, duplicatePlan.itemOrder[0]!] }), /occurrence identities/);
   assert.throws(() => getTrainingSessionProgress(duplicatePlan, [makeAttempt("a1", "occurrence-first"), makeAttempt("a2", "occurrence-first")]), /multiple committed attempts/);
   assert.throws(() => getTrainingSessionProgress(duplicatePlan, [{ ...makeAttempt("a1", "occurrence-first"), item: { ...duplicatePlan.itemOrder[0]!.item, contentVersion: "outside-content" } }]), /does not belong/);
-});
-
-test("foreground accumulation persists only the supplied active interval", async () => {
-  const saved: TrainingSession[] = [];
-  const updated = await persistTrainingSessionForegroundTime(session(), 750, boundary({ save: async (value) => { saved.push(value); } }));
-  assert.equal(updated.activeForegroundMs, 850);
-  assert.equal(saved[0]?.activeForegroundMs, 850);
-});
-
-test("start failure rejects without exposing a session", async () => {
-  await assert.rejects(startOrResumeTrainingSession(session(), boundary({ save: async () => { throw new Error("disk full"); } })), /disk full/);
-});
-
-test("a new session is not returned before its durable write resolves", async () => {
-  let release!: () => void;
-  let exposed = false;
-  const pending = startOrResumeTrainingSession(session(), boundary({ save: () => new Promise<void>((resolve) => { release = resolve; }) })).then(() => { exposed = true; });
-  await Promise.resolve();
-  await Promise.resolve();
-  assert.equal(exposed, false);
-  release();
-  await pending;
-  assert.equal(exposed, true);
-});
-
-test("advance failure rejects and cannot expose the next position", async () => {
-  const current = session();
-  await assert.rejects(advanceTrainingSessionDurably(current, 250, boundary({ save: async () => { throw new Error("write failed"); } })), /write failed/);
-  assert.equal(current.currentItemIndex, 0);
-  assert.equal(current.activeForegroundMs, 100);
 });

@@ -100,6 +100,7 @@ export function validateCanonicalArtifact(value: unknown, lock: CanonicalContent
   else {
     if (value.questions.length !== lock.questionCount) errors.push("artifact.questions: count differs from lock");
     const ids = new Set<string>();
+    const hasProfile = Array.isArray(value.simulationProfiles) && value.simulationProfiles.some((profile) => record(profile) && profile.familyId === "certification" && profile.modeId === "certification-exam-simulation");
     for (const [i, question] of value.questions.entries()) {
       const child = validateQuestion(question, registry);
       errors.push(...child.map((x) => `artifact.questions[${i}].${x.replace(/^question\.?/, "")}`));
@@ -109,9 +110,8 @@ export function validateCanonicalArtifact(value: unknown, lock: CanonicalContent
         if (ids.has(question.questionId)) errors.push(`artifact.questions[${i}].questionId: duplicate identity`);
         ids.add(question.questionId);
       }
-      const hasProfile = Object.hasOwn(value, "simulationProfiles");
-      if (Object.hasOwn(question, "contentDomainId") && (expectedTrackId !== "google-cloud-associate-cloud-engineer" || !hasProfile)) errors.push(`artifact.questions[${i}].contentDomainId: only valid for GCP artifacts with simulation profiles`);
-      if (hasProfile && expectedTrackId === "google-cloud-associate-cloud-engineer" && !Object.hasOwn(question, "contentDomainId")) errors.push(`artifact.questions[${i}].contentDomainId: required for GCP simulation profile`);
+      if (Object.hasOwn(question, "contentDomainId") && !hasProfile) errors.push(`artifact.questions[${i}].contentDomainId: only valid for artifacts with a Certification simulation profile`);
+      if (hasProfile && !Object.hasOwn(question, "contentDomainId")) errors.push(`artifact.questions[${i}].contentDomainId: required for Certification simulation profile`);
     }
     errors.push(...validateQuestionRelations(value.questions));
   }
@@ -138,14 +138,14 @@ function validateSimulationProfiles(value: unknown, questions: readonly unknown[
     if (profile.schemaVersion !== "patternly-simulation-profile-envelope-v1") errors.push(`${path}.schemaVersion: unsupported envelope version`);
     if (!id(profile.profileId, `${path}.profileId`, errors) || profileIds.has(profile.profileId)) errors.push(`${path}.profileId: must be unique`);
     else profileIds.add(profile.profileId);
-    if (profile.profileVersion !== "1") errors.push(`${path}.profileVersion: unsupported version`);
+    if (!safeIdentity(profile.profileVersion, `${path}.profileVersion`, errors)) return;
     if (profile.modeId === "certification-exam-simulation") {
       if (profile.familyId !== "certification") errors.push(`${path}.familyId: unsupported family`);
-      if (profile.profileId !== "google-cloud-associate-cloud-engineer-certification-exam-v1") errors.push(`${path}.profileId: unsupported profile`);
-      if (trackId !== "google-cloud-associate-cloud-engineer") errors.push(`${path}: simulation profile is not supported for this track`);
-      validateCertificationSimulationConfig(profile.familyConfig, questions, nodeIds, trackId, questions.length, path, errors);
+      safeIdentity(profile.profileId, `${path}.profileId`, errors);
+      validateCertificationSimulationConfig(profile.familyConfig, questions, nodeIds, trackId, path, errors);
       return;
     }
+    if (profile.profileVersion !== "1") errors.push(`${path}.profileVersion: unsupported version`);
     if (profile.modeId === "coding-interview-simulation") {
       if (profile.familyId !== "coding_interview") errors.push(`${path}.familyId: unsupported family`);
       if (profile.profileId !== "algorithms-interview-simulation-v1") errors.push(`${path}.profileId: unsupported profile`);
@@ -253,18 +253,18 @@ function validateCodingInterviewSimulationConfig(value: unknown, questions: read
   });
 }
 
-function validateCertificationSimulationConfig(value: unknown, questions: readonly unknown[], nodeIds: readonly string[], trackId: unknown, questionTotal: number, path: string, errors: string[]): void {
+function validateCertificationSimulationConfig(value: unknown, questions: readonly unknown[], nodeIds: readonly string[], trackId: unknown, path: string, errors: string[]): void {
   const configKeys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap", "nodeDomainMapEvidence"];
   const configPath = `${path}.familyConfig`;
   if (!exact(value, configKeys, configKeys, configPath, errors)) return;
   if (value.schemaVersion !== "patternly-certification-simulation-config-v1") { errors.push(`${configPath}.schemaVersion: unsupported certification config version`); return; }
   if (!exact(value.source, ["url", "checkedDate", "guideVersion"], ["url", "checkedDate", "guideVersion"], `${configPath}.source`, errors)) return;
   text(value.source.url, `${configPath}.source.url`, errors); id(value.source.checkedDate, `${configPath}.source.checkedDate`, errors); text(value.source.guideVersion, `${configPath}.source.guideVersion`, errors);
-  if (value.durationMinutes !== 120) errors.push(`${configPath}.durationMinutes: must be 120`);
+  if (!Number.isSafeInteger(value.durationMinutes) || Number(value.durationMinutes) <= 0 || !Number.isSafeInteger(Number(value.durationMinutes) * 60_000)) errors.push(`${configPath}.durationMinutes: must be a positive safe duration`);
   if (!exact(value.questionCount, ["kind", "minimum", "maximum"], ["kind", "minimum", "maximum"], `${configPath}.questionCount`, errors)) return;
-  if (value.questionCount.kind !== "range" || value.questionCount.minimum !== 50 || value.questionCount.maximum !== 60) errors.push(`${configPath}.questionCount: must be the approved 50–60 range`);
+  if (value.questionCount.kind !== "range" || !Number.isSafeInteger(value.questionCount.minimum) || Number(value.questionCount.minimum) <= 0 || !Number.isSafeInteger(value.questionCount.maximum) || Number(value.questionCount.maximum) < Number(value.questionCount.minimum)) errors.push(`${configPath}.questionCount: must be a positive ordered safe range`);
   if (!exact(value.blueprint, ["kind", "sections"], ["kind", "sections"], `${configPath}.blueprint`, errors)) return;
-  if (value.blueprint.kind !== "weighted_sections" || !Array.isArray(value.blueprint.sections) || value.blueprint.sections.length !== 4) errors.push(`${configPath}.blueprint: must contain four weighted sections`);
+  if (value.blueprint.kind !== "weighted_sections" || !Array.isArray(value.blueprint.sections) || value.blueprint.sections.length === 0) errors.push(`${configPath}.blueprint: must contain nonempty weighted sections`);
   else {
     let sum = 0; const domains = new Set<string>(); const sectionIds = new Set<string>();
     value.blueprint.sections.forEach((section, sectionIndex) => {
@@ -283,9 +283,6 @@ function validateCertificationSimulationConfig(value: unknown, questions: readon
       else sum += section.weightPercent;
     });
     if (sum !== 100) errors.push(`${configPath}.blueprint.sections: weights must total 100`);
-    const weights = new Map(value.blueprint.sections.filter(record).map((section) => [section.contentDomainId, section.weightPercent]));
-    const expectedWeights = new Map([["gcp-ace-standard-domain-1", 20], ["gcp-ace-standard-domain-2", 30], ["gcp-ace-standard-domain-3", 30], ["gcp-ace-standard-domain-4", 20]]);
-    if (weights.size !== expectedWeights.size || [...expectedWeights].some(([domainId, weight]) => weights.get(domainId) !== weight)) errors.push(`${configPath}.blueprint.sections: unsupported GCP domain weights`);
   }
   const policy = value.interactionPolicy;
   const policyKeys = ["schemaVersion", "policyId", "policyVersion", "owner", "navigation", "answerChanges", "flagging", "navigator", "sections", "timeout", "feedbackTiming"];
@@ -294,6 +291,7 @@ function validateCertificationSimulationConfig(value: unknown, questions: readon
   if (!exact(value.nodeDomainMap, nodeIds, nodeIds, `${configPath}.nodeDomainMap`, errors)) return;
   const knownDomains = new Set(Array.isArray(value.blueprint.sections) ? value.blueprint.sections.flatMap((section) => record(section) && typeof section.contentDomainId === "string" ? [section.contentDomainId] : []) : []);
   for (const [nodeId, domainId] of Object.entries(value.nodeDomainMap)) if (typeof domainId !== "string" || !knownDomains.has(domainId)) errors.push(`${configPath}.nodeDomainMap.${nodeId}: unknown domain`);
+  if (questions.some((question) => !record(question) || typeof question.contentDomainId !== "string" || !knownDomains.has(question.contentDomainId))) errors.push(`${configPath}: every current question requires a known domain`);
   const sourceDomainsByNode = new Map<string, Set<string>>();
   for (const question of questions) if (record(question) && typeof question.nodeId === "string" && typeof question.contentDomainId === "string" && knownDomains.has(question.contentDomainId)) { const nodeDomains = sourceDomainsByNode.get(question.nodeId) ?? new Set<string>(); nodeDomains.add(question.contentDomainId); sourceDomainsByNode.set(question.nodeId, nodeDomains); }
   if (sourceDomainsByNode.size !== nodeIds.length || [...sourceDomainsByNode.values()].some((nodeDomains) => nodeDomains.size !== 1)) errors.push(`${configPath}: source-derived per-question domains are incomplete or ambiguous`);
@@ -308,8 +306,8 @@ function validateCertificationSimulationConfig(value: unknown, questions: readon
     : null;
   if (typeof trackId !== "string" || typeof evidenceVersion !== "string" || !SAFE_CONTENT_VERSION.test(evidenceVersion) ||
     !text(evidence.artifactPath, `${configPath}.nodeDomainMapEvidence.artifactPath`, errors) || evidence.artifactPath !== expectedEvidencePath ||
-    evidence.nodeCount !== nodeIds.length || evidence.ambiguousNodeCount !== 0 || evidence.itemCount !== questionTotal ||
-    !Number.isInteger(evidence.itemCount) || evidence.itemCount < 1) {
+    typeof evidence.nodeCount !== "number" || !Number.isSafeInteger(evidence.nodeCount) || evidence.nodeCount <= 0 || evidence.ambiguousNodeCount !== 0 ||
+    typeof evidence.itemCount !== "number" || !Number.isSafeInteger(evidence.itemCount) || evidence.itemCount < 1) {
     errors.push(`${configPath}.nodeDomainMapEvidence: does not match its pinned artifact identity or complete mapping`);
   }
 }

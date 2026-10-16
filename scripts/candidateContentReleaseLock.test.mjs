@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { createHash as cryptoCreateHash } from "node:crypto";
-import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, lstat, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { execFileSync } from "node:child_process";
-import { createCandidateContentReleaseLock, parseCandidateContentReleaseLockArgs, readCandidateContentProducerPin, readHistoricalContentProducerPin } from "./candidateContentReleaseLock.mjs";
+import { createCandidateContentReleaseLock, parseCandidateContentReleaseLockArgs, readCandidateContentProducerPin, readHistoricalContentProducerPin, updateCandidateContentReleaseLock } from "./candidateContentReleaseLock.mjs";
 import { historicalTrainingProjection } from "./syncBundledContentRelease.mjs";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
@@ -21,6 +21,52 @@ async function frozenAdmittedApp(t) {
   return fixture;
 }
 const contentRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content"));
+
+test("candidate lock writer rejects missing, corrupt or unreadable frozen history without changing either lock", async t => {
+  const historicalPath = "integration/contracts/content-release/release.lock.historical-0024.json";
+  const corruptBytes = Buffer.concat([await readFile(path.join(appRoot, historicalPath)), Buffer.from("\n")]);
+  for (const scenario of ["missing", "hash", "read-error"]) await t.test(scenario, async t => {
+    const fixture = await frozenAdmittedApp(t);
+    const active = path.join(fixture, "integration/contracts/content-release/release.lock.json");
+    const historical = path.join(fixture, historicalPath);
+    const activeBefore = Buffer.from("preserve active lock on history failure\n");
+    await writeFile(active, activeBefore);
+    const markerBytes = Buffer.from("preserve historical directory contents\n");
+    if (scenario === "hash") await writeFile(historical, corruptBytes);
+    if (scenario === "read-error") {
+      await mkdir(historical);
+      await writeFile(path.join(historical, "preserved"), markerBytes);
+      await assert.rejects(readFile(historical), { code: "EISDIR" });
+    }
+    const expectedError = scenario === "hash" ? /Frozen historical release lock hash differs/u
+      : { code: scenario === "missing" ? "ENOENT" : "EISDIR" };
+    await assert.rejects(updateCandidateContentReleaseLock({ mode: "write", appRoot: fixture, contentRoot }), expectedError);
+    assert.deepEqual(await readFile(active), activeBefore, "active lock bytes must stay unchanged");
+    if (scenario === "missing") await assert.rejects(lstat(historical), { code: "ENOENT" });
+    if (scenario === "hash") assert.deepEqual(await readFile(historical), corruptBytes);
+    if (scenario === "read-error") {
+      assert.ok((await lstat(historical)).isDirectory());
+      assert.deepEqual(await readdir(historical), ["preserved"]);
+      assert.deepEqual(await readFile(path.join(historical, "preserved")), markerBytes);
+    }
+  });
+});
+
+test("candidate lock writer preserves valid frozen history and the existing canonical output", async t => {
+  const fixture = await frozenAdmittedApp(t);
+  const active = path.join(fixture, "integration/contracts/content-release/release.lock.json");
+  const historicalPath = "integration/contracts/content-release/release.lock.historical-0024.json";
+  const historical = path.join(fixture, historicalPath);
+  const frozenBytes = await readFile(path.join(appRoot, historicalPath));
+  const expectedBytes = await readFile(active);
+  assert.deepEqual(await createCandidateContentReleaseLock({ appRoot: fixture, contentRoot }), JSON.parse(expectedBytes));
+  await writeFile(historical, frozenBytes);
+  await writeFile(active, "stale active lock\n");
+  await updateCandidateContentReleaseLock({ mode: "write", appRoot: fixture, contentRoot });
+  assert.deepEqual(await readFile(active), expectedBytes);
+  assert.deepEqual(await readFile(historical), frozenBytes);
+  await updateCandidateContentReleaseLock({ mode: "check", appRoot: fixture, contentRoot });
+});
 
 test("candidate lock CLI accepts one explicit producer root and rejects duplicates", () => {
   assert.deepEqual(parseCandidateContentReleaseLockArgs(["write", "--content-root", "/tmp/patternly-content"]), {

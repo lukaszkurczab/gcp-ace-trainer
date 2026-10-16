@@ -379,3 +379,21 @@ test("a profile change while exact content resolves prevents a manual review wri
     setIdentityNonceGeneratorForTests(null);
   }
 });
+
+
+test("manual review preserves a non-GCP Certification track and rejects a foreign family", async () => {
+  installMemoryStorage();
+  const trackId = "aws-certified-solutions-architect-associate";
+  const { track } = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "certification");
+  const question = track.getPool("certification-focus-practice")[0]!;
+  const sourceItem = createResolvedContentRef({ trackId, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 });
+  const input = { sourceItem, sourceSessionId: "session:aws-review" };
+  await setQuestionNeedsReview(input, true);
+  const first = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
+  assert.equal(first.length, 1);
+  assert.equal(first[0]!.trackId, trackId);
+  assert.deepEqual(first[0]!.sourceItem, sourceItem);
+  await setQuestionNeedsReview(input, false);
+  assert.equal((await getReviewQueueItems(productionTrackAdmissionContext)).value.length, 0);
+  await assert.rejects(setQuestionNeedsReview({ ...input, sourceItem: { ...sourceItem, trackId: "coding-interview-dsa-problem-solving" } }, true), /Certification review source/);
+});

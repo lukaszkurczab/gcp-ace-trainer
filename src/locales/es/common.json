@@ -1,6 +1,5 @@
 {
   "Back to results": "Volver a los resultados",
-  "Home": "Inicio",
   "Practice": "Práctica",
   "Progress": "Progreso",
   "Settings": "Ajustes",
@@ -668,7 +667,7 @@
   "Restoring your active session…": "Restaurando tu sesión activa…",
   "Loading topic roadmap": "Cargando la hoja de ruta de temas",
   "Loading practice setup": "Cargando la configuración de práctica",
-  "Loading Home": "Cargando Inicio",
+  "Loading Today": "Cargando Hoy",
   "Loading progress": "Cargando el progreso",
   "Loading settings": "Cargando los ajustes",
   "Answer could not be saved.": "No se pudo guardar la respuesta.",

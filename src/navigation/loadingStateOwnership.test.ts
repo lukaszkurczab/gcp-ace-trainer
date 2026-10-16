@@ -220,7 +220,7 @@ test("Home shell owns tab-specific glass loading geometry and keeps navigation u
   assert.match(home, /onOpenSettings=\{\(\) => handleHomeTabChange\("settings"\)\}/);
   assert.doesNotMatch(home, /LoadingState/);
 
-  assertLocalSkeletonDefinition("src/features/home/tabs/HomeTab.tsx", "HomeLoadingSkeleton", /accessibilityLabel=\{t\("Loading Home"\)\}/, ["homeLoadingTrackContext", "homeLoadingDecisionCard", "homeLoadingOverviewRow"]);
+  assertLocalSkeletonDefinition("src/features/home/tabs/HomeTab.tsx", "HomeLoadingSkeleton", /accessibilityLabel=\{t\("Loading Today"\)\}/, ["homeLoadingTrackContext", "homeLoadingDecisionCard", "homeLoadingOverviewRow"]);
   assertLocalSkeletonDefinition("src/features/home/tabs/ProgressTab.tsx", "ProgressLoadingSkeleton", /accessibilityLabel=\{t\("Loading progress"\)\}/, ["progressLoadingTrackSelector", "progressLoadingWeekCard", "progressLoadingFocusCard"]);
   assertLocalSkeletonDefinition("src/features/home/tabs/SettingsTab.tsx", "SettingsLoadingSkeleton", /accessibilityLabel=\{tCommon\("Loading settings"\)\}/, ["settingsLoadingGroup", "settingsLoadingCard", "settingsLoadingRow"]);
   const settings = source("src/features/home/tabs/SettingsTab.tsx");

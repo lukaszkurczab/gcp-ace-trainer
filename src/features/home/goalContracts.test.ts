@@ -45,7 +45,7 @@ test("goal templates are sourced from every canonical track descriptor", () => {
     assert.deepEqual(templates, descriptor.goalTemplates);
     assert.ok(templates.length >= 4);
   }
-  const descriptorBytes = canonicalSerialize(TRACK_DENSITY_DESCRIPTORS);
+  const descriptorBytes = canonicalSerialize(TRACK_DENSITY_DESCRIPTORS.map(({ presentation: _presentation, ...sourceBrief }) => sourceBrief));
   assert.equal(createHash("sha256").update(descriptorBytes).digest("hex"), "1e042fde65d262ca752c9bf57de4ed906b179b9b5fe4ff8ddee97e6157bbfe63");
 });
 

@@ -1,6 +1,6 @@
 # DOMAIN-MAIL-01 — firmowa domena i poczta
 
-Status i kolejność: [plan główny](../../PATTERNLY-WORKING-PLAN.md). Zadanie przygotowuje domenę oraz działającą firmową skrzynkę przed finalizacją kontaktów R01. Publikację witryny na tej domenie obejmuje [R02 / WEB-PUBLISH](web-release.md). Pełny odbiór automatycznych wiadomości backendu pozostaje w ODK-E2E-086.
+Status i kolejność: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Zadanie przygotowuje domenę oraz działającą firmową skrzynkę przed finalizacją kontaktów R01. Publikację witryny na tej domenie obejmuje [R02 / WEB-PUBLISH](web-release.md). Pełny odbiór automatycznych wiadomości backendu pozostaje w ODK-E2E-086.
 
 ## Cel i potwierdzona luka
 

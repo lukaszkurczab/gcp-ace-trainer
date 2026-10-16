@@ -1,3 +1,4 @@
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { usePreventRemove, type NavigationAction } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
@@ -148,7 +149,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     const certificationExam = getTrackRegistration(conflict.trackId).familyId === "certification" && conflict.modeId === "certification-exam-simulation";
     const continueActive = () => {
       if (ordinaryCertification) navigation.replace(ROUTES.PRACTICE_SESSION, { ...route.params, mode: conflict.modeId, expectedSessionId: conflict.id });
-      else if (certificationExam) navigation.replace(ROUTES.EXAM, { expectedSessionId: conflict.id });
+      else if (certificationExam) navigation.replace(ROUTES.EXAM, { trackId: conflict.trackId, expectedSessionId: conflict.id });
       else navigation.navigate(ROUTES.HOME);
     };
     return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Another session is active")} description={t("Resume your active session, or return to Practice.")} actionLabel={t(ordinaryCertification ? "Continue active practice" : certificationExam ? "Continue active exam" : "Go home")} onActionPress={continueActive} /><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">{t("Back to practice")}</Button></Screen>;
@@ -400,6 +401,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     ? undefined
     : getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: editable || retryFrozenResponse ? selected.length > 0 : false, isFinalPosition: projection.ordinal === projection.total, phase }) ?? undefined;
   return <PracticeSessionSurface
+    onFirstPromptLayout={projection.questionPresentation.variant === "structuredCertificationPrompt" ? () => markStartup("claude_prompt_layout") : undefined}
     allowLeave={!completionFailure}
     exit={{ kind: exit }}
     feedback={feedback ? { details: feedback.details, messages: feedback.messages, reason: feedback.reason, result: feedback.result, sources: feedback.sources } : undefined}
@@ -420,7 +422,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}
     primaryAction={primaryAction}
     progress={projection.ordinal / projection.total}
-    question={{ itemId: questionView.itemId, prompt: questionView.prompt, constraints: projection.session.trackId === "claude-certified-architect-professional-certification" ? [] : questionView.constraints, responseControl: buildPracticeResponseControl({ choiceSelectionMode: multiple ? "multiple" : "single", feedbackControls: feedback?.controls, localResponse: selected.length ? { kind: "choice", selectedOptionIds: selected } : null, renderer: questionView.interaction }) }}
+    question={{ itemId: questionView.itemId, prompt: questionView.prompt, constraints: questionView.constraints, presentation: projection.questionPresentation, responseControl: buildPracticeResponseControl({ choiceSelectionMode: multiple ? "multiple" : "single", feedbackControls: feedback?.controls, localResponse: selected.length ? { kind: "choice", selectedOptionIds: selected } : null, renderer: questionView.interaction }) }}
     responseEditable={editable}
     retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : exitFailure === "reconcile_abandon" ? "Check session status" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : uncertainResponse ? "Check saved response" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}

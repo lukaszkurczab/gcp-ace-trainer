@@ -113,8 +113,8 @@ export async function updateCandidateContentReleaseLock({ mode = "check", appRoo
   const expected = bytes(await createCandidateContentReleaseLock({ appRoot, contentRoot }));
   const output = path.join(appRoot, OUTPUT_PATH);
   if (mode === "write") {
-    try { await readFile(path.join(appRoot, HISTORICAL_PATH)); }
-    catch { await writeFile(path.join(appRoot, HISTORICAL_PATH), await readFile(output)); }
+    // Restore frozen history explicitly from Git; never derive it from the active lock.
+    await readHistoricalContentProducerPin({ appRoot });
     await writeFile(output, expected);
     return;
   }

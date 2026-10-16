@@ -1,6 +1,6 @@
 # Code health — zakres i kryteria odbioru
 
-Status i kolejność należą wyłącznie do [planu głównego](../../PATTERNLY-WORKING-PLAN.md). Ten dokument zachowuje pełne kryteria odbioru; datowane diagnozy i opisy wymaganych poprawek są historią, chyba że sekcja „Bieżący status” wskazuje jawnie pozostały zakres. Nie stanowi drugiej kolejki ani samodzielnego dowodu obecnego defektu.
+Status i kolejność należą wyłącznie do [planu głównego](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Ten dokument zachowuje pełne kryteria odbioru; datowane diagnozy i opisy wymaganych poprawek są historią, chyba że sekcja „Bieżący status” wskazuje jawnie pozostały zakres. Nie stanowi drugiej kolejki ani samodzielnego dowodu obecnego defektu.
 
 Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3fac115`, backend `039f7f000e701c4fbc69e18a1fb66528cbc5cdcb`, content `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03`. Nie opisuje on bieżącego stanu tych gałęzi. Historyczne probes/pomiary nie są nowym native acceptance. CH-01–05 pozostają zakończone.
 
@@ -21,7 +21,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## CH-07 — jeden sposób adresowania danych profilu, bez legacy namespace
 
-**Bieżący status:** CH-07 odebrany source/local/exact CI oraz natywny Guest/login/logout smoke i preservation (AC9): zachowane12pierwotnychprofili/ten samGuest, jeden dodatkowy profil autoryzowanego nowego smoke account. Dowody i ograniczenia: [plan](../../PATTERNLY-WORKING-PLAN.md), [raport CH-07](../../reports/ch07-acceptance-2026-10-12.md). Nie oznacza to gotowości wydania ani odbioru PERSIST-13.
+**Bieżący status:** CH-07 odebrany source/local/exact CI oraz natywny Guest/login/logout smoke i preservation (AC9): zachowane12pierwotnychprofili/ten samGuest, jeden dodatkowy profil autoryzowanego nowego smoke account. Dowody i ograniczenia: [plan](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md), [raport CH-07](../../reports/ch07-acceptance-2026-10-12.md). Nie oznacza to gotowości wydania ani odbioru PERSIST-13.
 
 **Historyczna diagnoza:** Przed zmianą CH-07 router/MMKV obsługiwały `legacy_owner`/`legacy_guest` i bootstrap nieskopowanych kluczy; `continueAsGuestInNewProfile` było eksportowane bez call site. Zmiana usunęła te ścieżki, zachowując journal/registry guards operacji Guest34.
 

@@ -1,5 +1,5 @@
-import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { PracticeQuestionCard } from "./PracticeQuestionCard";
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { getPracticeSessionExitCopy } from "./practiceSessionExitCopy";
 import type { ReactNode } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -18,7 +18,7 @@ import type { PracticeResponseRenderer } from "./practiceResponseRendererRegistr
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import { CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID } from "../../domain/tracks/trackRegistry";
+import { DEFAULT_TRACK_QUESTION_PRESENTATION, isSupportedTrackQuestionPresentation, type TrackQuestionPresentation } from "../../domain/tracks/trackAdmission";
 
 import {
   allowsPracticeFeedback,
@@ -33,6 +33,7 @@ import {
 } from "./practiceSessionPresentation";
 
 export type PracticeQuestionPresentation = Readonly<{
+  presentation?: TrackQuestionPresentation;
   constraints?: readonly string[];
   itemId: string;
   prompt: string;
@@ -73,6 +74,7 @@ export type PracticeSessionSurfaceProps = Readonly<{
   onInteractionResponseChange?: (response: unknown) => void;
   interactionResponse?: unknown;
   responseRendererBindings?: ReadonlyMap<string, PracticeResponseRenderer>;
+  onFirstPromptLayout?: () => void;
   onPrimaryAction?: () => void;
   onRequestLeave: () => void;
   onRetry?: () => void;
@@ -94,6 +96,7 @@ export type PracticeSessionSurfaceProps = Readonly<{
  * recovery remain application-owned.
  */
 export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
+  const usableLayoutMeasured = useRef(false);
   const promptLayoutMeasured = useRef(false);
   const feedbackAnchor = useRef<View>(null);
   const lastPrimaryActionActivation = useRef<PracticePrimaryActionActivation | null>(null);
@@ -115,13 +118,15 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
     lastPrimaryActionActivation.current = activation.lastAccepted;
     props.onPrimaryAction();
   };
+  const presentation = props.question?.presentation ?? DEFAULT_TRACK_QUESTION_PRESENTATION;
+  const supportedPresentation = isSupportedTrackQuestionPresentation(presentation);
   const controls = props.question && props.phase !== "preparing" && props.phase !== "completing" ? (
     <>
       <PracticeQuestionCard
         question={props.question}
-        variant={props.runtimeIdentity?.trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID ? "structuredCertificationPrompt" : "default"}
+        presentation={presentation}
       />
-      <PracticeResponseControls
+      {supportedPresentation ? <PracticeResponseControls
         control={props.question.responseControl}
         editable={editable}
         itemId={displayedQuestionId}
@@ -131,14 +136,14 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
         onInteractionResponseChange={props.onInteractionResponseChange}
         interactionResponse={props.interactionResponse}
         rendererBindings={props.responseRendererBindings}
-      />
+      /> : null}
     </>
   ) : null;
 
   return (
     <SessionShell
       actionBar={props.phase === "preparing" ? undefined : props.actionBar ?? <ActionBar {...props} onPrimaryAction={handlePrimaryAction} />}
-      scrollFocus={visibleFeedback && props.feedbackItem && displayedQuestionId && props.runtimeIdentity?.trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID
+      scrollFocus={visibleFeedback && props.feedbackItem && displayedQuestionId && props.runtimeIdentity && presentation.focusFeedback && supportedPresentation
         ? { key: `${props.runtimeIdentity.sessionId}:${props.runtimeIdentity.ordinal}:${displayedQuestionId}`, target: feedbackAnchor }
         : undefined}
       key={displayedQuestionId}
@@ -157,9 +162,13 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
       {props.phase === "completing" ? <CompletingNotice /> : null}
       {props.runtimeIdentity && controls ? (
         <View testID={runtimeSelectors.session.track(props.runtimeIdentity.trackId)} onLayout={() => {
-          if (!promptLayoutMeasured.current && props.runtimeIdentity?.trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID && props.runtimeIdentity.ordinal === 1) {
+          if (!usableLayoutMeasured.current && supportedPresentation && editable && props.phase === "unanswered" && props.exit.kind === "none") {
+            usableLayoutMeasured.current = true;
+            markStartup("practice_usable_layout");
+          }
+          if (!promptLayoutMeasured.current && props.onFirstPromptLayout && props.runtimeIdentity?.ordinal === 1) {
             promptLayoutMeasured.current = true;
-            markStartup("claude_prompt_layout");
+            props.onFirstPromptLayout();
           }
         }}>
           <View style={styles.questionAndResponse} testID={runtimeSelectors.session.roadmapNode(props.runtimeIdentity.roadmapNodeId)}>{controls}</View>

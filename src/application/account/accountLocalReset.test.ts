@@ -53,8 +53,16 @@ async function prepareBoundAccount(): Promise<MemoryKeyValueStorage> {
 
 async function seedHistory() {
   await saveActiveTrackId("coding-interview-dsa-problem-solving");
-  await saveTrainingSession(session("abandoned"), productionTrackAdmissionContext);
-  await addTrainingAttempt(attempt(), productionTrackAdmissionContext);
+  await saveTrainingSession({
+    ...session("abandoned"),
+    modeId: "coding-interview-guided-practice",
+    configurationSnapshot: { kind: "practice" },
+  }, productionTrackAdmissionContext);
+  await addTrainingAttempt({
+    ...attempt(),
+    modeId: "coding-interview-guided-practice",
+    response: { type: "choice_single", optionId: "a" },
+  }, productionTrackAdmissionContext);
   await addReviewQueueItems([review()], productionTrackAdmissionContext);
 }
 

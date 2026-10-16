@@ -1,6 +1,6 @@
 # AUD-08-B2/B4 — pozostały odbiór recovery i reissue
 
-Status i kolejność: [plan główny](../../../../docs/PATTERNLY-WORKING-PLAN.md). Kontrakt zachowany ze starego planu §4; nie oznacza nowego odbioru ani powtórnej implementacji istniejących slotów/generation fences.
+Status i kolejność: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Kontrakt zachowany ze starego planu §4; nie oznacza nowego odbioru ani powtórnej implementacji istniejących slotów/generation fences.
 
 ## B2 — operacje i decyzja SMTP
 

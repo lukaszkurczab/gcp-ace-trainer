@@ -10,7 +10,7 @@ import { getTrainingLifecycleUseCases, simulationHasReviewConflict } from "../..
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { Button, Card, EmptyState, Screen, SessionResultOverview, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
-import { getTrackDisplay, type ResolvedContentRef } from "../../domain";
+import { getTrackDisplay } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { useThemedStyles } from "../../preferences";
@@ -21,7 +21,6 @@ import { getDesignModeTitle, isDesignInterviewModeId } from "../../tracks/design
 import { isCertificationPracticeModeId } from "../../tracks/certification";
 import { getCertificationExamReviewProjection, getCertificationPracticeReviewProjection } from "../../application/certification";
 import { ReviewCycleConflictNotice } from "../practice/ReviewCycleConflictNotice";
-import { ProfileReadFenceChangedError } from "../../application/profileReadFence";
 import type { CertificationExamReviewProjection } from "../../application/certification/certificationExamReviewProjection";
 import type { CertificationPracticeReviewProjection } from "../../application/certification/certificationPracticeReviewProjection";
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.RESULT>;
@@ -69,14 +68,9 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       let certificationPracticeOverallPoints: number | null = null;
       let certificationPracticeReview: CertificationPracticeReviewProjection | null = null;
       if (!certificationExam && isCertificationPracticeModeId(session.modeId)) {
-        try {
-          const practiceReview = await getCertificationPracticeReviewProjection(capturedRequestKey);
-          certificationPracticeReview = practiceReview;
-          certificationPracticeOverallPoints = practiceReview.overallPointsEarned;
-        } catch (cause) {
-          if (cause instanceof ProfileReadFenceChangedError) throw cause;
-          // The practice count summary remains available when this optional exact-points projection is unavailable.
-        }
+        const practiceReview = await getCertificationPracticeReviewProjection(capturedRequestKey);
+        certificationPracticeReview = practiceReview;
+        certificationPracticeOverallPoints = practiceReview.overallPointsEarned;
       }
       const exact = !certificationExam && (isDesignInterviewModeId(session.modeId) || session.modeId.startsWith("certification-") || result.evidence.familyId === "certification")
         ? await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 })
@@ -87,9 +81,7 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       const certificationTopicId = certificationMode?.selection.kind === "node"
         ? certificationMode.selection.nodeId
         : session.modeId === "certification-diagnostic-baseline" && exact ? exact.track.questions[0]?.nodeId ?? null : null;
-      const certificationMaxPoints = certificationExam?.maxPoints ?? (result.evidence.familyId === "certification" && exact
-        ? await getCertificationMaximumPoints(session.itemOrder.map((occurrence) => occurrence.item))
-        : null);
+      const certificationMaxPoints = certificationExam?.maxPoints ?? certificationPracticeReview?.maxPoints ?? null;
       return { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam, ...(reviewConflict ? { reviewConflict: true as const } : {}), certificationPracticeOverallPoints, certificationPracticeReview };
     })()
       .then((summary) => { if (live && summary) setReadState({ kind: "ready", requestKey: capturedRequestKey, summary }); })
@@ -209,17 +201,6 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
         : null}
     </Screen>
   );
-}
-
-async function getCertificationMaximumPoints(items: readonly ResolvedContentRef[]): Promise<number | null> {
-  const resolved = await Promise.all(items.map((item) => contentPackageRuntimeOwner.resolveItem(item)));
-  let maximum = 0;
-  for (const item of resolved) {
-    if (item.question.interactionType === "choice_single") maximum += 1;
-    else if (item.question.interactionType === "choice_multiple") maximum += item.interactions.controlIds(item.question.questionId).length;
-    else return null;
-  }
-  return maximum > 0 ? maximum : null;
 }
 
 function CloudDiagnosticReportCard({ report, onRecommend }: Readonly<{

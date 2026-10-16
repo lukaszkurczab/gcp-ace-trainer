@@ -1,6 +1,6 @@
 # FCA-AUDIT-COMPLETE — dokończenie oceny każdego pytania
 
-Status i kolejność prac określa wyłącznie [plan główny](../../PATTERNLY-WORKING-PLAN.md). To niewykonany zakres AUDIT 3. Obejmuje dokończenie oceny wszystkich pytań; naprawy już wykrytych problemów oraz narzędzie EPIC-09 są osobnymi zadaniami. Porządkowanie dokumentacji nie stanowi wykonania audytu.
+Status i kolejność prac określa wyłącznie [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). To niewykonany zakres AUDIT 3. Obejmuje dokończenie oceny wszystkich pytań; naprawy już wykrytych problemów oraz narzędzie EPIC-09 są osobnymi zadaniami. Porządkowanie dokumentacji nie stanowi wykonania audytu.
 
 ## Zachowane wyniki i punkt rozpoczęcia
 

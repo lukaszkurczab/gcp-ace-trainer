@@ -1,6 +1,6 @@
 # Claude Professional — materiały źródłowe i pełne pokrycie nauki
 
-Plan na 11.10.2026, przygotowany na prośbę właściciela. Status: **CC-01–05 wdrożone i odebrane lokalnie**, ze zsynchronizowanym bankiem APP, bez publikacji. Źródło problemów: [audyt zgodności z kursem](../../reports/claude-course-alignment-2026-10-11.md). Status kolejki utrzymuje wyłącznie [główny plan](../../PATTERNLY-WORKING-PLAN.md).
+Plan na 11.10.2026, przygotowany na prośbę właściciela. Status: **CC-01–05 wdrożone i odebrane lokalnie**, ze zsynchronizowanym bankiem APP, bez publikacji. Źródło problemów: [audyt zgodności z kursem](../../reports/claude-course-alignment-2026-10-11.md). Status kolejki utrzymuje wyłącznie [główny plan](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md).
 
 ## Cel i decyzje produktu
 

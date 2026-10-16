@@ -1,8 +1,6 @@
+import { findTrackDescriptor } from "../domain/tracks/trackAdmission";
 import type { CertificationDomain } from "../tracks/certification/domain/certificationModes";
 
-export const EXAM_DOMAIN_LABELS: Record<CertificationDomain, string> = {
-  setup_environment: "Setting up a cloud solution environment",
-  planning_implementation: "Planning and configuring a cloud solution",
-  operations: "Ensuring successful operation of a cloud solution",
-  access_security: "Configuring access and security"
-};
+export const EXAM_DOMAIN_LABELS = Object.freeze(Object.fromEntries(
+  findTrackDescriptor("google-cloud-associate-cloud-engineer")!.presentation.progressDomains.map(value => [value.id, value.title]),
+)) as Readonly<Record<CertificationDomain, string>>;

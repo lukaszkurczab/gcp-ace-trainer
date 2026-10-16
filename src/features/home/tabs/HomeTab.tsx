@@ -1,23 +1,20 @@
+import type { HomePracticeProjection } from "../../../application/homePracticeProjection";
 import { markStartup } from "../../../infrastructure/diagnostics/startupTrace";
-import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
-import { selectSingleCase } from "../../../application/certification/singleCaseRecommendation";
-import { getApplicationCurrentTime } from "../../../application/trainingLifecycle";
 import { getTrackIconName } from "../../../components/trackIcon";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 
 import { Button, Card, Icon, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
-import { FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID, isActiveReviewQueueEntry } from "../../../domain";
+import { FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID } from "../../../domain";
 import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
 import type { GuidanceAction } from "../../../application/learningPlan";
 import { presentTargetDateGuidance } from "../../../application/learningPlan";
 import type { HomePlanSnapshot } from "../../../application/homePlanSnapshotReader";
 import { colorWithOpacity, radius, spacing, typography } from "../../../theme";
-import type { AnalyticsData } from "../../analytics/analyticsService";
 import { modeLabel } from "./activityPresentation";
-import { hasClaudeDueReview, homePlanPlacement, buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
+import { homePlanPlacement, buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
 import { buildHomeOverviewMetrics } from "./homeOverviewPresentation";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
@@ -31,9 +28,12 @@ import { localizeHomePlanArea } from "../homePlanUiContract";
 
 type HomeTabProps = {
   activeTrack: TrackDisplay;
+  homePractice: HomePracticeProjection | null;
+  capturedAt: string;
+  reviewQueueItems: readonly ReviewQueueEntry[];
+  currentNodeId?: string;
   activeSession: TrainingSession | null;
   resumeUnavailableReason?: "premium_entitlement_denied" | "premium_entitlement_unavailable";
-  analytics: AnalyticsData;
   algorithmsDashboard: CodingInterviewDashboard | null;
   dashboardError: string | null;
   onChangeTrack: () => void;
@@ -47,7 +47,6 @@ type HomeTabProps = {
   onRetryHomePlan: () => void;
   onStartLearning: (topicId: string) => void;
   homePlan: HomePlanSnapshot | null;
-  reviewQueueItems: readonly ReviewQueueEntry[];
   goalInvitationAudience: "guest" | "account";
   showGoalInvitation: boolean;
   trainingAttempts: readonly TrainingAttempt[];
@@ -67,7 +66,7 @@ export function HomeLoadingSkeleton() {
 
   return (
     <View
-      accessibilityLabel={t("Loading Home")}
+      accessibilityLabel={t("Loading Today")}
       accessibilityLiveRegion="polite"
       accessibilityRole="progressbar"
       accessibilityState={{ busy: true }}
@@ -75,7 +74,7 @@ export function HomeLoadingSkeleton() {
       style={styles.homeLoading}
       testID="home-loading-skeleton"
     >
-      <Text accessible={false} maxFontSizeMultiplier={2} style={styles.pageTitle}>{t("Home")}</Text>
+      <Text accessible={false} maxFontSizeMultiplier={2} style={styles.pageTitle}>{t("Today")}</Text>
       <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.homeLoadingShapes}>
         <View style={styles.homeLoadingTrackContext}>
           <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingTrackLabel, { height: 15 * textScale }]} />
@@ -123,9 +122,12 @@ export function HomeLoadingSkeleton() {
 
 export function HomeTab({
   activeTrack,
+  homePractice,
+  capturedAt,
+  reviewQueueItems,
+  currentNodeId,
   activeSession,
   resumeUnavailableReason,
-  analytics,
   algorithmsDashboard,
   dashboardError,
   onChangeTrack,
@@ -139,13 +141,13 @@ export function HomeTab({
   onRetryHomePlan,
   onStartLearning,
   homePlan,
-  reviewQueueItems,
   goalInvitationAudience,
   showGoalInvitation,
   trainingAttempts,
 }: HomeTabProps) {
+  const usableLayoutMeasured = useRef(false);
   const styles = useThemedStyles(createStyles);
-  const { colors: palette } = useAppPreferences();
+  const { colors: palette, locale } = useAppPreferences();
   const { i18n, t } = useTranslation("common");
   const { t: tPlan } = useTranslation("learningPlan");
   const { fontScale, width } = useWindowDimensions();
@@ -158,36 +160,24 @@ export function HomeTab({
     ? actionMeasurements.widths
     : { activity: 0, focus: 0 };
   const actionWidth = Math.max(actionWidths.focus, actionWidths.activity);
-  let singleCaseRecommendation: import("./homeTabModel").HomeRecommendationModel | null = null;
-  let caseDiscoveryUnavailable = false;
-  let dueReviewRecommendation: import("./homeTabModel").HomeRecommendationModel | null = null;
-  const now = getApplicationCurrentTime();
-  const claudeDue = activeTrack.id === "claude-certified-architect-professional-certification" && hasClaudeDueReview(reviewQueueItems, now);
-  if (!activeSession && activeTrack.id === "claude-certified-architect-professional-certification" && claudeDue) dueReviewRecommendation = { action: { kind: "start_certification_due_review", trackId: activeTrack.id }, title: "Review weak areas", detail: "Review due items before they become stale.", enabled: true, icon: "practice", label: "Start review", primaryLabel: "Start review", tone: "primary" };
-  try {
-    const catalog = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
-    const selected = selectSingleCase(catalog, trainingAttempts, reviewQueueItems, now);
-    const exactDue = catalog.trackId === "claude-certified-architect-professional-certification" ? claudeDue : reviewQueueItems.some(r => isActiveReviewQueueEntry(r) && r.dueAt && r.dueAt <= now && r.sourceItem.trackId === catalog.trackId && r.sourceItem.contentVersion === catalog.contentVersion && r.sourceItem.artifactSha256 === catalog.artifactSha256);
-    caseDiscoveryUnavailable = !selected && !exactDue;
-    if (selected && !exactDue && !activeSession && !(homePlan?.kind === "ready" && homePlan.dueReviewCount > 0 && !selected.due)) singleCaseRecommendation = { action: { kind: "start_single_case", caseId: selected.recipe.caseId, nodeId: selected.nodeId, decisionCount: selected.recipe.steps.length }, title: selected.recipe.title, detail: `${t("One case · {{count}} decisions", { count: selected.recipe.steps.length })} · ${t("Initial estimate: about {{minutes}} min", { minutes: Math.ceil(selected.recipe.initialEstimatedSeconds / 60) })}`, enabled: true, icon: "practice", label: "Start", primaryLabel: "Start", tone: "primary" };
-  } catch { caseDiscoveryUnavailable = true; }
-  if (caseDiscoveryUnavailable && activeTrack.id === "claude-certified-architect-professional-certification" && !activeSession && !singleCaseRecommendation && !dueReviewRecommendation) {
-    const reason = "This practice mode is unavailable.";
-    singleCaseRecommendation = { action: { kind: "unavailable", reason }, title: "Recommendation unavailable", detail: reason, unavailableReason: reason, enabled: false, icon: "alert-triangle", label: "Unavailable", primaryLabel: "Unavailable", tone: "warning" };
-  }
-  const model = buildHomeTabModel({ activeSession, activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts, singleCaseRecommendation, dueReviewRecommendation });
+  const dueReviewRecommendation: import("./homeTabModel").HomeRecommendationModel | null = homePractice?.kind === "due"
+    ? { action: { kind: "start_certification_due_review", trackId: homePractice.trackId }, title: "Review weak areas", detail: "Review due items before they become stale.", enabled: true, icon: "practice", label: "Start review", primaryLabel: "Start review", tone: "primary" } : null;
+  const singleCaseRecommendation: import("./homeTabModel").HomeRecommendationModel | null = homePractice?.kind === "case"
+    ? { action: { kind: "start_single_case", caseId: homePractice.caseId, nodeId: homePractice.nodeId, decisionCount: homePractice.decisionCount }, title: homePractice.title, detail: `${t("One case · {{count}} decisions", { count: homePractice.decisionCount })} · ${t("Initial estimate: about {{minutes}} min", { minutes: homePractice.initialMinutes })}`, enabled: true, icon: "practice", label: "Start", primaryLabel: "Start", tone: "primary" }
+    : homePractice?.kind === "unavailable" ? { action: { kind: "unavailable", reason: "This practice mode is unavailable." }, title: "Recommendation unavailable", detail: "This practice mode is unavailable.", unavailableReason: "This practice mode is unavailable.", enabled: false, icon: "alert-triangle", label: "Unavailable", primaryLabel: "Unavailable", tone: "warning" } : null;
+  const model = buildHomeTabModel({ activeSession, activeTrack, currentNodeId, algorithmsDashboard, dashboardError, trainingAttempts, singleCaseRecommendation, dueReviewRecommendation });
   const recommendation = model.recommendations[0];
   const hasActiveSession = activeSession?.status === "active" && activeSession.trackId === activeTrack.id;
   const planPlacement = homePlanPlacement({ hasActiveSession, hasPracticeRecommendation: Boolean(singleCaseRecommendation || dueReviewRecommendation), planKind: homePlan?.kind });
   const secondaryPlan = planPlacement === "secondary" && homePlan?.kind === "ready" ? homePlan : null;
-  const secondaryPlanPresentation = secondaryPlan ? presentTargetDateGuidance({ guidance: secondaryPlan.guidance, locale: i18n.resolvedLanguage?.toLowerCase().startsWith("pl") ? "pl" : "en", timezone: secondaryPlan.plan.timezone }) : null;
+  const secondaryPlanPresentation = secondaryPlan ? presentTargetDateGuidance({ guidance: secondaryPlan.guidance, locale, timezone: secondaryPlan.plan.timezone }) : null;
   const readyHomePlan = planPlacement === "primary" && homePlan?.kind === "ready" ? homePlan : null;
   const homePlanReady = readyHomePlan !== null;
   const homePlanUnavailable = planPlacement === "primary" && homePlan?.kind === "unavailable";
   const homePlanPresentation = homePlanReady
     ? presentTargetDateGuidance({
       guidance: readyHomePlan.guidance,
-      locale: i18n.resolvedLanguage?.toLowerCase().startsWith("pl") ? "pl" : "en",
+      locale,
       timezone: readyHomePlan.plan.timezone,
     })
     : null;
@@ -246,7 +236,7 @@ export function HomeTab({
     .filter((attempt) => attempt.trackId === activeTrack.id && attempt.sessionId !== activeSession?.id)
     .sort((left, right) => right.answeredAt.localeCompare(left.answeredAt));
   const recentAttempt = recentAttempts[0];
-  const overview = buildHomeOverviewMetrics({ trackId: activeTrack.id, reviewQueueItems, trainingAttempts, activeSessionId: activeSession?.id });
+  const overview = buildHomeOverviewMetrics({ trackId: activeTrack.id, reviewQueueItems, trainingAttempts, activeSessionId: activeSession?.id, now: capturedAt });
   const isFirstUse = !hasActiveSession && trainingAttempts.length === 0 && reviewQueueItems.length === 0;
 
   function recordActionWidth(key: HomeActionKey, width: number): void {
@@ -274,9 +264,15 @@ export function HomeTab({
   return (
     <Fragment key={fontScale}>
       <View style={styles.pageIntro}>
-        <Text maxFontSizeMultiplier={2} style={styles.pageTitle}>{t("Home")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.pageTitle}>{t("Today")}</Text>
         <Pressable
           accessibilityRole="button"
+          onLayout={() => {
+            if (!usableLayoutMeasured.current && !dashboardError && !homePlanUnavailable && decisionEnabled) {
+              usableLayoutMeasured.current = true;
+              markStartup("home_usable_layout");
+            }
+          }}
           onPress={onChangeTrack}
           style={({ pressed }) => [
             styles.trackContext,

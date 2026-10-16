@@ -76,7 +76,7 @@ test("Settings opens the shared goal screen with its return context", () => {
   assert.match(home, /onOpenGoal=\{\(\) => navigation\.navigate\(ROUTES\.GOAL_CADENCE, \{ returnTo: "settings", trackId: activeTrack\.id \}\)\}/);
   assert.match(navigationTypes, /export type GoalCadenceReturnTo = "home" \| "progress" \| "settings"/);
   assert.match(screen, /const returnTo: GoalCadenceReturnTo = route\.params\?\.returnTo \?\? "progress"/);
-  assert.match(screen, /returnTo === "home" \? "Home" : "Progress"/);
+  assert.match(screen, /returnTo === "home" \? "Today" : "Progress"/);
   assert.match(screen, /navigation\.canGoBack\(\)/);
   assert.match(screen, /navigation\.navigate\(ROUTES\.HOME, \{ initialTab: returnTo \}\)/);
   assert.match(screen, /<GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);

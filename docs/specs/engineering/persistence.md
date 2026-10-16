@@ -1,6 +1,6 @@
 # Trwałość i recovery — zakres i kryteria odbioru
 
-Status i kolejność należą wyłącznie do [planu głównego](../../PATTERNLY-WORKING-PLAN.md). Ten dokument zachowuje pełne kryteria odbioru; datowane diagnozy i opisy wymaganych poprawek są historią, chyba że sekcja „Bieżący status” wskazuje jawnie pozostały zakres. Nie stanowi drugiej kolejki ani samodzielnego dowodu obecnego defektu.
+Status i kolejność należą wyłącznie do [planu głównego](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Ten dokument zachowuje pełne kryteria odbioru; datowane diagnozy i opisy wymaganych poprawek są historią, chyba że sekcja „Bieżący status” wskazuje jawnie pozostały zakres. Nie stanowi drugiej kolejki ani samodzielnego dowodu obecnego defektu.
 
 Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3fac115`, backend `039f7f000e701c4fbc69e18a1fb66528cbc5cdcb`, content `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03`. Nie opisuje on bieżącego stanu tych gałęzi. Historyczne probes/pomiary nie są nowym native acceptance. CH-01–05 pozostają zakończone.
 

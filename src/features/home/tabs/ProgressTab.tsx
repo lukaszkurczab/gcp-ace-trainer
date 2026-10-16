@@ -3,36 +3,32 @@ import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Svg, { Circle, Polyline } from "react-native-svg";
 
-import { Button, Card, Icon, IconTile, InfoBlock, ProgressBar, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
+import { Button, Card, EmptyState, Icon, IconTile, InfoBlock, ProgressBar, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
+import type { ProgressEvidenceModel } from "../../../application/learningPlan/progressReadProjection";
 import type { ActivitySessionRecord } from "../../../application/activityReadModels";
 import type { GuidanceAction } from "../../../application/learningPlan";
 import type { HomePlanSnapshot } from "../../../application/homePlanSnapshotReader";
 import { completionCopy } from "../homePlanUiContract";
-import { CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID } from "../../../domain";
-import type { GoalRecord, ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
-import type { CloudCertificationProgressViewModel } from "../../../tracks";
-import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
-import type { AnalyticsData } from "../../analytics/analyticsService";
+import type { GoalRecord, TrackDisplay } from "../../../domain";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
 import type { AppColors } from "../../../theme";
 import { radius, shadows, spacing, typography } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
 import {
-  buildProgressTabModel,
+  presentProgressEvidence,
   type ProgressAction,
   type ProgressTabActivityItem,
 } from "./progressTabModel";
 import { formatActivityDateLabel } from "./activityPresentation";
 import type { ActivityItem } from "./activityModel";
 import { buildProgressPlanPresentationModel, type ProgressPlanPresentationModel, type ProgressPlanReadyPresentation } from "../progressPlanPresentationModel";
-import { getTrackRoadmapCatalog, titleForNode } from "../../practice/trackRoadmapCatalog";
+import { getTrackRoadmapCatalog } from "../../practice/trackRoadmapCatalog";
 
 type ProgressTabProps = {
   activeTrack: TrackDisplay;
-  analytics: AnalyticsData;
+  evidence: ProgressEvidenceModel | null;
+  evidenceError?: string | null;
   activityRecords: readonly ActivitySessionRecord[];
-  attempts: CertificationExamSummaryViewModel[];
-  cloudProgress?: CloudCertificationProgressViewModel | null;
   goal?: GoalRecord | null;
   onChangeTrack: () => void;
   onOpenActivity?: () => void;
@@ -43,9 +39,6 @@ type ProgressTabProps = {
   onRetryHomePlan?: () => void;
   onProgressAction?: (action: ProgressAction) => void;
   homePlan?: HomePlanSnapshot | null;
-  practiceHistory: CertificationPracticeAnswerViewModel[];
-  reviewQueueItems?: readonly ReviewQueueEntry[];
-  trainingAttempts?: TrainingAttempt[];
 };
 
 export function ProgressLoadingSkeleton() {
@@ -123,10 +116,9 @@ export function ProgressLoadingSkeleton() {
 /** Figma 09A-09G progress shell backed by the existing local evidence model. */
 export function ProgressTab({
   activeTrack,
-  analytics,
   activityRecords,
-  attempts,
-  cloudProgress,
+  evidence,
+  evidenceError,
   goal = null,
   onChangeTrack,
   onOpenActivity,
@@ -137,15 +129,13 @@ export function ProgressTab({
   onRetryHomePlan,
   onProgressAction,
   homePlan = null,
-  practiceHistory,
-  reviewQueueItems = [],
-  trainingAttempts = [],
 }: ProgressTabProps) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette, locale } = useAppPreferences();
   const { t } = useTranslation("common");
   const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const model = buildProgressTabModel({ activeTrackId: activeTrack.id, activityRecords, analytics, attempts, cloudProgress, practiceHistory, reviewQueueItems, trainingAttempts });
+  if (evidence === null || evidenceError) return <EmptyState title={`${t("Progress")} · ${t("Unavailable")}`} description={t("Try again")} actionLabel={t("Try again")} onActionPress={onRetryHomePlan} />;
+  const model = presentProgressEvidence(evidence, { activeTrackId: activeTrack.id, activityRecords }, evidence.capturedAt);
   const focus = model.algorithmsProgress?.currentFocus;
   const planPresentation = buildProgressPlanPresentationModel({ snapshot: homePlan, activeTrackId: activeTrack.id, locale });
   const focusTitle = focus?.title ?? model.performanceScores[0]?.label ?? activeTrack.shortTitle;
@@ -197,13 +187,13 @@ export function ProgressTab({
           <View style={styles.emptyProgressIcon}>
             <Text maxFontSizeMultiplier={2} style={styles.emptyProgressGlyph}>⫶</Text>
           </View>
-          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressTitle}>{t(activeTrack.id === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID ? "No performance evidence for this version yet" : "No learning evidence yet")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressDescription}>{t(activeTrack.id === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID && (trainingAttempts.length > 0 || activityRecords.length > 0 || reviewQueueItems.length > 0) ? "Earlier activity and reviews remain available." : "Complete a Practice session to begin building Progress.")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressTitle}>{t(model.emptyState.title)}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressDescription}>{t(model.emptyState.description)}</Text>
           {model.algorithmsProgress && onProgressAction ? (
             <Button labelStyle={styles.emptyProgressActionLabel} onPress={() => onProgressAction(model.algorithmsProgress!.priority.primaryAction)} style={styles.emptyProgressAction}>
               {t("Open Practice")}
             </Button>
-          ) : activeTrack.id === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID && model.reviewAction && onProgressAction ? (
+          ) : model.emptyState.reviewAction && model.reviewAction && onProgressAction ? (
             <Button labelStyle={styles.emptyProgressActionLabel} onPress={() => onProgressAction(model.reviewAction!)} style={styles.emptyProgressAction}>
               {t(model.reviewActionLabel)}
             </Button>
@@ -371,7 +361,7 @@ function ProgressPlanSection({ model, onAction, onRetry }: Readonly<{
                   <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("{{completed}} of {{required}} chapters complete", { completed: model.completion.completedChapterCount, required: model.completion.requiredChapterCount })}</Text>
                   {model.completion.chapters.map((chapter) => {
                     const access = model.chapterAccess.find((entry) => entry.nodeId === chapter.nodeId)?.access ?? "unavailable";
-                    const title = getTrackRoadmapCatalog(model.trackId).find((node) => node.id === chapter.nodeId)?.title ?? titleForNode(chapter.nodeId);
+                    const title = getTrackRoadmapCatalog(model.trackId).find((node) => node.id === chapter.nodeId)?.title ?? tCommon("Domain metadata unavailable");
                     const accessCopy = access === "locked" ? t("Premium access required") : access === "unavailable" ? t("Premium access unavailable") : null;
                     const statusCopy = chapter.status === "completed" ? t("Chapter complete")
                       : chapter.coverageDeficit > 0 ? t("Required topic questions remaining: {{count}}", { count: chapter.coverageDeficit })
@@ -509,7 +499,7 @@ function AlgorithmsEvidenceSection({
 }: Readonly<{
   activity: readonly ProgressTabActivityItem[];
   locale: AppLocale;
-  model: NonNullable<ReturnType<typeof buildProgressTabModel>["algorithmsProgress"]>;
+  model: NonNullable<ReturnType<typeof presentProgressEvidence>["algorithmsProgress"]>;
   onOpenActivity?: () => void;
   onOpenActivityItem?: (item: ActivityItem) => void;
   onProgressAction?: (action: ProgressAction) => void;
@@ -552,7 +542,7 @@ function AlgorithmsEvidenceSection({
         </View>
         {showDiagnostics ? <View style={styles.diagnosticsDetails}>
           <Text maxFontSizeMultiplier={2} style={styles.diagnosticsText}>{`${t("Attempt outcomes")}: ${formatDiagnosticFacts(model.diagnostics.outcomeSummary)}`}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.diagnosticsText}>{`${t("Detected mistake patterns")}: ${model.diagnostics.mistakePatterns.length ? model.diagnostics.mistakePatterns.join(" · ") : t("No repeated mistake patterns detected yet.")}`}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.diagnosticsText}>{`${t("Detected mistake patterns")}: ${model.diagnostics.mistakePatterns === null ? t("Unavailable") : model.diagnostics.mistakePatterns.length ? model.diagnostics.mistakePatterns.join(" · ") : t("No repeated mistake patterns detected yet.")}`}</Text>
           <Text maxFontSizeMultiplier={2} style={styles.diagnosticsText}>{`${t("Roadmap state")}: ${formatDiagnosticFacts(model.diagnostics.roadmapFacts)}`}</Text>
         </View> : null}
       </View>

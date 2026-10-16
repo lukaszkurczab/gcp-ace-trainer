@@ -1,0 +1,7 @@
+appId: com.lkurczab.patternly.sec03
+name: ARCH07 isolated reset seed delta
+---
+- extendedWaitUntil:
+    visible: "Stage: reset_pause"
+    timeout: 60000
+- assertVisible: "PERSIST-13 reset seed: pending"

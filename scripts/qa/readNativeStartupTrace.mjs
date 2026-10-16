@@ -44,6 +44,14 @@ export function heapResult(message) {
   return { kind: "observed", usedBytes: usedSize, totalBytes: totalSize };
 }
 
+/** Optional native markers share the probed monotonic clock; never invent a zero. */
+export function validateStartupTiming(value) {
+  const keys = ["bundlePreludeMs", "nativeBeforeMs", "performanceMs", "nativeAfterMs", "startTime", "initializeRuntimeStart", "executeJavaScriptBundleEntryPointStart", "endTime"];
+  if (!value || Object.keys(value).length !== keys.length || Object.keys(value).some((key) => !keys.includes(key))
+    || keys.some((key) => value[key] !== null && (!Number.isFinite(value[key]) || value[key] < 0))) throw Error("timing_rejected");
+  return value;
+}
+
 export function request(socket, id, method, params = {}) {
   return new Promise((accept, reject) => {
     const finish = (result, error) => {
@@ -63,7 +71,7 @@ export function request(socket, id, method, params = {}) {
   });
 }
 
-export async function readNativeStartupTrace(metroUrl, debuggerUrl) {
+export async function readNativeStartupTrace(metroUrl, debuggerUrl, expectedAppId = "com.lkurczab.patternly") {
   const metro = parseOrigin(metroUrl);
   const debuggerOrigin = parseOrigin(debuggerUrl);
   if (metro.port !== debuggerOrigin.port) throw Error("origin_rejected");
@@ -71,7 +79,7 @@ export async function readNativeStartupTrace(metroUrl, debuggerUrl) {
   if (!response.ok) throw Error("discovery_failed");
   const body = await response.text();
   if (body.length > 64 * 1024) throw Error("target_rejected");
-  const endpoint = selectTarget(JSON.parse(body), metro);
+  const endpoint = selectTarget(JSON.parse(body), metro, expectedAppId);
   const require = createRequire(new URL("../../node_modules/@react-native/dev-middleware/package.json", import.meta.url));
   const WebSocket = require("ws");
   const socket = new WebSocket(endpoint, { origin: debuggerOrigin.origin, handshakeTimeout: TIMEOUT_MS, maxPayload: 128 * 1024, followRedirects: false });
@@ -80,23 +88,34 @@ export async function readNativeStartupTrace(metroUrl, debuggerUrl) {
       socket.once("open", accept); socket.once("error", () => reject(Error("connect_failed")));
     });
     const result = await request(socket, 1, "Runtime.evaluate", {
-      expression: 'JSON.stringify({hermes:!!globalThis.HermesInternal,trace:globalThis[Symbol.for("patternly.startup-trace.v1")]?.read()})',
+      expression: `JSON.stringify({hermes:!!globalThis.HermesInternal,trace:globalThis[Symbol.for("patternly.startup-trace.v1")]?.read(),timing:(()=>{
+        const read=f=>{try{return f()??null}catch{return null}};
+        const nativeBeforeMs=read(()=>globalThis.nativePerformanceNow?.());
+        const performanceMs=read(()=>performance.now());
+        const nativeAfterMs=read(()=>globalThis.nativePerformanceNow?.());
+        const t=read(()=>performance.rnStartupTiming);
+        return {bundlePreludeMs:read(()=>globalThis.__BUNDLE_START_TIME__),nativeBeforeMs,performanceMs,nativeAfterMs,
+          startTime:read(()=>t?.startTime),initializeRuntimeStart:read(()=>t?.initializeRuntimeStart),
+          executeJavaScriptBundleEntryPointStart:read(()=>t?.executeJavaScriptBundleEntryPointStart),endTime:read(()=>t?.endTime)};
+      })()})`,
       returnByValue: true, silent: true,
     });
     if (result.error || result.result?.exceptionDetails) throw Error("trace_rejected");
-    const trace = validateTrace(JSON.parse(result.result?.result?.value ?? "null"));
+    const value = JSON.parse(result.result?.result?.value ?? "null");
+    const trace = validateTrace(value);
+    const timing = validateStartupTiming(value.timing);
     const heap = heapResult(await request(socket, 2, "Runtime.getHeapUsage"));
-    return { schema: "patternly.native-startup-readback.v1", trace, heap };
+    return { schema: "patternly.native-startup-readback.v1", trace, heap, timing };
   } finally { socket.terminate(); }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [metro, debuggerOrigin, ...extra] = process.argv.slice(2);
-  const safeErrors = new Set(["origin_rejected", "target_rejected", "trace_rejected", "heap_rejected", "transport_closed", "read_timeout", "connect_failed", "discovery_failed"]);
+  const [metro, debuggerOrigin, expectedAppId, ...extra] = process.argv.slice(2);
+  const safeErrors = new Set(["origin_rejected", "target_rejected", "trace_rejected", "heap_rejected", "timing_rejected", "transport_closed", "read_timeout", "connect_failed", "discovery_failed"]);
   if (!metro || !debuggerOrigin || extra.length) {
     console.error(JSON.stringify({ error: "arguments_rejected" })); process.exitCode = 1;
   } else {
-    readNativeStartupTrace(metro, debuggerOrigin).then((value) => {
+    readNativeStartupTrace(metro, debuggerOrigin, expectedAppId).then((value) => {
       console.log(JSON.stringify(value));
       if (value.trace.truncated) process.exitCode = 1;
     }).catch((error) => {

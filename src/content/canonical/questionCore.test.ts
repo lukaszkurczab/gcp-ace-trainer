@@ -208,7 +208,7 @@ test("optional GCP simulation profile is strict, complete, immutable and covered
     (copy: Record<string, unknown>) => { copy.simulationProfiles = []; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; first.familyId = "coding_interview"; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; first.modeId = "certification-focus-practice"; },
-    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; first.profileVersion = "2"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; first.profileVersion = ""; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; config.schemaVersion = "patternly-certification-simulation-config-v2"; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; delete (config.nodeDomainMap as Record<string, string>)[nodeIds[0]!]; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMap as Record<string, string>)[nodeIds[0]!] = "unknown-domain"; },
@@ -216,7 +216,7 @@ test("optional GCP simulation profile is strict, complete, immutable and covered
     (copy: Record<string, unknown>) => { ((copy.questions as Array<Record<string, unknown>>).find((question) => question.nodeId === sourceDerivedNode)!).contentDomainId = "gcp-ace-standard-domain-2"; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMapEvidence as Record<string, unknown>).contentVersion = "foreign-version"; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMapEvidence as Record<string, unknown>).contentVersion = "../foreign"; },
-    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.questionCount as Record<string, unknown>).maximum = 61; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.questionCount as Record<string, unknown>).maximum = 0; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.interactionPolicy as Record<string, unknown>).feedbackTiming = "after_each_answer"; },
   ];
   for (const mutate of mutations) {

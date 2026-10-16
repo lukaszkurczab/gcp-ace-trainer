@@ -52,8 +52,8 @@ export function resolveRequiredUnitFocusMode(
 
 export type ProductSimulationModeConfig = Readonly<{
   kind: "certification_exam_simulation";
-  trackId: "google-cloud-associate-cloud-engineer";
-  profileId: "google-cloud-associate-cloud-engineer-certification-exam-v1";
+  trackId: string;
+  profileId: string;
   familyId: "certification";
   modeId: "certification-exam-simulation";
 }>;
@@ -76,14 +76,6 @@ export type ProductDesignInterviewSimulationModeConfig = Readonly<{
 
 export type ProductSimulationConfig = ProductSimulationModeConfig | ProductCodingInterviewSimulationModeConfig | ProductDesignInterviewSimulationModeConfig;
 
-const GCP_SIMULATION_MODE: ProductSimulationModeConfig = Object.freeze({
-  kind: "certification_exam_simulation",
-  trackId: "google-cloud-associate-cloud-engineer",
-  profileId: "google-cloud-associate-cloud-engineer-certification-exam-v1",
-  familyId: "certification",
-  modeId: "certification-exam-simulation",
-});
-
 const CODING_INTERVIEW_SIMULATION_MODE: ProductCodingInterviewSimulationModeConfig = Object.freeze({
   kind: "coding_interview_simulation",
   trackId: "coding-interview-dsa-problem-solving",
@@ -100,8 +92,17 @@ const DESIGN_TRACK_IDS = Object.freeze([
 
 /** Resolve only the explicitly bound profile. Simulation policy values remain content-owned. */
 export function getProductSimulationModeConfig(trackId: string, profiles: readonly CanonicalProductSimulationProfile[] | undefined): Readonly<{ config: ProductSimulationConfig; profile: CanonicalProductSimulationProfile }> {
-  const expected = trackId === GCP_SIMULATION_MODE.trackId ? GCP_SIMULATION_MODE
-    : trackId === CODING_INTERVIEW_SIMULATION_MODE.trackId ? CODING_INTERVIEW_SIMULATION_MODE
+  const certificationProfiles = profiles?.filter((profile) => (profile.familyId as string) === "certification" || (profile.modeId as string) === "certification-exam-simulation") ?? [];
+  if (certificationProfiles.length > 0) {
+    const profile = certificationProfiles[0]!;
+    if (certificationProfiles.length !== 1 || profile.familyId !== "certification" || profile.modeId !== "certification-exam-simulation" ||
+      !isCanonicalSafeIdentity(trackId) || !isCanonicalSafeIdentity(profile.profileId) || !isCanonicalSafeIdentity(profile.profileVersion) ||
+      !profile.familyConfig.nodeDomainMapEvidence || !isCanonicalSafeIdentity(profile.familyConfig.nodeDomainMapEvidence.contentVersion) || profile.familyConfig.nodeDomainMapEvidence.artifactPath !== `artifacts/tracks/${trackId}/${profile.familyConfig.nodeDomainMapEvidence.contentVersion}/track-artifact.json`) {
+      throw new ProductModeUnavailableError(`Simulation profile for ${trackId} is unavailable or does not match its exact track, family and mode.`);
+    }
+    return Object.freeze({ config: Object.freeze({ kind: "certification_exam_simulation" as const, trackId, profileId: profile.profileId, familyId: profile.familyId, modeId: profile.modeId }), profile });
+  }
+  const expected = trackId === CODING_INTERVIEW_SIMULATION_MODE.trackId ? CODING_INTERVIEW_SIMULATION_MODE
       : DESIGN_TRACK_IDS.includes(trackId as (typeof DESIGN_TRACK_IDS)[number]) ? Object.freeze({ kind: "design_interview_simulation" as const, trackId: trackId as ProductDesignInterviewSimulationModeConfig["trackId"], profileId: `${trackId}-simulation-v1`, familyId: "design_interview" as const, modeId: "design-interview-simulation" as const })
         : null;
   if (!expected || !profiles) throw new ProductModeUnavailableError(`Simulation mode for ${trackId} is unavailable.`);
@@ -220,7 +221,7 @@ export function validateProductModeConfigs(configs: readonly ProductModeConfig[]
   return deepFreeze(JSON.parse(JSON.stringify(configs)) as ProductModeConfig[]);
 }
 
-export function validateProductModeConfigsAgainstArtifacts(configs: readonly ProductModeConfig[], artifacts: readonly ProductModeArtifact[]): readonly ProductModeConfig[] {
+export function validateProductModeConfigsAgainstArtifacts(configs: readonly ProductModeConfig[], artifacts: readonly ProductModeArtifact[], observeArtifactQuestions?: (edge: "begin" | "end") => void): readonly ProductModeConfig[] {
   const validatedConfigs = validateProductModeConfigs(configs);
   const artifactByTrack = new Map<string, ProductModeArtifact>();
   for (const artifact of artifacts) {
@@ -238,11 +239,17 @@ export function validateProductModeConfigsAgainstArtifacts(configs: readonly Pro
   }
   if (artifactByTrack.size !== 9 || Object.values(TRACKS).some((track) => !artifactByTrack.has(track.id))) throw new Error("Product mode artifacts are missing a canonical launch track.");
 
+  const validatedArtifacts = new Set<ProductModeArtifact>();
   for (const entry of validatedConfigs) {
     const entryKey = key(entry.trackId, entry.modeId);
     const artifact = artifactByTrack.get(entry.trackId);
     if (!artifact) throw new Error(`ProductModeConfig ${entryKey} references a foreign track.`);
-    validateArtifactQuestions(artifact);
+    if (!validatedArtifacts.has(artifact)) {
+      try { observeArtifactQuestions?.("begin"); } catch { /* Optional observation cannot change validation. */ }
+      try { validateArtifactQuestions(artifact); }
+      finally { try { observeArtifactQuestions?.("end"); } catch { /* Preserve the validation outcome. */ } }
+      validatedArtifacts.add(artifact);
+    }
     const pool = selectionPool(entry.selection, artifact);
     if (pool.length === 0) throw new Error(`ProductModeConfig ${entryKey} has an empty canonical pool.`);
     if (entry.selection.kind === "exact_ordered_questions" && pool.some((question) => question.nodeId !== TRACKS.gcp.freeNodeId)) throw new Error("GCP Diagnostic questions must belong to its canonical Free node.");

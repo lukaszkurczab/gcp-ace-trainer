@@ -1,5 +1,4 @@
 import type {
-  PracticeStatsSummary,
   PracticeTopicDetail,
   PracticeTopicTitle,
 } from "./practiceFlowModel";
@@ -36,27 +35,4 @@ export function formatPracticeTopicTitle(
     case "translation-key":
       return t(title.key);
   }
-}
-
-export function formatPracticeStatsDetail(
-  detail: PracticeStatsSummary["detail"],
-  t: Translate,
-): string {
-  switch (detail.kind) {
-    case "key":
-      return t(detail.key);
-    case "algorithm-outcomes":
-      return [
-        `${detail.correctCount} ${t("correct")}`,
-        `${detail.partialCount} ${t("partial")}`,
-        `${detail.incorrectCount} ${t("incorrect")}`,
-      ].join(", ") + ".";
-  }
-}
-
-export function formatPracticeStatsTitle(
-  summary: PracticeStatsSummary,
-  t: Translate,
-): string {
-  return `${t(summary.trackTitle)} — ${t("Stats")}`;
 }

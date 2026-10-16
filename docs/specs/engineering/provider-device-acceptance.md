@@ -1,6 +1,6 @@
 # Zachowane ODK-E2E-082–088 i099 — szczegółowe bramki
 
-Statusy wyłącznie w [planie głównym](../../PATTERNLY-WORKING-PLAN.md). Każde ID zachowuje osobny wynik odbioru; przypisanie do R01/R03/R04/R05 nie usuwa zadania. Źródła: app Git `fd940704:docs/qa/ios-backend/ODK-E2E-082-088-PROVIDER-GATES.md` oraz `8e08181c:docs/active/PLAN-SYNC/C-ODK-MAP-REPORT.md`. Poniżej odtworzono zakres z uwzględnieniem nowszych kontraktów; stare liczby i copy nie są automatycznie aktualnymi AC.
+Statusy wyłącznie w [planie głównym](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Każde ID zachowuje osobny wynik odbioru; przypisanie do R01/R03/R04/R05 nie usuwa zadania. Źródła: app Git `fd940704:docs/qa/ios-backend/ODK-E2E-082-088-PROVIDER-GATES.md` oraz `8e08181c:docs/active/PLAN-SYNC/C-ODK-MAP-REPORT.md`. Poniżej odtworzono zakres z uwzględnieniem nowszych kontraktów; stare liczby i copy nie są automatycznie aktualnymi AC.
 
 | ID / bramka | Pozostały wynik i AC |
 | --- | --- |

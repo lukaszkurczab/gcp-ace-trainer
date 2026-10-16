@@ -168,7 +168,7 @@ export async function runActualResultScreen({ projectionFails = false, projectio
   let effectStarted = false;
   const overview = createOverview();
   const Routes = { PRACTICE_HUB: "practice-hub", EXAM_REVIEW: "exam-review", DESIGN_INTERVIEW_SIMULATION_RESULT: "design-simulation-result" };
-  const Result = compileFunction("./ResultScreen.tsx", ["ResultScreen", "formatMode", "CloudDiagnosticReportCard", "getCertificationMaximumPoints"], {
+  const Result = compileFunction("./ResultScreen.tsx", ["ResultScreen", "formatMode", "CloudDiagnosticReportCard"], {
     useState: (initial) => {
       const index = stateIndex++;
       if (!(index in states)) states[index] = typeof initial === "function" ? initial() : initial;
@@ -224,13 +224,12 @@ export async function runActualResultScreen({ projectionFails = false, projectio
     getDesignModeTitle: (key) => key,
     isDesignInterviewModeId,
     isCertificationPracticeModeId,
-    scoreCanonicalQuestion,
     getCertificationExamReviewProjection: async () => null,
     getCertificationPracticeReviewProjection: async () => {
-      if (projectionFails) throw new Error("optional exact-points projection unavailable");
+      if (projectionFails) throw new Error("exact-points projection unavailable");
       if (projectionError) throw projectionError;
-      if (diagnosticReport) return { overallPointsEarned: result.evidence.details.pointsEarned, diagnosticReport };
-      return caseMode ? fixture.projection : { overallPointsEarned: fixture.projection.overallPointsEarned };
+      if (diagnosticReport) return { overallPointsEarned: result.evidence.details.pointsEarned, maxPoints: result.evidence.details.maxPoints, diagnosticReport };
+      return fixture.projection;
     },
     formatDomains: () => "domains",
   });

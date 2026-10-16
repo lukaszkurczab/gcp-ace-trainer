@@ -2,9 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { canPersistTrainingSessionDraft } from "../../domain";
-import { installLearningStateResetBarrier } from "../learningMutations/commitLearningStateReset";
+import { commitLearningStateReset, installLearningStateResetBarrier } from "../learningMutations/commitLearningStateReset";
 import { MutationCommitFailure } from "../mutationBoundary";
-import { clearPatternlyLocalHistory } from "../../features/home/localReset";
 import {
   getActiveTrainingSession,
   getActiveMutationJournal,
@@ -82,7 +81,7 @@ test("PERSIST-13 seed uses the registered Coding simulation draft and pauses aft
       assert.equal(stage, PERSIST13_RESET_PAUSE_STAGE);
       throw new Error("persist13_test_pause");
     });
-    await assert.rejects(clearPatternlyLocalHistory(), (error: unknown) => {
+    await assert.rejects(commitLearningStateReset(new Date().toISOString()), (error: unknown) => {
       assert.ok(error instanceof MutationCommitFailure);
       assert.equal(error.phase, "materialization");
       assert.equal(error.durableState, "journal_durable");

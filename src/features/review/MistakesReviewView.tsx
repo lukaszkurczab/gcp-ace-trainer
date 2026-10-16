@@ -27,9 +27,10 @@ type Props = Readonly<{
   onSelectRow: (id: string) => void;
   onConfirmRemoveChange: (confirm: boolean) => void;
   onRemoveUnavailable: () => void;
+  onRetry: () => void;
 }>;
 
-export function MistakesReviewView({ model, visibleRows, selectedRow, loading, readError, hasActiveTrack, confirmRemoveUnavailable, removingUnavailable, onSelectRow, onConfirmRemoveChange, onRemoveUnavailable }: Props) {
+export function MistakesReviewView({ model, visibleRows, selectedRow, loading, readError, hasActiveTrack, confirmRemoveUnavailable, removingUnavailable, onSelectRow, onConfirmRemoveChange, onRemoveUnavailable, onRetry }: Props) {
   const styles = useThemedStyles(createStyles);
   const { locale } = useAppPreferences();
   const { t } = useTranslation("common");
@@ -75,6 +76,8 @@ export function MistakesReviewView({ model, visibleRows, selectedRow, loading, r
 
       {!loading && readError ? (
         <EmptyState
+          actionLabel={t("Try again")}
+          onActionPress={onRetry}
           title={t("Review queue is unavailable")}
           description={t(readError)}
         />

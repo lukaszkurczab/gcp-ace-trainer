@@ -5,16 +5,16 @@ import test from "node:test";
 const card = readFileSync("src/features/practice/PracticeQuestionCard.tsx", "utf8");
 const surface = readFileSync("src/features/practice/PracticeSessionSurface.tsx", "utf8");
 
-test("Claude structured question presentation is selected only from canonical track identity", () => {
-  assert.match(surface, /trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID/);
-  assert.match(surface, /\? "structuredCertificationPrompt" : "default"/);
-  assert.doesNotMatch(surface, /prompt\.(includes|match)|constraints\.(includes|some)/);
+test("shared surface receives presentation config without provider-ID dispatch", () => {
+  assert.match(surface, /presentation=\{presentation\}/);
+  assert.match(surface, /presentation\.focusFeedback && supportedPresentation/);
+  assert.doesNotMatch(surface, /CLAUDE_|GOOGLE_|claude-certified|google-cloud|claude_prompt_layout/);
 });
 
 test("structured presentation preserves authored prompt and constraint strings", () => {
   assert.match(card, />\{question\.prompt\}<\/Text>/);
   assert.match(card, />• \{constraint\}<\/Text>/);
-  assert.match(card, /variant = "default"/);
+  assert.match(card, /presentation = DEFAULT_TRACK_QUESTION_PRESENTATION/);
   assert.match(card, /fontSize: 20[\s\S]*?lineHeight: 28/);
 });
 

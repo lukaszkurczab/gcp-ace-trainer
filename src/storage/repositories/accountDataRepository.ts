@@ -5,7 +5,8 @@ import { isGoalRecordForPolicy, normalizeGoalRecord, type GoalPolicyResolver } f
 import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
 import { canonicalJsonV1, canonicalJsonV1ByteLength, canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { recordFingerprintPayload } from "../../domain/identity/recordFingerprint";
+import { accountDataRecordFingerprint } from "../../domain/identity/recordFingerprint";
+import { SYNCABLE_RECORD_TYPES, type SyncableRecordType } from "../../domain/account/accountDataRecordIdentity";
 import { applyActiveForegroundTimerRaw, pauseActiveForegroundClock, getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { CANONICAL_RECORD_SCHEMA, readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, restoreCanonicalEnvelopeUnlocked, withCanonicalWriteLocks, writeCanonicalJson, writeCanonicalJsonUnlocked } from "./canonicalRecordCodec";
@@ -23,8 +24,8 @@ import { AccountDataFailure } from "../errors";
 import { acceptedTargetFromGoal } from "../../domain/learning/learningPlan";
 import { isTrackAdmitted, type LearningDataAdmissionContext, type TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 
-export const SYNCABLE_RECORD_TYPES = ["active_track", "training_session_summary", "training_session_result", "training_attempt", "review_queue_entry", "goal", "learning_plan"] as const;
-export type SyncableRecordType = (typeof SYNCABLE_RECORD_TYPES)[number];
+export { SYNCABLE_RECORD_TYPES, type SyncableRecordType } from "../../domain/account/accountDataRecordIdentity";
+export { accountDataRecordFingerprint } from "../../domain/identity/recordFingerprint";
 
 export type AccountDataRecord = Readonly<{
   fingerprint: string;
@@ -390,9 +391,6 @@ type AccountDataRecordIdentity = Pick<AccountDataRecord, "recordType" | "recordI
 /** Collision-safe, canonical key for one logical account record. */
 export function accountDataRecordKey(record: AccountDataRecordIdentity): string {
   return canonicalJsonV1({ recordId: record.recordId, recordType: record.recordType, trackId: record.trackId });
-}
-export function accountDataRecordFingerprint(record: Readonly<{ recordId: string; recordType: SyncableRecordType; state: Readonly<Record<string, unknown>>; trackId: string }>): string {
-  return sha256Utf8(recordFingerprintPayload(record));
 }
 export function isDeletedAccountDataRecord(record: Pick<AccountDataRecord, "state">): boolean { return record.state.deleted === true; }
 

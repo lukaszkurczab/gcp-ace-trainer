@@ -87,7 +87,7 @@ function ListFixture() {
           selectedSessionDetailsId={activity.items.find((item) => item.id === selectedId)?.kind === "canonical" ? selectedId : null}
           onItemPress={onActivityPress} onBack={unavailable} onRetry={unavailable} onOpenPractice={unavailable} />
           : review ? <MistakesReviewView key={scenario!.sequence} model={review} visibleRows={review.dueRows.length > 0 ? review.dueRows : review.upcomingRows}
-            selectedRow={selectedReview} loading={false} readError={null} hasActiveTrack confirmRemoveUnavailable={confirmRemove} removingUnavailable={false}
+            selectedRow={selectedReview} loading={false} readError={null} hasActiveTrack confirmRemoveUnavailable={confirmRemove} removingUnavailable={false} onRetry={unavailable}
             onSelectRow={(id) => setSelectedId((current) => current === id ? null : id)} onConfirmRemoveChange={setConfirmRemove} onRemoveUnavailable={unavailable} />
             : <View><Text>PERF-06 isolated presentation environment. No persisted preferences or profile data loaded.</Text></View>}
       </ListPresentationMeasurement>

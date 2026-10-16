@@ -8,6 +8,7 @@ import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 import { certificationReviewEvidenceMatches, projectCertificationPracticeFeedback, projectCertificationPracticeQuestion } from "./certificationSessionFacade";
 
 const question = Object.freeze({
+  trackId: "claude-certified-architect-professional-certification",
   answer: Object.freeze({ optionId: "correct", type: "choice_single" }),
   constraints: Object.freeze(["Select one answer."]),
   feedback: Object.freeze({ details: Object.freeze({ blocks: Object.freeze([Object.freeze({ text: "Full explanation", type: "paragraph" })]) }), messages: Object.freeze([{ kind: "wrong_option", targetId: "wrong", text: "Authored wrong-option explanation." }]), reason: "Correct because of the durable contract." }),
@@ -46,7 +47,7 @@ test("active Certification projection strips answers, explanations and feedback 
   const exactQuestion = exact(question);
   const projected = projectCertificationPracticeQuestion(exactQuestion.question, exactQuestion.interactions.present(question.questionId, null).model);
   assert.deepEqual(projected, {
-    constraints: ["Select one answer."],
+    constraints: [],
     interaction: {
       options: [
         { optionId: "correct", text: "Correct choice" },

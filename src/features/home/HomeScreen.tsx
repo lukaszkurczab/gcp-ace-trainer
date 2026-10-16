@@ -2,7 +2,7 @@ import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
 import {
@@ -24,14 +24,10 @@ import {
   loadActiveTrackId as getActiveTrackId,
   loadActiveTrainingSession,
   loadCodingInterviewDashboard,
-  loadCloudCertificationProgress as loadCloudCertificationProgressViewModel,
   loadGoal,
   loadGoalOnboardingDismissed,
-  loadExamSummaries as getAttempts,
-  loadPracticeHistory as getPracticeHistory,
   loadReviewQueueItems as getReviewQueueItems,
   loadTrainingAttempts as getTrainingAttempts,
-  type StorageIssue,
   persistGoalOnboardingDismissal,
 } from "../../application/learningReadModels";
 import {
@@ -46,14 +42,11 @@ import {
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
 import { captureHomeShellReadFence } from "../../application/homeShellReadFence";
 import { captureProfileReadFence } from "../../application/profileReadFence";
-import { type CloudCertificationProgressViewModel } from "../../tracks/certification";
-import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
 import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
 import type { CodingInterviewDashboard } from "../../application/coding-interview";
 import { getApplicationCurrentTime, resumeActiveTrainingSession } from "../../application/trainingLifecycle";
 import { TrainingApplicationFailure } from "../../application/trainingLifecycle/contracts";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { SelectTrackScreen } from "./SelectTrackScreen";
 import {
@@ -76,6 +69,9 @@ import type { AppColors } from "../../theme";
 import { feedbackTimingFromDurableSession } from "./resumeFeedbackTiming";
 import { navigateToActivityResult } from "./activityNavigation";
 import { buildHomePlanPracticeSetupParams } from "./homePlanUiContract";
+import { projectHomePractice, type HomePracticeProjection } from "../../application/homePracticeProjection";
+import { projectProgressEvidence, type ProgressEvidenceModel } from "../../application/learningPlan/progressReadProjection";
+import { isLocalLearningProjectionFailure, requireHomePlanReadIntegrity } from "../../application/learningProjectionFailure";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { useHomeResumeUnavailable } from "../../content/application/ContentPreparationGate";
 
@@ -90,13 +86,13 @@ type ShellData = {
   algorithmsDashboard: CodingInterviewDashboard | null;
   algorithmsDashboardError: string | null;
   activeSession: TrainingSession | null;
-  attempts: CertificationExamSummaryViewModel[];
-  cloudProgress: CloudCertificationProgressViewModel | null;
+  homePractice: HomePracticeProjection | null;
+  capturedAt: string | null;
+  progressEvidence: ProgressEvidenceModel | null;
+  progressEvidenceError: string | null;
   goal: GoalRecord | null;
   goalOnboardingDismissed: boolean;
-  practiceHistory: CertificationPracticeAnswerViewModel[];
   reviewQueueItems: ReviewQueueEntry[];
-  storageIssues: readonly StorageIssue[];
   trainingAttempts: TrainingAttempt[];
   homePlan: HomePlanSnapshot | null;
 };
@@ -127,13 +123,13 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     algorithmsDashboard: null,
     algorithmsDashboardError: null,
     activeSession: null,
-    attempts: [],
-    cloudProgress: null,
+    homePractice: null,
+    capturedAt: null,
+    progressEvidence: null,
+    progressEvidenceError: null,
     goal: null,
     goalOnboardingDismissed: true,
-    practiceHistory: [],
     reviewQueueItems: [],
-    storageIssues: [],
     trainingAttempts: [],
     homePlan: null,
   });
@@ -174,26 +170,22 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           }
           const savedTrackId = await getActiveTrackId();
           const assertCurrentSources = captureHomeShellReadFence(savedTrackId);
+          const readNow = getApplicationCurrentTime();
           const trainingAttemptsRead = getTrainingAttempts();
           const [
-            savedAttempts,
-            savedPracticeHistory,
             activeSession,
-            cloudProgress,
             reviewQueueItemsResult,
             trainingAttemptsResult,
             activityRecords,
             homePlan,
           ] = await Promise.all([
-            getAttempts(),
-            getPracticeHistory(),
             loadActiveTrainingSession(),
-            loadCloudCertificationProgressViewModel(),
             getReviewQueueItems(),
             trainingAttemptsRead,
             loadActivitySessionRecords({ getAttempts: () => trainingAttemptsRead }),
-            savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: getApplicationCurrentTime(), premiumAccess: accountRef.current.readCurrentPremiumAccess() }) : Promise.resolve(null),
+            savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: readNow, premiumAccess: accountRef.current.readCurrentPremiumAccess() }) : Promise.resolve(null),
           ]);
+          requireHomePlanReadIntegrity(homePlan);
           const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
           let goalOnboardingDismissed = true;
           if (savedTrackId) {
@@ -203,10 +195,27 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           let algorithmsDashboard: CodingInterviewDashboard | null = null;
           let algorithmsDashboardError: string | null = null;
           if (savedTrackId === CODING_INTERVIEW_TRACK_ID) {
-            try { algorithmsDashboard = await loadCodingInterviewDashboard(); }
-            catch (error) { algorithmsDashboardError = describeOperationalFailure(error, "Coding Interview recommendation is unavailable."); }
+            try { algorithmsDashboard = await loadCodingInterviewDashboard({ attempts: trainingAttemptsResult.value, reviews: reviewQueueItemsResult.value, activeSession, now: readNow }); }
+            catch (error) {
+              if (!isLocalLearningProjectionFailure(error)) throw error;
+              algorithmsDashboardError = describeOperationalFailure(error, "Coding Interview recommendation is unavailable.");
+            }
           }
 
+          let homePractice: HomePracticeProjection | null = null;
+          if (savedTrackId) {
+            try { homePractice = projectHomePractice({ trackId: savedTrackId, attempts: trainingAttemptsResult.value, reviews: reviewQueueItemsResult.value, activeSession, homePlan, now: readNow }); }
+            catch (error) { if (!isLocalLearningProjectionFailure(error)) throw error; homePractice = { kind: "unavailable" }; }
+          }
+          let progressEvidence: ProgressEvidenceModel | null = null;
+          let progressEvidenceError: string | null = null;
+          if (savedTrackId) {
+            try { progressEvidence = projectProgressEvidence({ activeTrackId: savedTrackId, activityRecords, trainingAttempts: trainingAttemptsResult.value, reviewQueueItems: reviewQueueItemsResult.value, now: readNow }); }
+            catch (error) {
+              if (!isLocalLearningProjectionFailure(error)) throw error;
+              progressEvidenceError = "Progress is unavailable";
+            }
+          }
           if (isActive) {
             assertCurrentProfile();
             assertCurrentSources();
@@ -216,13 +225,13 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               algorithmsDashboard,
               algorithmsDashboardError,
               activeSession,
-              attempts: savedAttempts,
-              cloudProgress,
+              homePractice,
+              capturedAt: readNow,
+              progressEvidence,
+              progressEvidenceError,
               goal,
               goalOnboardingDismissed,
-              practiceHistory: savedPracticeHistory,
               reviewQueueItems: reviewQueueItemsResult.value,
-              storageIssues: [],
               trainingAttempts: trainingAttemptsResult.value,
               homePlan,
             });
@@ -256,10 +265,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     }
   }, [data.activeSession?.id, hasLoadedActiveTrack, homeResumeContext]);
 
-  const analytics = useMemo(
-    () => buildAnalyticsData(data.attempts, data.practiceHistory),
-    [data.attempts, data.practiceHistory],
-  );
   if (!hasLoadedActiveTrack) return (
     <View style={styles.shell}>
       <Screen
@@ -307,6 +312,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
 
   async function handleRecommendationAction(action: HomeRecommendationAction) {
     if (action.kind === "unavailable") return;
+    if (action.kind === "resume_certification_practice" || action.kind === "resume_design_interview" || action.kind === "resume_active_practice") markStartup("resume_action");
     try {
       if (action.kind === "start_certification_due_review") {
         navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: "certification-weak-area-review", reviewSource: "due_queue", source: "home", topicId: "", trackId: action.trackId }));
@@ -499,7 +505,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               activeSession={homeActiveSession}
               resumeUnavailableReason={resumeUnavailableReason}
               activeTrack={activeTrack}
-              analytics={analytics}
+              homePractice={data.homePractice}
+              trainingAttempts={data.trainingAttempts}
+              reviewQueueItems={data.reviewQueueItems}
+              capturedAt={data.capturedAt!}
+              currentNodeId={data.progressEvidence?.algorithmsProgress?.currentFocus.nodeId}
               algorithmsDashboard={data.algorithmsDashboard}
               dashboardError={data.algorithmsDashboardError}
               onDismissGoalOnboarding={async () => {
@@ -518,7 +528,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               onRetryHomePlan={() => setShellReload((reload) => reload + 1)}
               onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId, trackId: activeTrack.id })}
               homePlan={data.homePlan}
-              reviewQueueItems={data.reviewQueueItems}
               goalInvitationAudience={account.state.kind === "authenticated" ? "account" : "guest"}
               showGoalInvitation={(account.state.kind === "guest" || (account.state.kind === "authenticated"
                 && account.state.accountData.status === "synced"
@@ -526,17 +535,15 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
                 && account.state.accountData.blockingConflictCode === null
                 && account.state.accountData.lastFailureCode === null))
                 && homeActiveSession === null && data.goal === null && !data.goalOnboardingDismissed}
-              trainingAttempts={data.trainingAttempts}
-            />
+              />
           </>
         ) : null}
         {activeTab === "progress" ? (
           <ProgressTab
             activeTrack={activeTrack}
             activityRecords={data.activityRecords}
-            analytics={analytics}
-            attempts={data.attempts}
-            cloudProgress={data.cloudProgress}
+            evidence={data.progressEvidence}
+            evidenceError={data.progressEvidenceError}
             goal={data.goal}
             onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
             onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
@@ -547,9 +554,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             onRetryHomePlan={() => setShellReload((reload) => reload + 1)}
             onProgressAction={handleProgressAction}
             homePlan={data.homePlan}
-            practiceHistory={data.practiceHistory}
-            reviewQueueItems={data.reviewQueueItems}
-            trainingAttempts={data.trainingAttempts}
           />
         ) : null}
         {activeTab === "settings" ? (
@@ -566,7 +570,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             onOpenPremium={() => navigation.navigate(ROUTES.PREMIUM_PURCHASE)}
             onOpenYourData={() => navigation.navigate(ROUTES.YOUR_DATA)}
             onSignOut={() => account.signOut()}
-            storageIssues={data.storageIssues}
           />
         ) : null}
       </Screen>

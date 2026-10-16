@@ -15,15 +15,12 @@ test("actual Certification Practice result presents derived overall points and t
   assert.match(rendered.text, /Session complete/);
 });
 
-test("an unavailable optional practice-points projection preserves counts and omits weighted points", async () => {
+test("an unavailable exact practice projection explicitly blocks an unverified result", async () => {
   const rendered = await runActualResultScreen({ projectionFails: true });
-  assert.match(rendered.text, /7\s+\/\s+10/);
-  assert.match(rendered.text, /Correct 7/);
-  assert.match(rendered.text, /Partly correct 1/);
-  assert.match(rendered.text, /Incorrect 2/);
-  assert.match(rendered.text, /Partly correct/);
-  assert.doesNotMatch(rendered.text, /Weighted points/);
-  assert.doesNotMatch(rendered.text, /Session summary unavailable/);
+  const unavailable = rendered.byType("EmptyState")[0];
+  assert.ok(unavailable);
+  assert.equal(unavailable.props.title, "Session summary unavailable");
+  assert.doesNotMatch(rendered.text, /Session complete|Weighted points/);
 });
 
 test("a profile-read fence failure is not swallowed as an optional diagnostic projection", async () => {

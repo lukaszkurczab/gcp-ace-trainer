@@ -1,0 +1,145 @@
+{
+  "date": "2026-10-15",
+  "scope": "Prompt 28 / ARCH-08 owner residual only",
+  "verdict": "PASS",
+  "historicalPartial": "solo-boundaries28-2026-10-15.json",
+  "outcomes": {
+    "code": "PASS",
+    "local": "PASS",
+    "native": "NOT_RUN_NOT_REQUIRED_PURE_OWNER_MOVE",
+    "services": "UNTOUCHED_NOT_ACCEPTED",
+    "release": "NOT_EVALUATED"
+  },
+  "approach": {
+    "fit": 0.98,
+    "simplicity": 0.89,
+    "safety": 0.95,
+    "maintainability": 0.94,
+    "minimum": 0.89,
+    "decision": "Canonical domain identity owner, exact pure SHA move with live import compatibility; application owns Premium runtime gate, repository owns marker I/O."
+  },
+  "changedSourceSha256": {
+    "src/application/account/accountDataService.ts": "46c942de453c6bffe9a7358a156e8f24fd5ba28f603c52e7ceecffa95665c7ff",
+    "src/application/premiumTesting.ts": "1c61bc749539ea08ed3a5b519a0f6d2c5e2eccb5f3aa9f1700fbacf9da358376",
+    "src/application/premiumTesting.test.ts": "2af24aed004596f319c83c79cfb55bb75e57e9e300a3e2d8ba391ea9ba06844b",
+    "src/domain/account/accountDataRecordIdentity.ts": "9ebfa1cf4be01cecf161ccfe641a94d58c876e5a0089731d65805fba761d3d61",
+    "src/domain/identity/recordFingerprint.ts": "4ecba705afd538ad3ee7b14e21c232aeec514ca68b27789a3aa3dc521dccf60e",
+    "src/domain/identity/recordFingerprint.test.ts": "ff8a1568f6b4adec38b0b0611a95dc82ee0b5b4e7b5efb27b0208f04303185d1",
+    "src/domain/identity/sha256.ts": "acf43201ce39a5e8f3f5d69519c98ce4648414025dd3c670755f0623f333dd4c",
+    "src/domain/identity/sha256.test.ts": "f77204ec1873db9377fed6fb25ab7011ab14b4a1b158641992f7d6a896dd88f2",
+    "src/infrastructure/identity/sha256.ts": "0c4c21b0061a943923e967e92b39d2769b7f11d3a93459b56f40a11bc376e151",
+    "src/storage/repositories/accountDataRepository.ts": "15c0ed428bccd398b8b996f8c57e58a5848ab80d7efac1077b29b4f4ede5b085",
+    "src/storage/repositories/premiumTestingRepository.ts": "b86b6115b07a7c81f094da7dfc7da62fee1ff2fdb1810c6d968ac6584bfa201a",
+    "src/storage/repositories/premiumTestingRepository.test.ts": "f74416f4cd728ffe035120d225bce53eff2abd26597274f1bd1a59e42bfe69e4"
+  },
+  "checks": [
+    {
+      "command": "node --import tsx --test scripts/mutationArchitecture.test.ts",
+      "phase": "before",
+      "exitCode": 1,
+      "pass": 1,
+      "fail": 1,
+      "evidence": "solo-boundaries28-residual-2026-10-15/before-red.tap",
+      "finding": "3 selected runtime symbols / 5 forbidden paths; existing ARCH-04/05/F-06 rule."
+    },
+    {
+      "command": "node --import tsx --test src/application/premiumTesting.test.ts src/storage/repositories/premiumTestingRepository.test.ts src/domain/identity/recordFingerprint.test.ts src/domain/identity/sha256.test.ts src/infrastructure/identity/sha256.test.ts src/application/account/accountDataService.test.ts src/application/account/accountDataContract.test.ts src/storage/repositories/accountDataSync.test.ts src/storage/contracts/terminalAccountWire.test.ts src/features/home/BackendDiagnosticsScreen.test.ts",
+      "exitCode": 0,
+      "pass": 39,
+      "fail": 0,
+      "evidence": "solo-boundaries28-residual-2026-10-15/owners.tap"
+    },
+    {
+      "command": "node --import tsx --test scripts/architectureBoundaries.test.ts scripts/mutationArchitecture.test.ts scripts/architecture/dependencyGraph.test.ts",
+      "exitCode": 0,
+      "pass": 51,
+      "fail": 0,
+      "fixtureCount": 44,
+      "repositoryVariants": [
+        "typescript/release",
+        "ios/release",
+        "ios/smoke",
+        "android/release",
+        "android/smoke"
+      ],
+      "repositoryViolations": 0,
+      "evidence": "solo-boundaries28-residual-2026-10-15/boundaries.tap"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "evidence": "solo-boundaries28-residual-2026-10-15/typecheck.log"
+    },
+    {
+      "command": "npm run recovery:check",
+      "exitCode": 0,
+      "evidence": "solo-boundaries28-residual-2026-10-15/recovery.log"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "preservation": {
+    "existingWipFilesCompared": 149,
+    "changedWipFiles": [],
+    "manifest": "solo-boundaries28-residual-2026-10-15/preserved-wip-sha256.json",
+    "dependencyPinsEqualToHead": true,
+    "packageLockEqualToHead": true,
+    "pureShaBeforeAndAfterSha256": "acf43201ce39a5e8f3f5d69519c98ce4648414025dd3c670755f0623f333dd4c",
+    "byteIdenticalShaMove": true,
+    "checkerAndFixturesUnchanged": true,
+    "uiConsumersUnchanged": true,
+    "protocolVectorsAndProfilesUnchanged": true
+  },
+  "reviews": {
+    "design": {
+      "agent": "residual28_design",
+      "model": "gpt-6-luna",
+      "reasoning": "high",
+      "verdict": "PASS",
+      "revision": "Rejected infrastructure identity owner; canonical domain owner confirmed against ARCH-09 and docs/11-implementation-guidelines.md."
+    },
+    "implementationQa": {
+      "agent": "residual28_qa",
+      "model": "gpt-6-luna",
+      "reasoning": "high",
+      "verdict": "PASS",
+      "independentCommand": "node --test --import tsx src/domain/identity/recordFingerprint.test.ts src/domain/identity/sha256.test.ts src/storage/repositories/premiumTestingRepository.test.ts src/application/premiumTesting.test.ts",
+      "independentPass": 11,
+      "independentLog": "Tool output only; no separate file",
+      "findings": "No implementation defect; 149 WIP hashes match; canonical documentation gap closed and independently read back.",
+      "initialVerdict": "PASS_WITH_DOCUMENTATION_GAP_BEFORE_CLOSEOUT",
+      "finalReadback": {
+        "verdict": "PASS",
+        "canonicalPlan": "ARCH-08 row removed after acceptance; next prompt29 unchanged and not started",
+        "canonicalState": "PASS28 with no residual; separate service/release limits",
+        "report": "Matches independently reviewed source and actual test evidence; historical PARTIAL preserved",
+        "remainingFindings": []
+      }
+    }
+  },
+  "residual": [],
+  "nextPermittedPrompt": 29,
+  "nextPromptStarted": false,
+  "commitOrPush": false,
+  "limits": [
+    "Static graph selection and actual resolver matrix; no full bundler/dead-code proof.",
+    "No full suite, CI, native build/mount or service/release acceptance.",
+    "Existing private Expo alias resolver and composition role permissions retain historical maintenance limitations.",
+    "Prior initial report remains a historical PARTIAL snapshot; current source and logs establish residual closure."
+  ],
+  "evidenceSha256": {
+    "solo-boundaries28-residual-2026-10-15/before-red.tap": "15bc131af2b723747f38bfeac643733f77c97008b7b4992ac71e9511cc38ceb7",
+    "solo-boundaries28-residual-2026-10-15/boundaries.tap": "c4bfe5b5bd351d419fd7608167b64b6f7fcc68d8eb48c5afe78250290ec8be71",
+    "solo-boundaries28-residual-2026-10-15/owners.tap": "887347069cb29a7db9256cb4c81ca6a4be95211b9cdd600255dc1651da2b2854",
+    "solo-boundaries28-residual-2026-10-15/preserved-wip-sha256.json": "e5719fef08a6a3b1af8d16d1d41f8466a326020cf3248ae64f09fc58d866d542",
+    "solo-boundaries28-residual-2026-10-15/recovery.log": "ea5f14875ae6fcee65726d6f5901411bd20dbe12dde40753d749167678419561",
+    "solo-boundaries28-residual-2026-10-15/typecheck.log": "22c83f1ac25b854ee6b451e80ec133d2e6b804f4f4a61055e5624328bff86ab3"
+  },
+  "workspaceFiles": {
+    "/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md": "7ca474b03b20b071beba3a310bbd89c280b1ff2daf228ee1f91e97ae0c51e9ef",
+    "/Users/lukaszkurczab/Desktop/Projects/Patternly/.agent/WORKING_STATE.md": "650e6a2cdae9bd4679c9d0226d346672225a5ce391a27d099fda202fff85d7e0"
+  },
+  "reportSha256": "412a37ba224871e2c0b63bc200b6c771fe7340453cb247afa014a5bbe2762579"
+}

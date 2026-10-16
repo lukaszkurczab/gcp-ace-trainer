@@ -79,4 +79,14 @@ test("Certification Exam Simulation authorizes before preparation resolution and
   const resumed = await lifecycle.resumeActiveSession();
   assert.equal(resumed.id, started.session.id);
   assert.deepEqual(events, ["authorize", "resolve-exact"]);
+
+  for (const deniedDecision of ["denied", "unavailable"] as const) {
+    decision = deniedDecision;
+    events.length = 0;
+    await assert.rejects(lifecycle.resumeActiveSession(), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === (deniedDecision === "denied" ? "premium_entitlement_denied" : "premium_entitlement_unavailable"));
+    assert.deepEqual(events, ["authorize"]);
+    assert.equal(durableStarts, 1);
+    assert.equal((activeSession as TrainingSession | null)?.id, started.session.id);
+  }
+
 });

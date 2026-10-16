@@ -1,6 +1,6 @@
 # GUEST-EXPORT-01 — lokalny eksport danych Gościa
 
-Status i kolejność określa [plan główny](../../PATTERNLY-WORKING-PLAN.md). Zadanie jest przed pierwszym wydaniem iOS. Wynika z korekty właściciela z 07.10: Gość ma lokalne dane i nie musi podawać e-maila ani potwierdzać tożsamości, aby je pobrać. Ten dokument opisuje zmianę do wykonania; nie potwierdza jej implementacji.
+Status i kolejność określa [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Zadanie jest przed pierwszym wydaniem iOS. Wynika z korekty właściciela z 07.10: Gość ma lokalne dane i nie musi podawać e-maila ani potwierdzać tożsamości, aby je pobrać. Ten dokument opisuje zmianę do wykonania; nie potwierdza jej implementacji.
 
 ## Problem i dowody w repozytorium
 

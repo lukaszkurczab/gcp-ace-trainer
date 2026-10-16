@@ -16,7 +16,7 @@ test("Practice Hub keeps the exam offer visible and routes each admission outcom
   assert.match(hub, /usePatternlyAccount\(\)/);
   assert.match(hub, /authorizePremiumSessionStart\(\)/);
   assert.match(hub, /resolveCertificationExamAccess\(admission\)/);
-  assert.match(hub, /case "startExam":\s*navigation\.navigate\(ROUTES\.EXAM\)/);
+  assert.match(hub, /case "startExam":\s*navigation\.navigate\(ROUTES\.EXAM, \{ trackId: activeTrack\.id \}\)/);
   assert.match(hub, /case "purchasePremium":\s*navigation\.navigate\(ROUTES\.PREMIUM_PURCHASE\)/);
   assert.match(hub, /case "retryAdmission":\s*setExamAccessUnavailable\(true\)/);
   assert.match(hub, /examAdmissionPendingRef\.current/);

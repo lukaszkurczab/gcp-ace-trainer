@@ -1,6 +1,5 @@
 {
   "Back to results": "Tagasi tulemuste juurde",
-  "Home": "Avaleht",
   "Practice": "Harjutamine",
   "Progress": "Edenemine",
   "Settings": "Seaded",
@@ -668,7 +667,7 @@
   "Restoring your active session…": "Aktiivse sessiooni taastamine…",
   "Loading topic roadmap": "Teema õpitee laadimine",
   "Loading practice setup": "Harjutamise seadistuse laadimine",
-  "Loading Home": "Avalehe laadimine",
+  "Loading Today": "Tänase vaate laadimine",
   "Loading progress": "Edenemise laadimine",
   "Loading settings": "Seadete laadimine",
   "Answer could not be saved.": "Vastust ei saanud salvestada.",

@@ -1,0 +1,417 @@
+{
+  "task": "prompt26 / ARCH-03",
+  "date": "2026-10-15",
+  "status": "PASS — code and targeted local checks; independent QA PASS; native/services/release separate",
+  "repositories": {
+    "patternly": {
+      "head": "3911c7c0882299ca2d5217c26a67ff24bb574af0",
+      "role": "app consumer/runtime"
+    },
+    "patternly-content": {
+      "head": "420cdf237e6ca8f1d4cf84c3d70e38ba7896f292",
+      "role": "current producer + historical verifier"
+    }
+  },
+  "designReview": {
+    "reviewer": "gpt-6-luna high",
+    "verdict": "PASS",
+    "scores": {
+      "fit": 0.94,
+      "simplicity": 0.86,
+      "risk": 0.84,
+      "maintainability": 0.86
+    },
+    "decisions": [
+      "preserve emitted GCP payload/schema/pins",
+      "one current nodeDomainMap + exact current inventory/version/digests",
+      "independent immutable history verifier",
+      "sessionId is result authority; exact artifact/profile pin checked"
+    ]
+  },
+  "ownedFiles": [
+    {
+      "repository": "patternly",
+      "path": "src/content/canonical/productModeConfig.ts",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "d7f7e8840d19d567f6fe36433af9eb5e66fae918f6ffec74599423d902748dc6",
+      "afterSha256": "c63a828838f67653e9cff22cc84beb0ed7a24978b134674e3ca144ee587945cb"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/content/canonical/questionValidation.ts",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "74af0bdd8dd0aeb81cbf76612cb6b663be50a751410803a6f75d9c34bbbb27d7",
+      "afterSha256": "a6172cf25cc2799a12011b2ce43bf047c685513e0c633f66e38ed6ec67304a2a"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/content/canonical/questionCore.test.ts",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "39c16c9576c97306362ceb518ced5cf3842f04aeda83a013588037bb2773bd89",
+      "afterSha256": "c8832fed0d99b704c02cefe1587cf1d70552f20589377868d50a2ef84152209b"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/application/certification/certificationTrainingRuntime.ts",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "704ceb5351b32604c2bf61ad8380d438161a01c88011c07a5699432c2d172665",
+      "afterSha256": "3dc6ee5d24cc55e884d5867f20bec0109ce975e7c871e31d498d15f7d104b12c"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/application/certification/certificationSessionFacade.ts",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "fc632c519de4368930a8b52e0903ed9687533ed96a75b5cb2d951675a1b8f387",
+      "afterSha256": "d152230ef7f41a1c20fad9b513d4916bf5e7a8a6b0b84806b6ff2be571d9422a"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/application/certification/certificationExamReviewProjection.ts",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "706865cf7ba04c4c967c78759854113d3301d9d76156c97e256785c1f9d5a2d9",
+      "afterSha256": "cf363aee52af17dde62a2d31e15808fe511793573c7f3228db58c6a1e658b4a0"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/application/certification/certificationReviewCommands.ts",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "8d3a338567079ad0d6ac9e3479c0af575289d63484bad8d80f748c37033849da",
+      "afterSha256": "cbebcd9e42c4a92453eb76efcb197c9c1947cadbaa4c274279673f6137bbb75e"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/application/certification/certificationProfileContract.test.ts",
+      "baseline": "new file",
+      "beforeSha256": null,
+      "afterSha256": "f5d6e1ba96cf4639894e3406cde418bf6abfd26bed0145de506f3250b51788d2"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/application/certification/certificationExamPremiumAdmission.test.ts",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "6d82315fe564aac008b0521463869bdfb05e94d4c9e9f7a49408a8fe758da976",
+      "afterSha256": "99cfb4465fc80c2eda88b14cb7bf44de3615208c5e5482e289d3a23f839e6f6f"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/application/certification/certificationDiagnosticLifecycle.integration.test.ts",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "2878893e9154844444ebe269b8d0b266f627d43adae5045ced14f944ee3f91a9",
+      "afterSha256": "fe07d4c3868242565cb5e201cd7ef2150b080ad53a4822e4d676005a76372fd3"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/application/certification/certificationReviewCommands.test.ts",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "089ba5a1a91a25c5d48f021052b5c461b37524640cc40ea4e916121662eabf3a",
+      "afterSha256": "24f9fa7630ea9149d727a2f35e7ae712ed3777c4047bbab922f98fa869bf73ae"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/features/exam/ExamScreen.tsx",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "ef80ac56c8b9ac461bff8503e71db3c710c49ab0d2314328a2aaf76eb737aaca",
+      "afterSha256": "a19d24fcd7f03654401a509c85ae46f6088b661800e63336d29df7d49b33c360"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/features/practice/PracticeHubScreen.tsx",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "46ab7837d873b791cc7a1d9742bfc9e35c6a87382ea4f78afe97e6715142261d",
+      "afterSha256": "d3a1e93449ce93c00ce38d3f902852e1b1ca71656bcc32dc21ac6efa0a75d728"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/features/practice/CertificationPracticeSessionScreen.tsx",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "45186732da45ac3f1a2616bc0a8946d9a4b24791b418ae263745b98150d3386b",
+      "afterSha256": "05135b645eec0397da086f3db70d3f31d9e0b83e4554b80c38bcd9310ac1f340"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/features/practice/certificationExamAccess.test.ts",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "c65be91f84ca86f341d28faa354677005053075c87bc7ff2bca9a652d385ed0c",
+      "afterSha256": "3b41b10238a37b5ad2148f586581ec9068423784089bc6f14fd4c93ed8db36e2"
+    },
+    {
+      "repository": "patternly",
+      "path": "src/navigation/types.ts",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "15e4b4d7cf2ba958efcbe46cf755a7707bc9290127d5e2532cbf8f65e55abfc1",
+      "afterSha256": "4ee24c7c80840d9ac2f563732145e4fdff225b6404314979020310448e49b5fd"
+    },
+    {
+      "repository": "patternly",
+      "path": "docs/specs/engineering/architecture.md",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "7b316a5b28a9db8a64c77bfdea715e66535436055343b89c00384caf49267522",
+      "afterSha256": "280d36999ec277bc96b45c2f96ea660b0fa186cc83e473e34dff47403a8ddb84"
+    },
+    {
+      "repository": "patternly-content",
+      "path": "config/tracks/google-cloud-associate-cloud-engineer.json",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "1c3b6534473d0ed50a7b3b8c62915bbe0caeecfd89d2f904473a018090c1891b",
+      "afterSha256": "ff91727e08a80788a6c4e6df3a23f9280228f3aacb7705bb76299c40faa617ea"
+    },
+    {
+      "repository": "patternly-content",
+      "path": "scripts/build.mjs",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "9802399dcbb2678e22ff3751d8ae82849f1dce117ad8b80f9149836cca54e798",
+      "afterSha256": "344e160e3b720467a9d6f51e5a97063d25803656c94d664fce78fcb42a9f062f"
+    },
+    {
+      "repository": "patternly-content",
+      "path": "scripts/content/verify-gcp-attribution-history.mjs",
+      "baseline": "new file",
+      "beforeSha256": null,
+      "afterSha256": "ac8c6041328d1b7a635e89590f60912c41ddeecd0491dc7eba7dc7f1f221c9fe"
+    },
+    {
+      "repository": "patternly-content",
+      "path": "tests/content-builder.test.mjs",
+      "baseline": "HEAD (initially clean)",
+      "beforeSha256": "e461df41dabd162ffc7348ff987f24ba80c06f28375a921e379c2def3fbd4c30",
+      "afterSha256": "44464ca2309033c8f5157ecb744ed72970b6f78550565f06282a0cd884804cbd"
+    },
+    {
+      "repository": "workspace",
+      "path": "docs/PATTERNLY-WORKING-PLAN.md",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "da151dae7b10afa9eb7678debbcbdcd5b3d74b2a49e53ae9b0bf3f9b08fe2377",
+      "afterSha256": "2bd32c8f6e55e1bd29175c7f61dca995ef58ccf32d278bdd83842df90c616a11"
+    },
+    {
+      "repository": "workspace",
+      "path": ".agent/WORKING_STATE.md",
+      "baseline": "pre-task working tree",
+      "beforeSha256": "8aad37ff406aae908122439fc21abd2f440fb07e5a0f8df8fdb13749e08c266f",
+      "afterSha256": "c27938f7cd9560b14ed5288a4b080c3aee24967ef1116f2eb2e8fa76fa3c9022"
+    }
+  ],
+  "evidenceFiles": [
+    "patternly/docs/reports/solo-certification26-2026-10-15.md",
+    "patternly/docs/reports/solo-certification26-2026-10-15.json"
+  ],
+  "preservation": {
+    "initialWipFileCount": 106,
+    "unchangedPreexistingWip": [
+      "docs/reports/solo-descriptors25-2026-10-15.json",
+      "docs/reports/solo-descriptors25-2026-10-15.md",
+      "docs/reports/solo-home23-2026-10-15.json",
+      "docs/reports/solo-home23-2026-10-15.md",
+      "docs/reports/solo-home23-ios-2026-10-15/01-home.png",
+      "docs/reports/solo-home23-ios-2026-10-15/02-progress.png",
+      "docs/reports/solo-home23-ios-2026-10-15/03-settings.png",
+      "docs/reports/solo-home23-ios-2026-10-15/04-settings-data.png",
+      "docs/reports/solo-projections24-2026-10-15.json",
+      "docs/reports/solo-projections24-2026-10-15.md",
+      "docs/reports/solo-ui22-2026-10-15.json",
+      "docs/reports/solo-ui22-2026-10-15.md",
+      "docs/reports/solo-ui22-ios-2026-10-15/01-home-primary-en.png",
+      "docs/reports/solo-ui22-ios-2026-10-15/02-home-primary-de.png",
+      "docs/reports/solo-ui22-ios-2026-10-15/03-home-secondary-de.png",
+      "docs/reports/solo-ui22-ios-2026-10-15/04-review-error.png",
+      "docs/reports/solo-ui22-ios-2026-10-15/05-review-success.png",
+      "docs/reports/solo-ui22-ios-2026-10-15/06-cadence-error.png",
+      "docs/reports/solo-ui22-ios-2026-10-15/07-cadence-success.png",
+      "scripts/qa/soloHome23/fixture.tsx",
+      "scripts/qa/soloHome23/ports.ts",
+      "scripts/qa/soloHome23/smoke.yaml",
+      "scripts/qa/soloUi22/fixture.tsx",
+      "scripts/qa/soloUi22/ports.ts",
+      "scripts/qa/soloUi22/smoke.yaml",
+      "scripts/qa/startSoloHome23Fixture.mjs",
+      "scripts/qa/startSoloUi22Fixture.mjs",
+      "src/application/canonical/canonicalProgressEvidence.ts",
+      "src/application/certification/certificationQuestionPresentation.ts",
+      "src/application/coding-interview/codingHomeRecommendation.ts",
+      "src/application/coding-interview/codingProgressProjection.ts",
+      "src/application/homeOverviewProjection.ts",
+      "src/application/homePracticeProjection.ts",
+      "src/application/learningPlan/progressProjectionContracts.ts",
+      "src/application/learningPlan/progressReadProjection.ts",
+      "src/application/learningProjectionFailure.ts",
+      "src/features/home/soloHome23.test.mjs",
+      "src/features/home/soloUi22.test.mjs",
+      "src/features/home/soloUi22TestHarness.mjs",
+      "src/features/home/tabs/trackProgressPresentation.test.mjs",
+      "src/features/practice/trackPresentationRender.test.mjs",
+      "scripts/qa/measureProgressProjection.ts",
+      "src/application/canonical/canonicalTrainingFamilies.test.ts",
+      "src/application/canonical/overallScoreCreditConsumers.test.ts",
+      "src/application/certification/certificationExamReviewProjection.test.ts",
+      "src/application/certification/certificationFeedbackProjection.test.ts",
+      "src/application/certification/certificationPracticeReviewProjection.test.ts",
+      "src/application/certification/certificationPracticeReviewProjection.ts",
+      "src/application/coding-interview/codingInterviewTrainingRuntime.ts",
+      "src/application/design-interview/designInterviewTrainingRuntime.ts",
+      "src/application/homeShellProfileReadIntegration.test.ts",
+      "src/application/learningPlan/learningEvidenceProjection.ts",
+      "src/application/learningReadModels.ts",
+      "src/application/trainingLifecycle/TrainingLifecycleUseCases.ts",
+      "src/application/trainingLifecycle/contracts.ts",
+      "src/application/weeklyActivityIntegration.test.ts",
+      "src/constants/exam.ts",
+      "src/domain/tracks/trackAdmission.ts",
+      "src/features/analytics/analyticsProjections.test.ts",
+      "src/features/analytics/analyticsService.ts",
+      "src/features/exam/CertificationPracticeFeedbackPreview.tsx",
+      "src/features/exam/ExamScreen.navigation.test.ts",
+      "src/features/exam/ResultScreen.tsx",
+      "src/features/home/GoalCadenceScreen.tsx",
+      "src/features/home/HomeScreen.tsx",
+      "src/features/home/goalContracts.test.ts",
+      "src/features/home/tabs/HomeTab.tsx",
+      "src/features/home/tabs/ProgressTab.tsx",
+      "src/features/home/tabs/SettingsTab.tsx",
+      "src/features/home/tabs/activityModel.test.ts",
+      "src/features/home/tabs/activityModel.ts",
+      "src/features/home/tabs/cloudProgressDomainMetadata.test.ts",
+      "src/features/home/tabs/cloudProgressDomainMetadata.ts",
+      "src/features/home/tabs/homeOverviewPresentation.ts",
+      "src/features/home/tabs/homeTabModel.test.ts",
+      "src/features/home/tabs/homeTabModel.ts",
+      "src/features/home/tabs/progressOverallCredit.test.ts",
+      "src/features/home/tabs/progressPlanSectionTestHarness.mjs",
+      "src/features/home/tabs/progressProjection.test.ts",
+      "src/features/home/tabs/progressScheduleEntry.test.mjs",
+      "src/features/home/tabs/progressTabModel.ts",
+      "src/features/practice/PracticeQuestionCard.tsx",
+      "src/features/practice/PracticeSessionSurface.tsx",
+      "src/features/practice/practiceFlowModel.ts",
+      "src/features/practice/practiceFlowPresentation.ts",
+      "src/features/practice/practiceQuestionPresentation.test.ts",
+      "src/features/practice/practiceRouteGuards.test.ts",
+      "src/features/practice/practiceSessionConfig.test.ts",
+      "src/features/practice/trackRoadmapCatalog.ts",
+      "src/features/review/MistakesReviewScreen.tsx",
+      "src/features/review/MistakesReviewView.tsx",
+      "src/features/review/trackPresentation.test.ts",
+      "src/locales/de/settings.json",
+      "src/locales/en/settings.json",
+      "src/locales/es/settings.json",
+      "src/locales/et/settings.json",
+      "src/locales/fr/settings.json",
+      "src/locales/it/settings.json",
+      "src/locales/pl/settings.json",
+      "src/testing/Perf06ListFixtureRoot.smoke.tsx",
+      "src/tracks/certification/certificationResultPresentation.test.ts"
+    ],
+    "modifiedPreexistingWipOnlyWithinOwnedScope": [
+      "docs/specs/engineering/architecture.md",
+      "src/application/certification/certificationSessionFacade.ts",
+      "src/application/certification/certificationTrainingRuntime.ts",
+      "src/features/exam/ExamScreen.tsx",
+      "src/features/practice/CertificationPracticeSessionScreen.tsx"
+    ],
+    "pinnedBytes": [
+      {
+        "repository": "patternly",
+        "path": "src/content/generated/canonical-content/content-lock.json",
+        "sha256": "4e27acc32ee463f6ee1f61e838d766a3cdb8057c63c5e1aa64a5e4c96c393cb8",
+        "byteIdenticalToHead": true
+      },
+      {
+        "repository": "patternly",
+        "path": "src/content/generated/canonical-content/google-cloud-associate-cloud-engineer.json",
+        "sha256": "e399212abf92bac30edcfb1aa04b170306469a8b2a1eab57b8f80f1ee7b37d82",
+        "byteIdenticalToHead": true
+      },
+      {
+        "repository": "patternly-content",
+        "path": "artifacts/tracks/google-cloud-associate-cloud-engineer/google-cloud-associate-cloud-engineer-authoring-v2026.08.11/track-artifact.json",
+        "sha256": "1a81dd62d78f7d207ba479a3a7aaa29f049ce2ec4f290569f346f196e27f87a3",
+        "byteIdenticalToHead": true
+      }
+    ],
+    "generatedContentAndReleaseContractsDiff": "empty",
+    "contentQuestionsArtifactsEvidenceDiff": "empty",
+    "deletedFiles": [],
+    "simulatorOrUserDataOperations": []
+  },
+  "verification": [
+    {
+      "repository": "patternly",
+      "command": "node --import tsx --test src/application/certification/*.test.ts src/application/canonical/canonicalTrainingFamilies.test.ts src/content/canonical/productModeConfig.test.ts src/content/canonical/questionCore.test.ts src/content/canonical/runtimeCatalog.test.ts src/features/exam/ExamScreen.navigation.test.ts src/features/exam/examReadOwner.test.ts src/features/practice/certificationExamAccess.test.ts src/features/practice/practiceRouteGuards.test.ts src/navigation/loadingStateOwnership.test.ts src/application/contentPackageRuntimeOwner.test.ts",
+      "result": "190/190 PASS"
+    },
+    {
+      "repository": "patternly",
+      "command": "node --import tsx --test src/application/trainingLifecycle/premiumProductModeLifecycle.test.ts src/application/trainingLifecycle/premiumSessionAdmission.test.ts src/application/trainingLifecycle/premiumEntryPointsContract.test.ts src/application/trainingLifecycle/premiumProductModePolicy.test.ts",
+      "result": "16/16 PASS"
+    },
+    {
+      "repository": "patternly",
+      "command": "npm run typecheck",
+      "result": "PASS"
+    },
+    {
+      "repository": "patternly",
+      "command": "npm run validate:content-boundary",
+      "result": "PASS"
+    },
+    {
+      "repository": "patternly",
+      "command": "npm run validate:runtime-privacy-boundary",
+      "result": "PASS"
+    },
+    {
+      "repository": "patternly-content",
+      "command": "node --test tests/content-builder.test.mjs",
+      "result": "36/36 PASS (before routine helper/test-only final corrections; unchanged cases reused)"
+    },
+    {
+      "repository": "patternly-content",
+      "command": "node --test --test-name-pattern='GCP historical attribution verifier' tests/content-builder.test.mjs",
+      "result": "1/1 PASS (final helper/provenance/recomputed checksum negative)"
+    },
+    {
+      "repository": "patternly-content",
+      "command": "node --test --test-name-pattern='GCP simulation profile validates current-source attribution without reading historical published bank' tests/content-builder.test.mjs",
+      "result": "1/1 PASS (final complete no-bank/tamper/next-version builds)"
+    },
+    {
+      "repository": "patternly-content",
+      "command": "node scripts/content/verify-gcp-attribution-history.mjs",
+      "result": "PASS 2981 questions/20 nodes"
+    },
+    {
+      "repository": "both",
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "independentQa": {
+    "initialVerdict": "PASS WITH ISSUES",
+    "issue": "ARCH-03 old documentation; reconciled in this package",
+    "commandsRun": [
+      "app contract/lifecycle/review/access/question tests31/31",
+      "content-builder36/36",
+      "premium admission4/4",
+      "typecheck"
+    ],
+    "finalVerdict": "PASS",
+    "finalReadback": "Architecture/plan/state/report reconciled; independently reran final no-history/full-build/next-version and historical/provenance tamper tests2/2 PASS. App source unchanged since prior independent checks."
+  },
+  "limits": [
+    "no full npm test/qa:static/CI",
+    "no native mount/iOS build/simulator/provider/release acceptance",
+    "second7/17 profile is artifact fixture only, not official producer/product admission",
+    "known unrelated mutationArchitecture/recovery findings from25 unchanged; no repeated full-suite acceptance"
+  ],
+  "nextPrompt": 27,
+  "nextPromptStarted": false,
+  "commitPush": false,
+  "runtime": "Node22 via PATH=/opt/homebrew/opt/node@22/bin:$PATH; no dependency changes",
+  "pins": {
+    "gcpArtifactSha256": "e399212abf92bac30edcfb1aa04b170306469a8b2a1eab57b8f80f1ee7b37d82",
+    "historicalPayloadSha256": "732f915e43542ca1318bf32aafd1f2cfab77012eb3c8d236a362a92a993740e4",
+    "crosswalkSha256": "a60cd7cf6b65f127d9e7550a8979b03a52efd4cdebd2abe2fa42659aeef4bf51"
+  },
+  "evidenceSha256": {
+    "patternly/docs/reports/solo-certification26-2026-10-15.md": "690f8423b61e2e15b807a6fa4859833c0d1998905a6014cae735611a9e8fa25f"
+  }
+}

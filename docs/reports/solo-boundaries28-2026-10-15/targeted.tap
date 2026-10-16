@@ -1,0 +1,670 @@
+TAP version 13
+# Subtest: RED -> GREEN: direct
+ok 1 - RED -> GREEN: direct
+  ---
+  duration_ms: 874.010875
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: barrel
+ok 2 - RED -> GREEN: barrel
+  ---
+  duration_ms: 62.35375
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: import then export alias
+ok 3 - RED -> GREEN: import then export alias
+  ---
+  duration_ms: 76.772333
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: export star barrel
+ok 4 - RED -> GREEN: export star barrel
+  ---
+  duration_ms: 66.150542
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: namespace
+ok 5 - RED -> GREEN: namespace
+  ---
+  duration_ms: 86.949209
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: type import
+ok 6 - RED -> GREEN: type import
+  ---
+  duration_ms: 42.460333
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: type import expression
+ok 7 - RED -> GREEN: type import expression
+  ---
+  duration_ms: 104.529584
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: type re-export
+ok 8 - RED -> GREEN: type re-export
+  ---
+  duration_ms: 30.532542
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: transitive
+ok 9 - RED -> GREEN: transitive
+  ---
+  duration_ms: 27.380375
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: kernel runtime barrel loads sibling
+ok 10 - RED -> GREEN: kernel runtime barrel loads sibling
+  ---
+  duration_ms: 122.619042
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: cycle
+ok 11 - RED -> GREEN: cycle
+  ---
+  duration_ms: 29.400417
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: family crossing
+ok 12 - RED -> GREEN: family crossing
+  ---
+  duration_ms: 70.954458
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: family raw storage
+ok 13 - RED -> GREEN: family raw storage
+  ---
+  duration_ms: 108.901084
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: UI scoring
+ok 14 - RED -> GREEN: UI scoring
+  ---
+  duration_ms: 73.418542
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: UI review mutation
+ok 15 - RED -> GREEN: UI review mutation
+  ---
+  duration_ms: 51.924125
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: domain content orchestration
+ok 16 - RED -> GREEN: domain content orchestration
+  ---
+  duration_ms: 28.522
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: envelope guard item semantics
+ok 17 - RED -> GREEN: envelope guard item semantics
+  ---
+  duration_ms: 66.869791
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: dynamic import
+ok 18 - RED -> GREEN: dynamic import
+  ---
+  duration_ms: 24.000292
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: require
+ok 19 - RED -> GREEN: require
+  ---
+  duration_ms: 40.109209
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: raw public storage
+ok 20 - RED -> GREEN: raw public storage
+  ---
+  duration_ms: 47.658292
+  type: 'test'
+  ...
+# Subtest: GREEN: UI application function -> port -> composition -> infrastructure; selected legal barrel export
+ok 21 - GREEN: UI application function -> port -> composition -> infrastructure; selected legal barrel export
+  ---
+  duration_ms: 30.0325
+  type: 'test'
+  ...
+# Subtest: GREEN: registry/config concrete track metadata and UI question types
+ok 22 - GREEN: registry/config concrete track metadata and UI question types
+  ---
+  duration_ms: 41.772167
+  type: 'test'
+  ...
+# Subtest: GREEN: harmless local names and legal cycles
+ok 23 - GREEN: harmless local names and legal cycles
+  ---
+  duration_ms: 16.349167
+  type: 'test'
+  ...
+# Subtest: configured TS paths are resolved, not interpreted as external packages
+ok 24 - configured TS paths are resolved, not interpreted as external packages
+  ---
+  duration_ms: 12.321
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: actual ios/native selection and extension precedence
+ok 25 - RED -> GREEN: actual ios/native selection and extension precedence
+  ---
+  duration_ms: 79.894917
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: actual android/native selection and extension precedence
+ok 26 - RED -> GREEN: actual android/native selection and extension precedence
+  ---
+  duration_ms: 71.572334
+  type: 'test'
+  ...
+# Subtest: unresolved relative module and nonliteral active load fail explicitly
+ok 27 - unresolved relative module and nonliteral active load fail explicitly
+  ---
+  duration_ms: 58.724875
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: test support follows the runtime entry, not helper filename
+ok 28 - RED -> GREEN: test support follows the runtime entry, not helper filename
+  ---
+  duration_ms: 35.010541
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: mixed default and named imports retain both bindings
+ok 29 - RED -> GREEN: mixed default and named imports retain both bindings
+  ---
+  duration_ms: 45.301334
+  type: 'test'
+  ...
+# Subtest: GREEN: explicit data contracts crossing application and repository ports
+ok 30 - GREEN: explicit data contracts crossing application and repository ports
+  ---
+  duration_ms: 16.083291
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: shared family switch imports concrete runtimes outside composition
+ok 31 - RED -> GREEN: shared family switch imports concrete runtimes outside composition
+  ---
+  duration_ms: 28.548958
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: shared lifecycle cannot take a closed concrete interaction payload
+ok 32 - RED -> GREEN: shared lifecycle cannot take a closed concrete interaction payload
+  ---
+  duration_ms: 45.750834
+  type: 'test'
+  ...
+# Subtest: RED: configured alias uses actual Expo ios variant selection
+ok 33 - RED: configured alias uses actual Expo ios variant selection
+  ---
+  duration_ms: 29.2435
+  type: 'test'
+  ...
+# Subtest: RED: configured alias uses actual Expo android variant selection
+ok 34 - RED: configured alias uses actual Expo android variant selection
+  ---
+  duration_ms: 20.137209
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: family cannot hide persistence behind an application helper
+ok 35 - RED -> GREEN: family cannot hide persistence behind an application helper
+  ---
+  duration_ms: 49.894292
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: registry metadata stays legal but concrete item catalog does not
+ok 36 - RED -> GREEN: registry metadata stays legal but concrete item catalog does not
+  ---
+  duration_ms: 55.144417
+  type: 'test'
+  ...
+# Subtest: GREEN profile lifecycle port; RED raw KV capability through the same repository barrel
+ok 37 - GREEN profile lifecycle port; RED raw KV capability through the same repository barrel
+  ---
+  duration_ms: 52.205917
+  type: 'test'
+  ...
+# Subtest: current residual RED -> repaired owner GREEN: src/application/premiumTesting.ts
+ok 38 - current residual RED -> repaired owner GREEN: src/application/premiumTesting.ts
+  ---
+  duration_ms: 51.753375
+  type: 'test'
+  ...
+# Subtest: current residual RED -> repaired owner GREEN: src/application/account/accountDataService.ts
+ok 39 - current residual RED -> repaired owner GREEN: src/application/account/accountDataService.ts
+  ---
+  duration_ms: 34.800875
+  type: 'test'
+  ...
+# Subtest: Premium original direct journal edge RED -> application composition GREEN
+ok 40 - Premium original direct journal edge RED -> application composition GREEN
+  ---
+  duration_ms: 68.862458
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: transitive type contract using a value import in heritage
+ok 41 - RED -> GREEN: transitive type contract using a value import in heritage
+  ---
+  duration_ms: 43.613125
+  type: 'test'
+  ...
+# Subtest: GREEN: a type-used binding does not pull its runtime-only barrel sibling
+ok 42 - GREEN: a type-used binding does not pull its runtime-only barrel sibling
+  ---
+  duration_ms: 48.003667
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: combined default and namespace preserves a transitive type member
+ok 43 - RED -> GREEN: combined default and namespace preserves a transitive type member
+  ---
+  duration_ms: 92.661459
+  type: 'test'
+  ...
+# Subtest: RED -> GREEN: identity value alias is not an application command wrapper
+ok 44 - RED -> GREEN: identity value alias is not an application command wrapper
+  ---
+  duration_ms: 69.367167
+  type: 'test'
+  ...
+# Subtest: intent→claim→one SDK effect→durable exact candidate precedes submit; backend alone grants
+ok 45 - intent→claim→one SDK effect→durable exact candidate precedes submit; backend alone grants
+  ---
+  duration_ms: 2.59075
+  type: 'test'
+  ...
+# Subtest: pending survives restart, blocks a second purchase, then foreground/provider refresh uses backend
+ok 46 - pending survives restart, blocks a second purchase, then foreground/provider refresh uses backend
+  ---
+  duration_ms: 3.951625
+  type: 'test'
+  ...
+# Subtest: original cancel closes attempt without claiming access; unknown store error stays blocked
+ok 47 - original cancel closes attempt without claiming access; unknown store error stays blocked
+  ---
+  duration_ms: 2.705792
+  type: 'test'
+  ...
+# Subtest: lost record ACK/restart never replays SDK, replays only original evidence
+ok 48 - lost record ACK/restart never replays SDK, replays only original evidence
+  ---
+  duration_ms: 0.591333
+  type: 'test'
+  ...
+# Subtest: lost claim ACK/restart never replays SDK, replays only original evidence
+ok 49 - lost claim ACK/restart never replays SDK, replays only original evidence
+  ---
+  duration_ms: 0.606042
+  type: 'test'
+  ...
+# Subtest: lost candidate ACK/restart never replays SDK, replays only original evidence
+ok 50 - lost candidate ACK/restart never replays SDK, replays only original evidence
+  ---
+  duration_ms: 0.614125
+  type: 'test'
+  ...
+# Subtest: save:intent prevents the store effect
+ok 51 - save:intent prevents the store effect
+  ---
+  duration_ms: 0.345084
+  type: 'test'
+  ...
+# Subtest: save:dispatch prevents the store effect
+ok 52 - save:dispatch prevents the store effect
+  ---
+  duration_ms: 0.706875
+  type: 'test'
+  ...
+# Subtest: expired prevents the store effect
+ok 53 - expired prevents the store effect
+  ---
+  duration_ms: 0.824666
+  type: 'test'
+  ...
+# Subtest: background prevents the store effect
+ok 54 - background prevents the store effect
+  ---
+  duration_ms: 1.342083
+  type: 'test'
+  ...
+# Subtest: identity invalidation during SDK drops old result; retained dispatch marker requires reconciliation
+ok 55 - identity invalidation during SDK drops old result; retained dispatch marker requires reconciliation
+  ---
+  duration_ms: 0.469125
+  type: 'test'
+  ...
+# Subtest: an active server or store subscriber cannot buy; store signal cannot grant access
+ok 56 - an active server or store subscriber cannot buy; store signal cannot grant access
+  ---
+  duration_ms: 0.372583
+  type: 'test'
+  ...
+# Subtest: unknown status/expiry/closed unresolved cannot release the marker
+ok 57 - unknown status/expiry/closed unresolved cannot release the marker
+  ---
+  duration_ms: 0.5245
+  type: 'test'
+  ...
+# Subtest: invalidation/unmount while claim is pending refuses dispatch; restore never becomes a candidate
+ok 58 - invalidation/unmount while claim is pending refuses dispatch; restore never becomes a candidate
+  ---
+  duration_ms: 0.707584
+  type: 'test'
+  ...
+# Subtest: journal read failure fails closed
+ok 59 - journal read failure fails closed
+  ---
+  duration_ms: 0.21375
+  type: 'test'
+  ...
+# Subtest: restart after record did not commit retries identical consent only, never claim or SDK
+ok 60 - restart after record did not commit retries identical consent only, never claim or SDK
+  ---
+  duration_ms: 3.280375
+  type: 'test'
+  ...
+# Subtest: restart after committed confirmation before dispatch marker retries exact record, no claim
+ok 61 - restart after committed confirmation before dispatch marker retries exact record, no claim
+  ---
+  duration_ms: 8.723875
+  type: 'test'
+  ...
+# Subtest: truncated cases fail closed even if shown cases, server and store look clear
+ok 62 - truncated cases fail closed even if shown cases, server and store look clear
+  ---
+  duration_ms: 0.489541
+  type: 'test'
+  ...
+# Subtest: interruption after SDK before candidate persistence leaves reconciliation, never a guessed candidate
+ok 63 - interruption after SDK before candidate persistence leaves reconciliation, never a guessed candidate
+  ---
+  duration_ms: 0.615375
+  type: 'test'
+  ...
+# Subtest: a provider/foreground refresh arriving during an existing read is coalesced and not lost
+ok 64 - a provider/foreground refresh arriving during an existing read is coalesced and not lost
+  ---
+  duration_ms: 19.052334
+  type: 'test'
+  ...
+# Subtest: bound candidate plus denied backend/empty store cannot invite a second subscription
+ok 65 - bound candidate plus denied backend/empty store cannot invite a second subscription
+  ---
+  duration_ms: 0.771417
+  type: 'test'
+  ...
+# Subtest: restore cancellation does not cancel an original pending purchase or show a failure
+ok 66 - restore cancellation does not cancel an original pending purchase or show a failure
+  ---
+  duration_ms: 0.295125
+  type: 'test'
+  ...
+# Subtest: PERSIST-13 selects the regular root only when both compiled fixture values are absent
+ok 67 - PERSIST-13 selects the regular root only when both compiled fixture values are absent
+  ---
+  duration_ms: 3.519459
+  type: 'test'
+  ...
+# Subtest: PERSIST-13 manifest binds exact run stores, state, profile and closed target lists
+ok 68 - PERSIST-13 manifest binds exact run stores, state, profile and closed target lists
+  ---
+  duration_ms: 0.879875
+  type: 'test'
+  ...
+# Subtest: PERSIST-13 physical snapshot equality includes exact key set and raw values
+ok 69 - PERSIST-13 physical snapshot equality includes exact key set and raw values
+  ---
+  duration_ms: 0.370375
+  type: 'test'
+  ...
+# Subtest: scenario fault key is the exact modern physical key produced by the profile router
+ok 70 - scenario fault key is the exact modern physical key produced by the profile router
+  ---
+  duration_ms: 0.410084
+  type: 'test'
+  ...
+# Subtest: control namespace permits only the manifest, scenario sidecar and canonical router registry slots
+ok 71 - control namespace permits only the manifest, scenario sidecar and canonical router registry slots
+  ---
+  duration_ms: 0.372917
+  type: 'test'
+  ...
+# Subtest: scenario sidecar is closed, run-bound and records only exact-key hashes
+ok 72 - scenario sidecar is closed, run-bound and records only exact-key hashes
+  ---
+  duration_ms: 1.718125
+  type: 'test'
+  ...
+# Subtest: draft sidecar binds the expected canonical payload and codec-prepared envelope by hash
+ok 73 - draft sidecar binds the expected canonical payload and codec-prepared envelope by hash
+  ---
+  duration_ms: 0.367042
+  type: 'test'
+  ...
+# Subtest: fixture selector keeps ordinary providers behind a dynamic import boundary
+ok 74 - fixture selector keeps ordinary providers behind a dynamic import boundary
+  ---
+  duration_ms: 0.579291
+  type: 'test'
+  ...
+# Subtest: recovery baseline grants only the explicit PERSIST-13 fixture its isolated MMKV test boundary
+ok 75 - recovery baseline grants only the explicit PERSIST-13 fixture its isolated MMKV test boundary
+  ---
+  duration_ms: 0.470333
+  type: 'test'
+  ...
+# Subtest: fixture pauses only after the durable reset materialization and exact native postconditions
+ok 76 - fixture pauses only after the durable reset materialization and exact native postconditions
+  ---
+  duration_ms: 1.903625
+  type: 'test'
+  ...
+# Subtest: the raw fixture supplies its explicit timer CAS at the existing preparation boundary
+ok 77 - the raw fixture supplies its explicit timer CAS at the existing preparation boundary
+  ---
+  duration_ms: 0.210208
+  type: 'test'
+  ...
+# Subtest: fixture readers are optional screen seams and production readers remain the default
+ok 78 - fixture readers are optional screen seams and production readers remain the default
+  ---
+  duration_ms: 1.260458
+  type: 'test'
+  ...
+# Subtest: fixture creates validator-approved fixed-50 canonical evidence without partial or persistence shortcuts
+ok 79 - fixture creates validator-approved fixed-50 canonical evidence without partial or persistence shortcuts
+  ---
+  duration_ms: 1470.299625
+  type: 'test'
+  ...
+# Subtest: memory readers require the fixture session identity and preserve read-only evidence
+ok 80 - memory readers require the fixture session identity and preserve read-only evidence
+  ---
+  duration_ms: 5.890334
+  type: 'test'
+  ...
+# Subtest: ready fixture calls the supplied opener with each exact projected source URL
+ok 81 - ready fixture calls the supplied opener with each exact projected source URL
+  ---
+  duration_ms: 15.468916
+  type: 'test'
+  ...
+# Subtest: source-failure fixture records exact opener attempt but never calls external URL opening
+ok 82 - source-failure fixture records exact opener attempt but never calls external URL opening
+  ---
+  duration_ms: 14.781625
+  type: 'test'
+  ...
+# Subtest: practice answer matrix exposes actual completed summary, five feedback previews, and full review
+ok 83 - practice answer matrix exposes actual completed summary, five feedback previews, and full review
+  ---
+  duration_ms: 82.235084
+  type: 'test'
+  ...
+# Subtest: practice answer matrix opens both source-mapped in-memory course modules from the shared projection
+ok 84 - practice answer matrix opens both source-mapped in-memory course modules from the shared projection
+  ---
+  duration_ms: 45.315208
+  type: 'test'
+  ...
+# Subtest: Metro disabled runtime is explicitly unavailable outside smoke
+ok 85 - Metro disabled runtime is explicitly unavailable outside smoke
+  ---
+  duration_ms: 0.179625
+  type: 'test'
+  ...
+# Subtest: actual Certification Practice result presents derived overall points and the existing partial diagnostic
+ok 86 - actual Certification Practice result presents derived overall points and the existing partial diagnostic
+  ---
+  duration_ms: 1621.47325
+  type: 'test'
+  ...
+# Subtest: an unavailable exact practice projection explicitly blocks an unverified result
+ok 87 - an unavailable exact practice projection explicitly blocks an unverified result
+  ---
+  duration_ms: 157.750916
+  type: 'test'
+  ...
+# Subtest: a profile-read fence failure is not swallowed as an optional diagnostic projection
+ok 88 - a profile-read fence failure is not swallowed as an optional diagnostic projection
+  ---
+  duration_ms: 84.80825
+  type: 'test'
+  ...
+# Subtest: generic history without compatible verified points does not render its raw weighted aggregate
+ok 89 - generic history without compatible verified points does not render its raw weighted aggregate
+  ---
+  duration_ms: 78.606375
+  type: 'test'
+  ...
+# Subtest: actual GCP diagnostic result renders observed unit evidence and opens the pinned Focus target
+ok 90 - actual GCP diagnostic result renders observed unit evidence and opens the pinned Focus target
+  ---
+  duration_ms: 51.864542
+  type: 'test'
+  ...
+# Subtest: diagnostic and focused-unit copy is translated with matching placeholders in all seven locales
+ok 91 - diagnostic and focused-unit copy is translated with matching placeholders in all seven locales
+  ---
+  duration_ms: 8.290208
+  type: 'test'
+  ...
+# Subtest: actual case continuation ignores concurrent and delayed duplicate presses before state commit
+ok 92 - actual case continuation ignores concurrent and delayed duplicate presses before state commit
+  ---
+  duration_ms: 37.556833
+  type: 'test'
+  ...
+# Subtest: actual case continuation releases a failed attempt for retry and cancels navigation after leaving
+ok 93 - actual case continuation releases a failed attempt for retry and cancels navigation after leaving
+  ---
+  duration_ms: 48.177792
+  type: 'test'
+  ...
+# Subtest: fresh response requires exactly one matching provider-backed item with strict UTC dates
+ok 94 - fresh response requires exactly one matching provider-backed item with strict UTC dates
+  ---
+  duration_ms: 3.269625
+  type: 'test'
+  ...
+# Subtest: confirmed account change removes the previous account cache and fails closed if removal fails
+ok 95 - confirmed account change removes the previous account cache and fails closed if removal fails
+  ---
+  duration_ms: 0.879
+  type: 'test'
+  ...
+# Subtest: active and grace expire exactly at their provider dates; negative states deny
+ok 96 - active and grace expire exactly at their provider dates; negative states deny
+  ---
+  duration_ms: 0.4285
+  type: 'test'
+  ...
+# Subtest: clock rollback and account switch deny, and a fresh response cannot reduce observed wall time
+ok 97 - clock rollback and account switch deny, and a fresh response cannot reduce observed wall time
+  ---
+  duration_ms: 0.117875
+  type: 'test'
+  ...
+# Subtest: cache writes before offline authorization; failed writes, invalid refresh and account change fail closed
+ok 98 - cache writes before offline authorization; failed writes, invalid refresh and account change fail closed
+  ---
+  duration_ms: 1.173833
+  type: 'test'
+  ...
+# Subtest: read-only cached access distinguishes policy denial from unavailable evidence without advancing the clock fence
+ok 99 - read-only cached access distinguishes policy denial from unavailable evidence without advancing the clock fence
+  ---
+  duration_ms: 0.260833
+  type: 'test'
+  ...
+# Subtest: Premium distinguishes an account waiting for online verification from Guest or signed-out access
+ok 100 - Premium distinguishes an account waiting for online verification from Guest or signed-out access
+  ---
+  duration_ms: 2.955125
+  type: 'test'
+  ...
+# Subtest: all seven records round trip with exact QLE first answers, assistance, plan and review
+ok 101 - all seven records round trip with exact QLE first answers, assistance, plan and review
+  ---
+  duration_ms: 2075.168708
+  type: 'test'
+  ...
+# Subtest: DTO retry reuses exact fingerprints/IDs; obsolete queued summaries preserve bytes and fail closed
+ok 102 - DTO retry reuses exact fingerprints/IDs; obsolete queued summaries preserve bytes and fail closed
+  ---
+  duration_ms: 539.609083
+  type: 'test'
+  ...
+# Subtest: a real active QLE session stays device-owned and cannot be projected as a terminal fact
+ok 103 - a real active QLE session stays device-owned and cannot be projected as a terminal fact
+  ---
+  duration_ms: 402.4325
+  type: 'test'
+  ...
+# Subtest: journal roundtrip is canonical, restart-readable and survives learning-only reset
+ok 104 - journal roundtrip is canonical, restart-readable and survives learning-only reset
+  ---
+  duration_ms: 11.049542
+  type: 'test'
+  ...
+# Subtest: same-account new lease and actor invalidation refuse old journal writes
+ok 105 - same-account new lease and actor invalidation refuse old journal writes
+  ---
+  duration_ms: 3.786167
+  type: 'test'
+  ...
+# Subtest: invalid/corrupt markers and uncertain storage write cannot permit dispatch
+ok 106 - invalid/corrupt markers and uncertain storage write cannot permit dispatch
+  ---
+  duration_ms: 0.308291
+  type: 'test'
+  ...
+# Subtest: intent preserves exact consent payload for idempotent recovery
+ok 107 - intent preserves exact consent payload for idempotent recovery
+  ---
+  duration_ms: 0.273084
+  type: 'test'
+  ...
+# Subtest: Certification result keeps truthful session metrics and routes Focus domains through the canonical formatter
+ok 108 - Certification result keeps truthful session metrics and routes Focus domains through the canonical formatter
+  ---
+  duration_ms: 0.71725
+  type: 'test'
+  ...
+# Subtest: Certification Focus domain formatter resolves only a canonical roadmap node
+ok 109 - Certification Focus domain formatter resolves only a canonical roadmap node
+  ---
+  duration_ms: 0.808292
+  type: 'test'
+  ...
+# Subtest: Certification result resolves dependencies through the application projection boundary
+ok 110 - Certification result resolves dependencies through the application projection boundary
+  ---
+  duration_ms: 4359.242666
+  type: 'test'
+  ...
+1..110
+# tests 110
+# suites 0
+# pass 110
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5863.050958

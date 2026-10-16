@@ -1,6 +1,6 @@
 # Utrzymanie banków — zachowane zadania naprawcze
 
-Priorytet i status określa wyłącznie [plan główny](../../PATTERNLY-WORKING-PLAN.md). Porównanie z 07.10.2026 obejmuje źródła contentu `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03` i wersję audytowaną `78ba999098ea12704b74fe9de2eecdf89578e885`.
+Priorytet i status określa wyłącznie [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Porównanie z 07.10.2026 obejmuje źródła contentu `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03` i wersję audytowaną `78ba999098ea12704b74fe9de2eecdf89578e885`.
 
 Historyczna lista zachowuje 158 zakresów napraw obejmujących 2 129 pytań z porównania 07.10. Treść niezmienionych zakresów odpowiada ocenianym źródłom; naprawy i ich aktualny status wskazano przy istniejących zadaniach. Dokumenty poniżej zawierają konkretne problemy, identyfikatory i skróty plików. Pozwalają rozpocząć poprawę wybranej partii bez odtwarzania całego audytu. Przed zmianą sprawdź jednak, czy pliki nadal odpowiadają tym skrótom.
 

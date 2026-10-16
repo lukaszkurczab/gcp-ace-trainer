@@ -1,6 +1,6 @@
 # Wydajność — gotowe zakresy pracy
 
-Status i kolejność: [plan główny](../../PATTERNLY-WORKING-PLAN.md). Porównano aktualne źródła 07.10:  app e889b05, backend039f7f0. Stare liczby z audytu02.10 nie opisują dzisiejszego banku ani urządzenia; zachowano je na końcu wyłącznie jako kwalifikowany baseline uzasadniający taski. Poniższe przyczyny kosztu nadal występują w kodzie. Pomiar jest określonym etapem zadania, nie poleceniem ponownego audytu całego repo.
+Status i kolejność: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Porównano aktualne źródła 07.10:  app e889b05, backend039f7f0. Stare liczby z audytu02.10 nie opisują dzisiejszego banku ani urządzenia; zachowano je na końcu wyłącznie jako kwalifikowany baseline uzasadniający taski. Opisy przyczyn dotyczą wskazanych baseline; późniejsze odbiory PERF-02–06 mają pierwszeństwo. Nie oznacza to, że odebrany problem nadal występuje w bieżącym kodzie. Pomiar jest określonym etapem zadania, nie poleceniem ponownego audytu całego repo.
 
 ## PERF-01 — eager content load
 
@@ -13,6 +13,10 @@ Bieżący runtimeCatalog statycznie importuje wszystkie9pełnych banków; owner 
 Pierwszy wynik: source-matched cold/warm guest/resume na istniejącym iPhone17 — osobno module evaluation, hash/validation, repository/recovery, first usable screen, heap i JS/HBC. Uzgodnić wymagany offline Free zakres, modes/interactions, discovery metadata i exact pins przed redukcją eager danych. Configured producer Free packages mają tylko package-binding acceptance, runtimeAdmission:not_granted; bezpośredni swap nie jest zatwierdzony.
 
 AC: zmniejszona zbędna materializacja/pamięć i cold work na tym samym dataset/build envelope, przy pełnym Free offline, Premium gating, schema/hash/semantics oraz immutable session/review pins. Jedna content authority; żadnej cichej podmiany lub walidacji przeniesionej wyłącznie do builda. Konkretny reprezentacyjny kontrakt wymaga review; kolejność producer→artifact/lock→consumer. Nie obiecywać UX budgetu lub przyspieszenia na podstawie gzip.
+
+Pomiar34 odebrany lokalnie16.10.2026, niezależny Luna High PASS WITH ISSUES: [aktualny envelope, wyniki i projekt35](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/reports/perf01-startup34-2026-10-16.md), [numeryczne evidence](../../reports/perf01-startup34-2026-10-16.json). Trzy cold/warm/real Resume na zachowanym Debug binary i source-matched JS; existing account, bez profile switch/reset/reinstall. RN/prelude/root require, storage/recovery, content, layout/data readiness i heap oddzielone. Odpowiedź jest JS, nie HBC; native first paint, fresh Guest, pełne9track live offline i Release mają jawne granice. Pełny gate repo pozostaje czerwony poza wycinkiem34.
+
+Wybrana optymalizacja35 **odebrana lokalnie16.10.2026**, niezależny Luna High PASS WITH ISSUES: [wynik i granice](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/reports/perf01-optimization35-2026-10-16.md), [numeryczne before/after](../../reports/perf01-optimization35-2026-10-16.json). Function-local Set exact obiektów w `validateProductModeConfigsAgainstArtifacts`, wpis po sukcesie: scan29→9, mediana tej samej native granicy233,858→68,865ms (−70,55%) na niezmienionym datasecie/native binary. Każda per-mode pool/requestedLength/Diagnostic/admission kontrola, runtime schema/hash/predecessor, Free nodes/interactions/discovery i immutable history/review pins pozostają. Świeże wywołanie ponownie waliduje obiekt. Bez trwałego cache, podmiany pakietów lub alternatywnej ścieżki runtime. Startup/warm/Resume i właściwe regresje odebrane w opisanym envelope; brak jednego Home layout timestampu i byte-preservation całego control, pełny live9track offline/Guest/Release/usługi pozostają poza tym dowodem. Nie ponawiać ani uruchamiać dalszych eager optymalizacji bez nowego konkretnego pomiaru i zakresu.
 
 ## PERF-02 — membership scan w Progress
 
@@ -38,7 +42,7 @@ AC: mniej powtórnego parsowania/alokacji i czasu przy identycznych outcomes ora
 
 ## PERF-04 — pełny readback journalu
 
-Status: odebrane source/logical/local 12.10.2026, independent Luna High PASS. [Decyzja, pomiary i weryfikacja](../../reports/perf04-journal-readback-2026-10-12.md), [wyniki](../../reports/perf04-journal-readback-2026-10-12.json). Native macierz pozostaje w PERSIST-13; brak twierdzenia o MMKV durability/UI latency. Severity historyczne: P2.
+Status: odebrane source/logical/local 12.10.2026, independent Luna High PASS. Decyzja, pomiary i weryfikacja (historyczny plik `perf04-journal-readback-2026-10-12.md` niedostępny), wyniki (historyczny plik `perf04-journal-readback-2026-10-12.json` niedostępny). Native macierz pozostaje w PERSIST-13; brak twierdzenia o MMKV durability/UI latency. Severity historyczne: P2.
 
 Pliki: `src/application/learningMutations/mutationVerifier.ts`, `src/storage/repositories/{trainingAttemptRepository,trainingSessionRepository,reviewQueueRepository,mutationJournalRepository}.ts` i recovery tests.
 
@@ -50,7 +54,7 @@ AC: mniej dużych unrelated reads przy identycznych postconditions, profile fenc
 
 ## PERF-05 — bounded backend paging
 
-Status: odebrane source/local/hosted CI 13.10.2026, independent Luna High PASS. [Decyzja, pomiar i weryfikacja](../../reports/perf05-bounded-paging-2026-10-12.md), [wyniki](../../reports/perf05-bounded-paging-2026-10-12.json). Backend producer dostarczony przez [PR1](https://github.com/lukaszkurczab/patternly-backend/pull/1); cloud deployment i native acceptance osobno. Severity historyczne: P2.
+Status: odebrane source/local/hosted CI 13.10.2026, independent Luna High PASS. Decyzja, pomiar i weryfikacja (historyczny plik `perf05-bounded-paging-2026-10-12.md` niedostępny), wyniki (historyczny plik `perf05-bounded-paging-2026-10-12.json` niedostępny). Backend producer dostarczony przez [PR1](https://github.com/lukaszkurczab/patternly-backend/pull/1); cloud deployment i native acceptance osobno. Severity historyczne: P2.
 
 Kanoniczny `FirestoreProgressStore.readPage` czyta najwyżej pageSize+1 progress documents w document-ID order oraz cztery metadata/account documents przez dwa świeże getAll. Default/max pageSize100; opaque tokenv2 wskazuje pierwszy niewysłany lookahead, jest związany z user/revision/generation i wymaga exact cursor. Pre/post-query guards obejmują autoryzację, revision/generation, metadata updateTime i promotion lease. Strict validation obejmuje lookahead. Usunięto pełny snapshot/sort/slice z GET/v1/progress; readSnapshot pozostaje potrzebny adopcji/transferowi. Mobile production runtime już pobiera wszystkie strony przed restore i nie wymagał zmiany.
 
@@ -58,11 +62,13 @@ AC: bounded page, pełny sweep O(N), bez braków/duplikatów; stale/invalid toke
 
 ## PERF-06 — okno Activity i Review
 
+Status: odebrane 13.10.2026 w opisanym poniżej zakresie; bez ponawiania odbioru w prompt33. Historyczny raport jest niedostępny, a aktualne `ActivityView` i `MistakesReviewView` potwierdzają użycie `SectionList`.
+
 Severity: P2.
 
 Pliki: `src/features/home/ActivityScreen.tsx`, `src/features/review/MistakesReviewScreen.tsx`, `src/components/Screen.tsx` i istniejące model/navigation tests.
 
-Historyczny baseline mapował wszystkie wiersze wewnątrz ScrollView. Kanoniczne ActivityView i MistakesReviewView używają teraz SectionList bez limitu historii; screen pozostaje właścicielem odczytu i operacji. Source, dopasowane ograniczone pomiary native, scroll/selection/return, normalne Activity/Review i zachowanie danych odebrane niezależnie 13.10.2026. [Dowody i ograniczenia](../../reports/perf06-list-windowing-2026-10-13.md): sampled RSS maxima oraz natywne callback rates, bez twierdzenia o absolute peak/presented frames/hitches. Końcowe dostarczenie helpera62e73229 ma [exact-source CI38330733575](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38330733575) obu jobsSUCCESS; PERF06 odebrane w opisanym zakresie. Derived model Activity nie był wykazanym bottleneckiem.
+Historyczny baseline mapował wszystkie wiersze wewnątrz ScrollView. Kanoniczne ActivityView i MistakesReviewView używają teraz SectionList bez limitu historii; screen pozostaje właścicielem odczytu i operacji. Source, dopasowane ograniczone pomiary native, scroll/selection/return, normalne Activity/Review i zachowanie danych odebrane niezależnie 13.10.2026. Dowody i ograniczenia (historyczny plik `perf06-list-windowing-2026-10-13.md` niedostępny): sampled RSS maxima oraz natywne callback rates, bez twierdzenia o absolute peak/presented frames/hitches. Końcowe dostarczenie helpera62e73229 ma [exact-source CI38330733575](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38330733575) obu jobsSUCCESS; PERF06 odebrane w opisanym zakresie. Derived model Activity nie był wykazanym bottleneckiem.
 
 Poprawka: windowing obecnego presentation layer, bez cap/usuwania historii. AC: mounted rows zależą od viewportu, nie od pełnego datasetu; zachowane date/DST/locale grouping, sort/ties/filter, selected details, scroll/return, due/upcoming/unavailable i semantyczne accessibility props. Na jednym iPhone17 porównać Activity50/500/1000 i Review100/1000: mounted rows/commits, JS long tasks, peak memory i frames. Scroll/remount nie traci stanu. Bez testów VoiceOver zgodnie z PO. Nie wymaga PERF-02/03.
 
@@ -86,7 +92,7 @@ Audyt02.10: app `200f8504c48df020d19937cad788d3961eb4caf7`, backend `019e48e7d8e
 
 ### PERF-04
 
-- **Dowód/baseline:** `src/application/learningMutations/mutationVerifier.ts:6` bezwarunkowo pobiera wszystkie sessions/attempts/reviews, zanim sprawdzi zadeklarowane writes. Sam `getTrainingAttempts` (`src/storage/repositories/trainingAttemptRepository.ts:7`) dla A=100/1k/10k: **0,78/1,46 → 5,85/6,96 → 64,26/66,35 ms**, **101/1001/10001** synchronicznych odczytów, **111 450 / 1 117 586 / 11 291 369 znaków** envelope/index. Licznik używa JS `.length`, nie rzeczywistych bajtów MMKV. To zmierzony składnik i source-backed zbędne odczyty względem write set; **nie czas całego submit/recovery**. Historyczna próba syntetycznego całego verifiera nie przeszła integrity setup; jej czasu nie użyto. Aktualny poprawny persisted-journal baseline i porównanie pełnego recovery z12.10 znajdują się w [raporcie PERF-04](../../reports/perf04-journal-readback-2026-10-12.md); to dowód kodu/codecs nad adapterem pamięciowym, bez native durability/UI claim.
+- **Dowód/baseline:** `src/application/learningMutations/mutationVerifier.ts:6` bezwarunkowo pobiera wszystkie sessions/attempts/reviews, zanim sprawdzi zadeklarowane writes. Sam `getTrainingAttempts` (`src/storage/repositories/trainingAttemptRepository.ts:7`) dla A=100/1k/10k: **0,78/1,46 → 5,85/6,96 → 64,26/66,35 ms**, **101/1001/10001** synchronicznych odczytów, **111 450 / 1 117 586 / 11 291 369 znaków** envelope/index. Licznik używa JS `.length`, nie rzeczywistych bajtów MMKV. To zmierzony składnik i source-backed zbędne odczyty względem write set; **nie czas całego submit/recovery**. Historyczna próba syntetycznego całego verifiera nie przeszła integrity setup; jej czasu nie użyto. Aktualny poprawny persisted-journal baseline i porównanie pełnego recovery z12.10 znajdują się w raporcie PERF-04 (historyczny plik `perf04-journal-readback-2026-10-12.md` niedostępny); to dowód kodu/codecs nad adapterem pamięciowym, bez native durability/UI claim.
 
 ### PERF-05
 

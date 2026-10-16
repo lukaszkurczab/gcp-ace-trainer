@@ -1,0 +1,516 @@
+{
+  "schemaVersion": 1,
+  "scope": "prompt25/ARCH-06",
+  "date": "2026-10-15",
+  "verdict": "PASS",
+  "readiness": "code and focused local tests only",
+  "appHead": "3911c7c0882299ca2d5217c26a67ff24bb574af0",
+  "nextPrompt": 26,
+  "nextPromptStarted": false,
+  "commitPush": false,
+  "deviceOrServicesOperations": false,
+  "designReview": {
+    "model": "gpt-6-luna",
+    "effort": "high",
+    "initialMinimum": 0.84,
+    "revisedMinimum": 0.82
+  },
+  "independentQA": {
+    "model": "gpt-6-luna",
+    "effort": "high",
+    "firstVerdict": "FAIL",
+    "correctedFindings": [
+      "Progress empty-state provider-ID branches",
+      "cross-track GCP labels in activity"
+    ],
+    "finalVerdict": "PASS",
+    "passedTests": 130,
+    "command": "node --import tsx --test src/features/practice/trackPresentationRender.test.mjs src/features/practice/practiceQuestionPresentation.test.ts src/features/practice/practiceFlowModel.test.ts src/features/practice/practiceSessionConfig.test.ts src/features/home/tabs/trackProgressPresentation.test.mjs src/features/home/tabs/activityModel.test.ts src/features/home/tabs/progressProjection.test.ts src/features/home/tabs/cloudProgressDomainMetadata.test.ts src/features/home/soloUi22.test.mjs src/features/home/soloHome23.test.mjs src/features/home/goalContracts.test.ts src/application/homeShellProfileReadIntegration.test.ts"
+  },
+  "authorVerification": {
+    "passedTests": 284,
+    "failedTests": 0,
+    "command": "node --import tsx --test --test-skip-pattern='^(mutation failure has one boundary owner and presentation cannot recreate durable state|features and track semantics cannot import storage or repository implementations)$' src/features/practice/*.test.ts src/features/practice/trackPresentationRender.test.mjs src/features/home/tabs/cloudProgressDomainMetadata.test.ts src/features/home/tabs/progressProjection.test.ts src/features/home/tabs/progressOverallCredit.test.ts src/features/home/tabs/progressScheduleEntry.test.mjs src/features/home/tabs/trackProgressPresentation.test.mjs src/features/home/tabs/activityModel.test.ts src/features/home/goalContracts.test.ts src/features/home/soloUi22.test.mjs src/features/home/soloHome23.test.mjs src/application/homeShellProfileReadIntegration.test.ts src/features/exam/ExamScreen.navigation.test.ts src/features/exam/certificationPracticeReviewPresentation.test.ts src/application/certification/certificationFeedbackProjection.test.ts src/application/certification/singleCase.integration.test.ts src/application/certification/certificationPracticeReviewProjection.test.ts src/application/certification/certificationReviewCommands.test.ts src/application/canonical/canonicalPracticeChoiceOrderProjection.test.ts scripts/architectureBoundaries.test.ts scripts/mutationArchitecture.test.ts",
+    "checks": {
+      "typecheck": "PASS",
+      "contentBoundary": "PASS",
+      "runtimePrivacyBoundary": "PASS",
+      "gitDiffCheck": "PASS"
+    },
+    "node": "22.22.3"
+  },
+  "excludedBaselineFailures": {
+    "mutationArchitecture": [
+      "mutation failure has one boundary owner and presentation cannot recreate durable state",
+      "features and track semantics cannot import storage or repository implementations"
+    ],
+    "recoveryCheck": "unchanged terminalWireFixture test-only import",
+    "unchangedInputs": {
+      "src/features/premium/PremiumPurchaseScreen.tsx": "5688c608ff17d3619089d2e02b2dab4ebb5565963329044ce865dcb6738f25ac",
+      "scripts/mutationArchitecture.test.ts": "253b59525d4a6bcc841a3118b49cb29c39592fe37eba5a9c017ff3264f6930ab",
+      "src/testing/terminalWireFixture.ts": "fb3a339f3016953b4fba9b58d526ca5e4ac98ad13a3d4b0f5509e1f125dfd148"
+    }
+  },
+  "limits": [
+    "No full npm test/qa:static or hosted CI",
+    "Controlled function harness, no React/native mount or device layout evidence",
+    "No native build/smoke, services or release acceptance",
+    "Existing gcp-ace-standard-domain-* has no authored metadata mapping; prior unavailable preserved"
+  ],
+  "sourceBriefFingerprint": "1e042fde65d262ca752c9bf57de4ed906b179b9b5fe4ff8ddee97e6157bbfe63",
+  "metadataParity": {
+    "roadmapNodeIdDigests": {
+      "aws-certified-solutions-architect-associate": "95c94de07cbea07bf9bc58aa40278b07f77cf53c52b6cd7a0861fc5015ab2ba8",
+      "backend-system-design-interview": "2daa7826ab5f8d8e0bc931d92d1dcb0f71a2ee78b23982993289df6857ab0d34",
+      "frontend-system-design-interview": "49747d7225ac16318c9ced186871e7143688855b3914566cd74f31f4bbefaf8e",
+      "google-cloud-associate-cloud-engineer": "cf2d5a6b587834d08b2c1ce3267205c46bf482f67ba9f865ed5fc02b92296ee8",
+      "microsoft-azure-administrator-associate-az-104": "de4e575708ad1f2767ad66f1c39cd88ac1616c03e89c0cba729b815ea9a62ff2",
+      "microsoft-azure-ai-fundamentals-ai-901": "1e2a9b5e0e900f7e3e0d20c71bdb20962f772476867f185a9b5832725c92bb46",
+      "claude-certified-architect-professional-certification": "2165a3f0682481fce9363f0126825eb1bffe48b7fe64ae8e950b3ce788271493",
+      "object-oriented-design-interview": "b93b0e329673bb1255c7337de4817707b93d2ef65178b0fbce2accaab673a913"
+    },
+    "nonCodingRoadmapArrays": 8,
+    "authoredDomainRecords": 11,
+    "result": "PASS"
+  },
+  "changedFiles": [
+    {
+      "path": "patternly/docs/reports/solo-descriptors25-2026-10-15.md",
+      "beforeSha256": null,
+      "afterSha256": "0dba7788f4e55958cdc5706b7dc8bd8c0d29c547d849b1ea9e617fcde01dc173"
+    },
+    {
+      "path": "patternly/docs/specs/engineering/architecture.md",
+      "beforeSha256": "d7534e608428f79b326c388ab4537106ffaa116cd27608795baa30eba536868b",
+      "afterSha256": "7b316a5b28a9db8a64c77bfdea715e66535436055343b89c00384caf49267522"
+    },
+    {
+      "path": "patternly/src/application/certification/certificationFeedbackProjection.test.ts",
+      "beforeSha256": "72d5a32da7b35fa1ff2e83bfbcb081a9fff6aef4d957dc7bd2a5f014cc3c0f11",
+      "afterSha256": "b66256e8db00d43561465ecbc1d856a70064194228b1c9dd61928f2ad27a8c53"
+    },
+    {
+      "path": "patternly/src/application/certification/certificationQuestionPresentation.ts",
+      "beforeSha256": null,
+      "afterSha256": "e5d3876d8653f72207400644a7815e4a87678f68a372b0574944d68b9f91c4ac"
+    },
+    {
+      "path": "patternly/src/application/certification/certificationSessionFacade.ts",
+      "beforeSha256": "6950c94f81dc44792dfe80f8608f52966dfb7afc7fedeef5093c917b568cc557",
+      "afterSha256": "fc632c519de4368930a8b52e0903ed9687533ed96a75b5cb2d951675a1b8f387"
+    },
+    {
+      "path": "patternly/src/application/coding-interview/codingProgressProjection.ts",
+      "beforeSha256": "613f8fe14769121f4c7eea5a48050cf27590a0e37c212f87ffaaf95d14b21e2d",
+      "afterSha256": "77315c15d604cb962ef1e6b29fd99b0dd916e579b1a33d4bdafa55291a855ad0"
+    },
+    {
+      "path": "patternly/src/application/learningPlan/progressProjectionContracts.ts",
+      "beforeSha256": "7eed40c674510ce44b9b766f4d3bfb91b7ff915051f824b60a4de14a974990cb",
+      "afterSha256": "91951b66a4722f940f2a017d2631547e34e907749270071a503ba27373d0f48e"
+    },
+    {
+      "path": "patternly/src/application/learningPlan/progressReadProjection.ts",
+      "beforeSha256": "d5488c473e4a6670ae64085bd8d0edf1a8eba4bfbc7a20615c5e1e5da3022b9d",
+      "afterSha256": "ea4c5c82531f84df099845b2de79d9a6ce1f339804d2e55bdb4620514e7f001c"
+    },
+    {
+      "path": "patternly/src/constants/exam.ts",
+      "beforeSha256": "489ff6789db74493310b19132fee86a2fdd9ac9426d4ded68f47e1b1cd4b0b48",
+      "afterSha256": "6ad24bc6a8107352bac6a22dbf4f7db2ffbb6c00faca8651438bb6c1a7c22765"
+    },
+    {
+      "path": "patternly/src/domain/tracks/trackAdmission.ts",
+      "beforeSha256": "a84d654be306271fae71bbd89d163e138321abe98f966605dfc9f9b47b21df78",
+      "afterSha256": "3337456827bc549f3ad7eab4b3594ed1970f6420e175711b2483be3f912f4bc0"
+    },
+    {
+      "path": "patternly/src/features/exam/CertificationPracticeFeedbackPreview.tsx",
+      "beforeSha256": "b8af8a75b3b98a4cdf2c095fb1f6c7154a73c3e42f06c08dfe15f5289399fee1",
+      "afterSha256": "617e10c12c9a1599e9d0133a7414d3dc3d22f2c1e54e062807f058e87ba6ceb0"
+    },
+    {
+      "path": "patternly/src/features/exam/ExamScreen.navigation.test.ts",
+      "beforeSha256": "6a45ed070670942f1c096b97bc85267ccdc05aeb99eaa11aa7a4d554d7de2173",
+      "afterSha256": "66df4324bd29f04b4e8ab815f94df3626839ebecc43c1dc7851bd8b1e3da831c"
+    },
+    {
+      "path": "patternly/src/features/exam/ExamScreen.tsx",
+      "beforeSha256": "e1559555d2bb5e8eb790f3da4e9eb0ea63d2c151d07cc302d23e1f30c169d30d",
+      "afterSha256": "ef80ac56c8b9ac461bff8503e71db3c710c49ab0d2314328a2aaf76eb737aaca"
+    },
+    {
+      "path": "patternly/src/features/home/HomeScreen.tsx",
+      "beforeSha256": "6d52ba77fe83d694c53c55d5883f8182819c5ffc84f08208bd53a6d41d5aeade",
+      "afterSha256": "9336bfea213b0c161f85936ab984b353254ca89f244ce4ad82c388a20776d6da"
+    },
+    {
+      "path": "patternly/src/features/home/goalContracts.test.ts",
+      "beforeSha256": "a81dfefdf267cf09a14c3f9e81ab1e5c2aed9c277211a5c9f288f3f9049b792e",
+      "afterSha256": "41f27e1e4c0b7b02264de81c44da7f0975efb91802a66e4e7f547ed9204d4c91"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/ProgressTab.tsx",
+      "beforeSha256": "1da7cbee2ce851bd979629ab2cca1b92dfb889880b38c7c6c6b769143185c129",
+      "afterSha256": "e160199db2cf758395c2e7c32238dd27b5549291dfe76cfdbef9fd882ba43254"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/activityModel.test.ts",
+      "beforeSha256": "03b1d72bfb7016c6f68a83b88e77e2697f893923cf27de927bcbd7a3412992a8",
+      "afterSha256": "4ab4973ef9e94059fb5e5d9193f6607420264569d37aa692d97330c54c558f3b"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/activityModel.ts",
+      "beforeSha256": "8dbfe15f74c583316386500c8bdcbf26dd84dfc9f19245bca6edda2f49f0a400",
+      "afterSha256": "20a79c291aa1706ed621bb80928f878a87597f2ba8d5dcc1e11bbb6ac291ce5e"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/cloudProgressDomainMetadata.test.ts",
+      "beforeSha256": "3446b6ebd2771f52cc320167e5a35b010b80f07439b19b8315ec122b7833dd51",
+      "afterSha256": "4a148da3d5dcf49137e5a5c6a37663b35742e75b9e00541d92780db22f7076ec"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/cloudProgressDomainMetadata.ts",
+      "beforeSha256": "c91e51b828c05ffe530a5a9b403e98e9ec54bd7752d8447757f37f4e57cd711c",
+      "afterSha256": null
+    },
+    {
+      "path": "patternly/src/features/home/tabs/progressPlanSectionTestHarness.mjs",
+      "beforeSha256": "93450e2fba769aaadf831825dab03b757df8a8e714e7f0f45dbef88ee871c6b9",
+      "afterSha256": "c60fcaf8805c30b583b4b817a5e1cbb0339c90957cf1d8eec3a971074cafd011"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/progressProjection.test.ts",
+      "beforeSha256": "149f2dc4d0d17194f503da2d03e31ef0692d900c5cf0352d8b84de63dfa9e44b",
+      "afterSha256": "373cd567b567350709ac2b0c753ad44c4294bb5a968da41061e17a6e0c5a587e"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/progressScheduleEntry.test.mjs",
+      "beforeSha256": "b31e1f6afa292d84ed290bb09fde796828d53a9f9025cd1bb9a93c889a7268eb",
+      "afterSha256": "d4ca87eac3c7d48132a037de36bfd0efc14880b1bc237941f3d950e7420091a2"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/progressTabModel.ts",
+      "beforeSha256": "ecc487cac1426520019860c4186d68141d28bed3339c78a0875145d437e0f38b",
+      "afterSha256": "402fd2cbfce219e4da8880f8ae7a33ce74d4560c693939000250fdfff36b2c04"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/trackProgressPresentation.test.mjs",
+      "beforeSha256": null,
+      "afterSha256": "61b19a3925fc8cb16ca4cede93b4c5f3e83a91c4b0a27eb5e57f789581647c0c"
+    },
+    {
+      "path": "patternly/src/features/practice/CertificationPracticeSessionScreen.tsx",
+      "beforeSha256": "51365dde6e39054f70d2fed27a6dbc25bb1cd2f0887e1931cde78ecbf8ab4cd2",
+      "afterSha256": "45186732da45ac3f1a2616bc0a8946d9a4b24791b418ae263745b98150d3386b"
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeQuestionCard.tsx",
+      "beforeSha256": "f8bed97ece78c1767820926f832601e998dd765d5d3c5dc0129e7caf2c53b25a",
+      "afterSha256": "a30be3f8f1924f983761c5253b6633a6b134ed1509a41293866e3785f6a67869"
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeSessionSurface.tsx",
+      "beforeSha256": "3727dca4b2b908e6de892553350921268b3318f2b3f3fbbcb21847c0fb90a9cd",
+      "afterSha256": "64384962325829f3b8a9cbec676d728096b783e2d481be0047e8b235e48b364d"
+    },
+    {
+      "path": "patternly/src/features/practice/practiceFlowModel.ts",
+      "beforeSha256": "04d7ab3dc7b2120063070604609dd902c7ccef8bc8b664c66e4644b7bc9bd0ae",
+      "afterSha256": "bce6a258829d7e793884e3456eb82f7f6ef8de8b1ef5c3474ceb63bd515b9749"
+    },
+    {
+      "path": "patternly/src/features/practice/practiceQuestionPresentation.test.ts",
+      "beforeSha256": "ca3639a509343fc43a6638ee0b551cecdd777e2c32fb808c779bdbaa522855b1",
+      "afterSha256": "25d89d637adedbebd6c264e70bf285af57b9b878e5adf3bff3e3548f8fa80dd7"
+    },
+    {
+      "path": "patternly/src/features/practice/practiceRouteGuards.test.ts",
+      "beforeSha256": "f3529b51c2791f7109578cca2dfa5a4d2775222d9306235da7923cbd2f135eab",
+      "afterSha256": "1231454d682dc1431416f438f081f15961d2477079e19bc140d45c21b574bd62"
+    },
+    {
+      "path": "patternly/src/features/practice/trackPresentationRender.test.mjs",
+      "beforeSha256": null,
+      "afterSha256": "060689c4afd05cede256d326a62034a454a2a0c9a40456826da9e719e7caf086"
+    },
+    {
+      "path": "patternly/src/features/practice/trackRoadmapCatalog.ts",
+      "beforeSha256": "3945d63f06bb6b7a7ed6929377ef6052f3bac72a82499218ba924936f0053a9c",
+      "afterSha256": "2f65f07b50b47dc42d2a8b8d4073a6e472bda5674a0c608b21ac4e5487ea98b4"
+    },
+    {
+      "path": "docs/PATTERNLY-WORKING-PLAN.md",
+      "beforeSha256": "ac18ddb60110009d1d9b734eff8600f18128b74d705b998782dda19a8554e0e2",
+      "afterSha256": "da151dae7b10afa9eb7678debbcbdcd5b3d74b2a49e53ae9b0bf3f9b08fe2377"
+    },
+    {
+      "path": ".agent/WORKING_STATE.md",
+      "beforeSha256": "a579b2ea9b61181067e99884d551d297ef83a981dc4961ec31b33a37e2392151",
+      "afterSha256": "8aad37ff406aae908122439fc21abd2f440fb07e5a0f8df8fdb13749e08c266f"
+    }
+  ],
+  "manifestPath": "patternly/docs/reports/solo-descriptors25-2026-10-15.json",
+  "manifestSelfHashOmitted": true,
+  "preservedUnrelatedTrackedWip": [
+    {
+      "path": "scripts/qa/measureProgressProjection.ts",
+      "sha256": "6187261cace54f29c92cbaa7e7fa795332d2ae5b933cbba53ca0b9831e771b06"
+    },
+    {
+      "path": "src/application/canonical/canonicalTrainingFamilies.test.ts",
+      "sha256": "1683b5d1fbfef4cd2cebbd168a48f85468ced9dbacf1779a0117de6896168b51"
+    },
+    {
+      "path": "src/application/canonical/overallScoreCreditConsumers.test.ts",
+      "sha256": "4ce64a3c2ab1ae3b21890d44b7f04860f151c16fac3c2b47cb566032cf45d8df"
+    },
+    {
+      "path": "src/application/certification/certificationExamReviewProjection.test.ts",
+      "sha256": "4d212017982462986c430384e617e4d00d7e11ab48887734b85187a906bd80df"
+    },
+    {
+      "path": "src/application/certification/certificationPracticeReviewProjection.test.ts",
+      "sha256": "2e4ba4abe3b818f5439236290fa88263d187b71999f76ce611362e5b3db70d49"
+    },
+    {
+      "path": "src/application/certification/certificationPracticeReviewProjection.ts",
+      "sha256": "b57a326bb1accf448bbd2cbd93752ba1477a4619d2fd1b3c602fb9bdd3c9d017"
+    },
+    {
+      "path": "src/application/certification/certificationTrainingRuntime.ts",
+      "sha256": "704ceb5351b32604c2bf61ad8380d438161a01c88011c07a5699432c2d172665"
+    },
+    {
+      "path": "src/application/coding-interview/codingInterviewTrainingRuntime.ts",
+      "sha256": "48d618b4174f908ec3a70dc379089eb3162a8ba2f4e34e022728e4234b3261a8"
+    },
+    {
+      "path": "src/application/design-interview/designInterviewTrainingRuntime.ts",
+      "sha256": "3647158d3c6f643ebcf8839f3cb81ee0c4ffa5b28b2ce09b061fb1059b23da9b"
+    },
+    {
+      "path": "src/application/homeShellProfileReadIntegration.test.ts",
+      "sha256": "5606cfbbe5ef7810907813b7ee5d2b3315a2916059d5d1940ee5fce60ae7910e"
+    },
+    {
+      "path": "src/application/learningPlan/learningEvidenceProjection.ts",
+      "sha256": "74ac733bd5056dd7e7e738f653e88cb7b4012f1c8700ab6cee5f950c6efa96a2"
+    },
+    {
+      "path": "src/application/learningReadModels.ts",
+      "sha256": "11a1ba7b9f57b4d632664ebfe9615aca69b71adfeb1280c35e346314ab999ccc"
+    },
+    {
+      "path": "src/application/trainingLifecycle/TrainingLifecycleUseCases.ts",
+      "sha256": "daf50580565025baa00ed085c6f367989f7598ede442c879ddba6c07d3c95630"
+    },
+    {
+      "path": "src/application/trainingLifecycle/contracts.ts",
+      "sha256": "12f102a04d0e0c22db155a962e11c845475ed5a9c40b08474663327076162ee7"
+    },
+    {
+      "path": "src/application/weeklyActivityIntegration.test.ts",
+      "sha256": "9a990cca7313b68f0b0161897b1e469791bb6eddec70ec83b250880997a4c530"
+    },
+    {
+      "path": "src/features/analytics/analyticsProjections.test.ts",
+      "sha256": null
+    },
+    {
+      "path": "src/features/analytics/analyticsService.ts",
+      "sha256": null
+    },
+    {
+      "path": "src/features/exam/ResultScreen.tsx",
+      "sha256": "acf37c68977ba6d814873bf1cbec4d7fde08258f79e460bbd7bece87b41c20f7"
+    },
+    {
+      "path": "src/features/home/GoalCadenceScreen.tsx",
+      "sha256": "2788373de46dc5d60164670c2bae8ac3acd584839c1c921aa393f809a6d21963"
+    },
+    {
+      "path": "src/features/home/tabs/HomeTab.tsx",
+      "sha256": "24c1b741297d0a2070e85ed9efbfe38e7a108c049dee26078e8577bec15db3f6"
+    },
+    {
+      "path": "src/features/home/tabs/SettingsTab.tsx",
+      "sha256": "7108f7f4f151a716fae1b6b13988ac0e88a4f301f0634f453811e5ece6e8ff5f"
+    },
+    {
+      "path": "src/features/home/tabs/homeOverviewPresentation.ts",
+      "sha256": "efa829119546fd92522a45768ea2f4521d9b23677867366c39f8ee7288a26443"
+    },
+    {
+      "path": "src/features/home/tabs/homeTabModel.test.ts",
+      "sha256": "402163eca65dada0b632d8aa8bc5d5e8434235dfda069a81980d00359d310dce"
+    },
+    {
+      "path": "src/features/home/tabs/homeTabModel.ts",
+      "sha256": "03ed7c417d37e585760e11e22b583d52beb41f3f694b4a1d1881c12b553880f3"
+    },
+    {
+      "path": "src/features/home/tabs/progressOverallCredit.test.ts",
+      "sha256": "87b7cc66f84ccba81e36520076d325d0aed79857054af4c50a2b6be6c77127a3"
+    },
+    {
+      "path": "src/features/practice/practiceFlowPresentation.ts",
+      "sha256": "8fe99d4c1a1598a7dbf65dc10f9b1fa5155a114a182a242ad11c0796394a9ba4"
+    },
+    {
+      "path": "src/features/practice/practiceSessionConfig.test.ts",
+      "sha256": "c1bff0586ccbb15eaa7d77aa840d68662b8b63d6ee7ba7ac4fe4db85a9f8dd75"
+    },
+    {
+      "path": "src/features/review/MistakesReviewScreen.tsx",
+      "sha256": "24bfc6eac6f6b4dc4ca6c22ce1e92863b4071441176c403562261c1c65311d86"
+    },
+    {
+      "path": "src/features/review/MistakesReviewView.tsx",
+      "sha256": "1de96f28ecc72d945aa79e76bd8fe5ea7e36bfcee97dd19a8af11e151b756c9f"
+    },
+    {
+      "path": "src/features/review/trackPresentation.test.ts",
+      "sha256": "555dbe96f8a94a92897752fa17b87868e604f679804902b361944fc552e9905c"
+    },
+    {
+      "path": "src/locales/de/settings.json",
+      "sha256": "749ec19ce45cdbab124c287f1c2d183a0a33ddd175bf8da9937737c8a2300bae"
+    },
+    {
+      "path": "src/locales/en/settings.json",
+      "sha256": "51d2f0fe44eaaeb4356df44ce49410649a46ee26c18b61d34494c72d9e698973"
+    },
+    {
+      "path": "src/locales/es/settings.json",
+      "sha256": "03b778a68088994e005c99c57f1e61ef111f150da1937ec896ed7c7f32d54ec2"
+    },
+    {
+      "path": "src/locales/et/settings.json",
+      "sha256": "f9b7490a9b8c7b0208a08c1a8a2690f9ddb5293eb4b031bd8eedaebb021e70e1"
+    },
+    {
+      "path": "src/locales/fr/settings.json",
+      "sha256": "05d56a39a01f24f2d5a20ad1b2a56dcdfb1fcb1821862056f9c4990c611afa81"
+    },
+    {
+      "path": "src/locales/it/settings.json",
+      "sha256": "d2e879c13e302b52dbac4c8e95cbcd3a5bad03bda61a002e2a84a8a7a4989199"
+    },
+    {
+      "path": "src/locales/pl/settings.json",
+      "sha256": "718acfc42228fdf849a25293c3b97fe7adb3e0086e577d5f32ebae5e2fbd6f20"
+    },
+    {
+      "path": "src/testing/Perf06ListFixtureRoot.smoke.tsx",
+      "sha256": "b766f370d103c29b49600bc34b72150fa78d52f02e11a65043386cab4d96b803"
+    },
+    {
+      "path": "src/tracks/certification/certificationResultPresentation.test.ts",
+      "sha256": "6e68f9118c05102613e9c621e7fff5b6f1ffee928a45c124e1d514b8f5fd2004"
+    }
+  ],
+  "sharedTrackedWipIntentionallyAdjusted": [
+    "docs/specs/engineering/architecture.md",
+    "src/features/home/HomeScreen.tsx",
+    "src/features/home/tabs/ProgressTab.tsx",
+    "src/features/home/tabs/cloudProgressDomainMetadata.test.ts",
+    "src/features/home/tabs/progressProjection.test.ts",
+    "src/features/home/tabs/progressTabModel.ts",
+    "src/features/practice/practiceFlowModel.ts"
+  ],
+  "preservedContentPins": [
+    {
+      "path": "integration/contracts/content-release/local-claude/claude-course-alignment-acceptance-2026-10-11.md",
+      "sha256": "a38fdbcfd77923c1c93abad2a25c08f13fbdec88f0c1d71a137545d7b5dd2080"
+    },
+    {
+      "path": "integration/contracts/content-release/local-claude/claude-local-candidate-2026-10-11.json",
+      "sha256": "5136796ed3e47dc5f2002df0bfc39ad13a15bedb59590f5056c74be1b7b15c4e"
+    },
+    {
+      "path": "integration/contracts/content-release/local-claude/claude-unit-coverage-acceptance-2026-10-11.md",
+      "sha256": "b50990a544e6ab0af624e1443107d618bcdb8192da5eb15c6f701d738e33e27d"
+    },
+    {
+      "path": "integration/contracts/content-release/local-claude/qle-v2-acceptance.json",
+      "sha256": "9aa2a525eae6ff55f3b6b01ca94fd9225ab498fe748cb693d6d431253eb13aff"
+    },
+    {
+      "path": "integration/contracts/content-release/local-claude/qle-v2-contract.md",
+      "sha256": "dc9e56f4c5c552c0a654685edd335af19d3f430ca9666d5798bcd0109f28a233"
+    },
+    {
+      "path": "integration/contracts/content-release/release.lock.historical-0024.json",
+      "sha256": "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195"
+    },
+    {
+      "path": "integration/contracts/content-release/release.lock.json",
+      "sha256": "22f3ef64cb3801bc0345b8d8bf6f8b656bd6579c6a46816b5ce9c0b30f5e8823"
+    },
+    {
+      "path": "src/content/generated/README.md",
+      "sha256": "d3847cd528df351cae58df11f1460164442549e23b1a0e96db4efa1598c13e85"
+    },
+    {
+      "path": "src/content/generated/canonical-content/aws-certified-solutions-architect-associate.json",
+      "sha256": "350dc44eed14c7087bfdd79196d84d5ca16c606b449536f8c35078b4116a6fc6"
+    },
+    {
+      "path": "src/content/generated/canonical-content/backend-system-design-interview.json",
+      "sha256": "b583803be9ac81c4e0e4b0b115086177867bad0aaab3b519a01bbbed3261b421"
+    },
+    {
+      "path": "src/content/generated/canonical-content/claude-certified-architect-professional-certification.json",
+      "sha256": "364ead796c19ee378e0ef7a5c47d80da69f0c3af694e2107d58ad6061f3ff80c"
+    },
+    {
+      "path": "src/content/generated/canonical-content/coding-interview-dsa-problem-solving.json",
+      "sha256": "73178e6205688aae2e830975fc0fa7eb78197b8f291b0cae0046300f7156b173"
+    },
+    {
+      "path": "src/content/generated/canonical-content/content-lock.json",
+      "sha256": "4e27acc32ee463f6ee1f61e838d766a3cdb8057c63c5e1aa64a5e4c96c393cb8"
+    },
+    {
+      "path": "src/content/generated/canonical-content/content-successor-ledger.json",
+      "sha256": "856cb965e1cc7381129dddf40fb09aae2d0b2159dd6ff8f6dddf896a0b097e47"
+    },
+    {
+      "path": "src/content/generated/canonical-content/frontend-system-design-interview.json",
+      "sha256": "48b295c98c7d7ff18df35e26a30690704d0cb4cdd74989cedc887cdcb62def37"
+    },
+    {
+      "path": "src/content/generated/canonical-content/google-cloud-associate-cloud-engineer.json",
+      "sha256": "e399212abf92bac30edcfb1aa04b170306469a8b2a1eab57b8f80f1ee7b37d82"
+    },
+    {
+      "path": "src/content/generated/canonical-content/microsoft-azure-administrator-associate-az-104.json",
+      "sha256": "67fbb6dd4866c21f8e26b98b215ab4a49f099b334e6dbc789e80c6de3c5fb0d8"
+    },
+    {
+      "path": "src/content/generated/canonical-content/microsoft-azure-ai-fundamentals-ai-901.json",
+      "sha256": "e52b885248eb200f0a60730e36640befad84a62780b9f8e3903377eb30e28172"
+    },
+    {
+      "path": "src/content/generated/canonical-content/object-oriented-design-interview.json",
+      "sha256": "1a798d2b5a84f5e66898b34db33cde2c8384a254c1630a10889f082d132c6ee1"
+    },
+    {
+      "path": "src/content/generated/premium-node-offer.json",
+      "sha256": "839aeb1bd5198a20580bda3655db68dabe1fa3e5f67aafe7144a6297fddbe481"
+    },
+    {
+      "path": "src/content/generated/retained-content/claude-pre-qle-v2.json",
+      "sha256": "149afda8628dfb79f109eaeb760dc41dfcbacdaa5bd9f59a3c2e7a88bf2151ff"
+    },
+    {
+      "path": "src/content/generated/retained-content/claude-qle-v2-before-identity.json",
+      "sha256": "4aec030c921e333adca9dfddb768859a36b06cb2aa4c5f6bd201c9ade27d8bd1"
+    },
+    {
+      "path": "src/content/generated/retained-content/claude-qle-v2-first-cases.json",
+      "sha256": "bd0f5191998108b3d1d651358dd9d4be486543d64e12167d6489adb44fc718cf"
+    }
+  ]
+}

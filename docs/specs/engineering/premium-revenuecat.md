@@ -1,6 +1,6 @@
 # Premium i RevenueCat — połączenie oraz pełny przebieg zakupu
 
-Status: projekt16, backend17, APP18 i transport/oferta/native19 lokalnie odebrane; **20 PASS po zmianie zakresu właściciela15.10** (readback i przygotowany diff); wykonanie pozostałych usług przeniesione do **Post internal testing**, odbiór wydania nadal osobno. [Readback, dokładny diff i braki20](../../reports/premium-rc20-2026-10-15.md). Źródło: prośba właściciela z 13.10.2026 o sprawdzenie Apple/Google i dodanie zadania integracji. Priorytet: prostota rozwoju i utrzymania przez jedną osobę. Kolejka i termin: [plan](../../../../docs/PATTERNLY-WORKING-PLAN.md). Historyczny audyt solo z 13.10 jest niedostępny po porządkach; aktualne dowody i decyzja wycinka16 znajdują się poniżej.
+Status: projekt16, backend17, APP18 i transport/oferta/native19 lokalnie odebrane; **20 PASS po zmianie zakresu właściciela15.10** (readback i przygotowany diff); wykonanie pozostałych usług przeniesione do **Post internal testing**, odbiór wydania nadal osobno. [Readback, dokładny diff i braki20](../../reports/premium-rc20-2026-10-15.md). Źródło: prośba właściciela z 13.10.2026 o sprawdzenie Apple/Google i dodanie zadania integracji. Priorytet: prostota rozwoju i utrzymania przez jedną osobę. Kolejka i termin: [plan](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Historyczny audyt solo z 13.10 jest niedostępny po porządkach; aktualne dowody i decyzja wycinka16 znajdują się poniżej.
 
 ## Cel i granice
 

@@ -1,0 +1,12 @@
+appId: com.lkurczab.patternly.sec03
+name: ARCH07 isolated reset recovery delta
+---
+- extendedWaitUntil:
+    visible: "Stage: complete"
+    timeout: 60000
+- assertVisible: "PERSIST-13 reset recover: observed"
+- assertVisible: "Bootstrap ready: true"
+- assertVisible: "Journal absent: true"
+- assertVisible: "Targets absent: true"
+- assertVisible: "Preserved equal: true"
+- assertVisible: "Fixture cleanup: true"

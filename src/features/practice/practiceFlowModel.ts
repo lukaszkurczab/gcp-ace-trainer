@@ -15,11 +15,8 @@ import {
   ALGORITHM_ROADMAP,
   getAlgorithmMode,
 } from "../../tracks/coding-interview";
-import type { CloudCertificationProgressViewModel } from "../../tracks/certification";
 import type { CertificationModeId } from "../../tracks/certification";
 import { getDesignModeTitle } from "../../tracks/design-interview";
-import { getDomainLabel } from "../../utils";
-import type { AnalyticsData } from "../analytics/analyticsService";
 import type { CanonicalPracticeModeId } from "../../application/practice/practiceModeContract";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
@@ -84,20 +81,6 @@ export type PracticeModeModel = {
   unavailableReason?: string;
 };
 
-export type PracticeStatsSummary = {
-  detail:
-    | Readonly<{ key: string; kind: "key" }>
-    | Readonly<{
-        correctCount: number;
-        incorrectCount: number;
-        kind: "algorithm-outcomes";
-        partialCount: number;
-      }>;
-  metricLabel: string;
-  metricValue: string;
-  trackTitle: string;
-};
-
 export type TopicRoadmapNodeModel = {
   detail: TopicRoadmapDetail;
   id: string;
@@ -142,7 +125,6 @@ export function resolvePracticeFlowRegistration(
           );
       }
     case "certification":
-      if (registration.id === "google-cloud-associate-cloud-engineer") return "certification";
       try {
         contentPackageRuntimeOwner.getPreparedDiscovery(registration.id);
         return "certification";
@@ -211,7 +193,7 @@ export function getCurrentPracticeTopic(
           trackTitle: track.display.shortTitle,
         },
         id: freeNodeId,
-        title: { kind: "authored", value: knownTopic?.title ?? getDomainLabel(freeNodeId) },
+        title: { kind: "authored", value: knownTopic?.title ?? "Domain metadata unavailable" },
       };
     }
     case "design_interview": {
@@ -223,7 +205,7 @@ export function getCurrentPracticeTopic(
           trackTitle: track.display.shortTitle,
         },
         id: freeNodeId,
-        title: { kind: "authored", value: getTrackRoadmapCatalog(activeTrack.id).find((topic) => topic.id === freeNodeId)?.title ?? getDomainLabel(freeNodeId) },
+        title: { kind: "authored", value: getTrackRoadmapCatalog(activeTrack.id).find((topic) => topic.id === freeNodeId)?.title ?? "Domain metadata unavailable" },
       };
     }
   }
@@ -265,26 +247,6 @@ export function resolvePracticeTopic(input: {
     getTrackDisplay(input.activeTrackId),
     input.trainingAttempts,
   );
-}
-
-export function hasTrackProgress(input: {
-  activeTrackId: TrackId;
-  analytics: AnalyticsData;
-  trainingAttempts: readonly TrainingAttempt[];
-}): boolean {
-  const track = resolvePracticeFlowTrack(input.activeTrackId);
-
-  switch (track.kind) {
-    case "coding_interview":
-      return currentAttemptsForCanonicalTrack(input.trainingAttempts, track.display.id).length > 0;
-    case "certification":
-      return (
-        input.analytics.summary.totalPracticeQuestionsAnswered > 0 ||
-        input.analytics.summary.totalCompletedExams > 0
-      );
-    case "design_interview":
-      return currentAttemptsForCanonicalTrack(input.trainingAttempts, track.display.id).length > 0;
-  }
 }
 
 export function buildPracticeModes(activeTrack: TrackDisplay, hasReviewEvidence = false): PracticeModeModel[] {
@@ -360,84 +322,6 @@ export function buildPracticeModes(activeTrack: TrackDisplay, hasReviewEvidence 
         { enabled: hasReviewEvidence && availability("design-interview-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "design-interview-weak-area-review", title: getDesignModeTitle("design-interview-weak-area-review"), tone: "danger" },
       ];
       }
-  }
-}
-
-export function buildPracticeStatsSummary(input: {
-  activeTrack: TrackDisplay;
-  analytics: AnalyticsData;
-  cloudProgress?: CloudCertificationProgressViewModel | null;
-  trainingAttempts: readonly TrainingAttempt[];
-}): PracticeStatsSummary {
-  const track = resolvePracticeFlowTrack(input.activeTrack.id);
-
-  switch (track.kind) {
-    case "coding_interview": {
-      const progress = canonicalOutcomeFacts(input.trainingAttempts);
-
-      return {
-        detail: {
-          correctCount: progress.correctCount,
-          incorrectCount: progress.incorrectCount,
-          kind: "algorithm-outcomes",
-          partialCount: progress.partialCount,
-        },
-        metricLabel: "Items practiced",
-        metricValue: String(progress.itemsCompleted),
-        trackTitle: track.display.shortTitle,
-      };
-    }
-    case "certification": {
-      const totalAttempts = input.cloudProgress?.totalAttempts ??
-        input.analytics.summary.totalPracticeQuestionsAnswered;
-
-      return {
-        detail: {
-          key: "Progress, weak areas, and local practice history.",
-          kind: "key",
-        },
-        metricLabel: "Answered",
-        metricValue: String(totalAttempts),
-        trackTitle: track.display.shortTitle,
-      };
-    }
-    case "design_interview": {
-      const attemptCount = currentAttemptsForCanonicalTrack(input.trainingAttempts, track.display.id).length;
-      return {
-        detail: { key: "Progress, weak areas, and local Design Interview practice history.", kind: "key" },
-        metricLabel: "Answered",
-        metricValue: String(attemptCount),
-        trackTitle: track.display.shortTitle,
-      };
-    }
-  }
-}
-
-export function buildTrackProgressPercent(input: {
-  activeTrackId: TrackId;
-  analytics: AnalyticsData;
-  trainingAttempts: readonly TrainingAttempt[];
-}): number {
-  const track = resolvePracticeFlowTrack(input.activeTrackId);
-
-  switch (track.kind) {
-    case "coding_interview": {
-      const progress = canonicalOutcomeFacts(input.trainingAttempts);
-      const totalItems = codingPackageContent().items.length;
-
-      return totalItems > 0
-        ? Math.round((progress.itemsCompleted / totalItems) * 100)
-        : 0;
-    }
-    case "certification": {
-      const answered = input.analytics.summary.totalPracticeQuestionsAnswered;
-
-      return Math.min(100, Math.round((answered / 50) * 100));
-    }
-    case "design_interview": {
-      const answered = currentAttemptsForCanonicalTrack(input.trainingAttempts, track.display.id).length;
-      return Math.min(100, Math.round((answered / 50) * 100));
-    }
   }
 }
 

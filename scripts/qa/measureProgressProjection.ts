@@ -29,7 +29,7 @@ async function main() {
         id: `perf02-review:${i}`, trackId: trackId as ReviewQueueEntry["trackId"], sourceAttemptId: `perf02-source:${i}`, sourceSessionId: "perf02-session",
         sourceItem: { trackId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256, questionId: track.questions[i % track.questions.length]!.questionId }, taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], createdAt: "2026-01-01T00:00:00.000Z", dueAt: i % 2 ? "2026-02-01T00:00:00.000Z" : "2026-01-01T00:00:00.000Z", persistent: false, consecutiveAfterDueSuccesses: 0, policyVersion: "bizq04-v1", stage: "retention7", status: "active",
       }));
-      const input: BuildProgressTabModelInput = { activeTrackId: track.trackId, analytics: {} as never, attempts: [], activityRecords: [], practiceHistory: [], trainingAttempts: attempts, reviewQueueItems: reviews, now: "2026-01-15T00:00:00.000Z", timezone: "UTC" };
+      const input: BuildProgressTabModelInput = { activeTrackId: track.trackId, activityRecords: [], trainingAttempts: attempts, reviewQueueItems: reviews, now: "2026-01-15T00:00:00.000Z", timezone: "UTC" };
       const inputSha256 = hash(input);
       stage = "projection_measurement";
       for (let i = 0; i < warmups; i++) buildProgressTabModel(input);

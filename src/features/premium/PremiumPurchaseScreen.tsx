@@ -8,8 +8,8 @@ import { usePatternlyAccount } from "../../application/account/AccountSessionPro
 import { Button, Icon, InfoBlock, Screen, ScreenHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { createPurchasesAdapter, createRevenueCatGateway, readPurchaseConfig, type PurchasesAdapter, type RevenueCatPackage } from "../../infrastructure/purchases";
-import { createPremiumPurchaseCoordinator, type PremiumPurchaseActor, type PremiumPurchaseState } from "../../application/account/premiumPurchaseCoordinator";
-import { capturePremiumPurchaseJournal } from "../../storage/repositories/premiumPurchaseAttemptRepository";
+import type { PremiumPurchaseActor, PremiumPurchaseState } from "../../application/account/premiumPurchaseCoordinator";
+import { composePremiumPurchaseCoordinator } from "../../application/account/premiumPurchaseComposition";
 import { legalVariables } from "../../legal/legalVariables";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -42,8 +42,8 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
     return config ? createPurchasesAdapter(createRevenueCatGateway(), { config, platform: Platform.OS, isCurrent: actor.isCurrent }) : null;
   }, [actor]);
   const foregroundRef = useRef({ active: AppState.currentState === "active", epoch: 0 });
-  const coordinator = useMemo(() => actor && adapter ? createPremiumPurchaseCoordinator({
-    actor, adapter, journal: capturePremiumPurchaseJournal(actor.accountId, actor.isCurrent),
+  const coordinator = useMemo(() => actor && adapter ? composePremiumPurchaseCoordinator({
+    actor, adapter,
     monotonicNow: () => performance.now(),
     dispatchEpoch: () => foregroundRef.current.active ? foregroundRef.current.epoch : null,
   }) : null, [actor, adapter]);

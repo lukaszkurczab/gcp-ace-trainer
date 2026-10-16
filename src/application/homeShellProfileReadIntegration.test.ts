@@ -4,6 +4,10 @@ import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import vm from "node:vm";
 import ts from "typescript";
+import { composeTrainingLifecycleUseCases } from "./bootstrap/trainingLifecycleComposition";
+import { projectHomePractice } from "./homePracticeProjection";
+import { projectProgressEvidence } from "./learningPlan/progressReadProjection";
+import { isLocalLearningProjectionFailure, requireHomePlanReadIntegrity } from "./learningProjectionFailure";
 import * as reads from "./learningReadModels";
 import { loadActivitySessionRecords } from "./activityReadModels";
 import { captureProfileReadFence } from "./profileReadFence";
@@ -45,13 +49,13 @@ async function runHome(
   const context = {
     isActive: true, accountRef: { current: { state: { kind: "guest" }, readCurrentPremiumAccess: () => "denied" } },
     getActiveTrackId: reads.loadActiveTrackId, getAttempts: reads.loadExamSummaries, getPracticeHistory: reads.loadPracticeHistory,
-    loadActiveTrainingSession: reads.loadActiveTrainingSession, loadCloudCertificationProgressViewModel: reads.loadCloudCertificationProgress,
+    loadActiveTrainingSession: reads.loadActiveTrainingSession,
     getReviewQueueItems: reads.loadReviewQueueItems, getTrainingAttempts: reads.loadTrainingAttempts,
-    loadActivitySessionRecords, homePlanSnapshotReader, captureProfileReadFence, captureHomeShellReadFence,
+    loadActivitySessionRecords, homePlanSnapshotReader, captureProfileReadFence, captureHomeShellReadFence, projectProgressEvidence, projectHomePractice, isLocalLearningProjectionFailure, requireHomePlanReadIntegrity,
     loadGoal: async (trackId: string) => { const result = await reads.loadGoal(trackId); await changeAfterGoal(); return result; },
     loadGoalOnboardingDismissed: reads.loadGoalOnboardingDismissed,
-    loadCodingInterviewDashboard: async () => {
-      try { return await reads.loadCodingInterviewDashboard(); }
+    loadCodingInterviewDashboard: async (input: Parameters<typeof reads.loadCodingInterviewDashboard>[0]) => {
+      try { return await reads.loadCodingInterviewDashboard(input); }
       finally { await changeAfterDashboard(); }
     },
     getApplicationCurrentTime: () => "2026-10-09T12:00:00.000Z",
@@ -76,10 +80,18 @@ test("actual Home command rejects profile changes after Activity reads and befor
   }
   try {
     await select("home-read-fixture-a"); await contentPackageRuntimeOwner.verifyBundledPackages();
+    composeTrainingLifecycleUseCases({ wallClock: { now: () => "2026-10-09T12:00:00.000Z" } });
     const track = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID).track;
     const item = { trackId: CODING_INTERVIEW_TRACK_ID, questionId: track.questions[0]!.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
     await addTrainingAttempt(createTrainingAttempt({ id: "a-answer", sessionId: "a-answer", trackId: CODING_INTERVIEW_TRACK_ID, modeId: track.modes[0]!.modeId, occurrenceId: "a-answer", item,
       response: { answer: "fixture" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-10-01T10:00:00.000Z", committedAt: "2026-10-01T10:00:00.000Z" }), productionTrackAdmissionContext);
+    await t.test("persisted durable facts feed the application/family projection", async () => {
+      const projection = projectProgressEvidence({ activeTrackId: CODING_INTERVIEW_TRACK_ID, trainingAttempts: (await reads.loadTrainingAttempts()).value, reviewQueueItems: (await reads.loadReviewQueueItems()).value, now: "2026-10-09T12:00:00.000Z" });
+      assert.equal(projection.algorithmsProgress?.diagnostics.outcomeSummary[0]?.value, 1);
+      assert.equal(projection.identity.artifactSha256, track.artifactSha256);
+      const snapshot = await homePlanSnapshotReader.read({ trackId: CODING_INTERVIEW_TRACK_ID, now: "2026-10-09T12:00:00.000Z", premiumAccess: "denied" });
+      requireHomePlanReadIntegrity(snapshot);
+    });
     await t.test("same profile publishes actual persisted answers", async () => {
       const unchanged = await runHome(async () => {});
       assert.equal(unchanged.readError, null);

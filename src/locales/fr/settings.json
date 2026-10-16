@@ -56,8 +56,6 @@
   "reminders": "Rappels",
   "remindersDetail": "Configurez vos rappels d’entraînement.",
   "version": "Version",
-  "storageDegraded": "Données locales dégradées",
-  "storageStatus": "État du stockage",
   "preferencesSecurity": "Préférences et sécurité",
   "guestIdentity": "Invité",
   "recoveryCodes": "Codes de récupération",

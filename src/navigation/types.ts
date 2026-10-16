@@ -32,7 +32,7 @@ export type RootStackParamList = {
   [ROUTES.PRACTICE_HUB]: { topicId?: string; trackId?: TrackId } | undefined;
   [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home"; targetMentalUnitId?: string };
   [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;
-  [ROUTES.EXAM]: { expectedSessionId?: string } | undefined;
+  [ROUTES.EXAM]: { trackId: TrackId; expectedSessionId?: string };
   [ROUTES.EXAM_REVIEW]: { sessionId: string };
   [ROUTES.RESULT]: { sessionId: string };
   [ROUTES.PRACTICE_SETUP]: (Partial<PracticeSessionRouteParams> & Readonly<{

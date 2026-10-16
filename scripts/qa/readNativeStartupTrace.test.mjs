@@ -1,7 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { parseOrigin, selectTarget, validateTrace, heapResult, request } from "./readNativeStartupTrace.mjs";
+import { parseOrigin, selectTarget, validateTrace, validateStartupTiming, heapResult, request } from "./readNativeStartupTrace.mjs";
+
+test("optional native startup timestamps retain unavailable boundaries and reject false numbers/payloads", () => {
+  const timing = { bundlePreludeMs: 10, nativeBeforeMs: 20, performanceMs: 20, nativeAfterMs: 21, startTime: null, initializeRuntimeStart: 1, executeJavaScriptBundleEntryPointStart: 2, endTime: 15 };
+  assert.deepEqual(validateStartupTiming(timing), timing);
+  assert.equal(validateStartupTiming({ ...timing, endTime: null }).endTime, null);
+  for (const bad of [{ ...timing, endTime: NaN }, { ...timing, endTime: -1 }, { ...timing, endTime: undefined }, { ...timing, payload: "private" }, {}]) assert.throws(() => validateStartupTiming(bad), /timing_rejected/);
+});
 
 test("origins must be loopback with explicit port and no extra URL capabilities", () => {
   for (const value of ["https://localhost:8082", "http://remote.test:8082", "http://user@localhost:8082", "http://localhost:8082/path", "http://localhost:8082/?query=1"]) assert.throws(() => parseOrigin(value));

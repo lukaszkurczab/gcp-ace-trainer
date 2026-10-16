@@ -1,45 +1,11 @@
-import {
-  accumulateTrainingSessionForegroundTime,
-  advanceTrainingSession,
-  areTrainingSessionConfigurationsEqual,
-  resolvedContentRefsEqual,
-  type TrainingAttempt,
-  type TrainingSession,
-} from "../../domain";
-import { getActiveTrainingSession, saveTrainingSession } from "../../storage/repositories";
-import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { resolvedContentRefsEqual, type TrainingAttempt, type TrainingSession } from "../../domain";
 
-export type TrainingSessionPersistenceBoundary = Readonly<{
-  getActive(): Promise<TrainingSession | null>;
-  save(session: TrainingSession): Promise<void>;
-}>;
-
-const canonicalPersistence: TrainingSessionPersistenceBoundary = {
-  getActive: () => getActiveTrainingSession(productionTrackAdmissionContext),
-  save: (session) => saveTrainingSession(session, productionTrackAdmissionContext),
-};
-
-export class TrainingSessionStartError extends Error {}
 export class TrainingSessionProgressError extends Error {}
-export class TrainingSessionOptionPlanError extends Error {}
 
 export type TrainingSessionProgress<Response = unknown> = Readonly<{
   attempts: readonly TrainingAttempt<Response>[];
   currentAttempt: TrainingAttempt<Response> | null;
 }>;
-
-export function assertTrainingSessionOptionPlan(
-  session: TrainingSession,
-  expectedOptionIdsByOccurrence: Readonly<Record<string, readonly string[]>>,
-): void {
-  for (const [occurrenceId, expectedIds] of Object.entries(expectedOptionIdsByOccurrence)) {
-    const durableIds = session.optionOrderByOccurrence[occurrenceId];
-    if (!durableIds || durableIds.length !== expectedIds.length || new Set(durableIds).size !== durableIds.length ||
-      durableIds.some((id) => !expectedIds.includes(id)) || expectedIds.some((id) => !durableIds.includes(id))) {
-      throw new TrainingSessionOptionPlanError(`Durable option plan for ${occurrenceId} does not match the active content item occurrence.`);
-    }
-  }
-}
 
 export function getTrainingSessionProgress<Response>(
   session: TrainingSession,
@@ -67,52 +33,6 @@ export function getTrainingSessionProgress<Response>(
   };
 }
 
-export async function startOrResumeTrainingSession(
-  candidate: TrainingSession,
-  persistence: TrainingSessionPersistenceBoundary = canonicalPersistence,
-): Promise<TrainingSession> {
-  const active = await persistence.getActive();
-  if (active) {
-    if (active.trackId !== candidate.trackId) throw new TrainingSessionStartError(`Active ${active.trackId} session must be completed or abandoned first.`);
-    if (active.modeId !== candidate.modeId) throw new TrainingSessionStartError("The active session mode does not match this practice setup.");
-    if (active.contentVersion !== candidate.contentVersion) throw new TrainingSessionStartError("The active session content version no longer matches the active content bank.");
-    if (!areTrainingSessionConfigurationsEqual(active.configurationSnapshot, candidate.configurationSnapshot)) {
-      throw new TrainingSessionStartError("The active session configuration does not match this practice setup.");
-    }
-    if (!areItemPlansEqual(active, candidate)) {
-      throw new TrainingSessionStartError("The active session item and option plan does not match this practice setup.");
-    }
-    return active;
-  }
-  await persistence.save(candidate);
-  return candidate;
-}
-
-function areItemPlansEqual(left: TrainingSession, right: TrainingSession): boolean {
-  return JSON.stringify(left.itemOrder) === JSON.stringify(right.itemOrder) &&
-    JSON.stringify(left.optionOrderByOccurrence) === JSON.stringify(right.optionOrderByOccurrence);
-}
-
 function equalItemRef(left: TrainingAttempt["item"], right: TrainingAttempt["item"]): boolean {
   return resolvedContentRefsEqual(left, right);
-}
-
-export async function advanceTrainingSessionDurably(
-  session: TrainingSession,
-  foregroundElapsedMs: number,
-  persistence: Pick<TrainingSessionPersistenceBoundary, "save"> = canonicalPersistence,
-): Promise<TrainingSession> {
-  const next = advanceTrainingSession(accumulateTrainingSessionForegroundTime(session, foregroundElapsedMs));
-  await persistence.save(next);
-  return next;
-}
-
-export async function persistTrainingSessionForegroundTime(
-  session: TrainingSession,
-  foregroundElapsedMs: number,
-  persistence: Pick<TrainingSessionPersistenceBoundary, "save"> = canonicalPersistence,
-): Promise<TrainingSession> {
-  const next = accumulateTrainingSessionForegroundTime(session, foregroundElapsedMs);
-  await persistence.save(next);
-  return next;
 }

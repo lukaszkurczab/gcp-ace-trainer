@@ -1,6 +1,6 @@
 # FCA — coding-interview-dsa-problem-solving
 
-Status i kolejność: [plan główny](../../../PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Każdy opisany problem nadal dotyczy identycznej treści pytania i tej samej taksonomii w źródłach z 07.10.
+Status i kolejność: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Każdy opisany problem nadal dotyczy identycznej treści pytania i tej samej taksonomii w źródłach z 07.10.
 
 ## FCA-EDIT-b258f07035 — coding-interview-dsa-problem-solving/arrays_and_strings/duplicate_handling
 

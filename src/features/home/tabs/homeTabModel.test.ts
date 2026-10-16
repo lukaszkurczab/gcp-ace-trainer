@@ -1,15 +1,14 @@
+import { hasClaudeDueReview } from "../../../application/homePracticeProjection";
 import assert from "node:assert/strict";
 import test, { before } from "node:test";
 
 import { getTrackDisplay } from "../../../domain";
-import type { AnalyticsData } from "../../analytics/analyticsService";
 import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
-import { hasClaudeDueReview, homePlanPlacement, buildHomeTabModel, type HomeRecommendationModel } from "./homeTabModel";
+import { homePlanPlacement, buildHomeTabModel, type HomeRecommendationModel } from "./homeTabModel";
 
 const trackId = "coding-interview-dsa-problem-solving" as const;
 const base = {
   activeTrack: getTrackDisplay(trackId),
-  analytics: {} as AnalyticsData,
   dashboardError: null,
   trainingAttempts: [],
 };

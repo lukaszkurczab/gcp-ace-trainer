@@ -15,6 +15,7 @@ import {
   useSkeletonGlassMotion,
 } from "../../components";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { captureProfileReadFence } from "../../application/profileReadFence";
 import { learningPlanProposalCoordinator, type LearningPlanProposalResult } from "../../application/learningPlan";
 import { loadActiveTrackId, loadGoal, loadLearningPlan, persistGoalPlanStatus } from "../../application/learningReadModels";
 import { reconcileDeviceReminder, reminderNeedsAttention } from "../../preferences";
@@ -142,13 +143,15 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const [minutesPerStudyDay, setMinutesPerStudyDay] = useState<number | null>(null);
   const [dateInput, setDateInput] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [readFailed, setReadFailed] = useState(false);
+  const [readRevision, setReadRevision] = useState(0);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [reminderErrorKind, setReminderErrorKind] = useState<LearningPlanReminderFailure | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [creatingPlan, setCreatingPlan] = useState(false);
   const returnTo: GoalCadenceReturnTo = route.params?.returnTo ?? "progress";
-  const context = t(returnTo === "settings" ? "Settings" : returnTo === "home" ? "Home" : "Progress");
+  const context = t(returnTo === "settings" ? "Settings" : returnTo === "home" ? "Today" : "Progress");
 
   const handleBack = useCallback(() => {
     if (navigation.canGoBack()) {
@@ -162,10 +165,15 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     let active = true;
     setLoading(true);
     setLoadError(null);
+    setReadFailed(false);
     void (async () => {
+      let assertCurrentProfile: (() => void) | undefined;
       try {
+        assertCurrentProfile = captureProfileReadFence();
         const requestedTrackId = route.params?.trackId;
         const savedTrackId = requestedTrackId ?? await loadActiveTrackId();
+        if (!active) return;
+        assertCurrentProfile();
         if (!savedTrackId || !isRegisteredTrackId(savedTrackId)) {
           if (active) {
             setTrackId(null);
@@ -178,6 +186,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           return;
         }
         const [savedGoal, savedPlan] = await Promise.all([loadGoal(savedTrackId), loadLearningPlan(savedTrackId)]);
+        assertCurrentProfile();
         if (active) {
           setTrackId(savedTrackId);
           setGoal(savedGoal);
@@ -189,14 +198,16 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           setLoading(false);
         }
       } catch (error) {
+        try { assertCurrentProfile?.(); } catch { return; }
         if (active) {
           setLoadError(describeOperationalFailure(error, "Goal data is unavailable."));
+          setReadFailed(true);
           setLoading(false);
         }
       }
     })();
     return () => { active = false; };
-  }, [route.params?.trackId]);
+  }, [route.params?.trackId, readRevision]);
 
   const track = useMemo(() => trackId ? getTrackDisplay(trackId) : null, [trackId]);
   const editing = draft !== null;
@@ -326,6 +337,8 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
         scroll={false}
       >
         <EmptyState
+          actionLabel={readFailed ? t("Try again") : undefined}
+          onActionPress={readFailed ? () => setReadRevision((revision) => revision + 1) : undefined}
           description={t(loadError ?? "Goal data is unavailable.")}
           title={t("Goal unavailable")}
         />

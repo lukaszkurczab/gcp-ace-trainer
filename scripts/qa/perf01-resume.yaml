@@ -1,0 +1,17 @@
+# Existing iPhone17, matching current actor/session, English UI. No launch/reset.
+# Dismiss an observed developer warning overlay before starting this flow.
+appId: com.lkurczab.patternly.sec03
+---
+- assertVisible: "Resume session"
+- tapOn: "Resume session"
+- assertVisible: "Guided Practice"
+- assertVisible: "Check answer"
+- takeScreenshot: perf01-resumed-prompt
+- scrollUntilVisible:
+    element:
+      text: "Leave session"
+    direction: DOWN
+- tapOn: "Leave session"
+- assertVisible: "Pause or end this session?"
+- tapOn: "Pause and resume later"
+- assertVisible: "Resume session"

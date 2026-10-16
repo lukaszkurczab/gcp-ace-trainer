@@ -18,7 +18,7 @@ test("abandoned GCP diagnostic preserves its one durable answer and cannot produ
     sessionIds: { create: async () => "gcp-diagnostic-abandoned-lifecycle" },
   });
 
-  const opened = await openCertificationPracticeSession({ modeId: "certification-diagnostic-baseline", requestedLength: 40, source: "diagnostic-lifecycle-integration-test" });
+  const opened = await openCertificationPracticeSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-diagnostic-baseline", requestedLength: 40, source: "diagnostic-lifecycle-integration-test" });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") throw new Error("Expected the GCP diagnostic session to start.");
   assert.equal(opened.projection.total, 40);
@@ -52,7 +52,7 @@ test("Certification exact abandonment retry routes a later durable phase failure
   composeTrainingLifecycleUseCases({
     sessionIds: { create: async () => "gcp-diagnostic-abandonment-later-phase" },
   });
-  const opened = await openCertificationPracticeSession({ modeId: "certification-diagnostic-baseline", requestedLength: 40, source: "diagnostic-abandonment-recovery-test" });
+  const opened = await openCertificationPracticeSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-diagnostic-baseline", requestedLength: 40, source: "diagnostic-abandonment-recovery-test" });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") throw new Error("Expected the GCP diagnostic session to start.");
   const lifecycle = getTrainingLifecycleUseCases();

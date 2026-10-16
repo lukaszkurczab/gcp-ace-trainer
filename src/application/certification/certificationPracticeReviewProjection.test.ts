@@ -40,6 +40,8 @@ test("completed practice projector preserves the canonical five-state answer mat
   assert.deepEqual(fixture.projection.items.slice(0, 5).map((item) => item.result), ["correct", "incorrect", "correct", "partial", "incorrect"]);
   assert.deepEqual(fixture.projection.items.slice(0, 5).map((item) => item.selectionMode), ["single", "single", "multiple", "multiple", "multiple"]);
   assert.equal(fixture.projection.total, 10);
+  assert.equal(fixture.projection.maxPoints, 22);
+  assert.equal(fixture.projection.maxPoints, fixture.attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0));
   assert.equal(fixture.projection.items[2]?.selectedOptionIds.join(","), "b,d");
   assert.equal(fixture.projection.items[3]?.selectedOptionIds.length, 1);
   assert.equal(fixture.projection.overallPointsEarned, fixture.attempts.filter((attempt) => attempt.result.kind === "correct").reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0));

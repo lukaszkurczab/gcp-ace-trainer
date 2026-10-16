@@ -1,6 +1,6 @@
 # Q13 — aktualizacja pakietu przy aktywnej sesji
 
-Priorytet i status: [plan główny](../../PATTERNLY-WORKING-PLAN.md), BIZQ-01. Cel i AC: [Q13 w specyfikacji](../business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md). To pozostały rzeczywisty odbiór, bez nowej redakcji OOD.
+Priorytet i status: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md), BIZQ-01. Cel i AC: [Q13 w specyfikacji](../business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md). To pozostały rzeczywisty odbiór, bez nowej redakcji OOD.
 
 ## Potwierdzony punkt rozpoczęcia07.10
 

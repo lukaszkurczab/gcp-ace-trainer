@@ -117,7 +117,7 @@ const rebuildConflictResolutionSyncPlan = (input: Parameters<typeof rebuildConfl
 const parseGoalCloudState = (value: Parameters<typeof parseGoalCloudStateWithPolicy>[0], track: string) => parseGoalCloudStateWithPolicy(value, track, requireGoalPolicy);
 const dismissLearningPlanRecovery = (accountId: string, incidentId: string) => dismissPersistedLearningPlanRecovery(accountId, incidentId, productionLearningDataAdmissionContext);
 
-export { accountDataRecordFingerprint } from "../../storage/repositories/accountDataRepository";
+export { accountDataRecordFingerprint } from "../../domain/identity/recordFingerprint";
 export { clearAccountDeletionOwnedLocalData } from "../../storage/repositories/accountDataRepository";
 
 function transportGuestMergeSnapshot(snapshot: AccountDataSnapshot): GuestMergeSnapshotRequestDto {

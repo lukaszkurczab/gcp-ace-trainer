@@ -9,8 +9,7 @@ import { openProfileStorageRouter, type ProfileStorageRouter } from "../../infra
 import { activatePreparedProfile, captureActiveProfileStorageLease, getKeyValueStorage, isPersist13StorageOwnerCold, prepareProfileStorage, setProfileStoragePreparationFactoryForTests, closeActiveProfileStorage, type KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { isPersist13LifecycleOwnerCold } from "../trainingLifecycle/applicationLifecycle";
 import { isPersist13TimerOwnerCold } from "../trainingLifecycle/ForegroundSessionTimerFacade";
-import { isPersist13ResetBarrierCold } from "../learningMutations/commitLearningStateReset";
-import { clearPatternlyLocalHistory } from "../../features/home/localReset";
+import { commitLearningStateReset, isPersist13ResetBarrierCold } from "../learningMutations/commitLearningStateReset";
 import { getActiveMutationJournal, getActiveTrainingSession, getActiveTrainingSessionDraft, getReviewQueueItems, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions, provisionGuestInstallation, saveTrainingSessionDraft } from "../../storage/repositories";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
@@ -143,7 +142,7 @@ async function runPersist13Fixture(entry: Persist13Entry, publish: (receipt: Fix
         return new Promise<never>(() => undefined);
       });
       publish({ result: "pending", stage: "seed", targetCount: targetEntries.length, preservedCount: preservedEntries.length });
-      await clearPatternlyLocalHistory();
+      await commitLearningStateReset(new Date().toISOString());
       throw Object.assign(new Error("persist13_reset_pause_not_reached"), { stage: "reset_pause", category: "reset_failed" });
     }
 

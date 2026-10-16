@@ -1,0 +1,244 @@
+TAP version 13
+# Subtest: account snapshot and outbox use one exact canonical identity contract
+ok 1 - account snapshot and outbox use one exact canonical identity contract
+  ---
+  duration_ms: 30.537084
+  type: 'test'
+  ...
+# Subtest: stored account state rejects removed protocol and content schema fields
+ok 2 - stored account state rejects removed protocol and content schema fields
+  ---
+  duration_ms: 0.88975
+  type: 'test'
+  ...
+# Subtest: guest adoption choice is canonical and survives a durable reread
+ok 3 - guest adoption choice is canonical and survives a durable reread
+  ---
+  duration_ms: 0.426708
+  type: 'test'
+  ...
+# Subtest: stored account state fails closed instead of assigning missing outbox sequence
+ok 4 - stored account state fails closed instead of assigning missing outbox sequence
+  ---
+  duration_ms: 2.96875
+  type: 'test'
+  ...
+# Subtest: guest-merge materialization accepts its timestamp-free contract only when active track is unambiguous
+ok 5 - guest-merge materialization accepts its timestamp-free contract only when active track is unambiguous
+  ---
+  duration_ms: 1.386708
+  type: 'test'
+  ...
+# Subtest: Premium test control refuses release runtime without storage access
+ok 6 - Premium test control refuses release runtime without storage access
+  ---
+  duration_ms: 2.605667
+  type: 'test'
+  ...
+# Subtest: Premium test control refuses missing runtime without storage access
+ok 7 - Premium test control refuses missing runtime without storage access
+  ---
+  duration_ms: 0.400792
+  type: 'test'
+  ...
+# Subtest: Premium test control refuses unknown runtime without storage access
+ok 8 - Premium test control refuses unknown runtime without storage access
+  ---
+  duration_ms: 0.363542
+  type: 'test'
+  ...
+# Subtest: Premium test control preserves persistence in sandbox
+ok 9 - Premium test control preserves persistence in sandbox
+  ---
+  duration_ms: 0.453292
+  type: 'test'
+  ...
+# Subtest: Premium test control preserves persistence in smoke
+ok 10 - Premium test control preserves persistence in smoke
+  ---
+  duration_ms: 0.132833
+  type: 'test'
+  ...
+# Subtest: permitted Premium control propagates storage failures and preserves the prior marker
+ok 11 - permitted Premium control propagates storage failures and preserves the prior marker
+  ---
+  duration_ms: 0.230292
+  type: 'test'
+  ...
+# Subtest: shared record vectors preserve historical APP bytes and hashes
+ok 12 - shared record vectors preserve historical APP bytes and hashes
+  ---
+  duration_ms: 2.552625
+  type: 'test'
+  ...
+# Subtest: record profile rejects ambiguous keys and non-JSON values without normalizing text
+ok 13 - record profile rejects ambiguous keys and non-JSON values without normalizing text
+  ---
+  duration_ms: 0.681583
+  type: 'test'
+  ...
+# Subtest: domain SHA and active infrastructure imports share one unchanged UTF-8 implementation
+ok 14 - domain SHA and active infrastructure imports share one unchanged UTF-8 implementation
+  ---
+  duration_ms: 3.675875
+  type: 'test'
+  ...
+# Subtest: backend diagnostics records prerequisite and sync preparation failures before final status
+ok 15 - backend diagnostics records prerequisite and sync preparation failures before final status
+  ---
+  duration_ms: 0.917458
+  type: 'test'
+  ...
+# Subtest: successful backend diagnostics still verify sync apply, deduplication, conflict, and read-after
+ok 16 - successful backend diagnostics still verify sync apply, deduplication, conflict, and read-after
+  ---
+  duration_ms: 0.257834
+  type: 'test'
+  ...
+# Subtest: platform-neutral SHA-256 matches standard UTF-8 vectors
+ok 17 - platform-neutral SHA-256 matches standard UTF-8 vectors
+  ---
+  duration_ms: 1.063833
+  type: 'test'
+  ...
+# Subtest: all seven records round trip with exact QLE first answers, assistance, plan and review
+ok 18 - all seven records round trip with exact QLE first answers, assistance, plan and review
+  ---
+  duration_ms: 687.987542
+  type: 'test'
+  ...
+# Subtest: DTO retry reuses exact fingerprints/IDs; obsolete queued summaries preserve bytes and fail closed
+ok 19 - DTO retry reuses exact fingerprints/IDs; obsolete queued summaries preserve bytes and fail closed
+  ---
+  duration_ms: 186.95675
+  type: 'test'
+  ...
+# Subtest: a real active QLE session stays device-owned and cannot be projected as a terminal fact
+ok 20 - a real active QLE session stays device-owned and cannot be projected as a terminal fact
+  ---
+  duration_ms: 150.359792
+  type: 'test'
+  ...
+# Subtest: active sessions stay local and block account snapshot export
+ok 21 - active sessions stay local and block account snapshot export
+  ---
+  duration_ms: 4.770417
+  type: 'test'
+  ...
+# Subtest: corrupt training evidence blocks account snapshots, outbox reconciliation, and remote replacement without writes
+ok 22 - corrupt training evidence blocks account snapshots, outbox reconciliation, and remote replacement without writes
+  ---
+  duration_ms: 1.628042
+  type: 'test'
+  ...
+# Subtest: canonical account records round trip through remote materialization
+ok 23 - canonical account records round trip through remote materialization
+  ---
+  duration_ms: 1.750042
+  type: 'test'
+  ...
+# Subtest: account sync rejects a goal evaluated under another track's program policy
+ok 24 - account sync rejects a goal evaluated under another track's program policy
+  ---
+  duration_ms: 3.820291
+  type: 'test'
+  ...
+# Subtest: account sync requires a v2 accepted goal-plan pair, including exact target and revision
+ok 25 - account sync requires a v2 accepted goal-plan pair, including exact target and revision
+  ---
+  duration_ms: 64.689667
+  type: 'test'
+  ...
+# Subtest: review cycle history and active obligations survive account snapshot materialization without advancing
+ok 26 - review cycle history and active obligations survive account snapshot materialization without advancing
+  ---
+  duration_ms: 8.559375
+  type: 'test'
+  ...
+# Subtest: remote materialization keeps the newest active track independent of input order and acknowledges both records
+ok 27 - remote materialization keeps the newest active track independent of input order and acknowledges both records
+  ---
+  duration_ms: 2.161583
+  type: 'test'
+  ...
+# Subtest: remote materialization rejects missing or invalid updatedAt
+ok 28 - remote materialization rejects missing or invalid updatedAt
+  ---
+  duration_ms: 0.213125
+  type: 'test'
+  ...
+# Subtest: equal updatedAt selects the same active track using canonical identity
+ok 29 - equal updatedAt selects the same active track using canonical identity
+  ---
+  duration_ms: 0.574708
+  type: 'test'
+  ...
+# Subtest: snapshot and materialization preserve one exact goal-plan bundle
+ok 30 - snapshot and materialization preserve one exact goal-plan bundle
+  ---
+  duration_ms: 3.266
+  type: 'test'
+  ...
+# Subtest: bound account sync validates a goal and learning plan as one sync-plan bundle
+ok 31 - bound account sync validates a goal and learning plan as one sync-plan bundle
+  ---
+  duration_ms: 8.238875
+  type: 'test'
+  ...
+# Subtest: bound account sync builds one retryable canonical outbox and acknowledges it
+ok 32 - bound account sync builds one retryable canonical outbox and acknowledges it
+  ---
+  duration_ms: 1.991084
+  type: 'test'
+  ...
+# Subtest: bound account outbox creates an explicit tombstone for a deleted acknowledged record
+ok 33 - bound account outbox creates an explicit tombstone for a deleted acknowledged record
+  ---
+  duration_ms: 1.520125
+  type: 'test'
+  ...
+# Subtest: reselecting an acknowledged active track tombstones the previously acknowledged track
+ok 34 - reselecting an acknowledged active track tombstones the previously acknowledged track
+  ---
+  duration_ms: 0.912417
+  type: 'test'
+  ...
+# Subtest: pending mutation IDs stay stable across an uncertain retry
+ok 35 - pending mutation IDs stay stable across an uncertain retry
+  ---
+  duration_ms: 1.973458
+  type: 'test'
+  ...
+# Subtest: removed identity metadata is rejected before persistence
+ok 36 - removed identity metadata is rejected before persistence
+  ---
+  duration_ms: 0.246708
+  type: 'test'
+  ...
+# Subtest: deleted records keep their exact durable identity and tombstone state
+ok 37 - deleted records keep their exact durable identity and tombstone state
+  ---
+  duration_ms: 0.156959
+  type: 'test'
+  ...
+# Subtest: device-local Premium flag preserves its exact key/value and unrelated records
+ok 38 - device-local Premium flag preserves its exact key/value and unrelated records
+  ---
+  duration_ms: 1.361083
+  type: 'test'
+  ...
+# Subtest: the stored flag grants only the exact enabled value
+ok 39 - the stored flag grants only the exact enabled value
+  ---
+  duration_ms: 0.088416
+  type: 'test'
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2181.453916

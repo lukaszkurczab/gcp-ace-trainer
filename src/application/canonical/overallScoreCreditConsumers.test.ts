@@ -20,8 +20,13 @@ test("result screens render validated overall credit rather than raw diagnostic 
   assert.match(codingSimulation, /earned: result\.overallPointsEarned/);
 });
 
-test("both progress point numerators use the shared correct-only credit policy", () => {
-  assert.match(progressModel, /import \{ overallScoreCredit \} from "\.\.\/\.\.\/\.\.\/application\/canonical\/overallScoreCredit"/);
-  assert.match(progressModel, /earned: score\.earned \+ overallScoreCredit\(attempt\.result\)/);
-  assert.match(progressModel, /attempts\.reduce\(\(total, attempt\) => total \+ overallScoreCredit\(attempt\.result\), 0\)/);
+test("progress policy owners use shared correct-only credit and UI imports no scorer", () => {
+  const projection = readFileSync("src/application/canonical/canonicalProgressEvidence.ts", "utf8");
+  const coding = readFileSync("src/application/coding-interview/codingProgressProjection.ts", "utf8");
+  assert.match(projection, /earned: score\.earned \+ overallScoreCredit\(attempt\.result\)/);
+  assert.match(coding, /attempts\.reduce\(\(total, attempt\) => total \+ overallScoreCredit\(attempt\.result\), 0\)/);
+  for (const path of ["src/features/home/tabs/HomeTab.tsx", "src/features/home/tabs/homeTabModel.ts"]) {
+    assert.doesNotMatch(readFileSync(path, "utf8"), /scoreCanonicalQuestion|overallScoreCredit|qualifyPackageAttempts|selectSingleCase|isActiveReviewQueueEntry|getApplicationCurrentTime/);
+  }
+  assert.doesNotMatch(progressModel, /overallScoreCredit|scoreCanonicalQuestion|qualifyPackageAttempts|calculateEffectiveness|buildLearningPriority/);
 });

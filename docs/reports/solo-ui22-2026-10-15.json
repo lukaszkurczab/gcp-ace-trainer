@@ -1,0 +1,111 @@
+{
+  "date": "2026-10-15",
+  "prompt": 22,
+  "status": "PASS",
+  "baselineAppSha": "3911c7c0882299ca2d5217c26a67ff24bb574af0",
+  "sourceSha256": {
+    "src/features/home/tabs/HomeTab.tsx": "53183886800e07290ec95c03c447b114b215a02877a2d99fc0d4f5728ac66145",
+    "src/features/home/GoalCadenceScreen.tsx": "2788373de46dc5d60164670c2bae8ac3acd584839c1c921aa393f809a6d21963",
+    "src/features/review/MistakesReviewScreen.tsx": "24bfc6eac6f6b4dc4ca6c22ce1e92863b4071441176c403562261c1c65311d86",
+    "src/features/review/MistakesReviewView.tsx": "1de96f28ecc72d945aa79e76bd8fe5ea7e36bfcee97dd19a8af11e151b756c9f",
+    "scripts/qa/soloUi22/fixture.tsx": "09300afc25465eaf62e05b0b2e8b7a1914578daabaae5b076447ddaadb00e711",
+    "scripts/qa/soloUi22/ports.ts": "e2d91af60881c3f29b66da2067a081aa6feeb14ad3b125cf8f7f7aa628e62e66"
+  },
+  "automated": {
+    "focusedTests": 88,
+    "passed": 88,
+    "failed": 0,
+    "typecheck": "PASS",
+    "contentBoundary": "PASS",
+    "runtimePrivacyBoundary": "PASS",
+    "diffCheck": "PASS",
+    "recoveryCheck": "EXISTING_BASELINE_FAIL: terminalWireFixture imports journalTestSupport; both unchanged against HEAD",
+    "independentQaModel": "gpt-6-luna high",
+    "independentFinalVerdict": "PASS code/local and bounded native smoke; independent final typecheck exit0; screenshots02-07 reviewed"
+  },
+  "native": {
+    "status": "PASS_SCOPED_SMOKE",
+    "simulator": "iPhone 17",
+    "udid": "7F315654-3175-4F3C-BB24-B0263F59360C",
+    "os": "iOS 26.4",
+    "bundleId": "com.lkurczab.patternly.sec03",
+    "installedArtifact": "existing candidate-eventstore.app from prompt21; no build/install/reset in22",
+    "flow": "scripts/qa/soloUi22/smoke.yaml",
+    "maestroExitCode": 0,
+    "sourceCopyMatchesCurrent": true,
+    "regularProfileLoaded": false,
+    "storageOrMutationPortsUsed": false,
+    "fence": "native read-only fixture stub; production fence verified in automated tests",
+    "nativeLocales": [
+      "en",
+      "de"
+    ],
+    "automatedLocales": [
+      "pl",
+      "en",
+      "de",
+      "fr",
+      "es",
+      "it",
+      "et"
+    ],
+    "limits": [
+      "Native fixture tests changed plan panels and Retry controls, not full regular account/storage flow.",
+      "Profile switch/unmount/error race evidence uses actual screen/fence code with controlled hooks and storage scope, not native profile switches.",
+      "Secondary Home recommendation branch is stubbed; its empty primary title in screenshot03 is a fixture limitation, not a claim about real Home model.",
+      "Existing require-cycle LogBox overlays remain visible; no console/global warnings suppressed.",
+      "No Android, full npm test, qa:static, hosted CI, services or release gates."
+    ]
+  },
+  "screenshots": [
+    {
+      "path": "docs/reports/solo-ui22-ios-2026-10-15/01-home-primary-en.png",
+      "sha256": "3d31259abfe61e24646c55bc511d69b6bfdd8a0be1bda8a521b8e7c4be3100ce",
+      "theme": "dark",
+      "locale": "en",
+      "fixture": "soloUi22-in-memory-read-ports"
+    },
+    {
+      "path": "docs/reports/solo-ui22-ios-2026-10-15/02-home-primary-de.png",
+      "sha256": "49239476d525fa42880351cd8c025cc77b6dc369eccae29383be1149800a2e68",
+      "theme": "dark",
+      "locale": "de",
+      "fixture": "soloUi22-in-memory-read-ports"
+    },
+    {
+      "path": "docs/reports/solo-ui22-ios-2026-10-15/03-home-secondary-de.png",
+      "sha256": "743bbb2a376aacaf960c1c8f6799f1da242e9482830cbb10c2972c6273547248",
+      "theme": "dark",
+      "locale": "de",
+      "fixture": "soloUi22-in-memory-read-ports"
+    },
+    {
+      "path": "docs/reports/solo-ui22-ios-2026-10-15/04-review-error.png",
+      "sha256": "5a12da4eed6ea2a71e2f6dfd69e1c1f1013d8e7a4eb2bbde6e146c22890f42d2",
+      "theme": "dark",
+      "locale": "en",
+      "fixture": "soloUi22-in-memory-read-ports"
+    },
+    {
+      "path": "docs/reports/solo-ui22-ios-2026-10-15/05-review-success.png",
+      "sha256": "9a753a657643347641d30e5faa8f70ec0c15c041b815eb1c8ed95836a7bd8baa",
+      "theme": "dark",
+      "locale": "en",
+      "fixture": "soloUi22-in-memory-read-ports"
+    },
+    {
+      "path": "docs/reports/solo-ui22-ios-2026-10-15/06-cadence-error.png",
+      "sha256": "69976bef839f7dcece798ad0c6e691a830b00718999024bddf126b9e96d89769",
+      "theme": "dark",
+      "locale": "en",
+      "fixture": "soloUi22-in-memory-read-ports"
+    },
+    {
+      "path": "docs/reports/solo-ui22-ios-2026-10-15/07-cadence-success.png",
+      "sha256": "e30fffa6e28b0f7f6ac1d7b77774a19ea8d0aac3f356c3098332d6141c814e8a",
+      "theme": "dark",
+      "locale": "en",
+      "fixture": "soloUi22-in-memory-read-ports"
+    }
+  ]
+}

@@ -63,7 +63,7 @@ test('opening editor from Progress does not mutate model, active session or prim
   assert.equal(rendered.byTestId('patternly:target-date-guidance:primary:progress'), undefined);
 });
 
-test('Progress chapter rows humanize unknown IDs and keep curated titles first', () => {
+test('Progress chapter rows show missing metadata explicitly and keep curated titles first', () => {
   const rendered = renderProgressPlanSection(ready({
     trackId: 'backend-system-design-interview',
     completion: {
@@ -87,7 +87,8 @@ test('Progress chapter rows humanize unknown IDs and keep curated titles first',
   const chapterList = rendered.byTestId('patternly:progress-plan:chapter-list');
   assert.ok(chapterList);
   const chapterText = rendered.textOf(chapterList);
-  assert.ok(chapterText.includes('API Contracts Service Boundaries And Request Flows'));
+  assert.ok(chapterText.includes('Domain metadata unavailable'));
+  assert.ok(!chapterText.includes('API Contracts Service Boundaries And Request Flows'));
   assert.ok(!chapterText.includes('api_contracts_service_boundaries_and_request_flows'));
 
   const curated = renderProgressPlanSection(ready({

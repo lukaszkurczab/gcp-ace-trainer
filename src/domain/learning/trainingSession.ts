@@ -154,17 +154,6 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   });
 }
 
-export function accumulateTrainingSessionForegroundTime(session: TrainingSession, elapsedMs: number): TrainingSession {
-  if (session.status !== "active") throw new InvalidTrainingSessionError("Only an active session can accumulate foreground time.");
-  if (!Number.isFinite(elapsedMs) || elapsedMs < 0) throw new InvalidTrainingSessionError("Foreground elapsed time must be non-negative and finite.");
-  return createTrainingSession({ ...session, activeForegroundMs: session.activeForegroundMs + elapsedMs });
-}
-
-export function areTrainingSessionConfigurationsEqual(left: TrainingSessionConfigurationSnapshot, right: TrainingSessionConfigurationSnapshot): boolean {
-  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
-  return [...keys].every((key) => JSON.stringify(left[key]) === JSON.stringify(right[key]));
-}
-
 export function getCurrentSessionItem(session: TrainingSession): ResolvedContentRef {
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new InvalidTrainingSessionError("The current session item is unavailable.");

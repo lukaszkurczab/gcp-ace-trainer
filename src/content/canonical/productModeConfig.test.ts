@@ -28,6 +28,57 @@ import type { CanonicalCodingInterviewSimulationProfile, CanonicalSimulationProf
 const coding = "coding-interview-dsa-problem-solving";
 const gcp = "google-cloud-associate-cloud-engineer";
 const artifacts = [codingArtifact, backendDesignArtifact, objectDesignArtifact, frontendDesignArtifact, gcpArtifact, awsArtifact, az104Artifact, ai901Artifact, claudeArtifact] as readonly ProductModeArtifact[];
+
+test("question-scan observation cannot change validation success or mask its failure", () => {
+  const edges: string[] = [];
+  const observe = (edge: "begin" | "end") => { edges.push(edge); throw new Error("observer failure"); };
+  assert.deepEqual(validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, artifacts, observe), PRODUCT_MODE_CONFIGS);
+  assert.deepEqual(edges, artifacts.flatMap(() => ["begin", "end"]));
+  const invalid = artifacts.map((artifact, index) => index === 0 ? { ...artifact, questions: [{ ...artifact.questions[0]!, trackId: "wrong-track" }, ...artifact.questions.slice(1)] } : artifact);
+  edges.length = 0;
+  assert.throws(() => validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, invalid, observe), /invalid question identity/);
+  assert.deepEqual(edges, ["begin", "end"]);
+});
+
+test("question scans run once per exact artifact per call without mutating inputs or mode order", () => {
+  const before = JSON.stringify(artifacts);
+  for (let call = 0; call < 2; call++) {
+    const edges: string[] = [];
+    const result = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, artifacts, (edge) => edges.push(edge));
+    assert.deepEqual(edges, artifacts.flatMap(() => ["begin", "end"]));
+    assert.deepEqual(result, PRODUCT_MODE_CONFIGS);
+    assert.ok(Object.isFrozen(result));
+  }
+  assert.equal(JSON.stringify(artifacts), before);
+});
+
+test("successful scans never grant validation to later calls or replacement objects", () => {
+  const question = { ...artifacts[0]!.questions[0]!, interaction: { ...artifacts[0]!.questions[0]!.interaction } };
+  const copy = { ...artifacts[0]!, questions: [question, ...artifacts[0]!.questions.slice(1)] };
+  const input = [copy, ...artifacts.slice(1)];
+  validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, input);
+  question.trackId = "wrong-track";
+  assert.throws(() => validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, input), /invalid question identity/);
+  question.trackId = copy.trackId;
+  question.interaction.type = "unsupported";
+  assert.throws(() => validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, input), /unsupported interaction/);
+  const replacement = { ...copy };
+  assert.throws(() => validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, [replacement, ...artifacts.slice(1)]), /unsupported interaction/);
+  question.interaction.type = artifacts[0]!.questions[0]!.interaction.type;
+  assert.deepEqual(validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, input), PRODUCT_MODE_CONFIGS);
+});
+
+test("a later mode still checks its requested pool length after its artifact scan was reused", () => {
+  const first = artifacts[0]!;
+  const selection = getProductModeConfig(coding, "coding-interview-learn-approach").selection;
+  assert.equal(selection.kind, "node");
+  if (selection.kind !== "node") throw new Error("Expected the canonical Coding node selection.");
+  const freeNode = selection.nodeId;
+  const reduced = { ...first, questions: first.questions.filter((question) => question.nodeId === freeNode).slice(0, 20) };
+  const edges: string[] = [];
+  assert.throws(() => validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, [reduced, ...artifacts.slice(1)], (edge) => edges.push(edge)), /guided-practice.*requested length larger/);
+  assert.deepEqual(edges, ["begin", "end"]);
+});
 const designTracks = [
   { trackId: "backend-system-design-interview", profileId: "backend-system-design-interview-free-node-v1", freeNodeId: "requirements_capacity_and_architecture_decomposition" },
   { trackId: "object-oriented-design-interview", profileId: "object-oriented-design-interview-free-node-v1", freeNodeId: "requirements_use_cases_domain_vocabulary_and_model_boundaries" },

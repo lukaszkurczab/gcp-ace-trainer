@@ -1,6 +1,6 @@
 # FCA — aws-certified-solutions-architect-associate
 
-Status i kolejność: [plan główny](../../../PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Zachowane opisy problemów i wersje poniżej przedstawiają stan BEFORE ze źródeł z 07.10; bieżący status napraw wskazuje raport wykonania.
+Status i kolejność: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Zachowane opisy problemów i wersje poniżej przedstawiają stan BEFORE ze źródeł z 07.10; bieżący status napraw wskazuje raport wykonania.
 
 ## FCA-EDIT-658fa75523 — aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/amazon_mq_protocol_preserving_integration
 

@@ -1,3 +1,6 @@
+import type { AccountDataRecordFingerprintInput } from "../account/accountDataRecordIdentity";
+import { sha256Utf8 } from "./sha256";
+
 /** Static byte profile; deliberately absent from the preimage to retain existing APP identities. */
 export const RECORD_FINGERPRINT_PROFILE = "record-fingerprint-json-utf8-v1" as const;
 
@@ -34,4 +37,9 @@ export function recordFingerprintPayload(record: RecordFingerprintInput): string
     }
   };
   return serialize({ recordId: record.recordId, recordType: record.recordType, state: record.state, trackId: record.trackId });
+}
+
+/** Canonical account record identity, shared by persistence and application diagnostics. */
+export function accountDataRecordFingerprint(record: AccountDataRecordFingerprintInput): string {
+  return sha256Utf8(recordFingerprintPayload(record));
 }

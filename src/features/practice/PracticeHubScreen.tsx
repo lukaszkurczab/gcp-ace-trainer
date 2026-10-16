@@ -282,7 +282,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         .then((admission) => {
           switch (resolveCertificationExamAccess(admission)) {
             case "startExam":
-              navigation.navigate(ROUTES.EXAM);
+              navigation.navigate(ROUTES.EXAM, { trackId: activeTrack.id });
               return;
             case "purchasePremium":
               navigation.navigate(ROUTES.PREMIUM_PURCHASE);

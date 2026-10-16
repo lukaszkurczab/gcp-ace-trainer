@@ -364,7 +364,6 @@ function registeredFixtureFamily(catalog: TrainingCatalog, interactions: Trainin
     async finalizeSimulation() { throw new Error("The acceptance fixture does not run simulations."); },
     async validateDraftCommand() { throw new Error("The acceptance fixture does not write drafts."); },
     async queryDashboard() { throw new Error("The acceptance fixture does not serve dashboard queries."); },
-    async queryProgress() { throw new Error("The acceptance fixture does not serve progress queries."); },
     async queryReview() { throw new Error("The acceptance fixture does not serve review queries."); },
   });
 }

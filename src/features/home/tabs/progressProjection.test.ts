@@ -11,7 +11,7 @@ function attempt(track: Track, questionId: string, index: number, kind: "correct
   return createTrainingAttempt({ id: `projection:${String(index).padStart(4, "0")}`, sessionId: "projection-session", trackId: track.trackId as TrainingAttempt["trackId"], modeId: "practice", occurrenceId: `projection-occurrence:${index}`, item, response: {}, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-01-01T00:00:00.000Z", committedAt: "2026-01-01T00:00:00.000Z" });
 }
 function build(track: Track, trainingAttempts: readonly TrainingAttempt[]) {
-  return buildProgressTabModel({ activeTrackId: track.trackId, analytics: {} as never, attempts: [], practiceHistory: [], activityRecords: [], trainingAttempts, now: "2026-01-15T00:00:00.000Z", timezone: "UTC" });
+  return buildProgressTabModel({ activeTrackId: track.trackId, activityRecords: [], trainingAttempts, reviewQueueItems: [], now: "2026-01-15T00:00:00.000Z", timezone: "UTC" });
 }
 
 test("Progress preserves chronological ID ties, per-node windows and global interleaved trend without mutating history", async () => {
@@ -34,32 +34,29 @@ test("Progress preserves chronological ID ties, per-node windows and global inte
   assert.equal(JSON.stringify(history), before);
 });
 
-test("Progress excludes other tracks, stale versions/hashes and absent questions in both affected branches", async () => {
+test("Progress excludes foreign/stale evidence and rejects an absent exact question", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
   const coding = contentPackageRuntimeOwner.getPreparedDiscovery("coding-interview-dsa-problem-solving").track;
   const design = contentPackageRuntimeOwner.getPreparedDiscovery("frontend-system-design-interview").track;
   for (const track of [coding, design]) {
     const good = attempt(track, track.questions[0]!.questionId, 0);
     const foreign = attempt(track === coding ? design : coding, (track === coding ? design : coding).questions[0]!.questionId, 1);
-    const staleVersion = { ...good, id: "stale-version", item: { ...good.item, contentVersion: "old-content" } };
-    const staleHash = { ...good, id: "stale-hash", item: { ...good.item, artifactSha256: "f".repeat(64) } };
-    const absent = { ...good, id: "absent-question", item: { ...good.item, questionId: "not-in-this-package" } };
-    assert.deepEqual(build(track, [absent, staleHash, foreign, staleVersion, good]), build(track, [good]));
+    const oldItem = { ...good.item, contentVersion: "old-content" };
+    const staleVersion = { ...good, id: "stale-version", item: oldItem, reviewEvidence: { ...good.reviewEvidence, sourceItem: oldItem } };
+    const oldHashItem = { ...good.item, artifactSha256: "f".repeat(64) };
+    const staleHash = { ...good, id: "stale-hash", item: oldHashItem, reviewEvidence: { ...good.reviewEvidence, sourceItem: oldHashItem } };
+    const absentItem = { ...good.item, questionId: "not-in-this-package" };
+    const absent = { ...good, id: "absent-question", item: absentItem, reviewEvidence: { ...good.reviewEvidence, sourceItem: absentItem } };
+    assert.deepEqual(build(track, [staleHash, foreign, staleVersion, good]), build(track, [good]));
+    assert.throws(() => build(track, [absent, good]), /absent from its verified package/);
   }
 });
 
-test("unscored attempts count for practiced coverage but never dilute scored evidence windows", async () => {
+test("invalid zero-point durable attempts block Progress instead of inventing coverage", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
   const track = contentPackageRuntimeOwner.getPreparedDiscovery("coding-interview-dsa-problem-solving").track;
-  const question = track.questions[0]!;
-  const scored = Array.from({ length: 20 }, (_, i) => attempt(track, question.questionId, i, i < 10 ? "partial" : "correct"));
-  const unscored = { ...attempt(track, question.questionId, 21), result: { kind: "correct" as const, earnedPoints: 0, maxPoints: 0 } };
-  const before = build(track, scored).algorithmsProgress!;
-  const after = build(track, [unscored, ...scored]).algorithmsProgress!;
-  assert.deepEqual(after.evidenceSummary, before.evidenceSummary);
-  assert.deepEqual(after.effectivenessTrend, before.effectivenessTrend);
-  assert.deepEqual(after.trackNodes, before.trackNodes);
-  assert.equal(after.diagnostics.outcomeSummary.find((fact) => fact.label === "Correct")?.value, 11);
+  const invalid = { ...attempt(track, track.questions[0]!.questionId, 21), result: { kind: "correct" as const, earnedPoints: 0, maxPoints: 0 } };
+  assert.throws(() => build(track, [invalid]), /invalid/);
 });
 
 test("due, repeated-mistake, completed and future-manual reviews preserve node attention and due-first action", async () => {
@@ -70,7 +67,7 @@ test("due, repeated-mistake, completed and future-manual reviews preserve node a
   const entry = (id: string, questionId: string): ReviewQueueEntry => ({
     id, trackId: track.trackId as ReviewQueueEntry["trackId"], sourceAttemptId: `source:${id}`, sourceSessionId: "projection-session", sourceItem: { trackId: track.trackId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256, questionId }, taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], dueAt: "2026-01-01T00:00:00.000Z", createdAt: "2025-12-25T00:00:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: false, policyVersion: "bizq04-v1", stage: "retention7", status: "active",
   });
-  const model = buildProgressTabModel({ activeTrackId: track.trackId, analytics: {} as never, attempts: [], practiceHistory: [], activityRecords: [], trainingAttempts: [], now: "2026-01-15T00:00:00.000Z", timezone: "UTC", reviewQueueItems: [
+  const model = buildProgressTabModel({ activeTrackId: track.trackId, activityRecords: [], trainingAttempts: [], now: "2026-01-15T00:00:00.000Z", timezone: "UTC", reviewQueueItems: [
     entry("due", first.questionId),
     { ...entry("repeated", other.questionId), reasons: ["repeated_mistake"] },
     { ...entry("completed", first.questionId), status: "completed", completedAt: "2026-01-02T00:00:00.000Z", completedByAttemptId: "completed-by" },
@@ -78,26 +75,18 @@ test("due, repeated-mistake, completed and future-manual reviews preserve node a
   ] });
   assert.equal(model.reviewQueueCount, 3);
   assert.deepEqual(model.reviewQueueCopyParams, { dueCount: 2, manualCount: 1 });
-  assert.equal(model.algorithmsProgress?.currentFocus.statusLabel, "Needs remediation");
+  assert.equal(model.algorithmsProgress?.currentFocus.statusLabel, "Review due");
   assert.equal(model.algorithmsProgress?.priority.primaryAction.kind, "practiceSession");
   assert.equal(model.reviewAction?.kind, "practiceSession");
   if (model.reviewAction?.kind === "practiceSession") assert.equal(model.reviewAction.params.reviewSource, "due_queue");
 });
 
-test("facts retain their broader identity predicate while evidence and the actionable queue retain exact binding", async () => {
+test("Progress rejects inconsistent durable track identity rather than showing broader fake coverage", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
   const track = contentPackageRuntimeOwner.getPreparedDiscovery("coding-interview-dsa-problem-solving").track;
   const good = attempt(track, track.questions[0]!.questionId, 0);
-  // Deliberately inconsistent read-model input to lock existing distinct predicates,
-  // not a fixture claimed to be admitted by the persistence/domain contract.
   const mismatched = { ...good, item: { ...good.item, trackId: "frontend-system-design-interview" } };
-  const review: ReviewQueueEntry = { id: "broader-facts", trackId: "frontend-system-design-interview", sourceItem: { ...good.item, contentVersion: "other-version" }, sourceAttemptId: "source:broader", sourceSessionId: "session:broader", taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], createdAt: "2025-12-25T00:00:00.000Z", dueAt: "2026-01-01T00:00:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: false, status: "active" };
-  const model = buildProgressTabModel({ activeTrackId: track.trackId, analytics: {} as never, attempts: [], practiceHistory: [], activityRecords: [], trainingAttempts: [mismatched], reviewQueueItems: [review, { ...review, id: "broader-facts-second" }], now: "2026-01-15T00:00:00.000Z", timezone: "UTC" });
-  assert.equal(model.algorithmsProgress?.currentFocus.practicedLabel, `1 of ${track.questions.filter((question) => question.nodeId === track.questions[0]!.nodeId).length}`);
-  assert.equal(model.algorithmsProgress?.currentFocus.statusLabel, "Needs remediation");
-  assert.equal(model.algorithmsProgress?.evidenceSummary.currentFocus.responseCount, 0);
-  assert.equal(model.reviewQueueCount, 0);
-  assert.equal(model.reviewActionEnabled, false);
+  assert.throws(() => build(track, [mismatched]), /invalid/);
 });
 
 
@@ -129,10 +118,13 @@ test("Claude Progress keeps historical due obligations and their exact retained 
   const old = retained.artifact.questions.find((q: { questionId: string }) => !track.getQuestion(q.questionId));
   assert.ok(old, "actual retained package has a replaced question absent from discovery");
   const entry: ReviewQueueEntry = { id: "historical-due", trackId: track.trackId as ReviewQueueEntry["trackId"], sourceAttemptId: "historical-attempt", sourceSessionId: "historical-session", sourceItem: { trackId: track.trackId, questionId: old.questionId, contentVersion: retained.lock.contentVersion, artifactSha256: retained.lock.sha256 }, taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], createdAt: "2026-01-01T00:00:00.000Z", dueAt: "2026-01-15T00:00:00.000Z", status: "active", consecutiveAfterDueSuccesses: 0, persistent: false, policyVersion: "bizq04-v1", stage: "retention7" };
-  const buildReviews = (reviews: readonly ReviewQueueEntry[], now = "2026-01-15T00:00:00.000Z") => buildProgressTabModel({ activeTrackId: track.trackId, analytics: {} as never, attempts: [], practiceHistory: [], activityRecords: [], trainingAttempts: [], reviewQueueItems: reviews, now, timezone: "UTC" });
+  const buildReviews = (reviews: readonly ReviewQueueEntry[], now = "2026-01-15T00:00:00.000Z") => buildProgressTabModel({ activeTrackId: track.trackId, activityRecords: [], trainingAttempts: [], reviewQueueItems: reviews, now, timezone: "UTC" });
   const before = JSON.stringify(entry);
   const model = buildReviews([entry]);
   assert.equal(model.reviewQueueCount, 1);
+  assert.equal(model.emptyState.reviewAction, true);
+  assert.equal(model.emptyState.title, "No performance evidence for this version yet");
+  assert.equal(model.emptyState.description, "Earlier activity and reviews remain available.");
   assert.equal(model.reviewAction?.kind, "canonicalReviewQueue");
   assert.equal(model.metrics.find(metric => metric.label === "Due review")?.value, 1);
   const resolved = await contentPackageRuntimeOwner.resolveItem(entry.sourceItem);

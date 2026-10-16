@@ -1,6 +1,5 @@
 {
   "Back to results": "Powrót do wyników",
-  "Home": "Start",
   "Practice": "Ćwiczenia",
   "Progress": "Postęp",
   "Settings": "Ustawienia",
@@ -668,7 +667,7 @@
   "Restoring your active session…": "Przywracanie aktywnej sesji…",
   "Loading topic roadmap": "Wczytywanie mapy tematów",
   "Loading practice setup": "Wczytywanie ustawień ćwiczeń",
-  "Loading Home": "Wczytywanie ekranu głównego",
+  "Loading Today": "Wczytywanie widoku Dzisiaj",
   "Loading progress": "Wczytywanie postępów",
   "Loading settings": "Wczytywanie ustawień",
   "Answer could not be saved.": "Nie udało się zapisać odpowiedzi.",

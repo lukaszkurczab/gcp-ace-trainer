@@ -71,6 +71,7 @@ export type CertificationPracticeReviewProjection = Readonly<{
   items: readonly CertificationPracticeReviewItem[];
   modeId: CertificationPracticeModeId;
   overallPointsEarned: number;
+  maxPoints: number;
   relatedPracticeLimitation?: "related_question_pair";
   sessionId: string;
   total: number;
@@ -170,6 +171,7 @@ export async function projectCertificationPracticeReview(input: Readonly<{
   });
   const singleCase = session.caseState ? caseSummaries[0] : undefined;
   const caseSummary = singleCase ? { title: singleCase.title, steps: singleCase.steps } : undefined;
+  const maxPoints = sessionAttempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0);
   const overallPointsEarned = sessionAttempts.reduce((sum, attempt) => sum + overallScoreCredit(attempt.result), 0);
   const diagnosticReport = session.modeId === "certification-diagnostic-baseline"
     ? projectDiagnosticReport({ items, attempts, session, ...(input.diagnosticContext ? { context: input.diagnosticContext } : {}) })
@@ -177,7 +179,7 @@ export async function projectCertificationPracticeReview(input: Readonly<{
   const relatedPracticeLimitation = hasRecordedRelatedQuestionPair({ attempts, items, questionById, session, attemptByOccurrenceId })
     ? "related_question_pair" as const
     : undefined;
-  return Object.freeze({ ...(caseSummary ? { caseSummary } : {}), ...(session.configurationSnapshot.caseBlockPolicy ? { caseSummaries: Object.freeze(caseSummaries) } : {}), ...(diagnosticReport ? { diagnosticReport } : {}), feedbackMode, items: Object.freeze(items), modeId: session.modeId, overallPointsEarned, ...(relatedPracticeLimitation ? { relatedPracticeLimitation } : {}), sessionId: session.id, total: session.actualLength });
+  return Object.freeze({ ...(caseSummary ? { caseSummary } : {}), ...(session.configurationSnapshot.caseBlockPolicy ? { caseSummaries: Object.freeze(caseSummaries) } : {}), ...(diagnosticReport ? { diagnosticReport } : {}), feedbackMode, items: Object.freeze(items), modeId: session.modeId, maxPoints, overallPointsEarned, ...(relatedPracticeLimitation ? { relatedPracticeLimitation } : {}), sessionId: session.id, total: session.actualLength });
 }
 
 function hasRecordedRelatedQuestionPair(input: Readonly<{

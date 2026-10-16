@@ -219,3 +219,16 @@ function unavailableRecord(sessionId: string, trackId = codingTrack): ActivityUn
     unavailableReasons: ["unknown_artifact_hash"],
   };
 }
+
+test("activity resolves domain labels from its own track and rejects missing or cross-track metadata", () => {
+  for (const [trackId, expected] of [
+    ["google-cloud-associate-cloud-engineer", "Ensuring successful operation of a cloud solution"],
+    ["aws-certified-solutions-architect-associate", "Domain metadata unavailable"],
+    ["claude-certified-architect-professional-certification", "Domain metadata unavailable"],
+  ] as const) {
+    const model = buildActivityModel([record({ id: "metadata", trackId, modeId: "certification-focus-practice", status: "completed", completedAt: "2026-08-23T11:00:00.000Z", totalOccurrences: 10, answered: 10,
+      scopeRefs: [{ axisId: "cloud-domain", nodeId: "operations", role: "primary" }],
+    })], trackId, now);
+    assert.equal(model.items[0]?.scopeLabel, expected);
+  }
+});

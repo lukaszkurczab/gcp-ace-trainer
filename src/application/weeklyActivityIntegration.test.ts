@@ -5,7 +5,6 @@ import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 import { readFileSync } from "node:fs";
 import { createInstance } from "i18next";
 import { loadCanonicalRuntimeCatalog } from "../content/canonical/runtimeCatalog";
-import { loadCloudCertificationProgress } from "./learningReadModels";
 import { createActivityReadOwner, loadActivityRecords, projectWeeklySessionActivity, loadActivitySessionRecords } from "./activityReadModels";
 import { addTrainingAttempt, getTrainingAttempts, saveTrainingSession } from "../storage/repositories";
 import { installMemoryStorage } from "../testing/journalTestSupport";
@@ -47,14 +46,14 @@ test("Progress week counts durable completed sessions, not distinct answers or e
   await recordAnswers(current.session.id, current.refs);
   await durableSession("earlier", "completed", "2026-09-20T10:00:00.000Z");
   const records = await loadActivitySessionRecords();
-  const model = buildProgressTabModel({ activeTrackId: TRACK, activityRecords: records, analytics: {} as never, attempts: [], practiceHistory: [], trainingAttempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value, reviewQueueItems: [], now: NOW, timezone: "Europe/Warsaw" });
+  const model = buildProgressTabModel({ activeTrackId: TRACK, activityRecords: records, trainingAttempts: (await getTrainingAttempts(productionTrackAdmissionContext)).value, reviewQueueItems: [], now: NOW, timezone: "Europe/Warsaw" });
   assert.equal(model.weeklyActivity.kind, "ready");
   if (model.weeklyActivity.kind === "ready") assert.equal(model.weeklyActivity.completedSessionCount, 1);
 });
 
 test("A durable completed session without answers remains one completed session", async () => {
   await durableSession("without-answers", "completed");
-  const model = buildProgressTabModel({ activeTrackId: TRACK, activityRecords: await loadActivitySessionRecords(), analytics: {} as never, attempts: [], practiceHistory: [], trainingAttempts: [], reviewQueueItems: [], now: NOW, timezone: "Europe/Warsaw" });
+  const model = buildProgressTabModel({ activeTrackId: TRACK, activityRecords: await loadActivitySessionRecords(), trainingAttempts: [], reviewQueueItems: [], now: NOW, timezone: "Europe/Warsaw" });
   assert.equal(model.weeklyActivity.kind, "ready");
   if (model.weeklyActivity.kind === "ready") assert.equal(model.weeklyActivity.completedSessionCount, 1);
 });
@@ -71,9 +70,8 @@ test("all nine tracks and all three Progress branches use the same durable weekl
     await durableSession(`all-nine:${trackId}`, "completed", "2026-10-01T10:00:00.000Z", trackId);
   }
   const records = await loadActivitySessionRecords();
-  const cloudProgress = await loadCloudCertificationProgress({ now: NOW });
   for (const activeTrackId of catalog.tracks) {
-    const model = buildProgressTabModel({ activeTrackId, activityRecords: records, analytics: {} as never, attempts: [], practiceHistory: [], trainingAttempts: [], reviewQueueItems: [], now: NOW, timezone: "Europe/Warsaw", ...(activeTrackId === "google-cloud-associate-cloud-engineer" ? { cloudProgress } : {}) });
+    const model = buildProgressTabModel({ activeTrackId, activityRecords: records, trainingAttempts: [], reviewQueueItems: [], now: NOW, timezone: "Europe/Warsaw" });
     assert.equal(model.weeklyActivity.kind, "ready", activeTrackId);
     if (model.weeklyActivity.kind === "ready") assert.equal(model.weeklyActivity.completedSessionCount, 1, activeTrackId);
   }

@@ -1,3 +1,4 @@
+import { DEFAULT_TRACK_QUESTION_PRESENTATION, isSupportedTrackQuestionPresentation, type TrackQuestionPresentation } from "../../domain/tracks/trackAdmission";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useThemedStyles } from "../../preferences";
@@ -6,17 +7,18 @@ import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 type PracticeQuestionContent = Readonly<{ constraints?: readonly string[]; itemId: string; prompt: string }>;
 
-export type PracticeQuestionPresentationVariant = "default" | "structuredCertificationPrompt";
 
-export function PracticeQuestionCard({ question, variant = "default" }: Readonly<{ question: PracticeQuestionContent; variant?: PracticeQuestionPresentationVariant }>) {
+export function PracticeQuestionCard({ question, presentation = DEFAULT_TRACK_QUESTION_PRESENTATION }: Readonly<{ question: PracticeQuestionContent; presentation?: TrackQuestionPresentation }>) {
   const { t } = useTranslation("common");
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
+  if (!isSupportedTrackQuestionPresentation(presentation)) return <Text accessibilityRole="alert" maxFontSizeMultiplier={2}>{t("Practice interaction unavailable")}</Text>;
+  const variant = presentation.variant;
   return (
     <View style={styles.questionCard} testID={runtimeSelectors.session.question(question.itemId)}>
       <Text key={`label:${fontScale}`} maxFontSizeMultiplier={2} style={styles.questionLabel}>{t("Question")}</Text>
       <Text key={`prompt:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.prompt, variant === "structuredCertificationPrompt" ? styles.structuredPrompt : null]}>{question.prompt}</Text>
-      {question.constraints?.length ? (
+      {presentation.constraints === "show" && question.constraints?.length ? (
         <View
           style={[styles.constraints, variant === "structuredCertificationPrompt" ? styles.structuredConstraints : null]}
           testID={variant === "structuredCertificationPrompt" ? `${runtimeSelectors.session.question(question.itemId)}:constraints` : undefined}

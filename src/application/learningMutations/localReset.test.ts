@@ -1,13 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-  CLEAR_LOCAL_HISTORY_DETAIL,
-  CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE,
-  clearPatternlyLocalHistory,
-  tryClearPatternlyLocalHistory,
-} from "../../features/home/localReset";
-import { installLearningStateResetBarrier, recoverPendingMutation } from "./";
+import { commitLearningStateReset, installLearningStateResetBarrier, recoverPendingMutation } from "./";
 import { createForegroundTimerState, createTrainingSessionDraft, createTrainingSessionResult, type TrainingSessionDraft } from "../../domain";
 import {
   addReviewQueueItems,
@@ -84,21 +78,13 @@ test("clear local history is one journaled learning-state mutation", async () =>
   installMemoryStorage();
   await seedResettableLearningState();
 
-  await clearPatternlyLocalHistory();
+  await commitLearningStateReset(new Date().toISOString());
 
   assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, []);
   assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, []);
   assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, []);
   assert.equal(await getActiveTrainingSessionDraft(productionTrackAdmissionContext), null);
-});
-
-test("clear local history copy covers progress and review data", () => {
-  assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /practice/);
-  assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /exams/);
-  assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /review queue/);
-  assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /progress/);
-  assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /active sessions/);
 });
 
 test("clear local history preserves the one guest installation and local dataset identity", async () => {
@@ -110,7 +96,7 @@ test("clear local history preserves the one guest installation and local dataset
   const guestInstallation = await provisionGuestInstallation({ async create() { return identity; } });
   await seedResettableLearningState();
 
-  await clearPatternlyLocalHistory();
+  await commitLearningStateReset(new Date().toISOString());
 
   assert.deepEqual(await getGuestInstallation(), guestInstallation);
   assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, []);
@@ -121,7 +107,7 @@ test("reset recovers a pending command before deleting its fully materialized le
   const { persistMutationJournal } = await import("../../storage/repositories/mutationJournalRepository");
   await persistMutationJournal(journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_session", record: session() }]), productionLearningDataAdmissionContext);
 
-  await clearPatternlyLocalHistory();
+  await commitLearningStateReset(new Date().toISOString());
 
   assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
   assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value, []);
@@ -158,8 +144,7 @@ test("durable reset replay keeps latest settings and reminder bytes across a fre
     setActiveProfileLeaseForTests(profile);
   };
 
-  const firstAttempt = await tryClearPatternlyLocalHistory();
-  assert.deepEqual(firstAttempt, { ok: false, message: CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE });
+  await assert.rejects(commitLearningStateReset(new Date().toISOString()));
 
   assert.equal(restarted, true);
   storage.setFailurePlan(null);
@@ -193,9 +178,7 @@ test("durable reset rejects changed or new physical targets before deleting and 
       afterInjection = storage.snapshot();
     };
 
-    const result = await tryClearPatternlyLocalHistory();
-
-    assert.deepEqual(result, { ok: false, message: CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE }, injectedTarget);
+    await assert.rejects(commitLearningStateReset(new Date().toISOString()), injectedTarget);
     assert.equal(injected, true);
     assert.ok(afterInjection);
     assert.deepEqual(storage.snapshot(), afterInjection);
@@ -234,12 +217,11 @@ test("reset recovers after every physical target deletion boundary across fresh 
     const preservedBefore = new Map(plan.preserved.map(({ key }) => [key, storage.snapshot().get(key)]));
     const bytesBeforeAttempt = storage.snapshot();
     storage.setFailurePlan(boundary.failure);
-    const result = await tryClearPatternlyLocalHistory();
-    assert.deepEqual(result, { ok: false, message: CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE }, boundary.label);
+    await assert.rejects(commitLearningStateReset(new Date().toISOString()), boundary.label);
     storage.setFailurePlan(null);
     if (boundary.retry === "new-command") {
       assert.deepEqual(storage.snapshot(), bytesBeforeAttempt, boundary.label);
-      await clearPatternlyLocalHistory();
+      await commitLearningStateReset(new Date().toISOString());
     } else {
       if (boundary.failure.kind === "fail_on_key_write_occurrence") {
         assert.ok(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), boundary.label);

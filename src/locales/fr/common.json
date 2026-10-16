@@ -1,6 +1,5 @@
 {
   "Back to results": "Retour aux résultats",
-  "Home": "Accueil",
   "Practice": "Entraînement",
   "Progress": "Progression",
   "Settings": "Réglages",
@@ -668,7 +667,7 @@
   "Restoring your active session…": "Restauration de votre session en cours…",
   "Loading topic roadmap": "Chargement du parcours des sujets",
   "Loading practice setup": "Chargement de la configuration de l’entraînement",
-  "Loading Home": "Chargement de l’accueil",
+  "Loading Today": "Chargement d’aujourd’hui",
   "Loading progress": "Chargement de la progression",
   "Loading settings": "Chargement des réglages",
   "Answer could not be saved.": "La réponse n’a pas pu être enregistrée.",

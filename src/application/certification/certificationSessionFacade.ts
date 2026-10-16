@@ -1,3 +1,5 @@
+import type { TrackQuestionPresentation } from "../../domain/tracks/trackAdmission";
+import { certificationQuestionPresentation } from "./certificationQuestionPresentation";
 import { isCaseAttemptEvidence, sessionCaseStates } from "../../domain/learning/caseEvidence";
 import type { ForegroundTimerLeaveReason } from "../runtime/ForegroundSessionTimer";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
@@ -30,7 +32,7 @@ import { captureProfileReadFence } from "../profileReadFence";
 export { certificationReviewEvidenceMatches } from "./certificationPracticeReviewProjection";
 export type { CertificationDiagnosticReport, CertificationPracticeReviewItem, CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
 
-export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; preset?: "single_case"; caseId?: string; domain?: CertificationDomain; nodeId?: string; mentalUnitId?: string; expectedContentVersion?: string; expectedArtifactSha256?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; reviewSource?: "due_queue" | "manual_request"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
+export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; preset?: "single_case"; caseId?: string; domain?: CertificationDomain; nodeId?: string; mentalUnitId?: string; expectedContentVersion?: string; expectedArtifactSha256?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; reviewSource?: "due_queue" | "manual_request"; source?: string; expectedSessionId?: string; trackId: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationExamResumeResult = Readonly<{ kind: "ready"; projection: CertificationExamProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationAbandonmentResult =
@@ -40,6 +42,7 @@ export type CertificationAbandonmentResult =
   | Readonly<{ expectedSessionId: string; kind: "recovery_required"; recovery: "abandonment" | "active_operation" }>;
 
 export type CertificationPracticeProjection = Readonly<{
+  questionPresentation: TrackQuestionPresentation;
   session: TrainingSession;
   question: CertificationPracticeQuestion;
   occurrenceId: string;
@@ -91,7 +94,7 @@ export class CertificationExamExpiredError extends Error {
 export function buildCertificationPracticeStartCommand(input: CertificationPracticeOpenInput) {
   const feedbackTiming = input.feedbackMode === "atSessionEnd" ? "after_session_completion" : input.feedbackMode === "afterEachAnswer" ? "after_each_durable_submit" : undefined;
   const { expectedContentVersion, expectedArtifactSha256, ...request } = input;
-  return { trackId: input.trackId ?? "google-cloud-associate-cloud-engineer", modeId: input.modeId, source: input.source, request: { ...request, ...(expectedContentVersion === undefined ? {} : { expectedContentVersion }), ...(expectedArtifactSha256 === undefined ? {} : { expectedArtifactSha256 }), ...(feedbackTiming ? { feedbackTiming } : {}) } } as const;
+  return { trackId: input.trackId, modeId: input.modeId, source: input.source, request: { ...request, ...(expectedContentVersion === undefined ? {} : { expectedContentVersion }), ...(expectedArtifactSha256 === undefined ? {} : { expectedArtifactSha256 }), ...(feedbackTiming ? { feedbackTiming } : {}) } } as const;
 }
 
 async function startCertificationPracticeSession(input: CertificationPracticeOpenInput): Promise<PreparedSession> {
@@ -102,8 +105,8 @@ async function startCertificationPracticeSession(input: CertificationPracticeOpe
 
 export async function openCertificationPracticeSession(input: CertificationPracticeOpenInput): Promise<CertificationPracticeOpenResult> {
   const active = await loadActiveTrainingSession();
-  if (input.expectedSessionId) return resumeExpectedCertificationPractice(active, input.expectedSessionId, input.modeId, input.trackId ?? "google-cloud-associate-cloud-engineer");
-  if (active) return active.trackId === (input.trackId ?? "google-cloud-associate-cloud-engineer") && active.modeId === input.modeId
+  if (input.expectedSessionId) return resumeExpectedCertificationPractice(active, input.expectedSessionId, input.modeId, input.trackId);
+  if (active) return active.trackId === (input.trackId) && active.modeId === input.modeId
     ? resumeCertificationPractice(active)
     : Object.freeze({ kind: "active_session_conflict", session: active });
   try {
@@ -112,27 +115,27 @@ export async function openCertificationPracticeSession(input: CertificationPract
     if (!(cause instanceof TrainingApplicationFailure) || cause.code !== "active_session_conflict") throw cause;
     const raced = await loadActiveTrainingSession();
     if (!raced) throw cause;
-    return raced.trackId === (input.trackId ?? "google-cloud-associate-cloud-engineer") && raced.modeId === input.modeId
+    return raced.trackId === (input.trackId) && raced.modeId === input.modeId
       ? resumeCertificationPractice(raced)
       : Object.freeze({ kind: "active_session_conflict", session: raced });
   }
   return Object.freeze({ kind: "ready", projection: await getCertificationPracticeProjection() });
 }
 
-export async function resumeExpectedCertificationExam(expectedSessionId: string): Promise<CertificationExamResumeResult> {
+export async function resumeExpectedCertificationExam(trackId: TrackId, expectedSessionId: string): Promise<CertificationExamResumeResult> {
   const active = await loadActiveTrainingSession();
   if (!active) throw new TrainingApplicationFailure("resume_unavailable", `Expected Cloud exam ${expectedSessionId} is no longer active.`);
-  if (active.id !== expectedSessionId || active.trackId !== "google-cloud-associate-cloud-engineer" || active.modeId !== "certification-exam-simulation") {
+  if (active.id !== expectedSessionId || active.trackId !== trackId || active.modeId !== "certification-exam-simulation") {
     return Object.freeze({ kind: "active_session_conflict", session: active });
   }
   const resumed = await getTrainingLifecycleUseCases().resumeActiveSession();
-  if (resumed.id !== expectedSessionId || resumed.trackId !== "google-cloud-associate-cloud-engineer" || resumed.modeId !== "certification-exam-simulation") {
+  if (resumed.id !== expectedSessionId || resumed.trackId !== trackId || resumed.modeId !== "certification-exam-simulation") {
     return Object.freeze({ kind: "active_session_conflict", session: resumed });
   }
   return Object.freeze({ kind: "ready", projection: await getCertificationExamProjection() });
 }
-export async function startCertificationExam(source = "practiceHub"): Promise<PreparedSession> {
-  return startTrainingSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-exam-simulation", source, request: {} });
+export async function startCertificationExam(trackId: TrackId, source = "practiceHub"): Promise<PreparedSession> {
+  return startTrainingSession({ trackId, modeId: "certification-exam-simulation", source, request: {} });
 }
 export async function getCertificationPracticeProjection(): Promise<CertificationPracticeProjection> {
   const [initialSession, attempts] = await Promise.all([requireActive(), loadTrainingAttempts()]);
@@ -157,7 +160,7 @@ export async function getCertificationPracticeProjection(): Promise<Certificatio
     getForegroundSessionTimerFacade().projection(session),
   ]);
   const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response as CanonicalQuestionResponse }) : null;
-  return Object.freeze({ session, question: projectCertificationPracticeQuestion(question, presentation.model), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, elapsedForegroundMs: time.elapsedForegroundMs, operation, response, feedback });
+  return Object.freeze({ session, questionPresentation: certificationQuestionPresentation(session.trackId), question: projectCertificationPracticeQuestion(question, presentation.model), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, elapsedForegroundMs: time.elapsedForegroundMs, operation, response, feedback });
 }
 export async function submitCertificationPracticeResponse(response: CanonicalQuestionResponse): Promise<void> {
   await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireCertificationPractice());
@@ -210,29 +213,40 @@ export async function getCertificationPracticeReviewProjection(sessionId: string
   return projection;
 }
 
-/** Reads and validates the complete immutable 50-item Certification Exam result and review. */
+/** Reads and validates the complete immutable Certification Exam result and review. */
 export async function getCertificationExamReviewProjection(sessionId: string): Promise<CertificationExamReviewProjection> {
+  const assertCurrentProfile = captureProfileReadFence();
   const lifecycle = getTrainingLifecycleUseCases();
   const [result, session, attemptsRecord] = await Promise.all([
     lifecycle.loadSummary(sessionId),
     lifecycle.loadSessionRecord(sessionId),
     loadTrainingAttempts(),
   ]);
-  if (session.id !== sessionId || session.status !== "completed" || !session.completedAt || session.trackId !== "google-cloud-associate-cloud-engineer" || session.modeId !== "certification-exam-simulation" ||
+  if (session.id !== sessionId || session.status !== "completed" || !session.completedAt || getTrackRegistration(session.trackId).familyId !== "certification" || session.modeId !== "certification-exam-simulation" ||
     result.sessionId !== session.id || result.trackId !== session.trackId || result.completedAt !== session.completedAt || result.evidence.familyId !== "certification") {
     throw new TrainingApplicationFailure("summary_unavailable", "Answer review requires one verified completed Certification Exam session.");
   }
+  assertCurrentProfile();
   const exact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 });
-  const profile = exact.track.simulationProfiles?.find((candidate): candidate is import("../../content/canonical").CanonicalSimulationProfile => candidate.profileId === session.configurationSnapshot.simulationProfileId && candidate.familyId === "certification" && candidate.modeId === "certification-exam-simulation");
+  assertCurrentProfile();
+  const profiles = exact.track.simulationProfiles?.filter((candidate): candidate is import("../../content/canonical").CanonicalSimulationProfile => candidate.profileId === session.configurationSnapshot.simulationProfileId && candidate.profileVersion === session.configurationSnapshot.simulationProfileVersion && candidate.familyId === "certification" && candidate.modeId === "certification-exam-simulation");
+  const profile = profiles?.length === 1 ? profiles[0] : undefined;
   if (!profile) throw new TrainingApplicationFailure("summary_unavailable", "The exact Certification Exam profile is unavailable.");
-  return projectCertificationExamReview({
+  const projection = await projectCertificationExamReview({
     attempts: attemptsRecord.value,
     profile,
     questionsById: new Map(exact.track.questions.map((question) => [question.questionId, question])),
-    resolveItem: (item) => contentPackageRuntimeOwner.resolveItem(item),
+    resolveItem: async (item) => {
+      assertCurrentProfile();
+      const resolved = await contentPackageRuntimeOwner.resolveItem(item);
+      assertCurrentProfile();
+      return resolved;
+    },
     result,
     session: session as CompletedTrainingSession,
   });
+  assertCurrentProfile();
+  return projection;
 }
 export async function advanceCertificationPracticeSession(): Promise<TrainingSession> { return getTrainingLifecycleUseCases().advancePracticeSession(); }
 export async function recoverCertificationPracticeOperation(): Promise<void> { await getTrainingLifecycleUseCases().recoverActiveTrainingOperation(); }
@@ -403,21 +417,22 @@ export function subscribeCertificationPracticeProjectionRefresh(listener: (event
   return getForegroundSessionTimerFacade().subscribe(listener);
 }
 
-export async function getCertificationExamProjection(): Promise<CertificationExamProjection> {
+export async function getCertificationExamProjection(expectedTrackId?: TrackId): Promise<CertificationExamProjection> {
   const lifecycle = getTrainingLifecycleUseCases();
   const initial = await requireActive();
+  if (expectedTrackId !== undefined && initial.trackId !== expectedTrackId) throw new TrainingApplicationFailure("resume_unavailable", "The active Certification Exam belongs to a different track.");
   const initialOperation = await lifecycle.getSimulationOperationState(initial);
   const unresolved = initialOperation.kind !== "editable";
   if (!unresolved) await assertCertificationExamIsActive();
   const [session, draft] = await Promise.all([requireActive(), loadActiveTrainingSessionDraft()]);
-  if (session.modeId !== "certification-exam-simulation" || !draft || draft.sessionId !== session.id) throw new Error("The active Cloud exam draft is unavailable.");
+  if ((expectedTrackId !== undefined && session.trackId !== expectedTrackId) || session.id !== initial.id || session.modeId !== "certification-exam-simulation" || !draft || draft.sessionId !== session.id) throw new Error("The active Cloud exam draft is unavailable.");
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("Cloud exam occurrence is unavailable.");
   const raw = draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null;
   const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
   if (question.question.questionId !== occurrence.item.questionId || (raw !== null && !question.interactions.isComplete(question.question.questionId, raw))) throw new TrainingApplicationFailure("invalid_response", "Cloud exam response does not match its exact interaction.");
   const interaction = question.interactions.present(question.question.questionId, raw, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
-  return Object.freeze({ session, draft, question: question.question, interaction, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: lifecycle.currentTime(), operation: await lifecycle.getSimulationOperationState(session) });
+  return Object.freeze({ session, draft, question: Object.freeze({ ...question.question, constraints: certificationQuestionPresentation(session.trackId).constraints === "hide" ? [] : question.question.constraints }), interaction, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: lifecycle.currentTime(), operation: await lifecycle.getSimulationOperationState(session) });
 }
 
 export async function reconcileCertificationExamOperation(): Promise<"verified" | "conflict" | "unknown"> {
@@ -508,7 +523,7 @@ export function projectCertificationPracticeQuestion(question: TrainingQuestionS
   }
   const options = Object.freeze(renderer.options.map((option) => Object.freeze({ optionId: option.id, text: option.text })));
   return Object.freeze({
-    constraints: Object.freeze([...(question.constraints ?? [])]),
+    constraints: Object.freeze(certificationQuestionPresentation(question.trackId).constraints === "hide" ? [] : [...(question.constraints ?? [])]),
     interaction: Object.freeze({ type: question.interactionType, scoringMethod: "exact_selected_set", options }),
     nodeId: question.nodeId,
     prompt: question.prompt,

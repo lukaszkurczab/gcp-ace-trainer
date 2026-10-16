@@ -1,6 +1,6 @@
 # BIZQ — kontrakt wspólny
 
-Jedyna kolejka i bieżące statusy: [plan główny](../../PATTERNLY-WORKING-PLAN.md). Specyfikacje 01–06 określają produkt i kryteria odbioru, nie harmonogram ani dodatkowe plany.
+Jedyna kolejka i bieżące statusy: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Specyfikacje 01–06 określają produkt i kryteria odbioru, nie harmonogram ani dodatkowe plany.
 
 BIZQ-01 dotyczy jakości authored pytań, Details i feedback. BIZQ-02 integruje wiarygodny postęp z celem i planem. BIZQ-04 prowadzi remediation i utrwalanie. BIZQ-05 rozdziela diagnozę, próbkę i transfer. BIZQ-03 buduje plan adaptacyjny z ich prawdziwych danych. BIZQ-06 wiąże uczciwe demo web z rzeczywistą drogą dostępu. Zależności i nierozstrzygnięte polityki są w planie głównym.
 

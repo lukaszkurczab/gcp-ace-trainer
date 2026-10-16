@@ -14,7 +14,8 @@ import {
 test("bottom navigation labels stay canonical", () => {
   const labels: readonly string[] = MAIN_TAB_ITEMS.map((item) => item.label);
 
-  assert.deepEqual(labels, ["Home", "Practice", "Progress", "Settings"]);
+  assert.deepEqual(labels, ["Today", "Practice", "Progress", "Settings"]);
+  assert.equal(MAIN_TAB_ITEMS[0]?.id, "home");
   assert.equal(labels.includes("Stats"), false);
 });
 

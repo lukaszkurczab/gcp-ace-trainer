@@ -34,10 +34,8 @@ test("progress areas and Coding effectiveness exclude raw partial points from ov
   ];
   const areaModel = buildProgressTabModel({
     activeTrackId: design.trackId,
-    analytics: {} as never,
-    attempts: [],
     activityRecords: [],
-    practiceHistory: [],
+    reviewQueueItems: [],
     trainingAttempts: designAttempts,
     now: "2026-01-01T01:00:00.000Z",
   });
@@ -60,10 +58,8 @@ test("progress areas and Coding effectiveness exclude raw partial points from ov
   ));
   const codingModel = buildProgressTabModel({
     activeTrackId: "coding-interview-dsa-problem-solving",
-    analytics: {} as never,
-    attempts: [],
     activityRecords: [],
-    practiceHistory: [],
+    reviewQueueItems: [],
     trainingAttempts: codingAttempts,
     now: "2026-01-01T01:00:00.000Z",
   });
@@ -93,11 +89,8 @@ test("Progress uses the canonical copy for due reviews and future manual request
   };
   const build = (entry: ReviewQueueEntry) => buildProgressTabModel({
     activeTrackId: "frontend-system-design-interview",
-    analytics: {} as never,
-    attempts: [],
     activityRecords: [],
-    practiceHistory: [],
-    reviewQueueItems: [entry],
+    reviewQueueItems: [JSON.parse(JSON.stringify(entry))],
     trainingAttempts: [],
     now: "2026-01-01T00:00:00.000Z",
   });
@@ -146,10 +139,7 @@ test("Progress counts a due item and a separate future manual request while pres
   };
   const model = buildProgressTabModel({
     activeTrackId: track.trackId,
-    analytics: {} as never,
-    attempts: [],
     activityRecords: [],
-    practiceHistory: [],
     reviewQueueItems: [due, manual],
     trainingAttempts: [],
     now: "2026-01-01T00:00:00.000Z",
@@ -187,10 +177,7 @@ test("Coding Progress copy includes manual requests alongside due work", async (
   } as ReviewQueueEntry);
   const model = buildProgressTabModel({
     activeTrackId: track.trackId,
-    analytics: {} as never,
-    attempts: [],
     activityRecords: [],
-    practiceHistory: [],
     reviewQueueItems: [
       entry("coding-mixed-due", dueQuestion.questionId, "2025-12-31T00:00:00.000Z"),
       entry("coding-mixed-manual", manualQuestion.questionId, "2026-01-08T00:00:00.000Z", true),

@@ -1,19 +1,6 @@
-# Patternly — bieżący stan
+# Patternly — odsyłacz do bieżącego stanu
 
-14.10.2026 — **PASS kodu i lokalnego kontraktu HTTP prompt11 / SEC-04; niezależny design review i QA Luna High PASS.** [Dowód11](/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/docs/sec04-recovery-app-check.md), [jedyny plan](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Następny dopuszczalny prompt **12** (wyłącznie projekt retencji/replay), nieuruchomiony. Odbiór usług i wydania pozostaje odrębny.
+Jedyny aktualny handoff jest w [stanie workspace](/Users/lukaszkurczab/Desktop/Projects/Patternly/.agent/WORKING_STATE.md).
+Jedyna kolejka jest w [planie workspace](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md).
 
-## Bieżący wynik i dowody
-
-Backend wejściowy `65587f8a37dd`, APP `b449b7f2fad2`, oba checkouty czyste. Main sole writer; niezależny reviewer `gpt-6-luna high`. Trzy routes `issue/status`, `issue/saved-ack`, `consume/ack` przełączono z bearer na istniejący `app_check_bearer`. Zachowane handler args, ownership/generation, pierwotny issue reauth, no-store. Publiczny `consume/status` nadal App Check-only. OpenAPI source/generated i expectations zgodne; klient mobilny już wysyła oba nagłówki. Bez nowej abstrakcji, zależności, zmian pinów lub zastąpionych ścieżek do usunięcia.
-
-Independent QA: route/OpenAPI/observability **51/51 PASS**, typecheck/lint/openapi parity **76 operacji**/diff-check PASS. Owner: route14/14 (59 żądań), mobile transport1/1, frontend inventory54 i build PASS. Początkowa nowa fixture nie miała3 wymaganych wartości konfiguracyjnych; poprawiono syntetyczny config, finalna niezależna suita51/51 zastępuje tę porażkę. Szczegóły i odtwarzalne komendy w dowodzie11; prywatne TAP `/private/tmp/patternly-sec04-11-*.tap`.
-
-Testy wykonują realne Fastify guards/auth adapters/handlers ze store/verifier doubles: zero auth/account/limiter/lifecycle przy odmowie App Check, poprawna para trafia do właściwej operacji, błędy ownership/generation zachowane. Real lifecycle source sprawdzone bez zmian. Nie odebrano na nowo transakcji Firestore, rzeczywistej atestacji Firebase, usług, urządzenia ani pełnego CI/wydania. R04/APPCHK-03/04/ODK-E2E-084 pozostają. Nie uruchamiano emulatora/symulatora, SMTP/usług/publikacji, reset/reinstall/newGuest. Bez commit/push. Plan usunął wyłącznie odebrany SEC-04; brak celu/automatyzacji/nowego wątku.
-
-## Zachowane wyniki i ograniczenia
-
-QLE odebrane i dostarczone zgodnie z kanonicznym handoffem planu, niepowtarzane. 10: **PASS kodu i wąskiego lokalnego iOS smoke**, niezależny QA PASS WITH ISSUES dla baseline: [dowód10](/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/reports/auth-bootstrap10-2026-10-14.md). Jeden `accountBootstrap.ts` prowadzi admission restore/login, profil, completion i reconciliation; oba `/me`, UID/generation/lease, recovery i localOffline zachowane. Weryfikacja owner9/9, niezależny107/107 i type/boundary PASS; account+bootstrap356/359 z3 potwierdzonymi baseline `accountLocalReset` failures, `recovery:check` baseline import failure. Nie deklarować pełnego app npm test/qa:static/hosted CI PASS. Native10 na istniejącym iPhone17 potwierdził offline/retry i zachowanie6kategorii danych; nie świeże online/provider logowanie. Po smoke SEC03/własne Metro zatrzymane.
-
-09: **PASS kod/lokalny iOS**, offline/restart/reconnect+canonical sync retry odebrane: [dowód09](/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/reports/auth-offline09-ios-2026-10-14.md). Retained export `/private/tmp/patternly-offline09-unblock-UvbZV3/emulator-export-after-approved-ack` i `.local/admin` nietknięte. Właściciel zatwierdził private save600+ACK;10kodów w ignorowanym `.temp/owner-recovery/offline09-local-account-replacement-codes.json`, nie oczekiwać ponownej zgody dla wykonanego ACK, nie logować sekretów.09 nie dowodzi automatycznego NetInfo edge ani release/provider attestation.
-
-07/08 granice pozostają w [security-privacy](/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/specs/engineering/security-privacy.md). **Settings/password re-auth gen:null residual14 pozostaje**, bez deklaracji naprawy w10/11. Android po pierwszej premierze iOS. Następna sesja tylko12, bez automatycznego startu.
+Ten plik nie przechowuje statusu ani kolejnego promptu. Poprzednie wpisy są historyczne i pozostają w Git; nie stanowią aktualnego odbioru.

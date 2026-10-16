@@ -1047,11 +1047,10 @@ export class TrainingLifecycleUseCases {
   }
 
   async queryDashboard(trackId: TrackId): Promise<unknown> { return this.query(trackId, "queryDashboard"); }
-  async queryProgress(trackId: TrackId): Promise<unknown> { return this.query(trackId, "queryProgress"); }
   async queryReview(trackId: TrackId): Promise<unknown> { return this.query(trackId, "queryReview"); }
   async queryHistory(): Promise<readonly TrainingSession[]> { return (await this.run("persistence_failure", () => this.ports.repositories.getHistory())).filter((session) => session.status === "completed"); }
 
-  private async query(trackId: TrackId, method: "queryDashboard" | "queryProgress" | "queryReview"): Promise<unknown> {
+  private async query(trackId: TrackId, method: "queryDashboard" | "queryReview"): Promise<unknown> {
     const registration = this.trackRegistration(trackId);
     const resolution = await this.run("missing_content", () => this.ports.packages.resolveForDiscovery(trackId, registration.familyId));
     const runtime = resolution.runtime;

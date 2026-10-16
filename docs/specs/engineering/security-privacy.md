@@ -1,6 +1,6 @@
 # Bezpieczeństwo i prywatność — zakres pozostałych zadań
 
-Status i kolejność należą wyłącznie do [planu głównego](../../PATTERNLY-WORKING-PLAN.md). Ten dokument precyzuje zadania; nie stanowi drugiej kolejki ani dowodu obecnego defektu.
+Status i kolejność należą wyłącznie do [planu głównego](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Ten dokument precyzuje zadania; nie stanowi drugiej kolejki ani dowodu obecnego defektu.
 
 Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3fac115`, backend `039f7f000e701c4fbc69e18a1fb66528cbc5cdcb`, content `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03`. Poniżej podano aktualną brakującą pracę i granicę dowodu. Nie trzeba odtwarzać audytu02.10 ani dawnych pakietów; zwykły preflight wykonawcy ma tylko wykryć późniejszą zmianę źródła. Historyczne probes/pomiary przytoczone w opisach nie są nowym native acceptance. CH-01–05 pozostają zakończone.
 
@@ -295,13 +295,11 @@ Odbiór niezależny: **51/51** route/OpenAPI/observability, typecheck, lint, Ope
 
 ## SEC-06 — LOW — Integralność lokalnej historii content review
 
-**Potwierdzenie w bieżącym kodzie:** Console POST mutations nadal nie walidują Host/Origin/JSON content type mimo loopback binding. Guard ma objąć wszystkie mutations; samo server rejection nie dowodzi browser PNA/reachability.
+**16.10.2026 / prompt32: PASS kodu, ochrony HTTP i lokalnego UI w Operze.** [Kontrakt, disposable fixtures, niezależne review/QA i granice dowodu](../../../../docs/reports/security-console32-2026-10-16.md).
 
-- **Exact risk/data:** obcy request do działającego loopback servera zmienia outcomes.json/reviewer/note/outcome. Probe foreign Host/Origin + text/plain JSON →200/approved; browser local-network reachability jest niezweryfikowana. Nie znaleziono downstream consumer w admission/build; nie jest to dowód publikacji niezatwierdzonego banku.
-- **Pliki/config:** content `scripts/review/content-review-console.mjs` (server, body parser, recordOutcome i batch mutations), `tests/contentReviewConsole.test.mjs`, wyłącznie odpowiadające local-console instructions.
-- **Remediation:** strict Host/Origin i związanie mutation request z własnym UI, wymagany JSON content type; utrzymać loopback binding. Bez nowego cloud auth/remote DB. Objąć wszystkie mutation routes, nie tylko jeden button.
-- **Test/manual proof i AC:** disposable fixtures: foreign/missing origin, foreign host, simple content types i nieuprawnione mutation methods nie zmieniają pliku; same-origin UI działa. Sprawdzić local browser workflow bez tokenów w URL/logach; wynik PNA/runtime udokumentować osobno od serwerowego guard.
-- **Privacy copy:** brak zmiany learner policy; dokumentacja console opisuje lokalny use case. **Platform:** developer Node/browser, nie mobile. **Dependencies:** niezależne od mobile/backend release.
+- **Kontrakt:** serwer dopuszcza wyłącznie literal loopback `127.0.0.1`/`::1`. Exact pojedynczy Host odpowiada faktycznemu adresowi i portowi także przy odczycie HTML. Obie mutacje (`POST /api/reviews`, `POST /api/reviews/batch`) wymagają exact pojedynczego Origin, `application/json` z opcjonalnym `charset=utf-8` oraz tokenu losowanego dla każdego startu serwera, przekazanego przez własny UI. Guard działa przed parserem body i zapisem. Inne metody, brakujące/obce i zduplikowane nagłówki są odrzucane; nie ma CORS. HTML z tokenem ma `no-store` i blokadę osadzania w ramce.
+- **Dowód:** serwerowe negative tests obu tras na brakującym i istniejącym disposable outcomes file zachowują bajty i stan pamięci; poprawne single/batch działają, token poprzedniego procesu nie działa po restarcie. Niezależny review/QA `gpt-6-luna high`; probe IPv6 HTTP200. Właściciel wykonał zapis `needs_change` w Operze na dziewięciu skopiowanych pytaniach; odczyt UI po odświeżeniu i pliku fixture potwierdzają zapis. Właściwa historia review nietknięta.
+- **Granice:** ochrona lokalnych żądań przeglądarkowych nie uwierzytelnia lokalnego użytkownika/procesu ani nie nadaje human approval/publishing admission. CLI pozostaje lokalną operacją operatora. **PNA/reachability z obcej strony niezweryfikowane i raportowane osobno**; odmowy serwera nie zależą od PNA. Bez cloud auth, remote DB, usług, publikacji i zmiany learner privacy policy; platforma developer Node/browser.
 
 ## SEC-07 — LOW — Retencja metadanych unieważniania sesji
 

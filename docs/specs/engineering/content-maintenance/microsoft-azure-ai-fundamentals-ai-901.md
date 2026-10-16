@@ -1,6 +1,6 @@
 # FCA — microsoft-azure-ai-fundamentals-ai-901
 
-Status i kolejność: [plan główny](../../../PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Każdy opisany problem nadal dotyczy identycznej treści pytania i tej samej taksonomii w źródłach z 07.10.
+Status i kolejność: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Każdy opisany problem nadal dotyczy identycznej treści pytania i tej samej taksonomii w źródłach z 07.10.
 
 ## FCA-EDIT-ecebc19ef5 — microsoft-azure-ai-fundamentals-ai-901/ai_workload_recognition_and_capability_boundaries/AI901-N02-B01
 

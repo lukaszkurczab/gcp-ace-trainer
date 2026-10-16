@@ -1,6 +1,11 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import dependencyGraph from "./architecture/dependencyGraph.ts";
+import architectureBoundaries from "./architecture/checkBoundaries.ts";
 import { validateBuiltContent, GENERATED_DIRECTORY, LOCAL_CLAUDE_INVENTORY } from "./syncBundledContentRelease.mjs";
+
+const { createDependencyGraph } = dependencyGraph;
+const { runtimeTestSupportViolations } = architectureBoundaries;
 
 const root = process.cwd();
 const failures = [];
@@ -68,9 +73,11 @@ for (const path of sourcePaths) {
   if (/infrastructure\/storage\/mmkvClient/.test(source) && path !== persist13FixtureRootPath && !/src\/(?:storage\/repositories|content\/application|preferences)\//.test(path)) {
     fail(`only repository implementations may import the MMKV client: ${path}`);
   }
-  if (/(?:from\s+|import\s*\()\s*["'](?:[^"']*\/)?journalTestSupport["']/.test(source)) {
-    fail(`runtime source imports test-only support: ${path}`);
-  }
+}
+// Helpers used only by tests are not production sources. Follow the actual App entry and Metro variants.
+for (const platform of ["ios", "android"]) for (const mode of ["release", "smoke"]) {
+  const graph = createDependencyGraph({ root, platform, mode });
+  for (const message of runtimeTestSupportViolations(graph)) fail(`${platform}/${mode}: ${message}`);
 }
 for (const path of ["src/storage/storageCodec.ts", "src/storage/repositories/certificationExamRepository.ts", "src/content/cache", "src/content/source"]) {
   if (existsSync(join(root, path))) fail(`obsolete persistence or remote-content path remains: ${path}`);

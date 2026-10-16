@@ -1,5 +1,5 @@
-import { isActiveReviewQueueEntry, manualRequestIdForEntry, type ReviewQueueEntry, type TrainingAttempt } from "../../../domain";
-import { projectWeeklyAnsweredActivity } from "../../../application/activityReadModels";
+import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
+import { projectHomeOverviewEvidence } from "../../../application/homeOverviewProjection";
 import { modeLabel, relativeDay } from "./activityPresentation";
 
 export type HomeOverviewMetric = Readonly<{
@@ -20,16 +20,7 @@ export function buildHomeOverviewMetrics(input: Readonly<{
   timezone?: string;
 }>): readonly HomeOverviewMetric[] {
   const now = new Date(input.now ?? Date.now());
-  const weekly = projectWeeklyAnsweredActivity(input.trainingAttempts, {
-    trackId: input.trackId,
-    now: input.now ?? now.toISOString(),
-    timezone: input.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
-    activeSessionId: input.activeSessionId,
-  });
-  const trackAttempts = input.trainingAttempts.filter(attempt => attempt.trackId === input.trackId && attempt.sessionId !== input.activeSessionId);
-  const dueReviews = input.reviewQueueItems.filter(entry => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.trackId === input.trackId && Date.parse(entry.dueAt) <= now.getTime()).length;
-  const manualRequests = input.reviewQueueItems.filter(entry => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.trackId === input.trackId && Date.parse(entry.dueAt) > now.getTime() && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined).length;
-  const latestAttempt = [...trackAttempts].sort((left, right) => right.answeredAt.localeCompare(left.answeredAt))[0];
+  const { weekly, dueReviews, manualRequests, latestAttempt } = projectHomeOverviewEvidence({ ...input, now: input.now ?? now.toISOString(), timezone: input.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone });
   const week: HomeOverviewMetric = weekly.kind === "unavailable"
     ? { label: "This week", value: "home.week.unavailable" }
     : weekly.answeredCount > 0

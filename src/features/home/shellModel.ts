@@ -5,7 +5,7 @@ import type { ShellTab } from "./types";
 export type ShellTabItem = {
   icon: IconName;
   id: ShellTab;
-  label: "Home" | "Practice" | "Progress" | "Settings";
+  label: "Today" | "Practice" | "Progress" | "Settings";
 };
 
 export type VisibleCta = {
@@ -19,7 +19,7 @@ export type StaticCta = {
 };
 
 export const MAIN_TAB_ITEMS: readonly ShellTabItem[] = [
-  { icon: "home", id: "home", label: "Home" },
+  { icon: "home", id: "home", label: "Today" },
   { icon: "practice", id: "practice", label: "Practice" },
   { icon: "progress", id: "progress", label: "Progress" },
   { icon: "settings", id: "settings", label: "Settings" },

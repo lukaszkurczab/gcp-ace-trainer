@@ -1,6 +1,6 @@
 # AUD-06 — lokalny odbiór i SIM-READY
 
-Status i kolejność: [plan główny](../../PATTERNLY-WORKING-PLAN.md). SIM-READY jest wynikiem tego zadania. Nie ustanowiono go w dotychczasowych raportach.
+Status i kolejność: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). SIM-READY jest wynikiem tego zadania. Nie ustanowiono go w dotychczasowych raportach.
 
 ## Macierz krytycznych przepływów
 

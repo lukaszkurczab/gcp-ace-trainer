@@ -4,6 +4,7 @@ import { loadActiveTrackId as getActiveTrackId } from "../../application/learnin
 import { buildReviewQueueScreenModel, type ReviewQueueScreenModel } from "./reviewQueueModel";
 import { loadTrackReviewQueueViewModel, removeUnavailableReview } from "../../application/reviewQueueQueries";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { captureProfileReadFence } from "../../application/profileReadFence";
 import { MistakesReviewView } from "./MistakesReviewView";
 
 export function MistakesReviewScreen() {
@@ -28,8 +29,12 @@ export function MistakesReviewScreen() {
         setConfirmRemoveUnavailable(false);
         setHasActiveTrack(false);
 
+        let assertCurrentProfile: (() => void) | undefined;
         try {
+          assertCurrentProfile = captureProfileReadFence();
           const activeTrackId = await getActiveTrackId();
+          if (!isActive) return;
+          assertCurrentProfile();
           if (!activeTrackId) {
             if (isActive) {
               setHasActiveTrack(false);
@@ -40,12 +45,14 @@ export function MistakesReviewScreen() {
           const viewModel = await loadTrackReviewQueueViewModel({ trackId: activeTrackId });
           const nextModel = buildReviewQueueScreenModel(viewModel);
 
+          assertCurrentProfile();
           if (isActive) {
             setHasActiveTrack(true);
             setModel(nextModel);
             setLoading(false);
           }
         } catch (error) {
+          try { assertCurrentProfile?.(); } catch { return; }
           if (isActive) {
             setReadError(describeOperationalFailure(error, "Review queue data is unavailable."));
             setLoading(false);
@@ -89,6 +96,7 @@ export function MistakesReviewScreen() {
   return <MistakesReviewView
     model={model} visibleRows={visibleRows} selectedRow={selectedRow}
     loading={loading} readError={readError} hasActiveTrack={hasActiveTrack}
+    onRetry={() => setRefreshRevision((revision) => revision + 1)}
     confirmRemoveUnavailable={confirmRemoveUnavailable} removingUnavailable={removingUnavailable}
     onSelectRow={(id) => { setConfirmRemoveUnavailable(false); setSelectedRowId((current) => current === id ? null : id); }}
     onConfirmRemoveChange={setConfirmRemoveUnavailable}
