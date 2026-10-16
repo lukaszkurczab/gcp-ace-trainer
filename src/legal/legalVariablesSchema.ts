@@ -18,11 +18,11 @@ const termsKeys = [
   "technicalRequirements", "withdrawalEmail",
 ] as const;
 const privacyKeys = [
-  "activeCloudProcessors", "activeIndependentRecipients", "anonymousReportRetentionDays", "backupPurgeDisclosure",
-  "clipboardRecoveryCodeRetentionMinutes", "completedSyncOperationRetentionDays", "consumerRequestRetentionYears",
-  "controllerAddress", "controllerBusinessForm", "controllerLegalName", "controllerPhone", "deletionEvidenceRetentionYears",
+  "activeCloudProcessors", "activeIndependentRecipients", "contentReportRetentionDays", "backupPurgeDisclosure",
+  "clipboardRecoveryCodeRetentionMinutes", "completedSyncOperationRetentionDays",
+  "controllerAddress", "controllerBusinessForm", "controllerLegalName", "controllerPhone", "deletionEvidenceRetentionMonths",
   "deletionTombstoneRetentionDays", "distributionTerritories", "dpoContact", "effectiveDate", "emailDeliveryProvider",
-  "hostingRegions", "internationalTransferSafeguards", "linkedReportRetentionDays", "localReportOutboxRetentionDays",
+  "hostingRegions", "internationalTransferSafeguards", "localReportOutboxRetentionDays",
   "operationalLogRetentionDays", "privacyEmail", "reportRateLimitIdentifierRetentionSeconds", "processingRegisterDisclosure",
   "registrationNumber", "retentionRegisterDisclosure", "revenueCatStatus", "securityLogRetentionDays", "supervisoryAuthority",
   "taxIdentifier",

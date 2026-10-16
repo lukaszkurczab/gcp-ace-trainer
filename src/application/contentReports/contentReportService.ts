@@ -1,4 +1,4 @@
-import { prepareContentReportDescription, type ContentReportInput, type ContentReportOutboxEntry, type ContentReportOutboxStatus } from "../../domain";
+import { minimizeContentReportInput, prepareContentReportDescription, type ContentReportInput, type ContentReportOutboxEntry, type ContentReportOutboxStatus } from "../../domain";
 import { PatternlyApiClientError, type CreateContentReportDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { createContentReportSubmissionId } from "../../infrastructure/identity/contentReportSubmissionIdentity";
@@ -53,9 +53,9 @@ export function createContentReportTransport(client: Readonly<{ createContentRep
 
 export function createQueuedContentReport(input: Omit<ContentReportInput, "clientSubmissionId"> & Partial<Pick<ContentReportInput, "clientSubmissionId">>): ContentReportOutboxEntry {
   const now = new Date().toISOString();
-  const safeInput = { ...input, description: prepareContentReportDescription(input.description) };
+  const safeInput = minimizeContentReportInput({ ...input, clientSubmissionId: input.clientSubmissionId ?? createContentReportSubmissionId(), description: prepareContentReportDescription(input.description) });
   const entry: ContentReportOutboxEntry = {
-    input: { ...safeInput, clientSubmissionId: input.clientSubmissionId ?? createContentReportSubmissionId() },
+    input: safeInput,
     status: "queued",
     attemptCount: 0,
     createdAt: now,
@@ -155,7 +155,7 @@ async function submitOutboxEntry(clientSubmissionId: string, transport: ContentR
 }
 
 function toApiInput(input: ContentReportInput): CreateContentReportDto {
-  return input;
+  return minimizeContentReportInput(input);
 }
 
 function reportErrorCode(error: unknown): string {

@@ -105,7 +105,6 @@ function projectUserReport(entry: ReturnType<typeof getContentReportOutbox>[numb
       locale: input.context.locale,
       occurredAt: input.context.occurredAt,
     }),
-    ...(input.contactEmail === undefined ? {} : { contactEmail: input.contactEmail }),
   });
 }
 

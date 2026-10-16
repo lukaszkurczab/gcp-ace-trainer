@@ -117,14 +117,15 @@ test("rejects empty, whitespace-only and padded localized values", () => {
 });
 
 test("release mode rejects recognized placeholders and test mode allows them", () => {
-  const issues = validateLegalVariables(legalVariables, "release");
-  const checkedInReleaseIssues = validateLegalVariables(releaseLegalVariables, "release");
+  const withPlaceholders = copyLegalVariables();
+  withPlaceholders.terms.operatorLegalName.en = "[TO BE COMPLETED: operatorLegalName]";
+  withPlaceholders.privacy.controllerLegalName.pl = "[DO UZUPEŁNIENIA: controllerLegalName]";
+  const issues = validateLegalVariables(withPlaceholders, "release");
   const publicLinkIssues = validateLegalVariables({ ...legalVariablesLocalFixture, publicLinks: { ...legalVariablesLocalFixture.publicLinks, privacyUrl: "[TO BE COMPLETED: privacyUrl]" } }, "release");
   assert.ok(issues.some(({ path }) => path === "terms.operatorLegalName.en"));
   assert.ok(issues.some(({ path }) => path === "privacy.controllerLegalName.pl"));
-  assert.ok(checkedInReleaseIssues.some(({ path }) => path === "terms.operatorLegalName.en"));
-  assert.ok(checkedInReleaseIssues.some(({ path }) => path === "publicLinks.privacyUrl"));
   assert.ok(publicLinkIssues.some(({ path }) => path === "publicLinks.privacyUrl"));
+  assert.deepEqual(validateLegalVariables(withPlaceholders, "test"), []);
   assert.deepEqual(validateLegalVariables(legalVariablesLocalFixture, "test"), []);
   assert.deepEqual(validateLegalVariables(legalVariables, "test"), []);
 });
@@ -154,14 +155,33 @@ test("accepts complete production-like legal values in release mode", () => {
   assert.deepEqual(validateLegalVariables(completed, "release"), []);
 });
 
-test("CLI passes test mode and release mode rejects placeholders with field paths", () => {
+test("CLI passes test mode and reports canonical release validation with field paths", () => {
   const script = resolve(process.cwd(), "scripts/checkLegalVariables.mjs");
   const testRun = spawnSync(process.execPath, ["--import", "tsx", script], { encoding: "utf8", env: { ...process.env, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release" } });
   assert.equal(testRun.status, 0, testRun.stderr);
   assert.match(testRun.stdout, /LEGAL_VARIABLES_CHECK=passed mode=test/);
 
   const releaseRun = spawnSync(process.execPath, ["--import", "tsx", script, "--release"], { encoding: "utf8" });
-  assert.equal(releaseRun.status, 1);
-  assert.match(releaseRun.stderr, /terms\.operatorLegalName\.en: Unresolved legal placeholder/);
+  const releaseIssues = validateLegalVariables(releaseLegalVariables, "release");
+  assert.equal(releaseRun.status, releaseIssues.length > 0 ? 1 : 0);
+  if (releaseIssues.length > 0) {
+    assert.match(releaseRun.stderr, /LEGAL_VARIABLES_CHECK=failed mode=release/);
+    for (const { path, message } of releaseIssues) assert.ok(releaseRun.stderr.includes(`- ${path}: ${message}`));
+  } else {
+    assert.match(releaseRun.stdout, /LEGAL_VARIABLES_CHECK=passed mode=release/);
+  }
   assert.doesNotMatch(releaseRun.stderr, /\[TO BE COMPLETED:/);
+});
+
+
+test("retention schema rejects replaced blanket periods and keeps current units explicit", () => {
+  const candidate = copyLegalVariables();
+  for (const key of ["anonymousReportRetentionDays", "linkedReportRetentionDays", "deletionEvidenceRetentionYears", "consumerRequestRetentionYears"]) {
+    candidate.privacy[key] = { en: "180", pl: "180" };
+    assert.ok(validateLegalVariables(candidate).some(({ path }) => path === `privacy.${key}`));
+    delete candidate.privacy[key];
+  }
+  assert.deepEqual(candidate.privacy.contentReportRetentionDays, { en: "30", pl: "30" });
+  assert.deepEqual(candidate.privacy.deletionEvidenceRetentionMonths, { en: "12", pl: "12" });
+  assert.deepEqual(candidate.privacy.securityLogRetentionDays, { en: "90", pl: "90" });
 });

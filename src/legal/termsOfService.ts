@@ -83,7 +83,7 @@ Patternly may rely on Apple, authentication, hosting, notification, and billing 
 
 13. Governing law and disputes
 
-These Terms are governed by ${vars.terms.governingLaw.en}. The courts described as ${vars.terms.competentCourts.en} have jurisdiction, without depriving you of mandatory consumer protections or the right to bring a claim before a court available under applicable law in your place of residence.
+These Terms are governed by ${vars.terms.governingLaw.en}. Jurisdiction is determined by ${vars.terms.competentCourts.en}, without depriving you of mandatory consumer protections or the right to bring a claim before a court available under applicable law in your place of residence.
 
 Before filing a formal claim, you may contact the Operator so the issue can be reviewed. This does not limit statutory complaint, regulatory, alternative-dispute-resolution, or court rights.
 
@@ -215,7 +215,7 @@ Patternly może korzystać z Apple oraz dostawców uwierzytelniania, hostingu, p
 
 13. Prawo właściwe i spory
 
-Warunki podlegają prawu: ${vars.terms.governingLaw.pl}. Właściwe sądy: ${vars.terms.competentCourts.pl}, bez pozbawiania Cię bezwzględnej ochrony konsumenckiej ani prawa do wniesienia sprawy przed sąd dostępny zgodnie z właściwym prawem w miejscu Twojego zamieszkania.
+Warunki podlegają ${vars.terms.governingLaw.pl}. Jurysdykcję i właściwość sądów ustala się na podstawie ${vars.terms.competentCourts.pl}, bez pozbawiania Cię bezwzględnej ochrony konsumenckiej ani prawa do wniesienia sprawy przed sąd dostępny zgodnie z właściwym prawem w miejscu Twojego zamieszkania.
 
 Przed formalnym zgłoszeniem roszczenia możesz skontaktować się z Operatorem, aby umożliwić rozpatrzenie sprawy. Nie ogranicza to ustawowego prawa do reklamacji, regulatora, alternatywnego rozstrzygania sporów ani sądu.
 

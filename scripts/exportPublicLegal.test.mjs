@@ -67,6 +67,7 @@ test("production exporter rejects the current incomplete canonical source before
 
 test("synthetic seven-locale artifacts are marked unapproved and contain complete, interpolated drafts", () => {
   const input = syntheticSource();
+  input.terms.operatorLegalName = { en: "Synthetic test operator", pl: "Syntetyczny operator testowy" };
   const artifact = buildPublicLegalArtifactForTest(input);
   assert.equal(artifact.schemaVersion, "patternly-public-legal-export-v1");
   assert.equal(artifact.testOnly, true);
@@ -78,8 +79,8 @@ test("synthetic seven-locale artifacts are marked unapproved and contain complet
   assert.match(artifact.sourceFingerprint, /^[a-f0-9]{64}$/u);
   assert.match(artifact.documents.privacyPolicy.en, /Synthetic TO BE COMPLETED/u);
   assert.match(artifact.documents.privacyPolicy.pl, /Synthetic DO UZUPEŁNIENIA/u);
-  assert.match(artifact.documents.termsOfService.en, /Synthetic TO BE COMPLETED/u);
-  assert.match(artifact.documents.termsOfService.pl, /Synthetic DO UZUPEŁNIENIA/u);
+  assert.match(artifact.documents.termsOfService.en, /Synthetic test operator/u);
+  assert.match(artifact.documents.termsOfService.pl, /Syntetyczny operator testowy/u);
   for (const locale of locales) {
     const privacy = artifact.documents.privacyPolicy[locale];
     const terms = artifact.documents.termsOfService[locale];

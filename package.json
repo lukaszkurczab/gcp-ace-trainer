@@ -47,7 +47,8 @@
     "validate:content-boundary": "node scripts/validateContentBoundary.mjs",
     "validate:runtime-privacy-boundary": "node scripts/validateRuntimePrivacyBoundary.mjs",
     "sync:content-release": "node scripts/syncBundledContentRelease.mjs sync",
-    "check:content-release": "node scripts/syncBundledContentRelease.mjs check"
+    "check:content-release": "node scripts/syncBundledContentRelease.mjs check",
+    "check:retention-contract": "node --import tsx scripts/checkRetentionContract.mjs"
   },
   "dependencies": {
     "@react-native-community/netinfo": "^12.0.1",

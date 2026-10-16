@@ -5,6 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { runQ13LocalActor, safeQ13ErrorCode } from "./prepareQ13LocalActor.mjs";
 
+const legalVersion = JSON.parse(await readFile(new URL("../config/public-legal.release.json", import.meta.url), "utf8")).documentVersion.en;
 const APP_CHECK = "a".repeat(64);
 const ENVIRONMENT = Object.freeze({ PATTERNLY_RUNTIME_MODE: "smoke", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "smoke" });
 
@@ -64,7 +65,7 @@ function createFetch({ uid, registration = "success", statusResolution = "unregi
       assert.equal(init.headers["x-firebase-appcheck"], APP_CHECK);
       assert.equal(init.method, "POST");
       assert.deepEqual(JSON.parse(init.body), {
-        termsVersion: "2026-09-05", termsLocale: "en", privacyPolicyVersion: "2026-09-05", privacyPolicyLocale: "en", privacyPolicyAcknowledged: true,
+        termsVersion: legalVersion, termsLocale: "en", privacyPolicyVersion: legalVersion, privacyPolicyLocale: "en", privacyPolicyAcknowledged: true,
       });
       if (registration === "timeout") throw new Error("synthetic transport failure");
       if (registration === "created-false") return response(200, { registration: { created: false, user: { identity: { subject: uid } } } });

@@ -24,8 +24,6 @@ export type ContentReportInput = Readonly<{
   reason: ContentReportReason;
   description: string;
   context: ContentReportContext;
-  linkAccount?: boolean;
-  contactEmail?: string;
 }>;
 
 export type ContentReportOutboxStatus = "queued" | "retrying" | "failed" | "accepted";
@@ -37,3 +35,24 @@ export type ContentReportOutboxEntry = Readonly<{
   updatedAt: string;
   lastErrorCode: string | null;
 }>;
+
+/** Explicit projection shared by new submissions and legacy outbox minimization. */
+export function minimizeContentReportInput(input: ContentReportInput): ContentReportInput {
+  return {
+    clientSubmissionId: input.clientSubmissionId,
+    trackId: input.trackId,
+    contentVersion: input.contentVersion,
+    itemId: input.itemId,
+    reason: input.reason,
+    description: input.description,
+    context: {
+      releasePackageId: input.context.releasePackageId,
+      trackNode: input.context.trackNode,
+      modeRoute: input.context.modeRoute,
+      locale: input.context.locale,
+      appBuild: input.context.appBuild,
+      platform: input.context.platform,
+      occurredAt: input.context.occurredAt,
+    },
+  };
+}

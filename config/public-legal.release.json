@@ -1,42 +1,42 @@
 {
   "documentVersion": {
-    "en": "2026-09-05",
-    "pl": "2026-09-05"
+    "en": "2026-10-16",
+    "pl": "2026-10-16"
   },
   "premiumCheckoutEnabled": false,
   "publicLinks": {
-    "privacyUrl": "[TO BE COMPLETED: privacyUrl]",
-    "termsUrl": "[TO BE COMPLETED: termsUrl]",
-    "supportUrl": "[TO BE COMPLETED: supportUrl]"
+    "privacyUrl": "https://patternly.it/privacy",
+    "termsUrl": "https://patternly.it/terms",
+    "supportUrl": "https://patternly.it/terms#support"
   },
   "terms": {
     "adrEntity": {
-      "en": "[TO BE COMPLETED: adrEntity]",
-      "pl": "[DO UZUPEŁNIENIA: adrEntity]"
+      "en": "The UOKiK ADR contact point provides information and helps identify the competent ADR entity: https://polubowne.uokik.gov.pl/kontakt,7,pl.html",
+      "pl": "Punkt kontaktowy ADR przy UOKiK udziela informacji i pomaga wskazać właściwy podmiot ADR: https://polubowne.uokik.gov.pl/kontakt,7,pl.html"
     },
     "adrPosition": {
-      "en": "[TO BE COMPLETED: adrPosition]",
-      "pl": "[DO UZUPEŁNIENIA: adrPosition]"
+      "en": "The Operator assesses participation individually for each unresolved dispute. If a complaint does not resolve the dispute, the Operator will provide the information about the competent ADR entity and an express statement on participation or refusal required by applicable law on a durable medium",
+      "pl": "Operator ocenia udział indywidualnie dla każdego nierozwiązanego sporu. Jeśli reklamacja nie rozwiąże sporu, Operator przekaże na trwałym nośniku wymagane prawem informacje o właściwym podmiocie ADR oraz jednoznaczne oświadczenie o udziale albo odmowie"
     },
     "competentCourts": {
-      "en": "[TO BE COMPLETED: competentCourts]",
-      "pl": "[DO UZUPEŁNIENIA: competentCourts]"
+      "en": "the applicable rules on jurisdiction",
+      "pl": "obowiązujących przepisów o jurysdykcji i właściwości sądów"
     },
     "complaintEmail": {
-      "en": "[TO BE COMPLETED: complaintEmail]",
-      "pl": "[DO UZUPEŁNIENIA: complaintEmail]"
+      "en": "contact@patternly.it",
+      "pl": "contact@patternly.it"
     },
     "distributionTerritories": {
-      "en": "[TO BE COMPLETED: distributionTerritories]",
-      "pl": "[DO UZUPEŁNIENIA: distributionTerritories]"
+      "en": "European Economic Area (EEA)",
+      "pl": "Europejski Obszar Gospodarczy (EOG)"
     },
     "effectiveDate": {
-      "en": "[TO BE COMPLETED: effectiveDate]",
-      "pl": "[DO UZUPEŁNIENIA: effectiveDate]"
+      "en": "upon publication of this version",
+      "pl": "opublikowania tej wersji"
     },
     "governingLaw": {
-      "en": "[TO BE COMPLETED: governingLaw]",
-      "pl": "[DO UZUPEŁNIENIA: governingLaw]"
+      "en": "Polish law",
+      "pl": "prawu polskiemu"
     },
     "merchantOfRecord": {
       "en": "Apple App Store",
@@ -47,44 +47,44 @@
       "pl": "18"
     },
     "minimumUserAgeScope": {
-      "en": "[TO BE COMPLETED: minimumUserAgeScope]",
-      "pl": "[DO UZUPEŁNIENIA: minimumUserAgeScope]"
+      "en": "Self-service account creation, cloud synchronization and Premium purchases; account-free guest learning is outside the account-creation age rule",
+      "pl": "Samodzielne tworzenie konta, synchronizacja w chmurze i zakupy Premium; nauka gościa bez konta nie jest objęta zasadą wieku dotyczącą tworzenia konta"
     },
     "operatorBusinessForm": {
-      "en": "[TO BE COMPLETED: operatorBusinessForm]",
-      "pl": "[DO UZUPEŁNIENIA: operatorBusinessForm]"
+      "en": "natural person",
+      "pl": "osoba fizyczna"
     },
     "operatorEmail": {
-      "en": "[TO BE COMPLETED: operatorEmail]",
-      "pl": "[DO UZUPEŁNIENIA: operatorEmail]"
+      "en": "contact@patternly.it",
+      "pl": "contact@patternly.it"
     },
     "operatorLegalName": {
-      "en": "[TO BE COMPLETED: operatorLegalName]",
-      "pl": "[DO UZUPEŁNIENIA: operatorLegalName]"
+      "en": "Łukasz Kurczab",
+      "pl": "Łukasz Kurczab"
     },
     "operatorPhone": {
-      "en": "[TO BE COMPLETED: operatorPhone]",
-      "pl": "[DO UZUPEŁNIENIA: operatorPhone]"
+      "en": "+48 793 724 184",
+      "pl": "+48 793 724 184"
     },
     "operatorRegisteredAddress": {
-      "en": "[TO BE COMPLETED: operatorRegisteredAddress]",
-      "pl": "[DO UZUPEŁNIENIA: operatorRegisteredAddress]"
+      "en": "ul. Wróblewskiego 59, 33-170 Tuchów, Poland",
+      "pl": "ul. Wróblewskiego 59, 33-170 Tuchów, Polska"
     },
     "operatorRegistrationNumber": {
-      "en": "[TO BE COMPLETED: operatorRegistrationNumber]",
-      "pl": "[DO UZUPEŁNIENIA: operatorRegistrationNumber]"
+      "en": "Not entered in a business register",
+      "pl": "Brak wpisu do rejestru działalności"
     },
     "operatorTaxIdentifier": {
-      "en": "[TO BE COMPLETED: operatorTaxIdentifier]",
-      "pl": "[DO UZUPEŁNIENIA: operatorTaxIdentifier]"
+      "en": "No public tax identifier",
+      "pl": "Brak publicznego identyfikatora podatkowego"
     },
     "premiumBillingPeriod": {
       "en": "one month",
       "pl": "jeden miesiąc"
     },
     "premiumPriceIncludingTaxes": {
-      "en": "[TO BE COMPLETED: premiumPriceIncludingTaxes]",
-      "pl": "[DO UZUPEŁNIENIA: premiumPriceIncludingTaxes]"
+      "en": "PLN 29.99 per month in Poland. In other countries, the local price shown in the App Store applies",
+      "pl": "29,99 PLN miesięcznie w Polsce. W innych krajach obowiązuje cena lokalna pokazywana w App Store"
     },
     "premiumProductIdentifier": {
       "en": "com.lkurczab.patternly.premium.monthly",
@@ -95,94 +95,82 @@
       "pl": "Patternly Premium"
     },
     "premiumRenewalPriceIncludingTaxes": {
-      "en": "[TO BE COMPLETED: premiumRenewalPriceIncludingTaxes]",
-      "pl": "[DO UZUPEŁNIENIA: premiumRenewalPriceIncludingTaxes]"
+      "en": "PLN 29.99 in Poland. In other countries, the local renewal price shown in the App Store applies",
+      "pl": "29,99 PLN w Polsce. W innych krajach obowiązuje lokalna cena odnowienia pokazywana w App Store"
     },
     "premiumServiceScope": {
-      "en": "The first nodes in each learning track are free. Premium unlocks the remaining nodes.",
-      "pl": "Początkowe węzły każdej ścieżki są dostępne bezpłatnie. Premium odblokowuje pozostałe węzły."
+      "en": "Premium unlocks all Premium content in every learning track, including all Design Interview modes, Certification Exam and Coding Interview Mock. Each Free-eligible Certification or Coding Interview track includes one complete free node.",
+      "pl": "Premium odblokowuje wszystkie treści Premium we wszystkich ścieżkach, w tym wszystkie tryby Design Interview, Certification Exam i Coding Interview Mock. Każda ścieżka Certification lub Coding Interview objęta dostępem Free zawiera jeden kompletny bezpłatny węzeł."
     },
     "supportCommitment": {
-      "en": "[TO BE COMPLETED: supportCommitment]",
-      "pl": "[DO UZUPEŁNIENIA: supportCommitment]"
+      "en": "Help is available through support@patternly.it. Requests concerning statutory rights follow the deadlines set out in these Terms",
+      "pl": "Pomoc jest dostępna przez support@patternly.it. Żądania dotyczące praw ustawowych podlegają terminom wskazanym w niniejszych Warunkach"
     },
     "technicalRequirements": {
-      "en": "[TO BE COMPLETED: technicalRequirements]",
-      "pl": "[DO UZUPEŁNIENIA: technicalRequirements]"
+      "en": "An iPhone with iOS 16.4 or later for the first iOS release",
+      "pl": "iPhone z iOS 16.4 lub nowszym dla pierwszego wydania iOS"
     },
     "withdrawalEmail": {
-      "en": "[TO BE COMPLETED: withdrawalEmail]",
-      "pl": "[DO UZUPEŁNIENIA: withdrawalEmail]"
+      "en": "contact@patternly.it",
+      "pl": "contact@patternly.it"
     }
   },
   "privacy": {
     "activeCloudProcessors": {
-      "en": "[TO BE COMPLETED: activeCloudProcessors]",
-      "pl": "[DO UZUPEŁNIENIA: activeCloudProcessors]"
+      "en": "Google Cloud/Firebase — account authentication, backend and synchronization; RevenueCat — subscription management; Brevo — transactional email delivery; OVHcloud/Zimbra — support and contact mailboxes",
+      "pl": "Google Cloud/Firebase — uwierzytelnianie kont, backend i synchronizacja; RevenueCat — obsługa subskrypcji; Brevo — dostarczanie wiadomości transakcyjnych; OVHcloud/Zimbra — skrzynki wsparcia i kontaktu"
     },
     "activeIndependentRecipients": {
       "en": "[TO BE COMPLETED: activeIndependentRecipients]",
       "pl": "[DO UZUPEŁNIENIA: activeIndependentRecipients]"
-    },
-    "anonymousReportRetentionDays": {
-      "en": "30",
-      "pl": "30"
     },
     "backupPurgeDisclosure": {
       "en": "Firestore point-in-time recovery retains database versions for up to 7 days. Patternly does not maintain an additional scheduled Firestore backup. Expired or deleted data may therefore remain recoverable within the protected PITR window and is no longer recoverable after that window expires.",
       "pl": "Odzyskiwanie Firestore do punktu w czasie przechowuje wersje bazy maksymalnie przez 7 dni. Patternly nie utrzymuje dodatkowej harmonogramowej kopii zapasowej Firestore. Wygasłe lub usunięte dane mogą więc pozostać możliwe do odzyskania w chronionym oknie PITR, a po jego upływie nie są już możliwe do odzyskania."
     },
     "clipboardRecoveryCodeRetentionMinutes": {
-      "en": "[TO BE COMPLETED: clipboardRecoveryCodeRetentionMinutes]",
-      "pl": "[DO UZUPEŁNIENIA: clipboardRecoveryCodeRetentionMinutes]"
+      "en": "5",
+      "pl": "5"
     },
     "completedSyncOperationRetentionDays": {
       "en": "30",
       "pl": "30"
     },
-    "consumerRequestRetentionYears": {
-      "en": "6",
-      "pl": "6"
-    },
     "controllerAddress": {
-      "en": "[TO BE COMPLETED: controllerAddress]",
-      "pl": "[DO UZUPEŁNIENIA: controllerAddress]"
+      "en": "ul. Wróblewskiego 59, 33-170 Tuchów, Poland",
+      "pl": "ul. Wróblewskiego 59, 33-170 Tuchów, Polska"
     },
     "controllerBusinessForm": {
-      "en": "[TO BE COMPLETED: controllerBusinessForm]",
-      "pl": "[DO UZUPEŁNIENIA: controllerBusinessForm]"
+      "en": "natural person",
+      "pl": "osoba fizyczna"
     },
     "controllerLegalName": {
-      "en": "[TO BE COMPLETED: controllerLegalName]",
-      "pl": "[DO UZUPEŁNIENIA: controllerLegalName]"
+      "en": "Łukasz Kurczab",
+      "pl": "Łukasz Kurczab"
     },
     "controllerPhone": {
-      "en": "[TO BE COMPLETED: controllerPhone]",
-      "pl": "[DO UZUPEŁNIENIA: controllerPhone]"
-    },
-    "deletionEvidenceRetentionYears": {
-      "en": "3",
-      "pl": "3"
+      "en": "+48 793 724 184",
+      "pl": "+48 793 724 184"
     },
     "deletionTombstoneRetentionDays": {
       "en": "45",
       "pl": "45"
     },
     "distributionTerritories": {
-      "en": "[TO BE COMPLETED: distributionTerritories]",
-      "pl": "[DO UZUPEŁNIENIA: distributionTerritories]"
+      "en": "European Economic Area (EEA)",
+      "pl": "Europejski Obszar Gospodarczy (EOG)"
     },
     "dpoContact": {
-      "en": "[TO BE COMPLETED: dpoContact]",
-      "pl": "[DO UZUPEŁNIENIA: dpoContact]"
+      "en": "No data protection officer has been appointed; privacy contact: privacy@patternly.it",
+      "pl": "Nie wyznaczono inspektora ochrony danych; kontakt w sprawach prywatności: privacy@patternly.it"
     },
     "effectiveDate": {
-      "en": "[TO BE COMPLETED: effectiveDate]",
-      "pl": "[DO UZUPEŁNIENIA: effectiveDate]"
+      "en": "upon publication of this version",
+      "pl": "opublikowania tej wersji"
     },
     "emailDeliveryProvider": {
-      "en": "Google Workspace SMTP Relay",
-      "pl": "Google Workspace SMTP Relay"
+      "en": "Brevo SMTP",
+      "pl": "Brevo SMTP"
     },
     "hostingRegions": {
       "en": "Google Cloud europe-central2 (Warsaw, Poland)",
@@ -191,10 +179,6 @@
     "internationalTransferSafeguards": {
       "en": "[TO BE COMPLETED: internationalTransferSafeguards]",
       "pl": "[DO UZUPEŁNIENIA: internationalTransferSafeguards]"
-    },
-    "linkedReportRetentionDays": {
-      "en": "180",
-      "pl": "180"
     },
     "localReportOutboxRetentionDays": {
       "en": "30",
@@ -205,8 +189,8 @@
       "pl": "30"
     },
     "privacyEmail": {
-      "en": "[TO BE COMPLETED: privacyEmail]",
-      "pl": "[DO UZUPEŁNIENIA: privacyEmail]"
+      "en": "privacy@patternly.it",
+      "pl": "privacy@patternly.it"
     },
     "reportRateLimitIdentifierRetentionSeconds": {
       "en": "[TO BE COMPLETED: reportRateLimitIdentifierRetentionSeconds]",
@@ -217,28 +201,36 @@
       "pl": "[DO UZUPEŁNIENIA: processingRegisterDisclosure]"
     },
     "registrationNumber": {
-      "en": "[TO BE COMPLETED: registrationNumber]",
-      "pl": "[DO UZUPEŁNIENIA: registrationNumber]"
+      "en": "Not entered in a business register",
+      "pl": "Brak wpisu do rejestru działalności"
     },
     "retentionRegisterDisclosure": {
-      "en": "Operational logs: 30 days. Security-relevant logs: 180 days. Completed synchronization operations and mutations: 30 days. Anonymous content reports: 30 days. Reports linked to an account or contact address at submission: 180 days. Consumer complaints, withdrawal statements, non-personal data-return requests and suspension appeals: 6 years from closure, unless a legal hold applies. Account-deletion tombstones: 45 days. Minimal deletion evidence and completed deletion-operation records: 3 years. Firestore PITR versions: up to 7 days; no additional scheduled Firestore backup is maintained. Deletion is performed by managed TTL and may occur after the stated expiry time because TTL processing is asynchronous.",
-      "pl": "Logi operacyjne: 30 dni. Logi dotyczące bezpieczeństwa: 180 dni. Ukończone operacje i mutacje synchronizacji: 30 dni. Anonimowe zgłoszenia treści: 30 dni. Zgłoszenia powiązane przy wysłaniu z kontem lub adresem kontaktowym: 180 dni. Reklamacje konsumenckie, oświadczenia o odstąpieniu, wnioski o zwrot danych nieosobowych i odwołania od zawieszenia: 6 lat od zamknięcia sprawy, chyba że obowiązuje legal hold. Pseudonimizowane blokady po usunięciu konta: 45 dni. Minimalne dowody usunięcia i ukończone rekordy operacji usunięcia: 3 lata. Wersje Firestore PITR: maksymalnie 7 dni; Patternly nie utrzymuje dodatkowej harmonogramowej kopii Firestore. Usuwanie realizuje zarządzany TTL i ze względu na asynchroniczne przetwarzanie może nastąpić po wskazanym terminie wygaśnięcia."
+      "en": "Ordinary support correspondence: 90 days after closure. Operational logs: 30 days; selected security logs: 90 days. Completed synchronization operations and mutations: 30 days. Content reports: 30 days from receipt, without an attached account or contact address. Account-deletion tombstones: 45 days. Minimal deletion evidence and completed deletion-operation records: 12 calendar months from completion. Closed privacy requests without a dispute: minimal record of request type, dates, method and outcome for 12 calendar months from closure; unnecessary working data and secrets for 30 days after reasoned closure. Generated privacy responses and exports: 30 days from confirmed availability. Non-financial data-return requests and suspension appeals without a claim: minimal record for 12 calendar months from closure. Necessary complaint, withdrawal and refund evidence: until the applicable limitation period, assessed for the particular claim and law; unnecessary copies and attachments removed within 90 days of closure. Disputes: necessary evidence through proceedings and execution of the outcome, reviewed every 6 months; unnecessary materials removed within 90 days after final resolution and execution. Any remaining necessary evidence has a documented applicable deadline. Incidents without a personal-data breach or dispute: minimal description, assessment reason and remediation for 12 calendar months from closure. Confirmed personal-data breaches: necessary core documentation and notification evidence for a reviewable baseline of 6 calendar years from closure, reviewed annually; this is not a fixed statutory period or a universal maximum. Unnecessary incident working materials: 30 days after closure. Documented legal holds preserve only necessary evidence and are reviewed at least every 6 months; they are not silently released or deleted. Logical expiry denies access to expired materials before asynchronous physical TTL deletion. Provider and backup retention: see the separate provider and backup disclosures.",
+      "pl": "Zwykła korespondencja wsparcia: 90 dni od zamknięcia. Logi operacyjne: 30 dni; wybrane logi bezpieczeństwa: 90 dni. Ukończone operacje i mutacje synchronizacji: 30 dni. Zgłoszenia treści: 30 dni od otrzymania, bez dołączonego konta ani adresu kontaktowego. Znaczniki po usunięciu konta: 45 dni. Minimalne dowody usunięcia i ukończone operacje usunięcia: 12 miesięcy kalendarzowych od ukończenia. Zamknięte wnioski RODO bez sporu: minimalny zapis rodzaju, dat, sposobu i wyniku realizacji przez 12 miesięcy kalendarzowych od zamknięcia; zbędne dane robocze i sekrety przez 30 dni po uzasadnionym zamknięciu. Wygenerowane odpowiedzi RODO i eksporty: 30 dni od potwierdzonego udostępnienia. Niefinansowe wnioski o zwrot danych i odwołania od zawieszenia bez roszczenia: minimalny zapis przez 12 miesięcy kalendarzowych od zamknięcia. Niezbędne dowody reklamacji, odstąpienia i zwrotu płatności: do właściwego przedawnienia, ustalonego dla konkretnego roszczenia i prawa; zbędne kopie i załączniki usuwane w ciągu 90 dni od zamknięcia. Spory: potrzebne dowody przez postępowanie i wykonanie rozstrzygnięcia, z przeglądem co 6 miesięcy; zbędne materiały usuwane w ciągu 90 dni po prawomocnym zakończeniu i wykonaniu. Pozostałe potrzebne dowody mają udokumentowany właściwy termin. Incydenty bez naruszenia danych osobowych i bez sporu: minimalny opis, uzasadnienie oceny i działania naprawcze przez 12 miesięcy kalendarzowych od zamknięcia. Potwierdzone naruszenia danych: niezbędna dokumentacja główna i dowody powiadomień przez podlegający przeglądowi okres roboczy 6 lat kalendarzowych od zamknięcia, z corocznym przeglądem; nie jest to stały okres ustawowy ani uniwersalne maksimum. Zbędne robocze materiały incydentu: 30 dni po zamknięciu. Udokumentowane zabezpieczenie prawne obejmuje tylko potrzebne dowody i podlega przeglądowi co najmniej co 6 miesięcy; nie wygasa ani nie usuwa dowodów po cichu. Logiczne wygaśnięcie uniemożliwia dostęp do wygasłych materiałów przed asynchronicznym fizycznym usunięciem przez TTL. Retencja dostawców i kopii zapasowych: według osobnych informacji o dostawcach i kopiach."
     },
     "revenueCatStatus": {
-      "en": "[TO BE COMPLETED: revenueCatStatus]",
-      "pl": "[DO UZUPEŁNIENIA: revenueCatStatus]"
+      "en": "RevenueCat is integrated for subscription management. New Premium purchases are currently disabled",
+      "pl": "RevenueCat jest zintegrowany do obsługi subskrypcji. Nowe zakupy Premium są obecnie wyłączone"
     },
     "securityLogRetentionDays": {
-      "en": "180",
-      "pl": "180"
+      "en": "90",
+      "pl": "90"
     },
     "supervisoryAuthority": {
-      "en": "[TO BE COMPLETED: supervisoryAuthority]",
-      "pl": "[DO UZUPEŁNIENIA: supervisoryAuthority]"
+      "en": "the President of the Personal Data Protection Office (Prezes Urzędu Ochrony Danych Osobowych, Poland): https://uodo.gov.pl/en/681/1404",
+      "pl": "Prezesa Urzędu Ochrony Danych Osobowych (Polska): https://uodo.gov.pl/en/681/1404"
     },
     "taxIdentifier": {
-      "en": "[TO BE COMPLETED: taxIdentifier]",
-      "pl": "[DO UZUPEŁNIENIA: taxIdentifier]"
+      "en": "No public tax identifier",
+      "pl": "Brak publicznego identyfikatora podatkowego"
+    },
+    "contentReportRetentionDays": {
+      "en": "30",
+      "pl": "30"
+    },
+    "deletionEvidenceRetentionMonths": {
+      "en": "12",
+      "pl": "12"
     }
   }
 }

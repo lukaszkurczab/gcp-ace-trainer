@@ -1,5 +1,5 @@
 import type { ContentReportInput, ContentReportOutboxEntry, ContentReportOutboxStatus } from "../../domain";
-import { CONTENT_REPORT_REASONS, contentReportDescriptionIssue, isRegisteredTrackId } from "../../domain";
+import { CONTENT_REPORT_REASONS, minimizeContentReportInput, contentReportDescriptionIssue, isRegisteredTrackId } from "../../domain";
 import { localReportOutboxRetentionDays } from "../../legal/legalVariables";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
@@ -27,11 +27,16 @@ const isEntries = (value: unknown): value is ContentReportOutboxEntry[] => Array
 export const isContentReportOutboxEntries = isEntries;
 
 export function getContentReportOutbox(): readonly ContentReportOutboxEntry[] {
-  return Object.freeze(readCanonicalJson(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, isEntries) ?? []);
+  const entries = readCanonicalJson(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, isEntries) ?? [];
+  // Read legacy fields only to remove them without losing the queued report or its identity.
+  if (entries.some(({ input }) => Object.hasOwn(input, "linkAccount") || Object.hasOwn(input, "contactEmail"))) {
+    return saveContentReportOutbox(entries);
+  }
+  return Object.freeze(entries);
 }
 
 export function saveContentReportOutbox(entries: readonly ContentReportOutboxEntry[]): readonly ContentReportOutboxEntry[] {
-  const next = [...entries];
+  const next = entries.map((entry) => ({ ...entry, input: minimizeContentReportInput(entry.input) }));
   if (next.length === 0) {
     removeCanonicalValue(STORAGE_KEYS.CONTENT_REPORT_OUTBOX);
     return Object.freeze(next);
@@ -40,7 +45,8 @@ export function saveContentReportOutbox(entries: readonly ContentReportOutboxEnt
   return Object.freeze(next);
 }
 
-export function upsertContentReportOutboxEntry(entry: ContentReportOutboxEntry): ContentReportOutboxEntry {
+export function upsertContentReportOutboxEntry(candidateEntry: ContentReportOutboxEntry): ContentReportOutboxEntry {
+  const entry = { ...candidateEntry, input: minimizeContentReportInput(candidateEntry.input) };
   const current = getContentReportOutbox();
   const existing = current.find((candidate) => candidate.input.clientSubmissionId === entry.input.clientSubmissionId);
   if (existing) {

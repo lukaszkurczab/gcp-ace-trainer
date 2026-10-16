@@ -41,3 +41,18 @@ test("visible legal screens request the selected locale directly", () => {
     assert.doesNotMatch(source, /\? "pl" : "en"/u);
   }
 });
+
+test("rendered dispute and support clauses preserve consumer venue and statutory rights", () => {
+  const enDisputes = termsOfService.en.split("13. Governing law and disputes")[1]!.split("14. Changes")[0]!;
+  const plDisputes = termsOfService.pl.split("13. Prawo właściwe i spory")[1]!.split("14. Zmiany")[0]!;
+  assert.match(enDisputes, /mandatory consumer protections/u);
+  assert.match(enDisputes, /right to bring a claim[\s\S]*place of residence/u);
+  assert.match(plDisputes, /bezwzględnej ochrony konsumenckiej/u);
+  assert.match(plDisputes, /prawa do wniesienia sprawy[\s\S]*miejscu Twojego zamieszkania/u);
+  const enAdr = termsOfService.en.split("21. Out-of-court dispute resolution")[1]!.split("22.")[0]!;
+  const plAdr = termsOfService.pl.split("21. Pozasądowe rozstrzyganie sporów")[1]!.split("22.")[0]!;
+  assert.match(enAdr, /express statement on participation or refusal[\s\S]*durable medium/u);
+  assert.match(plAdr, /trwałym nośniku[\s\S]*oświadczenie o udziale albo odmowie/u);
+  assert.match(termsOfService.en, /Required security and conformity updates[\s\S]*mandatory law/u);
+  assert.match(termsOfService.pl, /Aktualizacje bezpieczeństwa i zgodności[\s\S]*bezwzględnie obowiązującym prawem/u);
+});

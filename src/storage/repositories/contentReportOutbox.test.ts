@@ -6,6 +6,7 @@ import { bootstrapApplication } from "../../application/bootstrap";
 import { configurePatternlyAppCheckTokenProvider } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { installKeyValueStorageForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { getContentReportOutbox, purgeExpiredContentReportOutboxEntries, updateContentReportOutboxStatus, upsertContentReportOutboxEntry } from "./contentReportOutboxRepository";
+import { readCanonicalJson, writeCanonicalJson } from "./canonicalRecordCodec";
 import { STORAGE_KEYS } from "../keys";
 import { TEST_CONTENT_ARTIFACT_METADATA } from "../../testing/contentArtifactMetadataFixture";
 
@@ -241,4 +242,53 @@ test("teardown during an in-flight response leaves the entry retryable for dupli
   await current.ready;
   assert.deepEqual(getContentReportOutbox(), []);
   current.unregister();
+});
+
+
+test("new report projection never stores or transmits an account or contact supplied at runtime", async () => {
+  configurePatternlyAppCheckTokenProvider(async () => "verified-app-check-token");
+  const extra = { ...baseInput, linkAccount: true, contactEmail: "private@example.test", context: { ...baseInput.context, userId: "private-account" } };
+  const queued = await submitContentReport(extra);
+  assert.equal(Object.hasOwn(queued.entry.input, "linkAccount"), false);
+  assert.equal(Object.hasOwn(queued.entry.input, "contactEmail"), false);
+  assert.equal(Object.hasOwn(queued.entry.input.context, "userId"), false);
+  let sent = false;
+  await retryContentReport(queued.entry.input.clientSubmissionId, { create: async (input) => {
+    sent = true;
+    assert.deepEqual(input, queued.entry.input);
+    assert.doesNotMatch(JSON.stringify(input), /private@example|private-account|linkAccount|contactEmail/);
+    return { duplicate: false };
+  } });
+  assert.equal(sent, true);
+});
+
+test("legacy contact fields are removed durably while report content and retry identity survive", async () => {
+  const queued = await submitContentReport(baseInput);
+  writeCanonicalJson(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, [{ ...queued.entry, input: { ...queued.entry.input, linkAccount: true, contactEmail: "private@example.test" } }]);
+  const recovered = getContentReportOutbox();
+  assert.deepEqual(recovered, [queued.entry]);
+  assert.deepEqual(readCanonicalJson(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, (value): value is unknown[] => Array.isArray(value)), [queued.entry]);
+  assert.deepEqual(getContentReportOutbox(), [queued.entry]);
+  configurePatternlyAppCheckTokenProvider(async () => "verified-app-check-token");
+  const result = await retryContentReport(queued.entry.input.clientSubmissionId, { create: async (input) => {
+    assert.deepEqual(input, queued.entry.input);
+    return { duplicate: false };
+  } });
+  assert.equal(result.status, "accepted");
+});
+
+test("failed legacy minimization blocks transmission and preserves the original report for retry", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  const queued = await submitContentReport(baseInput);
+  writeCanonicalJson(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, [{ ...queued.entry, input: { ...queued.entry.input, contactEmail: "private@example.test" } }]);
+  storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.CONTENT_REPORT_OUTBOX });
+  let calls = 0;
+  await assert.rejects(retryContentReport(queued.entry.input.clientSubmissionId, { create: async () => {
+    calls += 1;
+    return { duplicate: false };
+  } }));
+  assert.equal(calls, 0);
+  storage.setFailurePlan(null);
+  assert.deepEqual(getContentReportOutbox(), [queued.entry]);
 });

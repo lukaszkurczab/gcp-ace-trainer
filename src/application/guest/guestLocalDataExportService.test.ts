@@ -229,8 +229,6 @@ test("includes user settings, reminder preferences, and report text without tran
           platform: "ios",
           occurredAt: "2026-10-09T11:00:00.000Z",
         },
-        linkAccount: true,
-        contactEmail: "learner@example.test",
       },
       status: "retrying",
       attemptCount: 4,
@@ -246,7 +244,7 @@ test("includes user settings, reminder preferences, and report text without tran
     assert.deepEqual(document.settings.reminders, { kind: "device", enabled: false, schedules: [], pending: null });
     assert.equal(document.userReports.length, 1);
     assert.equal(document.userReports[0].description, "The explanation describes the wrong boundary condition.");
-    assert.equal(document.userReports[0].contactEmail, "learner@example.test");
+    assert.equal(Object.hasOwn(document.userReports[0], "contactEmail"), false);
     assert.equal(document.userReports[0].context.trackNode, "arrays");
     const exported = JSON.stringify(document);
     for (const omitted of ["private-transport-id", "private-release-id", "private-build", "private-transport-error", "attemptCount", "linkAccount"]) {
