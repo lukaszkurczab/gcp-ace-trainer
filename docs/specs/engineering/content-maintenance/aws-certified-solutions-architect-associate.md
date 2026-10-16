@@ -1,12 +1,14 @@
 # FCA — aws-certified-solutions-architect-associate
 
+> Porządki 16.10.2026: odnośniki do usuniętych raportów zastąpiono podsumowaniem ustaleń. Nie zachowano tu ich surowych dowodów; status i pozostały zakres określa jeden plan workspace.
+
 Status i kolejność: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Zachowane opisy problemów i wersje poniżej przedstawiają stan BEFORE ze źródeł z 07.10; bieżący status napraw wskazuje raport wykonania.
 
 ## FCA-EDIT-658fa75523 — aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/amazon_mq_protocol_preserving_integration
 
 **Status: ZAMKNIĘTE — PASS (11.10.2026).** Niezależne semantic/integration QA, świeże AWS-02 admission i release gate PASS; szczegóły oraz rzeczywiste testy są w raporcie.
 
-Wykonanie 11.10.2026: właściciel w aktywnej rozmowie dopuścił ten zakres oraz dokładne pakiety SAA-20261010-01…12 przed pierwszym iOS, z ochroną Q13 i cudzych zmian. Bieżący odbiór i publikacja: [raport napraw](../../../reports/aws-saa-fixes-2026-10-11.md). Poniższe findings i hashe opisują stan BEFORE; nie są dowodem dla poprawionego pakietu. Zakres zachowuje jedno istniejące zadanie FCA, bez konkurencyjnej kolejki.
+Wykonanie 11.10.2026: właściciel w aktywnej rozmowie dopuścił ten zakres oraz dokładne pakiety SAA-20261010-01…12 przed pierwszym iOS, z ochroną Q13 i cudzych zmian. Bieżący odbiór i publikacja: raport napraw (historyczny plik `aws-saa-fixes-2026-10-11.md` niedostępny). Poniższe findings i hashe opisują stan BEFORE; nie są dowodem dla poprawionego pakietu. Zakres zachowuje jedno istniejące zadanie FCA, bez konkurencyjnej kolejki.
 
 Plik: `content/aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/amazon_mq_protocol_preserving_integration.json`. Badana wersja: `aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096`.
 SHA-256 pliku BEFORE: `6d13a60fda5a12581896bb87945ab0e5e0815c29682578e5ec8efd140ee014f4`.

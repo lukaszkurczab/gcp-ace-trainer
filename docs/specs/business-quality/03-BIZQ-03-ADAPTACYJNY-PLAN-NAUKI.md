@@ -1,5 +1,7 @@
 # BIZQ-03 — adaptacyjny plan pod zakres, czas i termin
 
+> Porządki 16.10.2026: odnośniki do usuniętych raportów zastąpiono podsumowaniem ustaleń. Nie zachowano tu ich surowych dowodów; status i pozostały zakres określa jeden plan workspace.
+
 **Priorytet:** P1  
 **Główne repo:** aplikacja + content; backend wyłącznie jako konsument koniecznej zmiany kontraktu sync  
 **Zależności odbioru:** BIZQ-02, BIZQ-04, BIZQ-05 oraz naprawione pytania z BIZQ-01  
@@ -433,7 +435,7 @@ Bieżący kalendarz wymaga distinct unknown capacity i unknown-blocked obligatio
 bez dopisywania ich do confirmed no-fit/shortfall; real due jest rozkładane
 według earliest due i dostępnej pojemności. Native bounded account preparation,
 zachowanie11 wcześniejszych profili/kategorii77/77 i cold-start powiązanego
-profilu mają niezależny odbiór: [raport](../../reports/bizq03-account-profile-native-2026-10-09.md).
+profilu mają niezależny odbiór: raport (historyczny plik `bizq03-account-profile-native-2026-10-09.md` niedostępny).
 Nie zastępuje to journal fault/relaunch, aktywnej sesji ani trzech planów.
 
 Korekta bramki CI po policy-only v2: rzeczywisty candidateContentReleaseLock

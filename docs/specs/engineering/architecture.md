@@ -1,13 +1,15 @@
-# Architektura i kontrakty — zakres pozostałych zadań
+# Architektura i kontrakty — wymagania oraz granice odbioru
+
+> Porządki 16.10.2026: odnośniki do usuniętych raportów zastąpiono podsumowaniem ustaleń. Nie zachowano tu ich surowych dowodów; status i pozostały zakres określa jeden plan workspace.
 
 Status i kolejność należą wyłącznie do [planu głównego](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Ten dokument precyzuje zadania; nie stanowi drugiej kolejki ani dowodu obecnego defektu.
 
-Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3fac115`, backend `039f7f000e701c4fbc69e18a1fb66528cbc5cdcb`, content `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03`. Poniżej podano aktualną brakującą pracę i granicę dowodu. Nie trzeba odtwarzać audytu02.10 ani dawnych pakietów; zwykły preflight wykonawcy ma tylko wykryć późniejszą zmianę źródła. Historyczne probes/pomiary przytoczone w opisach nie są nowym native acceptance. CH-01–05 pozostają zakończone.
+Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3fac115`, backend `039f7f000e701c4fbc69e18a1fb66528cbc5cdcb`, content `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03`. Poniżej zachowano kontrakty wcześniejszych zakresów i granice dowodu. Opisy problemów z07.10 są baseline, nie nową kolejką; odebrane zakresy i residual ownerów28 mają pierwszeństwo. Nie trzeba odtwarzać audytu02.10 ani dawnych pakietów; zwykły preflight wykonawcy ma tylko wykryć późniejszą zmianę źródła. Historyczne probes/pomiary przytoczone w opisach nie są nowym native acceptance. CH-01–05 pozostają zakończone.
 
 
 ## ARCH-01 — odciąć kernel i kontrakty application od katalogu, infrastruktury i UI
 
-**Bieżący zakres:** `src/domain/learning/{learningPlan,resolvedContentRef}.ts; src/domain/goals/goalContracts.ts; src/domain/tracks/trackAdmission.ts; src/storage/repositories/trainingModelGuards.ts; src/application/coding-interview/codingInterviewContracts.ts`. goalContracts→trackAdmission nadal ładuje catalog; guards importuje domain barrel; codingInterviewContracts importuje feature sessionConfig. Kernel/guards nie są jeszcze neutralne.
+**Zakres kontraktu (baseline07.10):** `src/domain/learning/{learningPlan,resolvedContentRef}.ts; src/domain/goals/goalContracts.ts; src/domain/tracks/trackAdmission.ts; src/storage/repositories/trainingModelGuards.ts; src/application/coding-interview/codingInterviewContracts.ts`. goalContracts→trackAdmission nadal ładuje catalog; guards importuje domain barrel; codingInterviewContracts importuje feature sessionConfig. Kernel/guards nie są jeszcze neutralne.
 
 - **Severity / findings:** HIGH; F-01 i F-08. **Problem:** czyste modele oraz storage guards ładują konkretne banki, a komenda application zależy od feature union.
 - **Repository evidence / affected:** `patternly`: learningPlan, learningPlanProposalGenerator, resolvedContentRef, goalContracts, trackAdmission, domain/content barrels, trainingModelGuards, codingInterviewContracts/sessionConfig; symbole i krawędzie F-01/08. Actual probe potwierdza ładowanie modułów, nie tylko import typu.
@@ -22,7 +24,7 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## ARCH-02 — powierzyć semantykę sesji zarejestrowanym family runtimes
 
-**Bieżący zakres:** `src/application/{contentPackageRuntimeOwner.ts,canonical/CanonicalTrainingRuntime.ts,trainingLifecycle/}; patternly-content/scripts/build.mjs`. Package owner nadal tworzy CanonicalTrainingRuntime bez registry family factories; centralny runtime obsługuje scoring/preparation/simulation wszystkich rodzin i switches familyId. Producent nadal dispatchuje loader po trackId.
+**Zakres kontraktu (baseline07.10):** `src/application/{contentPackageRuntimeOwner.ts,canonical/CanonicalTrainingRuntime.ts,trainingLifecycle/}; patternly-content/scripts/build.mjs`. Package owner nadal tworzy CanonicalTrainingRuntime bez registry family factories; centralny runtime obsługuje scoring/preparation/simulation wszystkich rodzin i switches familyId. Producent nadal dispatchuje loader po trackId.
 
 - **Severity / findings:** HIGH; F-02. **Problem:** centralny runtime i package owner decydują o rodzinie oraz wykonują wszystkie family policies.
 - **Repository evidence / affected:** `patternly`: CanonicalTrainingRuntime, contentPackageRuntimeOwner, trainingLifecycle contracts/composition, istniejące track/family modules; `patternly-content/scripts/build.mjs` validateTrack/verifyExistingArtifact wyłącznie w zakresie track→family profile-loader binding; prepare/submitPractice/finalizeSimulation/finalizeDesignSimulation/queryProgress i mapa families.
@@ -37,7 +39,7 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## ARCH-03 — Certification sterowane track instance i dokładnym profilem
 
-**Odebrane lokalnie 15.10.2026, prompt26.** [Kontrakt, testy i granice](../../reports/solo-certification26-2026-10-15.md), [manifest własnych zmian i pinów](../../reports/solo-certification26-2026-10-15.json). Brak residualu ARCH-03; ARCH-07/08 pozostają osobnymi zadaniami.
+**Odebrane lokalnie 15.10.2026, prompt26.** [zachowane ustalenia; dawny raport usunięty](../../../../docs/reports/current-audit.md), [zachowane ustalenia; dawny raport usunięty](../../../../docs/reports/current-audit.md). Brak residualu ARCH-03; ARCH-07/08 pozostają osobnymi zadaniami.
 
 - Certification rozwiązuje jeden jawny profil family/mode z dokładnego artefaktu tracku. Wspólny resolver, selektor i review nie mają GCP default ani wymogu exact50. Start/Practice/resume otrzymują trackId; wynik ładuje sesję po sessionId i sprawdza jej track/contentVersion/artifact SHA oraz unikalny profileId/profileVersion. Snapshot, plan fingerprint, quotas i źródła odpowiedzi pozostają sprawdzane; brak/mismatch profilu i niedobór puli są jawne.
 - Current producer używa canonical questionId→nodeId oraz jednego `profile.nodeDomainMap` w config GCP. Producer-only `currentAttribution` wiąże wersję, pełny inventory i uporządkowany crosswalk z hashami; nie jest emitowane do artefaktu. Build nie czyta starego published bank. `nodeDomainMapEvidence` jest historyczną provenance, bez utożsamiania jej count z bieżącym inventory.
@@ -48,7 +50,7 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## ARCH-04 — jeden pionowy owner każdej interakcji
 
-**Bieżący zakres:** `src/content/canonical/{questionTypes,questionValidation,questionScoring}.ts; src/application/canonical/canonicalInteractionPresentation.ts; src/application/trainingLifecycle/contracts.ts; src/features/practice/canonicalQuestionViewModel.ts`. Globalne question unions, validator/scorer i presentation dispatch nadal są właścicielami wielu concrete interactions. BIZQ scoring/feedback fixes należy przenieść bez zmiany ich zachowania, nie implementować ponownie.
+**Zakres kontraktu (baseline07.10):** `src/content/canonical/{questionTypes,questionValidation,questionScoring}.ts; src/application/canonical/canonicalInteractionPresentation.ts; src/application/trainingLifecycle/contracts.ts; src/features/practice/canonicalQuestionViewModel.ts`. Globalne question unions, validator/scorer i presentation dispatch nadal są właścicielami wielu concrete interactions. BIZQ scoring/feedback fixes należy przenieść bez zmiany ich zachowania, nie implementować ponownie.
 
 - **Severity / findings:** HIGH; F-04. **Problem:** konkretne typy/payloads i reguły są rozsiane po globalnych unionach, scorerze, validatorze, feedback composerze oraz UI dispatcherze.
 - **Repository evidence / affected:** `patternly`: questionTypes/questionValidation/questionScoring, canonicalInteractionPresentation, trainingLifecycle/contracts, canonicalQuestionViewModel, codingInterviewSessionFacade response mapping i istniejące interaction views. Mappings UI same w sobie nie są defektem; audyt potwierdza centralne domain authority.
@@ -63,7 +65,7 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## ARCH-05 — jedna projekcja evidence, rekomendacji i wyniku dla UI
 
-**Ownership slice odebrany 15.10.2026, prompt24: PASS kod i wąskie lokalne testy; niezależny QA Luna High PASS.** [Wynik, pliki, zachowane kontrakty i granice dowodów](../../reports/solo-projections24-2026-10-15.md). To nie jest odbiór usług/wydania ani pełnego biznesowego BIZQ.
+**Ownership slice odebrany 15.10.2026, prompt24: PASS kod i wąskie lokalne testy; niezależny QA Luna High PASS.** [zachowane ustalenia; dawny raport usunięty](../../../../docs/reports/current-audit.md). To nie jest odbiór usług/wydania ani pełnego biznesowego BIZQ.
 
 Home/Progress używają wspólnej exact kwalifikacji `application/learningPlan/learningEvidenceProjection.ts` i tych samych przechwyconych faktów/czasu, zachowując snapshot oraz profile/source fences. Istniejący family owner `application/coding-interview` liczy okna/trendy/pokrycie/remediation/rekomendacje; canonical family agreguje wyniki, application składa projekcje. UI formatuje/renderuje i mapuje request na route. Historyczna aktywność pozostaje osobnym widokiem tych samych durable facts, a Claude zachowuje historyczne exact review obligations.
 
@@ -71,7 +73,7 @@ ResultScreen konsumuje exact application review maxPoints; Practice opiera maksi
 
 ## ARCH-06 — track-owned taxonomy i wskazówki prezentacji
 
-**Odebrane 15.10.2026, prompt25: PASS kod i celowane testy lokalne; niezależny QA Luna High PASS.** [Odbiór, manifest, komendy i ograniczenia](../../reports/solo-descriptors25-2026-10-15.md). Bez residualu ARCH-06; odbiór urządzenia, usług i wydania pozostaje odrębny.
+**Odebrane 15.10.2026, prompt25: PASS kod i celowane testy lokalne; niezależny QA Luna High PASS.** [zachowane ustalenia; dawny raport usunięty](../../../../docs/reports/current-audit.md). Bez residualu ARCH-06; odbiór urządzenia, usług i wydania pozostaje odrębny.
 
 Istniejący `domain/tracks/trackAdmission.ts` posiada app-owned presentation config, authored metadata Claude/GCP i listy roadmap poza coding. Application przekazuje gotowe metadata/emptyState/config; shared Practice/Progress wybiera wariant po kontrakcie, bez provider-ID dispatch. Historyczna aktywność rozstrzyga domenę z descriptora własnego tracka, brak metadata/unknown variant daje jawne unavailable. Usunięto feature-owned katalog metadata, powtórzone listy i GCP readiness/label fallback; pozostały `EXAM_DOMAIN_LABELS` jest wyłącznie projekcją tego samego ownera dla rzeczywistych exam/review konsumentów.
 
@@ -83,11 +85,11 @@ Zachowano dziewięć tracków, authored copy, coding roadmap owner, piny/source-
 
 Usunięto `features/home/localReset.ts` i martwe copy/result/scope helpers oraz tylko copy self-test. Aktywny native `Persist13ResetFixtureRoot` i wartościowe reset/draft tests wywołują teraz bezpośrednio `commitLearningStateReset(new Date().toISOString())`, zachowując canonical barrier/journal. UI nadal przechodzi przez account command; account reset tests mają poprawiony lokalny wire-valid seed, bez zmiany produkcyjnego kontraktu ani globalnego test support. Live lifecycle/family/account owners nadal chronią start/resume/finalize/reset/review. Refcheck/typecheck i celowane testy PASS; brak usuniętych eksportów i bezpośrednich `saveTrainingSession` w produkcyjnych features/families.
 
-Świeża natywna delta: istniejący iPhone17, izolowany raw MMKV fixture, pauza po usunięciu11 targets przy `journal_durable`, przed ACK/verify; SIGKILL i cold production bootstrap recovery. Dwa bootstrapy idempotentne, journal/targets absent,4 preserved records identical, własne stores usunięte. Istniejące MMKV/content/RC files byte-identical; osobna zmiana SDK heartbeat sklasyfikowana. Nie jest to encrypted/keychain/account ani pełna macierz PERSIST-13. Historyczny linkowany reset report był niedostępny, nie przyjęto go jako dowodu. [Odbiór27, komendy i granice](../../reports/solo-api27-2026-10-15.md), [manifest](../../reports/solo-api27-2026-10-15.json). Brak residualu ARCH-07; ARCH-08 pozostaje osobno. SessionShell i historyczne artefakty bez zmian.
+Świeża natywna delta: istniejący iPhone17, izolowany raw MMKV fixture, pauza po usunięciu11 targets przy `journal_durable`, przed ACK/verify; SIGKILL i cold production bootstrap recovery. Dwa bootstrapy idempotentne, journal/targets absent,4 preserved records identical, własne stores usunięte. Istniejące MMKV/content/RC files byte-identical; osobna zmiana SDK heartbeat sklasyfikowana. Nie jest to encrypted/keychain/account ani pełna macierz PERSIST-13. Historyczny linkowany reset report był niedostępny, nie przyjęto go jako dowodu. [zachowane ustalenia; dawny raport usunięty](../../../../docs/reports/current-audit.md), [zachowane ustalenia; dawny raport usunięty](../../../../docs/reports/current-audit.md). Brak residualu ARCH-07; ARCH-08 pozostaje osobno. SessionShell i historyczne artefakty bez zmian.
 
 ## ARCH-08 — kontrole rzeczywistych granic i negatywne fixture architektury
 
-**Bieżący zakres:** `scripts/{architectureBoundaries,mutationArchitecture}.test.ts; src/tracks/certification/certificationResultPresentation.test.ts`. Checkery nadal głównie używają literal/name guards; current forbidden importy z ARCH-01/02/04/05 nie są rozwiązywane jako pełne edges. Nie rozszerzać do zakazu legalnej composition ani nowej release gate.
+**Zakres kontraktu (baseline07.10):** `scripts/{architectureBoundaries,mutationArchitecture}.test.ts; src/tracks/certification/certificationResultPresentation.test.ts`. Checkery nadal głównie używają literal/name guards; current forbidden importy z ARCH-01/02/04/05 nie są rozwiązywane jako pełne edges. Nie rozszerzać do zakazu legalnej composition ani nowej release gate.
 
 - **Severity / findings:** MEDIUM; F-11. **Problem:** aktualne zielone testy nie wykrywają potwierdzonych forbidden paths i utrwalają UI scoring.
 - **Repository evidence / affected:** `patternly`: scripts/architectureBoundaries.test.ts, scripts/mutationArchitecture.test.ts, certificationResultPresentation.test.ts, import/export boundaries wskazane F-01/02/04/06/08.

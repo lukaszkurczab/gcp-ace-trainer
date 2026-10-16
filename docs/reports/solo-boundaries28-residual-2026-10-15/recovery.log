@@ -1,9 +1,0 @@
-
-> patternly@0.1.0 recovery:check
-> node --import tsx scripts/checkRecoveryBaseline.mjs
-
-RECOVERY_INVENTORY_CHECK=passed
-RECOVERY_ACTIVE_SOURCE_FILES=554
-RECOVERY_ACTIVE_TESTS=432
-RECOVERY_TEST_CASES=2652
-RECOVERY_STAGE_1_BOUNDARIES=passed

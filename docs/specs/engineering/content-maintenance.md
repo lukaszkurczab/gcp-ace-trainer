@@ -1,5 +1,7 @@
 # Utrzymanie banków — zachowane zadania naprawcze
 
+> Porządki 16.10.2026: odnośniki do usuniętych raportów zastąpiono podsumowaniem ustaleń. Nie zachowano tu ich surowych dowodów; status i pozostały zakres określa jeden plan workspace.
+
 Priorytet i status określa wyłącznie [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Porównanie z 07.10.2026 obejmuje źródła contentu `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03` i wersję audytowaną `78ba999098ea12704b74fe9de2eecdf89578e885`.
 
 Historyczna lista zachowuje 158 zakresów napraw obejmujących 2 129 pytań z porównania 07.10. Treść niezmienionych zakresów odpowiada ocenianym źródłom; naprawy i ich aktualny status wskazano przy istniejących zadaniach. Dokumenty poniżej zawierają konkretne problemy, identyfikatory i skróty plików. Pozwalają rozpocząć poprawę wybranej partii bez odtwarzania całego audytu. Przed zmianą sprawdź jednak, czy pliki nadal odpowiadają tym skrótom.
@@ -39,4 +41,4 @@ Doprowadź spójnie zmianę źródeł, wersję i migrację, zatwierdzenie i dopu
 
 ## Celowane naprawy AWS SAA — odebrane 11.10.2026
 
-[Raport wykonania](../../reports/aws-saa-fixes-2026-10-11.md): PO autoryzował przed iOS dokładne SAA-20261010-01…12 oraz istniejące FCA-EDIT-658fa75523. Naprawiono 28 pytań w 12 plikach, z niezależnym semantic/integration QA PASS, nowym kandydatem, runtime admission i release gate. FCA jest zamknięte; dawne opisy poniżej linku służą jako BEFORE. Pozostały audyt banku jest PARTIAL. Q13 i równolegle opublikowane naprawy Claude zachowano.
+Raport wykonania (historyczny plik `aws-saa-fixes-2026-10-11.md` niedostępny): PO autoryzował przed iOS dokładne SAA-20261010-01…12 oraz istniejące FCA-EDIT-658fa75523. Naprawiono 28 pytań w 12 plikach, z niezależnym semantic/integration QA PASS, nowym kandydatem, runtime admission i release gate. FCA jest zamknięte; dawne opisy poniżej linku służą jako BEFORE. Pozostały audyt banku jest PARTIAL. Q13 i równolegle opublikowane naprawy Claude zachowano.

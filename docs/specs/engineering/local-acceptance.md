@@ -1,5 +1,7 @@
 # AUD-06 — lokalny odbiór i SIM-READY
 
+> Porządki 16.10.2026: odnośniki do usuniętych raportów zastąpiono podsumowaniem ustaleń. Nie zachowano tu ich surowych dowodów; status i pozostały zakres określa jeden plan workspace.
+
 Status i kolejność: [plan główny](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). SIM-READY jest wynikiem tego zadania. Nie ustanowiono go w dotychczasowych raportach.
 
 ## Macierz krytycznych przepływów
@@ -21,7 +23,7 @@ Historyczna mapa odbioru i granic: app Git `e889b05d:docs/active/AUD-06/REPORT.m
 
 ## AUD-06-CHECK — frontend client scanner
 
-Naprawa rozpoznawania literalnych `lifecycle.request`/`requestAdminJson` została dostarczona w backendzie `4d8efbd` podczas BIZQ-03. Historyczny odbiór:25/25 testów parsera i independently sprawdzone rzeczywiste callsites; świeże `node scripts/check-frontend-client.mjs`11.10 rozpoznało54 używane operacje (PASS). Szczegóły w [raporcie źródłowym BIZQ-03](../../reports/bizq03-source-acceptance-2026-10-09.md).
+Naprawa rozpoznawania literalnych `lifecycle.request`/`requestAdminJson` została dostarczona w backendzie `4d8efbd` podczas BIZQ-03. Historyczny odbiór:25/25 testów parsera i independently sprawdzone rzeczywiste callsites; świeże `node scripts/check-frontend-client.mjs`11.10 rozpoznało54 używane operacje (PASS). Szczegóły w raporcie źródłowym BIZQ-03 (historyczny plik `bizq03-source-acceptance-2026-10-09.md` niedostępny).
 
 Pozostaje granica narzędzia: parser nie rozwiązuje import/symbol bindings, więc syntetyczny no-op o tej samej nazwie lokalnej może zostać policzony. Obecne callsites potwierdzono niezależnie; nie jest to dowód transportu dowolnego przyszłego kodu ani brakująca naprawa11 operacji. Zachować istniejące negative fixtures (unknown options/spread/computed method/staticpath bez wywołania), bez atrap konsumentów lub usuwania endpointów dla GREEN. Realny transport ma osobne odbiory usług.
 

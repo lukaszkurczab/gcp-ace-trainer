@@ -1,5 +1,7 @@
 # Code health — zakres i kryteria odbioru
 
+> Porządki 16.10.2026: odnośniki do usuniętych raportów zastąpiono podsumowaniem ustaleń. Nie zachowano tu ich surowych dowodów; status i pozostały zakres określa jeden plan workspace.
+
 Status i kolejność należą wyłącznie do [planu głównego](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Ten dokument zachowuje pełne kryteria odbioru; datowane diagnozy i opisy wymaganych poprawek są historią, chyba że sekcja „Bieżący status” wskazuje jawnie pozostały zakres. Nie stanowi drugiej kolejki ani samodzielnego dowodu obecnego defektu.
 
 Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3fac115`, backend `039f7f000e701c4fbc69e18a1fb66528cbc5cdcb`, content `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03`. Nie opisuje on bieżącego stanu tych gałęzi. Historyczne probes/pomiary nie są nowym native acceptance. CH-01–05 pozostają zakończone.
@@ -7,7 +9,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## CH-06 — usunięcie starych formatów i zapisu ukrytego w odczycie reminders
 
-**Bieżący status:** CH-06 został odebrany dla zakresu source/local/full gate/exact CI. Bieżące [getters](../../../src/storage/repositories/notificationSettingsRepository.ts#L227) odczytują kanoniczne envelopes bez zapisu; historyczne formaty są jawnie odrzucane. Dowody i granica bez native UI/device: [odbiór CH-06](../../reports/ch06-acceptance-2026-10-12.md). To nie otwiera ponownie wymaganej pracy.
+**Bieżący status:** CH-06 został odebrany dla zakresu source/local/full gate/exact CI. Bieżące [getters](../../../src/storage/repositories/notificationSettingsRepository.ts#L227) odczytują kanoniczne envelopes bez zapisu; historyczne formaty są jawnie odrzucane. Dowody i granica bez native UI/device: odbiór CH-06 (historyczny plik `ch06-acceptance-2026-10-12.md` niedostępny). To nie otwiera ponownie wymaganej pracy.
 
 **Historyczna diagnoza:** W baseline poprzedzającym CH-06 odczyty `getDeviceReminderSettingsSnapshot`/`getDeviceReminderJournal` normalizowały i zapisywały legacy formaty, a testy oczekiwały migracji. Cancellation IDs były i pozostają używane przez bieżący runtime.
 
@@ -21,7 +23,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## CH-07 — jeden sposób adresowania danych profilu, bez legacy namespace
 
-**Bieżący status:** CH-07 odebrany source/local/exact CI oraz natywny Guest/login/logout smoke i preservation (AC9): zachowane12pierwotnychprofili/ten samGuest, jeden dodatkowy profil autoryzowanego nowego smoke account. Dowody i ograniczenia: [plan](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md), [raport CH-07](../../reports/ch07-acceptance-2026-10-12.md). Nie oznacza to gotowości wydania ani odbioru PERSIST-13.
+**Bieżący status:** CH-07 odebrany source/local/exact CI oraz natywny Guest/login/logout smoke i preservation (AC9): zachowane12pierwotnychprofili/ten samGuest, jeden dodatkowy profil autoryzowanego nowego smoke account. Dowody i ograniczenia: [plan](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md), raport CH-07 (historyczny plik `ch07-acceptance-2026-10-12.md` niedostępny). Nie oznacza to gotowości wydania ani odbioru PERSIST-13.
 
 **Historyczna diagnoza:** Przed zmianą CH-07 router/MMKV obsługiwały `legacy_owner`/`legacy_guest` i bootstrap nieskopowanych kluczy; `continueAsGuestInNewProfile` było eksportowane bez call site. Zmiana usunęła te ścieżki, zachowując journal/registry guards operacji Guest34.
 
@@ -35,7 +37,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## CH-08 — testowalna finalizacja konta zamiast kombinacji flag w providerze
 
-**Bieżący status:** CH-08 został odebrany dla bounded source/local/full gate/exact CI. [Provider](../../../src/application/account/AccountSessionProvider.tsx#L1000) przekazuje `AccountFinalizationOptions` do [wyodrębnionego executora](../../../src/application/account/accountFinalization.ts); szczegóły napraw i granice dowodu są w [raporcie odbioru CH-08](../../reports/ch08-acceptance-2026-10-12.md). Raport zachowuje nieblokującą lukę testową i nie twierdzi pełnego native acceptance CH-07.
+**Bieżący status:** CH-08 został odebrany dla bounded source/local/full gate/exact CI. [Provider](../../../src/application/account/AccountSessionProvider.tsx#L1000) przekazuje `AccountFinalizationOptions` do [wyodrębnionego executora](../../../src/application/account/accountFinalization.ts); szczegóły napraw i granice dowodu są w raporcie odbioru CH-08 (historyczny plik `ch08-acceptance-2026-10-12.md` niedostępny). Raport zachowuje nieblokującą lukę testową i nie twierdzi pełnego native acceptance CH-07.
 
 **Historyczna diagnoza:** W baseline przed CH-08 `AccountSessionProvider` wykonywał `finalizeCurrent` z pozycyjnymi flagami. Wydzielenie ownera oraz testy stale-generation były wtedy brakujące.
 

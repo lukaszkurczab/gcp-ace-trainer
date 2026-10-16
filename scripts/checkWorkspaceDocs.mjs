@@ -42,7 +42,7 @@ for (const path of [
   join(workspace, "docs/01-product-definition.md"),
   join(workspace, "docs/03-navigation-and-flows.md"),
   join(workspace, "docs/execution-prompts/2026-10-13/README.md"),
-  join(workspace, "docs/reports/solo-docs33-2026-10-16.md"),
+  join(workspace, "docs/reports/current-audit.md"),
   join(workspace, "patternly-backend/README.md"),
   join(app, "AGENTS.md"), join(app, ".agent/WORKING_STATE.md"),
   join(app, "docs/specs/engineering/performance.md"),

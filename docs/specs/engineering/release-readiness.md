@@ -1,5 +1,7 @@
 # LEGAL-VALUES — wymagane dane właściciela
 
+**Kolejność16.10: Android przed iOS.** Historia poniżej opisuje dotychczasowe fakty. W prompt40 dostosować wymagania techniczne (dotychczas EN/PL iOS16.4), sklep/ofertę i linki do kandydata Androida; wspólny legal/export siedmiu locale pozostaje wymagany przed publikacją. Nie uznawać historycznego Apple wariantu za gotowy Android.
+
 Status: **BLOCKED prompt40 / R01 — zakres nieukończony.** Praca lokalna UI/backend może trwać. Kanoniczny zapis: `config/public-legal.release.json` w app. To publiczne dane wydaniowe, nie sekret ani plik lokalnego runtime. Nie przesyłać haseł/tokenów/API keys.
 
 Realny przykład: użytkownik otwiera Settings → Legal information → Terms i musi znaleźć rzeczywistego sprzedawcę, kontakt reklamacyjny/odstąpienia oraz cenę i odnowienie Premium. Brak tych danych blokuje release config/build i produkcyjny eksport prawny WWW.

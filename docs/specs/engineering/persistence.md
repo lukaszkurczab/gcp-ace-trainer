@@ -1,5 +1,7 @@
 # Trwałość i recovery — zakres i kryteria odbioru
 
+> Porządki 16.10.2026: odnośniki do usuniętych raportów zastąpiono podsumowaniem ustaleń. Nie zachowano tu ich surowych dowodów; status i pozostały zakres określa jeden plan workspace.
+
 Status i kolejność należą wyłącznie do [planu głównego](/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/PATTERNLY-WORKING-PLAN.md). Ten dokument zachowuje pełne kryteria odbioru; datowane diagnozy i opisy wymaganych poprawek są historią, chyba że sekcja „Bieżący status” wskazuje jawnie pozostały zakres. Nie stanowi drugiej kolejki ani samodzielnego dowodu obecnego defektu.
 
 Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3fac115`, backend `039f7f000e701c4fbc69e18a1fb66528cbc5cdcb`, content `8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03`. Nie opisuje on bieżącego stanu tych gałęzi. Historyczne probes/pomiary nie są nowym native acceptance. CH-01–05 pozostają zakończone.
@@ -7,7 +9,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-01 — P1 — Recovery przed strict active/content reads
 
-**Bieżący status:** PERSIST-01 został odebrany dla source/local/exact CI: bootstrap wykonuje inspect/preflight i recovery przed strict active/unavailable/content reads. [Dowody odbioru PERSIST-01/14](../../reports/persist01-14-acceptance-2026-10-11.md) obejmują terminal S + pointer-clear failure i drugie uruchomienie bez odtworzenia stanu. Historyczny defekt kolejności opisany niżej został usunięty; natywny kill na pointer-clear boundary pozostaje częścią PERSIST-13.
+**Bieżący status:** PERSIST-01 został odebrany dla source/local/exact CI: bootstrap wykonuje inspect/preflight i recovery przed strict active/unavailable/content reads. Dowody odbioru PERSIST-01/14 (historyczny plik `persist01-14-acceptance-2026-10-11.md` niedostępny) obejmują terminal S + pointer-clear failure i drugie uruchomienie bez odtworzenia stanu. Historyczny defekt kolejności opisany niżej został usunięty; natywny kill na pointer-clear boundary pozostaje częścią PERSIST-13.
 
 - **Operacje i granica:** ordinary completion, simulation finalization, abandonment; crash po zapisie terminal S, przed usunięciem active pointer. Dodatkowo unavailable-active record współistniejący z pending J (P2 wariant tego samego zadania).
 - **Invariant / expected:** prefix terminal mutation jest legalnym stanem przejściowym; replay i verify J poprzedzają strict active/content resolution. Brak ready przed rozstrzygnięciem.
@@ -18,7 +20,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-02 — P1 — Integralność indeksów przed odczytem evidence i tombstones
 
-**Bieżący status:** PERSIST-02 został odebrany dla source/local/hosted CI; integralność indeksów i blokada eksportu na uszkodzonym stanie są objęte produkcyjnymi testami. Dowody i ich granice: [odbiór eksportu Gościa oraz PERSIST-02/03](../../reports/guest-local-export-acceptance-2026-10-09.md). To zadanie nie pozostaje w planie.
+**Bieżący status:** PERSIST-02 został odebrany dla source/local/hosted CI; integralność indeksów i blokada eksportu na uszkodzonym stanie są objęte produkcyjnymi testami. Dowody i ich granice: odbiór eksportu Gościa oraz PERSIST-02/03 (historyczny plik `guest-local-export-acceptance-2026-10-09.md` niedostępny). To zadanie nie pozostaje w planie.
 
 **Historyczna diagnoza:** W baseline przed PERSIST-02 czytniki session/attempt/review traktowały brak indeksu jako `[]`, akceptowały duplicate IDs, a snapshot/outbox pracował na widocznych kolekcjach. Partial readers BIZQ-02 nie ustanawiały wtedy integralności całego namespace.
 
@@ -31,7 +33,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-03 — P1 — Pełny reset plan i verification fizycznych targets
 
-**Bieżący status:** PERSIST-03 został odebrany dla source/local/hosted CI, w tym bounded native interruption/recovery fixture resetu. Ten fixture nie stanowi pełnej native macierzy PERSIST-13. Dowody i granice: [odbiór eksportu Gościa oraz PERSIST-02/03](../../reports/guest-local-export-acceptance-2026-10-09.md). Zadanie nie pozostaje w planie.
+**Bieżący status:** PERSIST-03 został odebrany dla source/local/hosted CI, w tym bounded native interruption/recovery fixture resetu. Ten fixture nie stanowi pełnej native macierzy PERSIST-13. Dowody i granice: odbiór eksportu Gościa oraz PERSIST-02/03 (historyczny plik `guest-local-export-acceptance-2026-10-09.md` niedostępny). Zadanie nie pozostaje w planie.
 
 **Historyczna diagnoza:** W baseline przed PERSIST-03 clearers i `mutationVerifier` wyliczały lub porównywały targets przez indeksowane kolekcje, co pozwalało zgłosić sukces mimo pozostawionego fizycznego rekordu.
 
@@ -44,7 +46,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-04 — P1 — Rozstrzyganie niepewnego zapisu journalu
 
-**Odbiór zakresu04:** exact attempted J/readback/reconcile, operation-bound retry z pierwotnym rekordem/lease/preflight oraz blokady UI odebrane niezależnie. [Dowody i granice](../../reports/persist04-08-acceptance-2026-10-11.md); rzeczywiste CI dostarczenia osobno. Poniższa reprodukcja opisuje stan historyczny, nie bieżący defekt.
+**Odbiór zakresu04:** exact attempted J/readback/reconcile, operation-bound retry z pierwotnym rekordem/lease/preflight oraz blokady UI odebrane niezależnie. Dowody i granice (historyczny plik `persist04-08-acceptance-2026-10-11.md` niedostępny); rzeczywiste CI dostarczenia osobno. Poniższa reprodukcja opisuje stan historyczny, nie bieżący defekt.
 
 - **Operacje i granica:** każdy commit, szczególnie practice submit; `setString(ACTIVE_JOURNAL)` wykonany, następny read-back rzuca błąd.
 - **Invariant / expected:** istniejący lub niejednoznacznie zapisany J nie jest komunikowany jako pewne `not_durable`; odpowiedź/outcome nie mogą być ponownie edytowane lub oceniane jako nowa komenda.
@@ -55,7 +57,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-05 — P1 — Replay guards i identyczne canonical revisions
 
-**Bieżący status:** PERSIST-05 został odebrany jako source/logical/local/exact CI PASS; pełna native macierz przerwań pozostaje w PERSIST-13. [Dowody odbioru PERSIST-05/06/07](../../reports/persist05-07-acceptance-2026-10-11.md). Kontrakt poniżej pozostaje kryterium zaakceptowanego zakresu.
+**Bieżący status:** PERSIST-05 został odebrany jako source/logical/local/exact CI PASS; pełna native macierz przerwań pozostaje w PERSIST-13. Dowody odbioru PERSIST-05/06/07 (historyczny plik `persist05-07-acceptance-2026-10-11.md` niedostępny). Kontrakt poniżej pozostaje kryterium zaakceptowanego zakresu.
 
 **Historyczna diagnoza:** W baseline przed PERSIST-05 materializer replay nie sprawdzał captured prior/already-applied state każdej fizycznej operacji przed użyciem mutowalnych zapisów repository.
 
@@ -68,7 +70,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-06 — P1 — Ponowna weryfikacja przed journal clear po restarcie
 
-**Bieżący status:** PERSIST-06 został odebrany jako source/logical/local/exact CI PASS; native przerwania są częścią otwartej macierzy PERSIST-13. [Dowody odbioru PERSIST-05/06/07](../../reports/persist05-07-acceptance-2026-10-11.md).
+**Bieżący status:** PERSIST-06 został odebrany jako source/logical/local/exact CI PASS; native przerwania są częścią otwartej macierzy PERSIST-13. Dowody odbioru PERSIST-05/06/07 (historyczny plik `persist05-07-acceptance-2026-10-11.md` niedostępny).
 
 **Historyczna diagnoza:** Przed poprawką recovery `verified_pending_clear` mogło oznaczyć account sync i usunąć journal bez ponownej weryfikacji postconditions po restarcie.
 
@@ -81,7 +83,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-07 — P2 — Review materialization zmienia tylko zadeklarowane targets
 
-**Bieżący status:** PERSIST-07 został odebrany jako source/logical/local/exact CI PASS; pełna native macierz pozostaje w PERSIST-13. [Dowody odbioru PERSIST-05/06/07](../../reports/persist05-07-acceptance-2026-10-11.md). Polityka BIZQ-04 nie była zmieniana.
+**Bieżący status:** PERSIST-07 został odebrany jako source/logical/local/exact CI PASS; pełna native macierz pozostaje w PERSIST-13. Dowody odbioru PERSIST-05/06/07 (historyczny plik `persist05-07-acceptance-2026-10-11.md` niedostępny). Polityka BIZQ-04 nie była zmieniana.
 
 **Historyczna diagnoza:** W baseline przed PERSIST-07 `ReviewQueueRepository` zapisywało kolekcję przez collection-level owner; kontrakt wymagał wykazania braku zmian unrelated envelopes.
 
@@ -94,7 +96,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-08 — P1 — Niepewny draft save nie jest ani Unsaved, ani Saved bez rozstrzygnięcia
 
-**Odbiór zakresu08:** exact D receipt/readback/reconcile, zachowanie pierwotnego lease, blokady edycji/finalizacji i zachowanie input odebrane niezależnie. [Dowody i granice](../../reports/persist04-08-acceptance-2026-10-11.md); pełna macierz13 i native PremiumUI pozostają osobno. Poniższa reprodukcja jest historyczna.
+**Odbiór zakresu08:** exact D receipt/readback/reconcile, zachowanie pierwotnego lease, blokady edycji/finalizacji i zachowanie input odebrane niezależnie. Dowody i granice (historyczny plik `persist04-08-acceptance-2026-10-11.md` niedostępny); pełna macierz13 i native PremiumUI pozostają osobno. Poniższa reprodukcja jest historyczna.
 
 - **Operacje i granica:** simulation save → write nowego D zakończony, odczyt kontrolny zawodzi → timer expiry/manual finish/restart.
 - **Invariant / expected:** ostatnia zweryfikowana rewizja pozostaje authority; nie wolno przedstawiać odpowiedzi jako niezapisanej, a później bez wyjaśnienia włączyć jej do score. Niepewny efekt wymaga rozstrzygnięcia albo jawnego recovery block.
@@ -105,7 +107,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-09 — P1 — Freeze finalizacji ma przetrwać restart
 
-**Bieżący status:** PERSIST-09 został odebrany dla source/local/exact CI; pozostałe native interruptions oraz frozen/error UI należą do PERSIST-13. [Dowody odbioru PERSIST-09/10](../../reports/persist09-10-acceptance-2026-10-11.md). Przyjęty kontrakt freeze pozostaje bez zmian.
+**Bieżący status:** PERSIST-09 został odebrany dla source/local/exact CI; pozostałe native interruptions oraz frozen/error UI należą do PERSIST-13. Dowody odbioru PERSIST-09/10 (historyczny plik `persist09-10-acceptance-2026-10-11.md` niedostępny). Przyjęty kontrakt freeze pozostaje bez zmian.
 
 **Historyczna diagnoza:** Przed PERSIST-09 nie było trwałej granicy freeze ani dokładnej rewizji szkicu; konkretne testy odtworzyły utratę RAM-only freeze przy rekonstrukcji lifecycle.
 
@@ -118,7 +120,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-10 — P2 — Deterministyczna macierz save/manual/timeout, szczególnie Design
 
-**Bieżący status:** PERSIST-10 został odebrany dla source/local/exact CI; native Design overlap/dirty UI i przerwania pozostają w PERSIST-13. [Dowody odbioru PERSIST-09/10](../../reports/persist09-10-acceptance-2026-10-11.md). Raport nie potwierdza regresji Design save/timeout ponad sprawdzone scenariusze.
+**Bieżący status:** PERSIST-10 został odebrany dla source/local/exact CI; native Design overlap/dirty UI i przerwania pozostają w PERSIST-13. Dowody odbioru PERSIST-09/10 (historyczny plik `persist09-10-acceptance-2026-10-11.md` niedostępny). Raport nie potwierdza regresji Design save/timeout ponad sprawdzone scenariusze.
 
 **Historyczna diagnoza:** Audyt nie potwierdził wtedy regresyjnego wyniku Design save/timeout; przyjętym zakresem były bounded deferred-save probes oraz rozszerzenie testów tylko zgodnie z ich wynikiem.
 
@@ -131,7 +133,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-11 — P2 — Jawna granica utraty czasu i clock-discontinuity tests
 
-**Bieżący status:** **PERSIST-11 odebrane lokalnie dla iOS**, z końcowym niezależnym Luna High PASS i qa:static2607PASS/0FAIL/5SKIP. Zatwierdzony limit maksymalnie **5 sekund** pozostaje bez zmian. Jeden [natywny właściciel T](../../../native/foreground-clock/PatternlyForegroundClock.mm) używa oryginalnego encrypted handle, monotonicznego segmentu i checkpointu co 1 s bez iOS JS fallbacku. [Wyniki i ograniczenia](../../reports/persist11-native-acceptance-2026-10-13.json), [raport](../../reports/persist11-probe-2026-10-12.md) rozdzielają rzeczywiste count-up/countdown SIGKILL i cold recovery, AppState, native-owner modeled SDK failures, memory-composition deadline tests i zachowanie danych. Największy zmierzony konserwatywny upper bound to 979,658 ms; nie jest to uniwersalny dowód wszystkich warunków sprzętowych. Historyczne JS offsets15s/trigger14s zastąpiono dla iOS granicami checkpointu1s/limitu5s; wartości historyczne nie są deklarowane jako ponownie zmierzone. [Jawna ścieżka Androida](../../../src/application/runtime/AndroidForegroundSessionTimer.ts) zachowuje dotychczasowy mechanizm bez deklaracji ≤5s; Android pozostaje po pierwszym iOS. PERSIST-13 oraz fizyczny finalny kandydat pozostają osobnymi odbiorami.
+**Bieżący status:** **PERSIST-11 odebrane lokalnie dla iOS**, z końcowym niezależnym Luna High PASS i qa:static2607PASS/0FAIL/5SKIP. Zatwierdzony limit maksymalnie **5 sekund** pozostaje bez zmian. Jeden [natywny właściciel T](../../../native/foreground-clock/PatternlyForegroundClock.mm) używa oryginalnego encrypted handle, monotonicznego segmentu i checkpointu co 1 s bez iOS JS fallbacku. Wyniki i ograniczenia (historyczny plik `persist11-native-acceptance-2026-10-13.json` niedostępny), raport (historyczny plik `persist11-probe-2026-10-12.md` niedostępny) rozdzielają rzeczywiste count-up/countdown SIGKILL i cold recovery, AppState, native-owner modeled SDK failures, memory-composition deadline tests i zachowanie danych. Największy zmierzony konserwatywny upper bound to 979,658 ms; nie jest to uniwersalny dowód wszystkich warunków sprzętowych. Historyczne JS offsets15s/trigger14s zastąpiono dla iOS granicami checkpointu1s/limitu5s; wartości historyczne nie są deklarowane jako ponownie zmierzone. [Jawna ścieżka Androida](../../../src/application/runtime/AndroidForegroundSessionTimer.ts) zachowuje dotychczasowy mechanizm bez deklaracji ≤5s; Android jest teraz pierwszą platformą do wydania; limit wymaga osobnego dowodu56. PERSIST-13 oraz fizyczny finalny kandydat pozostają osobnymi odbiorami.
 
 **Decyzja właściciela z 07.10.2026:** po nagłym zamknięciu procesu i wznowieniu sesji dopuszczalna utrata aktywnego czasu wynosi maksymalnie 5 sekund. Dotyczy czasomierzy liczących aktywność, zarówno narastających, jak i odliczających. Nie zmienia absolutnego terminu zakończenia egzaminu. To wymaganie do wdrożenia i zweryfikowania, nie potwierdzenie zgodności obecnego mechanizmu. Opóźnienie wykonania nie może zostać pominięte jako wygodny wyjątek; jeżeli mały rzeczywisty test wykaże ograniczenie uniemożliwiające limit, przed zmianą zakresu przedstawić konkretny wynik właścicielowi.
 
@@ -144,7 +146,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-12 — P2 — Corrupt installed-package state nie jest pustym katalogiem
 
-**Bieżący status:** PERSIST-12 został odebrany jako source/local/exact CI PASS z ograniczeniami dowodu. Rozróżnienie absent/corrupt/unsupported oraz exact pins są zaimplementowane; native file-move durability i pełna macierz pozostają PERSIST-13. [Odbiór PERSIST-12](../../reports/persist12-acceptance-2026-10-12.md).
+**Bieżący status:** PERSIST-12 został odebrany jako source/local/exact CI PASS z ograniczeniami dowodu. Rozróżnienie absent/corrupt/unsupported oraz exact pins są zaimplementowane; native file-move durability i pełna macierz pozostają PERSIST-13. Odbiór PERSIST-12 (historyczny plik `persist12-acceptance-2026-10-12.md` niedostępny).
 
 **Historyczna diagnoza:** W baseline przed PERSIST-12 `NodePackageStorage`/loader mogły ukrywać korupcję jako brak pakietu. Nie wykazano błędnego scoringu; zadanie dotyczyło diagnostyki integralności i bezpiecznego resume.
 
@@ -157,7 +159,7 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 
 ## PERSIST-13 — P2 — Brakujące fault hooks i produkcyjna macierz recovery
 
-**Bieżący status:** macierz native PERSIST-13 pozostaje niekompletna; audyt nie potwierdził powtarzalnego native kill hooka dla granic journal durability/clear. Pamięciowe fault tests nie są dowodem native kill/no-op/torn-write. Aktualne luki i ograniczenia: [audyt stanu](../../reports/project-state-audit-2026-10-12.md). To otwarty zakres już zapisany w planie, nie nowa bramka.
+**Bieżący status:** macierz native PERSIST-13 pozostaje niekompletna; audyt nie potwierdził powtarzalnego native kill hooka dla granic journal durability/clear. Pamięciowe fault tests nie są dowodem native kill/no-op/torn-write. Aktualne luki i ograniczenia: audyt stanu (historyczny plik `project-state-audit-2026-10-12.md` niedostępny). To otwarty zakres już zapisany w planie, nie nowa bramka.
 
 - **Operacje i granica:** C1–C11, start/advance/ordinary completion/review commands, finalization i reset; before/after każdego fizycznego write/delete/read-back, journal phase update/clear i nawigacja.
 - **Invariant / expected:** dowód dotyczy produkcyjnej drogi bootstrap/retry, nie tylko bezpośredniego materializera i nie tylko happy path. Test musi umieć zatrzymać się po skutku, zanim ACK/verify dotrze do wywołującego.
@@ -167,11 +169,11 @@ Historyczny baseline audytu źródeł i testów z 07.10.2026: app `e889b05d033d4
 - **Manual/native:** jeden istniejący iPhone17, exact build/SHA; kill po journal durability, mid-materialization, po verification/przed clear, po clear/przed Next, draft-save uncertainty, przed/po timer checkpoint i w reset. Nie instalować snapshotu obok obecnej aplikacji. Brak identycznego native buildu/hooka raportować jako konkretną lukę, nie zastępować screenshotem czy restartem po ACK.
 - **Dependencies:** przygotowanie hooków niezależne; końcowy odbiór po 01–12 i 14. **Out of scope:** nowe urządzenia, VoiceOver, pełny performance/security audit, wdrożenie/release, powtarzanie niezmienionych AUD-08 provider tests.
 
-**Dodatkowy finding P3 historycznie przypisany do PERSIST-05 (cross-session plan validation):** weryfikator przyjmował standalone `remove_review_entry` z obcym `sourceSessionId`; bieżący wrapper przekazywał poprawny ID, więc reachable błędnego UI usunięcia nie wykazano. Scope guard i malformed-plan test zostały uwzględnione w odebranym PERSIST-05, bez przenoszenia reguły na prawidłowy outcome update historycznego review. Szczegóły: [raport PERSIST-05/06/07](../../reports/persist05-07-acceptance-2026-10-11.md).
+**Dodatkowy finding P3 historycznie przypisany do PERSIST-05 (cross-session plan validation):** weryfikator przyjmował standalone `remove_review_entry` z obcym `sourceSessionId`; bieżący wrapper przekazywał poprawny ID, więc reachable błędnego UI usunięcia nie wykazano. Scope guard i malformed-plan test zostały uwzględnione w odebranym PERSIST-05, bez przenoszenia reguły na prawidłowy outcome update historycznego review. Szczegóły: raport PERSIST-05/06/07 (historyczny plik `persist05-07-acceptance-2026-10-11.md` niedostępny).
 
 ## PERSIST-14 — P1 — Początkowy timer w tym samym journalu co start sesji
 
-**Bieżący status:** PERSIST-14 został odebrany dla source/local/exact CI; native kill po journal clear/przed item pozostaje w PERSIST-13. [Dowody odbioru PERSIST-01/14](../../reports/persist01-14-acceptance-2026-10-11.md). Zakres nadal dotyczy wyłącznie foreground-timed sessions, bez zmiany absolute-deadline.
+**Bieżący status:** PERSIST-14 został odebrany dla source/local/exact CI; native kill po journal clear/przed item pozostaje w PERSIST-13. Dowody odbioru PERSIST-01/14 (historyczny plik `persist01-14-acceptance-2026-10-11.md` niedostępny). Zakres nadal dotyczy wyłącznie foreground-timed sessions, bez zmiany absolute-deadline.
 
 **Historyczna diagnoza:** Przed PERSIST-14 Coding/Certification/Design facades inicjowały foreground timer po `startTrainingSession`; start journal nie obejmował initial timer.
 
