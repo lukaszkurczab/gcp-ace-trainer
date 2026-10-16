@@ -200,12 +200,14 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     assert.equal(report.schemaVersion, "patternly-launch-readiness-v2");
     assert.equal(report.stage, "go");
     assert.equal(report.status, "not_ready");
-    assert.equal(report.publicLegalVariables.status, "incomplete");
+    // This frozen application predates the current retention schema.
+    assert.equal(report.publicLegalVariables.status, "invalid");
+    assert.ok(report.publicLegalVariables.fieldPaths.includes("privacy.contentReportRetentionDays"));
     assert.equal(report.publicLegalVariables.path, "config/public-legal.release.json");
     assert.deepEqual(report.publicLegalVariables.version, { en: "2026-09-05", pl: "2026-09-05" });
     assert.match(report.publicLegalVariables.fingerprint, /^[a-f0-9]{64}$/u);
     assert.ok(report.publicLegalVariables.fieldPaths.includes("terms.adrEntity.en"));
-    assert.ok(report.blockers.some((blocker) => blocker.kind === "public_legal_variables_incomplete"));
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "public_legal_variables_invalid"));
     assert.equal(JSON.stringify(report.publicLegalVariables).includes("TO BE COMPLETED"), false);
     assert.equal(report.launchTrackIds.length, 9);
     assert.ok(["clean", "dirty"].includes(report.applicationRepository.status));
@@ -215,7 +217,7 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     assert.equal(report.contentReadiness.headCommit, HISTORICAL_CONTENT_COMMIT);
     assert.equal(report.contentReadiness.candidateId, HISTORICAL_CANDIDATE_ID);
     assert.equal(report.contentReleaseLock.bundleId, "patternly-app-candidate-946d3589abf9");
-    assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing", "public_legal_variables_incomplete", "release_manifest_missing"].includes(blocker.kind)), true);
+    assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing", "public_legal_variables_invalid", "release_manifest_missing"].includes(blocker.kind)), true);
     assert.ok(report.blockers.some((blocker) => blocker.kind === "release_manifest_missing"));
     assert.deepEqual(
       report.blockers.filter((blocker) => blocker.kind === "application_worktree_dirty").map((blocker) => blocker.kind),

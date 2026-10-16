@@ -58,7 +58,7 @@ test("sandbox and release reject mode/configuration mismatches", () => {
 
 test("release app config always rejects the checked-in public legal payload", () => {
   const releaseEnvironment = { ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
-  assert.throws(() => createExpoConfig(releaseEnvironment), /Release legal variables are invalid:[\s\S]*terms\.operatorLegalName\.en: Unresolved legal placeholder/);
+  assert.throws(() => createExpoConfig(releaseEnvironment), /Release legal variables are invalid:[\s\S]*privacy\.activeIndependentRecipients\.en: Unresolved legal placeholder/);
 });
 
 test("release public legal links use the configured public environment parser and match the legal record", () => {

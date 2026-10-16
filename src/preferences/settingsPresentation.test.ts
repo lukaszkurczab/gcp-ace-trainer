@@ -148,8 +148,8 @@ test("Settings account presentation names guest, authenticated, and unavailable 
 
 test("Settings keeps the backend verification group explicitly development-only", () => {
   const groups = settingsTab.match(/<SettingsGroup\b/g) ?? [];
-  assert.equal(groups.length, 5);
-  assert.equal((settingsTab.match(/titleGap=\{spacing\.md\}/g) ?? []).length, 5);
+  assert.equal(groups.length, 4, "three participant groups and one conditional developer group");
+  assert.equal((settingsTab.match(/titleGap=\{spacing\.md\}/g) ?? []).length, 4);
   assert.match(settingsTab, /title=\{text\.developerVerification\}/);
   assert.match(settingsTab, /backendDiagnosticsConfigured \? \([\s\S]*?\) : null/);
 });

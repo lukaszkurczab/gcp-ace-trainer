@@ -266,7 +266,7 @@ test("goal loading keeps its back action separate from the busy content announce
   assert.match(screen, /<View accessible=\{false\} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style=\{styles\.loadingShapes\}>/);
   assert.match(screen, /loadingTrackContext[\s\S]*?loadingTrackAccent[\s\S]*?loadingTrack/);
   assert.match(screen, /if \(loading\) return <GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
-  assert.match(screen, /useEffect\(\(\) => \{[\s\S]*?\}, \[route\.params\?\.trackId\]\);/);
+  assert.match(screen, /useEffect\(\(\) => \{[\s\S]*?\}, \[route\.params\?\.trackId, readRevision\]\);/);
   assert.doesNotMatch(screen, /useFocusEffect/);
   const pendingBranch = screen.slice(screen.indexOf("if (loading)"), screen.indexOf("if (loadError"));
   assert.doesNotMatch(pendingBranch, /scroll=\{false\}/);

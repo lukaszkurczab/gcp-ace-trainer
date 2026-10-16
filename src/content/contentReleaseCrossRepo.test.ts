@@ -8,6 +8,7 @@ import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { loadCanonicalRuntimeCatalog } from "./canonical";
+import { acceptedQleProducer } from "../../scripts/fixtures/acceptedQleProducer";
 
 type CurrentProducerBuilder = Readonly<{
   buildAll(options: Readonly<{ rootDirectory: string; outputRoot: string }>): Promise<Readonly<{
@@ -102,7 +103,7 @@ test("historical content release lock remains covered by frozen release manifest
   }
 });
 
-test("current producer remains buildable while app artifacts stay pinned to the admitted candidate", async () => {
+test("current producer remains buildable while app artifacts stay pinned to the admitted candidate", async (t) => {
   const appRoot = process.cwd();
   const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
   const expectedCurrentSha = expectedCurrentContentSha();
@@ -134,7 +135,13 @@ test("current producer remains buildable while app artifacts stay pinned to the 
       const acceptance = JSON.parse(readFileSync(acceptancePath, "utf8"));
       assert.equal(acceptance.scope, "local_only"); assert.equal(acceptance.publication, "not_granted"); assert.equal(acceptance.releaseLockUpdate, false);
       const sync = await import(pathToFileURL(join(appRoot, "scripts/syncBundledContentRelease.mjs")).href);
-      await sync.syncCanonicalContent({ mode: "check", appRoot, producerRoot: currentContentRoot, localReviewedCandidate: acceptancePath });
+      await assert.rejects(
+        sync.syncCanonicalContent({ mode: "check", appRoot, producerRoot: currentContentRoot, localReviewedCandidate: acceptancePath }),
+        /Local candidate acceptance record is stale for current producer inputs/u,
+        "the frozen acceptance must not admit changed producer inputs",
+      );
+      const acceptedProducerRoot = await acceptedQleProducer(t, currentContentRoot);
+      await sync.syncCanonicalContent({ mode: "check", appRoot, producerRoot: acceptedProducerRoot, localReviewedCandidate: acceptancePath });
       assert.deepEqual(generated.filter(t => t.trackId !== claudeId), published.filter(t => t.trackId !== claudeId), "eight release artifacts remain exactly pinned");
       assert.deepEqual(generated.find(t => t.trackId === claudeId), { trackId: claudeId, contentVersion: acceptance.candidate.artifact.contentVersion, questionCount: acceptance.candidate.artifact.questionCount, sha256: acceptance.candidate.artifact.artifactSha256 });
     } else assert.deepEqual(generated, published, "all nine published artifacts remain exactly pinned");

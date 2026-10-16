@@ -8,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import { renderProgressPlanSection } from '../../features/home/tabs/progressPlanSectionTestHarness.mjs';
 const require = createRequire(import.meta.url);
+const { acceptedQleProducer } = require('../../../scripts/fixtures/acceptedQleProducer.ts');
 const { contentPackageRuntimeOwner } = require('../contentPackageRuntimeOwner.ts');
 const { loadCanonicalRuntimeCatalog } = require('../../content/canonical/runtimeCatalog.ts');
 const { HomePlanSnapshotReader } = require('../homePlanSnapshotReader.ts');
@@ -630,7 +631,14 @@ test('current producer remains buildable while app bundle matches the admitted c
   const candidateLockApi = await import(pathToFileURL(path.join(APP_ROOT, 'scripts/candidateContentReleaseLock.mjs')).href);
   await assert.rejects(candidateLockApi.updateCandidateContentReleaseLock({ mode: 'check', appRoot: APP_ROOT, contentRoot: CONTENT }), /[Ii]nventory mismatch|differs from release artifact/u);
   const qleSync = await import(pathToFileURL(path.join(APP_ROOT, 'scripts/syncBundledContentRelease.mjs')).href);
-  await qleSync.syncCanonicalContent({ mode: 'check', appRoot: APP_ROOT, producerRoot: CONTENT, localReviewedCandidate: path.join(APP_ROOT, 'integration/contracts/content-release/local-claude/qle-v2-acceptance.json') });
+  const acceptancePath = path.join(APP_ROOT, 'integration/contracts/content-release/local-claude/qle-v2-acceptance.json');
+  await assert.rejects(
+    qleSync.syncCanonicalContent({ mode: 'check', appRoot: APP_ROOT, producerRoot: CONTENT, localReviewedCandidate: acceptancePath }),
+    /Local candidate acceptance record is stale for current producer inputs/u,
+    'the frozen acceptance must not admit changed producer inputs',
+  );
+  const acceptedProducerRoot = await acceptedQleProducer(t, CONTENT);
+  await qleSync.syncCanonicalContent({ mode: 'check', appRoot: APP_ROOT, producerRoot: acceptedProducerRoot, localReviewedCandidate: acceptancePath });
   assert.equal(built.artifacts.length, 9);
   assert.equal(built.lock.tracks.length, 9);
   assert.deepEqual(
