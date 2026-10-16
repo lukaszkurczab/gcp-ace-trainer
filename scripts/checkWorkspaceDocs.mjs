@@ -41,7 +41,7 @@ for (const path of [
   plan, state,
   join(workspace, "docs/01-product-definition.md"),
   join(workspace, "docs/03-navigation-and-flows.md"),
-  join(workspace, "docs/execution-prompts/2026-10-13/README.md"),
+  ...walk(join(workspace, "docs/execution-prompts/Patternly-Codex-prompty-2026-10-16")),
   join(workspace, "docs/reports/current-audit.md"),
   join(workspace, "patternly-backend/README.md"),
   join(app, "AGENTS.md"), join(app, ".agent/WORKING_STATE.md"),
@@ -66,4 +66,4 @@ for (const pattern of [/node-version: ([\d.]+)/, /java-version: '([\d]+)'/, /fir
   assert.ok(readme.includes(pin), `README missing CI pin ${pin}`);
 }
 console.log(`PASS: ${checked} local references; one workspace plan/state, Activity wording consistent.`);
-console.log("Scope: all local links in the named entry docs; only plan/state links in other specs. External URLs and historical report contents are not validated.");
+console.log("Scope: all local links in the named entry docs and current prompt pack; only plan/state links in other specs. External URLs and historical report contents are not validated.");
