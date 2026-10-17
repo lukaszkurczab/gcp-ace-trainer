@@ -4,7 +4,7 @@ import type { PatternlyApiClient } from "../../infrastructure/clients/PatternlyA
 import type { LocalLogoutControl, LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
 import type { PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
-import type { AccountStartupDiagnosticWriter } from "../operationalDiagnostics";
+import { recordAccountStartupFailure, type AccountStartupDiagnosticWriter } from "../operationalDiagnostics";
 import { createProfilePreparationHandoffOwner, type ProfilePreparationHandoffToken } from "../account/profilePreparationHandoff";
 import { activatePreparedProfile, captureActiveProfileStorageLease, closeActiveProfileStorage, getActiveStorageProfileOrNull, isActiveProfileStorageLeaseCurrent, notifyProfileStorageReady, prepareProfileStorage, readActiveAccountIdentityBinding, readPreparedAccountIdentityBinding, selectPreparedAccountProfile, type ActiveProfileStorageLease, type AccountIdentityBinding } from "../../storage/repositories/profileStorageRepository";
 import { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, guardAuthenticatedScopeAgainstIncompleteSignOut, prepareAuthenticatedProfileScope } from "../account/profileStartupCoordination";
@@ -218,9 +218,10 @@ export async function prepareAuthenticatedAccountBootstrap(
     const selectedBeforePreparation = preparedProfileState.selectedProfile;
     if (activeBeforePreparation?.kind === "account" || selectedBeforePreparation.kind === "account") {
       if (activeBeforePreparation) closeActiveProfileStorage();
-      diagnosticStage = "account_profile_prepare";
+      diagnosticStage = "account_storage_prepare";
       startupDiagnostic?.pending(diagnosticStage, stateRef.current.kind);
       await prepareProfileStorage();
+      diagnosticStage = "account_binding_barrier";
       proofBarrier = await beginIdentityProofBarrier(auth, user, generation, true);
     }
     diagnosticStage = "recovery_guard";
@@ -270,11 +271,17 @@ export async function prepareAuthenticatedAccountBootstrap(
     startupDiagnostic?.pending("account_profile_prepare", stateRef.current.kind);
     const selectedProfile = await prepareAuthenticatedProfileScope({
       canContinue,
-      prepareStorage: prepareProfileStorage,
+      prepareStorage: async () => { diagnosticStage = "account_storage_prepare"; return prepareProfileStorage(); },
       getMe: async () => {
+        diagnosticStage = "account_identity_proof";
         const identityProof = await runAccountIdentityProof({
           request: () => getMeWithExchangedSession({
-            api,
+            api: { ...api, getMe: async () => {
+              diagnosticStage = "account_me_request";
+              const response = await api.getMe();
+              diagnosticStage = "account_binding_restore";
+              return response;
+            } },
             auth,
             ...(recoverySessionIdentityRef.current?.firebaseUid === user.uid ? { requiredAuthorizationGeneration: recoverySessionIdentityRef.current.authorizationGeneration } : {}),
             canContinue,
@@ -403,7 +410,10 @@ export async function prepareAuthenticatedAccountBootstrap(
         }
       }
     }
-    if (ownsPreparation && canContinue()) setState(failureState);
+    if (ownsPreparation && canContinue()) {
+      recordAccountStartupFailure(diagnosticStage, error, failureState.kind);
+      setState(failureState);
+    }
     if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
     attempt.bootstrapFailure = { kind: "failure", failure };
     resolveCompletion(attempt.bootstrapFailure);

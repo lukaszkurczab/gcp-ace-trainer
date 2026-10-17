@@ -2,7 +2,7 @@ import { markStartup } from "../infrastructure/diagnostics/startupTrace";
 import { ContentError } from "../content/errors";
 import { CorruptStoredRecordError, JournalMaterializationError, JournalVerificationError, JournalWriteError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../storage/errors";
 import { CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER, type CanonicalRepositoryBootstrapStep as CanonicalRepositoryBootstrapStepCode } from "../storage/repositories/canonicalRepositories";
-import { isPatternlySmokeRuntime } from "../infrastructure/runtime/runtimeMode";
+import { isPatternlySmokeRuntime, readPatternlyRuntimeMode } from "../infrastructure/runtime/runtimeMode";
 import { encryptedStorageFailureCode, type EncryptedStorageFailureCode } from "../infrastructure/storage/encryptedStorageBootstrap";
 import type { LocalLogoutControlError } from "../infrastructure/storage/localLogoutControl";
 import type { ProfileStorageError } from "../infrastructure/storage/profileStorageRouter";
@@ -77,14 +77,15 @@ export type ProfileStoragePreparationDiagnosticWriter = Readonly<{
   dispose: () => void;
 }>;
 
-export type AccountStartupDiagnosticStage = "auth_client_setup" | "auth_observer_wait" | "auth_event" | "recovery_guard" | "guest_storage_prepare" | "guest_state_inspect" | "guest_scope_prepare" | "account_profile_prepare" | "profile_preparing" | "profile_completion" | "complete";
+export type AccountStartupDiagnosticStage = "account_me_request" | "account_binding_restore" | "revoke_initial_session" | "revoke_request" | "revoke_replacement_signin" | "revoke_replacement_claim" | "revoke_marker_complete" | "account_storage_prepare" | "account_binding_barrier" | "account_identity_proof" | "auth_client_setup" | "auth_observer_wait" | "auth_event" | "recovery_guard" | "guest_storage_prepare" | "guest_state_inspect" | "guest_scope_prepare" | "account_profile_prepare" | "profile_preparing" | "profile_completion" | "complete";
 export type AccountStartupDiagnosticStateKind = "loading" | "profilePreparing" | "unavailable" | "signedOut" | "guest" | "guestAccessBlocked" | "recoveryPending" | "providerRegistrationRequired" | "verificationPending" | "authenticated" | "localOffline" | "deletionPending" | "signingOut" | "signOutPending" | "deleting" | "backendUnavailable" | "reauthenticationRequired" | "revokedSession";
+export type AccountStartupErrorCategory = ProfileStoragePreparationErrorCategory | "auth_generation_invalid" | "auth_network" | "auth_token_expired" | "auth_user_disabled" | "auth_other" | "api_invalid_response" | "api_transport" | "api_timeout" | "api_unauthorized" | "api_rate_limited" | "api_server" | "api_other";
 export type AccountStartupDiagnostic = Readonly<{
   schema: "patternly.account-startup-diagnostic.v1";
   status: "pending" | "ready" | "failed";
   stage: AccountStartupDiagnosticStage;
   accountStateKind?: AccountStartupDiagnosticStateKind;
-  errorCategory?: ProfileStoragePreparationErrorCategory;
+  errorCategory?: AccountStartupErrorCategory;
 }>;
 export type AccountStartupDiagnosticWriter = Readonly<{
   pending: (stage: Exclude<AccountStartupDiagnosticStage, "complete">, accountStateKind?: AccountStartupDiagnosticStateKind) => void;
@@ -115,8 +116,49 @@ function developmentSmokeDiagnosticsEnabled(): boolean {
   return typeof __DEV__ !== "undefined" && __DEV__ && isPatternlySmokeRuntime();
 }
 
+function accountStartupDiagnosticsEnabled(): boolean {
+  return readPatternlyRuntimeMode() === "sandbox" || developmentSmokeDiagnosticsEnabled();
+}
+
+const ACCOUNT_ERROR_CATEGORIES = ["auth_generation_invalid", "auth_network", "auth_token_expired", "auth_user_disabled", "auth_other", "api_invalid_response", "api_transport", "api_timeout", "api_unauthorized", "api_rate_limited", "api_server", "api_other"] as const;
+function accountStartupErrorCategory(error: unknown): AccountStartupErrorCategory {
+  if (typeof error === "object" && error !== null) {
+    const record = error as { name?: unknown; code?: unknown; status?: unknown };
+    if (record.name === "PatternlyApiClientError") {
+      if (record.status === 401) return "api_unauthorized";
+      if (record.status === 429) return "api_rate_limited";
+      if (typeof record.status === "number" && record.status >= 500) return "api_server";
+      if (record.code === "invalid_response") return "api_invalid_response";
+      if (record.code === "transport_failed") return "api_transport";
+      if (record.code === "request_timeout") return "api_timeout";
+      return "api_other";
+    }
+    if (record.name === "FirebaseAuthClientError" || record.name === "FirebaseError") {
+      if (record.code === "auth/authorization-generation-invalid") return "auth_generation_invalid";
+      if (record.code === "auth/network-request-failed") return "auth_network";
+      if (record.code === "auth/user-token-expired" || record.code === "auth/invalid-user-token") return "auth_token_expired";
+      if (record.code === "auth/user-disabled") return "auth_user_disabled";
+      return "auth_other";
+    }
+  }
+  return preparationErrorCategory(error);
+}
+
+/** Failed receipt only, with no account identifiers, payloads or error text. */
+export function readAccountStartupFailureTestID(): string | undefined {
+  const receipt = readDevelopmentAccountStartupDiagnostic();
+  return receipt?.status === "failed" ? `account-failure:${receipt.stage}:${receipt.errorCategory ?? "unknown"}` : undefined;
+}
+
+/** Called only by a still-current failed account attempt, after asynchronous work settles. */
+export function recordAccountStartupFailure(stage: Exclude<AccountStartupDiagnosticStage, "complete">, error: unknown, state: AccountStartupDiagnosticStateKind): void {
+  const writer = createAccountStartupDiagnosticWriter();
+  writer.failed(stage, error, state);
+  writer.dispose();
+}
+
 const PROFILE_STORAGE_PREPARATION_STAGES: readonly ProfileStoragePreparationDiagnosticStage[] = ["logout_control_create", "logout_control_read", "profile_storage_prepare", "profile_state_inspect", "complete"];
-const ACCOUNT_STARTUP_STAGES: readonly AccountStartupDiagnosticStage[] = ["auth_client_setup", "auth_observer_wait", "auth_event", "recovery_guard", "guest_storage_prepare", "guest_state_inspect", "guest_scope_prepare", "account_profile_prepare", "profile_preparing", "profile_completion", "complete"];
+const ACCOUNT_STARTUP_STAGES: readonly AccountStartupDiagnosticStage[] = ["account_me_request", "account_binding_restore", "revoke_initial_session", "revoke_request", "revoke_replacement_signin", "revoke_replacement_claim", "revoke_marker_complete", "account_storage_prepare", "account_binding_barrier", "account_identity_proof", "auth_client_setup", "auth_observer_wait", "auth_event", "recovery_guard", "guest_storage_prepare", "guest_state_inspect", "guest_scope_prepare", "account_profile_prepare", "profile_preparing", "profile_completion", "complete"];
 const ACCOUNT_STATE_KINDS: readonly AccountStartupDiagnosticStateKind[] = ["loading", "profilePreparing", "unavailable", "signedOut", "guest", "guestAccessBlocked", "recoveryPending", "providerRegistrationRequired", "verificationPending", "authenticated", "localOffline", "deletionPending", "signingOut", "signOutPending", "deleting", "backendUnavailable", "reauthenticationRequired", "revokedSession"];
 const ENCRYPTED_STORAGE_CATEGORIES: readonly EncryptedStorageFailureCode[] = ["secure_store_temporarily_unavailable", "encrypted_storage_key_missing", "encrypted_storage_unavailable", "storage_manifest_corrupt", "storage_migration_incomplete", "legacy_cleanup_failed"];
 const LOCAL_LOGOUT_CATEGORIES: readonly LocalLogoutControlError["code"][] = ["local_logout_control_corrupt", "local_logout_control_unavailable", "local_logout_control_verification_failed"];
@@ -161,7 +203,7 @@ function isAccountStartupDiagnostic(value: unknown): value is AccountStartupDiag
   if (value === null || typeof value !== "object" || !Object.isFrozen(value)) return false;
   const record = value as Record<string, unknown>;
   const expectedKeys = ["schema", "stage", "status", ...(record.accountStateKind === undefined ? [] : ["accountStateKind"]), ...(record.errorCategory === undefined ? [] : ["errorCategory"])].sort();
-  const categories = [...OPERATIONAL_DIAGNOSTIC_CODES, ...ENCRYPTED_STORAGE_CATEGORIES, ...LOCAL_LOGOUT_CATEGORIES, ...PROFILE_STORAGE_CATEGORIES, "unknown"];
+  const categories = [...OPERATIONAL_DIAGNOSTIC_CODES, ...ENCRYPTED_STORAGE_CATEGORIES, ...LOCAL_LOGOUT_CATEGORIES, ...PROFILE_STORAGE_CATEGORIES, ...ACCOUNT_ERROR_CATEGORIES, "unknown"];
   return Object.keys(record).sort().join("\u0000") === expectedKeys.join("\u0000")
     && record.schema === "patternly.account-startup-diagnostic.v1"
     && ["pending", "ready", "failed"].includes(record.status as string)
@@ -172,7 +214,7 @@ function isAccountStartupDiagnostic(value: unknown): value is AccountStartupDiag
 
 /** Latest closed account-startup receipt in RAM for dev-smoke diagnosis. */
 export function readDevelopmentAccountStartupDiagnostic(): AccountStartupDiagnostic | null {
-  if (!developmentSmokeDiagnosticsEnabled()) return null;
+  if (!accountStartupDiagnosticsEnabled()) return null;
   try {
     const value = bootstrapProgressHost()[ACCOUNT_STARTUP_DIAGNOSTIC_SYMBOL];
     if (!isAccountStartupDiagnostic(value)) return null;
@@ -183,7 +225,7 @@ export function readDevelopmentAccountStartupDiagnostic(): AccountStartupDiagnos
 /** Attempt owner is replaced on every new startup event; cleanup removes only its own pending receipt. */
 export function createAccountStartupDiagnosticWriter(): AccountStartupDiagnosticWriter {
   const inert = Object.freeze({ pending: () => undefined, ready: () => undefined, failed: () => undefined, dispose: () => undefined });
-  if (!developmentSmokeDiagnosticsEnabled()) return inert;
+  if (!accountStartupDiagnosticsEnabled()) return inert;
   const host = bootstrapProgressHost();
   const owner = Object.freeze({});
   try {
@@ -198,7 +240,7 @@ export function createAccountStartupDiagnosticWriter(): AccountStartupDiagnostic
         status,
         stage,
         ...(accountStateKind ? { accountStateKind } : {}),
-        ...(status === "failed" ? { errorCategory: preparationErrorCategory(error) } : {}),
+        ...(status === "failed" ? { errorCategory: accountStartupErrorCategory(error) } : {}),
       });
       Object.defineProperty(host, ACCOUNT_STARTUP_DIAGNOSTIC_SYMBOL, { configurable: true, enumerable: false, value: receipt, writable: false });
     } catch { /* diagnostics never alter account startup */ }

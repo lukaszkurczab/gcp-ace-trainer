@@ -1,3 +1,4 @@
+import { readAccountStartupFailureTestID } from "../operationalDiagnostics";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -339,4 +340,36 @@ test("expired revoke keeps exact durable ID and never signs in, clears or automa
       : error instanceof PatternlyApiClientError && !(error instanceof SessionRevocationExpiredError));
   }
   assert.deepEqual(calls, [pending.operationId, pending.operationId]);
+});
+
+
+test("a replacement SDK failure preserves the error and durable marker while reporting only its stage", async () => {
+  const previousMode = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+  process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE = "sandbox";
+  const sdkError = Object.assign(new Error("private token and uid"), { name: "FirebaseError", code: "auth/user-token-expired" });
+  let completionCalls = 0;
+  try {
+    await assert.rejects(resumePendingSessionRevocation({
+      api: {
+        exchangeAccountSession: async () => ({ customToken: "unused" }),
+        revokeSessions: async (operationId) => ({ status: "revoked", operationId, customToken: "replacement" }),
+      },
+      auth: {
+        getAuthorizationGeneration: async () => 7,
+        getSnapshot: () => user,
+        signInWithSessionToken: async () => { throw sdkError; },
+      },
+      canContinue: () => true,
+      control: { completePendingRevoke: async () => { completionCalls += 1; return completed; } },
+      onSessionTokenSignIn: () => undefined,
+      pending,
+      user,
+    }), (error) => error === sdkError);
+    assert.equal(completionCalls, 0);
+    assert.equal(readAccountStartupFailureTestID(), "account-failure:revoke_replacement_signin:auth_token_expired");
+  } finally {
+    if (previousMode === undefined) delete process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+    else process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE = previousMode;
+    Reflect.deleteProperty(globalThis, Symbol.for("patternly.account-startup-diagnostic.v1"));
+  }
 });

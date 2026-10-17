@@ -20,6 +20,8 @@ import {
   readDevelopmentBootstrapDiagnostic,
   readDevelopmentProfileStoragePreparationDiagnostic,
   readDevelopmentAccountStartupDiagnostic,
+  readAccountStartupFailureTestID,
+  recordAccountStartupFailure,
   type BootstrapDiagnosticEvent,
 } from "./operationalDiagnostics";
 
@@ -319,5 +321,50 @@ test("progress diagnostics are absent outside development smoke and cleanup remo
     else process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE = previousMode;
     if (hadDev) Object.defineProperty(global, "__DEV__", { configurable: true, value: previousDev });
     else Reflect.deleteProperty(global, "__DEV__");
+  }
+});
+
+
+test("sandbox account failure bridge is bounded and release stays inert", () => {
+  const host = globalThis as typeof globalThis & { __DEV__?: boolean };
+  const previousDev = host.__DEV__;
+  const previousMode = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+  try {
+    Object.defineProperty(host, "__DEV__", { configurable: true, value: false });
+    process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE = "sandbox";
+    const writer = createAccountStartupDiagnosticWriter();
+    writer.pending("auth_event", "loading");
+    assert.equal(readAccountStartupFailureTestID(), undefined);
+    writer.ready("authenticated");
+    assert.equal(readAccountStartupFailureTestID(), undefined);
+    const error = Object.assign(new Error("uid secret token response password"), { name: "FirebaseError", code: "auth/user-token-expired" });
+    recordAccountStartupFailure("revoke_replacement_claim", error, "signOutPending");
+    writer.failed("recovery_guard", new Error("obsolete"), "signOutPending");
+    assert.equal(readAccountStartupFailureTestID(), "account-failure:revoke_replacement_claim:auth_token_expired");
+    assert.doesNotMatch(JSON.stringify(readDevelopmentAccountStartupDiagnostic()), /secret|token response|password|uid/u);
+    for (const [name, code, status, expected] of [
+      ["FirebaseError", "auth/unknown-secret", undefined, "auth_other"],
+      ["PatternlyApiClientError", "invalid_response", undefined, "api_invalid_response"],
+      ["PatternlyApiClientError", "transport_failed", undefined, "api_transport"],
+      ["PatternlyApiClientError", "server_error", 429, "api_rate_limited"],
+    ] as const) {
+      recordAccountStartupFailure("account_identity_proof", Object.assign(new Error("secret"), { name, code, status }), "backendUnavailable");
+      assert.equal(readAccountStartupFailureTestID(), `account-failure:account_identity_proof:${expected}`);
+    }
+    assert.equal(readDevelopmentProfileStoragePreparationDiagnostic(), null);
+    for (const mode of ["release", "invalid", undefined]) {
+      if (mode === undefined) delete process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+      else process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE = mode;
+      Object.defineProperty(host, "__DEV__", { configurable: true, value: true });
+      recordAccountStartupFailure("auth_event", error, "backendUnavailable");
+      assert.equal(readDevelopmentAccountStartupDiagnostic(), null);
+      assert.equal(readAccountStartupFailureTestID(), undefined);
+    }
+  } finally {
+    if (previousMode === undefined) delete process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+    else process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE = previousMode;
+    if (previousDev === undefined) Reflect.deleteProperty(host, "__DEV__");
+    else Object.defineProperty(host, "__DEV__", { configurable: true, value: previousDev });
+    Reflect.deleteProperty(globalThis, Symbol.for("patternly.account-startup-diagnostic.v1"));
   }
 });

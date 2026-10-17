@@ -1,3 +1,4 @@
+import { recordAccountStartupFailure, type AccountStartupDiagnosticStage } from "../operationalDiagnostics";
 import { PatternlyApiClientError, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { FirebaseAuthClientError, type FirebaseAuthClient, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import type { LocalLogoutControl, LocalLogoutControlSnapshot, PendingRevoke } from "../../infrastructure/storage/localLogoutControl";
@@ -65,32 +66,42 @@ export async function resumePendingSessionRevocation(input: Readonly<{
   pending: PendingRevoke;
   user: FirebaseAuthUserSnapshot;
 }>): Promise<LocalLogoutControlSnapshot> {
-  const expectedGeneration = await ensureAccountSessionGeneration({
-    api: input.api,
-    auth: input.auth,
-    canContinue: input.canContinue,
-    onExchangeStarting: input.onSessionTokenSignIn,
-    user: input.user,
-  });
-  if (!input.canContinue()) throw new AccountSessionGenerationStaleError();
-  const response = await input.api.revokeSessions(input.pending.operationId).catch((error: unknown) => {
-    if (error instanceof PatternlyApiClientError && error.serverCode === "session_revocation_operation_expired") {
-      throw new SessionRevocationExpiredError(input.pending);
+  let stage: Exclude<AccountStartupDiagnosticStage, "complete"> = "revoke_initial_session";
+  try {
+    const expectedGeneration = await ensureAccountSessionGeneration({
+      api: input.api,
+      auth: input.auth,
+      canContinue: input.canContinue,
+      onExchangeStarting: input.onSessionTokenSignIn,
+      user: input.user,
+    });
+    if (!input.canContinue()) throw new AccountSessionGenerationStaleError();
+    stage = "revoke_request";
+    const response = await input.api.revokeSessions(input.pending.operationId).catch((error: unknown) => {
+      if (error instanceof PatternlyApiClientError && error.serverCode === "session_revocation_operation_expired") {
+        throw new SessionRevocationExpiredError(input.pending);
+      }
+      throw error;
+    });
+    if (!input.canContinue() || response.operationId !== input.pending.operationId) throw new AccountSessionGenerationStaleError();
+    input.onSessionTokenSignIn();
+    stage = "revoke_replacement_signin";
+    const replacementUser = await input.auth.signInWithSessionToken(response.customToken);
+    if (!input.canContinue() || replacementUser.uid !== input.user.uid || input.auth.getSnapshot()?.uid !== input.user.uid) {
+      throw new AccountSessionGenerationStaleError();
     }
+    stage = "revoke_replacement_claim";
+    const replacementGeneration = await input.auth.getAuthorizationGeneration();
+    if (!input.canContinue()) throw new AccountSessionGenerationStaleError();
+    if (replacementGeneration !== expectedGeneration) throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
+    stage = "revoke_marker_complete";
+    const completed = await input.control.completePendingRevoke(input.pending.uid, input.pending.operationId, input.canContinue);
+    if (!input.canContinue()) throw new AccountSessionGenerationStaleError();
+    return completed;
+  } catch (error) {
+    if (input.canContinue()) recordAccountStartupFailure(stage, error, "signOutPending");
     throw error;
-  });
-  if (!input.canContinue() || response.operationId !== input.pending.operationId) throw new AccountSessionGenerationStaleError();
-  input.onSessionTokenSignIn();
-  const replacementUser = await input.auth.signInWithSessionToken(response.customToken);
-  if (!input.canContinue() || replacementUser.uid !== input.user.uid || input.auth.getSnapshot()?.uid !== input.user.uid) {
-    throw new AccountSessionGenerationStaleError();
   }
-  const replacementGeneration = await input.auth.getAuthorizationGeneration();
-  if (!input.canContinue()) throw new AccountSessionGenerationStaleError();
-  if (replacementGeneration !== expectedGeneration) throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
-  const completed = await input.control.completePendingRevoke(input.pending.uid, input.pending.operationId, input.canContinue);
-  if (!input.canContinue()) throw new AccountSessionGenerationStaleError();
-  return completed;
 }
 
 /** Re-read and resume every durable revoke for a UID under one Auth owner. */

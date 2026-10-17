@@ -1,3 +1,4 @@
+import { readAccountStartupFailureTestID } from "../../application/operationalDiagnostics";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigationState, usePreventRemove } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
@@ -1455,6 +1456,7 @@ function AuthStatusScreen({
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
+  const failureTestID = testID === "account-backend-unavailable" || testID === "account-sign-out-pending" ? readAccountStartupFailureTestID() : undefined;
   return (
     <Screen
       ambient
@@ -1466,6 +1468,7 @@ function AuthStatusScreen({
     >
       {backAction ? <ScreenHeader backAction={backAction} title="" /> : null}
       <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null]} testID={testID}>
+        {failureTestID ? <View collapsable={false} testID={failureTestID} /> : null}
         <View style={styles.statusCopy}>
           <AuthText style={styles.authTitle}>{title}</AuthText>
           <AuthText style={styles.authDescription}>{body}</AuthText>
