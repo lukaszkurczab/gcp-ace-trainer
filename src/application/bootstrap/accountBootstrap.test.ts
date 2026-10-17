@@ -427,3 +427,29 @@ test("the canonical preparation owner stops on unavailable and authoritative /me
     setProfileStoragePreparationFactoryForTests(null);
   }
 });
+
+
+test("a failed login with closed profile storage can re-enter bootstrap and reach the awaited account handoff", async () => {
+  const user = { uid: "retry-uid", email: "retry@example.test", emailVerified: true, providers: ["password"] } as const;
+  const fixture = await createBootstrapFixture("retry-account");
+  const { ports, auth, state, generation, coordinator } = createPreparationPorts({ selectedProfile: fixture.selected, user });
+  let requests = 0;
+  const api = {
+    getMe: async () => {
+      requests += 1;
+      if (requests === 1) throw new PatternlyApiClientError("request_timeout");
+      return { user: { id: "retry-account", email: user.email, emailVerified: true, providers: ["password"], identity: { subject: user.uid } } };
+    },
+    exchangeAccountSession: async () => { throw new Error("existing generation needs no exchange"); },
+  } as unknown as PatternlyApiClient;
+  const failed = await prepareAuthenticatedAccountBootstrap(ports, auth as never, api, user, generation);
+  assert.deepEqual(failed?.bootstrapFailure, { kind: "failure", failure: "backendUnavailable" });
+  assert.equal(state.at(-1)?.kind, "backendUnavailable");
+  assert.equal(getActiveStorageProfileOrNull(), null);
+  const retried = await prepareAuthenticatedAccountBootstrap(ports, auth as never, api, user, coordinator.restart(user.uid));
+  assert.equal(requests, 2);
+  assert.equal(retried?.bootstrapFailure, undefined);
+  assert.equal(retried?.handoffReady, true);
+  assert.equal(getActiveStorageProfileOrNull()?.accountId, "retry-account");
+  assert.equal(state.at(-1)?.kind, "profilePreparing");
+});

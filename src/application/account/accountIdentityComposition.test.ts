@@ -628,7 +628,7 @@ test("registration keeps consent presentation separate from the boolean domain c
   assert.match(provider, /registrationIntentRef[\s\S]*?inFlight\?\.uid === user\.uid[\s\S]*?return inFlight\.promise/u);
   assert.match(provider, /registrationIntentRef\.current = Object\.freeze\(\{ uid: user\.uid, promise \}\)/u);
   assert.match(provider, /const registration = await api\.registerAccount\(evidence\)/u);
-  const adoptionMarker = provider.indexOf("if (registration.registration.created) await markGuestInstallationAdoptionPending()");
+  const adoptionMarker = provider.indexOf('if (registration.registration.created && getActiveStorageProfileOrNull()?.kind === "guest") await markGuestInstallationAdoptionPending()');
   const registrationFinalize = provider.indexOf("accountFinalizationPolicies.registrationCreated<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation)");
   assert.ok(adoptionMarker >= 0 && registrationFinalize > adoptionMarker, "registration adoption is durably marked before the named finalization policy runs");
   for (const policy of ["preparedProfile", "registrationCreated", "verification", "resendVerification", "passwordRefresh", "localOfflineRefresh", "deletionReauthentication"]) {
@@ -1530,4 +1530,21 @@ test("expired-revoke presentation belongs only to the exact durable UID/ID and e
     const copy = JSON.parse(readFileSync(new URL(`../../locales/${locale}/account.json`, import.meta.url), "utf8"));
     for (const key of ["sessionRevocationExpired", "sessionRevocationExpiredDescription", "restartSessionRevocation"]) assert.ok(copy[key].length > 5);
   }
+});
+
+
+test("verified closed-profile entry and failed-login retry await bootstrap while identity-barrier refresh keeps its policy", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const start = provider.indexOf("refreshVerification: () => runSensitiveWithAuth");
+  const refresh = provider.slice(start, provider.indexOf("refreshAccountIdentity: () =>", start));
+  const verifiedPlan = refresh.indexOf('const plan = planPasswordVerificationCommand("refresh", runtimeMode, user)');
+  const verifiedEntry = refresh.indexOf('if ((current.kind === "verificationPending" || current.kind === "backendUnavailable") && proofBarrier === null && getActiveStorageProfileOrNull() === null)');
+  const legacyRefresh = refresh.indexOf("return finalizeCurrent(auth, api, user, accountFinalizationPolicies.passwordRefresh");
+  const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const retryScreen = screen.slice(screen.indexOf('if (account.state.kind === "backendUnavailable")'));
+  assert.match(retryScreen, /onPress=\{\(\) =>\s*void account\.refreshVerification\(\)\.then\(setResult\(setFeedback\)\)\s*\}[\s\S]*?testID="account-retry-backend"/u);
+  assert.ok(verifiedPlan >= 0 && verifiedEntry > verifiedPlan && legacyRefresh > verifiedEntry);
+  assert.match(refresh.slice(verifiedEntry, legacyRefresh), /return finalizeExplicitAuthentication\(auth, api, user\)/u);
+  const explicit = provider.slice(provider.indexOf("const finalizeExplicitAuthentication ="), provider.indexOf("const completeExplicitRecoveryAccountTransition ="));
+  assert.match(explicit, /await admitAuthenticatedBootstrap[\s\S]*return attempt\.completion/u);
 });

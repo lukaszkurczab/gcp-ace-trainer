@@ -1784,7 +1784,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     try {
       const registration = await api.registerAccount(evidence);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
-      if (registration.registration.created) await markGuestInstallationAdoptionPending();
+      if (registration.registration.created && getActiveStorageProfileOrNull()?.kind === "guest") await markGuestInstallationAdoptionPending();
       const result: Promise<AccountCommandResult> = finalize
         ? (registration.registration.created
           ? finalizeCurrent(auth, api, user, accountFinalizationPolicies.registrationCreated<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation))
@@ -2603,6 +2603,11 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           }
           setState({ kind: "verificationPending", user });
           return { kind: "failure", failure: "unverifiedIdentity" };
+        }
+        // Verification and a failed login can both leave profile storage closed.
+        // Re-enter the awaited bootstrap instead of the active-profile refresh.
+        if ((current.kind === "verificationPending" || current.kind === "backendUnavailable") && proofBarrier === null && getActiveStorageProfileOrNull() === null) {
+          return finalizeExplicitAuthentication(auth, api, user);
         }
         return finalizeCurrent(auth, api, user, accountFinalizationPolicies.passwordRefresh<AccountSessionGenerationToken, AccountIdentityProofBarrierContext>(generation, proofBarrier));
       } finally {

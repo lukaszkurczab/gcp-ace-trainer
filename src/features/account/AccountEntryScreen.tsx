@@ -1468,8 +1468,7 @@ function AuthStatusScreen({
     >
       {backAction ? <ScreenHeader backAction={backAction} title="" /> : null}
       <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null]} testID={testID}>
-        {failureTestID ? <View collapsable={false} testID={failureTestID} /> : null}
-        <View style={styles.statusCopy}>
+        <View style={styles.statusCopy} testID={failureTestID}>
           <AuthText style={styles.authTitle}>{title}</AuthText>
           <AuthText style={styles.authDescription}>{body}</AuthText>
           {detail ? <AuthText style={styles.statusDetail}>{detail}</AuthText> : null}
