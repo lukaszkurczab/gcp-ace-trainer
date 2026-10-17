@@ -39,6 +39,7 @@
   "resetPasswordCompleteDescription": "Se ha cambiado tu contraseña. Inicia sesión con la nueva contraseña para continuar.",
   "verification": "Verifica tu correo electrónico",
   "verificationDescription": "Abre el enlace de verificación que te enviamos por correo y vuelve aquí para comprobarlo.",
+  "verificationEmailSent": "Correo de verificación enviado.",
   "resend": "Reenviar verificación",
   "check": "Comprobar verificación",
   "signOut": "Cerrar sesión",

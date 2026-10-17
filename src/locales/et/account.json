@@ -39,6 +39,7 @@
   "resetPasswordCompleteDescription": "Sinu parool on muudetud. Jätkamiseks logi uue parooliga sisse.",
   "verification": "Kinnita oma e-posti aadress",
   "verificationDescription": "Ava e-kirjas olev kinnituslink, naase seejärel siia ja kontrolli uuesti.",
+  "verificationEmailSent": "Kinnituskiri on saadetud.",
   "resend": "Saada kinnitus uuesti",
   "check": "Kontrolli kinnitust",
   "signOut": "Logi välja",

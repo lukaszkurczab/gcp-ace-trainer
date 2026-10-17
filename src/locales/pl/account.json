@@ -39,6 +39,7 @@
   "resetPasswordCompleteDescription": "Hasło zostało ustawione. Zaloguj się nowym hasłem, aby kontynuować.",
   "verification": "Zweryfikuj e-mail",
   "verificationDescription": "Otwórz link w wiadomości, a następnie wróć tutaj i sprawdź ponownie.",
+  "verificationEmailSent": "Wiadomość weryfikacyjna została wysłana.",
   "resend": "Wyślij weryfikację ponownie",
   "check": "Sprawdź weryfikację",
   "signOut": "Wyloguj",

@@ -39,6 +39,7 @@
   "resetPasswordCompleteDescription": "Dein Passwort wurde geändert. Melde dich mit dem neuen Passwort an, um fortzufahren.",
   "verification": "E-Mail-Adresse bestätigen",
   "verificationDescription": "Öffne den Bestätigungslink aus der E-Mail. Kehre anschließend hierher zurück und prüfe den Status erneut.",
+  "verificationEmailSent": "Bestätigungs-E-Mail gesendet.",
   "resend": "Bestätigung erneut senden",
   "check": "Bestätigung prüfen",
   "signOut": "Abmelden",

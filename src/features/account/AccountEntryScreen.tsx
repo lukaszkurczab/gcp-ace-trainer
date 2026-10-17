@@ -139,6 +139,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   resetPasswordCompleteDescription: t("resetPasswordCompleteDescription"),
   verification: t("verification"),
   verificationDescription: t("verificationDescription"),
+  verificationEmailSent: t("verificationEmailSent"),
   resend: t("resend"),
   check: t("check"),
   signOut: t("signOut"),
@@ -287,6 +288,10 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const [recoveryCode, setRecoveryCode] = useState("");
   const [recoveryMethod, setRecoveryMethod] = useState<"email" | "code">("email");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [verificationResentFor, setVerificationResentFor] = useState<string | null>(null);
+  const { busyAction: verificationBusyAction, runCommand: runVerificationCommand } = useAccountCommand();
+  const verificationUid = account.state.kind === "verificationPending" ? account.state.user.uid : null;
+  useEffect(() => { setVerificationResentFor(null); }, [verificationUid]);
   const [recoveryAccountTransitionRequired, setRecoveryAccountTransitionRequired] = useState(false);
   const backAction = mode === "register"
     ? { onPress: () => { setFeedback(null); setMode("signIn"); } }
@@ -416,33 +421,43 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     return (
       <AuthStatusScreen
         backAction={backAction}
+        contentPlacement="top"
         body={text.verificationDescription}
         detail={account.state.user.email ?? email}
         testID="account-verification-pending"
         title={text.verification}
       >
-        {renderFeedback(feedback, text)}
+        {renderFeedback(feedback?.kind === "failure" ? feedback : null, text)}
+        {verificationResentFor === verificationUid ? (
+          <AuthText accessibilityLiveRegion="polite" style={styles.authDescription} testID="account-verification-email-sent">
+            {text.verificationEmailSent}
+          </AuthText>
+        ) : null}
         <Button
-          loading={false}
-          onPress={() =>
-            void account.resendVerification().then(setResult(setFeedback))
-          }
-          testID="account-resend-verification"
-          variant="primary"
-        >
-          {text.resend}
-        </Button>
-        <Button
-          onPress={() =>
-            void account.refreshVerification().then(setResult(setFeedback))
-          }
+          disabled={verificationBusyAction !== null}
+          loading={verificationBusyAction === "retry"}
+          onPress={() => runVerificationCommand("retry", () => account.refreshVerification(), setResult(setFeedback))}
           testID="account-check-verification"
-          variant="secondary"
+          variant="primary"
         >
           {text.check}
         </Button>
         <Button
-          onPress={() => void account.signOut()}
+          disabled={verificationBusyAction !== null}
+          loading={verificationBusyAction === "continue"}
+          onPress={() => runVerificationCommand("continue", () => account.resendVerification(), (result) => {
+            setFeedback(result.kind === "failure" ? result : null);
+            setVerificationResentFor(result.kind === "success" && result.next === "verificationPending" ? verificationUid : null);
+          })}
+          testID="account-resend-verification"
+          variant="secondary"
+        >
+          {text.resend}
+        </Button>
+        <Button
+          disabled={verificationBusyAction !== null}
+          loading={verificationBusyAction === "signOut"}
+          onPress={() => runVerificationCommand("signOut", () => account.signOut(), setResult(setFeedback))}
           testID="account-sign-out"
           variant="ghost"
         >
@@ -1439,6 +1454,7 @@ function AuthStatusScreen({
   backAction,
   body,
   children,
+  contentPlacement = "center",
   detail,
   footerAction,
   testID,
@@ -1448,6 +1464,7 @@ function AuthStatusScreen({
   backAction?: Readonly<{ onPress: () => void }>;
   body: string;
   children?: ReactNode;
+  contentPlacement?: "center" | "top";
   detail?: string;
   footerAction?: Readonly<{ label: string; onPress: () => void; testID: string }>;
   testID: string;
@@ -1464,10 +1481,10 @@ function AuthStatusScreen({
       edges={["top", "bottom"]}
       footer={footerAction ? <Button onPress={footerAction.onPress} testID={footerAction.testID} variant="ghost">{footerAction.label}</Button> : undefined}
       footerVariant={footerAction ? "sticky" : undefined}
-      style={[styles.authScreen, largeText ? styles.authScreenLargeText : null]}
+      style={[styles.authScreen, largeText ? styles.authScreenLargeText : null, contentPlacement === "top" ? styles.statusScreenTop : null]}
     >
       {backAction ? <ScreenHeader backAction={backAction} title="" /> : null}
-      <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null]} testID={testID}>
+      <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null, contentPlacement === "top" ? styles.statusPanelTop : null]} testID={testID}>
         <View style={styles.statusCopy} testID={failureTestID}>
           <AuthText style={styles.authTitle}>{title}</AuthText>
           <AuthText style={styles.authDescription}>{body}</AuthText>
@@ -2361,6 +2378,8 @@ function isAuthFieldFailure(
       fontSize: 15,
       lineHeight: 22,
     },
+    statusScreenTop: { justifyContent: "flex-start", gap: spacing.xxxl },
+    statusPanelTop: { gap: spacing.xxl },
     statusCopy: { gap: spacing.md },
     statusDetail: {
       ...typography.bodyStrong,

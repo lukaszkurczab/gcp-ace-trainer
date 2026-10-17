@@ -39,6 +39,7 @@
   "resetPasswordCompleteDescription": "Your password has been changed. Sign in with the new password to continue.",
   "verification": "Verify your email",
   "verificationDescription": "Open the verification link sent to your email, then return here and check again.",
+  "verificationEmailSent": "Verification email sent.",
   "resend": "Resend verification",
   "check": "Check verification",
   "signOut": "Sign out",

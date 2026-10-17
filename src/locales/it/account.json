@@ -39,6 +39,7 @@
   "resetPasswordCompleteDescription": "La password è stata modificata. Accedi con la nuova password per continuare.",
   "verification": "Verifica la tua email",
   "verificationDescription": "Apri il link di verifica inviato alla tua email, poi torna qui e controlla di nuovo.",
+  "verificationEmailSent": "Email di verifica inviata.",
   "resend": "Invia di nuovo la verifica",
   "check": "Controlla la verifica",
   "signOut": "Disconnetti",
