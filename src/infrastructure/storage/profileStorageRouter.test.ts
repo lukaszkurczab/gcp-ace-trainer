@@ -186,6 +186,7 @@ test("missing registry fails closed on any existing key without reading or chang
     { name: "canonical user data", key: STORAGE_KEYS.METADATA, expected: "legacy_profile_unidentified" },
     { name: "recognized content package pointer", key: `patternly.content-node.active.v1.${"a".repeat(64)}`, expected: "legacy_profile_unidentified" },
     { name: "global runtime state", key: "patternly:premium-cache:v1", expected: "profile_scope_unavailable" },
+    { name: "global scoped Premium state", key: "patternly:premium-cache:v2", expected: "profile_scope_unavailable" },
     { name: "unknown nonempty store", key: "patternly:unknown:preserved-data", expected: "profile_scope_unavailable" },
     { name: "orphan profile-scoped data", key: `patternly:profile:v1:${GUEST_ID}:orphan`, expected: "profile_scope_unavailable" },
   ] as const;

@@ -3,14 +3,16 @@ import test from "node:test";
 import { createPremiumPurchaseCoordinator, type PremiumPurchaseActor, type PremiumVerification } from "./premiumPurchaseCoordinator";
 import type { LocalPurchaseAttempt } from "../../storage/repositories/premiumPurchaseAttemptRepository";
 import { createPurchasesAdapter, type PurchaseResult, type RevenueCatGateway } from "../../infrastructure/purchases";
+import type { PremiumSnapshot } from "../../domain/entitlements";
 import type { PurchaseAttemptDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 
-const pkg = { identifier: "$rc_monthly", product: { identifier: "com.lkurczab.patternly.premium.monthly", priceString: "49,99 zł" } };
-const confirmation = { confirmationId: "00000000-0000-4000-8000-000000000018", termsVersion: "v1", productIdentifier: pkg.product.identifier, storefrontPrice: pkg.product.priceString, locale: "pl", immediateStartRequested: true } as const;
+const pkg = { identifier: "$rc_monthly", store: "APP_STORE" as const, purchaseProductIdentifier: "com.lkurczab.patternly.premium.monthly", product: { identifier: "com.lkurczab.patternly.premium.monthly", priceString: "49,99 zł" } };
+const confirmation = { confirmationId: "00000000-0000-4000-8000-000000000018", termsVersion: "v1", productIdentifier: pkg.purchaseProductIdentifier, store: "APP_STORE" as const, storefrontPrice: pkg.product.priceString, locale: "pl", immediateStartRequested: true } as const;
 const base: PurchaseAttemptDto = { attemptId: confirmation.confirmationId, outcome: "initiated", acceptedAt: "2026-10-15T00:00:00.000Z", startExpiresAt: "2026-10-15T00:15:00.000Z", initiatedAt: "2026-10-15T00:01:00.000Z", transactionKey: null, resolutionReason: null, dispatchAllowed: true };
 function fixture() {
   let marker: LocalPurchaseAttempt | null = null, current = true, clock = 0, epoch: number | null = 1;
   let access: PremiumVerification = "denied", activeSubscriptions: string[] = [], attempt = base;
+  let premiumSnapshot: PremiumSnapshot | null = null;
   let storeOutcome: PurchaseResult = { status: "success", transactionId: "exact-T" };
   let fault: string | null = null;
   const events: string[] = [];
@@ -35,6 +37,7 @@ function fixture() {
     },
     cases: async () => ({ items: [], truncated: false }),
     refresh: async () => { events.push("backend"); return access; },
+    readPremiumSnapshot: () => premiumSnapshot,
   };
   const gateway: RevenueCatGateway = {
     configure: async () => {}, getOfferings: async () => ({ current: null }), managementURL: async () => null,
@@ -45,12 +48,12 @@ function fixture() {
       if (storeOutcome.status === "pending") throw { code: "20" };
       if (storeOutcome.status === "cancelled") throw { code: "1" };
       if (storeOutcome.status === "unknown") throw { code: "2" };
-      return { productIdentifier: pkg.product.identifier, transaction: { productIdentifier: pkg.product.identifier, transactionIdentifier: storeOutcome.transactionId } };
+    return { productIdentifier: pkg.product.identifier, transaction: { productIdentifier: pkg.product.identifier, transactionIdentifier: storeOutcome.transactionId } };
     },
   };
-  const adapter = createPurchasesAdapter(gateway, { config: { apiKey: "key", accountId: "A" }, checkoutEnabled: true, isCurrent: () => current });
+  const adapter = createPurchasesAdapter(gateway, { config: { apiKey: "key", accountId: "A", binding: { platform: "ios", store: "APP_STORE", appId: "fixture-ios", rcProductId: "fixture-rc-ios", storeProductId: "com.lkurczab.patternly.premium.monthly", basePlanId: null } }, checkoutEnabled: true, isCurrent: () => current });
   const create = () => createPremiumPurchaseCoordinator({ actor, adapter, journal, monotonicNow: () => clock, dispatchEpoch: () => epoch });
-  return { create, events, journal, actor, adapter, marker: () => marker, setAccess: (v: PremiumVerification) => { access = v; }, setStore: (v: string[]) => { activeSubscriptions = v; }, setOutcome: (v: PurchaseResult) => { storeOutcome = v; }, setFault: (v: string | null) => { fault = v; }, setAttempt: (v: PurchaseAttemptDto) => { attempt = v; }, switchActor: () => { current = false; } };
+  return { create, events, journal, actor, adapter, marker: () => marker, setAccess: (v: PremiumVerification) => { access = v; }, setSnapshot: (v: PremiumSnapshot | null) => { premiumSnapshot = v; }, setStore: (v: string[]) => { activeSubscriptions = v; }, setOutcome: (v: PurchaseResult) => { storeOutcome = v; }, setFault: (v: string | null) => { fault = v; }, setAttempt: (v: PurchaseAttemptDto) => { attempt = v; }, switchActor: () => { current = false; } };
 }
 
 test("intent→claim→one SDK effect→durable exact candidate precedes submit; backend alone grants", async () => {
@@ -114,6 +117,21 @@ test("an active server or store subscriber cannot buy; store signal cannot grant
     assert.equal(f.events.includes("SDK"), false); assert.equal(f.events.includes("record"), false);
     assert.equal(c.getState().access, source === "server" ? "verified" : "denied");
   }
+});
+
+test("Premium confirmed from Play on an iOS device blocks a second checkout and exposes the source store", async () => {
+  const f = fixture();
+  f.setAccess("verified");
+  f.setSnapshot({ accountId: "A", entitlement: "premium", productId: "com.lkurczab.patternly.premium.monthly", state: "active", source: "revenuecat",
+    projectId: "fixture-project", mapVersion: "premium-map-fixture-v1", environment: "SANDBOX", reason: null,
+    sources: [{ platform: "android", store: "PLAY_STORE", appId: "fixture-play", rcProductId: "fixture-rc-play", storeProductId: "fixture_play_monthly", basePlanId: "monthly", state: "active", reason: null, managementURL: "https://play.google.com/store/account/subscriptions", providerExpiresAt: "2026-11-01T00:00:00.000Z", providerGraceExpiresAt: null }],
+    providerExpiresAt: "2026-11-01T00:00:00.000Z", providerGraceExpiresAt: null, providerObservedAt: "2026-10-15T00:00:00.000Z", serverObservedAt: "2026-10-15T00:00:00.000Z" });
+  const c = f.create(); await c.reload(); await c.purchase(pkg, confirmation);
+  assert.equal(c.getState().access, "verified");
+  assert.equal(c.getState().blocked, true);
+  assert.equal(c.getState().sources[0]?.store, "PLAY_STORE");
+  assert.equal(f.events.includes("SDK"), false);
+  assert.equal(f.events.includes("record"), false);
 });
 
 test("unknown status/expiry/closed unresolved cannot release the marker", async () => {

@@ -347,7 +347,7 @@ function q13UnclassifiedInventory(keys: readonly Readonly<{ scope: Q13Unclassifi
 }
 
 function globalQ13Category(key: string): string | null {
-  if (key === "patternly:premium-cache:v1") return "premium_cache";
+  if (key === "patternly:premium-cache:v1" || key === "patternly:premium-cache:v2") return "premium_cache";
   if (key === "patternly:test-runtime:v1:premium-access") return "premium_test_runtime";
   return null;
 }

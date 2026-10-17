@@ -45,3 +45,11 @@ test("intent preserves exact consent payload for idempotent recovery", () => {
   journal.save({ ...marker, phase: "intent", transactionId: null, confirmation });
   assert.deepEqual(capturePremiumPurchaseJournal("A", () => true).read()?.confirmation, confirmation);
 });
+
+test("Play journal preserves the composite store product and store discriminator exactly", () => {
+  const storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); setActiveProfileLeaseForTests(profile);
+  const confirmation = { confirmationId: marker.attemptId, termsVersion: "2026-10-17", productIdentifier: "fixture_play_monthly:monthly", storefrontPrice: "€9.99", store: "PLAY_STORE" as const, locale: "en" as const, immediateStartRequested: true as const };
+  const journal = capturePremiumPurchaseJournal("A", () => true);
+  journal.save({ ...marker, phase: "intent", transactionId: null, confirmation });
+  assert.deepEqual(capturePremiumPurchaseJournal("A", () => true).read()?.confirmation, confirmation);
+});

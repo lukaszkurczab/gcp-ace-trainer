@@ -45,7 +45,7 @@ function Fixture() {
       },
       restorePurchases: async () => { events.push("restore"); if (config.scenario === "restore-failure") throw Error("fixture_restore_failure"); access = "verified"; return { activeSubscriptions: [pkg.product.identifier] }; },
       managementURL: async () => config.scenario === "manage-unavailable" ? null : "https://apps.apple.com/account/subscriptions",
-    }, { config: { apiKey: "fixture", accountId: "fixture-A" }, checkoutEnabled: config.scenario !== "checkout-off" });
+    }, { config: { apiKey: "fixture", accountId: "fixture-A", binding: { platform: "ios", store: "APP_STORE", appId: "fixture-ios", rcProductId: "fixture-rc-ios", storeProductId: pkg.product.identifier, basePlanId: null } }, checkoutEnabled: config.scenario !== "checkout-off" });
     const coordinator = createPremiumPurchaseCoordinator({ actor: {
       accountId: "fixture-A", isCurrent: () => true, record: async () => { events.push("record"); },
       attempt: async () => ({ attempt }), command: async (_id, command) => {
@@ -92,7 +92,7 @@ function Fixture() {
       hasCurrentLegalAcceptance checkoutEnabled={config.scenario !== "checkout-off"}
       loadState={config.scenario === "offer-failure" ? { kind: "failure" } : ["checkout-off", "guest", "offline"].includes(config.scenario) ? { kind: "unavailable" } : { kind: "ready", package: pkg }}
       busy={busy} purchaseState={state} managementFailure={managementFailure} instantStartAccepted={accepted} serviceAvailable={!['guest', 'offline'].includes(config.scenario)}
-      purchaseEnabled={accepted && !state.blocked && config.scenario !== "checkout-off"} onToggleConsent={() => setAccepted((v) => !v)} onAction={(v) => void action(v)} onRefresh={() => void fixture.coordinator.reload()} />}
+      purchaseEnabled={accepted && !state.blocked && config.scenario !== "checkout-off"} storeActionsAvailable={!['guest', 'offline'].includes(config.scenario)} onToggleConsent={() => setAccepted((v) => !v)} onAction={(v) => void action(v)} onRefresh={() => void fixture.coordinator.reload()} />}
   </View></AppPreferencesPresentationProvider></SafeAreaProvider>;
 }
 if (typeof __DEV__ === "undefined" || !__DEV__) throw Error("development_fixture_only");

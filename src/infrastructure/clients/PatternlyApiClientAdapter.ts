@@ -437,6 +437,19 @@ export type MeResponseDto = Readonly<{ user: Readonly<{ id: string; createdAt: s
 export type AccountDeletionResponseDto = Readonly<{ status: "deleted"; operationId: string; proofId: string }>;
 export type PublicDeletionProofResponseDto = Readonly<{ status: "deleted"; operationId: string; proofId: string }>;
 export type DeletionOperationStatusDto = Readonly<{ status: "pending" | "remote_deleted" | "complete"; operationId: string; proofId: string | null }>;
+export type PremiumSourceDto = Readonly<{
+  platform: "ios" | "android";
+  store: "APP_STORE" | "PLAY_STORE";
+  appId: string;
+  rcProductId: string;
+  storeProductId: string;
+  basePlanId: string | null;
+  state: "active" | "grace" | "hold" | "paused" | "expired" | "refunded";
+  reason: null | "paused" | "account_hold";
+  managementURL: string | null;
+  providerExpiresAt: string | null;
+  providerGraceExpiresAt: string | null;
+}>;
 export type EntitlementsResponseDto = Readonly<{
   serverObservedAt: string;
   entitlements: readonly Readonly<{
@@ -445,6 +458,11 @@ export type EntitlementsResponseDto = Readonly<{
     productId: string;
     state: "active" | "grace" | "hold" | "expired" | "refunded";
     source: "revenuecat";
+    mapVersion: string;
+    projectId: string;
+    environment: "SANDBOX" | "PRODUCTION";
+    reason: null | "paused" | "identity_conflict" | "promotional";
+    sources: readonly PremiumSourceDto[];
     providerExpiresAt: string | null;
     providerGraceExpiresAt: string | null;
     providerObservedAt: string;
@@ -661,7 +679,7 @@ export type PatternlyApiClient = Readonly<{
   exchangeAccountSession: () => Promise<Readonly<{ customToken: string }>>;
   registerAccount: (input: AccountRegistrationInputDto) => Promise<AccountRegistrationResponseDto>;
   recordLegalAcceptance: (termsVersion: string) => Promise<Readonly<{ acceptance: Readonly<{ termsVersion: string; acceptedAt: string }> }>>;
-  recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>, isCurrent?: () => boolean) => Promise<Readonly<{ confirmation: Readonly<{ confirmationId: string; acceptedAt: string; attemptExpiresAt: string }> }>>;
+  recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; store?: "APP_STORE" | "PLAY_STORE"; locale: "en" | "pl"; immediateStartRequested: true }>, isCurrent?: () => boolean) => Promise<Readonly<{ confirmation: Readonly<{ confirmationId: string; acceptedAt: string; attemptExpiresAt: string }> }>>;
   getPurchaseAttempt: (attemptId: string, isCurrent?: () => boolean) => Promise<Readonly<{ attempt: PurchaseAttemptDto }>>;
   commandPurchaseAttempt: (attemptId: string, command: PurchaseAttemptCommandDto, isCurrent?: () => boolean) => Promise<Readonly<{ attempt: PurchaseAttemptDto }>>;
   getPurchaseCases: (isCurrent?: () => boolean) => Promise<Readonly<{ items: readonly PurchaseCaseDto[]; truncated: boolean }>>;

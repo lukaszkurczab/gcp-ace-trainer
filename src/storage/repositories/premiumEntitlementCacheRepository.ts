@@ -2,7 +2,7 @@ import { evaluateOfflinePremiumAccess, isPremiumCacheRecord, premiumCacheFromFre
 import { getActiveStorageProfileOrNull, getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
 
-const KEY = "patternly:premium-cache:v1";
+const KEY = "patternly:premium-cache:v2";
 
 function read(): PremiumCacheRecord | null {
   const raw = getKeyValueStorage().getString(KEY);
@@ -51,6 +51,17 @@ export function readCachedPremiumAccess(identity: PremiumIdentity, nowMs: number
     if (decision.nextRecord === null) return "unavailable";
     return decision.allowed ? "allowed" : "denied";
   } catch { return "unavailable"; }
+}
+
+/** Scoped snapshot for source-aware management UI; this does not grant admission or advance the clock fence. */
+export function readCachedPremiumSnapshot(identity: PremiumIdentity): PremiumCacheRecord["snapshot"] | null {
+  try {
+    const value = read();
+    return value !== null && value.snapshot.accountId === identity.accountId
+      && value.snapshot.projectId === identity.projectId && value.snapshot.environment === identity.environment
+      && value.snapshot.mapVersion === identity.mapVersion && value.snapshot.entitlement === identity.entitlement
+      && value.snapshot.productId === identity.productId ? value.snapshot : null;
+  } catch { return null; }
 }
 
 export function clearPremiumCache(): void { getKeyValueStorage().remove(KEY); }

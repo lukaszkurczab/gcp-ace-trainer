@@ -8,9 +8,10 @@ import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAcc
 const observed = "2026-09-22T12:00:00.000Z";
 const expiry = "2026-09-23T12:00:00.000Z";
 const grace = "2026-09-24T12:00:00.000Z";
-const identity = { accountId: "account-1", entitlement: PREMIUM_ENTITLEMENT, productId: "monthly" } as const;
-const item = { ...identity, state: "active" as const, source: "revenuecat" as const, providerExpiresAt: expiry, providerGraceExpiresAt: null, providerObservedAt: observed };
-const response = (replacement: Record<string, unknown> = {}) => ({ serverObservedAt: observed, entitlements: [{ ...item, ...replacement }] });
+const identity = { accountId: "account-1", entitlement: PREMIUM_ENTITLEMENT, productId: "monthly", projectId: "fixture-project", mapVersion: "premium-map-fixture-v1", environment: "SANDBOX" as const };
+const source = { platform: "ios" as const, store: "APP_STORE" as const, appId: "fixture-ios", rcProductId: "fixture-rc-ios", storeProductId: "fixture.ios.monthly", basePlanId: null, state: "active" as const, reason: null, managementURL: "https://apps.apple.com/account/subscriptions", providerExpiresAt: expiry, providerGraceExpiresAt: null };
+const item = { ...identity, state: "active" as const, source: "revenuecat" as const, reason: null, sources: [source], providerExpiresAt: expiry, providerGraceExpiresAt: null, providerObservedAt: observed };
+const response = (replacement: Record<string, unknown> = {}) => ({ serverObservedAt: observed, entitlements: [{ ...item, ...replacement, sources: replacement.state === "grace" ? [{ ...source, state: "grace", providerGraceExpiresAt: grace }] : item.sources }] });
 const now = Date.parse(observed);
 
 test("fresh response requires exactly one matching provider-backed item with strict UTC dates", () => {
@@ -22,6 +23,9 @@ test("fresh response requires exactly one matching provider-backed item with str
     response({ productId: "annual" }),
     response({ entitlement: "other" }),
     response({ source: "webhook" }),
+    response({ mapVersion: "premium-map-v2" }),
+    response({ projectId: "other-project" }),
+    response({ environment: "PRODUCTION" }),
     response({ providerExpiresAt: "2026-09-23T12:00:00+00:00" }),
     response({ providerExpiresAt: null }),
     response({ state: "grace", providerGraceExpiresAt: null }),
@@ -38,12 +42,12 @@ test("confirmed account change removes the previous account cache and fails clos
   assert.equal(clearPremiumCacheUnlessBoundTo(identity.accountId), true);
   assert.equal(hasOfflinePremiumAccess(identity, now + 1000), true);
 
-  storage.setFailurePlan({ kind: "fail_on_key_remove", key: "patternly:premium-cache:v1" });
+  storage.setFailurePlan({ kind: "fail_on_key_remove", key: "patternly:premium-cache:v2" });
   assert.equal(clearPremiumCacheUnlessBoundTo("account-2"), false);
-  assert.equal(storage.contains("patternly:premium-cache:v1"), true);
+  assert.equal(storage.contains("patternly:premium-cache:v2"), true);
   storage.setFailurePlan(null);
   assert.equal(clearPremiumCacheUnlessBoundTo("account-2"), true);
-  assert.equal(storage.contains("patternly:premium-cache:v1"), false);
+  assert.equal(storage.contains("patternly:premium-cache:v2"), false);
   assert.equal(hasOfflinePremiumAccess(identity, now + 1000), false);
 });
 
@@ -81,7 +85,7 @@ test("cache writes before offline authorization; failed writes, invalid refresh 
   const before = storage.snapshot();
   assert.equal(replacePremiumCacheFromFreshResponse(response({ productId: "annual" }), identity, now), false);
   assert.deepEqual(storage.snapshot(), before);
-  storage.setFailurePlan({ kind: "fail_on_key_read", key: "patternly:premium-cache:v1" });
+  storage.setFailurePlan({ kind: "fail_on_key_read", key: "patternly:premium-cache:v2" });
   assert.equal(replacePremiumCacheFromFreshResponse(response(), identity, now + 1000), false);
   assert.deepEqual(storage.snapshot(), before);
   storage.setFailurePlan(null);
@@ -112,7 +116,8 @@ test("read-only cached access distinguishes policy denial from unavailable evide
   assert.deepEqual(storage.snapshot(), before);
   assert.equal(readCachedPremiumAccess(identity, Date.parse(expiry)), "denied");
   assert.deepEqual(storage.snapshot(), before);
-  storage.setString("patternly:premium-cache:v1", "not-json");
+  clearPremiumCache();
+  storage.setString("patternly:premium-cache:v1", JSON.stringify({ snapshot: { ...item, serverObservedAt: observed }, maxObservedWallTime: now }));
   assert.equal(readCachedPremiumAccess(identity, now), "unavailable");
 });
 
@@ -121,6 +126,10 @@ test("Premium distinguishes an account waiting for online verification from Gues
   assert.match(screen, /const isLocalOfflineAccount = accountKind === "localOffline"/u);
   assert.match(screen, /isLocalOfflineAccount \? "premiumOfflineAccountRequiredDetail" : "premiumAccountRequiredDetail"/u);
   assert.match(screen, /isLocalOfflineAccount \? "premiumOfflineAccountRequired" : "premiumAccountRequired"/u);
+  assert.match(screen, /readPurchaseConfig\(undefined, actor\.accountId, Platform\.OS\)/u);
+  assert.match(screen, /serviceAvailable=\{actor !== null && coordinator !== null\} storeActionsAvailable=\{purchaseConfig !== null\}/u);
+  assert.match(screen, /disabled=\{!storeActionsAvailable \|\| busy !== null\} loading=\{busy === "restore"\}/u);
+  assert.match(screen, /disabled=\{!storeActionsAvailable \|\| busy !== null\} loading=\{busy === "manage"\}/u);
 
   const locales = ["en", "pl", "de", "es", "fr", "it", "et"] as const;
   const entries = locales.map((locale) => {
@@ -132,5 +141,9 @@ test("Premium distinguishes an account waiting for online verification from Gues
     assert.ok(String(settings.premiumOfflineAccountRequired).trim().length > 0, `${locale} title`);
     assert.equal(typeof settings.premiumOfflineAccountRequiredDetail, "string", `${locale} detail`);
     assert.ok(String(settings.premiumOfflineAccountRequiredDetail).trim().length > 0, `${locale} detail`);
+    for (const key of ["premiumCancelAction", "premiumAccessSources", "premiumPaused", "premiumPausedDetail", "premiumOnHold", "premiumOnHoldDetail"]) {
+      assert.equal(typeof settings[key], "string", `${locale} ${key}`);
+      assert.ok(String(settings[key]).trim().length > 0, `${locale} ${key}`);
+    }
   }
 });

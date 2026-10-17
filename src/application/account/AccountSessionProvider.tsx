@@ -3,9 +3,10 @@ import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type AccountRegistrationInputDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
-import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
+import { isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
+import { premiumIdentityForAccount } from "./premiumEntitlementIdentity";
 import type { TrackId } from "../../domain";
-import { clearPremiumCache, clearPremiumCacheForAccountInProfile, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, readCachedPremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
+import { clearPremiumCache, clearPremiumCacheForAccountInProfile, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, readCachedPremiumAccess, readCachedPremiumSnapshot, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import type { PremiumPurchaseActor } from "./premiumPurchaseCoordinator";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
@@ -2024,7 +2025,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       try {
         const response = await apiClient.getEntitlements(stillCurrent);
         if (!stillCurrent()) return "pending" as const;
-        const identity = { accountId, entitlement: PREMIUM_ENTITLEMENT, productId: legalVariables.terms.premiumProductIdentifier.en };
+        const identity = premiumIdentityForAccount(accountId);
+        if (!identity) return "pending" as const;
         if (!replacePremiumCacheFromFreshResponse(response, identity, Date.now())) return "pending" as const;
         return isPremiumAccessConfirmedOnline({ ...response.entitlements[0], serverObservedAt: response.serverObservedAt }) ? "verified" as const : "denied" as const;
       } catch { return "pending" as const; }
@@ -2060,7 +2062,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     if (current.kind !== "authenticated" && current.kind !== "localOffline") return "denied" as const;
     const accountId = current.kind === "authenticated" ? current.backendUser.id : current.accountId;
     const accountUid = current.user.uid;
-    const identity = { accountId, entitlement: PREMIUM_ENTITLEMENT, productId: legalVariables.terms.premiumProductIdentifier.en };
+    const identity = premiumIdentityForAccount(accountId);
+    if (!identity) return "unavailable" as const;
     if (current.kind === "localOffline") {
       let confirmedOffline = false;
       try { confirmedOffline = (await (await import("@react-native-community/netinfo")).default.fetch()).isInternetReachable === false; }
@@ -2086,7 +2089,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     if (current.kind === "guest" || current.kind === "signedOut") return "denied" as const;
     if (current.kind === "localOffline") {
       if (!authClient || !isCurrentLocalOfflineActor(current)) return "unavailable" as const;
-      const result = readCachedPremiumAccess({ accountId: current.accountId, entitlement: PREMIUM_ENTITLEMENT, productId: legalVariables.terms.premiumProductIdentifier.en }, Date.now());
+      const identity = premiumIdentityForAccount(current.accountId);
+      if (!identity) return "unavailable" as const;
+      const result = readCachedPremiumAccess(identity, Date.now());
       return isCurrentLocalOfflineActor(current) ? result : "unavailable" as const;
     }
     if (current.kind !== "authenticated" || !authClient || authClient.getSnapshot()?.uid !== current.user.uid) return "unavailable" as const;
@@ -2095,7 +2100,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     const generation = sessionCoordinator.current(uid);
     const profile = getActiveStorageProfileOrNull();
     if (!generation || !profile || profile.kind !== "account" || profile.accountId !== accountId) return "unavailable" as const;
-    const result = readCachedPremiumAccess({ accountId, entitlement: PREMIUM_ENTITLEMENT, productId: legalVariables.terms.premiumProductIdentifier.en }, Date.now());
+    const identity = premiumIdentityForAccount(accountId);
+    if (!identity) return "unavailable" as const;
+    const result = readCachedPremiumAccess(identity, Date.now());
     const latest = stateRef.current;
     const latestProfile = getActiveStorageProfileOrNull();
     const sameProfile = latestProfile !== null && latestProfile.id === profile.id && latestProfile.kind === profile.kind && latestProfile.accountId === profile.accountId;
@@ -2165,6 +2172,11 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       command: (id, command) => guarded(() => apiClient.commandPurchaseAttempt(id, command, isCurrent)),
       cases: () => guarded(() => apiClient.getPurchaseCases(isCurrent)),
       refresh: () => guarded(() => refreshPremiumEntitlement(accountId)),
+      readPremiumSnapshot: () => {
+        if (!isCurrent()) return null;
+        const identity = premiumIdentityForAccount(accountId);
+        return identity ? readCachedPremiumSnapshot(identity) : null;
+      },
     });
   }, [apiClient, captureCurrentAuthenticatedActorFence, refreshPremiumEntitlement]);
 

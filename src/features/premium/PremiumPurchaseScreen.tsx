@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AppState, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, AppState, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import * as Crypto from "expo-crypto";
 
@@ -20,11 +20,12 @@ export function hasConfirmedPremiumScope(value: string): boolean {
 }
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PREMIUM_PURCHASE>;
-const emptyPurchaseState: PremiumPurchaseState = { access: "pending", blocked: true, storeActive: false, notice: "checking", receiptIssue: false };
+const emptyPurchaseState: PremiumPurchaseState = { access: "pending", blocked: true, storeActive: false, sources: [], reason: null, notice: "checking", receiptIssue: false };
 export type PremiumOfferLoadState = Readonly<{ kind: "loading" } | { kind: "ready"; package: RevenueCatPackage } | { kind: "unavailable" | "failure" }>;
 
 export function PremiumPurchaseScreen({ navigation }: Props) {
   const { locale } = useAppPreferences();
+  const { t } = useTranslation("settings");
   const legalLocale = locale === "pl" ? "pl" : "en";
   const account = usePatternlyAccount();
   const [instantStartAccepted, setInstantStartAccepted] = useState(false);
@@ -36,11 +37,14 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
   const actorRef = useRef<PremiumPurchaseActor | null>(null);
   if (!actorRef.current?.isCurrent()) actorRef.current = account.capturePremiumPurchaseActor();
   const actor = actorRef.current;
+  const purchaseConfig = useMemo(() => actor && (Platform.OS === "ios" || Platform.OS === "android")
+    ? readPurchaseConfig(undefined, actor.accountId, Platform.OS) : null, [actor]);
   const adapter = useMemo<PurchasesAdapter | null>(() => {
-    if (Platform.OS !== "ios" || !actor) return null;
-    const config = readPurchaseConfig(process.env, actor.accountId);
-    return config ? createPurchasesAdapter(createRevenueCatGateway(), { config, platform: Platform.OS, isCurrent: actor.isCurrent }) : null;
-  }, [actor]);
+    if (!actor || (Platform.OS !== "ios" && Platform.OS !== "android")) return null;
+    const unavailableConfig = { apiKey: "", accountId: actor.accountId,
+      binding: { platform: "ios" as const, store: "APP_STORE" as const, appId: "", rcProductId: "", storeProductId: "", basePlanId: null } };
+    return createPurchasesAdapter(createRevenueCatGateway(), { config: purchaseConfig ?? unavailableConfig, binding: purchaseConfig?.binding ?? null, platform: Platform.OS, isCurrent: actor.isCurrent });
+  }, [actor, purchaseConfig]);
   const foregroundRef = useRef({ active: AppState.currentState === "active", epoch: 0 });
   const coordinator = useMemo(() => actor && adapter ? composePremiumPurchaseCoordinator({
     actor, adapter,
@@ -85,20 +89,37 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
 
   async function run(action: "purchase" | "restore" | "manage") {
     if (actionLockedRef.current || !adapter || !actor || !coordinator || !actor.isCurrent()) return;
+    if (action !== "purchase" && !purchaseConfig) return;
     if (action === "purchase" && (!purchaseEnabled || loadState.kind !== "ready")) return;
     actionLockedRef.current = true;
     setBusy(action);
     setManagementFailure(null);
     try {
       if (action === "manage") {
+        const sources = purchaseState.sources;
+        const openSource = (source: typeof sources[number]) => {
+          if (!actor.isCurrent() || coordinatorRef.current !== coordinator) return;
+          if (!source.managementURL) { setManagementFailure("unavailable"); return; }
+          void Linking.openURL(source.managementURL).catch(() => setManagementFailure("failure"));
+        };
+        if (sources.length > 1) {
+          Alert.alert(legalVariables.terms.premiumProductName[legalLocale], undefined, [
+            ...sources.map((source) => ({ text: source.store === "APP_STORE" ? "Apple App Store" : "Google Play", onPress: () => openSource(source) })),
+            { text: t("premiumCancelAction"), style: "cancel" as const },
+          ]);
+          return;
+        }
+        const onlySource = sources[0];
+        if (sources.length === 1 && onlySource) { openSource(onlySource); return; }
         const management = await adapter.managementURL();
         if (!actor.isCurrent() || coordinatorRef.current !== coordinator) return;
-        if (management.status !== "success" || !management.url) { setManagementFailure(management.status === "unavailable" ? "unavailable" : "failure"); return; }
+        if (management.status !== "success" || !management.url) { setManagementFailure("unavailable"); return; }
         await Linking.openURL(management.url);
       } else if (action === "restore") await coordinator.restore();
       else if (loadState.kind === "ready") await coordinator.purchase(loadState.package, {
         confirmationId: Crypto.randomUUID(), termsVersion: legalVariables.documentVersion.en,
-        productIdentifier: loadState.package.product.identifier, storefrontPrice: loadState.package.product.priceString,
+        productIdentifier: loadState.package.purchaseProductIdentifier ?? loadState.package.product.identifier,
+        store: loadState.package.store, storefrontPrice: loadState.package.product.priceString,
         locale: legalLocale, immediateStartRequested: true,
       });
     } catch {
@@ -113,7 +134,7 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
   return <PremiumPurchaseView navigation={navigation} accountKind={account.state.kind} hasCurrentLegalAcceptance={hasCurrentLegalAcceptance}
     checkoutEnabled={legalVariables.premiumCheckoutEnabled} loadState={loadState} busy={busy} purchaseState={purchaseState}
     managementFailure={managementFailure} instantStartAccepted={instantStartAccepted} purchaseEnabled={purchaseEnabled}
-    serviceAvailable={adapter !== null} onToggleConsent={() => setInstantStartAccepted((accepted) => !accepted)}
+    serviceAvailable={actor !== null && coordinator !== null} storeActionsAvailable={purchaseConfig !== null} onToggleConsent={() => setInstantStartAccepted((accepted) => !accepted)}
     onAction={(action) => void run(action)} onRefresh={() => void coordinator?.reload()} />;
 }
 
@@ -122,12 +143,12 @@ export type PremiumPurchaseViewProps = Readonly<{
   accountKind: string; hasCurrentLegalAcceptance: boolean; checkoutEnabled: boolean;
   loadState: PremiumOfferLoadState; busy: "purchase" | "restore" | "manage" | null;
   purchaseState: PremiumPurchaseState; managementFailure: "unavailable" | "failure" | null;
-  instantStartAccepted: boolean; purchaseEnabled: boolean; serviceAvailable: boolean;
+  instantStartAccepted: boolean; purchaseEnabled: boolean; serviceAvailable: boolean; storeActionsAvailable: boolean;
   onToggleConsent: () => void; onAction: (action: "purchase" | "restore" | "manage") => void; onRefresh: () => void;
 }>;
 
 /** The production view is also used by the isolated native state/locale acceptance fixture. */
-export function PremiumPurchaseView({ navigation, accountKind, hasCurrentLegalAcceptance, checkoutEnabled, loadState, busy, purchaseState, managementFailure, instantStartAccepted, purchaseEnabled, serviceAvailable, onToggleConsent, onAction, onRefresh }: PremiumPurchaseViewProps) {
+export function PremiumPurchaseView({ navigation, accountKind, hasCurrentLegalAcceptance, checkoutEnabled, loadState, busy, purchaseState, managementFailure, instantStartAccepted, purchaseEnabled, serviceAvailable, storeActionsAvailable, onToggleConsent, onAction, onRefresh }: PremiumPurchaseViewProps) {
   const styles = useThemedStyles(createStyles);
   const { locale } = useAppPreferences();
   const legalLocale = locale === "pl" ? "pl" : "en";
@@ -184,10 +205,14 @@ export function PremiumPurchaseView({ navigation, accountKind, hasCurrentLegalAc
       ) : null}
 
       {isAuthenticated && purchaseState.notice ? <InfoBlock
-        body={t(({ restoreCancelled: "premiumCancelledDetail", notStarted: "premiumNotStartedDetail", checking: "premiumCheckingDetail", active: "premiumSuccessDetail", pending: "premiumPaymentPendingDetail", unknown: "premiumUnknownDetail", cancelled: "premiumCancelledDetail", failure: "premiumActionFailedDetail", denied: "premiumVerificationDeniedDetail" } as const)[purchaseState.notice])}
-        title={t(({ restoreCancelled: "premiumRestoreCancelled", notStarted: "premiumNotStarted", checking: "premiumChecking", active: "premiumSuccess", pending: "premiumPaymentPending", unknown: "premiumUnknown", cancelled: "premiumCancelled", failure: "premiumActionFailed", denied: "premiumVerificationDenied" } as const)[purchaseState.notice])}
+        body={t(({ restoreCancelled: "premiumCancelledDetail", notStarted: "premiumNotStartedDetail", checking: "premiumCheckingDetail", active: "premiumSuccessDetail", pending: "premiumPaymentPendingDetail", unknown: "premiumUnknownDetail", cancelled: "premiumCancelledDetail", failure: "premiumActionFailedDetail", denied: "premiumVerificationDeniedDetail", paused: "premiumPausedDetail", onHold: "premiumOnHoldDetail" } as const)[purchaseState.notice])}
+        title={t(({ restoreCancelled: "premiumRestoreCancelled", notStarted: "premiumNotStarted", checking: "premiumChecking", active: "premiumSuccess", pending: "premiumPaymentPending", unknown: "premiumUnknown", cancelled: "premiumCancelled", failure: "premiumActionFailed", denied: "premiumVerificationDenied", paused: "premiumPaused", onHold: "premiumOnHold" } as const)[purchaseState.notice])}
         testID={`premium-${purchaseState.notice}`} tone={purchaseState.notice === "active" ? "success" : purchaseState.notice === "cancelled" || purchaseState.notice === "restoreCancelled" || purchaseState.notice === "checking" ? "neutral" : "warning"}
       /> : null}
+      {isAuthenticated && purchaseState.access === "verified" && purchaseState.sources.length > 0 ? <Text maxFontSizeMultiplier={2} style={styles.caption} testID="premium-access-sources">
+        {t("premiumAccessSources", { stores: [...new Set(purchaseState.sources.map((source) => source.store === "APP_STORE" ? "Apple App Store" : "Google Play"))].join(", ") })}
+      </Text> : null}
+      {isAuthenticated && purchaseState.access === "verified" && purchaseState.reason === "paused" ? <InfoBlock title={t("premiumPaused")} body={t("premiumPausedDetail")} testID="premium-scheduled-pause" tone="warning" /> : null}
       {isAuthenticated && purchaseState.receiptIssue ? <InfoBlock title={t("premiumReceiptIssue")} body={t("premiumReceiptIssueDetail")} testID="premium-receipt-issue" tone="warning" /> : null}
       {managementFailure ? <InfoBlock title={t(managementFailure === "unavailable" ? "premiumManageUnavailable" : "premiumActionFailed")} body={t(managementFailure === "unavailable" ? "premiumManageUnavailableDetail" : "premiumActionFailedDetail")} testID="premium-management-failure" tone="warning" /> : null}
       {isAuthenticated && !hasCurrentLegalAcceptance ? <InfoBlock title={t("premiumTermsRequired")} body={t("premiumTermsRequiredDetail")} testID="premium-terms-required" tone="warning" /> : null}
@@ -199,8 +224,8 @@ export function PremiumPurchaseView({ navigation, accountKind, hasCurrentLegalAc
       {isAuthenticated && serviceAvailable ? <Button disabled={busy !== null} onPress={onRefresh} testID="premium-refresh" variant="ghost">{t("premiumRefresh")}</Button> : null}
 
       <View style={styles.secondaryActions}>
-        <Button disabled={!serviceAvailable || busy !== null} loading={busy === "restore"} onPress={() => onAction("restore")} testID="premium-restore" variant="secondary">{t("premiumRestore")}</Button>
-        <Button disabled={!serviceAvailable || busy !== null} loading={busy === "manage"} onPress={() => onAction("manage")} testID="premium-manage" variant="ghost">{t("premiumManage")}</Button>
+        <Button disabled={!storeActionsAvailable || busy !== null} loading={busy === "restore"} onPress={() => onAction("restore")} testID="premium-restore" variant="secondary">{t("premiumRestore")}</Button>
+        <Button disabled={!storeActionsAvailable || busy !== null} loading={busy === "manage"} onPress={() => onAction("manage")} testID="premium-manage" variant="ghost">{t("premiumManage")}</Button>
       </View>
     </Screen>
   );

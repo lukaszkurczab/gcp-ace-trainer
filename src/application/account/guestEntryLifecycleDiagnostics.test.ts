@@ -15,11 +15,11 @@ import { performLocalAccountSignOut } from "./profileStartupCoordination";
 const ACCOUNT_ID = "diagnostic-account";
 const AUTH_UID = "diagnostic-auth-uid";
 const OPERATION_ID = "00000000-0000-4000-8000-000000000091";
-const PREMIUM_PRODUCT = "patternly.premium.month";
-const PREMIUM_CACHE_KEY = "patternly:premium-cache:v1";
+const PREMIUM_PRODUCT = "com.lkurczab.patternly.premium.monthly";
+const PREMIUM_CACHE_KEY = "patternly:premium-cache:v2";
 const ACTIVE_TRACK = "coding-interview-dsa-problem-solving" as const;
 const NOW = Date.parse("2026-10-01T12:00:00.000Z");
-const ACCOUNT_IDENTITY = { accountId: ACCOUNT_ID, entitlement: PREMIUM_ENTITLEMENT, productId: PREMIUM_PRODUCT } as const;
+const ACCOUNT_IDENTITY = { accountId: ACCOUNT_ID, entitlement: PREMIUM_ENTITLEMENT, productId: PREMIUM_PRODUCT, projectId: "fixture-project", mapVersion: "premium-map-fixture-v1", environment: "SANDBOX" as const };
 const PREMIUM_RESPONSE = {
   serverObservedAt: "2026-10-01T11:59:00.000Z",
   entitlements: [{
@@ -28,6 +28,11 @@ const PREMIUM_RESPONSE = {
     productId: PREMIUM_PRODUCT,
     state: "active",
     source: "revenuecat",
+    mapVersion: "premium-map-fixture-v1",
+    projectId: "fixture-project",
+    environment: "SANDBOX",
+    reason: null,
+    sources: [{ platform: "ios", store: "APP_STORE", appId: "fixture-ios", rcProductId: "fixture-rc-ios", storeProductId: "fixture.ios.monthly", basePlanId: null, state: "active", reason: null, managementURL: "https://apps.apple.com/account/subscriptions", providerExpiresAt: "2026-11-01T00:00:00.000Z", providerGraceExpiresAt: null }],
     providerExpiresAt: "2026-11-01T00:00:00.000Z",
     providerGraceExpiresAt: null,
     providerObservedAt: "2026-10-01T11:58:00.000Z",

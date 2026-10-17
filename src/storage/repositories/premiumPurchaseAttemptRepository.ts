@@ -1,6 +1,6 @@
 export type PurchaseConfirmationInput = Readonly<{
   confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string;
-  locale: "en" | "pl"; immediateStartRequested: true;
+  store?: "APP_STORE" | "PLAY_STORE"; locale: "en" | "pl"; immediateStartRequested: true;
 }>;
 export type LocalPurchaseAttempt = Readonly<{
   accountId: string; attemptId: string; phase: "intent" | "dispatch" | "pending" | "unknown" | "candidate" | "cancelled";
@@ -30,8 +30,11 @@ function isMarker(value: unknown): value is LocalPurchaseAttempt {
 function isConfirmation(value: unknown, id: string): value is PurchaseConfirmationInput {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
-  return Object.keys(v).length === 6 && v.confirmationId === id
+  const keys = Object.keys(v).sort().join(":");
+  return (keys === "confirmationId:immediateStartRequested:locale:productIdentifier:storefrontPrice:termsVersion"
+    || keys === "confirmationId:immediateStartRequested:locale:productIdentifier:store:storefrontPrice:termsVersion") && v.confirmationId === id
     && [v.termsVersion, v.productIdentifier, v.storefrontPrice].every((item) => typeof item === "string" && item.trim().length > 0)
+    && (v.store === undefined || v.store === "APP_STORE" || v.store === "PLAY_STORE")
     && (v.locale === "en" || v.locale === "pl") && v.immediateStartRequested === true;
 }
 

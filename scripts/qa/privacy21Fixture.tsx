@@ -35,7 +35,7 @@ async function revenueCat(input: Input) {
   step = "sdk_preflight";
   const native = NativeModules.RNPurchases;
   check(await native.isConfigured() === false, "rc_already_configured");
-  const adapter = createPurchasesAdapter(createRevenueCatGateway(), { platform: "ios", config: { apiKey: input.apiKey, accountId: input.accountId }, checkoutEnabled: false });
+  const adapter = createPurchasesAdapter(createRevenueCatGateway(), { platform: "ios", config: { apiKey: input.apiKey, accountId: input.accountId, binding: { platform: "ios", store: "APP_STORE", appId: "app7b06e9a4c1", rcProductId: "prod8d07384c8c", storeProductId: "com.lkurczab.patternly.premium.monthly", basePlanId: null } }, checkoutEnabled: false });
   step = "sdk_configure";
   check((await adapter.configure()).status === "success", "rc_configure_failed");
   check(await native.getAppUserID() === input.accountId, "rc_identity_mismatch");

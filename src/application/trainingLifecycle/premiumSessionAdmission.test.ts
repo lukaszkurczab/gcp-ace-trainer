@@ -110,7 +110,7 @@ test("a Free-first mixed plan checks every item before durable start", async () 
 test("P20: actual offline Premium policy denial leaves session, attempts, and journal untouched", async () => {
   const storage = installMemoryStorage();
   const before = storage.snapshot();
-  const identity = { accountId: "p20-free-denial-fixture", entitlement: "premium" as const, productId: "p20-product-fixture" };
+  const identity = { accountId: "p20-free-denial-fixture", entitlement: "premium" as const, productId: "p20-product-fixture", projectId: "fixture-project", mapVersion: "premium-map-fixture-v1", environment: "SANDBOX" as const };
   let sessionIdentityCalls = 0;
   let refreshCalls = 0;
   const lifecycle = composeTrainingLifecycleUseCases({

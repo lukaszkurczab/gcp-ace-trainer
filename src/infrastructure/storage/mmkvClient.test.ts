@@ -312,9 +312,11 @@ test("Q13 full inventory includes registered inactive profiles and global catego
   fixture.base.setString(`patternly:profile:v1:${GUEST_ID}:${encodeURIComponent(STORAGE_KEYS.TRAINING_SESSION_INDEX)}`, "[]");
   for (const id of [GUEST_ID, ...registeredGuestIds]) {
     fixture.base.setString(`patternly:profile:v1:${id}:${encodeURIComponent("patternly:premium-cache:v1")}`, "private-profile-premium-state");
+    fixture.base.setString(`patternly:profile:v1:${id}:${encodeURIComponent("patternly:premium-cache:v2")}`, "private-profile-premium-state-v2");
   }
   fixture.base.setString(`patternly:profile:v1:${registeredGuestIds[1]}:${encodeURIComponent("patternly:test-runtime:v1:premium-access")}`, "private-profile-test-state");
   fixture.base.setString("patternly:premium-cache:v1", "private-premium-state");
+  fixture.base.setString("patternly:premium-cache:v2", "private-premium-state-v2");
   fixture.base.setString(`patternly:profile:v1:${GUEST_ID}:${encodeURIComponent(STORAGE_KEYS.PREMIUM_PURCHASE_ATTEMPT)}`, "private-purchase-attempt");
   setProfileStoragePreparationFactoryForTests(async () => ({ base: fixture.base, router }));
   await prepareProfileStorage();
@@ -325,20 +327,21 @@ test("Q13 full inventory includes registered inactive profiles and global catego
   assert.equal(snapshot.kind, "observed");
   assert.equal(snapshot.profileCount, 5);
   assert.equal(snapshot.profileInventories?.length, 5);
-  assert.equal(snapshot.profileInventories?.reduce((sum, profile) => sum + profile.keyCount, 0), 10);
+  assert.equal(snapshot.profileInventories?.reduce((sum, profile) => sum + profile.keyCount, 0), 15);
   assert.deepEqual(snapshot.profileInventories?.[0]?.categoryInventories.map(({ category }) => category), ["learningProgress", "settings", "profileLifecycle", "packagePointers", "premiumCache", "premiumTestRuntime"]);
   assert.equal(snapshot.profileInventories?.reduce((sum, profile) => sum + (profile.categoryInventories.find((entry) => entry.category === "learningProgress")?.keyCount ?? 0), 0), 2);
   assert.equal(snapshot.profileInventories?.reduce((sum, profile) => sum + (profile.categoryInventories.find((entry) => entry.category === "settings")?.keyCount ?? 0), 0), 1);
-  assert.equal(snapshot.profileInventories?.reduce((sum, profile) => sum + (profile.categoryInventories.find((entry) => entry.category === "premiumCache")?.keyCount ?? 0), 0), 5);
+  assert.equal(snapshot.profileInventories?.reduce((sum, profile) => sum + (profile.categoryInventories.find((entry) => entry.category === "premiumCache")?.keyCount ?? 0), 0), 10);
   assert.equal(snapshot.profileInventories?.reduce((sum, profile) => sum + (profile.categoryInventories.find((entry) => entry.category === "premiumTestRuntime")?.keyCount ?? 0), 0), 1);
   assert.equal(snapshot.profileInventories?.every((profile) => profile.categoryInventories.find((entry) => entry.category === "learningProgress")?.inventorySha256.length === 64), true);
   assert.equal(snapshot.profileInventories?.reduce((sum, profile) => sum + (profile.categoryInventories.find((entry) => entry.category === "profileLifecycle")?.keyCount ?? 0), 0), 1);
   assert.equal(JSON.stringify(snapshot).includes("private-purchase-attempt"), false);
   assert.deepEqual(snapshot.globalInventories?.map((entry) => entry.category), ["premium_cache", "premium_test_runtime"]);
-  assert.equal(snapshot.physicalKeyCount, 11);
+  assert.equal(snapshot.physicalKeyCount, 17);
   assert.deepEqual(fixture.base.operations.filter((operation) => operation.kind !== "read"), []);
   assert.equal(JSON.stringify(snapshot).includes("private-premium-state"), false);
   assert.equal(JSON.stringify(snapshot).includes("private-profile-premium-state"), false);
+  assert.equal(JSON.stringify(snapshot).includes("private-profile-premium-state-v2"), false);
   assert.equal(JSON.stringify(snapshot).includes("private-profile-test-state"), false);
   assert.equal(JSON.stringify(snapshot).includes(GUEST_ID), false);
   setProfileStoragePreparationFactoryForTests(null);

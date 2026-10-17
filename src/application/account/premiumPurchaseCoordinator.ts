@@ -1,6 +1,7 @@
 import type { LocalPurchaseAttempt, PurchaseAttemptJournal, PurchaseConfirmationInput } from "../../storage/repositories/premiumPurchaseAttemptRepository";
 import type { PurchaseAttemptDto, PurchaseAttemptCommandDto, PurchaseCaseDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import type { PurchasesAdapter, RevenueCatPackage } from "../../infrastructure/purchases";
+import type { PremiumSnapshot, PremiumSource } from "../../domain/entitlements";
 
 export type PremiumVerification = "verified" | "denied" | "pending";
 export type PremiumPurchaseActor = Readonly<{
@@ -11,12 +12,15 @@ export type PremiumPurchaseActor = Readonly<{
   command: (id: string, command: PurchaseAttemptCommandDto) => Promise<Readonly<{ attempt: PurchaseAttemptDto }>>;
   cases: () => Promise<Readonly<{ items: readonly PurchaseCaseDto[]; truncated: boolean }>>;
   refresh: () => Promise<PremiumVerification>;
+  readPremiumSnapshot?: () => PremiumSnapshot | null;
 }>;
 export type PremiumPurchaseState = Readonly<{
   access: PremiumVerification;
   blocked: boolean;
   storeActive: boolean;
-  notice: "checking" | "active" | "pending" | "unknown" | "cancelled" | "failure" | "denied" | "notStarted" | "restoreCancelled" | null;
+  sources: readonly PremiumSource[];
+  reason: "paused" | "identity_conflict" | "promotional" | null;
+  notice: "checking" | "active" | "pending" | "unknown" | "cancelled" | "failure" | "denied" | "notStarted" | "restoreCancelled" | "paused" | "onHold" | null;
   receiptIssue: boolean;
 }>;
 
@@ -26,7 +30,7 @@ export function createPremiumPurchaseCoordinator(input: Readonly<{
   monotonicNow: () => number; dispatchEpoch: () => number | null;
 }>) {
   const { actor, adapter, journal } = input;
-  let state: PremiumPurchaseState = { access: "pending", blocked: true, storeActive: false, notice: "checking", receiptIssue: false };
+  let state: PremiumPurchaseState = { access: "pending", blocked: true, storeActive: false, sources: [], reason: null, notice: "checking", receiptIssue: false };
   let busy = false;
   let dispatchValid = true;
   let reloadQueued = false;
@@ -81,6 +85,8 @@ export function createPremiumPurchaseCoordinator(input: Readonly<{
     unresolved ||= cases.truncated || cases.items.some((item) => item.status === "reconciliation_required" || item.status === "expired_unresolved");
     const access = await actor.refresh();
     assertCurrent();
+    const premiumSnapshot = actor.readPremiumSnapshot?.() ?? null;
+    const sources = premiumSnapshot?.sources ?? [];
     if (boundMarker) {
       if (access === "verified") journal.clear();
       else unresolved = true; // A bound receipt is not proof that another purchase is safe.
@@ -89,9 +95,10 @@ export function createPremiumPurchaseCoordinator(input: Readonly<{
     assertCurrent();
     const storeActive = store.status === "success" && store.hasActiveSubscription === true;
     const knownStore = store.status === "success" && store.hasActiveSubscription !== undefined;
-    publish({ access, storeActive, receiptIssue,
+    const readerNotice = premiumSnapshot?.reason === "paused" ? "paused" : sources.some((source) => source.reason === "account_hold") ? "onHold" : null;
+    publish({ access, storeActive, receiptIssue, sources, reason: premiumSnapshot?.reason ?? null,
       blocked: unresolved || access !== "denied" || !knownStore || storeActive,
-      notice: access === "verified" ? "active" : notStarted ? "notStarted" : pending ? "pending" : unresolved || storeActive ? "unknown" : access === "pending" || !knownStore ? "checking" : state.notice === "checking" ? null : state.notice,
+      notice: access === "verified" ? "active" : readerNotice ?? (notStarted ? "notStarted" : pending ? "pending" : unresolved || storeActive ? "unknown" : access === "pending" || !knownStore ? "checking" : state.notice === "checking" ? null : state.notice),
     });
   }
   async function reload(): Promise<PremiumPurchaseState> {
