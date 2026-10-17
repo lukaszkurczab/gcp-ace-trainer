@@ -63,7 +63,6 @@
   "attemptsRemaining_other": "{{remaining}} qualifying attempts remaining to reach the minimum number of attempts.",
   "The package completion rule is currently met.": "The package completion rule is currently met.",
   "Target outlook": "Target outlook",
-  "Completion scope unavailable": "Completion scope unavailable",
   "{{count}} qualifying attempt_one": "{{count}} qualifying attempt",
   "{{count}} qualifying attempt_few": "{{count}} qualifying attempts",
   "{{count}} qualifying attempt_many": "{{count}} qualifying attempts",

@@ -31,7 +31,6 @@ export type ProgressPlanNonePresentation = Readonly<{
   kind: "none";
   trackId: TrackId;
   guidance: TargetDateGuidancePresentation;
-  completion: ProgressPlanCompletionPresentation;
   primaryAction: GuidanceAction | null;
   secondaryAction: null;
 }>;
@@ -83,7 +82,6 @@ export function buildProgressPlanPresentationModel(input: ProgressPlanPresentati
         kind: "none",
         trackId: input.activeTrackId,
         guidance,
-        completion: unknownCompletion(),
         primaryAction: actions.primary,
         secondaryAction: null,
       });

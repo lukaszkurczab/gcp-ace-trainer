@@ -63,7 +63,6 @@
   "attemptsRemaining_other": "Minimaalse katsete arvu saavutamiseks on veel vaja {{remaining}} sobivat katset.",
   "The package completion rule is currently met.": "Paketi lõpetamise reegel on praegu täidetud.",
   "Target outlook": "Eesmärgi prognoos",
-  "Completion scope unavailable": "Lõpetamise ulatus pole saadaval",
   "{{count}} qualifying attempt_one": "{{count}} sobiv katse",
   "{{count}} qualifying attempt_few": "{{count}} sobivat katset",
   "{{count}} qualifying attempt_many": "{{count}} sobivat katset",

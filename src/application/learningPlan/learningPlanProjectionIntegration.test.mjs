@@ -367,8 +367,12 @@ test('actual Home none and Progress unavailable preserve honest status, actions 
       const rendered = renderProgressPlanSection(localizedModel, { locale, onAction: action => actions.push(action) });
       const block = rendered.byTestId(runtimeSelectors.progressPlan.completion('unknown'));
       const translate = rendered.i18n.getFixedT(locale, 'learningPlan');
-      assert.equal(rendered.textOf(block), translate('Completion rule') + translate('Completion scope unavailable'));
-      assert.ok(!rendered.textOf(block).includes(translate('The package does not define a completion rule.')));
+      assert.equal(block, undefined, 'An absent plan does not resolve package completion');
+      assert.ok(!rendered.text.includes(translate('The package does not define a completion rule.')));
+      assert.equal(rendered.textOf(rendered.byTestId(runtimeSelectors.targetDateGuidance.reason('progress', localizedModel.guidance.reason))), localizedModel.guidance.message);
+      for (const fact of ['required-pace', 'actual-pace', 'forecast', 'target']) {
+        assert.equal(rendered.byTestId(runtimeSelectors.targetDateGuidance.fact(fact)), undefined);
+      }
       assert.equal(rendered.nodes.some(node => node.type === 'ProgressBar'), false);
       const action = rendered.byTestId(runtimeSelectors.targetDateGuidance.primary('progress'));
       assert.ok(action);

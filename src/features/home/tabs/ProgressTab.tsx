@@ -390,21 +390,16 @@ function ProgressPlanSection({ model, onAction, onRetry }: Readonly<{
               <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{`${tCommon(model.session.areaLabel)} · ${t("{{count}} question", { count: model.session.sessionLength })}`}</Text>
             </View>
           </>
-        ) : (
-          <View style={styles.planCompletion} testID={runtimeSelectors.progressPlan.completion("unknown")}>
-            <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Completion rule")}</Text>
-            <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("Completion scope unavailable")}</Text>
-          </View>
-        )}
+        ) : null}
 
-        <View style={[styles.planFacts, largeTextLayout ? styles.planFactsLarge : null]}>
+        {model.kind === "ready" ? <View style={[styles.planFacts, largeTextLayout ? styles.planFactsLarge : null]}>
           {model.guidance.facts.map((fact) => (
             <View key={fact.key} style={[styles.planFact, largeTextLayout ? styles.planFactLarge : null]} testID={runtimeSelectors.targetDateGuidance.fact(factSelector[fact.key])}>
               <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{fact.label}</Text>
               <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{fact.value}</Text>
             </View>
           ))}
-        </View>
+        </View> : null}
 
         {action && onAction ? <Button onPress={() => onAction(action)} testID={runtimeSelectors.targetDateGuidance.primary("progress")}>{model.guidance.primaryLabel}</Button> : null}
         {secondary && onAction ? <Button onPress={() => onAction(secondary)} testID={runtimeSelectors.targetDateGuidance.secondary()} variant="secondary">{model.guidance.secondaryLabel}</Button> : null}

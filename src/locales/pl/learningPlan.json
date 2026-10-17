@@ -63,7 +63,6 @@
   "attemptsRemaining_other": "Pozostało {{remaining}} kwalifikującej próby do osiągnięcia minimalnej liczby prób.",
   "The package completion rule is currently met.": "Reguła ukończenia pakietu jest obecnie spełniona.",
   "Target outlook": "Ocena terminu",
-  "Completion scope unavailable": "Ukończony zakres jest niedostępny",
   "{{count}} qualifying attempt_one": "{{count}} kwalifikująca próba",
   "{{count}} qualifying attempt_few": "{{count}} kwalifikujące próby",
   "{{count}} qualifying attempt_many": "{{count}} kwalifikujących prób",

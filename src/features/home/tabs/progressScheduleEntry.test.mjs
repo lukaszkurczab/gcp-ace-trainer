@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createRequire } from 'node:module';
 import { renderProgressPlanSection } from './progressPlanSectionTestHarness.mjs';
+
+const require = createRequire(import.meta.url);
+const { buildProgressPlanPresentationModel } = require('../progressPlanPresentationModel.ts');
+const { projectTargetDateGuidance } = require('../../../application/learningPlan/index.ts');
+const { createDefaultGoal } = require('../../../domain/index.ts');
+const { requireGoalPolicy } = require('../../../domain/tracks/trackGoalPolicies.ts');
+const { runtimeSelectors } = require('../../../testing/runtimeSelectors.ts');
 
 const selector = 'patternly:progress-plan:edit-schedule';
 const edit = { kind: 'adjust_schedule', destination: 'LearningPlanEditor' };
@@ -27,8 +35,40 @@ test('verified ready plan exposes existing edit action in all seven locales, ind
     assert.equal(button.type, 'Button');
     assert.equal(rendered.textOf(button), rendered.i18n.t('Edit schedule', { ns: 'learningPlan' }));
     assert.ok(rendered.i18n.exists('Edit schedule', { ns: 'learningPlan', lng: locale }));
+    assert.ok(rendered.byTestId('patternly:progress-plan:completion:unknown'));
+    assert.ok(rendered.text.includes(rendered.i18n.t('The package does not define a completion rule.', { ns: 'learningPlan' })));
     button.props.onPress();
     assert.deepEqual(JSON.parse(JSON.stringify(actions)), [edit]);
+  }
+});
+
+test('no goal and no plan retain one explanation and their action without empty facts or completion in all locales', () => {
+  const trackId = 'coding-interview-dsa-problem-solving';
+  const goal = { record: createDefaultGoal(requireGoalPolicy(trackId)), revision: 1 };
+  for (const currentGoal of [null, goal]) for (const locale of ['en', 'pl', 'de', 'es', 'fr', 'it', 'et']) {
+    const guidance = projectTargetDateGuidance({
+      currentGoal, acceptedPlan: null, currentVerifiedArtifactSha256: 'a'.repeat(64),
+      c3Result: 'in_progress', today: '2026-10-17',
+      completedFacts: { sessions: [], attempts: [] }, paceForecast: { kind: 'unavailable', reason: 'no_target' },
+    });
+    const model = buildProgressPlanPresentationModel({ activeTrackId: trackId, locale, snapshot: { kind: 'none', trackId, goal: currentGoal, guidance } });
+    assert.equal(model.kind, 'none');
+    const actions = [];
+    const rendered = renderProgressPlanSection(model, { locale, fontScale: 2, onAction: action => actions.push(action) });
+    const message = rendered.byTestId(runtimeSelectors.targetDateGuidance.reason('progress', model.guidance.reason));
+    assert.ok(message);
+    assert.equal(rendered.textOf(message), model.guidance.message);
+    assert.equal(rendered.text.split(model.guidance.message).length - 1, 1);
+    assert.equal(rendered.nodes.filter(node => node.props.testID?.startsWith('patternly:progress-plan:completion:')).length, 0);
+    for (const fact of ['required-pace', 'actual-pace', 'forecast', 'target']) {
+      assert.equal(rendered.byTestId(runtimeSelectors.targetDateGuidance.fact(fact)), undefined);
+    }
+    const button = rendered.byTestId('patternly:target-date-guidance:primary:progress');
+    assert.ok(button);
+    button.props.onPress();
+    assert.deepEqual(actions, [model.primaryAction]);
+    assert.equal(actions[0].kind, currentGoal ? 'create_plan' : 'set_goal');
+    assert.equal(actions[0].destination, currentGoal ? 'LearningPlanProposal' : 'GoalCadence');
   }
 });
 

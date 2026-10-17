@@ -63,7 +63,6 @@
   "attemptsRemaining_other": "Restano {{remaining}} tentativi validi per raggiungere il numero minimo di tentativi.",
   "The package completion rule is currently met.": "Il criterio di completamento del pacchetto è attualmente soddisfatto.",
   "Target outlook": "Previsione dell’obiettivo",
-  "Completion scope unavailable": "Ambito di completamento non disponibile",
   "{{count}} qualifying attempt_one": "{{count}} tentativo idoneo",
   "{{count}} qualifying attempt_few": "{{count}} tentativi idonei",
   "{{count}} qualifying attempt_many": "{{count}} tentativi idonei",

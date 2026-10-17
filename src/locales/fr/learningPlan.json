@@ -63,7 +63,6 @@
   "attemptsRemaining_other": "Il reste {{remaining}} tentatives admissibles pour atteindre le nombre minimal de tentatives.",
   "The package completion rule is currently met.": "La règle de validation du contenu est actuellement satisfaite.",
   "Target outlook": "Prévision de l’échéance",
-  "Completion scope unavailable": "Périmètre de validation indisponible",
   "{{count}} qualifying attempt_one": "{{count}} tentative admissible",
   "{{count}} qualifying attempt_few": "{{count}} tentatives admissibles",
   "{{count}} qualifying attempt_many": "{{count}} tentatives admissibles",

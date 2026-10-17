@@ -63,7 +63,6 @@
   "attemptsRemaining_other": "Quedan {{remaining}} intentos que cumplen los requisitos para alcanzar el número mínimo de intentos.",
   "The package completion rule is currently met.": "Actualmente se cumple el criterio de finalización del paquete.",
   "Target outlook": "Previsión de la fecha objetivo",
-  "Completion scope unavailable": "El ámbito de finalización no está disponible",
   "{{count}} qualifying attempt_one": "{{count}} intento que cumple los requisitos",
   "{{count}} qualifying attempt_few": "{{count}} intentos que cumplen los requisitos",
   "{{count}} qualifying attempt_many": "{{count}} intentos que cumplen los requisitos",

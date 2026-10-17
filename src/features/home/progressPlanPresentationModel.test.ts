@@ -223,8 +223,21 @@ test("Progress model keeps none guidance explicit for no goal, paused goal and n
     assert.equal(noGoalModel.guidance.state, "no_goal");
     assert.equal(pausedModel.guidance.state, "goal_paused");
     assert.equal(noPlanModel.guidance.state, "no_plan");
+    for (const model of [noGoalModel, pausedModel, noPlanModel]) {
+      assert.equal("completion" in model, false, "No plan does not resolve package completion");
+    }
+    assert.equal(noGoalModel.primaryAction?.kind, "set_goal");
     assert.equal(noPlanModel.primaryAction?.kind, "create_plan");
   }
+});
+
+test("Progress preserves a genuinely unknown rule in a verified ready snapshot", () => {
+  const snapshot = ready({ kind: "unknown" });
+  const model = buildProgressPlanPresentationModel({ snapshot, activeTrackId: TRACK_ID, locale: "en" });
+  assert.equal(model.kind, "ready");
+  if (model.kind !== "ready") return;
+  assert.deepEqual(model.completion, { kind: "unknown" });
+  assert.equal(model.guidance.facts.length, 4);
 });
 
 test("Progress model fails closed for a foreign active track or unavailable snapshot", () => {

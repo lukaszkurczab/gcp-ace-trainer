@@ -63,7 +63,6 @@
   "attemptsRemaining_other": "Noch {{remaining}} anrechenbare Versuche, um die Mindestanzahl an Versuchen zu erreichen.",
   "The package completion rule is currently met.": "Die Abschlussregel des Pakets ist derzeit erfüllt.",
   "Target outlook": "Prognose zum Zieltermin",
-  "Completion scope unavailable": "Abschlussumfang nicht verfügbar",
   "{{count}} qualifying attempt_one": "{{count}} anrechenbarer Versuch",
   "{{count}} qualifying attempt_few": "{{count}} anrechenbare Versuche",
   "{{count}} qualifying attempt_many": "{{count}} anrechenbare Versuche",
