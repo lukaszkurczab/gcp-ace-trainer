@@ -37,6 +37,10 @@ test("EAS release configuration has explicit version, runtime, and channel polic
 
   assert.deepEqual(eas.build, {
     sandbox: { distribution: "internal", android: { buildType: "apk" }, channel: "sandbox", environment: "preview", env: { PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox" } },
+    "android-isolation-probe": {
+      extends: "sandbox", channel: "android-isolation-probe",
+      env: { EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: JSON.stringify({ ...JSON.parse(readFileSync("scripts/fixtures/androidIsolationPublicEnvironment.json", "utf8")), apiOrigin: "https://environment-isolation.invalid" }) },
+    },
     release: { distribution: "store", channel: "production", autoIncrement: true, environment: "production", env: { PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release" } },
   });
   assert.deepEqual(updatesConfiguration("release"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab", enabled: false, checkAutomatically: "NEVER" });
@@ -51,4 +55,21 @@ test("EAS source archives exclude generated native output, artifacts, and creden
     assert.match(easIgnore, new RegExp(`^${pattern.replace(/[.*]/g, "\\$&")}$`, "mu"));
   }
   assert.doesNotMatch(easIgnore, /PATTERNLY_[A-Z0-9_]+=|BEGIN (?:PRIVATE|OPENSSH) KEY/u);
+});
+
+test("Android isolation probe changes only API identity and retains the sandbox build contract", () => {
+  const config = JSON.parse(readFileSync("eas.json", "utf8"));
+  const probe = config.build["android-isolation-probe"];
+  assert.equal(probe.extends, "sandbox");
+  assert.equal(probe.channel, "android-isolation-probe");
+  assert.deepEqual(Object.keys(probe).sort(), ["channel", "env", "extends"]);
+  assert.deepEqual(Object.keys(probe.env), ["EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT"]);
+  const baseline = JSON.parse(readFileSync("scripts/fixtures/androidIsolationPublicEnvironment.json", "utf8"));
+  const publicB = JSON.parse(probe.env.EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT);
+  assert.equal(baseline.environment, "sandbox");
+  assert.notEqual(baseline.apiOrigin, publicB.apiOrigin);
+  assert.deepEqual(publicB, { ...baseline, apiOrigin: "https://environment-isolation.invalid" });
+  const effective = { ...config.build.sandbox.env, ...probe.env };
+  assert.equal(effective.PATTERNLY_RUNTIME_MODE, "sandbox");
+  assert.equal(effective.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE, "sandbox");
 });

@@ -1,0 +1,13 @@
+{
+  "apiOrigin": "https://patternly-backend-sandbox-958691314582.europe-central2.run.app",
+  "androidAppLinkHost": "patternly-backend-sandbox-958691314582.europe-central2.run.app",
+  "authActionOrigin": "https://patternly-app-sandbox.firebaseapp.com",
+  "authRedirectDomain": "patternly-app-sandbox.firebaseapp.com",
+  "environment": "sandbox",
+  "iosAssociatedDomain": "applinks:patternly-backend-sandbox-958691314582.europe-central2.run.app",
+  "privacyUrl": "https://patternly-backend-sandbox-958691314582.europe-central2.run.app/privacy",
+  "publicWebOrigin": "https://patternly-backend-sandbox-958691314582.europe-central2.run.app",
+  "supportUrl": "https://patternly-backend-sandbox-958691314582.europe-central2.run.app/support",
+  "termsUrl": "https://patternly-backend-sandbox-958691314582.europe-central2.run.app/terms",
+  "transactionalSenderDomain": "patternly-app-sandbox.firebaseapp.com"
+}

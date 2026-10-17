@@ -21,7 +21,27 @@ for (const key of ["EXPO_PUBLIC_PATTERNLY_BACKEND_E2E", "EXPO_PUBLIC_PATTERNLY_A
   "EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD", "EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN"]) delete environment[key];
 validateLocalProfile("sandbox", environment);
 const { createExpoConfig } = require("../../app.config.js");
+const baselineConfig = createExpoConfig(environment);
+const isolationProbe = process.argv.includes("--isolation-probe");
+if (isolationProbe) {
+  const baseline = JSON.parse(readFileSync(join(root, "scripts/fixtures/androidIsolationPublicEnvironment.json"), "utf8"));
+  assert.deepEqual(JSON.parse(environment.EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT), baseline,
+    "isolation_probe_baseline_drift: review the sandbox baseline before building B");
+  const eas = JSON.parse(readFileSync(join(root, "eas.json"), "utf8"));
+  const probe = eas.build["android-isolation-probe"];
+  assert.equal(probe.extends, "sandbox");
+  assert.deepEqual(JSON.parse(probe.env.EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT),
+    { ...baseline, apiOrigin: "https://environment-isolation.invalid" });
+  Object.assign(environment, eas.build.sandbox.env, probe.env);
+  validateLocalProfile("sandbox", environment);
+}
 const config = createExpoConfig(environment);
+if (isolationProbe) {
+  assert.notEqual(config.expo.extra.patternlyEnvironmentFingerprint, baselineConfig.expo.extra.patternlyEnvironmentFingerprint);
+  assert.equal(config.expo.android.package, baselineConfig.expo.android.package);
+  assert.equal(config.expo.version, baselineConfig.expo.version);
+  assert.equal(config.expo.android.versionCode, baselineConfig.expo.android.versionCode);
+}
 const directory = mkdtempSync(join(tmpdir(), "patternly-android-privacy-"));
 for (const path of ["package.json", "package-lock.json", "plugins", "assets"]) {
   cpSync(join(root, path), join(directory, path), { recursive: true });
@@ -49,6 +69,6 @@ assert.equal(readFileSync(join(base, "res/xml/backup_rules.xml"), "utf8"), andro
 assert.equal(readFileSync(join(base, "res/xml/data_extraction_rules.xml"), "utf8"), androidBackupRules().extraction);
 const schemes = app.activity.flatMap((activity) => (activity["intent-filter"] ?? []).flatMap((filter) => filter.data ?? [])).map((data) => data.$["android:scheme"]);
 assert.ok(schemes.includes(config.expo.scheme));
-console.log(JSON.stringify({ result: "PASS", scope: "generated-native-source-only", directory,
+console.log(JSON.stringify({ result: "PASS", scope: "generated-native-source-only", isolationProbe, directory,
   fingerprint: config.expo.extra.patternlyEnvironmentFingerprint, callbackScheme: config.expo.scheme,
   domainsPerMode: 9, built: false, signed: false, installed: false }));
