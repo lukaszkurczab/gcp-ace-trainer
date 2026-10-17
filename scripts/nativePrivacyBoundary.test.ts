@@ -8,6 +8,7 @@ const require = createRequire(import.meta.url);
 const plist = require("@expo/plist").default;
 const normalized = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const {
+  androidBackupRules,
   injectIosBackupPolicy,
   iosBackupPolicySwift,
   privacyInfoXcPrivacy,
@@ -36,7 +37,7 @@ test("release-native configuration excludes canonical learning storage from back
     assert.match(plugin, new RegExp(`"${permission}"`));
   }
   assert.match(plugin, /manifest\.queries = \[\{ \$: \{ "tools:node": "remove" \} \}\]/);
-  assert.match(plugin, /<exclude domain="root" path="\."\/>/);
+  assert.match(plugin, /"root", "file", "database", "sharedpref", "external"/);
   assert.match(plugin, /<cloud-backup>/);
   assert.match(plugin, /<device-transfer>/);
   assert.match(plugin, /appendingPathComponent\("mmkv", isDirectory: true\)/);
@@ -47,6 +48,7 @@ test("release-native configuration excludes canonical learning storage from back
 
 test("Android privacy transforms are reproducible without generated native projects", () => {
   const config = {
+    extra: { patternlyEnvironmentFingerprint: "a".repeat(64) },
     modResults: {
       manifest: {
         $: {},
@@ -146,4 +148,44 @@ test("clean iOS output declares current data collection without tracking or remo
   assert.deepEqual(withoutRemoteNotificationEntitlement({ "aps-environment": "development", "com.apple.developer.applesignin": ["Default"] }), { "com.apple.developer.applesignin": ["Default"] });
   assert.deepEqual(withoutRemoteNotificationBackgroundMode({ UIBackgroundModes: ["remote-notification", "processing"] }), { UIBackgroundModes: ["processing"] });
   assert.deepEqual(withoutRemoteNotificationBackgroundMode({ UIBackgroundModes: ["remote-notification"] }), {});
+});
+
+// Parse generated XML rather than only checking the generator source: a missing
+// domain in either transfer mode would silently allow that class of app data.
+test("Android backup XML denies every supported storage domain in every mode", async () => {
+  const { parseStringPromise } = require("xml2js");
+  const rules = androidBackupRules();
+  const legacy = await parseStringPromise(rules.legacy);
+  const extraction = await parseStringPromise(rules.extraction);
+  const expected = ["root", "file", "database", "sharedpref", "external",
+    "device_root", "device_file", "device_database", "device_sharedpref"].sort();
+  const assertExcluded = (section: { exclude: { $: { domain: string; path: string } }[]; include?: unknown }) => {
+    assert.equal(section.include, undefined);
+    assert.deepEqual(section.exclude.map((entry) => entry.$.domain).sort(), expected);
+    assert.ok(section.exclude.every((entry) => entry.$.path === "."));
+  };
+  assertExcluded(legacy["full-backup-content"]);
+  for (const mode of ["cloud-backup", "device-transfer"]) {
+    assert.equal(extraction["data-extraction-rules"][mode].length, 1);
+    assertExcluded(extraction["data-extraction-rules"][mode][0]);
+  }
+});
+
+test("Android artifact fingerprint uses canonical config, fails closed and preserves other metadata", () => {
+  const make = (fingerprint?: string) => ({ extra: { patternlyEnvironmentFingerprint: fingerprint }, modResults: {
+    manifest: { application: [{ $: {}, "meta-data": [
+      { $: { "android:name": "unrelated", "android:value": "keep" } },
+      { $: { "android:name": "com.patternly.environmentFingerprint", "android:value": "stale" } },
+    ] }] },
+  } });
+  for (const fingerprint of [undefined, "", "A".repeat(64), "a".repeat(63), "a".repeat(65)]) {
+    assert.throws(() => withAndroidBackupPolicy(make(fingerprint)), /canonical environment fingerprint/);
+  }
+  const config = make("b".repeat(64));
+  withAndroidBackupPolicy(config);
+  withAndroidBackupPolicy(config);
+  assert.deepEqual(config.modResults.manifest.application[0]!["meta-data"], [
+    { $: { "android:name": "unrelated", "android:value": "keep" } },
+    { $: { "android:name": "com.patternly.environmentFingerprint", "android:value": "b".repeat(64) } },
+  ]);
 });

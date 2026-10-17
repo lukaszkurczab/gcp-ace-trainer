@@ -27,10 +27,10 @@ const eas = JSON.parse(readFileSync("eas.json", "utf8")) as {
 const easIgnore = readFileSync(".easignore", "utf8");
 
 test("EAS release configuration has explicit version, runtime, and channel policy", () => {
-  assert.equal(app.version, "0.1.0");
+  assert.equal(app.version, "0.1.1");
   assert.deepEqual(app.runtimeVersion, { policy: "appVersion" });
   assert.equal(app.ios?.buildNumber, "1");
-  assert.equal(app.android?.versionCode, 1);
+  assert.equal(app.android?.versionCode, 2);
   assert.equal(eas.cli.appVersionSource, "local");
   assert.equal(eas.cli.requireCommit, true);
   assert.match(eas.cli.version, /^>= /u);

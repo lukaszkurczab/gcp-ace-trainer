@@ -186,7 +186,7 @@ function createExpoConfig(environment = process.env) {
     expo: {
       name: "Patternly",
       slug: "patternly",
-      version: "0.1.0",
+      version: "0.1.1",
       runtimeVersion: { policy: "appVersion" },
       scheme: "com.lkurczab.patternly",
       icon: "./assets/brand/app-icon/patternly-app-icon.png",
@@ -229,7 +229,7 @@ function createExpoConfig(environment = process.env) {
       android: {
         package: "com.lkurczab.patternly",
         ...(environment.EAS_BUILD_PLATFORM === "ios" && runtimeMode === "release" ? {} : { googleServicesFile: nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.android, runtimeMode) }),
-        versionCode: 1,
+        versionCode: 2,
         adaptiveIcon: {
           foregroundImage: "./assets/brand/app-icon/patternly-app-icon-foreground.png",
           backgroundColor: "#0C1324",

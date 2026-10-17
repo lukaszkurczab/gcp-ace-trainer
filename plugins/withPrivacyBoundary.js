@@ -32,8 +32,21 @@ const REMOVED_ANDROID_PERMISSIONS = [
 
 const REQUIRED_ANDROID_PERMISSION = "android.permission.INTERNET";
 
-const LEGACY_BACKUP_RULES = `<?xml version="1.0" encoding="utf-8"?>\n<full-backup-content>\n  <exclude domain="root" path="."/>\n</full-backup-content>\n`;
-const DATA_EXTRACTION_RULES = `<?xml version="1.0" encoding="utf-8"?>\n<data-extraction-rules>\n  <cloud-backup>\n    <exclude domain="root" path="."/>\n  </cloud-backup>\n  <device-transfer>\n    <exclude domain="root" path="."/>\n  </device-transfer>\n</data-extraction-rules>\n`;
+// Keep credential-encrypted, device-protected and external app storage local.
+// "root" alone does not cover the other Android backup domains.
+const ANDROID_BACKUP_DOMAINS = Object.freeze([
+  "root", "file", "database", "sharedpref", "external",
+  "device_root", "device_file", "device_database", "device_sharedpref",
+]);
+function androidBackupExclusions(indent) {
+  return ANDROID_BACKUP_DOMAINS.map((domain) => `${indent}<exclude domain="${domain}" path="."/>`).join("\n");
+}
+function androidBackupRules() {
+  return {
+    legacy: `<?xml version="1.0" encoding="utf-8"?>\n<full-backup-content>\n${androidBackupExclusions("  ")}\n</full-backup-content>\n`,
+    extraction: `<?xml version="1.0" encoding="utf-8"?>\n<data-extraction-rules>\n  <cloud-backup>\n${androidBackupExclusions("    ")}\n  </cloud-backup>\n  <device-transfer>\n${androidBackupExclusions("    ")}\n  </device-transfer>\n</data-extraction-rules>\n`,
+  };
+}
 const APP_FUNCTIONALITY_PURPOSE = "NSPrivacyCollectedDataTypePurposeAppFunctionality";
 const ANALYTICS_PURPOSE = "NSPrivacyCollectedDataTypePurposeAnalytics";
 const PRIVACY_INFO_XC_PRIVACY = Object.freeze({
@@ -132,6 +145,10 @@ function finalizeIosPrivacyBoundary(nextConfig) {
 }
 
 function withAndroidBackupPolicy(config) {
+  const fingerprint = config.extra?.patternlyEnvironmentFingerprint;
+  if (typeof fingerprint !== "string" || !/^[a-f0-9]{64}$/.test(fingerprint)) {
+    throw new Error("Patternly Android manifest requires its canonical environment fingerprint.");
+  }
   const manifest = config.modResults.manifest;
   manifest.$ = { ...manifest.$, "xmlns:tools": "http://schemas.android.com/tools" };
   manifest["uses-permission"] = [
@@ -141,6 +158,11 @@ function withAndroidBackupPolicy(config) {
   manifest.queries = [{ $: { "tools:node": "remove" } }];
   const application = manifest.application?.[0];
   if (!application) throw new Error("Patternly Android manifest has no application element.");
+  const fingerprintName = "com.patternly.environmentFingerprint";
+  application["meta-data"] = [
+    ...(application["meta-data"] ?? []).filter((entry) => entry.$?.["android:name"] !== fingerprintName),
+    { $: { "android:name": fingerprintName, "android:value": fingerprint } },
+  ];
   application.$ = {
     ...application.$,
     "android:allowBackup": "false",
@@ -220,8 +242,9 @@ function withPrivacyBoundary(config) {
   config = withDangerousMod(config, ["android", async (nextConfig) => {
     const xmlDirectory = join(nextConfig.modRequest.platformProjectRoot, "app", "src", "main", "res", "xml");
     mkdirSync(xmlDirectory, { recursive: true });
-    writeFileSync(join(xmlDirectory, "backup_rules.xml"), LEGACY_BACKUP_RULES);
-    writeFileSync(join(xmlDirectory, "data_extraction_rules.xml"), DATA_EXTRACTION_RULES);
+    const rules = androidBackupRules();
+    writeFileSync(join(xmlDirectory, "backup_rules.xml"), rules.legacy);
+    writeFileSync(join(xmlDirectory, "data_extraction_rules.xml"), rules.extraction);
     return nextConfig;
   }]);
   config = withDangerousMod(config, ["ios", async (nextConfig) => {
@@ -240,3 +263,5 @@ module.exports.privacyInfoXcPrivacy = privacyInfoXcPrivacy;
 module.exports.withoutRemoteNotificationEntitlement = withoutRemoteNotificationEntitlement;
 module.exports.withoutRemoteNotificationBackgroundMode = withoutRemoteNotificationBackgroundMode;
 module.exports.iosBackupPolicySwift = iosBackupPolicySwift;
+
+module.exports.androidBackupRules = androidBackupRules;
