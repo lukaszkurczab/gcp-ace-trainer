@@ -422,6 +422,14 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       <AuthStatusScreen
         backAction={backAction}
         contentPlacement="top"
+        textAlignment="center"
+        footerAction={{
+          label: text.signOut,
+          onPress: () => runVerificationCommand("signOut", () => account.signOut(), setResult(setFeedback)),
+          testID: "account-sign-out",
+          disabled: verificationBusyAction !== null,
+          loading: verificationBusyAction === "signOut",
+        }}
         body={text.verificationDescription}
         detail={account.state.user.email ?? email}
         testID="account-verification-pending"
@@ -429,7 +437,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       >
         {renderFeedback(feedback?.kind === "failure" ? feedback : null, text)}
         {verificationResentFor === verificationUid ? (
-          <AuthText accessibilityLiveRegion="polite" style={styles.authDescription} testID="account-verification-email-sent">
+          <AuthText accessibilityLiveRegion="polite" style={[styles.authDescription, styles.centeredStatusText]} testID="account-verification-email-sent">
             {text.verificationEmailSent}
           </AuthText>
         ) : null}
@@ -453,15 +461,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           variant="secondary"
         >
           {text.resend}
-        </Button>
-        <Button
-          disabled={verificationBusyAction !== null}
-          loading={verificationBusyAction === "signOut"}
-          onPress={() => runVerificationCommand("signOut", () => account.signOut(), setResult(setFeedback))}
-          testID="account-sign-out"
-          variant="ghost"
-        >
-          {text.signOut}
         </Button>
       </AuthStatusScreen>
     );
@@ -1458,6 +1457,7 @@ function AuthStatusScreen({
   detail,
   footerAction,
   testID,
+  textAlignment = "left",
   title,
 }: Readonly<{
   action?: Readonly<{ label: string; onPress: () => void; testID: string }>;
@@ -1466,8 +1466,9 @@ function AuthStatusScreen({
   children?: ReactNode;
   contentPlacement?: "center" | "top";
   detail?: string;
-  footerAction?: Readonly<{ label: string; onPress: () => void; testID: string }>;
+  footerAction?: Readonly<{ label: string; onPress: () => void; testID: string; disabled?: boolean; loading?: boolean }>;
   testID: string;
+  textAlignment?: "left" | "center";
   title: string;
 }>) {
   const styles = useThemedStyles(createStyles);
@@ -1479,16 +1480,16 @@ function AuthStatusScreen({
       ambient
       ambientVariant="auth"
       edges={["top", "bottom"]}
-      footer={footerAction ? <Button onPress={footerAction.onPress} testID={footerAction.testID} variant="ghost">{footerAction.label}</Button> : undefined}
+      footer={footerAction ? <Button disabled={footerAction.disabled} loading={footerAction.loading} onPress={footerAction.onPress} testID={footerAction.testID} variant="ghost">{footerAction.label}</Button> : undefined}
       footerVariant={footerAction ? "sticky" : undefined}
       style={[styles.authScreen, largeText ? styles.authScreenLargeText : null, contentPlacement === "top" ? styles.statusScreenTop : null]}
     >
       {backAction ? <ScreenHeader backAction={backAction} title="" /> : null}
       <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null, contentPlacement === "top" ? styles.statusPanelTop : null]} testID={testID}>
         <View style={styles.statusCopy} testID={failureTestID}>
-          <AuthText style={styles.authTitle}>{title}</AuthText>
-          <AuthText style={styles.authDescription}>{body}</AuthText>
-          {detail ? <AuthText style={styles.statusDetail}>{detail}</AuthText> : null}
+          <AuthText style={[styles.authTitle, textAlignment === "center" ? styles.centeredStatusText : null]}>{title}</AuthText>
+          <AuthText style={[styles.authDescription, textAlignment === "center" ? styles.centeredStatusText : null]}>{body}</AuthText>
+          {detail ? <AuthText style={[styles.statusDetail, textAlignment === "center" ? styles.centeredStatusText : null]}>{detail}</AuthText> : null}
         </View>
         {children}
         {action ? (
@@ -2380,6 +2381,7 @@ function isAuthFieldFailure(
     },
     statusScreenTop: { justifyContent: "flex-start", gap: spacing.xxxl },
     statusPanelTop: { gap: spacing.xxl },
+    centeredStatusText: { textAlign: "center" },
     statusCopy: { gap: spacing.md },
     statusDetail: {
       ...typography.bodyStrong,

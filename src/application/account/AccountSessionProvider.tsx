@@ -2954,7 +2954,13 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         && activeProfile.kind === signOutProfile.kind
         && activeProfile.accountId === signOutProfile.accountId;
       const clearSigningOutAccountCache = (operationId: string | undefined): boolean | "stale" => {
-        if (!operationId || !signOutProfile) return false;
+        if (!operationId) return false;
+        if (!signOutProfile) {
+          // Pending verification has no active account cache to clear.
+          // Its durable revoke fence is still required before Firebase sign-out.
+          if (stateAtSignOut.kind !== "verificationPending" || stateAtSignOut.user.uid !== user.uid) return false;
+          return getActiveStorageProfileOrNull() === null && canContinue() ? true : "stale";
+        }
         if (!sameSignOutProfile(getActiveStorageProfileOrNull()) || !canContinue()) return "stale";
         let accountId = authenticatedAccountId;
         if (!accountId) {

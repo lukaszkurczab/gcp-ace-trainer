@@ -354,6 +354,7 @@ test("local sign-out persists its block before closing scope and never invokes r
   assert.ok(signOut.includes('recoveryOutcome === "stale"'));
   assert.ok(signOut.includes('recoveryOutcome === "signOutPending"'));
   assert.doesNotMatch(signOut, /clearPremiumCache\(\)/);
+  assert.match(signOut, /if \(!signOutProfile\) \{[\s\S]*?stateAtSignOut\.kind !== "verificationPending" \|\| stateAtSignOut\.user\.uid !== user\.uid[\s\S]*?getActiveStorageProfileOrNull\(\) === null && canContinue\(\) \? true : "stale"/u);
   assert.match(signOut, /return \{ kind: "failure", failure: "localCleanupFailure" \}/);
   assert.doesNotMatch(signOut, /prepareAccountSignOut|revokeSessions|synchronizeBoundAccount|clearAccountOwnedLocalData/);
   assert.doesNotMatch(signOut, /revokeGuestAccess/);
