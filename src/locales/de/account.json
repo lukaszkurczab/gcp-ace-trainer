@@ -119,7 +119,7 @@
   "adoption_conflict": "Für einige Datensätze ist eine ausdrückliche Auswahl erforderlich.",
   "journal_recovery_required": "Setze die unterbrochene Aktivität fort, bevor du den Lernfortschritt in deinem Konto speicherst.",
   "account_data_unavailable": "Kontodaten sind derzeit nicht verfügbar.",
-  "backendUnavailable": "Anmeldung konnte nicht abgeschlossen werden",
+  "backendUnavailable": "Der Dienst ist vorübergehend nicht verfügbar. Versuche es in Kürze erneut.",
   "backendUnavailableDescription": "Wir konnten keine Verbindung zu deinem Patternly-Konto herstellen. Versuche es gleich noch einmal.",
   "revokedSession": "Bitte melde dich erneut an",
   "revokedSessionDescription": "Deine Anmeldung ist nicht mehr gültig. Melde dich ab und anschließend erneut an, um fortzufahren.",

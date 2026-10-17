@@ -132,7 +132,7 @@ export function isTemporaryIdentityProofUnavailable(error: unknown): boolean {
 /** Local attestation unavailability cannot invalidate a previously verified local account. */
 export function isLocalAccountStartupUnavailable(error: unknown): boolean {
   return classifyAccountFailure(error) === "offline"
-    || (error instanceof PatternlyApiClientError && error.code === "app_check_unavailable" && error.status === undefined);
+    || (error instanceof PatternlyApiClientError && ["app_check_unavailable", "request_timeout"].includes(error.code) && error.status === undefined);
 }
 
 export type AccountIdentityProofBarrierContext = Readonly<{
@@ -3597,8 +3597,9 @@ export function classifyAccountFailure(error: unknown): AccountFailure {
     if (error.serverCode === "recovery_code_used") return "recoveryCodeUsed";
     if (error.serverCode === "purchase_attempt_active") return "conflict";
     if (error.status === 401 || error.serverCode === "account_deleted" || error.serverCode === "authentication_required") return "revokedSession";
+    if (error.status === 429) return "rateLimited";
     if (error.status !== undefined && error.status >= 500) return "backendUnavailable";
-    if (error.code === "transport_failed" || error.code === "request_timeout") return "offline";
+    if (error.code === "transport_failed") return "offline";
     return "backendUnavailable";
   }
   const code = firebaseAuthErrorCode(error);

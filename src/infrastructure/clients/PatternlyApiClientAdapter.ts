@@ -765,10 +765,14 @@ export function createPatternlyApiClient(input: Readonly<{
       try {
         payload = await withinDeadline(response.json());
       } catch (error) {
-        if (error instanceof PatternlyApiClientError) throw error;
-        if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
-        if (response.status >= 500) throw new PatternlyApiClientError("server_error", response.status);
-        throw new PatternlyApiClientError("invalid_response", response.status);
+        // Cloud Run can return a plain-text error before a container receives
+        // the request. Once headers arrive, retain that HTTP failure even if
+        // its body is malformed or exceeds the remaining deadline.
+        if (response.ok) {
+          if (error instanceof PatternlyApiClientError) throw error;
+          if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
+          throw new PatternlyApiClientError("invalid_response", response.status);
+        }
       }
       if (!response.ok) {
         const syncConflict = path === "/v1/progress/sync" && response.status === 409 ? parseSyncConflictError(payload) : undefined;

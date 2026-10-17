@@ -119,7 +119,7 @@
   "adoption_conflict": "Alcuni record richiedono una scelta esplicita.",
   "journal_recovery_required": "Riprendi l’attività interrotta prima di salvare i progressi nel tuo account.",
   "account_data_unavailable": "I dati dell’account non sono disponibili al momento.",
-  "backendUnavailable": "Impossibile completare l’accesso",
+  "backendUnavailable": "Il servizio è temporaneamente non disponibile. Riprova tra poco.",
   "backendUnavailableDescription": "Non è stato possibile connettersi al tuo account Patternly. Riprova tra poco.",
   "revokedSession": "Accedi di nuovo",
   "revokedSessionDescription": "Il tuo accesso non è più valido. Disconnettiti e accedi di nuovo per continuare.",

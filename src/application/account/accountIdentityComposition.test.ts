@@ -1000,6 +1000,9 @@ test("account failures expose explicit provider, network, expiry, and revoked-se
   assert.equal(classifyAccountFailure({ code: "auth/user-token-expired", message: "private provider detail" }), "revokedSession");
   assert.equal(classifyAccountFailure({ code: "auth/operation-not-allowed", message: "private provider detail" }), "providerUnavailable");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("transport_failed")), "offline");
+  assert.equal(classifyAccountFailure(new PatternlyApiClientError("request_timeout")), "backendUnavailable");
+  assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 429)), "rateLimited");
+  assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 429, "recovery_rate_limited")), "rateLimited");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 401, "authentication_required")), "revokedSession");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 401, "recent_reauthentication_required")), "reauthenticationRequired");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 401, "reauthentication_required")), "reauthenticationRequired");
@@ -1172,6 +1175,7 @@ test("cold account startup admits local attestation unavailability without admit
     ...["app_check_invalid", "app_check_required", "app_check_not_configured", "account_deleted", "authentication_required"].map((code) => new PatternlyApiClientError("server_error", 401, code)),
     new PatternlyApiClientError("server_error", 404, "account_not_found"),
     new PatternlyApiClientError("app_check_unavailable", 503),
+    new PatternlyApiClientError("request_timeout", 429),
     new PatternlyApiClientError("authentication_required"),
     new PatternlyApiClientError("invalid_response"),
     { code: "auth/user-token-expired" },
@@ -1246,7 +1250,7 @@ test(`the production identity-proof boundary retains exact localOffline on ${fai
       if (proof.kind === "failed") return { result: { kind: "failure", failure: proof.failure }, state: proof.state };
       return { result: { kind: "failure", failure: "test_unexpected_success" }, state: currentState };
     });
-    assert.deepEqual(failed.result, { kind: "failure", failure: failureCode === "request_timeout" ? "offline" : "backendUnavailable" });
+    assert.deepEqual(failed.result, { kind: "failure", failure: "backendUnavailable" });
     assert.equal(requests, 1);
     assert.equal(currentState.kind, "localOffline");
     if (currentState.kind === "localOffline") {

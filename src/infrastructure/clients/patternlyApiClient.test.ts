@@ -28,6 +28,38 @@ function createTestClient(input: Partial<Parameters<typeof createPatternlyApiCli
   });
 }
 
+test("registration preserves edge HTTP failures and Retry-After even without a readable JSON body", async () => {
+  for (const status of [429, 503]) {
+    for (const body of ["plain text", "empty", "stalled"] as const) {
+      let calls = 0;
+      const client = createTestClient({
+        timeoutMs: 25,
+        fetchImplementation: async () => {
+          calls++;
+          const response = new Response(body === "empty" ? null : "No instances", { status, headers: { "retry-after": "12" } });
+          if (body === "stalled") response.json = () => new Promise(() => undefined);
+          return response;
+        },
+      });
+      await assert.rejects(client.registerAccount({
+        termsVersion: "terms-v1", termsLocale: "en", privacyPolicyVersion: "privacy-v1", privacyPolicyLocale: "en", privacyPolicyAcknowledged: true,
+      }), (error: unknown) => error instanceof PatternlyApiClientError
+        && error.code === "server_error" && error.status === status && error.retryAfterSeconds === 12 && error.serverCode === undefined,
+      `${status}: ${body}`);
+      assert.equal(calls, 1, "registration mutations are never retried automatically");
+    }
+  }
+});
+
+test("a deadline before HTTP headers remains a timeout and a malformed successful response stays invalid", async () => {
+  let calls = 0;
+  const timedOut = createTestClient({ timeoutMs: 25, fetchImplementation: () => { calls++; return new Promise(() => undefined); } });
+  await assert.rejects(timedOut.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "request_timeout" && error.status === undefined);
+  assert.equal(calls, 1);
+  const malformed = createTestClient({ fetchImplementation: async () => new Response("not JSON", { status: 200 }) });
+  await assert.rejects(malformed.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response" && error.status === 200);
+});
+
 function activeTrackMutation(overrides: Partial<ProgressMutationDto> = {}): ProgressMutationDto {
   return {
     mutationId: "mutation-canonical-0001",

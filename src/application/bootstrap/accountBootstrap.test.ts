@@ -407,10 +407,10 @@ test("the canonical preparation owner selects both new and returning /me account
   }
 });
 
-test("the canonical preparation owner stops on offline and authoritative /me failures", async () => {
+test("the canonical preparation owner stops on unavailable and authoritative /me failures", async () => {
   const user = { uid: "bootstrap-failure-uid", email: "person@example.test", emailVerified: true, providers: ["password"] } as const;
   for (const [error, expectedFailure] of [
-    [new PatternlyApiClientError("request_timeout"), "offline"],
+    [new PatternlyApiClientError("request_timeout"), "backendUnavailable"],
     [new PatternlyApiClientError("server_error", 401, "account_deleted"), "revokedSession"],
   ] as const) {
     const fixture = await createBootstrapFixture("existing-account");
