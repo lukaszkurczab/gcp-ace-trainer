@@ -1,5 +1,6 @@
 import { parseContentPackageDescriptor } from "./contentPackageDescriptor";
 import { isAccountWireState } from "../../domain/account/accountWireState";
+import { normalizeLegacyTerminalSessionRead } from "../../domain/account/terminalSessionWire";
 /**
  * Synchronized with patternly-backend/openapi/patternly-v1.json.
  * Backend CI verifies that every versioned API path is represented here.
@@ -183,7 +184,7 @@ function assertStringArray(value: unknown, max: number): value is string[] {
   return Array.isArray(value) && value.length <= max && value.every(isNonEmptyString);
 }
 
-export function validateProgressRecord(value: unknown): value is ProgressRecordDto {
+function validateProgressRecordEnvelope(value: unknown): asserts value is ProgressRecordDto {
   if (!isPlainRecord(value) || !hasExactKeys(value, ["kind", "recordType", "trackId", "targetId", "version", "fingerprint", "state", "lastMutationId", "updatedAt"])) return invalidResponse();
   if (value.kind !== "node" && value.kind !== "item") return invalidResponse();
   if (typeof value.recordType !== "string" || !PROGRESS_RECORD_TYPES.has(value.recordType)) return invalidResponse();
@@ -192,6 +193,10 @@ export function validateProgressRecord(value: unknown): value is ProgressRecordD
   if (!isNonEmptyString(value.trackId) || !isNonEmptyString(value.targetId) || !isFiniteNonNegativeInteger(value.version)
     || !isSha256(value.fingerprint) || !isBoundedString(value.lastMutationId, 16, 128) || !isIsoDate(value.updatedAt)) return invalidResponse();
   assertState(value.state);
+}
+
+export function validateProgressRecord(value: unknown): value is ProgressRecordDto {
+  validateProgressRecordEnvelope(value);
   if (!isAccountWireState(value.recordType, value.targetId, value.trackId, value.state)) return invalidResponse();
   return true;
 }
@@ -232,8 +237,15 @@ function parseProgressPage(value: unknown): ProgressResponseDto {
   if (!isPlainRecord(value) || !hasExactKeys(value, ["accountRevision", "generation", "records", "nextPageToken"])) return invalidResponse();
   if (!isFiniteNonNegativeInteger(value.accountRevision) || !isFiniteNonNegativeInteger(value.generation) || !Array.isArray(value.records) || value.records.length > 100) return invalidResponse();
   if (!(value.nextPageToken === null || (typeof value.nextPageToken === "string" && value.nextPageToken.length > 0))) return invalidResponse();
-  value.records.forEach((record) => validateProgressRecord(record));
-  return value as ProgressResponseDto;
+  const records = value.records.map((record) => {
+    validateProgressRecordEnvelope(record);
+    let normalized: ProgressRecordDto;
+    try { normalized = normalizeLegacyTerminalSessionRead(record); } catch { return invalidResponse(); }
+    validateProgressRecord(normalized);
+    return normalized;
+  });
+  return { accountRevision: value.accountRevision as number, generation: value.generation as number,
+    nextPageToken: value.nextPageToken as string | null, records };
 }
 
 /** Sync conflicts are errors. Resolution reads fresh progress rather than a stale record in the rejection. */
