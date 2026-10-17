@@ -39,6 +39,7 @@ test("EAS release configuration has explicit version, runtime, and channel polic
     sandbox: { distribution: "internal", android: { buildType: "apk" }, channel: "sandbox", environment: "preview", env: { PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox" } },
     "android-isolation-probe": {
       extends: "sandbox", channel: "android-isolation-probe",
+      android: { gradleCommand: ":app:assembleRelease --stacktrace --max-workers=1 --no-parallel" },
       env: { EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: JSON.stringify({ ...JSON.parse(readFileSync("scripts/fixtures/androidIsolationPublicEnvironment.json", "utf8")), apiOrigin: "https://environment-isolation.invalid" }) },
     },
     release: { distribution: "store", channel: "production", autoIncrement: true, environment: "production", env: { PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release" } },
@@ -62,7 +63,8 @@ test("Android isolation probe changes only API identity and retains the sandbox 
   const probe = config.build["android-isolation-probe"];
   assert.equal(probe.extends, "sandbox");
   assert.equal(probe.channel, "android-isolation-probe");
-  assert.deepEqual(Object.keys(probe).sort(), ["channel", "env", "extends"]);
+  assert.deepEqual(Object.keys(probe).sort(), ["android", "channel", "env", "extends"]);
+  assert.deepEqual(probe.android, { gradleCommand: ":app:assembleRelease --stacktrace --max-workers=1 --no-parallel" });
   assert.deepEqual(Object.keys(probe.env), ["EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT"]);
   const baseline = JSON.parse(readFileSync("scripts/fixtures/androidIsolationPublicEnvironment.json", "utf8"));
   const publicB = JSON.parse(probe.env.EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT);
