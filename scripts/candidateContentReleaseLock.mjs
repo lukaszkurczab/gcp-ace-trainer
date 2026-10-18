@@ -123,28 +123,33 @@ export async function updateCandidateContentReleaseLock({ mode = "check", appRoo
 }
 
 export function parseCandidateContentReleaseLockArgs(argv = process.argv.slice(2)) {
-  const options = { mode: "check", contentRoot: DEFAULT_CONTENT_ROOT };
+  const options = { mode: "check", appRoot: APP_ROOT, contentRoot: DEFAULT_CONTENT_ROOT };
   const modes = new Set(["check", "write", "producer-pin", "historical-producer-pin"]);
   let index = 0;
   let hasContentRoot = false;
+  let hasAppRoot = false;
   if (argv[index] && modes.has(argv[index])) options.mode = argv[index++];
   while (index < argv.length) {
     if (argv[index] === "--content-root" && index + 1 < argv.length && !hasContentRoot) {
       options.contentRoot = path.resolve(argv[index + 1]);
       hasContentRoot = true;
       index += 2;
-    } else throw new Error("Usage: node scripts/candidateContentReleaseLock.mjs [check|write|producer-pin|historical-producer-pin] [--content-root <patternly-content checkout]");
+    } else if (argv[index] === "--app-root" && index + 1 < argv.length && !hasAppRoot) {
+      options.appRoot = path.resolve(argv[index + 1]);
+      hasAppRoot = true;
+      index += 2;
+    } else throw new Error("Usage: node scripts/candidateContentReleaseLock.mjs [check|write|producer-pin|historical-producer-pin] [--content-root <patternly-content checkout>] [--app-root <application checkout>]");
   }
   return options;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const options = parseCandidateContentReleaseLockArgs();
-  const { mode, contentRoot } = options;
+  const { mode, appRoot, contentRoot } = options;
   const run = mode === "producer-pin"
-    ? readCandidateContentProducerPin({ contentRoot }).then(pin => process.stdout.write(`${pin}\n`))
+    ? readCandidateContentProducerPin({ appRoot, contentRoot }).then(pin => process.stdout.write(`${pin}\n`))
     : mode === "historical-producer-pin"
-      ? readHistoricalContentProducerPin().then(pin => process.stdout.write(`${pin}\n`))
-      : updateCandidateContentReleaseLock({ mode, contentRoot }).then(() => process.stdout.write(`candidate content release lock ${mode} passed\n`));
+      ? readHistoricalContentProducerPin({ appRoot }).then(pin => process.stdout.write(`${pin}\n`))
+      : updateCandidateContentReleaseLock({ mode, appRoot, contentRoot }).then(() => process.stdout.write(`candidate content release lock ${mode} passed\n`));
   run.catch((error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 1; });
 }

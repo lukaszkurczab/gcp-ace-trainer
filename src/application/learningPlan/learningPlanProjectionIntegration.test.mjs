@@ -638,8 +638,8 @@ test('current producer remains buildable while app bundle matches the admitted c
   const acceptancePath = path.join(APP_ROOT, 'integration/contracts/content-release/local-claude/qle-v2-acceptance.json');
   await assert.rejects(
     qleSync.syncCanonicalContent({ mode: 'check', appRoot: APP_ROOT, producerRoot: CONTENT, localReviewedCandidate: acceptancePath }),
-    /Local candidate acceptance record is stale for current producer inputs/u,
-    'the frozen acceptance must not admit changed producer inputs',
+    /Local candidate acceptance record is stale for current producer inputs|Claude candidate does not satisfy the accepted local inventory/u,
+    'the frozen acceptance must reject changed producer inputs or a changed Claude artifact',
   );
   const acceptedProducerRoot = await acceptedQleProducer(t, CONTENT);
   await qleSync.syncCanonicalContent({ mode: 'check', appRoot: APP_ROOT, producerRoot: acceptedProducerRoot, localReviewedCandidate: acceptancePath });

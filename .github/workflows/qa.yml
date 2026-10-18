@@ -26,12 +26,31 @@ jobs:
           ref: master
           path: patternly-content
           fetch-depth: 0
+      - id: admitted-app
+        name: Read application identity from historical admission
+        working-directory: app
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFile, readFile } from "node:fs/promises";
+          const admission = JSON.parse(await readFile("../patternly-content/evidence/admissions/candidate-admission-v3.json", "utf8"));
+          const commit = admission.application?.frontendCommit;
+          if (typeof commit !== "string" || !/^[a-f0-9]{40}$/u.test(commit)) throw new Error("Admitted application commit is invalid.");
+          await appendFile(process.env.GITHUB_OUTPUT, `commit=${commit}\n`);
+          NODE
+      - name: Checkout admitted application artifacts
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.admitted-app.outputs.commit }}
+          path: app-admitted
+      - name: Bind active release lock to admitted application
+        working-directory: app
+        run: cmp integration/contracts/content-release/release.lock.json ../app-admitted/integration/contracts/content-release/release.lock.json
       - id: content-lock
         name: Read immutable content lock
         working-directory: app
         shell: bash
         run: |
-          content_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin)"
+          content_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin --app-root ../app-admitted)"
           historical_producer_pin="$(node scripts/candidateContentReleaseLock.mjs historical-producer-pin)"
           printf 'commit=%s\nhistorical-commit=%s\n' "$content_producer_pin" "$historical_producer_pin" >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer
@@ -57,7 +76,7 @@ jobs:
           printf 'sha=%s\nhistorical-sha=%s\n' "$current_content_sha" "$historical_content_sha" >> "$GITHUB_OUTPUT"
       - name: Verify candidate-bound content release lock
         working-directory: app
-        run: node scripts/candidateContentReleaseLock.mjs check
+        run: node scripts/candidateContentReleaseLock.mjs check --app-root ../app-admitted
       - name: Checkout current backend QA input
         uses: actions/checkout@v4
         with:
@@ -136,6 +155,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: app
+          fetch-depth: 0
       - name: Checkout current content producer
         uses: actions/checkout@v4
         with:
@@ -143,12 +163,31 @@ jobs:
           ref: master
           path: patternly-content
           fetch-depth: 0
+      - id: admitted-app
+        name: Read application identity from historical admission
+        working-directory: app
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFile, readFile } from "node:fs/promises";
+          const admission = JSON.parse(await readFile("../patternly-content/evidence/admissions/candidate-admission-v3.json", "utf8"));
+          const commit = admission.application?.frontendCommit;
+          if (typeof commit !== "string" || !/^[a-f0-9]{40}$/u.test(commit)) throw new Error("Admitted application commit is invalid.");
+          await appendFile(process.env.GITHUB_OUTPUT, `commit=${commit}\n`);
+          NODE
+      - name: Checkout admitted application artifacts
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.admitted-app.outputs.commit }}
+          path: app-admitted
+      - name: Bind active release lock to admitted application
+        working-directory: app
+        run: cmp integration/contracts/content-release/release.lock.json ../app-admitted/integration/contracts/content-release/release.lock.json
       - id: content-lock
         name: Read immutable content lock
         working-directory: app
         shell: bash
         run: |
-          content_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin)"
+          content_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin --app-root ../app-admitted)"
           historical_producer_pin="$(node scripts/candidateContentReleaseLock.mjs historical-producer-pin)"
           printf 'commit=%s\nhistorical-commit=%s\n' "$content_producer_pin" "$historical_producer_pin" >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer
@@ -174,7 +213,7 @@ jobs:
           printf 'sha=%s\nhistorical-sha=%s\n' "$current_content_sha" "$historical_content_sha" >> "$GITHUB_OUTPUT"
       - name: Verify candidate-bound content release lock
         working-directory: app
-        run: node scripts/candidateContentReleaseLock.mjs check
+        run: node scripts/candidateContentReleaseLock.mjs check --app-root ../app-admitted
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1

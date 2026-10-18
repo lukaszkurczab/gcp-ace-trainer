@@ -137,8 +137,8 @@ test("current producer remains buildable while app artifacts stay pinned to the 
       const sync = await import(pathToFileURL(join(appRoot, "scripts/syncBundledContentRelease.mjs")).href);
       await assert.rejects(
         sync.syncCanonicalContent({ mode: "check", appRoot, producerRoot: currentContentRoot, localReviewedCandidate: acceptancePath }),
-        /Local candidate acceptance record is stale for current producer inputs/u,
-        "the frozen acceptance must not admit changed producer inputs",
+        /Local candidate acceptance record is stale for current producer inputs|Claude candidate does not satisfy the accepted local inventory/u,
+        "the frozen acceptance must reject changed producer inputs or a changed Claude artifact",
       );
       const acceptedProducerRoot = await acceptedQleProducer(t, currentContentRoot);
       await sync.syncCanonicalContent({ mode: "check", appRoot, producerRoot: acceptedProducerRoot, localReviewedCandidate: acceptancePath });

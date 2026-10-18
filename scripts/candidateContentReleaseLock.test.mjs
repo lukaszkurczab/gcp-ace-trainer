@@ -70,9 +70,11 @@ test("candidate lock writer preserves valid frozen history and the existing cano
 
 test("candidate lock CLI accepts one explicit producer root and rejects duplicates", () => {
   assert.deepEqual(parseCandidateContentReleaseLockArgs(["write", "--content-root", "/tmp/patternly-content"]), {
-    mode: "write", contentRoot: path.resolve("/tmp/patternly-content"),
+    mode: "write", appRoot, contentRoot: path.resolve("/tmp/patternly-content"),
   });
   assert.throws(() => parseCandidateContentReleaseLockArgs(["--content-root", "/tmp/one", "--content-root", "/tmp/two"]), /Usage:/u);
+  assert.equal(parseCandidateContentReleaseLockArgs(["producer-pin", "--app-root", "/tmp/admitted-app"]).appRoot, "/tmp/admitted-app");
+  assert.throws(() => parseCandidateContentReleaseLockArgs(["--app-root", "/tmp/one", "--app-root", "/tmp/two"]), /Usage:/u);
 });
 
 test("candidate lock binds the exact nine admitted v2 artifacts and raw bundled lock", async t => {
@@ -216,14 +218,16 @@ test("both QA jobs share the strict pin reader and retain mandatory candidate an
     const immutableLockReadIndex = job.indexOf("name: Read immutable content lock");
     assert.ok(applicationCheckoutIndex >= 0 && applicationCheckoutIndex < currentProducerCheckoutIndex, "application checkout must precede current producer checkout");
     assert.ok(currentProducerCheckoutIndex < immutableLockReadIndex, "current producer checkout must precede immutable lock pin reads");
-    assert.match(job, /node scripts\/candidateContentReleaseLock\.mjs producer-pin/);
+    assert.match(job, /node scripts\/candidateContentReleaseLock\.mjs producer-pin --app-root \.\.\/app-admitted/);
+    assert.match(job, /ref: \$\{\{ steps\.admitted-app\.outputs\.commit \}\}/);
+    assert.match(job, /cmp integration\/contracts\/content-release\/release\.lock\.json \.\.\/app-admitted/);
     assert.match(job, /ref: \$\{\{ steps\.content-lock\.outputs\.historical-commit \}\}/);
     assert.match(job, /node scripts\/candidateContentReleaseLock\.mjs historical-producer-pin/);
     assert.match(job, /cat-file -e.*EXPECTED_CANDIDATE_SOURCE_SHA/);
     assert.match(job, /path: patternly-content-historical/);
     assert.match(job, /ref: master\n\s+path: patternly-content/);
     assert.match(job, /historical_content_sha.*EXPECTED_HISTORICAL_CONTENT_SHA/);
-    assert.match(job, /node scripts\/candidateContentReleaseLock\.mjs check/);
+    assert.match(job, /node scripts\/candidateContentReleaseLock\.mjs check --app-root \.\.\/app-admitted/);
     assert.match(job, /PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: \$\{\{ steps\.current-content\.outputs\.sha \}\}/);
     assert.match(job, /PATTERNLY_CONTENT_HISTORICAL_ROOT:.*patternly-content-historical/);
     assert.match(job, /PATTERNLY_CONTENT_CURRENT_ROOT:.*patternly-content\n/);
