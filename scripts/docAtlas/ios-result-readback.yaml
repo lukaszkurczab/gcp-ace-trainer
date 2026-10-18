@@ -1,0 +1,26 @@
+# Read the completed GCP test session after a prior cold start; no new answers.
+# Start at Your data after dismissing the authorized export.
+appId: com.lkurczab.patternly
+---
+- assertVisible:
+    id: guest-local-data-export
+- tapOn: "Go back"
+- tapOn:
+    id: main-tab-bar-progress
+- assertVisible:
+    id: "patternly:progress:root"
+- waitForAnimationToEnd
+- takeScreenshot: atlas-63-progress-with-completed-focus
+- scrollUntilVisible:
+    element:
+      id: "patternly:activity:row:google-cloud-associate-cloud-engineer:certification-focus-practice:1"
+    direction: DOWN
+    centerElement: false
+    speed: 70
+    timeout: 15000
+- tapOn:
+    id: "patternly:activity:row:google-cloud-associate-cloud-engineer:certification-focus-practice:1"
+- assertVisible:
+    id: "patternly:summary:root:.*"
+- waitForAnimationToEnd
+- takeScreenshot: atlas-64-persisted-certification-result

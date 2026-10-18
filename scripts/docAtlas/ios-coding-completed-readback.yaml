@@ -1,0 +1,44 @@
+# Start from the actually visible completed result, after Review returned.
+appId: com.lkurczab.patternly
+---
+- assertVisible:
+    id: "patternly:summary:back-to-practice:.*"
+- tapOn:
+    id: "patternly:summary:back-to-practice:.*"
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: main-tab-bar-home
+- stopApp
+- launchApp:
+    clearState: false
+    arguments:
+      RCT_jsLocation: "localhost:8083"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- assertNotVisible:
+    id: "patternly:resume:continue:.*"
+- takeScreenshot: coding-verified-02-completed-after-cold-start
+- tapOn:
+    id: main-tab-bar-progress
+- scrollUntilVisible:
+    element:
+      id: "patternly:activity:row:coding-interview-dsa-problem-solving:coding-interview-guided-practice:2"
+    direction: DOWN
+    centerElement: false
+    speed: 80
+    timeout: 30000
+- tapOn:
+    id: "patternly:activity:row:coding-interview-dsa-problem-solving:coding-interview-guided-practice:2"
+- assertVisible:
+    id: "patternly:summary:root:.*"
+- waitForAnimationToEnd
+- takeScreenshot: coding-verified-03-result-from-history

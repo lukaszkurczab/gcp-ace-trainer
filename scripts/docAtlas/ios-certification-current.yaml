@@ -1,0 +1,38 @@
+# Continue observed Certification Focus setup, within its long topic list.
+appId: com.lkurczab.patternly
+---
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:session-length:10"
+    direction: DOWN
+    speed: 90
+    timeout: 40000
+- tapOn:
+    id: "patternly:practice:session-length:10"
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:root:.*"
+    timeout: 20000
+- takeScreenshot: atlas-41-certification-start
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    id: "patternly:session:feedback:.*"
+- takeScreenshot: atlas-42-certification-first-feedback

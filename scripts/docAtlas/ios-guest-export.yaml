@@ -1,0 +1,18 @@
+# Requires explicit owner permission to export the present private Guest payload.
+# Start from Settings. Do not select any recipient; inspect then cancel the sheet.
+appId: com.lkurczab.patternly
+---
+- scrollUntilVisible:
+    element:
+      id: settings-your-data
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: settings-your-data
+- assertVisible:
+    id: guest-local-data-export
+- tapOn:
+    id: guest-local-data-export
+- waitForAnimationToEnd
+- takeScreenshot: atlas-60-guest-export-handoff-or-error

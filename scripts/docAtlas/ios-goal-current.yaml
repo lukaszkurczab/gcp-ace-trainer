@@ -1,0 +1,17 @@
+# Continue existing test goal draft. Center budget control above sticky footer before selection.
+appId: com.lkurczab.patternly
+---
+- scrollUntilVisible:
+    element: "30 min"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "30 min"
+- takeScreenshot: atlas-50-test-goal-draft
+- tapOn:
+    id: "patternly:goal:save"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:.*"
+    timeout: 20000
+- takeScreenshot: atlas-51-test-plan-proposal

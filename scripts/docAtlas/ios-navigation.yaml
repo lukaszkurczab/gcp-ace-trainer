@@ -1,0 +1,35 @@
+# Preconditions: same existing iPhone 17, regular com.lkurczab.patternly app,
+# current source already loaded from the explicitly owned Metro. No reset/login,
+# no answer submission, no settings writes. Existing session remains untouched.
+appId: com.lkurczab.patternly
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      # Observed close control of React Native's development-only LogBox banner.
+      - tapOn:
+          point: "92%,93%"
+- assertVisible:
+    id: "patternly:home:change-track"
+- takeScreenshot: atlas-01-home
+- tapOn:
+    id: main-tab-bar-practice
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- takeScreenshot: atlas-02-practice
+- tapOn:
+    id: main-tab-bar-progress
+- assertVisible:
+    id: "patternly:progress:root"
+- takeScreenshot: atlas-03-progress
+- tapOn:
+    id: main-tab-bar-settings
+- assertVisible:
+    id: settings-screen
+- takeScreenshot: atlas-04-settings
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: "patternly:home:change-track"
+- takeScreenshot: atlas-05-home-return

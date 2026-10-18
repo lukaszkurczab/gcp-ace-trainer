@@ -1,0 +1,16 @@
+# Continue the explicitly authorized export, only when the native sheet is open.
+# The observed iOS PopoverDismissRegion is outside the share destinations.
+appId: com.lkurczab.patternly
+---
+- assertVisible:
+    id: PopoverDismissRegion
+- takeScreenshot: atlas-61-native-share-sheet
+- tapOn:
+    point: "10%,20%"
+- extendedWaitUntil:
+    visible: "The save or share sheet was closed. No copy was confirmed."
+    timeout: 15000
+- assertVisible:
+    id: guest-local-data-export
+- waitForAnimationToEnd
+- takeScreenshot: atlas-62-export-dismissed

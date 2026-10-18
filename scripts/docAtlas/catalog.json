@@ -1,0 +1,1430 @@
+{
+  "schemaVersion": "patternly-atlas-catalog-v1",
+  "date": "2026-10-18",
+  "areas": [
+    {
+      "prefix": "patternly",
+      "description": "Aplikacja mobilna: interfejs nauki, lokalna trwałość, konto i konsumowanie kanonicznych pakietów. Punkt wejścia App.tsx."
+    },
+    {
+      "prefix": "patternly/src",
+      "description": "Kod aplikacji mobilnej; domain określa reguły, application koordynuje operacje, infrastructure łączy SDK, a features przedstawia zachowanie użytkownikowi."
+    },
+    {
+      "prefix": "patternly/src/application",
+      "description": "Koordynacja przypadków użycia i granic zapisu/odczytu; nie jest samodzielnym ekranem."
+    },
+    {
+      "prefix": "patternly/src/application/account",
+      "description": "Sesja Gościa/konta, przygotowanie profilu, recovery, synchronizacja i obsługa Premium; granica między tożsamością, stanem lokalnym i backendem."
+    },
+    {
+      "prefix": "patternly/src/application/bootstrap",
+      "description": "Przygotowanie konta i sesji przy starcie; składanie zależności lifecycle i odtwarzanie niezakończonych operacji."
+    },
+    {
+      "prefix": "patternly/src/application/canonical",
+      "description": "Wspólne mechanizmy kanonicznych interakcji: wybór pytań, kolejność opcji, wynik i projekcja evidence."
+    },
+    {
+      "prefix": "patternly/src/application/certification",
+      "description": "Przypadki użycia i modele odczytu certyfikacji, w tym egzaminu oraz jego wyniku."
+    },
+    {
+      "prefix": "patternly/src/application/coding-interview",
+      "description": "Koordynacja praktyki i symulacji Coding Interview oraz prezentacji evidence."
+    },
+    {
+      "prefix": "patternly/src/application/contentReports",
+      "description": "Zgłoszenie problemu z treścią i dostarczenie go przez outbox do API."
+    },
+    {
+      "prefix": "patternly/src/application/design-interview",
+      "description": "Koordynacja sesji Design Interview oraz ich oceny i modeli prezentacyjnych."
+    },
+    {
+      "prefix": "patternly/src/application/guest",
+      "description": "Operacje dostępne lokalnemu Gościowi, w tym eksport danych bez logowania."
+    },
+    {
+      "prefix": "patternly/src/application/learningMutations",
+      "description": "Kanoniczny zapis zmian nauki: plan journalu, materializacja, weryfikacja i recovery. Utrzymuje wspólną kolejkę zapisów."
+    },
+    {
+      "prefix": "patternly/src/application/learningPlan",
+      "description": "Budowanie propozycji planu, estymacja obciążenia, projekcja postępu i edycja zaakceptowanego planu."
+    },
+    {
+      "prefix": "patternly/src/application/practice",
+      "description": "Kontrakty trybów praktyki; używane przez uruchamianie i prezentację sesji."
+    },
+    {
+      "prefix": "patternly/src/application/runtime",
+      "description": "Zegar i porty runtime sesji; rozdziela odczyt czasu od zapisu i lifecycle."
+    },
+    {
+      "prefix": "patternly/src/application/runtimeAuditability",
+      "description": "Instrumentacja i kontrolowane wejścia diagnostyczne do prób runtime. Odczytuj warunki DEV/smoke przed użyciem; nie jest niezależnym dowodem działania."
+    },
+    {
+      "prefix": "patternly/src/application/tracks",
+      "description": "Produkcyjny kontekst admission ścieżek na granicach operacji nauki."
+    },
+    {
+      "prefix": "patternly/src/application/trainingLifecycle",
+      "description": "Właściciel cyklu sesji: start, odpowiedź, przejście, zakończenie i odtworzenie oraz facade zegara."
+    },
+    {
+      "prefix": "patternly/src/application/trainingSessions",
+      "description": "Kontrakty i decyzje o trwałości sesji."
+    },
+    {
+      "prefix": "patternly/src/content",
+      "description": "Konsument kanonicznych treści i pakietów; autoring pozostaje w patternly-content."
+    },
+    {
+      "prefix": "patternly/src/content/application",
+      "description": "Przygotowanie treści dla profilu i instalacja pakietu z kontrolą tożsamości, dostępu i aktualności profilu."
+    },
+    {
+      "prefix": "patternly/src/content/bundled",
+      "description": "Wejście do treści dołączonych do aplikacji."
+    },
+    {
+      "prefix": "patternly/src/content/canonical",
+      "description": "Wspólny runtime kontraktów pytań, interakcji, walidacji i rejestracji rodzin/ścieżek."
+    },
+    {
+      "prefix": "patternly/src/content/contracts",
+      "description": "Typy i kontrakty transportu pakietu treści."
+    },
+    {
+      "prefix": "patternly/src/content/errors",
+      "description": "Jawne kategorie błędów ładowania i użycia treści."
+    },
+    {
+      "prefix": "patternly/src/content/generated",
+      "description": "Dane wygenerowane przez proces wydania treści; zmiana przez producenta i ponowne generowanie, nie ręczną edycję."
+    },
+    {
+      "prefix": "patternly/src/content/runtime",
+      "description": "Weryfikacja, instalacja i przechowywanie pakietów węzłów; granica między deskryptorem, bajtami i aktywacją."
+    },
+    {
+      "prefix": "patternly/src/content/__fixtures__",
+      "description": "Fixture i przypięte dowody używane przez testy kontraktów treści, a nie alternatywne banki produkcyjne."
+    },
+    {
+      "prefix": "patternly/src/domain",
+      "description": "Reguły, modele i kontrakty niezależne od ekranów oraz adapterów SDK."
+    },
+    {
+      "prefix": "patternly/src/domain/account",
+      "description": "Format rekordu konta, stany synchronizacji i terminalnej sesji na granicy APP–BACKEND."
+    },
+    {
+      "prefix": "patternly/src/domain/entitlements",
+      "description": "Model dostępu Premium i interpretacja uprawnienia."
+    },
+    {
+      "prefix": "patternly/src/domain/goals",
+      "description": "Cel nauki, semantyka daty i kontrakt polityki celu."
+    },
+    {
+      "prefix": "patternly/src/domain/identity",
+      "description": "Kanoniczna tożsamość, serializacja i fingerprinty; zgodność bajtów ma znaczenie dla synchronizacji i historii."
+    },
+    {
+      "prefix": "patternly/src/domain/learning",
+      "description": "Sesje, odpowiedzi, wyniki, powtórki, plany, postęp i reguły ukończenia. Tu szukaj reguły domenowej przed zmianą ekranu."
+    },
+    {
+      "prefix": "patternly/src/domain/tracks",
+      "description": "Rejestr ścieżek, metadane, admission i polityki celu."
+    },
+    {
+      "prefix": "patternly/src/features",
+      "description": "Ekrany i logika prezentacji uporządkowane według obszarów użytkownika."
+    },
+    {
+      "prefix": "patternly/src/features/account",
+      "description": "Wejście do konta, bezpieczeństwo, zmiana e-maila i panel recovery."
+    },
+    {
+      "prefix": "patternly/src/features/exam",
+      "description": "Ekrany egzaminu certyfikacyjnego, wyniku i przeglądu odpowiedzi."
+    },
+    {
+      "prefix": "patternly/src/features/home",
+      "description": "Dzisiaj, aktywność, wybór ścieżki, cel i plan oraz ustawienia, dane użytkownika i dokumenty."
+    },
+    {
+      "prefix": "patternly/src/features/navigation",
+      "description": "Główna dolna nawigacja aplikacji."
+    },
+    {
+      "prefix": "patternly/src/features/practice",
+      "description": "Wybór zakresu i trybu praktyki, sesja, odpowiedź, feedback, roadmapa i podsumowanie."
+    },
+    {
+      "prefix": "patternly/src/features/premium",
+      "description": "Ekran zakupu, przywracania i informacji o dostępności Premium."
+    },
+    {
+      "prefix": "patternly/src/features/reports",
+      "description": "Prezentacja i zgłaszanie problemów z treścią."
+    },
+    {
+      "prefix": "patternly/src/features/review",
+      "description": "Przegląd zaplanowanych powtórek i błędów."
+    },
+    {
+      "prefix": "patternly/src/features/simulation",
+      "description": "Symulacje Coding/Design Interview, ich operacje, wyniki i przegląd."
+    },
+    {
+      "prefix": "patternly/src/features/coding-interview",
+      "description": "Wspólna powłoka i dostępność sesji Coding Interview."
+    },
+    {
+      "prefix": "patternly/src/infrastructure",
+      "description": "Adaptery platformowe i SDK: transport, Firebase, zakup, storage, powiadomienia, bezpieczeństwo i diagnostyka."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/clients",
+      "description": "Adapter HTTP API i walidacja odpowiedzi backendu; transport nie powinien samodzielnie podejmować decyzji o postępie."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/content",
+      "description": "Adaptery odczytu i instalacji treści."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/diagnostics",
+      "description": "Kontrolowane pomiary i ślady startu; nie kopiuj prywatnych logów do atlasu."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/firebase",
+      "description": "Tożsamość Firebase, App Check i integracja SDK z aplikacją."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/identity",
+      "description": "Adaptery haszowania i identyfikatorów używanych przez domenę."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/notifications",
+      "description": "Lokalne przypomnienia i integracja uprawnień powiadomień."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/purchases",
+      "description": "Adapter RevenueCat oraz platformowe wymagania zakupów i przywracania."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/runtime",
+      "description": "Wybór smoke/release i sprawdzanie dostępności środowiska."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/security",
+      "description": "Ochrona sekretów urządzenia i schowka recovery."
+    },
+    {
+      "prefix": "patternly/src/infrastructure/storage",
+      "description": "Szyfrowany MMKV, aktywny profil i lease zabezpieczające operacje podczas przełączania tożsamości."
+    },
+    {
+      "prefix": "patternly/src/storage",
+      "description": "Klucze, błędy i repozytoria lokalnych danych; fizyczny zapis jest w adapterze infrastruktury."
+    },
+    {
+      "prefix": "patternly/src/storage/contracts",
+      "description": "Kontrakty lokalnych rekordów i ich trwałości."
+    },
+    {
+      "prefix": "patternly/src/storage/repositories",
+      "description": "Odczyt i zapis rekordów profilu, sesji, prób, wyników, planu, journalu, outboxa i uprawnień."
+    },
+    {
+      "prefix": "patternly/src/navigation",
+      "description": "Rejestr tras i złożenie stosu nawigacji; zawiera również kontrolowane wejścia fixture."
+    },
+    {
+      "prefix": "patternly/src/preferences",
+      "description": "Preferencje wyglądu, języka i przypomnień oraz ich kontekst w React."
+    },
+    {
+      "prefix": "patternly/src/tracks",
+      "description": "Implementacje zachowania właściwego rodzinom ścieżek, zamiast równoległego ogólnego runtime."
+    },
+    {
+      "prefix": "patternly/src/tracks/certification",
+      "description": "Projekcje certyfikacji i prezentacja wyniku egzaminu."
+    },
+    {
+      "prefix": "patternly/src/tracks/coding-interview",
+      "description": "Mechanizmy i projekcje Coding Interview."
+    },
+    {
+      "prefix": "patternly/src/tracks/design-interview",
+      "description": "Tryby, modele i reguły Design Interview."
+    },
+    {
+      "prefix": "patternly/src/components",
+      "description": "Wspólne komponenty interfejsu, stany i drobne mechanizmy prezentacji."
+    },
+    {
+      "prefix": "patternly/src/theme",
+      "description": "Tokeny wyglądu i dostosowanie motywu nawigacji."
+    },
+    {
+      "prefix": "patternly/src/locales",
+      "description": "Słowniki interfejsu rozdzielone według języka i przestrzeni nazw; nie są bankami pytań."
+    },
+    {
+      "prefix": "patternly/src/legal",
+      "description": "Dokumenty prawne, zmienne oferty, ich walidacja i eksport; kompletność tekstu nie oznacza prawnego zatwierdzenia."
+    },
+    {
+      "prefix": "patternly/src/assets",
+      "description": "Źródłowe ikony i grafika interfejsu."
+    },
+    {
+      "prefix": "patternly/src/constants",
+      "description": "Stałe używane przez trasy i tryby aplikacji."
+    },
+    {
+      "prefix": "patternly/src/types",
+      "description": "Deklaracje typów modułów i zasobów."
+    },
+    {
+      "prefix": "patternly/src/utils",
+      "description": "Wspólne niewielkie narzędzia pomocnicze; sprawdź konsumentów przed zmianą."
+    },
+    {
+      "prefix": "patternly/src/testing",
+      "description": "Izolowane fixture i wejścia pomiarowe, nie zwykła podróż użytkownika."
+    },
+    {
+      "prefix": "patternly/scripts",
+      "description": "Narzędzia kontroli kontraktów, wydania, lokalnego środowiska i prób. Odczytaj tryb działania przed uruchomieniem."
+    },
+    {
+      "prefix": "patternly/scripts/architecture",
+      "description": "Analiza grafu zależności TS/Metro i egzekwowanie granic architektury."
+    },
+    {
+      "prefix": "patternly/scripts/docAtlas",
+      "description": "Powtarzalny spis kodu i generator strukturalnej części atlasu. Nie uruchamia prób runtime i nie zatwierdza opisów zachowania."
+    },
+    {
+      "prefix": "patternly/scripts/qa",
+      "description": "Runnerzy i probe do lokalnej weryfikacji; dowody wykonania są prywatne, a nie w źródłach narzędzia."
+    },
+    {
+      "prefix": "patternly/scripts/fixtures",
+      "description": "Izolowane modele i fixture narzędzi weryfikacyjnych."
+    },
+    {
+      "prefix": "patternly/.maestro",
+      "description": "Scenariusze interakcji iOS/Android. Przed uruchomieniem sprawdź reset, fixture i urządzenie."
+    },
+    {
+      "prefix": "patternly/integration",
+      "description": "Wersjonowane fixture wspólnych kontraktów repozytoriów."
+    },
+    {
+      "prefix": "patternly/native",
+      "description": "Natywne źródła i fixture pomiaru zegara; nie oznaczają instalacji danej wersji na urządzeniu."
+    },
+    {
+      "prefix": "patternly/plugins",
+      "description": "Pluginy konfiguracji Expo/prebuild; wymagają przebudowy natywnej, gdy zmieniają binarkę."
+    },
+    {
+      "prefix": "patternly/assets",
+      "description": "Zasoby marki dołączane przez konfigurację aplikacji."
+    },
+    {
+      "prefix": "patternly/config",
+      "description": "Konfiguracja produktu/wydań używana przez narzędzia."
+    },
+    {
+      "prefix": "patternly/schemas",
+      "description": "Schematy maszynowe wymaganych artefaktów wydania."
+    },
+    {
+      "prefix": "patternly/docs",
+      "description": "Zachowane maszynowo używane dowody; narracyjna dokumentacja jest w sejfie."
+    },
+    {
+      "prefix": "patternly/.github",
+      "description": "Konfiguracja CI repozytorium."
+    },
+    {
+      "prefix": "patternly-backend",
+      "description": "Backend Fastify: tożsamość, synchronizacja, dostęp do pakietów i uprawnienia oraz operacje danych użytkownika i operatora."
+    },
+    {
+      "prefix": "patternly-backend/src",
+      "description": "Kod usługi; index składa infrastrukturę i moduły, api rejestruje HTTP."
+    },
+    {
+      "prefix": "patternly-backend/src/api",
+      "description": "Rejestracja tras Fastify, kontrakt OpenAPI i próby profili bezpieczeństwa."
+    },
+    {
+      "prefix": "patternly-backend/src/config",
+      "description": "Walidacja środowiska, mapy sklepów i ograniczonej promocji sandbox."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure",
+      "description": "Adaptery dostawców i trwałości używane przez moduły biznesowe."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/content",
+      "description": "Magazyn niezmiennych bajtów pakietu w Google Cloud Storage."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/email",
+      "description": "Wysyłka komunikacji przez SMTP z rozróżnieniem wyniku pewnego i nieznanego."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/firebase",
+      "description": "Weryfikacja tożsamości i App Check oraz administracyjne operacje Auth."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/firestore",
+      "description": "Połączenie Firestore, ścieżki kolekcji, wartości i złożenie magazynów modułów."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/identity",
+      "description": "Serializacja i fingerprinty wspólne z aplikacją; różne profile mają różne cele."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/logging",
+      "description": "Logowanie z zamkniętym zbiorem bezpiecznych pól i zdarzeń."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/operator",
+      "description": "Weryfikacja OIDC i uprawnienia operatora."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/revenuecat",
+      "description": "Odczyt źródeł uprawnienia Premium z API RevenueCat."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/security",
+      "description": "Klucze pseudonimizacji i identyfikatory dowodów usunięcia."
+    },
+    {
+      "prefix": "patternly-backend/src/infrastructure/time",
+      "description": "Obliczenia kalendarzowe retencji w UTC."
+    },
+    {
+      "prefix": "patternly-backend/src/modules",
+      "description": "Moduły kontraktów i magazynów odpowiedzialnych za konkretne operacje biznesowe."
+    },
+    {
+      "prefix": "patternly-backend/scripts",
+      "description": "Narzędzia lokalnych emulatorów, weryfikacji kontraktów, operacji i administracji. Skrypty apply/purge/deploy nie są pasywnymi testami."
+    },
+    {
+      "prefix": "patternly-backend/tests",
+      "description": "Testy jednostkowe, kontraktowe i integracyjne backendu; nie wszystkie są odizolowane od emulatorów."
+    },
+    {
+      "prefix": "patternly-backend/config",
+      "description": "Wersjonowana konfiguracja retencji i środowisk."
+    },
+    {
+      "prefix": "patternly-backend/openapi",
+      "description": "Wygenerowany kontrakt HTTP; źródło katalogu tras znajduje się w src/api/openapi.ts."
+    },
+    {
+      "prefix": "patternly-backend/docs",
+      "description": "Wymagane techniczne pliki/odsyłacze; narracja i runbooki są w sejfie."
+    },
+    {
+      "prefix": "patternly-backend/.github",
+      "description": "Wymagane polecenia i wersje środowiska CI."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/account-lifecycle",
+      "description": "Odzyskiwanie konta i kodów oraz operacje usunięcia z trwałym stanem operacji."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/admin",
+      "description": "Odczyty i operacje panelu lokalnego właściciela."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/auth",
+      "description": "Kontrakt uwierzytelnienia i generation odwołująca wcześniejsze uprawnienia sesji."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/billing",
+      "description": "Webhook RevenueCat, korelacja zakupu i dostarczenie potwierdzenia."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/content",
+      "description": "Katalog wersji i pakietów treści; deskryptor, integralność i transport do aplikacji."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/content-reports",
+      "description": "Zgłoszenia błędów treści i ich obsługa przez operatora."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/data-export",
+      "description": "Przygotowanie eksportu danych konta."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/devices",
+      "description": "Rejestr urządzeń powiązanych z kontem."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/entitlements",
+      "description": "Magazyn i projekcja uprawnienia Premium."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/legal-requests",
+      "description": "Zgłoszenia reklamacji i odstąpienia z historią obsługi."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/operator-access",
+      "description": "Kontrakt dozwolonych działań i tożsamości operatora."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/privacy-requests",
+      "description": "Wnioski dotyczące praw do danych i ich obsługa."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/progress",
+      "description": "Synchronizacja rekordów postępu, revisions, fingerprinty i granice wielkości transportu."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/retention",
+      "description": "Polityki przechowywania i przeglądu rekordów."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/retention-purge",
+      "description": "Operacja usuwania po retencji; wymaga osobnej kontroli skutków przed uruchomieniem."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/security-incidents",
+      "description": "Rejestr incydentów, decyzje i powiadomienia oraz ich historia."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/tracks",
+      "description": "Odczyt dostępu do ścieżek."
+    },
+    {
+      "prefix": "patternly-backend/src/modules/users",
+      "description": "Konto, przejęcie danych Gościa i konflikt scalania."
+    },
+    {
+      "prefix": "patternly-content",
+      "description": "Kanoniczny producent treści: źródła pytań, rejestry, walidacja, pakowanie i przypięte dowody wydania."
+    },
+    {
+      "prefix": "patternly-content/content",
+      "description": "Źródła pytań uporządkowane według ścieżki, węzła i jednostki mentalnej. Zmiany przechodzą walidator i builder; aplikacja nie czyta tych katalogów bezpośrednio."
+    },
+    {
+      "prefix": "patternly-content/content/migration-evidence",
+      "description": "Dokładne historyczne wejścia i dowody migracji zachowane dla weryfikatora; nie traktuj ich jako bieżącego banku."
+    },
+    {
+      "prefix": "patternly-content/config",
+      "description": "Rejestry produktu i authoringu, powiązania runtime, katalogi oraz przypięcia wydań."
+    },
+    {
+      "prefix": "patternly-content/config/tracks",
+      "description": "Rejestracja ścieżki i powiązanie jej z rodziną oraz źródłami."
+    },
+    {
+      "prefix": "patternly-content/config/families",
+      "description": "Rejestracja rodzin interakcji authoringu."
+    },
+    {
+      "prefix": "patternly-content/config/curricula",
+      "description": "Programy ścieżek i ich struktura edukacyjna."
+    },
+    {
+      "prefix": "patternly-content/config/taxonomy",
+      "description": "Taksonomie pojęć i jednostek mentalnych."
+    },
+    {
+      "prefix": "patternly-content/config/certification-objective-registries",
+      "description": "Cele egzaminacyjne i ich identyfikatory w ścieżkach certyfikacyjnych."
+    },
+    {
+      "prefix": "patternly-content/config/certification-source-registries",
+      "description": "Pochodzenie i rejestr źródeł certyfikacyjnych."
+    },
+    {
+      "prefix": "patternly-content/config/free-node-experience-profiles",
+      "description": "Profil doświadczenia początkowego węzła Free."
+    },
+    {
+      "prefix": "patternly-content/config/simulation-profiles",
+      "description": "Profile i wymagania symulacji."
+    },
+    {
+      "prefix": "patternly-content/scripts",
+      "description": "Narzędzia producenta treści; odróżniaj walidację od budowania, zapisu i dopuszczania wydania."
+    },
+    {
+      "prefix": "patternly-content/scripts/content",
+      "description": "Kontrakt pytania, bindingi runtime, planowanie i weryfikatory historycznej migracji."
+    },
+    {
+      "prefix": "patternly-content/scripts/content-audit",
+      "description": "Narzędzia kontroli jakości i pokrycia; wynik zależy od konkretnego wejścia i daty."
+    },
+    {
+      "prefix": "patternly-content/scripts/model-evaluation",
+      "description": "Narzędzia EPIC-09; obecność źródeł nie oznacza uruchomienia ewaluacji ani zgody na treści."
+    },
+    {
+      "prefix": "patternly-content/scripts/product",
+      "description": "Walidacja/pakowanie produktu, profili i węzłów Free."
+    },
+    {
+      "prefix": "patternly-content/scripts/review",
+      "description": "Lokalny panel i narzędzia kandydatów, decyzji oraz admission."
+    },
+    {
+      "prefix": "patternly-content/schemas",
+      "description": "Schematy JSON authoringu, treści, programu, produktu i przeglądu."
+    },
+    {
+      "prefix": "patternly-content/tests",
+      "description": "Testy kontraktów, producenta, migracji i konkretnych napraw banków."
+    },
+    {
+      "prefix": "patternly-content/artifacts",
+      "description": "Przypięte artefakty i manifesty wydania; nie rekonstruuj ich ręczną zmianą bajtów."
+    },
+    {
+      "prefix": "patternly-content/evidence",
+      "description": "Wersjonowane maszynowe dowody i decyzje dopuszczenia; czytaj zakres oraz fingerprint wejścia przed użyciem."
+    },
+    {
+      "prefix": "patternly-content/reports",
+      "description": "Wyniki kontroli i uzgodnienia kandydatów; datowany raport nie dowodzi bieżącej poprawności."
+    },
+    {
+      "prefix": "patternly-content/manual",
+      "description": "Materiały pomocnicze authoringu i zasoby."
+    },
+    {
+      "prefix": "patternly-content/exports",
+      "description": "Artefakty eksportu producenta."
+    },
+    {
+      "prefix": "patternly-content/supplements",
+      "description": "Wersjonowane uzupełnienia źródeł i programu ścieżki."
+    },
+    {
+      "prefix": "patternly-content/docs",
+      "description": "Dokładne dowody/fixture nadal używane maszynowo; opisową dokumentację utrzymuje sejf."
+    },
+    {
+      "prefix": "patternly-content/.github",
+      "description": "Bramki walidacji producenta uruchamiane w CI."
+    },
+    {
+      "prefix": "patternly-web",
+      "description": "Publiczna witryna i lokalny panel właściciela. Publiczna publikacja i lokalny panel mają odrębne wejścia i granice dostępu."
+    },
+    {
+      "prefix": "patternly-web/src",
+      "description": "Komponenty i wejścia React witryny, dokumentów prawnych oraz panelu lokalnego."
+    },
+    {
+      "prefix": "patternly-web/src/pages",
+      "description": "Strony: prezentacja produktu, landingi ścieżek, dokumenty i panel administracyjny."
+    },
+    {
+      "prefix": "patternly-web/src/components",
+      "description": "Komponenty publicznej prezentacji/demo i paneli obsługi spraw."
+    },
+    {
+      "prefix": "patternly-web/src/hooks",
+      "description": "Gotowość klienta po hydratacji i animacja ujawniania z obsługą ograniczenia ruchu."
+    },
+    {
+      "prefix": "patternly-web/src/generated",
+      "description": "Ograniczona projekcja demo wyprodukowana przez APP; nie cały bank pytań."
+    },
+    {
+      "prefix": "patternly-web/scripts",
+      "description": "Budowanie, prerender i testy stron oraz ograniczenie lokalnego panelu. Sprawdź zależności od przygotowanego artefaktu legal/demo."
+    },
+    {
+      "prefix": "patternly-web/scripts/admin-behavior",
+      "description": "Scenariusze zachowania lokalnego panelu i adapter testowy."
+    },
+    {
+      "prefix": "patternly-web/assets",
+      "description": "Ikony i źródła marki witryny."
+    },
+    {
+      "prefix": "patternly-web/public",
+      "description": "Statyczne zasoby publikowane przez witrynę."
+    },
+    {
+      "prefix": "patternly-web/public/app-preview",
+      "description": "Obrazy aplikacji pokazywane na stronie; ich pochodzenie opisuje manifest."
+    },
+    {
+      "prefix": "patternly-web/.github",
+      "description": "Konfiguracja CI witryny."
+    },
+    {
+      "prefix": "patternly/native/foreground-clock/android",
+      "description": "Natywny właściciel czasu Androida na oryginalnym szyfrowanym uchwycie MMKV i jednym rekordzie T; C++ obsługuje monotoniczny checkpoint1s/CAS, a JNI/Kotlin publikuje lifecycle niezależnie od JS. Sam kod nie dowodzi limitu po kill."
+    }
+  ],
+  "files": {
+    "patternly/App.tsx": {
+      "description": "Wybiera regularną aplikację albo kontrolowane fixture przed załadowaniem providerów. Regularna ścieżka przechodzi przez EnvironmentGate.",
+      "reviewedHash": "4dad9a99a8fa4880f2e55ccd17e4e27e1f72c7106b3a61b5d0dfbce00ec8ef6f",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/RegularApplicationRoot.tsx": {
+      "description": "Składa bezpieczny obszar ekranu, preferencje, przygotowanie szyfrowanego profilu, sesję konta, gotowość treści i nawigację. Zmiana profilu może wyświetlić powierzchnię ponownego przygotowania.",
+      "reviewedHash": "534641c490963ed79394a8e298df39196e560f2e32faeb7b2b867c6047654079",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/navigation/RootNavigator.tsx": {
+      "description": "Rejestruje stos ekranów i warunki wejścia konta. Zawiera również wejścia fixture/audytu ograniczone warunkami DEV i smoke.",
+      "reviewedHash": "69856aeb5eaea50dabe08ea0be77b3c4d5db454365e85c1d3168294a13efb811",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/constants/routes.ts": {
+      "description": "Stałe identyfikatorów tras; służą do powiązania nawigacji z ekranami.",
+      "reviewedHash": "c276eccdd188dfad6683ad1f1736daf9b537ec238e481277cd125dbd74da2d1a",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/application/bootstrap/applicationBootstrap.ts": {
+      "description": "Przygotowuje runtime nauki i odtwarza przerwane operacje przed oddaniem gotowego stanu interfejsowi.",
+      "reviewedHash": "521d33510f76966fa73efd88d63bb8c9ae1179e9b930c1e0d64527867a7f5e27",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/application/bootstrap/accountBootstrap.ts": {
+      "description": "Koordynuje start tożsamości konta, obserwację Firebase i dostęp do usług konta.",
+      "reviewedHash": "4ee52371c06793074318b3336d5eae114919553ddb668d9968bb4260b55fd1bf",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/application/bootstrap/trainingLifecycleComposition.ts": {
+      "description": "Składa zegar, repozytoria i runtime rodzin w właściciela lifecycle; zmiana adaptera może wpływać na wznowienie sesji.",
+      "reviewedHash": "bb0778fe36e452dc59a13a7a54b6606fc347c6a7ee4b4215c5c0aade33d05d37",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/account/AccountSessionProvider.tsx": {
+      "description": "Udostępnia Reactowi bieżący stan konta/Gościa i skoordynowane operacje sesji.",
+      "reviewedHash": "007c615203071f8919aadabf046ceb18ddcd2a916dceab990bc7d707556a43dd",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/application/account/ProfileStoragePreparationGate.tsx": {
+      "description": "Wstrzymuje wejście do aplikacji do przygotowania właściwego szyfrowanego storage profilu.",
+      "reviewedHash": "2daf48ed1e0f24ef0645203db7296394cd462414bb8628e5a2f63d043f30002b",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/storage/repositories/profileStorageRepository.ts": {
+      "description": "Koordynuje przełączenie aktywnego profilu i sygnalizuje wymaganą zmianę/reload; istotny właściciel izolacji danych.",
+      "reviewedHash": "969700185f7e35b73a80fc4b7e1142ac567cb20ac3f087e1a289555974b7c158",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/application/account/accountDataService.ts": {
+      "description": "Koordynuje transport i materializację danych konta oraz stan synchronizacji.",
+      "reviewedHash": "46c942de453c6bffe9a7358a156e8f24fd5ba28f603c52e7ceecffa95665c7ff",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/infrastructure/clients/PatternlyApiClientAdapter.ts": {
+      "description": "Adapter wywołań API z walidacją odpowiedzi i ograniczeniami transportu; wspólna granica z kontraktem backendu.",
+      "reviewedHash": "7fd1a2534cabed17df627ca690f43ed32f692f9f969f3b0386886b1773fc48c7",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/infrastructure/storage/mmkvClient.ts": {
+      "description": "Wybiera i zabezpiecza szyfrowany magazyn profilu oraz lease chroniący opóźnione operacje przed zapisem do innej tożsamości.",
+      "reviewedHash": "738b2dbd6f7d9491c55034bf3807625c4cfff8449573721e1fbe22e04b0905b4",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/content/application/ContentPreparationGate.tsx": {
+      "description": "Łączy przygotowanie treści z przygotowaniem konta/profilu i blokuje przedwczesne wejście do nauki.",
+      "reviewedHash": "b406d55e783a46bc668a27110723b8bdd96185d3d4dfdf65d07f096931f0788b",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/src/content/application/nodePackageInstaller.ts": {
+      "description": "Instaluje ofertę pakietu węzła: sprawdza ofertę, wersję, hash i aktualność profilu przed aktywacją. Może wykorzystać istniejący dokładny pakiet.",
+      "reviewedHash": "47a361e7b3cfedeeaec278a9898442f3c7669b0e9aa59929ea3cf13ff04a3f9c",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/src/content/runtime/nodeContentPackage.ts": {
+      "description": "Waliduje payload i manifest oraz koordynuje weryfikację/instalację pakietu treści.",
+      "reviewedHash": "9f5dd1b976fc0046abbedcf607d191be6cea9ce874efb56219cdbc18c54dce84",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/src/content/runtime/nodePackageStorage.ts": {
+      "description": "Przechowuje i odczytuje pakiety z kontrolą integralności i tożsamości; rozdziela bajty artefaktu od wskaźnika aktywacji.",
+      "reviewedHash": "9d36c61aa0fc12742e027a4ebb27bbaebc51360c287bac29faf2638386977b1f",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/src/application/contentPackageRuntimeOwner.ts": {
+      "description": "Utrzymuje aktywne pakiety runtime przypisane do zakresu profilu.",
+      "reviewedHash": "0aaf2b95e7d6bb59ed50003a684cd62ad1740fb94dfc4b409e29c1818b31bdab",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/src/application/trainingLifecycle/TrainingLifecycleUseCases.ts": {
+      "description": "Właściciel operacji treningu: uruchamia, aktualizuje i finalizuje sesję przez kanoniczne kontrakty i zapis.",
+      "reviewedHash": "daf50580565025baa00ed085c6f367989f7598ede442c879ddba6c07d3c95630",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/trainingLifecycle/ForegroundSessionTimerFacade.ts": {
+      "description": "Uzgadnia natywne T z agregatem sesji S, serializuje granice zapisu i expiry oraz ogranicza okresowe uzgadnianie do jednej oczekującej operacji; absolutny deadline pozostaje odrębnym kontraktem.",
+      "reviewedHash": "5ca8e53db36e1f1569b1bca45f2032b310d342b3a904077e80df903fac66694e",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtime/ForegroundSessionTimer.ts": {
+      "description": "Źródło pomiaru czasu aktywnej sesji i kontrakt zegara; samo odmierzanie nie potwierdza trwałości po śmierci procesu.",
+      "reviewedHash": "ff81b35d753f37951f3112e831c9e87cc76316a5e2ee236f8873cf80daac830e",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/learningMutations/commitMutation.ts": {
+      "description": "Wykonuje zapis w kolejce: journal → materializacja → weryfikacja → oznaczenie danych do sync → usunięcie journalu. Zachowuje fazę trwałości i dokładny seed retry.",
+      "reviewedHash": "d24e8f10ab9a9281c930cdfd25089ac7933fb4b448eec12fef99326a4c222e7a",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/learningMutations/recoverPendingMutation.ts": {
+      "description": "Wznawia pozostającą trwałą fazę tego samego journalu bez tworzenia nowej odpowiedzi lub wyniku.",
+      "reviewedHash": "41931d2cb5ef023c61b795bee96791819dd9d8b9ffee89b5f8d8a2edbdb2972a",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/learningMutations/mutationMaterializer.ts": {
+      "description": "Realizuje fizyczne zapisy opisane przez przygotowany journal.",
+      "reviewedHash": "56ef2f20aa85b73435ae0dea4d508ebb518d6b10f19cec6bf3d9121f4c37655e",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/learningMutations/mutationVerifier.ts": {
+      "description": "Sprawdza materializację zapisów journalu przed przejściem do czyszczenia.",
+      "reviewedHash": "396081ab34683e701d5d7c832758633561aa9c51753f69645ab052a900bd7890",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/learningMutations/commitTrainingOutcome.ts": {
+      "description": "Buduje i zapisuje wynik pojedynczej odpowiedzi wraz z odpowiednimi rekordami nauki.",
+      "reviewedHash": "030ca1398ad6ba3e0dd9b2bbffa0c201cb51ba4d9d82cfa1c8788590a679d5e1",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/learningMutations/commitTrainingSessionFinalization.ts": {
+      "description": "Finalizuje sesję i jej wynik z regułami cleanup oraz tożsamością użytych treści.",
+      "reviewedHash": "ca6b18d76bdd518967dd8aa9e55785c2cd243e1d1510fc35c17743dffa3640e1",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/learningMutations/commitGoalPlanAcceptance.ts": {
+      "description": "Przygotowuje wspólne zaakceptowanie celu i planu dla właściwej ścieżki.",
+      "reviewedHash": "4b1f0391ab1185d8e8c7f1e830be55cf8842b35a2274ceab063b189dacebdbba",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/storage/repositories/mutationJournalRepository.ts": {
+      "description": "Trwały zapis planu i faz journalu; zawiera kontrolę tożsamości polecenia, oczekiwanych rewizji i lease profilu.",
+      "reviewedHash": "841758a2dff4118fdb5eda58c68c560a5cc694335ed2abaabdf36d4505993b0b",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/storage/repositories/foregroundTimerRepository.ts": {
+      "description": "Repozytorium stanu zegara sesji; trwałość tego zapisu wymaga osobnej próby natywnej.",
+      "reviewedHash": "bf4d8c85d590eda42df7cc300e8a880b6706800f7d3bb45c49cf3b0a03a8e7cb",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/domain/learning/packageCompletionRule.ts": {
+      "description": "Kontrakt reguły ukończenia pochodzącej z wersjonowanego pakietu, zamiast zaszytej w ekranie stałej.",
+      "reviewedHash": "0a7e7ccc7930baa401cda8e59e0e5d941d721764de00d1697d22c9aef29c643d",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/domain/identity/recordFingerprint.ts": {
+      "description": "Fingerprint rekordu zgodny bajtowo z backendem; profil zachowuje dokładne ciągi zamiast automatycznej normalizacji.",
+      "reviewedHash": "4ecba705afd538ad3ee7b14e21c232aeec514ca68b27789a3aa3dc521dccf60e",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/application/learningPlan/LearningPlanProposalCoordinator.ts": {
+      "description": "Koordynuje przygotowanie propozycji planu z danych i polityki ścieżki.",
+      "reviewedHash": "ddfb9bcf0d74d072e291adb349f7cf88402ae52144978aa52b6015ddd9496735",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/application/learningPlan/learningEvidenceProjection.ts": {
+      "description": "Przekształca zapisane evidence nauki w projekcje używane przez plan/postęp.",
+      "reviewedHash": "74ac733bd5056dd7e7e738f653e88cb7b4012f1c8700ab6cee5f950c6efa96a2",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/application/account/premiumStoreMap.ts": {
+      "description": "Przypisuje produkt Premium do platformy i sklepu, zamiast przenosić identyfikatory między sklepami.",
+      "reviewedHash": "72b5def58865548f219f39510623f89682793524ced8041a9cbc1900366f8946",
+      "flow": "Premium i zakup"
+    },
+    "patternly/src/application/account/premiumPurchaseComposition.ts": {
+      "description": "Składa zależności zakupów, aktualnej tożsamości i odświeżenia uprawnienia.",
+      "reviewedHash": "c6a4bffe4b29d8a78aa75adeba04b2dba598cb5c5aa181049918006b0d5dd045",
+      "flow": "Premium i zakup"
+    },
+    "patternly/src/domain/entitlements/premiumEntitlement.ts": {
+      "description": "Definiuje model uprawnienia Premium i reguły jego interpretacji.",
+      "reviewedHash": "94377ebc31eb91fe7566cd74cabf0ce5e37410b15618182c5477c752fce24077",
+      "flow": "Premium i zakup"
+    },
+    "patternly/src/application/guest/guestLocalDataExportService.ts": {
+      "description": "Przygotowuje eksport lokalnych danych Gościa bez wymagania konta lub adresu e-mail.",
+      "reviewedHash": "bc51e58db29f1c35f6555daf79c9b97816037d55d6832b9476f96525732befa8",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly/src/application/contentReports/contentReportService.ts": {
+      "description": "Przyjmuje zgłoszenie treści i obsługuje jego dostarczenie z lokalnej kolejki.",
+      "reviewedHash": "0cb4e68be75b761a7dbf73840ab11566f1bc156d8acb1f3fcb24d35cc2f11df1",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly/src/legal/legalVariables.ts": {
+      "description": "Wczytuje i waliduje zmienne dokumentów prawnych/oferty. Dostępność treści i zatwierdzenie wydania wymagają osobnych dowodów.",
+      "reviewedHash": "12b5fdb3442414efb5e147a22c19d45c769d1f3b6c52fbb0e491a6ec86df36be",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly/scripts/checkWorkspaceDocs.mjs": {
+      "description": "Sprawdza odnośniki dokumentacji, routing i jedyność planu/stanu; dotychczasowa kontrola wiki sprawdza cel pliku, bez kotwicy wiki.",
+      "reviewedHash": "af43e3198141294b016feb8e3e3243f8a33df9ae13e6a404ea95961482cff050"
+    },
+    "patternly/scripts/architecture/dependencyGraph.ts": {
+      "description": "Buduje graf zależności ze źródeł TS i resolvera Metro dla wybranej platformy. Jest mocniejszym źródłem wyboru natywnego niż ogólny spis atlasu.",
+      "reviewedHash": "4310b562e22b4955c88bb969c3f3b1fcc5e0eb07088cb2125729c77f251d668d"
+    },
+    "patternly-backend/src/index.ts": {
+      "description": "Składa konfigurację, Firestore, weryfikatory, RevenueCat, GCS i SMTP, a następnie uruchamia Fastify. Brak dostawcy może jawnie ograniczyć odpowiednią funkcję.",
+      "reviewedHash": "b6f608796356d3aa3f95caccf23a5c23e9473c56e82d42b7119ff16aab9cbcf7",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly-backend/src/api/app.ts": {
+      "description": "Rejestruje rzeczywiste endpointy i ich zabezpieczenia; łączy kontrakt HTTP z magazynami modułów. Duża koncentracja tras to kandydat do analizy kosztu utrzymania, nie dowód defektu.",
+      "reviewedHash": "fce09b2eab4e10c0116d84a5237e4aa101830ef72a34ad87dff1e5563ab7c0a2",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/src/api/openapi.ts": {
+      "description": "Kanoniczny katalog metod i ścieżek HTTP oraz schematów i profili bezpieczeństwa.",
+      "reviewedHash": "3ce338d29dcde8895da84a2ba6d7d14a2f41df57d7d17fcdd90a9d436d9bdba8",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/src/api/openapi-validator.ts": {
+      "description": "Weryfikuje kompletność i spójność kontraktu OpenAPI oraz rejestru runtime.",
+      "reviewedHash": "b1fe748e800d89c006d21f53ae3e4b8e754aa703317a39e79a5b942f77fac9cf",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/src/api/security-probes.ts": {
+      "description": "Sprawdza zachowanie profili bezpieczeństwa na rzeczywistej aplikacji Fastify przez inject; etykieta trasy sama nie jest dowodem ochrony.",
+      "reviewedHash": "38b49bc2dc3e865d64694f3b56288403aaa0b6d039351549d30ca6a8f8eefc9b",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/src/config/environment.ts": {
+      "description": "Waliduje zmienne środowiskowe i warunki konfiguracji usługi przed startem.",
+      "reviewedHash": "42f0ea79e4211f9ada25ebb4d4d6f645c317a9d638899decefbbc12ab1155680",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly-backend/src/infrastructure/firestore/stores.ts": {
+      "description": "Składa magazyny modułów i ich zależności w jeden runtime backendu.",
+      "reviewedHash": "7fcd51e4c2ea26deb1d5c2d7d1f15c9d5bc0c71863223952dfec1e33746f8e3a",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/src/infrastructure/logging/logger.ts": {
+      "description": "Ogranicza dane logów do bezpiecznych pól, zdarzeń i kodów.",
+      "reviewedHash": "1e27a3f0d59e7f8027e86955bddcc569e48ad2f7304f0829873de9c16577d8d1",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly-backend/src/infrastructure/revenuecat/client.ts": {
+      "description": "Odczytuje i scala źródła dostępu Premium z RevenueCat, uwzględniając sklep i stan.",
+      "reviewedHash": "dca50d2ab2fc276b01ddee8281a2580bd861264c51350022af15a1bd14640b74",
+      "flow": "Premium i zakup"
+    },
+    "patternly-backend/src/modules/progress/contracts.ts": {
+      "description": "Kontrakt rekordów synchronizacji, tożsamości treści i dopuszczalnych mutacji.",
+      "reviewedHash": "53653e1ef05cad693efeff74cdca4ebb79ae1069f991e86c510a07ca69250a3e",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/src/modules/progress/store.ts": {
+      "description": "Trwała obsługa synchronizacji rekordów i rewizji w Firestore.",
+      "reviewedHash": "fefb22e54322062a61a1cbca36818b44da7f7348c0f800c0d3a5c2917bd72bec",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/src/modules/users/merge.ts": {
+      "description": "Sprawdza i rozstrzyga dane przekazywane przy łączeniu profilu z kontem.",
+      "reviewedHash": "ae4d73bb20e71fa57d6b925061fe15103cb83aae11febb98cca71c62d9ca4945",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/src/modules/users/adoptionTransfer.ts": {
+      "description": "Protokół porcjowanego przejęcia danych Gościa z tożsamością operacji i ograniczeniami transakcji.",
+      "reviewedHash": "56be8ea9ab587e19485a2f28e8684f9bd23f5f60b4418f2249b7245f2a9e95b6",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/src/modules/account-lifecycle/store.ts": {
+      "description": "Operacje recovery i usunięcia konta z trwałym stanem umożliwiającym odtworzenie.",
+      "reviewedHash": "59255dc6eb363d04fb45d4126e6ce56180d78bdb3ac09bffee5bbb9b520d38a0",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly-backend/src/modules/content/packages.ts": {
+      "description": "Usługa manifestu/deskryptora pakietu oraz niezmiennego transportu treści.",
+      "reviewedHash": "644b1a831415f006ffcee48be79cb0cb7b800470b51d70248c6d4db3a3ec7f03",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-backend/src/infrastructure/content/gcsContentPackageStorage.ts": {
+      "description": "Jedyny wdrażany dostawca bajtów pakietów: Google Cloud Storage z kontrolą rozmiaru i generacji.",
+      "reviewedHash": "a0fd7b35d70aa357a1f7be8181d968c375b56dc4a01f96fe4ab409e04bf9c8b7",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-backend/src/modules/billing/revenuecatWebhookStore.ts": {
+      "description": "Trwały stan webhooka i wysyłki potwierdzenia; idempotencja oddziela odbiór zdarzenia od skutku dostawcy.",
+      "reviewedHash": "ba9cc727d48254d5712b6eee0523b34aa897dbdd5e655f1541895873e496221e",
+      "flow": "Premium i zakup"
+    },
+    "patternly-backend/src/modules/billing/purchaseReceiptDispatcher.ts": {
+      "description": "Rozsyła potwierdzenie zakupu na podstawie trwałego stanu dostarczenia.",
+      "reviewedHash": "0ed98c6ef67d60263b277a2b0a6dff2ff5aa1ced7170c53595bb00ed2874b48c",
+      "flow": "Premium i zakup"
+    },
+    "patternly-backend/src/modules/retention-purge/service.ts": {
+      "description": "Wykonuje usuwanie rekordów zgodnie z polityką retencji; nie uruchamiaj jako zwykłego testu audytu.",
+      "reviewedHash": "4fbd6021c605f55c8fef8ab3b2060e48633b30606606a7dfaebeedd1a013c3a0",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly-content/scripts/build.mjs": {
+      "description": "Waliduje źródła ścieżki, buduje pakiet i jego tożsamość oraz artefakty producenta. Polecenia validate/test/build mają różne skutki.",
+      "reviewedHash": "344e160e3b720467a9d6f51e5a97063d25803656c94d664fce78fcb42a9f062f",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-content/scripts/content/question-contract.mjs": {
+      "description": "Sprawdza kontrakt pytania i relacje interakcji; wspólny kontrakt producenta i runtime aplikacji.",
+      "reviewedHash": "f0e5969449188189af20e9e9c6919253cc614172b73997de8c916d519b1da475",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-content/scripts/content/track-runtime-bindings.mjs": {
+      "description": "Wczytuje i waliduje rejestr powiązań ścieżek z rodziną i loaderem runtime.",
+      "reviewedHash": "62a24b005cb8d99b2b60ddcebffff5e055f056f53692a4f59ff6e141f6e23ef0",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-content/scripts/content/planning-policy.mjs": {
+      "description": "Waliduje autorskie koszty i polityki planowania dostarczane przez pakiet.",
+      "reviewedHash": "c5744b3ebae51b47bb4410a5e3358d339afb488b2e6dedfe46d4f5b0e1295fb7",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly-content/scripts/content/verify-migration.mjs": {
+      "description": "Weryfikuje dokładne historyczne dowody migracji; nie zastępuje bieżącej oceny merytorycznej pytań.",
+      "reviewedHash": "d291ce6a7a838acaa06cd7db0f0f50389ae9e33b0d9e0ec9b84dcda987536fa4",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-content/scripts/review/content-review-console.mjs": {
+      "description": "Udostępnia lokalny panel przeglądu i kontrolowane zapisy źródeł z ochroną ścieżek i tożsamości wejścia.",
+      "reviewedHash": "209c41e7acebae19e339ff16249542a1a65336f2299e9a17a1db1c52030e9643",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-content/config/track-runtime-bindings.json": {
+      "description": "Maszynowy rejestr powiązania ścieżka–rodzina–loader.",
+      "reviewedHash": "249e22db14bc2eb1f363d784a0cd7a20e3db203728a79ceb173f88d4aedc80e1",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-content/config/bundled-free-node-packages.json": {
+      "description": "Przypięcia pakietów początkowych węzłów Free dołączanych do aplikacji.",
+      "reviewedHash": "b0019ca40bc3571f08a859ba1d89b63212ce8f52ec65322a34808b63d0bc53b8",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-content/schemas/content/question.schema.json": {
+      "description": "Schemat struktury kanonicznego pytania; walidacja schematu nie potwierdza poprawności odpowiedzi.",
+      "reviewedHash": "499299012bda4054b712a0a913ccfc3d27b5fa35d7c438438cf7f73067893091",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-web/src/main.jsx": {
+      "description": "Wybiera stronę główną albo landing ścieżki i hydratację/przejście do renderowania klienta.",
+      "reviewedHash": "894d19a7f9c72c4df77aa230de9010fcc87e822371a34f8716fe38500b4f7bd9",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/pages/PublicPage.jsx": {
+      "description": "Publiczna prezentacja produktu: katalog, demo, obrazy aplikacji, FAQ i kontakt.",
+      "reviewedHash": "7d4d870ec5b0fb193db1791877429c6e97c26a50c823656f093403bb773ae5dd",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/pages/PublicTrackPage.jsx": {
+      "description": "Publiczna strona tematyczna wybranej ścieżki z granicami oferty i odnośnikami.",
+      "reviewedHash": "5eee06390d71204d909bd1d2f578e7a4527d0856707662f7941bb01ac351e04c",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/publicTrackPages.js": {
+      "description": "Redakcyjna treść landingów; nie importuje pełnych banków pytań.",
+      "reviewedHash": "67d92df7fbfeea4eda771a455800fc268b1e1b4136957379c63fb0a1d2091a22",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/publicPages.js": {
+      "description": "Wspólna projekcja publicznych URL dla prerenderu, metadanych i sitemap.",
+      "reviewedHash": "b30c023fe29368c28d930a6a2fa8541aaa5cccd698d637ee5d1e1fa4eb9f1e0a",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/components/InteractiveQuestion.jsx": {
+      "description": "Lokalny przebieg demo: wybór, potwierdzenie, wynik i szczegóły wyjaśnienia.",
+      "reviewedHash": "09fa769ea35b809b8737faaa7d0d7ea6ceebef3d157e6ffc27bdec69c473e545",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/components/AppAvailability.jsx": {
+      "description": "Komunikat faktycznej dostępności aplikacji w sklepach; zmieniać po potwierdzeniu publikacji.",
+      "reviewedHash": "32e2841e84b0f9df38a49b68bfd785eb936da91982a6f34540b9f5e2c95f9321",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/hooks/useClientReady.js": {
+      "description": "Utrzymuje zgodność stanu podczas hydratacji, a następnie aktywuje interakcję klienta.",
+      "reviewedHash": "4896425876aa35ccb92553f57a57ee1224496d842b2c2211560e19549a57f77f",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/pages/PublicLegalPage.jsx": {
+      "description": "Wyświetla zatwierdzone dla danego artefaktu wersje dokumentów i wybór dostępnego języka.",
+      "reviewedHash": "f8d6c9b4c56616553918f60b52813cc9477c3c6f9ea8153f744313fe9e89f5e4",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/publicLegalArtifact.js": {
+      "description": "Wczytuje i waliduje artefakt prawny wyprodukowany przez aplikację.",
+      "reviewedHash": "357b26a65875813ae65dd0a163550ddda31a6b0ffeb8c7133766835426dfd801",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/publicLegalLocales.js": {
+      "description": "Wyznacza dostępność języków i ścieżki dokumentów na podstawie kompletności artefaktu.",
+      "reviewedHash": "25b1ce5804433455555c276068e39677317526439fff524b18a886b6bbe0a3de",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/pages/AdminPage.jsx": {
+      "description": "Wejście panelu lokalnego: konfiguracja, Firebase Auth, workspace i obsługa spraw.",
+      "reviewedHash": "09d3e9c3ef9fd09d2ee43efa6a79376ca24da0a6ab66fb969c0853d73f9d7dab",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/adminConfig.js": {
+      "description": "Ogranicza panel do poprawnego lokalnego środowiska API i emulatorów.",
+      "reviewedHash": "0db0b293ad739097df7dd7aec1bb979a1ef685c6fdaacf728ea4c70091129f96",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/adminRequestLifecycle.js": {
+      "description": "Cykl żądania operatora, timeout i zachowanie stanu operacji o nieznanym wyniku.",
+      "reviewedHash": "c5e865feb4e7d1685f757cd7ed4b30d08590e286a4dedb0258736329fdf7d257",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/components/AdminWorkspace.jsx": {
+      "description": "Widoki katalogu, użycia aplikacji i zgłoszeń dla lokalnego operatora.",
+      "reviewedHash": "53e6bb22034e83c57c810d24caef36744d975b76303a6b6bcaf33e68a90e71ee",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/components/PrivacyRequestsPanel.jsx": {
+      "description": "Obsługa wniosków dotyczących danych w lokalnym panelu.",
+      "reviewedHash": "e6c99508c5b0bfa477ac2a60367eaf4f7fcf09a10d76abbfbbaa3e954c3be47b",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/components/LegalRequestsPanel.jsx": {
+      "description": "Obsługa reklamacji i odstąpień w lokalnym panelu.",
+      "reviewedHash": "037e95360ba3cf729a2307df486e788dc3c19446e29dd3a02fea23064f5db1e2",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/src/components/SecurityIncidentsPanel.jsx": {
+      "description": "Obsługa incydentów i decyzji oraz powiadomień operatora.",
+      "reviewedHash": "27b4564806179e832d7a47d75272c5a1d518b49887d8ddd78caa42460bd6fc28",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/vite.config.js": {
+      "description": "Wejścia buildów i granice lokalnego panelu oraz wstrzykiwanie legal/demo.",
+      "reviewedHash": "a72a897b3fa5ca1ad6fbfb8e883f7fe4485c71196d553294422946d59c9a8cfd",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/scripts/dev-local.mjs": {
+      "description": "Przygotowuje testowy artefakt prawny i uruchamia lokalny Vite; nie jest produkcyjnym zatwierdzeniem dokumentów.",
+      "reviewedHash": "7bca542b4ce54706a819de56e05af9b093aad32b795e7a063e563b1000bf5b5f",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly-web/scripts/public-site.mjs": {
+      "description": "Prerender i kontrola publicznej strony w procesie budowania.",
+      "reviewedHash": "60e430983a1bae27de13b6b0385d9097c7b7b330fc4d40f4ff176af300196162",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly/src/features/home/LanguageSettingsScreen.tsx": {
+      "description": "Wybór języka interfejsu.",
+      "reviewedHash": "9490225ac8d8a26adc932195a036b1e9d8e6b6e7b7ce475221d9af07f33ab9a3",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/features/home/AppearanceSettingsScreen.tsx": {
+      "description": "Wybór wyglądu aplikacji.",
+      "reviewedHash": "7614ec48e16007dd1ed886cf9380a55f8dccaf8a9dd3c52ee448423fc3d79ca3",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/features/home/LegalRequestsScreen.tsx": {
+      "description": "Złożenie i przegląd spraw prawnych użytkownika.",
+      "reviewedHash": "25b26ef61ff3f56ddd7a0381ec7902c7b3ace60c8406451e1824905e5af2b49c",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly/src/features/home/NotificationSettingsScreen.tsx": {
+      "description": "Konfiguracja lokalnych przypomnień i ich dni/godzin.",
+      "reviewedHash": "6007d51e229d567d2c8ea8aeb48dfd0fe48e56283d737b534d0fe0d9e4598c58",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/PrivacyRequestsScreen.tsx": {
+      "description": "Złożenie i przegląd wniosków dotyczących danych.",
+      "reviewedHash": "db2182b004731892d5c1243c0a4473efde32f4957fcbca77ac5612b8973e1979",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly/src/features/home/LearningPlanEditorScreen.tsx": {
+      "description": "Edycja zaakceptowanego planu nauki.",
+      "reviewedHash": "d893d3a23952047b252da44775588c11d86e3bb10bf95e00e5190d6989eb81ac",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/SelectTrackScreen.tsx": {
+      "description": "Pozwala wybrać aktywną ścieżkę.",
+      "reviewedHash": "f5ca8c6f05f9d6c8684176864f2e08d2ccca9ec03f12a9934da41fd90e4ee1f6",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/src/features/home/ActivityScreen.tsx": {
+      "description": "Prezentuje zapisaną aktywność nauki.",
+      "reviewedHash": "3060e45c41d22465fef5335c2487a7d6603f7fefde4e79f5e29c81bc4a2eb04b",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/LearningPlanProposalScreen.tsx": {
+      "description": "Przedstawia propozycję planu i jej akceptację.",
+      "reviewedHash": "fd8362c6987843dabb616031ef648de22db69c24aee2794197d210d5b34fea69",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/GoalCadenceScreen.tsx": {
+      "description": "Zbiera cel i rytm nauki dla planu.",
+      "reviewedHash": "a76454e9346236c7ba052cab5e3934155c4602de801475f66a8b7753b1acc309",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/YourDataScreen.tsx": {
+      "description": "Dane użytkownika, eksport i dostęp do operacji resetu/usunięcia.",
+      "reviewedHash": "b26a232d3622daf0d3c56f67b1c0922cd06356fd577d2277bd27899c80e92fc3",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly/src/features/home/HomeScreen.tsx": {
+      "description": "Pokazuje dzisiejszy punkt wejścia nauki dla aktywnej ścieżki.",
+      "reviewedHash": "2bcc6f6750d39dd06f890d63235f9e49afcf66593f6e6fca9ce71b36b4692575",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/features/review/MistakesReviewScreen.tsx": {
+      "description": "Wejście do powtórki błędów i wymaganej pracy.",
+      "reviewedHash": "24bfc6eac6f6b4dc4ca6c22ce1e92863b4071441176c403562261c1c65311d86",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/exam/ExamScreen.tsx": {
+      "description": "Ekran egzaminu certyfikacyjnego z przebiegiem sesji.",
+      "reviewedHash": "a19d24fcd7f03654401a509c85ae46f6088b661800e63336d29df7d49b33c360",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/exam/ExamReviewScreen.tsx": {
+      "description": "Przegląd odpowiedzi po egzaminie.",
+      "reviewedHash": "98b2d92c7059209685b0e940d41a51906e0d32ce349e9b1b8160415e0f1513a8",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/exam/ResultScreen.tsx": {
+      "description": "Wynik zakończonego egzaminu.",
+      "reviewedHash": "acf37c68977ba6d814873bf1cbec4d7fde08258f79e460bbd7bece87b41c20f7",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/account/AccountEntryScreen.tsx": {
+      "description": "Wejście do konta i alternatywa sesji Gościa.",
+      "reviewedHash": "532158b07ae0825dca878677e2ad37fb3e315d643bde8684496f2e5549b5957b",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/features/account/AccountSecurityScreen.tsx": {
+      "description": "Zarządzanie bezpieczeństwem konta i recovery.",
+      "reviewedHash": "171376f3eb9c3064014c3135ae002314a1fa810427d63e4c98b2761e1188b233",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/features/practice/PracticeSetupScreen.tsx": {
+      "description": "Ustawienie zakresu i parametrów sesji praktyki.",
+      "reviewedHash": "fad8a9b5e0730028b305b085f0d98bc235b38f15a683ef14db2707accc648ffd",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/practice/PracticeHubScreen.tsx": {
+      "description": "Wybór dostępnej praktyki i trybów aktywnej ścieżki.",
+      "reviewedHash": "d3a1e93449ce93c00ce38d3f902852e1b1ca71656bcc32dc21ac6efa0a75d728",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/practice/PracticeSessionScreen.tsx": {
+      "description": "Ekran sesji praktyki łączący runtime i interakcję odpowiedzi.",
+      "reviewedHash": "53846a67c7c7794101fe7c31ad1bd77073a63db15953c59d0b92df1908f4f312",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/premium/PremiumPurchaseScreen.tsx": {
+      "description": "Zakup i restore Premium oraz jawna dostępność sklepu.",
+      "reviewedHash": "d0d60d2903722b0996d4a1ccce45cdbe3e6531efd1c8e376b9a333212f6cabbf",
+      "flow": "Premium i zakup"
+    },
+    "patternly/src/application/learningMutations/identity.ts": {
+      "description": "Tworzy fingerprint tożsamości i identyfikator próby z kanonicznej serializacji. Nie wykonuje journalu ani materializacji zapisu.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "be716be7352c0d218a1cd20830ddefe2f8fee647311e5962ab4a011abd33d7ab"
+    },
+    "patternly/src/infrastructure/runtime/EnvironmentGate.tsx": {
+      "description": "Przed otwarciem providerów i danych porównuje fingerprint konfiguracji z tożsamością środowiska, a następnie z trwałym markerem instalacji. Niezgodność, błąd i brak przypisania mają jawne powierzchnie.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "a0c6f52ac3b3b2bd9f188596d4b92dbefa8f16b21f5d76897561f9bf3e06926a"
+    },
+    "patternly/src/infrastructure/runtime/environmentIdentity.ts": {
+      "description": "Wylicza tożsamość właściciela danych z trybu, endpointów i konfiguracji dostawców. Bezpośrednie odczyty zmiennych są wymagane przez zastępowanie publicznych env w Expo.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "70eb9d10d0c91e9281ba3971870c77df611bdb5e598affa4f2c9897249695c0c"
+    },
+    "patternly/src/application/runtime/MemoryForegroundSessionTimer.ts": {
+      "description": "Jawny zegar testów pamięciowych. Produkcyjny magazyn natywny nie może wybrać tej ścieżki; nie jest fallbackiem awarii SDK.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "75b4ce22f9dd6467f18ecb7fd120bd24df05056fc29236fc46ddda1db27999a0"
+    },
+    "patternly/native/foreground-clock/android/PatternlyForegroundClockAndroid.cpp": {
+      "description": "Właściciel pojedynczego T na przekazanym HybridMMKVSpec: serializacja mutexem, natywny wątek checkpoint1s, lifecycle cutoff/resume, kontrola oczekiwanych bajtów przed zapisem i readback, lease i fault/revoke. Cold arm nie odtwarza segmentu; countdown ogranicza nowe naliczanie bez cofania starego overrun.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "40947050ff9753577aa806d7fac3c4f3a2396d465ceceb38338d0814e29110e4"
+    },
+    "patternly/native/foreground-clock/android/ForegroundTimerRecordAndroid.cpp": {
+      "description": "Ścisły codec istniejącej koperty T przez Folly z przypiętego React Native; waliduje klucze, wersje, liczby, scope i routerowy klucz. Wall time jest tylko metadanymi checkpointu.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "b425a8e9783c5ea2664f7c9b8e6f681698f34246ae2ab76a46a476a96ab8b2c6"
+    },
+    "patternly/native/foreground-clock/android/ForegroundClockJni.cpp": {
+      "description": "Ładuje rejestrację konstruktora Nitro i wiąże natywną metodę lifecycle; nie otwiera magazynu ani nie przenosi klucza szyfrowania.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "7628719e09f3d1d89588fa978271443f5b2e128ef3342446b54c392e55ba9e64"
+    },
+    "patternly/native/foreground-clock/android/src/main/java/com/lkurczab/patternly/foregroundclock/ForegroundClockLifecycle.kt": {
+      "description": "Publiczny instalator biblioteki i callbacków Activity MainActivity. Publikuje resume/pause do C++ przed oczekiwaniem na właścicieli; nie zależy od reakcji JavaScriptu.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "714ce74d34dd89a45d176bc99316e4c6b83ce42728094e98921c632feb07eb2f"
+    },
+    "patternly/native/foreground-clock/android/CMakeLists.txt": {
+      "description": "Buduje bibliotekę właściciela z publicznymi prefabami przypiętego React Native, NitroModules i NitroMmkv; nie kopiuje implementacji SDK ani registry.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "2e2b0cf51cb6bbfd01acc35b2ddb05724eb589a35be99a958f2d77246bfe2c85"
+    },
+    "patternly/native/foreground-clock/android/build.gradle": {
+      "description": "Moduł Android library/Kotlin z externalNativeBuild i prefabami; respektuje ten sam reactNativeArchitectures co SDK i elastyczne rozmiary stron pamięci.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "92df29fb85aa9803b38670015c60484088a3f73ce5f8a9c6788a9856cd4a97a0"
+    },
+    "patternly/plugins/withAndroidForegroundClock.js": {
+      "description": "Integruje moduł z projektem Expo Android: dependency/settings, publikacja nagłówków MMKV oraz instalator lifecycle przed loadReactNative. Nie zmienia konfiguracji iOS.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "7f2b971ddbf32f0b6c5f4d0eb0e0bdf7e96d73c2d0b66433a916d2439cb068d8"
+    },
+    "patternly/src/application/runtimeAuditability/AndroidClockProbeHost.tsx": {
+      "description": "Prywatny host poleceń Android/sandbox/UUID: dopuszcza obserwację, izolowane fixture i ograniczoną blokadę JS; nie działa w zwykłym wydaniu.",
+      "reviewedHash": "21d550cc5ed85923c45a48a52e2c4b33ce5dbc02cb2d26254f3099f0cf1efaa3",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtimeAuditability/androidClockFixture.ts": {
+      "description": "Izolowane szyfrowane fixture count-up/countdown używają oryginalnego SDK handle i tego samego natywnego ownera. Guard potwierdza nierosnący produkcyjny zegar; cleanup usuwa wyłącznie własny ID dopiero w zimnym procesie.",
+      "reviewedHash": "1924fe422a1d6bf52b46b403a6b8272fad2701eee09ffa5b66079a3514984637",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtimeAuditability/androidClockProbeRuntime.ts": {
+      "description": "Nieautorytatywny odczyt T przed uzgodnieniem oraz dwa bezpośrednie natywne pomiary czasu; wiąże sesję, konfigurację, profil i spis hashy bez zapisu elapsed.",
+      "reviewedHash": "e5e89722bced86ec52cabb6edba5bfa0db62d8c1e7bea9b6d11aa7742d8f7fb1",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/androidForegroundClockKillProbe.mjs": {
+      "description": "Sterownik jednego Androida: potwierdza JS stall i PID/birth, systemową śmierć procesu, zimny odczyt oraz konserwatywne granice utraty. Cleanup czeka na osobne potwierdzenie z zimnego procesu.",
+      "reviewedHash": "77bc5a8c01d7fafd949fe372444d4b08bbb2c8204ec4c74dae3c7baa5fdb847d",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/deriveAndroidClockProbeApk.py": {
+      "description": "Tworzy niepodpisaną lokalną pochodną wskazanego APK: dopuszcza zmianę jedynie bundle Hermes, porównuje pozostałe wpisy i zasoby; nie używa danych uwierzytelniających ani urządzenia.",
+      "reviewedHash": "1a779818ac83a016e8b8ebd8614edee260de56eb3ac8f93b166aa0a6ea79ab0e",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/embedAndroidClockProbe.mjs": {
+      "description": "Eksportuje prywatny bundle Android/Hermes ze spójnego snapshotu i zatwierdzonego sandbox fingerprint; bez buildu EAS i instalacji.",
+      "reviewedHash": "690457c80e8d918ab3123784666333ec94f8be8861f5c06aa4bfe26fad707a94",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    }
+  },
+  "flows": [
+    {
+      "name": "Start aplikacji i nawigacja",
+      "prefixes": [
+        "patternly/App.tsx",
+        "patternly/src/navigation",
+        "patternly/src/features/home",
+        "patternly/src/application/bootstrap",
+        "patternly/src/preferences"
+      ],
+      "reviewedDigest": "7f3dca228b8f2fa2068c4c15d57885747342da079c66419ef107e87d44aae46d"
+    },
+    {
+      "name": "Konto, Gość i synchronizacja",
+      "prefixes": [
+        "patternly/src/application/account",
+        "patternly/src/infrastructure/firebase",
+        "patternly/src/storage",
+        "patternly-backend/src/modules/auth",
+        "patternly-backend/src/modules/users",
+        "patternly-backend/src/modules/progress"
+      ],
+      "reviewedDigest": "4171ed7ce0b22626ac12b9b1de6c75ba5c13dd4c25da03b560c3afef11eccf45"
+    },
+    {
+      "name": "Treść od producenta do sesji",
+      "prefixes": [
+        "patternly/src/content",
+        "patternly/src/application/contentPackageRuntimeOwner.ts",
+        "patternly-content",
+        "patternly-backend/src/modules/content"
+      ],
+      "reviewedDigest": "b08cdcfca9dbaee455c2140bb1c043d9c47ae0c35a9e9773bb1872f78f8bc8c2"
+    },
+    {
+      "name": "Sesja, odpowiedź i trwały wynik",
+      "prefixes": [
+        "patternly/src/application/trainingLifecycle",
+        "patternly/src/application/learningMutations",
+        "patternly/src/application/runtime",
+        "patternly/src/features/practice",
+        "patternly/src/features/exam",
+        "patternly/src/features/simulation",
+        "patternly/src/features/review",
+        "patternly/native/foreground-clock/android",
+        "patternly/plugins/withAndroidForegroundClock.js"
+      ],
+      "reviewedDigest": "144300976525135c1c173ff479e813d1c45b003db6bd54153e68977f9e035af0"
+    },
+    {
+      "name": "Cel, plan i postęp",
+      "prefixes": [
+        "patternly/src/application/learningPlan",
+        "patternly/src/domain/learning",
+        "patternly/src/domain/goals",
+        "patternly/src/preferences",
+        "patternly-content/config/curricula"
+      ],
+      "reviewedDigest": "ad579e4da7bfd113c83c3423ee4e7b112fb5ecbbb10989d216a6e50d3b78e4dd"
+    },
+    {
+      "name": "Premium i zakup",
+      "prefixes": [
+        "patternly/src/features/premium",
+        "patternly/src/infrastructure/purchases",
+        "patternly/src/domain/entitlements",
+        "patternly-backend/src/modules/billing",
+        "patternly-backend/src/modules/entitlements"
+      ],
+      "reviewedDigest": "eed152e1da096d07de65750175645b5022292ba25c18f87b9816ba11aa4fa1b9"
+    },
+    {
+      "name": "Dane, prywatność i zgłoszenia",
+      "prefixes": [
+        "patternly/src/legal",
+        "patternly/src/application/contentReports",
+        "patternly-backend/src/modules/data-export",
+        "patternly-backend/src/modules/legal-requests",
+        "patternly-backend/src/modules/privacy-requests",
+        "patternly-backend/src/modules/security-incidents",
+        "patternly-backend/src/modules/retention"
+      ],
+      "reviewedDigest": "21b328f404d68903299e2eb110c9e62c5868e93fd79059fd38bc1a83b258b515"
+    },
+    {
+      "name": "Witryna, demo i panel",
+      "prefixes": [
+        "patternly-web",
+        "patternly-content/scripts/review",
+        "patternly-backend/src/modules/admin"
+      ],
+      "reviewedDigest": "65fbf562b519e9eff28b87253453bbc7439b8e2f8749975d12b529b4bfd44293"
+    }
+  ]
+}

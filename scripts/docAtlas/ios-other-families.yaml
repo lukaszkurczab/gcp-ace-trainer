@@ -1,0 +1,92 @@
+# From ended Coding result. Real Guest/local data; do not buy or grant Premium.
+appId: com.lkurczab.patternly
+---
+- tapOn:
+    id: "patternly:summary:back-to-practice:.*"
+- tapOn:
+    id: main-tab-bar-home
+- tapOn:
+    id: "patternly:home:change-track"
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:select-track:backend-system-design-interview"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:home:select-track:backend-system-design-interview"
+- tapOn:
+    id: "patternly:home:select-track:continue"
+- assertVisible:
+    id: "patternly:home:track-card:backend-system-design-interview"
+- tapOn:
+    id: main-tab-bar-practice
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: "patternly:practice:start-session"
+- assertVisible:
+    id: premium-offer-summary
+- assertNotVisible:
+    id: "patternly:session:root:.*"
+- takeScreenshot: atlas-40-design-premium-gate
+- tapOn: "Go back"
+- tapOn:
+    id: main-tab-bar-home
+- tapOn:
+    id: "patternly:home:change-track"
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
+- tapOn:
+    id: "patternly:home:select-track:continue"
+- assertVisible:
+    id: "patternly:home:track-card:google-cloud-associate-cloud-engineer"
+- tapOn:
+    id: main-tab-bar-practice
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: "patternly:practice:open-setup"
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:session-length:10"
+    direction: DOWN
+    speed: 90
+    timeout: 40000
+- tapOn:
+    id: "patternly:practice:session-length:10"
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:root:.*"
+    timeout: 20000
+- takeScreenshot: atlas-41-certification-start
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    id: "patternly:session:feedback:.*"
+- takeScreenshot: atlas-42-certification-first-feedback

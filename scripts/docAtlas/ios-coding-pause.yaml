@@ -1,0 +1,48 @@
+# Existing Coding Guided Practice, first amortized-cost question. Authorized test writes.
+appId: com.lkurczab.patternly
+---
+- assertVisible: "What does an amortized O(1) operation guarantee?"
+- tapOn: ".*For every allowed operation sequence.*"
+- tapOn:
+    id: "patternly:session:submit:.*"
+- assertVisible:
+    id: "patternly:session:feedback:.*"
+- assertVisible:
+    id: "patternly:session:result:.*:correct"
+- takeScreenshot: atlas-21-answer-saved
+- tapOn:
+    id: "patternly:session:leave:.*"
+- assertVisible: "Pause or end this session?"
+- tapOn:
+    id: "patternly:session:leave-and-resume:.*"
+- assertVisible:
+    id: "patternly:home:change-track"
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: "patternly:resume:continue:.*"
+- takeScreenshot: atlas-22-paused-home
+- stopApp
+- launchApp:
+    clearState: false
+    arguments:
+      RCT_jsLocation: "localhost:8083"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:ready"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "patternly:resume:continue:.*"
+    commands:
+      - tapOn:
+          id: "patternly:resume:continue:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:.*:correct"
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    id: "patternly:session:result:.*:correct"
+- takeScreenshot: atlas-23-answer-after-cold-resume

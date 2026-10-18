@@ -1,0 +1,27 @@
+# After read-only operation receipt: q2 unanswered, no pending journal, one materialized answer.
+# Owner authorized ending this retained test session. Do not retry the failed submit.
+appId: com.lkurczab.patternly
+---
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:2:length:10"
+- tapOn:
+    id: "patternly:session:leave:.*"
+- assertVisible: "Pause or end this session?"
+- tapOn:
+    id: "patternly:session:abandon:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:.*"
+    timeout: 20000
+- takeScreenshot: atlas-30-partial-result
+- assertNotVisible:
+    id: "patternly:summary:review-answers:.*"
+- tapOn:
+    id: "patternly:summary:back-to-practice:.*"
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: "patternly:home:change-track"
+- assertNotVisible:
+    id: "patternly:resume:continue:.*"
+- takeScreenshot: atlas-32-home-after-ended-session

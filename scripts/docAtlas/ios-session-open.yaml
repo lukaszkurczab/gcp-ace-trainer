@@ -1,0 +1,19 @@
+# Current Legal screen, scrolled to documents. Owner authorized learning writes.
+appId: com.lkurczab.patternly
+---
+- scrollUntilVisible:
+    element: "Go back"
+    direction: UP
+    timeout: 15000
+- tapOn: "Go back"
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: "patternly:home:change-track"
+- tapOn:
+    id: "patternly:resume:continue:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:root:.*"
+    timeout: 20000
+- takeScreenshot: atlas-20-retained-session

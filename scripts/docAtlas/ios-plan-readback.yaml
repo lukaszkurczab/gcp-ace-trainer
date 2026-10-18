@@ -1,0 +1,30 @@
+# Accepted local test plan: cold readback only; does not export data.
+appId: com.lkurczab.patternly
+---
+- assertVisible:
+    id: "patternly:learning-plan:persisted"
+- stopApp
+- launchApp:
+    clearState: false
+    arguments:
+      RCT_jsLocation: "localhost:8083"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- waitForAnimationToEnd
+- takeScreenshot: atlas-54-plan-home-after-cold-start
+- tapOn:
+    id: main-tab-bar-settings
+- tapOn:
+    id: settings-goal
+- assertVisible: "Self-paced"
+- waitForAnimationToEnd
+- takeScreenshot: atlas-55-goal-after-cold-start
+- tapOn: "Go back"

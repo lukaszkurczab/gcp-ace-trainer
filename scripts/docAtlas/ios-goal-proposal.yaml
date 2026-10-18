@@ -1,0 +1,38 @@
+# From Home after Certification completion. Authorized local test goal, no reminder scheduling.
+appId: com.lkurczab.patternly
+---
+- tapOn:
+    id: main-tab-bar-settings
+- scrollUntilVisible:
+    element:
+      id: settings-goal
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: settings-goal
+- runFlow:
+    when:
+      visible: "Edit goal"
+    commands:
+      - tapOn: "Edit goal"
+- scrollUntilVisible:
+    element:
+      id: "patternly:goal:type:learn_at_own_pace"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:goal:type:learn_at_own_pace"
+- scrollUntilVisible:
+    element: "30 min"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "30 min"
+- takeScreenshot: atlas-50-test-goal-draft
+- tapOn:
+    id: "patternly:goal:save"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:.*"
+    timeout: 20000
+- takeScreenshot: atlas-51-test-plan-proposal

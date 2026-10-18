@@ -1,0 +1,31 @@
+# Retained new Guided session at saved ordinal2. No new answer is submitted.
+appId: com.lkurczab.patternly
+---
+- stopApp
+- launchApp:
+    clearState: false
+    arguments:
+      RCT_jsLocation: "localhost:8083"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 90000
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- tapOn:
+    id: "patternly:resume:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:2:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    centerElement: false
+    timeout: 15000
+- assertNotVisible:
+    id: atlas-coding-temporary-receipt
+- takeScreenshot: coding-verified-01-second-after-cold-resume

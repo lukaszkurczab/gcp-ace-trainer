@@ -1,0 +1,45 @@
+# Enter from a visible main tab; read local documents and return Home.
+appId: com.lkurczab.patternly
+---
+- tapOn:
+    id: main-tab-bar-settings
+- assertVisible:
+    id: settings-screen
+- scrollUntilVisible:
+    element:
+      id: settings-legal-information
+    direction: DOWN
+    timeout: 15000
+    centerElement: true
+- takeScreenshot: atlas-legal-entry-row
+- tapOn:
+    id: settings-legal-information
+- scrollUntilVisible:
+    element:
+      id: legal-link-privacy
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: atlas-11-legal
+- tapOn:
+    id: legal-link-privacy
+- assertVisible:
+    id: privacy-policy-document
+- takeScreenshot: atlas-12-privacy
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: legal-link-terms
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: legal-link-terms
+- assertVisible:
+    id: terms-of-service-document
+- takeScreenshot: atlas-13-terms
+- tapOn: "Go back"
+- tapOn: "Go back"
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: "patternly:home:change-track"
+- takeScreenshot: atlas-14-home-final

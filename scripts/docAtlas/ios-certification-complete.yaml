@@ -1,0 +1,256 @@
+# Continue verified Certification Focus at first saved feedback, complete ten answers.
+appId: com.lkurczab.patternly
+---
+- tapOn:
+    id: "patternly:session:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:2:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: atlas-certification-answer-02
+- tapOn:
+    id: "patternly:session:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:3:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: atlas-certification-answer-03
+- tapOn:
+    id: "patternly:session:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:4:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: atlas-certification-answer-04
+- tapOn:
+    id: "patternly:session:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:5:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: atlas-certification-answer-05
+- tapOn:
+    id: "patternly:session:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:6:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: atlas-certification-answer-06
+- tapOn:
+    id: "patternly:session:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:7:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: atlas-certification-answer-07
+- tapOn:
+    id: "patternly:session:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:8:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: atlas-certification-answer-08
+- tapOn:
+    id: "patternly:session:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:9:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: atlas-certification-answer-09
+- tapOn:
+    id: "patternly:session:continue:.*"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:10:length:10"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+      index: 0
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: atlas-certification-answer-10
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:.*"
+    timeout: 20000
+- takeScreenshot: atlas-43-certification-complete
+- scrollUntilVisible:
+    element:
+      id: "patternly:summary:review-answers:.*"
+    direction: DOWN
+    speed: 90
+    timeout: 15000
+- tapOn:
+    id: "patternly:summary:review-answers:.*"
+- assertVisible:
+    id: "patternly:practice-review:root:.*"
+- takeScreenshot: atlas-44-certification-review
+- tapOn:
+    id: "patternly:practice-review:result"
+- scrollUntilVisible:
+    element:
+      id: "patternly:summary:back-to-practice:.*"
+    direction: DOWN
+    speed: 90
+    timeout: 15000
+- tapOn:
+    id: "patternly:summary:back-to-practice:.*"
+- tapOn:
+    id: main-tab-bar-home
+- stopApp
+- launchApp:
+    clearState: false
+    arguments:
+      RCT_jsLocation: "localhost:8083"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- assertNotVisible:
+    id: "patternly:resume:continue:.*"
+- takeScreenshot: atlas-45-certification-after-cold-start
+- tapOn:
+    id: main-tab-bar-progress
+- assertVisible:
+    id: "patternly:activity:row:google-cloud-associate-cloud-engineer:certification-focus-practice:.*"
+- takeScreenshot: atlas-46-completed-history
+- tapOn:
+    id: main-tab-bar-home

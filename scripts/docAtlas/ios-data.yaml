@@ -1,0 +1,32 @@
+# Continue from the observed Reminders screen. No mutation, export or reset.
+appId: com.lkurczab.patternly
+---
+- assertVisible:
+    id: "patternly:notifications:root"
+- tapOn: "Back to Settings"
+- scrollUntilVisible:
+    element:
+      id: settings-your-data
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: settings-your-data
+- assertVisible:
+    id: data-local-reset
+- takeScreenshot: atlas-10-your-data
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: settings-legal-information
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: settings-legal-information
+- scrollUntilVisible:
+    element:
+      id: legal-link-privacy
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    id: legal-link-privacy
+- takeScreenshot: atlas-11-legal

@@ -1,0 +1,29 @@
+# Proposal showed first diagnostic estimate 40–160min exceeding 30min budget.
+# Return to local test draft and use a sufficient explicit test budget; no reminders.
+appId: com.lkurczab.patternly
+---
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element: "Custom minutes per study day for this track"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "Custom minutes per study day for this track"
+- eraseText
+- inputText: "180"
+- tapOn:
+    id: "patternly:goal:save"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:root"
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: atlas-52-plan-with-sufficient-test-budget
+- tapOn:
+    id: "patternly:learning-plan:accept"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:persisted"
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: atlas-53-plan-accepted

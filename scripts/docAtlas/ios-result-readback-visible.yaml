@@ -1,0 +1,12 @@
+# Continue at the actually visible completed row after the centering probe.
+appId: com.lkurczab.patternly
+---
+- assertVisible:
+    id: "patternly:activity:row:google-cloud-associate-cloud-engineer:certification-focus-practice:1"
+- takeScreenshot: atlas-65-progress-completed-and-empty-evidence
+- tapOn:
+    id: "patternly:activity:row:google-cloud-associate-cloud-engineer:certification-focus-practice:1"
+- assertVisible:
+    id: "patternly:summary:root:.*"
+- waitForAnimationToEnd
+- takeScreenshot: atlas-66-persisted-certification-result

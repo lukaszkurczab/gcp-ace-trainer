@@ -1,0 +1,65 @@
+# Regular app, Home visible, English locale. No preference changes or data mutations.
+appId: com.lkurczab.patternly
+---
+- tapOn:
+    id: main-tab-bar-settings
+- assertVisible:
+    id: settings-screen
+- tapOn:
+    id: settings-appearance
+- assertVisible:
+    id: preference-option-dark
+- takeScreenshot: atlas-06-appearance
+- tapOn: "Go back"
+- tapOn:
+    id: settings-language
+- assertVisible:
+    id: language-option-en
+- takeScreenshot: atlas-07-language
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: settings-premium
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: settings-premium
+- assertVisible:
+    id: premium-offer-summary
+- takeScreenshot: atlas-08-premium
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: settings-notifications
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: settings-notifications
+- assertVisible:
+    id: "patternly:notifications:root"
+- takeScreenshot: atlas-09-reminders
+- tapOn: "Back to Settings"
+- scrollUntilVisible:
+    element:
+      id: settings-your-data
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: settings-your-data
+- assertVisible:
+    id: data-local-reset
+- takeScreenshot: atlas-10-your-data
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: settings-legal-information
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: settings-legal-information
+- takeScreenshot: atlas-11-legal
+- tapOn: "Go back"
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: "patternly:home:change-track"
