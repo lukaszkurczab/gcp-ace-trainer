@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -19,6 +20,8 @@ import {
   validateBuiltContent,
   verifyApprovedTrainingSuccessor,
 } from "./syncBundledContentRelease.mjs";
+
+const { acceptedQleProducer } = createRequire(import.meta.url)("./fixtures/acceptedQleProducer.ts");
 
 const SMALL_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 9, mentalUnitCount: 9, questionCount: 48 });
 const HEAD = "1".repeat(40);
@@ -285,11 +288,11 @@ async function snapshot(directory) {
   return Promise.all(names.map(async (name) => [name, sha256(await readFile(path.join(directory, name)))]));
 }
 
-test("historical local Claude acceptance is not silently retargeted after producer source drift", async (t) => {
+test("historical local Claude acceptance stays stale against the exact accepted QLE producer", async (t) => {
   const root = await mkdtemp(path.join(tmpdir(), "patternly-local-claude-sync-test-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const realAppRoot = path.resolve(import.meta.dirname, "..");
-  const producerRoot = path.resolve(realAppRoot, "../patternly-content");
+  const producerRoot = await acceptedQleProducer(t, path.resolve(realAppRoot, "../patternly-content"));
   const appRoot = path.join(root, "patternly");
   const targetDirectory = path.join(appRoot, GENERATED_DIRECTORY);
   await mkdir(targetDirectory, { recursive: true });
@@ -299,6 +302,10 @@ test("historical local Claude acceptance is not silently retargeted after produc
     await writeFile(path.join(targetDirectory, name), bytes);
   }
   const appEvidencePaths = [
+    "integration/contracts/content-release/local-claude/qle-v2-contract.md",
+    "src/content/generated/retained-content/claude-pre-qle-v2.json",
+    "src/content/generated/retained-content/claude-qle-v2-first-cases.json",
+    "src/content/generated/retained-content/claude-qle-v2-before-identity.json",
     "integration/contracts/content-release/local-claude/claude-course-alignment-acceptance-2026-10-11.md",
     "integration/contracts/content-release/local-claude/claude-unit-coverage-acceptance-2026-10-11.md",
     "integration/contracts/content-release/release.lock.json",
@@ -323,11 +330,13 @@ test("historical local Claude acceptance is not silently retargeted after produc
 
   const before = Object.fromEntries(await snapshot(targetDirectory));
   const acceptancePath = path.join(root, "local-acceptance.json");
-  await cp(path.join(realAppRoot, "integration/contracts/content-release/local-claude/claude-local-candidate-2026-10-11.json"), acceptancePath);
+  const staleRecord = JSON.parse(await readFile(path.join(realAppRoot, "integration/contracts/content-release/local-claude/qle-v2-acceptance.json"), "utf8"));
+  staleRecord.candidate.reviewEvidence[0].sha256 = "0".repeat(64);
+  await writeFile(acceptancePath, JSON.stringify(staleRecord));
   await assert.rejects(
     syncCanonicalContent({ appRoot, producerRoot, targetDirectory, localReviewedCandidate: acceptancePath }),
-    /acceptance record is stale for current producer inputs|artifact identity does not match the reviewed QLE-v2/u,
-    "the immutable CC-05 evidence must not be silently retargeted to changed producer bytes",
+    /acceptance record is stale for current producer inputs/u,
+    "changed review evidence must reject the otherwise exact accepted QLE producer",
   );
   assert.deepEqual(Object.fromEntries(await snapshot(targetDirectory)), before, "changed candidate bytes must be rejected before changing the bundle");
 });
