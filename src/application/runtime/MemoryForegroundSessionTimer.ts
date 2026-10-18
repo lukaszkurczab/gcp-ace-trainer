@@ -3,42 +3,37 @@ import {
   type ForegroundTimerState,
 } from "../../domain";
 
-const ANDROID_CHECKPOINT_INTERVAL_MS = 15_000;
-const ANDROID_CHECKPOINT_DRIFT_MS = 1_000;
+const MEMORY_CHECKPOINT_INTERVAL_MS = 15_000;
+const MEMORY_CHECKPOINT_DRIFT_MS = 1_000;
 
-export type AndroidForegroundSessionTimerPort = Readonly<{
+export type MemoryForegroundSessionTimerPort = Readonly<{
   save(timer: ForegroundTimerState, expectedPreviousCheckpointRevision: number | null): Promise<ForegroundTimerState>;
 }>;
 
 export type MonotonicClock = Readonly<{ now(): number }>;
 export type WallClock = Readonly<{ now(): string }>;
 
-/**
- * Existing Android JS authority, retained explicitly while Android native
- * acceptance is outside the first-iOS scope. It does not establish PERSIST-11
- * ≤5s and must never be selected after an iOS native-owner failure. It never derives
- * foreground work from wall time, so a process restart resumes from the last
- * durable checkpoint rather than counting the time while the app was closed.
- */
-export class AndroidForegroundSessionTimer {
+/** Explicit in-memory test clock. Production native storage cannot select it.
+ * Kept for deterministic lifecycle/monotonic boundary models, not SDK evidence. */
+export class MemoryForegroundSessionTimer {
   private segmentStartedAt: number | null = null;
 
   constructor(
     private state: ForegroundTimerState,
-    private readonly port: AndroidForegroundSessionTimerPort,
+    private readonly port: MemoryForegroundSessionTimerPort,
     private readonly monotonicClock: MonotonicClock,
     private readonly wallClock: WallClock,
   ) {}
 
   static restore(input: Readonly<{
     state: ForegroundTimerState;
-    port: AndroidForegroundSessionTimerPort;
+    port: MemoryForegroundSessionTimerPort;
     monotonicClock: MonotonicClock;
     wallClock: WallClock;
-  }>): AndroidForegroundSessionTimer {
+  }>): MemoryForegroundSessionTimer {
     // A persisted running marker is only diagnostic across process death. No
     // segment start survives, therefore no closed-app duration can be counted.
-    return new AndroidForegroundSessionTimer(input.state, input.port, input.monotonicClock, input.wallClock);
+    return new MemoryForegroundSessionTimer(input.state, input.port, input.monotonicClock, input.wallClock);
   }
 
   getState(): ForegroundTimerState { return this.state; }
@@ -48,7 +43,7 @@ export class AndroidForegroundSessionTimer {
   }
 
   needsPeriodicCheckpoint(): boolean {
-    return this.currentSegmentMs() >= ANDROID_CHECKPOINT_INTERVAL_MS - ANDROID_CHECKPOINT_DRIFT_MS;
+    return this.currentSegmentMs() >= MEMORY_CHECKPOINT_INTERVAL_MS - MEMORY_CHECKPOINT_DRIFT_MS;
   }
 
   async enterForeground(): Promise<ForegroundTimerState> {

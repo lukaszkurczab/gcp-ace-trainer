@@ -39,12 +39,13 @@ test("terminal boundaries pause native work before finalization or completion ca
   assert.deepEqual(f.events, ["checkpoint", "pause", "pause", "pause"]);
 });
 
-test("Android selects its existing authority and an absent iOS owner never selects JS", () => {
+test("both platforms require their native owner while memory remains explicitly test-only", () => {
   const f = fixture();
   const selections: string[] = [];
   const native = () => { selections.push("native"); throw new Error("foreground_clock_native_owner_unavailable"); };
-  const android = () => { selections.push("android"); return f.timer; };
-  assert.equal(selectForegroundSessionClock("android-js", native, android), f.timer);
-  assert.throws(() => selectForegroundSessionClock("ios-native", native, android), /native_owner_unavailable/);
-  assert.deepEqual(selections, ["android", "native"]);
+  const memory = () => { selections.push("memory"); return f.timer; };
+  assert.equal(selectForegroundSessionClock("memory-test", native, memory), f.timer);
+  assert.throws(() => selectForegroundSessionClock("ios-native", native, memory), /native_owner_unavailable/);
+  assert.throws(() => selectForegroundSessionClock("android-native", native, memory), /native_owner_unavailable/);
+  assert.deepEqual(selections, ["memory", "native", "native"]);
 });

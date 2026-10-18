@@ -36,7 +36,14 @@ credentials.json
 .temp/q13-local-actor/
 
 android/
+!native/foreground-clock/android/
+!native/foreground-clock/android/**
+native/foreground-clock/android/.cxx/
+native/foreground-clock/android/build/
+native/foreground-clock/android/.gradle/
+native/foreground-clock/android/local.properties
 ios/
 
 artifacts/
+.agent/private/
 .aider*

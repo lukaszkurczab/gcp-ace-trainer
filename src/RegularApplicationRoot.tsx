@@ -12,6 +12,7 @@ import { PatternlyAccountProvider, usePatternlyAccount } from "./application/acc
 import { ProfileStoragePreparationGate } from "./application/account/ProfileStoragePreparationGate";
 import { AccountForegroundRefreshSidecar } from "./application/account/AccountForegroundRefreshSidecar";
 import { Q13StorageReceiptHost } from "./application/runtimeAuditability/Q13StorageReceiptHost";
+import { AndroidClockProbeHost } from "./application/runtimeAuditability/AndroidClockProbeHost";
 import { RecoveryCodeClipboardGuard } from "./infrastructure/security/RecoveryCodeClipboardGuard";
 import { Button, LoadingState, Screen } from "./components";
 import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfileTransition } from "./storage/repositories/profileStorageRepository";
@@ -26,6 +27,7 @@ export default function RegularApplicationRoot() {
           <PatternlyAccountProvider>
             <AccountForegroundRefreshSidecar />
             <Q13StorageReceiptHost />
+            <AndroidClockProbeHost />
             <AppContent />
           </PatternlyAccountProvider>
         </ProfileStoragePreparationGate>

@@ -1,6 +1,7 @@
 import { createForegroundClockCapability, type ForegroundClockCapability, type ForegroundClockScope, type BoundForegroundClockDriver } from "./foregroundClockCapability";
 import type { HybridObject } from "react-native-nitro-modules";
 import type { EncryptedStoragePlatform, StorageManifestStore, StorageSlot } from "./encryptedStorageBootstrap";
+import { sha256Utf8 } from "../identity/sha256";
 
 type SecureStoreModule = typeof import("expo-secure-store");
 type MmkvModule = typeof import("react-native-mmkv");
@@ -20,10 +21,20 @@ function base64Url(bytes: Uint8Array): string {
   return output;
 }
 
-type NativeForegroundClock = HybridObject<{ ios: "c++" }> & BoundForegroundClockDriver & Readonly<{
+type NativeForegroundClock = HybridObject<{ ios: "c++"; android: "c++" }> & BoundForegroundClockDriver & Readonly<{
   bind(instance: ReturnType<MmkvModule["createMMKV"]>, physicalKey: string, profileId: string, token: string): void;
 }>;
 const foregroundClockFactories = new WeakMap<StorageSlot, (scope: ForegroundClockScope) => ForegroundClockCapability>();
+const probeEnabled = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "sandbox"
+  && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(process.env.EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID ?? "");
+type StorageProbe = Readonly<{ profileSha256: string; encrypted: boolean; bindReadMatched: boolean; aliasReadMatched: boolean; nativeRawSha256: string; checkpointCount: number }>;
+const storageProbeReaders = new Map<string, () => StorageProbe>();
+
+/** Diagnostic observation only. Both reads use the very same already-open
+ * HybridMMKV object; this never opens storage or exposes an encryption key. */
+export function readNativeForegroundClockStorageProbe(profileSha256: string) {
+  return probeEnabled ? storageProbeReaders.get(profileSha256)?.() ?? null : null;
+}
 
 /** The explicit storage-owner grant. Only the original opened slot is accepted;
  * no wrapper reflection, second MMKV instance or encryption-key reader. */
@@ -64,13 +75,33 @@ function wrap(instance: ReturnType<MmkvModule["createMMKV"]>, createToken: () =>
     try { native = NitroModules.createHybridObject<NativeForegroundClock>("PatternlyForegroundClock"); }
     catch { throw new Error("foreground_clock_native_owner_unavailable"); }
     const token = `${scope.generation}:${createToken()}`;
+    const beforeBind = instance.getString(scope.physicalKey);
     native.bind(instance, scope.physicalKey, scope.profileId, token);
+    if (native.read(token) !== beforeBind) throw new Error("foreground_clock_shared_handle_mismatch");
     const bound = createForegroundClockCapability(native, token, scope);
+    const profileSha256 = sha256Utf8(scope.profileId);
+    if (probeEnabled) storageProbeReaders.set(profileSha256, () => {
+      if (!scope.isCurrent()) throw new Error("foreground_clock_lease_stale");
+      // A periodic native checkpoint can race these read-only observations.
+      // Accept only a stable sandwich, never treat a changed revision as loss.
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const first = instance.getString(scope.physicalKey);
+        const observed = bound.read();
+        const last = instance.getString(scope.physicalKey);
+        if (first === last && observed === first) return Object.freeze({
+          profileSha256: sha256Utf8(scope.profileId), encrypted: instance.isEncrypted,
+          bindReadMatched: true, aliasReadMatched: true, nativeRawSha256: sha256Utf8(observed ?? ""),
+          checkpointCount: bound.metrics().checkpointCount,
+        });
+      }
+      throw Object.assign(new Error("foreground_clock_shared_handle_observation_busy"), { code: "foreground_clock_shared_handle_observation_busy" });
+    });
     let revokeFailed = false;
     const capability: ForegroundClockCapability = Object.freeze({
       ...bound,
       revoke() {
         if (revokeFailed) throw new Error("foreground_clock_revoke_unknown");
+        storageProbeReaders.delete(profileSha256);
         try { bound.revoke(); }
         catch (error) { revokeFailed = true; throw error; }
         if (activeCapability === capability) { activeCapability = null; activePhysicalKey = null; }

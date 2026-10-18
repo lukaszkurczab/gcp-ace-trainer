@@ -1,5 +1,5 @@
 import { ForegroundSessionTimer, type ForegroundSessionClock } from "./ForegroundSessionTimer";
-import { AndroidForegroundSessionTimer as MemoryForegroundSessionTimer } from "./AndroidForegroundSessionTimer";
+import { MemoryForegroundSessionTimer } from "./MemoryForegroundSessionTimer";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -459,7 +459,7 @@ function nativeTerminalFixture(failure?: Error, finalizerGate?: Promise<void>) {
     if (failure) throw failure;
   } });
   return { f, timer, calls: () => calls, pauses: () => pauses,
-    setElapsed(elapsed: number) { durable = createForegroundTimerState({ ...durable, accumulatedForegroundMs: elapsed, checkpointRevision: 3, running: false }); f.setState(durable); } };
+    setElapsed(elapsed: number) { durable = createForegroundTimerState({ ...durable, accumulatedForegroundMs: elapsed, checkpointRevision: durable.checkpointRevision + 1, running: false }); f.setState(durable); } };
 }
 
 test("native-port capped durable time reaches S before a single expiry clears T without later native access", async () => {
@@ -741,4 +741,30 @@ test("cold receipt sees validated durable T and old S before reconciliation with
   assert.deepEqual(observations, [{ timerMs: 500, sessionMs: 0, checkpoints: [] }]);
   assert.deepEqual(f.checkpoints, [500]);
   assert.equal(f.getActiveSession().activeForegroundMs, 500);
+});
+
+test("overlapping periodic syncs coalesce and the next tick reconciles the latest native T", async () => {
+  const n = nativeTerminalFixture(); const { f, timer } = n;
+  await timer.enterForeground(f.session); n.setElapsed(1000);
+  const release = f.blockCheckpoints(); f.fireScheduled(); await f.settle();
+  n.setElapsed(2000);
+  for (let index = 0; index < 20; index++) f.fireScheduled();
+  release(); await f.settle(); await f.settle();
+  assert.deepEqual(f.checkpoints, [0, 1000]);
+  await f.tick(); await f.settle();
+  assert.deepEqual(f.checkpoints, [0, 1000, 2000]);
+  await timer.leaveForeground(f.getActiveSession());
+  assert.equal(f.getActiveSession().activeForegroundMs, 2000);
+});
+
+test("countdown expiry during a slow periodic sync is finalized once with capped native T", async () => {
+  const n = nativeTerminalFixture(); const { f, timer } = n;
+  await timer.enterForeground(f.session); n.setElapsed(1000);
+  const release = f.blockCheckpoints(); f.fireScheduled(); await f.settle();
+  n.setElapsed(60000); f.fireScheduled(); f.fireScheduled();
+  release(); await f.settle(); await f.settle(); await f.settle();
+  assert.equal(f.getFinalizations(), 1);
+  assert.equal(f.getActiveSession().activeForegroundMs, 60000);
+  assert.equal(n.pauses(), 1);
+  await f.tick(); assert.equal(f.getFinalizations(), 1);
 });

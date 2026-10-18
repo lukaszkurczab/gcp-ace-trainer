@@ -1,11 +1,17 @@
 # Foreground clock owner
 
+The clock capability has iOS and Android native owners over the original
+encrypted MMKV handle. The first section describes the iOS lifecycle; Android
+setup and diagnostic tooling are documented below.
+
 The iOS Nitro object receives the original encrypted `HybridMMKVSpec` from
 `encryptedStorageNative`. The profile router supplies the physical T key.
 The object does not open storage, read keys, register MMKV listeners, or call
 JavaScript from its serial queue.
 
-`apply` owns exact before/after CAS and readback for raw T envelopes. It requires
+`apply` compares exact expected bytes before writing and verifies readback for
+raw T envelopes, serialized by the native owner. This is a conflict fence, not
+an atomic MMKV compare-and-swap primitive. It requires
 a stopped segment and invalidates the runtime arm, including exact-after replay.
 `arm` admits a specific session without restoring a monotonic segment from the
 persisted running marker. The repository must validate track admission and date
@@ -262,3 +268,87 @@ was rejected by the simulator loader. The test runs only on the existing iPhone
 it does not claim physical disk faults, torn-write recovery or power-loss
 durability of MMKV. The independent encrypted SDK interruption runs cover the
 real process-death boundary separately.
+
+## Android tooling
+
+`android/` implements the same capability over the original encrypted
+`HybridMMKVSpec`. The Expo plugin installs the Kotlin/JNI lifecycle observer
+before React Native starts. One mutex serializes T reads, expected-byte checks,
+writes/readback, lifecycle and a native one-second checkpoint thread. The
+conflict fence is read-before-write under the native owner mutex, not an atomic
+MMKV compare-and-swap primitive. Cold arm creates no elapsed segment.
+The implementation neither opens another production store nor registers MMKV
+value listeners. Registering such listeners requires a new concurrency review
+of the pinned SDK's listener registry.
+
+In a frozen source checkout, generate Android with the validated sandbox
+environment and checked Expo plugins. Use the configured JDK/Android SDK, then
+run from its generated `android` directory:
+
+```sh
+./gradlew :patternly-foreground-clock:externalNativeBuildRelease \
+  :patternly-foreground-clock:compileReleaseKotlin \
+  :patternly-foreground-clock:bundleReleaseAar \
+  -PreactNativeArchitectures=arm64-v8a --max-workers=1 --no-parallel
+```
+
+This checks SDK compilation/linking and library packaging, not the time-loss
+limit. Inspect the EAS source archive before an authorized build: native module
+sources must be included; generated Android files, build outputs, credentials
+and private runtime must be excluded. Verify the resulting APK's package,
+signature, frozen probe UUID, embedded bundle and native library before an
+authorized in-place update. Never uninstall or clear app data for this probe.
+
+The `android-clock-probe` EAS profile is a one-shot pinned profile for the
+2026-10-17 evidence run. A new independent run must use a fresh UUID and a
+separate private evidence directory; do not reuse its fixed namespace.
+
+The diagnostic host is enabled only by an explicit Android/sandbox UUID build.
+Use `scripts/qa/androidForegroundClockKillProbe.mjs` with `--adb`, `--run-id`,
+`--output` and `--mode`. `inventory` is observational; `snapshot` requires an
+already running production session. `stall-kill` blocks JS callbacks for up to
+12 seconds, confirms the same foreground PID/birth, performs API33 system
+user-stop and waits for normal cold-before-sync readback. `--kill-delay-ms`
+selects the requested offset; `--background-ms` adds Home/resume while JS is
+blocked. Loss bounds use actual host intervals, including transport uncertainty.
+An uncertain effect must not be retried automatically.
+
+For separate encrypted SDK fixtures, use `fixture-seed-elapsed` or
+`fixture-seed-countdown`, then `fixture-enter`, followed
+promptly by `stall-kill --subject fixture`. Seeding requires a production owner
+with two unchanged native elapsed samples, stable T/session/profile and no
+lifecycle transition. A cold arm may retain `running=true` without a segment;
+the probe never pauses or rewrites production T. Cold launch restores only the owned
+fixture; it never seeds a missing store. Other bounded commands are
+`fixture-seed-cap`, `fixture-seed-overrun`, `fixture-pause`, `fixture-conflict`
+and `fixture-cleanup`. Cleanup revokes the capability and writes an owned pending marker. The driver
+confirms process death, then cold startup deletes the exact fixture ID before
+opening any fixture handle and verifies its data/CRC pair is gone. This avoids
+the pinned SDK's retained AppState callbacks calling a deleted MMKV instance.
+Completion requires the case-scoped cold cleanup receipt; invalid markers refuse
+both deletion and fixture restoration. Preserve original profile/control
+inventories throughout. This fixture is not proof of production S/journal
+finalization, SDK disk faults, power loss, or all Android/OEM variants.
+
+For a local diagnostic correction, freeze the original source plus reviewed
+overlay in a separate directory with real `node_modules` (external symlinks
+change Android resource names). `scripts/qa/embedAndroidClockProbe.mjs` accepts
+`--project`, a fresh private `--output`, private `--env-file`, explicit `--run-id`
+and expected sandbox `--fingerprint`. It uses the pinned Expo/Hermes toolchain,
+resolves App inside that snapshot and keeps logs/maps private. It calls no EAS
+build and modifies no device.
+
+`deriveAndroidClockProbeApk.py` accepts the original `--base-apk` and its
+`--expected-base-sha256`, exported `--bundle`/`--assets`, the reviewed
+`--expected-resource-count` and a new unsigned `--output`. It allows only the
+Hermes bundle payload to change, verifies resource mapping (including equivalent
+Android PNG crunching with pinned `pngjs`), and compares all other APK entry
+bytes. It neither reads credentials nor installs. Use Android SDK `zipalign
+-P 16 4`, then `apksigner sign` with the existing private keystore; pass passwords
+through the tool's `env:` options. Verify alignment, signature/certificate, package,
+manifest, native-library hashes and changed-entry scope again after signing.
+Only then use an authorized `adb install -r`, without clearing data. The result
+is a local diagnostic derivative of the named EAS artifact, with its own hash;
+it is not the original EAS APK or a release artifact.
+
+Current acceptance results and the sole plan/state follow [AGENTS](../../AGENTS.md).

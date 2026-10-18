@@ -217,6 +217,8 @@ function createExpoConfig(environment = process.env) {
           android: { minSdkVersion: 28, targetSdkVersion: 36, compileSdkVersion: 36 },
         }],
         "./plugins/withPrivacyBoundary",
+        "./plugins/withAndroidForegroundClock",
+        ...(environment.EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID ? ["./plugins/withAndroidClockProbe"] : []),
       ],
       assetBundlePatterns: ["**/*"],
       ios: {

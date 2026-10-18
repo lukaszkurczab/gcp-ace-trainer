@@ -28,6 +28,16 @@
         "EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE": "release"
       }
     },
+    "android-clock-probe": {
+      "extends": "sandbox",
+      "channel": "android-clock-probe-20261017",
+      "env": {
+        "EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID": "c84afbb2-a2c7-405e-91df-9fd124ace0af"
+      },
+      "android": {
+        "gradleCommand": ":app:assembleRelease --stacktrace --max-workers=1 --no-parallel"
+      }
+    },
     "android-isolation-probe": {
       "extends": "sandbox",
       "channel": "android-isolation-probe",

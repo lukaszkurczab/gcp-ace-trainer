@@ -40,17 +40,12 @@ async function fixture(revokeFails = false, authority: "ios" | "android" = "ios"
     revoke() { events.push("drain"); if (revokeFails) throw new Error("foreground_clock_write_unknown"); },
   };
   setProfileStoragePreparationFactoryForTests(async () => ({ base, router,
-    ...(authority === "ios" ? {
-      claimForegroundClock(candidate: ForegroundClockScope) {
-        scope = candidate; grants++;
-        if (nativeUnavailable) throw new Error("foreground_clock_native_owner_unavailable");
-        return createForegroundClockCapability(driver, "synthetic-token", candidate);
-      },
-    } : {
-      applyAndroidForegroundTimer(key: string, before: string | undefined, after: string | undefined) {
-        base.applyForegroundTimerRaw(before, after, key);
-      },
-    }),
+    nativeForegroundClockPlatform: authority,
+    claimForegroundClock(candidate: ForegroundClockScope) {
+      scope = candidate; grants++;
+      if (nativeUnavailable) throw new Error("foreground_clock_native_owner_unavailable");
+      return createForegroundClockCapability(driver, "synthetic-token", candidate);
+    },
   }));
   const prepared = await prepareProfileStorage();
   activatePreparedProfile(prepared.id, prepared.kind);
@@ -99,24 +94,24 @@ test("rejected reset validates corrupt evidence before changing native timer int
   } finally { closeActiveProfileStorage(); setProfileStoragePreparationFactoryForTests(null); }
 });
 
-test("Android physical timer CAS preserves its scoped owner without claiming the iOS module", async () => {
+test("Android selects its native scoped owner and cannot fall back to JS CAS", async () => {
   const state = await fixture(false, "android");
   try {
-    assert.equal(getForegroundTimerStorageAuthority(), "android-js");
+    assert.equal(getForegroundTimerStorageAuthority(), "android-native");
     applyActiveForegroundTimerRaw(undefined, "android-checkpoint");
     assert.equal(state.base.getString(foregroundTimerPhysicalKey(state.router.profile.id)), "android-checkpoint");
-    assert.equal(state.grants(), 0);
-    assert.throws(() => getActiveForegroundClock(), /storage_owner_unavailable/);
+    assert.equal(state.grants(), 1);
+    assert.equal(getActiveForegroundClock().read(), "android-checkpoint");
   } finally { closeActiveProfileStorage(); setProfileStoragePreparationFactoryForTests(null); }
 });
 
-test("an unavailable iOS module leaves the authority native and performs no JS write", async () => {
-  const state = await fixture(false, "ios", true);
+for (const platform of ["android", "ios"] as const) test(`an unavailable ${platform} module leaves native authority and performs no JS write`, async () => {
+  const state = await fixture(false, platform, true);
   const before = state.base.snapshot();
   try {
-    assert.equal(getForegroundTimerStorageAuthority(), "ios-native");
+    assert.equal(getForegroundTimerStorageAuthority(), `${platform}-native`);
     assert.throws(() => applyActiveForegroundTimerRaw(undefined, "candidate"), /native_owner_unavailable/);
-    assert.equal(getForegroundTimerStorageAuthority(), "ios-native");
+    assert.equal(getForegroundTimerStorageAuthority(), `${platform}-native`);
     assert.deepEqual(state.base.snapshot(), before);
   } finally { closeActiveProfileStorage(); setProfileStoragePreparationFactoryForTests(null); }
 });

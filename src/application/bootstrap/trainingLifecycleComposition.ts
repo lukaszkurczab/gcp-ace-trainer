@@ -1,6 +1,7 @@
 import { observeForegroundClockColdRestore } from "../runtimeAuditability/foregroundClockColdReceipt";
+import { observeAndroidClockProbeRestore } from "../runtimeAuditability/androidClockProbeRuntime";
 import { ForegroundSessionTimer, selectForegroundSessionClock } from "../runtime/ForegroundSessionTimer";
-import { AndroidForegroundSessionTimer } from "../runtime/AndroidForegroundSessionTimer";
+import { MemoryForegroundSessionTimer } from "../runtime/MemoryForegroundSessionTimer";
 import { bindActiveForegroundTimerClock, getForegroundTimerStorageAuthority, saveActiveForegroundTimer } from "../../storage/repositories/foregroundTimerRepository";
 import { contentPackageRuntimePort } from "../contentPackageRuntimeOwner";
 import { OperationProjectionStore } from "../trainingLifecycle/operationProjectionStore";
@@ -266,7 +267,10 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   const lifecycle = new TrainingLifecycleUseCases(ports, new OperationProjectionStore());
   installTrainingLifecycleUseCases(lifecycle);
   const timerFacade = new ForegroundSessionTimerFacade({
-    observeRestoreBeforeSync: observeForegroundClockColdRestore,
+    observeRestoreBeforeSync(state, session) {
+      observeForegroundClockColdRestore(state, session);
+      observeAndroidClockProbeRestore(state, session);
+    },
     repository: {
       getActive: () => getActiveForegroundTimer(productionTrackAdmissionContext),
     },
@@ -274,7 +278,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     tracks: { getTrackRegistration },
     createTimer: (state, session) => selectForegroundSessionClock(getForegroundTimerStorageAuthority(),
       () => new ForegroundSessionTimer(bindActiveForegroundTimerClock(session, productionTrackAdmissionContext)),
-      () => AndroidForegroundSessionTimer.restore({ state,
+      () => MemoryForegroundSessionTimer.restore({ state,
         port: { save: (timer, expectedRevision) => saveActiveForegroundTimer(timer, expectedRevision, productionTrackAdmissionContext) },
         monotonicClock: { now: monotonicNow }, wallClock,
       })),
@@ -284,7 +288,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     getActiveSession: () => getActiveTrainingSession(productionTrackAdmissionContext),
     ...(developmentAuditability ? {
       advanceMonotonicClockBy(milliseconds: number) {
-        if (getForegroundTimerStorageAuthority() === "ios-native") throw new Error("Native timer audit advancement is unavailable.");
+        if (getForegroundTimerStorageAuthority() !== "memory-test") throw new Error("Native timer audit advancement is unavailable.");
         if (!Number.isSafeInteger(milliseconds) || milliseconds <= 0 || !Number.isSafeInteger(monotonicAuditOffsetMs + milliseconds)) {
           throw new Error("Runtime audit monotonic clock advance must be a positive safe integer.");
         }

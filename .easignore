@@ -4,8 +4,15 @@ node_modules/
 dist/
 web-build/
 android/
+!native/foreground-clock/android/
+!native/foreground-clock/android/**
+native/foreground-clock/android/.cxx/
+native/foreground-clock/android/build/
+native/foreground-clock/android/.gradle/
+native/foreground-clock/android/local.properties
 ios/
 artifacts/
+.agent/private/
 
 # Credentials and local environment files never enter an EAS archive.
 *.jks

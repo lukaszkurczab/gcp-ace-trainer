@@ -20,8 +20,7 @@ let foregroundClockClaim: (() => ForegroundClockCapability) | null = null;
 let foregroundClockRevokeFailed = false;
 type ForegroundTimerTestCas = (before: string | undefined, after: string | undefined) => void;
 let activeForegroundTimerTestCas: ForegroundTimerTestCas | null = null;
-let activeAndroidForegroundTimerCas: ForegroundTimerTestCas | null = null;
-type OpenedProfileStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter; secureControl?: StorageManifestStore; claimForegroundClock?: (scope: ForegroundClockScope) => ForegroundClockCapability; foregroundTimerCasForTests?: ForegroundTimerTestCas; applyAndroidForegroundTimer?: (physicalKey: string, before: string | undefined, after: string | undefined) => void }>;
+type OpenedProfileStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter; secureControl?: StorageManifestStore; claimForegroundClock?: (scope: ForegroundClockScope) => ForegroundClockCapability; foregroundTimerCasForTests?: ForegroundTimerTestCas; nativeForegroundClockPlatform?: "ios" | "android" }>;
 type PreparedProfileStorage = OpenedProfileStorage & Readonly<{ generation: number }>;
 export type ActiveProfileStorageLease = Readonly<{ profile: StorageProfile; generation: number }>;
 /** A read-only fence for the already prepared profile while it is not active. */
@@ -215,7 +214,7 @@ function snapshotGuestRemovalReconciliationState(base: KeyValueStorage, router: 
   });
 }
 
-export type PreparedStorage = Pick<OpenedProfileStorage, "base" | "router" | "foregroundTimerCasForTests" | "claimForegroundClock" | "applyAndroidForegroundTimer">;
+export type PreparedStorage = Pick<OpenedProfileStorage, "base" | "router" | "foregroundTimerCasForTests" | "claimForegroundClock" | "nativeForegroundClockPlatform">;
 export type PreparedProfileState = Readonly<{
   profiles: readonly StorageProfile[];
   selectedProfile: StorageProfile;
@@ -463,7 +462,6 @@ function revokeForegroundClock(): void {
   }
   foregroundClockClaim = null;
   activeForegroundTimerTestCas = null;
-  activeAndroidForegroundTimerCas = null;
 }
 
 function closePublishedProfileStorage(): void {
@@ -493,9 +491,10 @@ async function openProductionProfileStorage(generation: number): Promise<Prepare
     onBeforeProfileCommit: beginProfileTransition,
   });
   const operatingSystem = (require("react-native") as typeof import("react-native")).Platform.OS;
-  if (operatingSystem === "ios") return { base, router, secureControl: platform.manifestStore, generation, claimForegroundClock: (scope) => claimNativeForegroundClock(result.storage, scope) };
-  if (operatingSystem === "android") return { base, router, secureControl: platform.manifestStore, generation,
-    applyAndroidForegroundTimer: (key, before, after) => applySynchronousForegroundTimerRaw(result.storage, key, before, after) };
+  if (operatingSystem === "ios" || operatingSystem === "android") return {
+    base, router, secureControl: platform.manifestStore, generation, nativeForegroundClockPlatform: operatingSystem,
+    claimForegroundClock: (scope) => claimNativeForegroundClock(result.storage, scope),
+  };
   throw new Error("foreground_clock_platform_unsupported");
 }
 
@@ -755,13 +754,10 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
     contains(key) { checkPublished(); return scopedStorage.contains(key); },
     getAllKeys() { checkPublished(); return scopedStorage.getAllKeys(); },
   };
-  if (prepared.claimForegroundClock && prepared.applyAndroidForegroundTimer) throw new Error("foreground_clock_authority_conflict");
+  if (prepared.claimForegroundClock && !prepared.nativeForegroundClockPlatform) throw new Error("foreground_clock_authority_invalid");
   if (prepared.foregroundTimerCasForTests) {
     if (!testPreparationFactory) throw new Error("foreground_clock_test_adapter_forbidden");
     activeForegroundTimerTestCas = (before, after) => { checkPublished(); prepared.foregroundTimerCasForTests!(before, after); };
-  }
-  if (prepared.applyAndroidForegroundTimer) {
-    activeAndroidForegroundTimerCas = (before, after) => { checkPublished(); prepared.applyAndroidForegroundTimer!(foregroundTimerPhysicalKey(profile.id), before, after); };
   }
   if (prepared.claimForegroundClock) {
     foregroundClockClaim = () => prepared.claimForegroundClock!({
@@ -1174,12 +1170,14 @@ export function getActiveForegroundClock(): ForegroundClockCapability {
 }
 
 /** Explicit platform/test authority chosen by the opened storage owner.
- * An unavailable iOS native module never changes this authority to Android. */
-export function getForegroundTimerStorageAuthority(): "ios-native" | "android-js" | "memory-test" {
+ * An unavailable native module never changes this authority to a JS clock. */
+export function getForegroundTimerStorageAuthority(): "ios-native" | "android-native" | "memory-test" {
   if (!client || profileTransitionActive || foregroundClockRevokeFailed) throw new Error("foreground_clock_profile_unavailable");
   if (client instanceof MemoryKeyValueStorage || activeForegroundTimerTestCas) return "memory-test";
-  if (activeForegroundClock || foregroundClockClaim) return "ios-native";
-  if (activeAndroidForegroundTimerCas) return "android-js";
+  if (activeForegroundClock || foregroundClockClaim) {
+    if (activePreparedStorage?.nativeForegroundClockPlatform === "ios") return "ios-native";
+    if (activePreparedStorage?.nativeForegroundClockPlatform === "android") return "android-native";
+  }
   throw new Error("foreground_clock_storage_owner_unavailable");
 }
 
@@ -1188,7 +1186,6 @@ export function getForegroundTimerStorageAuthority(): "ios-native" | "android-js
 export function applyActiveForegroundTimerRaw(before: string | undefined, after: string | undefined): void {
   if (client instanceof MemoryKeyValueStorage) { client.applyForegroundTimerRaw(before, after); return; }
   if (activeForegroundTimerTestCas) { activeForegroundTimerTestCas(before, after); return; }
-  if (activeAndroidForegroundTimerCas) { activeAndroidForegroundTimerCas(before, after); return; }
   const observed = getActiveForegroundClock().apply(before, after);
   if (observed !== after) throw new Error("foreground_clock_write_unknown");
 }

@@ -59,6 +59,7 @@ export class ForegroundSessionTimerFacade {
   private readonly finalizations = new Map<string, Readonly<{ identity: string; operation: Promise<ForegroundTimeProjection> }>>();
   private readonly practiceCompletions = new Map<string, Promise<unknown>>();
   private readonly operations = new Map<string, Promise<unknown>>();
+  private readonly pendingPeriodicCheckpoints = new Set<string>();
   private interval: ReturnType<typeof setInterval> | null = null;
   private foregroundSessionId: string | null = null;
   private generation = 0;
@@ -474,16 +475,20 @@ export class ForegroundSessionTimerFacade {
     this.stopPeriodicCheckpoint();
     this.foregroundSessionId = sessionId;
     this.interval = this.dependencies.schedule(() => {
-      if (this.foregroundSessionId !== sessionId) return;
+      if (this.foregroundSessionId !== sessionId || this.pendingPeriodicCheckpoints.has(sessionId)) return;
       const timer = this.timers.get(sessionId);
       if (!timer) return;
+      // Native T advances independently. Queueing intermediate T→S snapshots
+      // behind a slow sync delays user commands without adding durability.
+      this.pendingPeriodicCheckpoints.add(sessionId);
       void this.serialize(sessionId, async () => {
         if (this.foregroundSessionId !== sessionId || this.finalizations.has(sessionId) || this.timers.get(sessionId) !== timer) return;
         const state = await timer.checkpointIfDue();
         if (state.checkpointRevision !== this.synchronizedTimerRevisions.get(sessionId)) await this.sync(state);
         await this.expireIfNeeded(session, timer);
         await this.publish(session, timer);
-      }).catch((error: unknown) => { this.fail(sessionId, error, "Periodic foreground timer checkpoint failed."); });
+      }).catch((error: unknown) => { this.fail(sessionId, error, "Periodic foreground timer checkpoint failed."); })
+        .finally(() => { this.pendingPeriodicCheckpoints.delete(sessionId); });
     });
   }
 

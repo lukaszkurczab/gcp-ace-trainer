@@ -43,13 +43,13 @@ export class ForegroundSessionTimer implements ForegroundSessionClock {
 }
 
 /** Platform selection is explicit and happens before construction. A native
- * construction/bind failure propagates; it never enters the Android branch. */
+ * construction/bind failure propagates; it never enters the memory-test branch. */
 export function selectForegroundSessionClock(
-  authority: "ios-native" | "android-js" | "memory-test",
+  authority: "ios-native" | "android-native" | "memory-test",
   createNative: () => ForegroundSessionClock,
-  createAndroidOrMemory: () => ForegroundSessionClock,
+  createMemory: () => ForegroundSessionClock,
 ): ForegroundSessionClock {
-  if (authority === "ios-native") return createNative();
-  if (authority === "android-js" || authority === "memory-test") return createAndroidOrMemory();
+  if (authority === "ios-native" || authority === "android-native") return createNative();
+  if (authority === "memory-test") return createMemory();
   throw new Error("foreground_clock_authority_invalid");
 }

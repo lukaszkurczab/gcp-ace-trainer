@@ -1,5 +1,7 @@
 #pragma once
+#if defined(__APPLE__)
 #import <Foundation/Foundation.h>
+#endif
 #include <cstdint>
 #include <string>
 

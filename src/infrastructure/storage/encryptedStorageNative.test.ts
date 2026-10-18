@@ -11,6 +11,7 @@ import type * as NativeStorageModule from "./encryptedStorageNative";
 // ownership and uncertain-revoke fencing, not the native SDK or durability.
 function runtime(revokeFails: boolean) {
   const values = new Map<string, string>();
+  values.set("router-derived-timer-key", "durable");
   let writes = 0, revokes = 0, binds = 0;
   const instance = {
     id: "synthetic-storage", isEncrypted: true,
@@ -38,13 +39,14 @@ function runtime(revokeFails: boolean) {
   const module = { exports: {} };
   const require = (name: string) => {
     if (name === "./foregroundClockCapability") return { createForegroundClockCapability };
+    if (name === "../identity/sha256") return { sha256Utf8: () => "synthetic-digest" };
     if (name === "expo-secure-store") return { WHEN_UNLOCKED_THIS_DEVICE_ONLY: "synthetic", getItemAsync: async () => null, setItemAsync: async () => {}, deleteItemAsync: async () => {} };
     if (name === "expo-crypto") return { randomUUID: () => "synthetic-nonce" };
     if (name === "react-native-mmkv") return { createMMKV: () => instance };
     if (name === "react-native-nitro-modules") return { NitroModules: { createHybridObject: () => native } };
     throw new Error("unexpected synthetic module");
   };
-  vm.runInNewContext(compiled, { module, exports: module.exports, require }, { timeout: 2000 });
+  vm.runInNewContext(compiled, { module, exports: module.exports, require, process: { env: {} } }, { timeout: 2000 });
   const api = module.exports as typeof NativeStorageModule;
   const slot = api.createNativeEncryptedStoragePlatform().open("synthetic-storage");
   const scope: ForegroundClockScope = { physicalKey: "router-derived-timer-key", profileId: "profile", generation: 3, isCurrent: () => true };

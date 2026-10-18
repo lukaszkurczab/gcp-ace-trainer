@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { AndroidForegroundSessionTimer as ForegroundSessionTimer } from "./AndroidForegroundSessionTimer";
+import { MemoryForegroundSessionTimer as ForegroundSessionTimer } from "./MemoryForegroundSessionTimer";
 import { createForegroundTimerState, type ForegroundTimerState } from "../../domain";
 import { getActiveForegroundTimer, saveActiveForegroundTimer, saveTrainingSession } from "../../storage/repositories";
 import { installMemoryStorage, session } from "../../testing/journalTestSupport";
