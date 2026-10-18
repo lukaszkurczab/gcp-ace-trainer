@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
-import { assertHistoricalDemoMatchesCurrentRuntime, assertSnapshotCurrent, buildPublicDemoProjection, createLocalAdmittedPublicDemoCatalog, createPublicDemoCatalog } from "./exportPublicDemo.mjs";
+import { assertAdmittedSampleMatchesCurrentRuntime, assertSnapshotCurrent, buildPublicDemoProjection, createPublicDemoCatalog, assertSelectedArtifactAdmitted, assertAdmissionCommitBindings, assertPreviewSampleManifest, previewSample, readAdmittedCommitText } from "./exportPublicDemo.mjs";
 
 const require = createRequire(import.meta.url);
 const { buildCanonicalRuntimeCatalog, loadCanonicalRuntimeCatalog } = require("../src/content/canonical/runtimeCatalog.ts");
@@ -100,18 +100,22 @@ async function historicalFixture(selection) {
   };
 }
 
-test("explicit local admitted-source projection preserves the admitted questions and current Free pools", async () => {
-  const catalog = await createLocalAdmittedPublicDemoCatalog();
+test("current receipt admits exactly three public samples and only two interactive payloads", async () => {
+  const catalog = await createPublicDemoCatalog();
   const bases = await Promise.all(contentSelections.map(historicalFixture));
   const demos = catalog.demos;
   assert.equal(catalog.schemaVersion, "patternly-canonical-demo-questions-v1");
   assert.deepEqual(demos.map((demo) => demo.provenance.questionId), ["alg-complexity-time-005", "aws-saa-c03-architecture-001-odk096"]);
   assert.deepEqual(demos.map((demo) => demo.provenance.trackId), contentSelections.map(({ trackId }) => trackId));
   assert.equal(demos.length, 2);
+  assert.deepEqual(catalog.publicSamples.map((sample) => sample.questionId), [...contentSelections.map((selection) => selection.questionId), previewSample.questionId]);
+  assert.equal(catalog.publicSamples[2].presentation, "image");
+  assert.ok(catalog.publicSamples.every((sample) => !Object.hasOwn(sample, "question")));
+  assert.ok(!JSON.stringify(catalog).includes("What does an amortized O(1) operation guarantee?"), "The screenshot question payload is never emitted.");
   for (const [index, selection] of contentSelections.entries()) {
     const demo = demos[index];
     const base = bases[index];
-    assert.equal(demo.provenance.candidateId, HISTORICAL_CANDIDATE_ID);
+    assert.equal(demo.provenance.candidateId, readContentJson("evidence/admissions/candidate-admission-v3.json").candidateId);
     assert.equal(demo.question.questionId, selection.questionId);
     assert.equal(demo.provenance.nodeId, selection.nodeId);
     assert.deepEqual(demo.provenance.modeIds, selection.modeIds);
@@ -140,29 +144,63 @@ test("local admitted-source parity requires the same exact sample and current Fr
   const base = await historicalFixture(selection);
   const { runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
   const currentTrack = (await loadCanonicalRuntimeCatalog()).getTrack(selection.trackId);
-  const valid = { selection, historicalQuestion: base.question, currentTrack, currentFamilyId: runtime.familyId };
-  assert.equal(assertHistoricalDemoMatchesCurrentRuntime(valid), undefined);
-  assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, currentFamilyId: "certification" }), /canonical track family/u);
-  assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, historicalQuestion: { ...base.question, prompt: `${base.question.prompt} changed` } }), /differs from the current canonical training question/u);
+  const valid = { selection, admittedQuestion: base.question, currentTrack, currentFamilyId: runtime.familyId };
+  assert.equal(assertAdmittedSampleMatchesCurrentRuntime(valid), undefined);
+  assert.throws(() => assertAdmittedSampleMatchesCurrentRuntime({ ...valid, currentFamilyId: "certification" }), /canonical track family/u);
+  assert.throws(() => assertAdmittedSampleMatchesCurrentRuntime({ ...valid, admittedQuestion: { ...base.question, prompt: `${base.question.prompt} changed` } }), /differs from the current canonical training question/u);
   const outsidePool = { ...currentTrack, getPool: () => [] };
-  assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, currentTrack: outsidePool }), /outside the current ordinary Free practice pool/u);
+  assert.throws(() => assertAdmittedSampleMatchesCurrentRuntime({ ...valid, currentTrack: outsidePool }), /outside the current ordinary Free practice pool/u);
 });
 
-test("local-only Claude bundle cannot export a public demo; historical admission remains pinned", async () => {
-  const releaseLock = readAppJson("integration/contracts/content-release/release.lock.json");
+test("scoped admission keeps the unrelated local-only Claude artifact outside public permission", async () => {
   const admission = readContentJson("evidence/admissions/candidate-admission-v3.json");
-  const candidateManifest = readContentJson(admission.candidatePath);
-  assert.equal(releaseLock.candidateId, candidateManifest.candidateId);
-  assert.equal(admission.runtimeAdmission, "granted");
-  assert.equal(candidateManifest.candidateId, admission.candidateId);
-  assert.notEqual(candidateManifest.candidateId, HISTORICAL_CANDIDATE_ID);
+  const currentLock = readAppJson("src/content/generated/canonical-content/content-lock.json");
+  const admittedLock = historicalJson(root, admission.application.frontendCommit, "src/content/generated/canonical-content/content-lock.json");
+  assert.notEqual(hashBytes(readFileSync(resolve(root, "src/content/generated/canonical-content/content-lock.json"))), admission.application.bundledContentLockSha256);
+  const selection = { trackId: "claude-certified-architect-professional-certification" };
+  const path = `src/content/generated/canonical-content/${selection.trackId}.json`;
+  assert.throws(() => assertSelectedArtifactAdmitted({ selection, currentBytes: readFileSync(resolve(root, path)), admittedBytes: Buffer.from(historicalText(root, admission.application.frontendCommit, path)), currentLock, admittedLock }), /selected artifact differs/u);
+  const catalog = await createPublicDemoCatalog();
+  assert.ok(catalog.publicSamples.every((sample) => sample.trackId !== selection.trackId));
+});
 
-  // QLE is explicitly local-only. Public tooling must continue rejecting it.
-  await assert.rejects(createPublicDemoCatalog(), /outside the existing app admission evidence/u);
+test("selected full artifact bytes and per-track lock must both match admission", () => {
+  const admission = readContentJson("evidence/admissions/candidate-admission-v3.json");
+  const currentLock = readAppJson("src/content/generated/canonical-content/content-lock.json");
+  const admittedLock = historicalJson(root, admission.application.frontendCommit, "src/content/generated/canonical-content/content-lock.json");
+  for (const selection of [...contentSelections, previewSample]) {
+    const path = `src/content/generated/canonical-content/${selection.trackId}.json`;
+    const valid = { selection, currentBytes: readFileSync(resolve(root, path)), admittedBytes: Buffer.from(historicalText(root, admission.application.frontendCommit, path)), currentLock, admittedLock };
+    assert.equal(assertSelectedArtifactAdmitted(valid), undefined);
+    assert.throws(() => assertSelectedArtifactAdmitted({ ...valid, currentBytes: Buffer.concat([valid.currentBytes, Buffer.from("\n")]) }), /selected artifact differs/u);
+    const staleLock = structuredClone(currentLock);
+    staleLock.tracks.find((entry) => entry.trackId === selection.trackId).contentVersion = "stale";
+    assert.throws(() => assertSelectedArtifactAdmitted({ ...valid, currentLock: staleLock }), /selected artifact differs/u);
+  }
+});
 
-  const historical = await historicalFixture(contentSelections[0]);
-  assert.equal(historical.admission.candidateId, HISTORICAL_CANDIDATE_ID);
-  assert.notEqual(historical.admission.candidateId, candidateManifest.candidateId);
+test("receipt commit locks and admission-time runtime test are exact and fail closed", () => {
+  const admission = readContentJson("evidence/admissions/candidate-admission-v3.json");
+  const runtimeEvidence = readContentJson(admission.runtimeEvidence.path);
+  const bytes = (path) => Buffer.from(historicalText(root, admission.application.frontendCommit, path));
+  const valid = { admission, runtimeEvidence, generatedLockBytes: bytes("src/content/generated/canonical-content/content-lock.json"), releaseLockBytes: bytes("integration/contracts/content-release/release.lock.json"), runtimeTestBytes: bytes("src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts") };
+  assert.equal(assertAdmissionCommitBindings(valid), undefined);
+  for (const field of ["generatedLockBytes", "releaseLockBytes", "runtimeTestBytes"]) assert.throws(() => assertAdmissionCommitBindings({ ...valid, [field]: Buffer.from("changed") }), /commit files differ/u);
+  assert.throws(() => readAdmittedCommitText(root, "0".repeat(40), "missing.json", "missing evidence"), /missing or unreadable/u);
+});
+
+test("all preview assets and the third sample identity are pinned, without adding sample payloads", () => {
+  const manifest = JSON.parse(readFileSync(resolve(root, "../patternly-web/scripts/app-preview-manifest.json")));
+  assert.equal(assertPreviewSampleManifest(manifest).questionId, previewSample.questionId);
+  for (const mutate of [
+    (m) => { m.images[0].sha256 = "0".repeat(64); },
+    (m) => { m.images.find((image) => image.questionId).questionId = "another-sample"; },
+    (m) => { m.images.push({ path: "public/app-preview/extra.png" }); },
+  ]) {
+    const changed = structuredClone(manifest); mutate(changed);
+    assert.throws(() => assertPreviewSampleManifest(changed), /Public preview/u);
+  }
+  assert.throws(() => assertPreviewSampleManifest(manifest, () => Buffer.from("changed")), /reviewed hash/u);
 });
 
 /* Historical 946d proof above intentionally reads the immutable commits that own
@@ -186,7 +224,7 @@ test("snapshot check accepts exact bytes and rejects missing or stale generated 
 });
 
 test("rejects source, identity, current locks/admission/receipts, family, and resolved Free-pool mismatches for each demo", async () => {
-  for (const selection of contentSelections) {
+  for (const selection of [...contentSelections, previewSample]) {
     const base = await historicalFixture(selection);
     assert.equal(buildPublicDemoProjection(base).question.questionId, selection.questionId);
     assert.throws(() => buildPublicDemoProjection({ ...base, sourceQuestion: { ...base.sourceQuestion, prompt: `${base.sourceQuestion.prompt} changed` } }), /canonical source file/u);
@@ -204,6 +242,11 @@ test("rejects source, identity, current locks/admission/receipts, family, and re
     const changedAdmission = { ...base, admission: structuredClone(base.admission) };
     changedAdmission.admission.tracks.find((entry) => entry.trackId === selection.trackId).runtimeAdmission = "denied";
     assert.throws(() => buildPublicDemoProjection(changedAdmission), /admission evidence/u);
+    const deniedPublishing = structuredClone(base.admission);
+    deniedPublishing.tracks.find((entry) => entry.trackId === selection.trackId).publishingAdmission = "denied";
+    assert.throws(() => buildPublicDemoProjection({ ...base, admission: deniedPublishing }), /admission evidence/u);
+    assert.throws(() => buildPublicDemoProjection({ ...base, releaseManifestSha: "0".repeat(64) }), /candidate and release receipts/u);
+    assert.throws(() => buildPublicDemoProjection({ ...base, runtimeEvidenceSha: "0".repeat(64) }), /runtime admission evidence/u);
     assert.throws(() => buildPublicDemoProjection({ ...base, admissionSha: "" }), /runtime admission receipt/u);
     const changedCandidate = { ...base, candidateManifest: structuredClone(base.candidateManifest) };
     changedCandidate.candidateManifest.candidateId = "another-candidate";

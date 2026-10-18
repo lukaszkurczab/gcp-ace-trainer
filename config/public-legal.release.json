@@ -121,8 +121,8 @@
       "pl": "Google Cloud/Firebase — uwierzytelnianie kont, backend i synchronizacja; RevenueCat — obsługa subskrypcji; Brevo — dostarczanie wiadomości transakcyjnych; OVHcloud/Zimbra — skrzynki wsparcia i kontaktu"
     },
     "activeIndependentRecipients": {
-      "en": "[TO BE COMPLETED: activeIndependentRecipients]",
-      "pl": "[DO UZUPEŁNIENIA: activeIndependentRecipients]"
+      "en": "No recipients other than the Controller and the service providers described in this policy.",
+      "pl": "Brak odbiorców poza Administratorem i usługodawcami opisanymi w tej polityce."
     },
     "backupPurgeDisclosure": {
       "en": "Firestore point-in-time recovery retains database versions for up to 7 days. Patternly does not maintain an additional scheduled Firestore backup. Expired or deleted data may therefore remain recoverable within the protected PITR window and is no longer recoverable after that window expires.",
@@ -177,8 +177,8 @@
       "pl": "Google Cloud europe-central2 (Warszawa, Polska)"
     },
     "internationalTransferSafeguards": {
-      "en": "[TO BE COMPLETED: internationalTransferSafeguards]",
-      "pl": "[DO UZUPEŁNIENIA: internationalTransferSafeguards]"
+      "en": "The providers' applicable data-processing terms describe the safeguards for transfers outside the EEA. Google states that its Cloud and Firebase terms provide the EU–U.S. Data Privacy Framework for transfers to covered certified Google entities in the U.S., and EU Standard Contractual Clauses (SCCs) for restricted transfers where the applicable terms require them. Firebase Authentication processes data in the U.S.; the Warsaw backend region does not apply to every service. For restricted transfers from the EEA to countries without an adequacy decision, RevenueCat's DPA incorporates SCC Module 2 for our controller-to-processor relationship, with transfer details and security measures in its annexes. Brevo's DPA provides for SCCs and supplementary measures, and reliance on the EU–U.S. Data Privacy Framework for covered U.S. transfers while applicable. OVHcloud's DPA regulates remote processing. Its SCC annex provides Module 3 for processor-to-processor transfers to countries without an adequacy decision within its stated scope, where the customer expressly requests such processing. A data-centre location alone does not exclude overseas support access. The providers' subprocessor lists include services that may not be used for Patternly; the lists do not establish that every listed provider receives Patternly data.",
+      "pl": "Właściwe warunki powierzenia dostawców opisują zabezpieczenia transferów poza EOG. Google wskazuje w warunkach Cloud i Firebase EU–US Data Privacy Framework dla transferów do objętych certyfikacją podmiotów Google w USA oraz unijne standardowe klauzule umowne (SCC) dla ograniczonych transferów, gdy wymagają tego właściwe warunki. Firebase Authentication przetwarza dane w USA; region backendu w Warszawie nie dotyczy każdej usługi. Dla ograniczonych transferów z EOG do krajów bez decyzji stwierdzającej odpowiedni stopień ochrony DPA RevenueCat włącza moduł 2 SCC dla naszej relacji administrator–podmiot przetwarzający, wraz ze szczegółami transferu i środkami bezpieczeństwa w załącznikach. DPA Brevo przewiduje SCC i środki uzupełniające oraz stosowanie EU–US Data Privacy Framework do objętych nim transferów do USA, dopóki ma zastosowanie. DPA OVHcloud reguluje zdalne przetwarzanie. Jego załącznik SCC przewiduje moduł 3 dla objętych określonym w nim zakresem transferów między podmiotami przetwarzającymi do krajów bez decyzji stwierdzającej odpowiedni stopień ochrony, gdy klient wyraźnie żąda takiego przetwarzania. Sama lokalizacja centrum danych nie wyklucza dostępu wsparcia z zagranicy. Wykazy podwykonawców dostawców obejmują usługi, z których Patternly może nie korzystać; nie dowodzą, że każdy wymieniony dostawca otrzymuje dane Patternly."
     },
     "localReportOutboxRetentionDays": {
       "en": "30",
@@ -193,8 +193,8 @@
       "pl": "privacy@patternly.it"
     },
     "reportRateLimitIdentifierRetentionSeconds": {
-      "en": "[TO BE COMPLETED: reportRateLimitIdentifierRetentionSeconds]",
-      "pl": "[DO UZUPEŁNIENIA: reportRateLimitIdentifierRetentionSeconds]"
+      "en": "3600",
+      "pl": "3600"
     },
     "processingRegisterDisclosure": {
       "en": "[TO BE COMPLETED: processingRegisterDisclosure]",
