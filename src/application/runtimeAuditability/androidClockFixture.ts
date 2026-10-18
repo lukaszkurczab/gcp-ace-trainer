@@ -3,9 +3,9 @@ import { androidClockProbeFailure } from "./androidClockProbeReadiness";
 import { enabled, runId, receipt, captureAndroidClockProbeInventory } from "./androidClockProbeRuntime";
 import { createNativeEncryptedStoragePlatform, claimNativeForegroundClock, readNativeForegroundClockStorageProbe } from "../../infrastructure/storage/encryptedStorageNative";
 import { foregroundTimerPhysicalKey } from "../../infrastructure/storage/profileStorageRouter";
-import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, getActiveForegroundClock } from "../../infrastructure/storage/mmkvClient";
+import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent } from "../../storage/repositories/profileStorageRepository";
 import { readActiveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
-import { readActiveForegroundTimer } from "../../storage/repositories/foregroundTimerRepository";
+import { readActiveForegroundTimer, getActiveForegroundClockForProbe } from "../../storage/repositories/foregroundTimerRepository";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { createForegroundTimerState, type ForegroundTimerState } from "../../domain";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
@@ -79,12 +79,12 @@ async function requirePausedProductionOwner() {
   const timer = readActiveForegroundTimer(productionTrackAdmissionContext);
   if (!session && !timer) return;
   if (!session || !timer || timer.sessionId !== session.id || timer.trackId !== session.trackId) throw androidClockProbeFailure("probe_scope_unavailable");
-  const owner = getActiveForegroundClock(), raw = owner.read(), elapsed = owner.elapsed();
+  const owner = getActiveForegroundClockForProbe(), raw = owner.read(), elapsed = owner.elapsed();
   let lifecycleChanged = false;
   const subscription = AppState.addEventListener("change", () => { lifecycleChanged = true; });
   try {
     await new Promise<void>(resolve => setTimeout(resolve, 100));
-    if (lifecycleChanged || AppState.currentState !== "active" || !isActiveProfileStorageLeaseCurrent(lease) || getActiveForegroundClock() !== owner
+    if (lifecycleChanged || AppState.currentState !== "active" || !isActiveProfileStorageLeaseCurrent(lease) || getActiveForegroundClockForProbe() !== owner
       || JSON.stringify(readActiveTrainingSession(productionTrackAdmissionContext)) !== JSON.stringify(session) || owner.read() !== raw) throw androidClockProbeFailure("probe_scope_unavailable");
     const after = owner.elapsed();
     if (!Number.isSafeInteger(elapsed) || elapsed !== timer.accumulatedForegroundMs || after !== elapsed) throw androidClockProbeFailure("fixture_requires_session_exit");

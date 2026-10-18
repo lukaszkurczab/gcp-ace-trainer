@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
+import type { TestContext } from "node:test";
 import type { CompletedTrainingSession } from "../../domain";
 import { CanonicalQuestionValidationError } from "../../content/canonical/questionValidation";
 import { createCanonicalQuestionCatalog } from "../../content/canonical/questionCatalog";
@@ -14,15 +15,13 @@ import type { CanonicalArtifact, CanonicalContentLockRecord, CanonicalSimulation
 import { createCanonicalTrainingFamilyRuntime, createTrainingCatalog, createTrainingInteractionPort } from "../canonicalTrainingFamilyComposition";
 import { projectCertificationExamReview } from "./certificationExamReviewProjection";
 import { buildCertificationPracticeStartCommand } from "./certificationSessionFacade";
+import { lockedContentProducer } from "../../../scripts/fixtures/lockedContentProducer";
 
 const GCP = "google-cloud-associate-cloud-engineer";
 const FIXTURE_TRACK = "aws-certified-solutions-architect-associate";
 const NOW = "2026-10-15T12:00:00.000Z";
 const sha256 = (text: string) => createHash("sha256").update(text).digest("hex");
-const producerRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? "../patternly-content");
-const producer = import(pathToFileURL(path.join(producerRoot, "scripts/build.mjs")).href) as Promise<{
-  buildTrack(options: { rootDirectory: string; outputRoot: string; trackId: string }): Promise<{ artifactBytes: string; lockEntry: CanonicalContentLockRecord }>;
-}>;
+const producerRepositoryRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? "../patternly-content");
 
 /** Test adapter uses the real validated artifact and production interaction modules. */
 async function admittedFixture(artifact: CanonicalArtifact, lock: CanonicalContentLockRecord): Promise<CanonicalTrackRuntime> {
@@ -36,10 +35,14 @@ async function admittedFixture(artifact: CanonicalArtifact, lock: CanonicalConte
   };
 }
 
-async function buildGcp(t: { after(fn: () => Promise<unknown>): void }) {
+async function buildGcp(t: Pick<TestContext, "after">) {
+  const producerRoot = await lockedContentProducer({ appRoot: process.cwd(), repositoryRoot: producerRepositoryRoot, trackId: GCP, after: (cleanup) => t.after(cleanup) });
   const outputRoot = await mkdtemp(path.join(tmpdir(), "patternly26-producer-"));
   t.after(() => rm(outputRoot, { recursive: true, force: true }));
-  return (await producer).buildTrack({ rootDirectory: producerRoot, outputRoot, trackId: GCP });
+  const producer = await import(pathToFileURL(path.join(producerRoot, "scripts/build.mjs")).href) as {
+    buildTrack(options: { rootDirectory: string; outputRoot: string; trackId: string }): Promise<{ artifactBytes: string; lockEntry: CanonicalContentLockRecord }>;
+  };
+  return producer.buildTrack({ rootDirectory: producerRoot, outputRoot, trackId: GCP });
 }
 
 async function exercise(track: CanonicalTrackRuntime, expectedCount: number, expectedDuration: number) {

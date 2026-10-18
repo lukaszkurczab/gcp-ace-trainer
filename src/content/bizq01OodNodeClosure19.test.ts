@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import test from "node:test";
+import test, { after, before } from "node:test";
 import path from "node:path";
 
 import {
@@ -13,6 +13,7 @@ import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQues
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
+import { lockedContentProducer } from "../../scripts/fixtures/lockedContentProducer";
 
 const PACKET = "src/content/__fixtures__/release-acceptance/ood-node-closure-19";
 const REASON_AMENDMENT = `${PACKET}/reason-amendment-19a/PROPOSED-REASONS.json`;
@@ -26,6 +27,19 @@ const MODES = [
   "design-interview-tradeoff-practice",
   "design-interview-weak-area-review",
 ] as const;
+let acceptedProducerRoot = "";
+let cleanupAcceptedProducer: () => void | Promise<void> = () => {};
+
+after(async () => { await cleanupAcceptedProducer(); });
+
+before(async () => {
+  acceptedProducerRoot = await lockedContentProducer({
+    appRoot: process.cwd(),
+    repositoryRoot: path.resolve("../patternly-content"),
+    trackId: TRACK,
+    after: (cleanup) => { cleanupAcceptedProducer = cleanup; },
+  });
+});
 
 // Fixed bindings to the reviewed, plain-array proposal payloads.
 const UNITS = [
@@ -95,7 +109,7 @@ function readFrozenQuestions(unit: UnitPayload): readonly Question[] {
 }
 
 function sourceQuestions(file: string): readonly Question[] {
-  const sourcePath = path.resolve("../patternly-content/content/object-oriented-design-interview", NODE, file);
+  const sourcePath = path.resolve(acceptedProducerRoot, "content/object-oriented-design-interview", NODE, file);
   return JSON.parse(readFileSync(sourcePath, "utf8")) as readonly Question[];
 }
 
@@ -104,7 +118,7 @@ function isSingleChoice(question: Question): question is Extract<Question, { int
 }
 
 function sourcePath(relativePath: string): string {
-  return path.resolve("../patternly-content", relativePath);
+  return path.resolve(acceptedProducerRoot, relativePath);
 }
 
 const ACCEPTED_N01 = [

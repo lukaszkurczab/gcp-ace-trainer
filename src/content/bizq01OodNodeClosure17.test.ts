@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import test from "node:test";
+import test, { after, before } from "node:test";
 import path from "node:path";
 
 import {
@@ -13,6 +13,7 @@ import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQues
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
+import { lockedContentProducer } from "../../scripts/fixtures/lockedContentProducer";
 
 const PACKET = "src/content/__fixtures__/release-acceptance/ood-node-closure-17";
 const TRACK = "object-oriented-design-interview";
@@ -22,6 +23,19 @@ const MODES = [
   "design-interview-tradeoff-practice",
   "design-interview-weak-area-review",
 ] as const;
+let acceptedProducerRoot = "";
+let cleanupAcceptedProducer: () => void | Promise<void> = () => {};
+
+after(async () => { await cleanupAcceptedProducer(); });
+
+before(async () => {
+  acceptedProducerRoot = await lockedContentProducer({
+    appRoot: process.cwd(),
+    repositoryRoot: path.resolve("../patternly-content"),
+    trackId: TRACK,
+    after: (cleanup) => { cleanupAcceptedProducer = cleanup; },
+  });
+});
 
 // Fixed proposal bindings; semantic acceptance is recorded separately.
 const UNITS = [
@@ -62,7 +76,7 @@ function readFrozenEntries(unit: (typeof UNITS)[number]): readonly ProposalEntry
 }
 
 function sourceQuestions(file: string): readonly Question[] {
-  const sourcePath = path.resolve("../patternly-content/content/object-oriented-design-interview", NODE, file);
+  const sourcePath = path.resolve(acceptedProducerRoot, "content/object-oriented-design-interview", NODE, file);
   return JSON.parse(readFileSync(sourcePath, "utf8")) as readonly Question[];
 }
 
@@ -118,7 +132,7 @@ test("OOD17 preserves all 136 accepted N01 source and artifact objects", async (
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
   let count = 0;
   for (const source of ACCEPTED_N01) {
-    const bytes = readFileSync(path.resolve("../patternly-content", source.path));
+    const bytes = readFileSync(path.resolve(acceptedProducerRoot, source.path));
     assert.equal(createHash("sha256").update(bytes).digest("hex"), source.sha256);
     const questions = JSON.parse(bytes.toString("utf8")) as readonly Question[];
     count += questions.length;

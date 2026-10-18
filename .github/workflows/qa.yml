@@ -92,6 +92,18 @@ jobs:
           [[ "$backend_sha" =~ ^[a-f0-9]{40}$ ]]
           printf 'Current backend QA input: %s\n' "$backend_sha"
           printf 'sha=%s\n' "$backend_sha" >> "$GITHUB_OUTPUT"
+      - name: Checkout current web QA assets
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-web
+          ref: main
+          path: patternly-web
+      - name: Record exact web QA input
+        shell: bash
+        run: |
+          web_sha="$(git -C "$GITHUB_WORKSPACE/patternly-web" rev-parse HEAD)"
+          [[ "$web_sha" =~ ^[a-f0-9]{40}$ ]]
+          printf 'Current web QA input: %s\n' "$web_sha"
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1

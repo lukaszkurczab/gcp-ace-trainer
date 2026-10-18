@@ -42,6 +42,11 @@ test("EAS release configuration has explicit version, runtime, and channel polic
       android: { gradleCommand: ":app:assembleRelease --stacktrace --max-workers=1 --no-parallel" },
       env: { EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: JSON.stringify({ ...JSON.parse(readFileSync("scripts/fixtures/androidIsolationPublicEnvironment.json", "utf8")), apiOrigin: "https://environment-isolation.invalid" }) },
     },
+    "android-clock-probe": {
+      extends: "sandbox", channel: "android-clock-probe-20261017",
+      android: { gradleCommand: ":app:assembleRelease --stacktrace --max-workers=1 --no-parallel" },
+      env: { EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID: "c84afbb2-a2c7-405e-91df-9fd124ace0af" },
+    },
     release: { distribution: "store", channel: "production", autoIncrement: true, environment: "production", env: { PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release" } },
   });
   assert.deepEqual(updatesConfiguration("release"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab", enabled: false, checkAutomatically: "NEVER" });

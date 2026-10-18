@@ -17,6 +17,7 @@ export {
   inspectPreparedQ13StorageReadiness,
   isProfileTransitionActive,
   onProfileTransitionChanged,
+  onKeyValueStorageReady,
   reloadForProfileTransition,
   notifyProfileStorageReady,
   isActiveProfileStorageLeaseCurrent,

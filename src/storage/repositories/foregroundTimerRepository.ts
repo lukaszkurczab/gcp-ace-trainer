@@ -1,5 +1,7 @@
 export { getForegroundTimerStorageAuthority } from "../../infrastructure/storage/mmkvClient";
 import { getActiveForegroundClock } from "../../infrastructure/storage/mmkvClient";
+import type { ForegroundClockCapability } from "../../infrastructure/storage/foregroundClockCapability";
+
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { createForegroundTimerState, getTrackRegistration, initialForegroundTimerForSession, type ForegroundTimerState, type TrainingSession } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
@@ -7,6 +9,11 @@ import { CANONICAL_RECORD_SCHEMA, applyCanonicalPhysicalWrite, readCanonicalJson
 import { readActiveTrainingSession, getActiveTrainingSession } from "./trainingSessionRepository";
 import { isAcceptedSimulationFinalization, isForegroundTimerState, isTrainingSession, isTrainingSessionDraftState } from "./trainingModelGuards";
 import type { TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
+
+/** Read-only view of the existing native owner; preserves owner identity. */
+export function getActiveForegroundClockForProbe(): Pick<ForegroundClockCapability, "read" | "elapsed" | "metrics"> {
+  return getActiveForegroundClock();
+}
 
 /** Pure canonical read used by snapshot consumers; performs no checkpoint or migration. */
 export function readActiveForegroundTimer(admission: TrackAdmissionContext): ForegroundTimerState | null {

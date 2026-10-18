@@ -1,8 +1,9 @@
+import { captureForegroundClockProbeStorage } from "../../storage/repositories/foregroundClockProbeRepository";
 import { androidClockProbeFailure, waitForAndroidClockProbe, requireAndroidClockProbeAdvance } from "./androidClockProbeReadiness";
 import { androidClockProbeEnabled } from "./androidClockProbeProtocol";
-import { readActiveForegroundTimer } from "../../storage/repositories/foregroundTimerRepository";
+import { readActiveForegroundTimer, getActiveForegroundClockForProbe } from "../../storage/repositories/foregroundTimerRepository";
 import { readActiveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
-import { getKeyValueStorage, getActiveForegroundClock, captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent } from "../../infrastructure/storage/mmkvClient";
+import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent } from "../../storage/repositories/profileStorageRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import type { ForegroundTimerState, TrainingSession } from "../../domain";
@@ -31,11 +32,11 @@ function identity(timer: ForegroundTimerState, session: TrainingSession) {
     checkpointRevision: timer.checkpointRevision, running: timer.running,
     sessionElapsedMs: session.activeForegroundMs, configurationSha256: sha256Utf8(JSON.stringify(session.configurationSnapshot)),
     startedAt: session.startedAt, lastCheckpointAt: timer.lastCheckpointAt,
-    timerEnvelopeSha256: sha256Utf8(getKeyValueStorage().getString(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) ?? "") };
+    timerEnvelopeSha256: sha256Utf8(captureForegroundClockProbeStorage().getString(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) ?? "") };
 }
 
 export function captureAndroidClockProbeInventory() {
-  const store = getKeyValueStorage();
+  const store = captureForegroundClockProbeStorage();
   const active = readActiveTrainingSession(productionTrackAdmissionContext);
   return [...store.getAllKeys()].sort().map(key => {
     const raw = store.getString(key) ?? "";
@@ -67,14 +68,14 @@ export function capture() {
   // order keeps the sampled elapsed >= the reported durable lower baseline.
   const timer = readActiveForegroundTimer(productionTrackAdmissionContext);
   if (!timer || !timer.running) throw androidClockProbeFailure("probe_timer_not_running");
-  const elapsedMs = getActiveForegroundClock().elapsed();
+  const elapsedMs = getActiveForegroundClockForProbe().elapsed();
   const duration = session.configurationSnapshot.timerDurationMs;
   if (!Number.isSafeInteger(elapsedMs) || elapsedMs < timer.accumulatedForegroundMs
     || (session.configurationSnapshot.timer === "countdownForeground" && (typeof duration !== "number" || duration - elapsedMs < 30_000))) throw androidClockProbeFailure("probe_countdown_or_owner_unavailable");
   if ((require("react-native") as typeof import("react-native")).AppState.currentState !== "active" || !lease || !isActiveProfileStorageLeaseCurrent(lease)) throw androidClockProbeFailure("probe_foreground_unavailable");
   return { ...identity(timer, session), elapsedMs,
     countdownMs: session.configurationSnapshot.timerDurationMs,
-    storageProbe: readNativeForegroundClockStorageProbe(sha256Utf8(lease.profile.id)), metrics: getActiveForegroundClock().metrics(),
+    storageProbe: readNativeForegroundClockStorageProbe(sha256Utf8(lease.profile.id)), metrics: getActiveForegroundClockForProbe().metrics(),
     inventory: captureAndroidClockProbeInventory(), observedMonotonicMs: performance.now(), observedWallMs: Date.now() };
 }
 
@@ -83,9 +84,9 @@ export function capture() {
  * Verify actual native advancement before admitting a production stall. */
 export async function captureAdvancing() {
   const lease = captureActiveProfileStorageLease();
-  const owner = getActiveForegroundClock();
+  const owner = getActiveForegroundClockForProbe();
   const sample = () => {
-    if (!lease || !isActiveProfileStorageLeaseCurrent(lease) || getActiveForegroundClock() !== owner) throw androidClockProbeFailure("probe_scope_unavailable");
+    if (!lease || !isActiveProfileStorageLeaseCurrent(lease) || getActiveForegroundClockForProbe() !== owner) throw androidClockProbeFailure("probe_scope_unavailable");
     return capture();
   };
   const { AppState } = require("react-native") as typeof import("react-native");

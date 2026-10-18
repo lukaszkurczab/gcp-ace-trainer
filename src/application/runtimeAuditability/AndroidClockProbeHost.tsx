@@ -4,7 +4,7 @@ import { parseAndroidClockProbeUrl } from "./androidClockProbeProtocol";
 import { enabled, runId, receipt, captureAdvancing, captureAndroidClockProbeInventory } from "./androidClockProbeRuntime";
 import { captureAndroidClockFixture, cleanupAndroidClockFixture, conflictAndroidClockFixture, enterAndroidClockFixture, pauseAndroidClockFixture, restoreAndroidClockFixture, seedAndroidClockFixture } from "./androidClockFixture";
 import { androidClockProbeErrorCategory, waitForAndroidClockProbe, androidClockProbeFailure } from "./androidClockProbeReadiness";
-import { captureActiveProfileStorageLease, inspectPreparedQ13StorageInventory } from "../../infrastructure/storage/mmkvClient";
+import { captureActiveProfileStorageLease, inspectPreparedQ13StorageInventory } from "../../storage/repositories/profileStorageRepository";
 
 let busy = false;
 const consumedCases = new Set<string>();
