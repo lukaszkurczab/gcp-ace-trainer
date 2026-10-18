@@ -5,7 +5,7 @@ import { legalTranslationDraftsFrTestOnly } from "./legalTranslationDrafts.fr.te
 import { italianLegalTranslationDraftTestOnly } from "./legalTranslationDrafts.it.testOnly";
 import type { LegalTranslationLocale } from "./legalVariablesSchema";
 
-/** Test-only, unapproved legal translations. Never use for release readiness. */
+/** Draft translations for review. Production export is gated by explicit approval bound to the exact rendered documents. */
 export const legalTranslationDraftsTestOnly = Object.freeze({
   testOnly: true as const,
   approvalStatus: "UNAPPROVED" as const,

@@ -14,13 +14,14 @@ import { abandonUnavailableExactActiveTrainingSession } from "../../application/
 import { TrainingApplicationFailure, type ExactArtifactIdentity } from "../../application/trainingLifecycle/contracts";
 import { useAppPreferences } from "../../preferences";
 import { usePatternlyAccount, type HomeResumeActorFence } from "../../application/account/AccountSessionProvider";
-import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent } from "../../infrastructure/storage/mmkvClient";
 import { getActiveStorageProfileOrNull } from "../../storage/repositories/profileStorageRepository";
 import { getGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 import { hasGuestAccess } from "../../storage/repositories/guestAccessRepository";
 import { captureExactMissingActorAnchor, captureExactMissingActorFenceAtConfirmation, type ExactMissingActorAnchor } from "../../application/exactMissingActorFence";
 import { prepareLifecycleAfterProfileCompletion } from "./profilePreparationBarrier";
 import type { ProfilePreparationHandoffToken } from "../../application/account/profilePreparationHandoff";
+import { createContentPreparationAttempt } from "./contentPreparationAttempt";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -85,6 +86,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
   const activeHandoffToken = lastHandoffTokenRef.current;
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading", phase: "opening-storage" });
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
+  const bootstrapGeneration = useRef(0);
   const [auditResetReady, setAuditResetReady] = useState(false);
   const [developmentResetUnavailable, setDevelopmentResetUnavailable] = useState(false);
   const [confirmUnavailableActiveAbandon, setConfirmUnavailableActiveAbandon] = useState(false);
@@ -120,8 +122,12 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
 
   useEffect(() => {
     const endGateTrace = beginStartupSpan("content_gate");
-    let live = true;
-    let settled = false;
+    const generation = ++bootstrapGeneration.current;
+    const lease = captureActiveProfileStorageLease();
+    const attempt = createContentPreparationAttempt(
+      () => bootstrapGeneration.current === generation && (!activeHandoffToken || activeHandoffToken.isCurrent()),
+      () => lease !== null && isActiveProfileStorageLeaseCurrent(lease),
+    );
     const bootstrapProgress = createBootstrapProgressObserver();
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
@@ -133,12 +139,11 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
     const setPhase = (phase: ContentPreparationPhase) => {
       markStartup(phase);
       currentPhase = phase;
-      if (live && !settled) setState({ kind: "loading", phase });
+      if (attempt.pending()) setState({ kind: "loading", phase });
     };
 
     const complete = (nextState: ContentPreparationState) => {
-      if (!live || settled) return;
-      settled = true;
+      if (!attempt.complete(nextState.kind === "ready" || nextState.kind === "home_ready_resume_unavailable")) return;
       markStartup(nextState.kind);
       endGateTrace();
       if (timeoutId !== undefined) clearTimeout(timeoutId);
@@ -150,7 +155,10 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
     };
 
     timeoutId = setTimeout(() => {
-      complete({
+      if (!attempt.timeout()) return;
+      markStartup("blocking");
+      endGateTrace();
+      setState({
         kind: "blocking",
         phase: currentPhase,
         reason: preparationTimeoutReason(currentPhase),
@@ -239,8 +247,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
       complete({ kind: "blocking", phase: currentPhase, reason: describeOperationalFailure(error, "Application bootstrap failed.") });
     });
     return () => {
-      live = false;
-      settled = true;
+      attempt.cancel();
       endGateTrace();
       bootstrapProgress.dispose();
       if (timeoutId !== undefined) clearTimeout(timeoutId);
@@ -270,6 +277,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
         const result = await handleRuntimeAuditabilityUrl(url);
         if (!live || result.kind !== "reset_learning_state") return;
         auditResetAwaitingBootstrap.current = true;
+        bootstrapGeneration.current++;
         setState({ kind: "loading", phase: "opening-storage" });
         setBootstrapRevision((revision) => revision + 1);
       } catch (error) {
@@ -289,6 +297,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
   }, [state.kind]);
 
   const retry = () => {
+    bootstrapGeneration.current++;
     exactMissingActorAnchor.current = null;
     setConfirmUnavailableActiveAbandon(false);
     setState({ kind: "loading", phase: "opening-storage" });

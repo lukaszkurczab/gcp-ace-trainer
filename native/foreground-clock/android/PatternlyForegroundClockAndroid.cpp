@@ -82,6 +82,14 @@ class PatternlyForegroundClock final : public HybridObject {
   std::optional<patternly::ForegroundTimerRecord> record;
   std::optional<int64_t> segmentStartedNs;
   std::optional<uint64_t> countdownMs;
+#ifdef PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID
+  std::string probeScenario;
+  bool consumeProbe(const char* scenario) {
+    if (probeScenario != scenario) return false;
+    probeScenario.clear();
+    return true;
+  }
+#endif
 
   void requireLease(const std::string& candidate) const {
     if (!storage || lease.empty() || candidate != lease) reject("foreground_clock_lease_stale");
@@ -90,6 +98,9 @@ class PatternlyForegroundClock final : public HybridObject {
 
   Raw readPhysicalLocked() {
     try {
+#ifdef PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID
+      if (consumeProbe("read")) reject("foreground_clock_probe_injected");
+#endif
       return storage->getString(key);
     } catch (...) {
       reject("foreground_clock_read_failed");
@@ -127,16 +138,25 @@ class PatternlyForegroundClock final : public HybridObject {
     if (current == after) return;
     if (current != before) reject("foreground_clock_conflict");
     try {
+#ifdef PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID
+      if (consumeProbe("write-before")) reject("foreground_clock_probe_injected");
+#endif
       if (after) {
         storage->set(key, *after);
       } else {
         (void)storage->remove(key);
       }
+#ifdef PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID
+      if (consumeProbe("write-after")) reject("foreground_clock_probe_injected");
+#endif
     } catch (...) {
       failLocked("foreground_clock_write_unknown");
       reject("foreground_clock_write_unknown");
     }
     try {
+#ifdef PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID
+      if (consumeProbe("readback")) reject("foreground_clock_probe_injected");
+#endif
       if (readPhysicalLocked() != after) reject("foreground_clock_write_unknown");
     } catch (...) {
       failLocked("foreground_clock_write_unknown");
@@ -188,6 +208,16 @@ class PatternlyForegroundClock final : public HybridObject {
       reject("foreground_clock_checkpoint_late");
     }
     return after;
+  }
+
+  std::string checkpointForLeaseLocked(const std::string& token, int64_t now) {
+    requireLease(token);
+    try {
+      return checkpointLocked(now, segmentStartedNs.has_value());
+    } catch (...) {
+      failLocked("foreground_clock_checkpoint_failed");
+      throw;
+    }
   }
 
   void tickerLoop() {
@@ -356,14 +386,61 @@ public:
   std::string checkpoint(const std::string& token) {
     std::lock_guard<std::mutex> lock(mutex);
     const int64_t now = monotonicNs();
-    requireLease(token);
-    try {
-      return checkpointLocked(now, segmentStartedNs.has_value());
-    } catch (...) {
-      failLocked("foreground_clock_checkpoint_failed");
-      throw;
-    }
+    return checkpointForLeaseLocked(token, now);
   }
+
+#ifdef PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID
+  // Synchronous under the owner mutex: no ticker or second command can consume
+  // the one-shot fault. The original SDK handle remains the storage authority.
+  std::string probeFault(const std::string& token, const std::string& scenario) {
+    std::lock_guard<std::mutex> lock(mutex);
+    requireLease(token);
+    const std::string uuid = PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID;
+    const auto keys = storage->getAllKeys();
+    if (storage->getId() != "patternly-android-clock-fixture-" + uuid || !storage->getIsEncrypted()
+        || !patternly::isForegroundTimerPhysicalKey(key, uuid) || token.rfind("0:", 0) != 0
+        || keys.size() != 1 || keys[0] != key || !record || !segmentStartedNs
+        || record->familyId != "coding_interview" || record->trackId != "coding-interview-dsa-problem-solving"
+        || (record->sessionId != "android-clock-fixture-elapsed-" + uuid
+            && record->sessionId != "android-clock-fixture-countdown-" + uuid)
+        || !probeScenario.empty() || !readApplicationActive()) reject("foreground_clock_probe_scope_invalid");
+    if (scenario != "read" && scenario != "write-before" && scenario != "write-after"
+        && scenario != "readback" && scenario != "backward") reject("foreground_clock_probe_scenario_invalid");
+    const Raw before = storage->getString(key);
+    if (!before || before != durableRaw) reject("foreground_clock_conflict");
+    const auto beforeRecord = patternly::decodeForegroundTimerRecord(*before);
+    struct ResetPlan { std::string& value; ~ResetPlan() { value.clear(); } } reset{probeScenario};
+    probeScenario = scenario;
+    const bool backward = consumeProbe("backward");
+    const int64_t sample = backward ? *segmentStartedNs - 1 : monotonicNs();
+    std::string firstCategory = "probe_unexpected_success";
+    try { (void)checkpointForLeaseLocked(token, sample); }
+    catch (const std::exception& error) {
+      const std::string category = error.what();
+      if (category == "foreground_clock_read_failed" || category == "foreground_clock_write_unknown"
+          || category == "foreground_clock_monotonic_invalid") firstCategory = category;
+      else firstCategory = "probe_unexpected_failure";
+    }
+    probeScenario.clear();
+    const Raw after = storage->getString(key);
+    if (!after) reject("foreground_clock_probe_readback_invalid");
+    const auto afterRecord = patternly::decodeForegroundTimerRecord(*after);
+    int deniedRetries = 0;
+    for (int attempt = 0; attempt < 2; ++attempt) {
+      try { (void)checkpointForLeaseLocked(token, monotonicNs()); }
+      catch (...) { if (!fault.empty()) ++deniedRetries; }
+    }
+    return folly::toJson(folly::dynamic::object
+        ("scenario", scenario)("firstCategory", firstCategory)("latchedCategory", fault)
+        ("deniedRetries", deniedRetries)("beforeEqualsAfter", before == after)
+        ("afterRetriesUnchanged", storage->getString(key) == after)
+        ("beforeRevision", static_cast<double>(beforeRecord.checkpointRevision))
+        ("afterRevision", static_cast<double>(afterRecord.checkpointRevision))
+        ("beforeElapsedMs", static_cast<double>(beforeRecord.accumulatedMs))
+        ("afterElapsedMs", static_cast<double>(afterRecord.accumulatedMs))
+        ("segmentStopped", !segmentStartedNs.has_value())("backwardSample", backward));
+  }
+#endif
 
   std::string pause(const std::string& token) {
     std::lock_guard<std::mutex> lock(mutex);
@@ -414,6 +491,9 @@ public:
   void revoke(const std::string& token) {
     std::lock_guard<std::mutex> lock(mutex);
     if (!storage || token != lease) reject("foreground_clock_lease_stale");
+#ifdef PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID
+    probeScenario.clear();
+#endif
     std::exception_ptr failure;
     try {
       if (!fault.empty()) reject(fault.c_str());
@@ -447,6 +527,9 @@ public:
       prototype.registerHybridMethod("elapsed", &PatternlyForegroundClock::elapsed);
       prototype.registerHybridMethod("metrics", &PatternlyForegroundClock::metrics);
       prototype.registerHybridMethod("revoke", &PatternlyForegroundClock::revoke);
+#ifdef PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID
+      prototype.registerHybridMethod("probeFault", &PatternlyForegroundClock::probeFault);
+#endif
     });
   }
 };

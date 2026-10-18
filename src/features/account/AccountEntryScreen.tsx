@@ -1323,11 +1323,11 @@ function getAccountRecoveryPresentation(accountData: AccountDataSession, text: A
   if (accountData.status === "signOutPending") return { body: text.signOutPendingDescription, cloudRecovery: false, retry: false, testID: "account-sign-out-pending", title: text.signOutPending };
   if (accountData.status === "remoteDeletionPending") return { body: text.deletionPendingDescription, cloudRecovery: false, retry: false, testID: "account-deletion-pending", title: text.deletionPending };
   if (accountData.status === "localCleanupPending") return { body: text.localCleanupPendingDescription, cloudRecovery: false, retry: false, testID: "account-deletion-local-cleanup-pending", title: text.localCleanupPending };
-  if (accountData.activeSessionBlocked || accountData.lastFailureCode === "active_session_adoption_blocked") {
-    return { body: text.activeSessionBlocked, cloudRecovery: false, retry: true, testID: "account-adoption-active-session", title: text.accountRecoveryTitle };
-  }
   if (accountData.lastFailureCode === "journal_recovery_required") {
     return { body: text.journalBlocked, cloudRecovery: false, retry: true, testID: "account-adoption-journal", title: text.accountRecoveryTitle };
+  }
+  if (accountData.activeSessionBlocked || accountData.lastFailureCode === "active_session_adoption_blocked") {
+    return { body: text.activeSessionBlocked, cloudRecovery: false, retry: true, testID: "account-adoption-active-session", title: text.accountRecoveryTitle };
   }
   if (accountData.lastFailureCode === "account_binding_mismatch") {
     return { body: text.accountBindingMismatchDescription, cloudRecovery: false, retry: false, testID: "account-sync-binding-mismatch", title: text.accountBindingMismatch };

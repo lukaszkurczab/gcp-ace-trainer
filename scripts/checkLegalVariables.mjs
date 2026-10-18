@@ -3,10 +3,11 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { legalDocumentApprovalIssue } from "./publicLegalApproval.mjs";
 
 const require = createRequire(import.meta.url);
 const { legalVariablesLocalFixture } = require("../src/legal/legalVariablesLocalFixture.ts");
-const { validateLegalVariables } = require("../src/legal/legalVariablesSchema.ts");
+const { validateLegalVariables, validateLegalVariablesRelease } = require("../src/legal/legalVariablesSchema.ts");
 const releaseLegalVariablesPath = resolve(dirname(fileURLToPath(import.meta.url)), "../config/public-legal.release.json");
 
 export function resolveLegalVariables(mode, releasePath = releaseLegalVariablesPath) {
@@ -43,7 +44,14 @@ export function runCheck(args = process.argv.slice(2)) {
     return 1;
   }
 
-  const issues = validateLegalVariables(legalVariables, mode);
+  const issues = mode === "release" ? validateLegalVariablesRelease(legalVariables) : validateLegalVariables(legalVariables, mode);
+  if (mode === "release") {
+    if (legalVariables?.legalDocumentApproval?.status !== "APPROVED") issues.push({ path: "legalDocumentApproval.status", message: "Production legal documents are not approved." });
+    else {
+      const approvalIssue = legalDocumentApprovalIssue(legalVariables);
+      if (approvalIssue) issues.push({ path: "legalDocumentApproval.renderedDocumentsSha256", message: approvalIssue });
+    }
+  }
   if (issues.length > 0) {
     console.error(`LEGAL_VARIABLES_CHECK=failed mode=${mode}`);
     for (const issue of issues) console.error(`- ${issue.path}: ${issue.message}`);

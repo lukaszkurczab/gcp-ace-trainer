@@ -30,6 +30,18 @@ target_compile_definitions(patternly_foreground_clock PRIVATE
   FOLLY_HAVE_XSI_STRERROR_R=1
 )
 
+# Empty in ordinary builds. An explicit UUID enables only the synthetic-store
+# failure probe; it never changes the production clock's public capability.
+set(PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID "" CACHE STRING "Private Android clock fixture UUID")
+if(NOT PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID STREQUAL "")
+  string(LENGTH "${PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID}" probe_uuid_length)
+  if(NOT probe_uuid_length EQUAL 36 OR NOT PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID MATCHES "^[0-9a-f]+-[0-9a-f]+-4[0-9a-f]+-[89ab][0-9a-f]+-[0-9a-f]+$")
+    message(FATAL_ERROR "Invalid Android clock fixture UUID")
+  endif()
+  target_compile_definitions(patternly_foreground_clock PRIVATE
+    PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID="${PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID}")
+endif()
+
 target_link_libraries(patternly_foreground_clock
   ReactAndroid::jsi
   ReactAndroid::reactnative

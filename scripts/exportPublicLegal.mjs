@@ -4,23 +4,16 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import "tsx/cjs";
 import { legalSourceFingerprint } from "./legalSourceFingerprint.mjs";
+import { legalDocumentApprovalIssue, renderCanonicalLegalDocuments, renderedDocumentsSha256 } from "./publicLegalApproval.mjs";
 
 const require = createRequire(import.meta.url);
-const { validateLegalVariables, validateLegalVariablesTestDraft } = require("../src/legal/legalVariablesSchema.ts");
+const { validateLegalVariables, validateLegalVariablesTestDraft, validateLegalVariablesRelease } = require("../src/legal/legalVariablesSchema.ts");
 const { renderPrivacyPolicy } = require("../src/legal/privacyPolicy.ts");
 const { renderTermsOfService } = require("../src/legal/termsOfService.ts");
 const { legalTranslationDraftsTestOnly, renderLegalTranslationDraftTestOnly } = require("../src/legal/legalTranslationDrafts.testOnly.ts");
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const canonicalSourcePath = resolve(appRoot, "config/public-legal.release.json");
 const locales = ["en", "pl"];
-
-function validateSource(source, mode) {
-  const issues = validateLegalVariables(source, mode);
-  if (issues.length > 0) {
-    const paths = [...new Set(issues.map(({ path }) => path))].sort();
-    throw new Error(`Public legal source is invalid (${paths.join(", ")}).`);
-  }
-}
 
 function publicProfileFrom(source) {
   return {
@@ -66,8 +59,18 @@ function createArtifact(source, testOnly) {
       throw new Error(`Test-only legal draft is invalid (${paths.join(", ")}).`);
     }
   } else {
-    validateSource(source, "release");
+    const issues = validateLegalVariablesRelease(source);
+    if (issues.length > 0) {
+      const paths = [...new Set(issues.map(({ path }) => path))].sort();
+      throw new Error(`Public legal source is invalid (${paths.join(", ")}).`);
+    }
+    if (source.legalDocumentApproval?.status !== "APPROVED") {
+      throw new Error("Public legal approval is invalid (legalDocumentApproval.status must be APPROVED)");
+    }
+    const approvalIssue = legalDocumentApprovalIssue(source);
+    if (approvalIssue) throw new Error(`Public legal approval is invalid (${approvalIssue})`);
   }
+  const documents = testOnly ? renderedDocuments(source, true) : renderCanonicalLegalDocuments(source);
   const artifact = {
     schemaVersion: "patternly-public-legal-export-v1",
     testOnly,
@@ -75,9 +78,13 @@ function createArtifact(source, testOnly) {
     sourceFingerprint: legalSourceFingerprint(testOnly ? { source, drafts: legalTranslationDraftsTestOnly.documents } : source),
     publicProfile: publicProfileFrom(source),
     publicLinks: source.publicLinks,
-    documents: renderedDocuments(source, testOnly),
+    documents,
   };
   if (testOnly) artifact.approvalStatus = "UNAPPROVED";
+  else {
+    artifact.approvalStatus = "APPROVED";
+    artifact.approvedDocumentsSha256 = renderedDocumentsSha256(documents);
+  }
   return artifact;
 }
 
@@ -88,15 +95,17 @@ export function buildPublicLegalArtifactForTest(syntheticSource) {
 }
 
 /** Reads the one canonical release source and builds a production artifact. */
+export function buildProductionPublicLegalArtifactFrom(source) {
+  return createArtifact(source, false);
+}
+
+/** Reads the one canonical release source and builds a production artifact. */
 export function buildProductionPublicLegalArtifact() {
   if (!existsSync(canonicalSourcePath)) throw new Error("Canonical public legal source is missing.");
   let source;
-  try {
-    source = JSON.parse(readFileSync(canonicalSourcePath, "utf8"));
-  } catch {
-    throw new Error("Canonical public legal source is malformed.");
-  }
-  return createArtifact(source, false);
+  try { source = JSON.parse(readFileSync(canonicalSourcePath, "utf8")); }
+  catch { throw new Error("Canonical public legal source is malformed."); }
+  return buildProductionPublicLegalArtifactFrom(source);
 }
 
 function outputPathFromArgs(args) {

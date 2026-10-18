@@ -8,7 +8,7 @@ export interface LegalVariablesIssue {
 }
 
 const releaseLocales = ["en", "pl"] as const;
-const placeholder = /^\[(?:TO BE COMPLETED|DO UZUPEŁNIENIA):\s*[A-Za-z][A-Za-z0-9]*\]$/;
+const placeholder = /^\[(?:TO BE COMPLETED|DO UZUPEŁNIENIA|UNRESOLVED|UNAPPROVED):\s*[A-Za-z][A-Za-z0-9.]*\]$/;
 const termsKeys = [
   "adrEntity", "adrPosition", "competentCourts", "complaintEmail", "distributionTerritories", "effectiveDate",
   "governingLaw", "merchantOfRecord", "minimumUserAge", "minimumUserAgeScope", "operatorBusinessForm",
@@ -138,9 +138,34 @@ function validateLegalVariablesForLocales(
   return issues;
 }
 
-/** Validates the stable EN/PL release contract. Draft locales must use the explicit test-only validator. */
+/** Validates the stable local EN/PL fixture contract. */
 export function validateLegalVariables(value: unknown, mode: LegalVariablesValidationMode = "test"): LegalVariablesIssue[] {
   return validateLegalVariablesForLocales(value, mode, releaseLocales);
+}
+
+/** Validates the canonical seven-locale candidate, including explicit approval metadata. */
+export function validateLegalVariablesRelease(value: unknown): LegalVariablesIssue[] {
+  if (!isRecord(value)) return [{ path: "", message: "Expected an object." }];
+  const { legalDocumentApproval, ...variables } = value;
+  const issues = validateLegalVariablesForLocales(variables, "release", LEGAL_TRANSLATION_LOCALES);
+  if (!isRecord(legalDocumentApproval)) {
+    issues.push({ path: "legalDocumentApproval", message: "Expected an approval record." });
+  } else {
+    if (!sameKeys(legalDocumentApproval, ["status", "renderedDocumentsSha256"])) {
+      issues.push({ path: "legalDocumentApproval", message: "Expected exactly status and renderedDocumentsSha256." });
+    }
+    if (legalDocumentApproval.status !== "APPROVED" && legalDocumentApproval.status !== "UNAPPROVED") {
+      issues.push({ path: "legalDocumentApproval.status", message: "Expected APPROVED or UNAPPROVED." });
+    }
+    const digest = legalDocumentApproval.renderedDocumentsSha256;
+    if (digest !== null && (typeof digest !== "string" || !/^[a-f0-9]{64}$/u.test(digest))) {
+      issues.push({ path: "legalDocumentApproval.renderedDocumentsSha256", message: "Expected null or a lowercase SHA-256." });
+    }
+    if (legalDocumentApproval.status === "APPROVED" && typeof digest !== "string") {
+      issues.push({ path: "legalDocumentApproval.renderedDocumentsSha256", message: "Approved documents require a bound SHA-256." });
+    }
+  }
+  return issues;
 }
 
 /** Validates a synthetic seven-locale fixture without changing the EN/PL release schema. */

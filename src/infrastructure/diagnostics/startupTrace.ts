@@ -1,5 +1,6 @@
 import type { AccountStartupDiagnosticStage, BootstrapRecoveryPendingStep, ProfileStoragePreparationDiagnosticStage } from "../../application/operationalDiagnostics";
 import type { CanonicalRepositoryBootstrapStep } from "../../storage/repositories/canonicalRepositories";
+import { androidClockProbeEnabled } from "./androidClockProbeGate";
 
 export type StartupTraceStage =
   | "app:active" | "app:background" | "app:inactive" | "app:unknown" | "app:extension" | "home_data_commit"
@@ -13,6 +14,8 @@ export type StartupTraceStage =
   | "predecessor_clone_stringify" | "predecessor_hash" | "catalog_projection" | "catalog_tracks"
   | "planning_policy" | "pool_construction"
   | "mode_artifact_questions"
+  | "premium:response_v2" | "premium:response_missing_v2" | "premium:response_rejected" | "premium:refresh_failed"
+  | "premium:actor_denied" | "premium:scope_unavailable" | "premium:allowed" | "premium:denied" | "premium:unavailable"
   | `recovery:${BootstrapRecoveryPendingStep | "idle"}`
   | `repository:${CanonicalRepositoryBootstrapStep}`
   | `account:${AccountStartupDiagnosticStage}`
@@ -25,9 +28,15 @@ let truncated = false;
 let nextSpan = 0;
 
 function enabled(): boolean {
-  return typeof __DEV__ !== "undefined" && __DEV__
+  const smoke = typeof __DEV__ !== "undefined" && __DEV__
     && process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"
     && process.env.EXPO_PUBLIC_PATTERNLY_STARTUP_TRACE === "1";
+  if (smoke) return true;
+  if (process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE !== "sandbox" || !process.env.EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID) return false;
+  try {
+    return androidClockProbeEnabled(process.env.EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID,
+      process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE, (require("react-native") as typeof import("react-native")).Platform.OS);
+  } catch { return false; }
 }
 
 /** RAM-only observation; failure must never affect the operation being measured. */

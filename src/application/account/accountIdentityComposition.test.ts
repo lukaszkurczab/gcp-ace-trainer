@@ -245,6 +245,8 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
   assert.match(presentation, /status === "localCleanupPending"\) return \{[^}]*cloudRecovery: false/u);
   assert.match(presentation, /activeSessionBlocked[\s\S]*?cloudRecovery: false/u);
   assert.match(presentation, /journal_recovery_required[\s\S]*?cloudRecovery: false/u);
+  assert.ok(presentation.indexOf('lastFailureCode === "journal_recovery_required"') < presentation.indexOf("accountData.activeSessionBlocked"),
+    "a pending journal can also block an active session; its recovery reason must precede generic adoption copy");
   assert.match(presentation, /account_binding_mismatch[\s\S]*?cloudRecovery: false/u);
   assert.match(presentation, /return \{ body: text\.syncing, cloudRecovery: false/u);
   assert.match(recovery, /const showCloudRecovery = status\.cloudRecovery && feedbackAction !== "signOut"/u);

@@ -1,6 +1,6 @@
 import { legalVariables } from "./legalVariables";
 import { getLegalDocument } from "./legalDocumentMap";
-import { validateLegalVariables } from "./legalVariablesSchema";
+import { validateLegalVariablesRelease } from "./legalVariablesSchema";
 import type { TargetLocale } from "../preferences/localeResolver";
 import type { PatternlyRuntimeMode } from "../infrastructure/runtime/runtimeMode";
 
@@ -29,7 +29,10 @@ export function resolveProviderRegistrationDocuments(
   const privacy = getLegalDocument(locale, "privacyPolicy", releaseRuntime);
   const termsVersion = legalVariables.documentVersion[locale]?.trim();
   const privacyVersion = legalVariables.documentVersion[locale]?.trim();
-  const releaseIssues = runtimeMode === "release" ? validateLegalVariables(legalVariables, "release") : [];
+  const releaseIssues = runtimeMode === "release" ? validateLegalVariablesRelease(legalVariables) : [];
+  if (runtimeMode === "release" && (legalVariables as unknown as { legalDocumentApproval?: { status?: string } }).legalDocumentApproval?.status !== "APPROVED") {
+    releaseIssues.push({ path: "legalDocumentApproval.status", message: "Production legal documents are not approved." });
+  }
   if (terms.status !== "canonical" || privacy.status !== "canonical"
     || !terms.content?.trim() || !privacy.content?.trim()
     || !termsVersion || !privacyVersion

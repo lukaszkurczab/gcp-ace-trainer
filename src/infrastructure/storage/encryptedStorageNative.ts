@@ -23,12 +23,23 @@ function base64Url(bytes: Uint8Array): string {
 
 type NativeForegroundClock = HybridObject<{ ios: "c++"; android: "c++" }> & BoundForegroundClockDriver & Readonly<{
   bind(instance: ReturnType<MmkvModule["createMMKV"]>, physicalKey: string, profileId: string, token: string): void;
+  probeFault?(token: string, scenario: string): string;
 }>;
 const foregroundClockFactories = new WeakMap<StorageSlot, (scope: ForegroundClockScope) => ForegroundClockCapability>();
 const probeEnabled = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "sandbox"
   && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(process.env.EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID ?? "");
 type StorageProbe = Readonly<{ profileSha256: string; encrypted: boolean; bindReadMatched: boolean; aliasReadMatched: boolean; nativeRawSha256: string; checkpointCount: number }>;
 const storageProbeReaders = new Map<string, () => StorageProbe>();
+const fixtureFaultProbes = new Map<string, (scenario: string) => string>();
+
+/** Private Android fixture command; native checks the compiled UUID, SDK store,
+ * exact physical key/session and generation independently of this caller. */
+export function runNativeForegroundClockFixtureFault(profileSha256: string, scenario: string): string {
+  if (!probeEnabled) throw new Error("foreground_clock_fixture_probe_unavailable");
+  const run = fixtureFaultProbes.get(profileSha256);
+  if (!run) throw new Error("foreground_clock_fixture_probe_unavailable");
+  return run(scenario);
+}
 
 /** Diagnostic observation only. Both reads use the very same already-open
  * HybridMMKV object; this never opens storage or exposes an encryption key. */
@@ -80,6 +91,18 @@ function wrap(instance: ReturnType<MmkvModule["createMMKV"]>, createToken: () =>
     if (native.read(token) !== beforeBind) throw new Error("foreground_clock_shared_handle_mismatch");
     const bound = createForegroundClockCapability(native, token, scope);
     const profileSha256 = sha256Utf8(scope.profileId);
+    if (probeEnabled && (require("react-native") as typeof import("react-native")).Platform.OS === "android") {
+      fixtureFaultProbes.set(profileSha256, scenario => {
+        if (!scope.isCurrent() || typeof native.probeFault !== "function") throw new Error("foreground_clock_fixture_probe_unavailable");
+        const result = JSON.parse(native.probeFault(token, scenario));
+        // Native accepted the exact compiled fixture scope and stopped its
+        // segment. Observe the original SDK object without retrying its faulted
+        // capability; only a digest crosses this private diagnostic boundary.
+        if (!scope.isCurrent() || scope.profileId !== process.env.EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID
+          || !result || typeof result !== "object" || Array.isArray(result)) throw new Error("foreground_clock_fixture_probe_unavailable");
+        return JSON.stringify({ ...result, timerEnvelopeSha256: sha256Utf8(instance.getString(scope.physicalKey) ?? "") });
+      });
+    }
     if (probeEnabled) storageProbeReaders.set(profileSha256, () => {
       if (!scope.isCurrent()) throw new Error("foreground_clock_lease_stale");
       // A periodic native checkpoint can race these read-only observations.
@@ -102,6 +125,7 @@ function wrap(instance: ReturnType<MmkvModule["createMMKV"]>, createToken: () =>
       revoke() {
         if (revokeFailed) throw new Error("foreground_clock_revoke_unknown");
         storageProbeReaders.delete(profileSha256);
+        fixtureFaultProbes.delete(profileSha256);
         try { bound.revoke(); }
         catch (error) { revokeFailed = true; throw error; }
         if (activeCapability === capability) { activeCapability = null; activePhysicalKey = null; }

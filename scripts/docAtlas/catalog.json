@@ -628,7 +628,7 @@
     },
     {
       "prefix": "patternly-content/.github",
-      "description": "Bramki walidacji producenta uruchamiane w CI."
+      "description": "CI producenta: testuje konsumenta APP, buduje i punktuje treści, tworzy draft w kwarantannie oraz sprawdza niezmienność historycznych dowodów; nie przyznaje admission ani nie zmienia pinów APP."
     },
     {
       "prefix": "patternly-web",
@@ -720,8 +720,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/account/AccountSessionProvider.tsx": {
-      "description": "Udostępnia Reactowi bieżący stan konta/Gościa i skoordynowane operacje sesji.",
-      "reviewedHash": "007c615203071f8919aadabf046ceb18ddcd2a916dceab990bc7d707556a43dd",
+      "description": "Udostępnia Reactowi stan konta/Gościa i koordynuje operacje sesji; znaczniki diagnostyczne odpowiedzi Premium trafiają wyłącznie do ograniczonego śladu startowego w RAM.",
+      "reviewedHash": "d6ece1ebe2a6455622b8823bc901d547d18ca972b199bfed3e2d5dffda90fba1",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/application/account/ProfileStoragePreparationGate.tsx": {
@@ -730,8 +730,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/storage/repositories/profileStorageRepository.ts": {
-      "description": "Koordynuje przełączenie aktywnego profilu i sygnalizuje wymaganą zmianę/reload; istotny właściciel izolacji danych.",
-      "reviewedHash": "969700185f7e35b73a80fc4b7e1142ac567cb20ac3f087e1a289555974b7c158",
+      "description": "Koordynuje przełączenie aktywnego profilu, zmianę/reload i publikację gotowości storage; istotny właściciel izolacji danych oraz wczesnej obserwacji diagnostycznej.",
+      "reviewedHash": "f593b1a05c62abc30466572e9b677825107f014876a4fcf1c919d8ef1dddfa8a",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/application/account/accountDataService.ts": {
@@ -750,8 +750,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/content/application/ContentPreparationGate.tsx": {
-      "description": "Łączy przygotowanie treści z przygotowaniem konta/profilu i blokuje przedwczesne wejście do nauki.",
-      "reviewedHash": "b406d55e783a46bc668a27110723b8bdd96185d3d4dfdf65d07f096931f0788b",
+      "description": "Weryfikuje treść przed wznowieniem; zachowuje limit oczekiwania 15 s i przyjmuje późny sukces tylko tej samej generacji bootstrapu, handoff i aktywnego lease profilu.",
+      "reviewedHash": "fa4a13e177bf3533f53d1143c9eefd97e3211d469fb6e937b07de801103aac37",
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/content/application/nodePackageInstaller.ts": {
@@ -830,8 +830,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/storage/repositories/foregroundTimerRepository.ts": {
-      "description": "Repozytorium stanu zegara sesji; trwałość tego zapisu wymaga osobnej próby natywnej.",
-      "reviewedHash": "bf4d8c85d590eda42df7cc300e8a880b6706800f7d3bb45c49cf3b0a03a8e7cb",
+      "description": "Repozytorium stanu zegara sesji oraz read-only accessor używany przez Android clock probe; trwałość zapisu zegara nadal wymaga osobnej próby natywnej.",
+      "reviewedHash": "be80cab819d1e24b9fde1d3bef33157b1acb848250e06729aea7376c98d6a0b2",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/domain/learning/packageCompletionRule.ts": {
@@ -880,8 +880,8 @@
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/legal/legalVariables.ts": {
-      "description": "Wczytuje i waliduje zmienne dokumentów prawnych/oferty. Dostępność treści i zatwierdzenie wydania wymagają osobnych dowodów.",
-      "reviewedHash": "12b5fdb3442414efb5e147a22c19d45c769d1f3b6c52fbb0e491a6ec86df36be",
+      "description": "Wybiera źródło zmiennych prawnych i waliduje kontrakt. Wydanie wymaga jawnego APPROVED oraz zgodnego SHA-256 dokładnie wyrenderowanych 14 dokumentów; bieżące drafty pozostają UNAPPROVED.",
+      "reviewedHash": "55e6fa666ac9996bbe3f9432768b721aded01179cbcc1975722a9f52a425bf1e",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/scripts/checkWorkspaceDocs.mjs": {
@@ -958,8 +958,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/account-lifecycle/store.ts": {
-      "description": "Operacje recovery i usunięcia konta z trwałym stanem umożliwiającym odtworzenie.",
-      "reviewedHash": "59255dc6eb363d04fb45d4126e6ce56180d78bdb3ac09bffee5bbb9b520d38a0",
+      "description": "Prowadzi kasowanie i recovery z lease oraz kontrolą właściciela operacji. Niezmienny checkpoint zachowuje pierwotny czas usunięcia; blokada logiczna trwa 7 dni, także dla poprawnych starych znaczników 45-dniowych. Po TTL wymaga kontroli odczytu.",
+      "reviewedHash": "4175ce8b00bfc8c291ed0421bb7236e9936efb1f6b62f1cf66c0b0a308b52c7c",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-backend/src/modules/content/packages.ts": {
@@ -1078,8 +1078,8 @@
       "flow": "Witryna, demo i panel"
     },
     "patternly-web/src/publicLegalArtifact.js": {
-      "description": "Wczytuje i waliduje artefakt prawny wyprodukowany przez aplikację.",
-      "reviewedHash": "357b26a65875813ae65dd0a163550ddda31a6b0ffeb8c7133766835426dfd801",
+      "description": "Waliduje artefakt legal w produkcji: wszystkie 7 locale, jawne APPROVED, brak placeholderów, source fingerprint i exact raw-export SHA256; tryby test wymagają testOnly i nie oznaczają zatwierdzenia.",
+      "reviewedHash": "8e657fa02e59bd3d54d5a5b3d7e531066a50ac5b92207afc022740fed56a6397",
       "flow": "Witryna, demo i panel"
     },
     "patternly-web/src/publicLegalLocales.js": {
@@ -1218,8 +1218,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/account/AccountEntryScreen.tsx": {
-      "description": "Wejście do konta i alternatywa sesji Gościa.",
-      "reviewedHash": "532158b07ae0825dca878677e2ad37fb3e315d643bde8684496f2e5549b5957b",
+      "description": "Wejście do konta i alternatywa sesji Gościa; konkretny błąd odzyskiwania dziennika jest pokazany przed ogólną blokadą adopcji aktywnej sesji.",
+      "reviewedHash": "3a47bbf108a0ace6ad0cf0eff6e7caa5a8305b2e4bf0455673010e97c6e0c4df",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/features/account/AccountSecurityScreen.tsx": {
@@ -1268,9 +1268,9 @@
       "reviewedHash": "75b4ce22f9dd6467f18ecb7fd120bd24df05056fc29236fc46ddda1db27999a0"
     },
     "patternly/native/foreground-clock/android/PatternlyForegroundClockAndroid.cpp": {
-      "description": "Właściciel pojedynczego T na przekazanym HybridMMKVSpec: serializacja mutexem, natywny wątek checkpoint1s, lifecycle cutoff/resume, kontrola oczekiwanych bajtów przed zapisem i readback, lease i fault/revoke. Cold arm nie odtwarza segmentu; countdown ogranicza nowe naliczanie bez cofania starego overrun.",
+      "description": "Właściciel pojedynczego T na przekazanym HybridMMKVSpec: serializacja mutexem, natywny checkpoint co 1 s, lifecycle cutoff/resume, kontrola bajtów przed zapisem, readback, lease i revoke. Wstrzykiwanie awarii jest dostępne wyłącznie w kompilacji z jawnym UUID dla syntetycznego fixture; cold arm nie odtwarza segmentu, a countdown nie cofa wcześniejszego overrun.",
       "flow": "Sesja, odpowiedź i trwały wynik",
-      "reviewedHash": "40947050ff9753577aa806d7fac3c4f3a2396d465ceceb38338d0814e29110e4"
+      "reviewedHash": "37b92b7065f27855fbccd4202f1e384b11109e6d0c20099ef9dcf354ccf122a6"
     },
     "patternly/native/foreground-clock/android/ForegroundTimerRecordAndroid.cpp": {
       "description": "Ścisły codec istniejącej koperty T przez Folly z przypiętego React Native; waliduje klucze, wersje, liczby, scope i routerowy klucz. Wall time jest tylko metadanymi checkpointu.",
@@ -1288,9 +1288,9 @@
       "reviewedHash": "714ce74d34dd89a45d176bc99316e4c6b83ce42728094e98921c632feb07eb2f"
     },
     "patternly/native/foreground-clock/android/CMakeLists.txt": {
-      "description": "Buduje bibliotekę właściciela z publicznymi prefabami przypiętego React Native, NitroModules i NitroMmkv; nie kopiuje implementacji SDK ani registry.",
+      "description": "Buduje natywny zegar z przypiętymi React Native, NitroModules i NitroMmkv prefabami. Domyślnie nie włącza wstrzykiwania błędów; jawny UUID kompilacyjny ogranicza je do prywatnej próby na syntetycznym fixture.",
       "flow": "Sesja, odpowiedź i trwały wynik",
-      "reviewedHash": "2e2b0cf51cb6bbfd01acc35b2ddb05724eb589a35be99a958f2d77246bfe2c85"
+      "reviewedHash": "77e32f278f4e7d62d8802cbc645d230470a8724d8498c0087b5fb80b0f84df49"
     },
     "patternly/native/foreground-clock/android/build.gradle": {
       "description": "Moduł Android library/Kotlin z externalNativeBuild i prefabami; respektuje ten sam reactNativeArchitectures co SDK i elastyczne rozmiary stron pamięci.",
@@ -1303,34 +1303,259 @@
       "reviewedHash": "7f2b971ddbf32f0b6c5f4d0eb0e0bdf7e96d73c2d0b66433a916d2439cb068d8"
     },
     "patternly/src/application/runtimeAuditability/AndroidClockProbeHost.tsx": {
-      "description": "Prywatny host poleceń Android/sandbox/UUID: dopuszcza obserwację, izolowane fixture i ograniczoną blokadę JS; nie działa w zwykłym wydaniu.",
-      "reviewedHash": "21d550cc5ed85923c45a48a52e2c4b33ce5dbc02cb2d26254f3099f0cf1efaa3",
+      "description": "Prywatny host Android/sandbox/UUID obsługuje jednorazowy stall i fixture. Przed fault odczytuje zweryfikowany binding, zachowując synchroniczny fault i T digest; diagnostyka nie nadaje odbioru runtime.",
+      "reviewedHash": "853181ca15e7534a5321032ddb4df698b1c8a8bf23c25d8ee12907efe2f92dd2",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/runtimeAuditability/androidClockFixture.ts": {
-      "description": "Izolowane szyfrowane fixture count-up/countdown używają oryginalnego SDK handle i tego samego natywnego ownera. Guard potwierdza nierosnący produkcyjny zegar; cleanup usuwa wyłącznie własny ID dopiero w zimnym procesie.",
-      "reviewedHash": "1924fe422a1d6bf52b46b403a6b8272fad2701eee09ffa5b66079a3514984637",
+      "description": "Izolowane szyfrowane fixture używają oryginalnego SDK i natywnego ownera; fault wymaga UUID. Cold readback sprawdza ponownie exact T po asynchronicznym odczycie bindingu; cleanup usuwa wyłącznie własny store po potwierdzonym cold restarcie.",
+      "reviewedHash": "9a8b8e31ab594771b0fc6a793093623ab77173d52b52b4f55962fb335fdfa91b",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/runtimeAuditability/androidClockProbeRuntime.ts": {
-      "description": "Nieautorytatywny odczyt T przed uzgodnieniem oraz dwa bezpośrednie natywne pomiary czasu; wiąże sesję, konfigurację, profil i spis hashy bez zapisu elapsed.",
-      "reviewedHash": "e5e89722bced86ec52cabb6edba5bfa0db62d8c1e7bea9b6d11aa7742d8f7fb1",
+      "description": "Wczesny odczyt poprzedza reconciliation, a jednorazowy stall wiąże lease/sesję/inventory na 10 s. Oddzielny asynchroniczny odczyt fault-preservation zwraca skróty zweryfikowanego bindingu i cache; nie opóźnia produkcyjnego early-T.",
+      "reviewedHash": "64fd38274e695d405f3a4be52384846fab4db2b0c73040285e7612a99ba46126",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/scripts/qa/androidForegroundClockKillProbe.mjs": {
-      "description": "Sterownik jednego Androida: potwierdza JS stall i PID/birth, systemową śmierć procesu, zimny odczyt oraz konserwatywne granice utraty. Cleanup czeka na osobne potwierdzenie z zimnego procesu.",
-      "reviewedHash": "77bc5a8c01d7fafd949fe372444d4b08bbb2c8204ec4c74dae3c7baa5fdb847d",
-      "flow": "Sesja, odpowiedź i trwały wynik"
+      "description": "Sterownik jednego Androida potwierdza APK, PID/birth, śmierć procesu i cold readback oraz granice utraty. Tylko porównanie fault-fixture dopuszcza zwalidowane odświeżenie obserwacji Premium przy tym samym koncie/profilu/UID; pozostałe dane i produkcyjny stall pozostają ścisłe.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "40d8601a700759f97b57b07f0e4ce8567e20801ff2f01945f8e387e7eb52c766"
     },
     "patternly/scripts/qa/deriveAndroidClockProbeApk.py": {
-      "description": "Tworzy niepodpisaną lokalną pochodną wskazanego APK: dopuszcza zmianę jedynie bundle Hermes, porównuje pozostałe wpisy i zasoby; nie używa danych uwierzytelniających ani urządzenia.",
-      "reviewedHash": "1a779818ac83a016e8b8ebd8614edee260de56eb3ac8f93b166aa0a6ea79ab0e",
+      "description": "Tworzy unsigned APK po weryfikacji tożsamości bazowego artefaktu, Hermes bundle i zasobów. Opcjonalna podmiana biblioteki ownera arm64 wymaga SHA-256 starej i nowej binarki oraz zgodnego ELF ABI, SONAME i zależności dynamicznych; pozostałe wpisy i AndroidManifest są sprawdzane jako niezmienione. Narzędzie nie podpisuje, nie instaluje ani nie dowodzi runtime.",
+      "reviewedHash": "8cdaf3402a7060d353f2c81566d29648ebe254ab6ae77d004bdf83bc761b19ef",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/scripts/qa/embedAndroidClockProbe.mjs": {
       "description": "Eksportuje prywatny bundle Android/Hermes ze spójnego snapshotu i zatwierdzonego sandbox fingerprint; bez buildu EAS i instalacji.",
       "reviewedHash": "690457c80e8d918ab3123784666333ec94f8be8861f5c06aa4bfe26fad707a94",
       "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtimeAuditability/androidClockAccountProbe.ts": {
+      "description": "Pasywnie porównuje profil, konto, sesję, zegar, cache Premium i sześć slotów sterujących; emituje ograniczone statusy, liczniki/czasy oraz skróty, bez surowych tożsamości, adopcji, odświeżania lub zapisu danych.",
+      "reviewedHash": "06cfcd954efe3412bc3e3d3a27be9690c8e945af980f84530cfa788f4962c034",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly/src/infrastructure/diagnostics/androidClockProbeGate.ts": {
+      "description": "Włącza prywatny Android probe wyłącznie dla jawnego UUID, platformy Android i sandboxowego trybu runtime.",
+      "reviewedHash": "865a48a7de4f345c7844299c109505acad5289efe2225d11ecb350d6e26fd2fb",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/infrastructure/diagnostics/startupTrace.ts": {
+      "description": "Zachowuje ograniczone zdarzenia startu w RAM dla development smoke lub jawnego prywatnego Android probe, bez payloadów użytkownika; obejmuje bezpieczne etapy odpowiedzi Premium.",
+      "reviewedHash": "b4c9659c26936c8ef5d11e22450003f2c1254ec4d37705094164afc9409bec20",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/content/application/contentPreparationAttempt.ts": {
+      "description": "Właściciel jednej próby przygotowania: timeout, ukończenie i anulowanie; odrzuca późne wyniki po retry, zmianie handoff, generacji bootstrapu lub profilu.",
+      "reviewedHash": "ffe7dbb0d91ccd11961da9949f4e840e706035f0cd527457fcf4f61bd2cc14f0",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/src/content/application/contentPreparationAttempt.test.ts": {
+      "description": "Testuje sukces po timeout oraz błędy, duplikat ukończenia i unieważnienie po retry, zmianie profilu/handoff/generacji lub unmount; nie stanowi dowodu runtime.",
+      "reviewedHash": "77a24a927e25e547e470ed0bccb0d6682b883601fe4c13adc35ad249923d7f26",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/scripts/candidateContentReleaseLock.mjs": {
+      "description": "Weryfikuje i odczytuje app lock przypięty do jednego kandydata i dokładnych artefaktów tracków, bundle oraz producenta treści. Pin kandydata jest odrębny od historycznego fixture i sam nie dowodzi publikacji.",
+      "reviewedHash": "09ed03ba93e291711f03655316ac28ff52729bf5bf36bacb16b223b3619a09b7",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/scripts/fixtures/lockedContentProducer.ts": {
+      "description": "Fixture integracyjne pobiera producenta treści z dokładnego commitu przypiętego w zaakceptowanym locku kandydata i sprząta własny checkout tymczasowy.",
+      "reviewedHash": "1d768210f401c46f0c3499f9066ee4a37d46ee5ab1bf7da74cd902443cbc0753",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-content/evidence/business-quality/besd-n03-20261018-repairs.json": {
+      "description": "Dowód korekty 72 pozycji BESD-N03 w czterech jednostkach: mapowanie przed/po, hashe źródeł, zmienione pola i macierz sprawdzeń. Zachowuje historyczne niepowodzenie cohort15 sprzed naprawy fixture; późniejszy PASS jest osobnym dowodem. Nie przyznaje admission nowym źródłom.",
+      "reviewedHash": "33f632b189c78041c0e681724fde335adcdee718808209f120b533e99e179e7e",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly-content/tests/besd-n03-repairs-20261018.test.mjs": {
+      "description": "Deklaruje kontrakty i niezmienniki korekt BESD-N03: tożsamość, dozwolone zmiany, mapowanie dowodu i granice pakietu. Sam opis przypadków nie potwierdza ich wykonania lub admission.",
+      "reviewedHash": "344db24cba7e3c8c49ad0d95224193179a57d8806bb35ff6f47521f823d88313",
+      "flow": "Treść od producenta do sesji"
+    },
+    "patternly/app.config.js": {
+      "description": "Release config gate wymaga prawidłowego źródła legal z APPROVED i SHA-256 dokładnego wyrenderowania dokumentów.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "ded118fc82c4493b0e700f85c3615a9565ce0f4a7bcdff6409283a19d1a5ee96"
+    },
+    "patternly/scripts/prepareLegalReview.mjs": {
+      "description": "Tworzy prywatny pakiet porównawczy 14 dokumentów/7 locale, z hashami, widocznymi unresolved markers i statusem UNAPPROVED/testOnly/deployable=false; nie zatwierdza ani nie eksportuje do produkcji.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "fb9667ca85f563b1edce01915fdff76969962363e408b4dee940d63b6e518bdd"
+    },
+    "patternly/scripts/publicLegalApproval.cjs": {
+      "description": "Wspólny renderer i walidator wiąże jawne APPROVED z SHA-256 JSON wyrenderowanych 14 dokumentów.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "7d0002abf3a8d490ff8adcbeac34650baee38ece9aa7bf55bc4c254e473d24f5"
+    },
+    "patternly/scripts/publicLegalApproval.mjs": {
+      "description": "ESM bridge do wspólnego renderera i sprawdzenia exact approved-document hash; sam skrypt nie stanowi odbioru prawnego.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "f9ffd0dbd9665ca4480da5e4eae7059c840023bfe59666f6dc9d0b2325c5a276"
+    },
+    "patternly/scripts/exportPublicLegal.mjs": {
+      "description": "Jeden producent legal: test export tworzy synthetic testOnly/UNAPPROVED; production wymaga pełnych 7 locale, APPROVED i zgodnego SHA-256 14 wyrenderowanych dokumentów.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "0619af4b9fd8d8321cf4e048aa44c1c71f231afed9a8274ef2f36047af2a1877"
+    },
+    "patternly/src/legal/legalDocumentMap.ts": {
+      "description": "Projektuje legal documents dla runtime: production gating wymaga zatwierdzenia; tłumaczenia DE/FR/ES/IT/ET są jawnie test-only/unapproved, dopóki review nie zostanie zamknięty.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "6d63f12f80e80b23703dc51402ddd43f40df16970cfa00ba03ca612f79360835"
+    },
+    "patternly/src/legal/legalVariablesSchema.ts": {
+      "description": "Waliduje strukturę 7 locale, placeholdery i schemat approval (status plus rendered document SHA); walidacja schematu nie jest oceną prawną.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "8ac4a31511a8848667846f2c228c4e07f61397e46e66c454034f32af62908da9"
+    },
+    "patternly-backend/src/modules/account-lifecycle/firestoreAccountErasure.ts": {
+      "description": "Wspólny katalog kasowania i kontroli odczytu: logiczna blokada tożsamości trwa 7 dni od pierwotnego usunięcia, także dla poprawnych starych znaczników 45-dniowych. Fizyczne TTL jest asynchroniczne; zgłoszenia i wnioski tracą powiązanie z kontem, a nie całą historię.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "f8212d556c4a3bb0cdbbd6b3f87f63824c93a2e15f3897be1ac49fabd3a1a2d6"
+    },
+    "patternly-backend/src/modules/account-lifecycle/offlineDeletionRestore.ts": {
+      "description": "Model uzgadniania usunięć wyłącznie w emulatorze: stały projekt demo, nazwane bazy źródłowa/docelowa, kontrola zamrożenia, odcisków i ścisłego okna 7 dni. Odmawia przy niezakończonym kasowaniu; nie zapewnia produkcyjnego PITR ani uzgodnienia retencji wniosków prawnych.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "4418200ed18c22f6b3a0ef251e7a9eae396f9e32c0c65999f9b9920f51d01c94"
+    },
+    "patternly-backend/src/modules/users/store.ts": {
+      "description": "Registration checks deletion candidates against exact provider/keyVersion/HMAC-derived document ID before honoring TTL expiry; malformed/mismatched markers fail closed.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "081f4b27242f2ac8e6873286509d48eb4ef1ac791ad374a1ec130eacce47028b"
+    },
+    "patternly-backend/scripts/isolated-emulator-test-runner.mjs": {
+      "description": "Uruchamia wskazane emulator suites wyłącznie dla demo project i loopback, z walidacją stałej konfiguracji/nazw DB oraz izolowanym zestawem portów; nie jest adapterem produkcyjnym.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "1107c50229899013835a4bc394cdc76e4d9706a44787a76fccd0f447ede6fddd"
+    },
+    "patternly-web/scripts/publicLegalTestArtifact.mjs": {
+      "description": "Buduje wyłącznie synthetic legal fixture testOnly z danymi testowymi; nie tworzy zatwierdzonego eksportu produkcyjnego.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "6b568e0b6c7681dee9fa94e6d439136d99f4742cb27276bd14361b1a3ca13567"
+    },
+    "patternly/scripts/checkLegalVariables.mjs": {
+      "description": "Sprawdza spójność i kompletność zmiennych legal; release check wykrywa placeholdery, ale nie udziela approval ani oceny prawnej.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "e92c6f16a8cbd9b10c80739b3f81d06e78a987219f8a185aca53fdf6e4aefc38"
+    },
+    "patternly/scripts/checkRetentionContract.mjs": {
+      "description": "Weryfikuje zgodność wartości retencji między APP, fixture i backend policy; kontrakt źródeł nie potwierdza deployed runtime.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "bc44cfba3fdcd7098341fe1c3bbc61ab9e0ca56ec58158aba50a9f88b3941d80"
+    },
+    "patternly/scripts/releaseGate.mjs": {
+      "description": "Ocena bramki release uwzględnia status UNAPPROVED i hash dokładnego wyrenderowania; incomplete nie oznacza legal acceptance.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "cdea8b28df2d1efe3be19d72b14892576e8aa0adaa5b2f2132a1d0a8392cf190"
+    },
+    "patternly/src/legal/legalTranslationDrafts.testOnly.ts": {
+      "description": "Zbiera drafty DE/FR/ES/IT/ET jako testOnly/UNAPPROVED do porównania; nie są włączane jako zatwierdzone treści produkcyjne.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "2193433b0cee6f2e337102a103725399f8a8a6fb63cff7c602bd6f4b5f94e418"
+    },
+    "patternly/src/legal/providerRegistrationDocuments.ts": {
+      "description": "Udostępnia EN/PL terms/privacy tylko gdy runtime ma canonical documents; release odmawia przy niezatwierdzonych dokumentach.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "9b834e679fecb83ac7b844b319a40b961f94964c050c597a25133270200d3109"
+    },
+    "patternly-backend/package.json": {
+      "description": "Dodaje wąskie polecenia izolowanych emulator suites dla usunięcia, expiry i offline restore; nie uruchamia produkcyjnej operacji.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "2c718d8a193ee39bb9cc7c6dfb2c8640e9decbec463b9e98d5e8d31022f2201d"
+    },
+    "patternly-backend/scripts/run-account-deletion-expiry-emulator-tests.mjs": {
+      "description": "Uruchamia lokalny emulator regression dla logicznego expiry/tombstone i wznowienia; fixed demo/loopback only.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "1624d548efec4de498750353f4b5ab10e0b75e5abf75c8440a0dbff22873f94a"
+    },
+    "patternly-backend/scripts/run-account-deletion-restore-emulator-tests.mjs": {
+      "description": "Uruchamia bounded offline restore model na named emulator DBs; nie wykonuje produkcyjnego restore/PITR.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "99d32725b81d5c12a02df81996454d0433d98fc09d77a7a3f9c50ee414f21f80"
+    },
+    "patternly-backend/scripts/run-deleted-identity-r01-tests.mjs": {
+      "description": "Uruchamia isolated same-email/new-UID regression dla usuniętej tożsamości; nie wywołuje produkcyjnych usług.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "b93fdce49dc29755e115ef17edd0944aada48a262889f5bc4ad32408da74d5f3"
+    },
+    "patternly-backend/tests/accountDeletionRestore.emulator.ts": {
+      "description": "Sprawdza lokalny emulator-only restore reconciliation, drift/freeze, granicę wieku i failure cases; nie potwierdza produkcyjnego odtworzenia.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "a5e40da709d0617905aadbf92fbbd7790c3f58d550002ef1d572e89abb6571d1"
+    },
+    "patternly-backend/tests/deletedIdentityR01.emulator.ts": {
+      "description": "Dowodzi w emulatorze usunięcia starego UID i odmowy odtworzenia prawa/progressu po rejestracji same-email nowym UID.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "a85f35261cfc170dc91532064b904147448a07a582810f1d8f10572d103ea078"
+    },
+    "patternly-backend/tests/aud08Recovery.emulator.test.ts": {
+      "description": "Regression recovery: niezgodny legacy tombstone nie może zostać uznany za wygasły i usunięty ani doprowadzić do token mint.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "cf8549b226ab6857979e9f182e178ebcf2a54421c2a7dc6cc569b16f95747913"
+    },
+    "patternly-backend/tests/usersStoreLegacyDeletedIdentities.test.ts": {
+      "description": "Unit regressions dla exact shape i identity binding legacy marker przed cleanup po expiry.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "95de0e91000c2df1b4dcf44e33218a168c253e6308915baa7737ebfbe45c197b"
+    },
+    "patternly-backend/tests/accountLifecycleCrash.emulator.test.ts": {
+      "description": "Emulator crash/retry regresja dla guarded account-deletion lifecycle; potwierdza wyłącznie tę lokalną ścieżkę.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "593ef92d0865534f0e1dd1d24c575db94e6e80a4454012ce1f86a13105df4a53"
+    },
+    "patternly-backend/tests/firestore.emulator.test.ts": {
+      "description": "Emulator regression dla readback/erasure katalogu danych użytkownika; nie jest proof backup restore.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "109e00b20f20be598f4bff499f50650a89b85bc908be2653f41e9effa9dbe3ac"
+    },
+    "patternly-backend/tests/fixtures/accountLifecycleCrashWorker.ts": {
+      "description": "Worker fixture używany przez crash/retry deletion suite; test support only.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "8d8607df4c6796be3896e903f1e274f5fea51e2fbfbce09127de17c4e8402096"
+    },
+    "patternly-web/scripts/public-legal.test.mjs": {
+      "description": "Sprawdza walidację artefaktu legal na fixtures; test pass nie stanowi zatwierdzenia ani produkcyjnej publikacji.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "1a505478f7cd7f998ee7e08fce9980796d5992ecba7793d31ceb4bb83990a8d0"
+    },
+    "patternly/native/foreground-clock/README.md": {
+      "description": "Opisuje osobno natywne dowody i modele oraz odtwarzalne narzędzia iOS/Android. Android obejmuje jednorazowy stall, wczesny cold, dokładną tożsamość APK, pochodne adjudication brakującej stałej oraz UUID-gated fixture fault bez deklaracji fizycznych awarii SDK.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "a402b7deac1c5884ec3fa9cc5c93460ba974636ad241965147ecb59e140fcce0"
+    },
+    "patternly/scripts/qa/buildAndroidClockFixtureOwner.py": {
+      "description": "Lokalnie kompiluje i linkuje arm64 ownera domyślnie bez hooka i z jawnym UUID, przeciw przypiętym prefabom SDK. Zachowuje prywatne źródła/logi/hash receipt; nie buduje EAS, nie podpisuje i nie dotyka urządzenia.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "a3a064a90f8596496939d92cd7c78c2ff7c5fb94c3f19c0fdabea47695f750ba"
+    },
+    "patternly/scripts/qa/adjudicateAndroidCountdownProbe.mjs": {
+      "description": "Wyprowadza wyłącznie brakującą stałą countdownMs historycznego cold receipt z dokładnie niezmienionego S/config. Sprawdza lineage procesu, cold przed lifecycle i T-only zmiany; zapisuje osobny wynik bez edycji surowych dowodów i bez zmiany limitu5s.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "de11d109cb913b5196c91f8fdb9e3669928adb137c48b57f21cf3f365b6a4c78"
+    },
+    "patternly/scripts/qa/adjudicateAndroidCountdownProbe.test.mjs": {
+      "description": "Sprawdza rachunek pochodnego countdownu i niemutowanie receipts oraz odmowy przy zmianie konfiguracji, S, procesu, danych lub niepoprawnym duration.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "b2ab2e1f2d2e09e1ad21d93bf25e9e269ecb3d19a12d2afbf0aad99e24d77a27"
+    },
+    "patternly/src/infrastructure/storage/encryptedStorageNative.ts": {
+      "description": "Otwiera oryginalny szyfrowany slot Nitro/MMKV i przekazuje ograniczoną capability czasu. Prywatny sandbox/Android UUID probe używa tego samego uchwytu, bez ujawniania tokenu, raw T lub handle; fixture fault zwraca tylko metadane i hash zapisu po zatrzaśniętym błędzie.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "1ce999df55598a972577714b67a6aa3b22bff9226a0c6b43561c17a05814f26d"
+    },
+    "patternly/src/application/runtimeAuditability/androidClockProbeReadiness.ts": {
+      "description": "Waliduje gotowość i jednorazowe okno stall 10 s, niezmienne pola sesji i wzrost czasu. Adnotacja Premium hashuje wszystkie pola uprawnień poza dwoma czasami obserwacji; nieprawidłowy lub obcy cache nie dostaje adnotacji.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "458b997b1cf67064d8ba113d109ec4901875fcbc4516455c7a7a31cf194be293"
+    },
+    "patternly/scripts/qa/androidForegroundClockPreservation.test.mjs": {
+      "description": "Deklaruje testy ograniczonego odświeżenia obserwacji Premium tylko dla fault-fixture oraz odmowy przy zmianie bindingu, uprawnień, cofnięciu czasu i zmianach innych danych; nie jest dowodem urządzeniowym.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "92642f018ff50c9bb01d51d36ce348dd078a642f2d24388b0fa8ab5d4ac734e2"
     }
   },
   "flows": [
@@ -1343,7 +1568,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "7f3dca228b8f2fa2068c4c15d57885747342da079c66419ef107e87d44aae46d"
+      "reviewedDigest": "ecd6e64971db44f467cbd78b13bb4b5ade72ac7e0dd17f5ea86de67ed015df11"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -1355,7 +1580,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "4171ed7ce0b22626ac12b9b1de6c75ba5c13dd4c25da03b560c3afef11eccf45"
+      "reviewedDigest": "83cd105c5eb837246e076740a6f5027c488861c1203a0fe2ff6f6f01ea861909"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -1365,7 +1590,7 @@
         "patternly-content",
         "patternly-backend/src/modules/content"
       ],
-      "reviewedDigest": "b08cdcfca9dbaee455c2140bb1c043d9c47ae0c35a9e9773bb1872f78f8bc8c2"
+      "reviewedDigest": "204314302826562a246a337eb514d4a9f3a70d5b337cb868915dc47c86759b73"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -1380,7 +1605,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "144300976525135c1c173ff479e813d1c45b003db6bd54153e68977f9e035af0"
+      "reviewedDigest": "19e982e1f03f63aed13dbd64698b234cdecfd453ea30ea47985f8795d0083799"
     },
     {
       "name": "Cel, plan i postęp",
@@ -1391,7 +1616,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "ad579e4da7bfd113c83c3423ee4e7b112fb5ecbbb10989d216a6e50d3b78e4dd"
+      "reviewedDigest": "8291842fe32aad5a3ae652d32ccb0c2f06a1920c6e682a076e13be7b36d8ef25"
     },
     {
       "name": "Premium i zakup",
@@ -1415,7 +1640,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "21b328f404d68903299e2eb110c9e62c5868e93fd79059fd38bc1a83b258b515"
+      "reviewedDigest": "19adde429dacadc6cacaf6552262544b9de640f4ef5598db98e9c673fefec657"
     },
     {
       "name": "Witryna, demo i panel",
@@ -1424,7 +1649,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "65fbf562b519e9eff28b87253453bbc7439b8e2f8749975d12b529b4bfd44293"
+      "reviewedDigest": "92664eaf935e8795d66afbb88032b19bf6e8690bd5669f7978a93d70866ec0b0"
     }
   ]
 }

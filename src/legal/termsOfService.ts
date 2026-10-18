@@ -24,7 +24,7 @@ Features and content may change as the service improves. Material changes that a
 
 Some features can be used as a guest and store data on the device. An account can enable recovery and synchronization of supported data. You are responsible for activity performed through your account unless you promptly report unauthorized access.
 
-The account service agreement is concluded for an indefinite period and continues until you or the Operator terminates it in accordance with these Terms. Deleting your Patternly account terminates the account service, but does not by itself cancel a separate App Store subscription.
+The account service agreement is concluded for an indefinite period and continues until you or the Operator terminates it in accordance with these Terms. Deleting your Patternly account terminates the account service. If you later purchase a subscription through the App Store, deleting your Patternly account does not by itself cancel that subscription.
 
 You can delete your account through the available in-app deletion flow. The Privacy Policy explains the data affected, retention rules, and limits of deletion.
 
@@ -43,13 +43,13 @@ You may quote limited portions where permitted by law, but you may not republish
 
 7. Premium and subscriptions
 
-Patternly Premium is a monthly, automatically renewing digital service sold through the Apple App Store in Poland and the other European Union countries where the offer is available. The offer is ${vars.terms.premiumProductName.en} (product identifier ${vars.terms.premiumProductIdentifier.en}). It includes: ${vars.terms.premiumServiceScope.en}. Its billing period is ${vars.terms.premiumBillingPeriod.en}. There is no trial period. The initial total price including applicable taxes is ${vars.terms.premiumPriceIncludingTaxes.en}; the renewal price including applicable taxes is ${vars.terms.premiumRenewalPriceIncludingTaxes.en} for each ${vars.terms.premiumBillingPeriod.en}. Before you order, the purchase screen shows these current prices, the renewal period, the Premium scope, the payment method and timing, when the service starts, and the payment obligation.
+New Premium purchases are currently disabled, so there is no current paid offer. If purchases are enabled later, the intended offer is ${vars.terms.premiumProductName.en} (product identifier ${vars.terms.premiumProductIdentifier.en}), a monthly automatically renewing digital service with no trial period. The planned price including applicable taxes in Poland is ${vars.terms.premiumPriceIncludingTaxes.en}; the planned renewal price is ${vars.terms.premiumRenewalPriceIncludingTaxes.en} per ${vars.terms.premiumBillingPeriod.en}. These are intended Polish prices, not a current offer; prices for other countries are not confirmed. Before any purchase is enabled, the applicable seller, current price, renewal period, Premium scope, payment method and timing, service start, and payment obligation must be stated for that offer.
 
-The merchant-of-record arrangement is: ${vars.terms.merchantOfRecord.en}. Apple provides the payment and subscription-management channel, but this does not remove the Operator’s responsibility for Patternly’s conformity or your statutory claims against the responsible trader.
+The current merchant-of-record arrangement is: ${vars.terms.merchantOfRecord.en}. No seller or payment arrangement has been confirmed for a future store-specific offer. If a subscription is later made available and purchased through the Apple App Store, Apple provides that store's payment and subscription-management channel; this does not remove the Operator’s responsibility for Patternly’s conformity or your statutory claims against the responsible trader.
 
-A subscription renews automatically only on the terms clearly displayed before purchase. You can stop future renewals through your Apple account settings. Deleting the app or your Patternly account does not cancel an App Store subscription. A material price increase is never accepted merely by continuing to use Patternly; it requires the legally applicable affirmative-consent, re-purchase, or renewal mechanism.
+Any subscription will renew only on terms clearly displayed before purchase. If you later purchase one through the Apple App Store, you can stop future renewals through your Apple account settings, and deleting the app or your Patternly account does not cancel that App Store subscription. A material price increase is never accepted merely by continuing to use Patternly; it requires the legally applicable affirmative-consent, re-purchase, or renewal mechanism.
 
-Apple may process transaction refunds through its platform. You may still direct complaints about Patternly’s service, conformity, or statutory consumer remedies to the Operator.
+If you later purchase a subscription through the Apple App Store, Apple may process transaction refunds through its platform. You may still direct complaints about Patternly’s service, conformity, or statutory consumer remedies to the Operator.
 
 Premium access starts immediately after purchase only after your separate, express request to begin the service before the 14-day withdrawal period ends. No box may be preselected. Withdrawing after service has begun may require proportionate payment for the service supplied until withdrawal, where mandatory law permits it. Premium is not offered as a separate one-time supply of digital content, so Patternly does not ask you to acknowledge losing the withdrawal right on that basis. Otherwise statutory withdrawal rights remain. Submitting a complaint is not limited to 14 days.
 
@@ -67,9 +67,9 @@ If you submit a content report or support message, you confirm that it is lawful
 
 10. Suspension and termination
 
-You may stop using Patternly and delete your account at any time, subject to separate cancellation of any platform subscription. The Operator may proportionately restrict access only for a material breach, a verified security threat, unlawful use, non-payment, or a binding legal requirement.
+You may stop using Patternly and delete your account at any time. If a platform subscription is made available later, you may need to cancel it separately through that platform. The Operator may proportionately restrict access only for a material breach, a verified security threat, unlawful use, non-payment, or a binding legal requirement.
 
-Except where immediate action is necessary to prevent harm or comply with law, the Operator will explain the reason, give reasonable prior notice and an opportunity to remedy the breach. You may appeal through ${vars.terms.complaintEmail.en}. Access will be restored when the ground ends. Suspension does not remove statutory conformity, refund, data-return, complaint, or cancellation rights and does not by itself cancel future Apple renewals.
+Except where immediate action is necessary to prevent harm or comply with law, the Operator will explain the reason, give reasonable prior notice and an opportunity to remedy the breach. You may appeal through ${vars.terms.complaintEmail.en}. Access will be restored when the ground ends. Suspension does not remove statutory conformity, refund, data-return, complaint, or cancellation rights. If you later purchase an Apple App Store subscription, suspension does not by itself cancel its future renewals.
 
 11. Responsibility and statutory rights
 
@@ -103,7 +103,7 @@ The Operator must provide confirmation on a durable medium and retain an auditab
 
 16. Technical requirements
 
-Technical and compatibility requirements: ${vars.terms.technicalRequirements.en}. Internet access is required for account authentication, synchronization, purchases, restoring purchases, and communications with the Operator. Supported offline features may remain limited to data already available on the device.
+Technical and compatibility requirements: ${vars.terms.technicalRequirements.en}. Internet access is required for account authentication, synchronization, and communications with the Operator. If store purchases are enabled, internet access will also be required to purchase or restore them. Supported offline features may remain limited to data already available on the device.
 
 Support and update commitment: ${vars.terms.supportCommitment.en}. Required security and conformity updates will be supplied for the period required by the contract and mandatory law.
 
@@ -115,7 +115,7 @@ If you are an eligible consumer, you generally have 14 days to withdraw from a d
 
 Patternly must conform to its description, agreed paid-service scope, functionality, compatibility, accessibility, continuity, security, and updates that you can reasonably expect under the contract and mandatory law. If it does not, notify ${vars.terms.complaintEmail.en}. You may require conformity within a reasonable time and without significant inconvenience.
 
-Where statutory conditions are met, you may seek a proportionate price reduction or terminate and obtain the applicable refund. These remedies are against the responsible trader and are not replaced by Apple’s transaction tools.
+Where statutory conditions are met, you may seek a proportionate price reduction or terminate and obtain the applicable refund from the responsible trader. If you purchased through the Apple App Store, its transaction tools do not replace these remedies.
 
 19. Complaints
 
@@ -156,7 +156,7 @@ Funkcje i treści mogą się zmieniać wraz z rozwojem usługi. Istotne zmiany w
 
 Z części funkcji można korzystać jako gość, zapisując dane na urządzeniu. Konto może umożliwiać odzyskiwanie i synchronizację obsługiwanych danych. Odpowiadasz za działania wykonane przez Twoje konto, chyba że niezwłocznie zgłosisz nieuprawniony dostęp.
 
-Umowa dotycząca usługi konta jest zawierana na czas nieoznaczony i trwa do jej rozwiązania przez Ciebie albo Operatora zgodnie z niniejszymi Warunkami. Usunięcie konta Patternly rozwiązuje umowę dotyczącą konta, ale samo w sobie nie anuluje odrębnej subskrypcji App Store.
+Umowa dotycząca usługi konta jest zawierana na czas nieoznaczony i trwa do jej rozwiązania przez Ciebie albo Operatora zgodnie z niniejszymi Warunkami. Usunięcie konta Patternly rozwiązuje umowę dotyczącą konta. Jeżeli później kupisz subskrypcję przez App Store, usunięcie konta Patternly samo jej nie anuluje.
 
 Możesz usunąć konto przez dostępny przepływ usuwania w aplikacji. Polityka prywatności opisuje zakres danych, okresy przechowywania i ograniczenia usuwania.
 
@@ -175,13 +175,13 @@ Możesz cytować ograniczone fragmenty, jeżeli pozwala na to prawo, ale bez pis
 
 7. Premium i subskrypcje
 
-Patternly Premium jest miesięczną, automatycznie odnawianą usługą cyfrową sprzedawaną przez Apple App Store w Polsce i pozostałych krajach Unii Europejskiej, w których oferta jest dostępna. Ofertą jest ${vars.terms.premiumProductName.pl} (identyfikator produktu ${vars.terms.premiumProductIdentifier.pl}). Obejmuje: ${vars.terms.premiumServiceScope.pl}. Okres rozliczeniowy: ${vars.terms.premiumBillingPeriod.pl}. Nie ma okresu próbnego. Początkowa łączna cena z podatkami wynosi ${vars.terms.premiumPriceIncludingTaxes.pl}; cena odnowienia z podatkami wynosi ${vars.terms.premiumRenewalPriceIncludingTaxes.pl} za każdy ${vars.terms.premiumBillingPeriod.pl}. Przed zamówieniem ekran zakupu pokazuje te aktualne ceny, okres odnowienia, zakres Premium, sposób i moment płatności, moment rozpoczęcia świadczenia oraz obowiązek zapłaty.
+Nowe zakupy Premium są obecnie wyłączone, więc nie ma obecnej płatnej oferty. Jeżeli zakupy zostaną później włączone, zamierzoną ofertą będzie ${vars.terms.premiumProductName.pl} (identyfikator produktu ${vars.terms.premiumProductIdentifier.pl}), miesięczna usługa cyfrowa odnawiana automatycznie, bez okresu próbnego. Planowana cena z podatkami w Polsce wynosi ${vars.terms.premiumPriceIncludingTaxes.pl}; planowana cena odnowienia wynosi ${vars.terms.premiumRenewalPriceIncludingTaxes.pl} za ${vars.terms.premiumBillingPeriod.pl}. Są to zamierzone ceny w Polsce, a nie obecna oferta; ceny w innych krajach nie są potwierdzone. Przed włączeniem zakupów dla danej oferty trzeba podać właściwego sprzedawcę, aktualną cenę, okres odnowienia, zakres Premium, sposób i moment płatności, moment rozpoczęcia świadczenia oraz obowiązek zapłaty.
 
-Model merchant of record: ${vars.terms.merchantOfRecord.pl}. Apple zapewnia kanał płatności i zarządzania subskrypcją, ale nie znosi to odpowiedzialności Operatora za zgodność Patternly ani Twoich ustawowych roszczeń wobec właściwego przedsiębiorcy.
+Obecny model merchant of record: ${vars.terms.merchantOfRecord.pl}. Sprzedawca ani sposób płatności dla przyszłej oferty w konkretnym sklepie nie są potwierdzone. Jeżeli subskrypcja zostanie później udostępniona i kupiona przez Apple App Store, Apple zapewnia kanał płatności i zarządzania subskrypcją w tym sklepie; nie znosi to odpowiedzialności Operatora za zgodność Patternly ani Twoich ustawowych roszczeń wobec właściwego przedsiębiorcy.
 
-Subskrypcja odnawia się automatycznie wyłącznie na warunkach jasno przedstawionych przed zakupem. Przyszłe odnowienia możesz zatrzymać w ustawieniach konta Apple. Usunięcie aplikacji lub konta Patternly nie anuluje subskrypcji. Istotna podwyżka ceny nie może zostać zaakceptowana przez samo dalsze korzystanie; wymaga właściwego mechanizmu wyraźnej zgody, ponownego zakupu albo odnowienia.
+Każda subskrypcja będzie odnawiana wyłącznie na warunkach jasno przedstawionych przed zakupem. Jeżeli później kupisz subskrypcję przez Apple App Store, przyszłe odnowienia możesz zatrzymać w ustawieniach konta Apple, a usunięcie aplikacji lub konta Patternly samo nie anuluje tej subskrypcji. Istotna podwyżka ceny nie może zostać zaakceptowana przez samo dalsze korzystanie; wymaga właściwego mechanizmu wyraźnej zgody, ponownego zakupu albo odnowienia.
 
-Apple może obsługiwać zwroty transakcji przez platformę. Reklamacje dotyczące usługi Patternly, jej zgodności i ustawowych środków możesz nadal kierować do Operatora.
+Jeżeli później kupisz subskrypcję przez Apple App Store, Apple może obsługiwać zwroty transakcji przez tę platformę. Reklamacje dotyczące usługi Patternly, jej zgodności i ustawowych środków możesz nadal kierować do Operatora.
 
 Dostęp Premium rozpoczyna się natychmiast po zakupie wyłącznie na Twoje odrębne, wyraźne żądanie rozpoczęcia usługi przed końcem 14-dniowego terminu na odstąpienie. Checkbox nie może być zaznaczony domyślnie. W razie odstąpienia po rozpoczęciu świadczenia może być należna proporcjonalna zapłata za usługę spełnioną do chwili odstąpienia, jeżeli pozwalają na to bezwzględnie obowiązujące przepisy. Premium nie jest oferowane jako odrębna, jednorazowa dostawa treści cyfrowej, dlatego Patternly nie wymaga potwierdzenia utraty prawa odstąpienia na tej podstawie. W pozostałym zakresie prawa ustawowe pozostają. Reklamacji nie trzeba składać w ciągu 14 dni.
 
@@ -199,9 +199,9 @@ Wysyłając zgłoszenie treści lub wiadomość do pomocy, potwierdzasz, że jes
 
 10. Ograniczenie i zakończenie dostępu
 
-Możesz przestać korzystać z Patternly i usunąć konto, pamiętając o osobnym anulowaniu subskrypcji. Operator może proporcjonalnie ograniczyć dostęp wyłącznie z powodu istotnego naruszenia, potwierdzonego zagrożenia bezpieczeństwa, bezprawnego użycia, braku płatności lub wiążącego wymogu prawnego.
+Możesz przestać korzystać z Patternly i usunąć konto. Jeżeli subskrypcja w sklepie zostanie udostępniona w przyszłości, może być konieczne osobne anulowanie jej przez ten sklep. Operator może proporcjonalnie ograniczyć dostęp wyłącznie z powodu istotnego naruszenia, potwierdzonego zagrożenia bezpieczeństwa, bezprawnego użycia, braku płatności lub wiążącego wymogu prawnego.
 
-Poza sytuacją wymagającą natychmiastowej reakcji dla zapobieżenia szkodzie lub wykonania prawa Operator wyjaśni powód, uprzedzi z rozsądnym wyprzedzeniem i umożliwi usunięcie naruszenia. Odwołanie można wysłać na ${vars.terms.complaintEmail.pl}. Dostęp zostanie przywrócony po ustaniu podstawy. Zawieszenie nie usuwa ustawowych praw do zgodności, zwrotu, odzyskania danych, reklamacji ani anulowania i samo nie zatrzymuje odnowień Apple.
+Poza sytuacją wymagającą natychmiastowej reakcji dla zapobieżenia szkodzie lub wykonania prawa Operator wyjaśni powód, uprzedzi z rozsądnym wyprzedzeniem i umożliwi usunięcie naruszenia. Odwołanie można wysłać na ${vars.terms.complaintEmail.pl}. Dostęp zostanie przywrócony po ustaniu podstawy. Zawieszenie nie usuwa ustawowych praw do zgodności, zwrotu, odzyskania danych, reklamacji ani anulowania. Jeżeli później kupisz subskrypcję przez Apple App Store, zawieszenie samo nie zatrzymuje jej przyszłych odnowień.
 
 11. Odpowiedzialność i prawa ustawowe
 
@@ -235,7 +235,7 @@ Operator musi przekazać potwierdzenie na trwałym nośniku i zachować audytowa
 
 16. Wymagania techniczne
 
-Wymagania techniczne i kompatybilność: ${vars.terms.technicalRequirements.pl}. Internet jest wymagany do uwierzytelniania konta, synchronizacji, zakupów, odtwarzania zakupów i kontaktu z Operatorem. Obsługiwane funkcje offline mogą ograniczać się do danych dostępnych już na urządzeniu.
+Wymagania techniczne i kompatybilność: ${vars.terms.technicalRequirements.pl}. Internet jest wymagany do uwierzytelniania konta, synchronizacji i kontaktu z Operatorem. Jeżeli zakupy w sklepie zostaną włączone, internet będzie także wymagany do ich dokonania lub odtworzenia. Obsługiwane funkcje offline mogą ograniczać się do danych dostępnych już na urządzeniu.
 
 Zobowiązanie wsparcia i aktualizacji: ${vars.terms.supportCommitment.pl}. Aktualizacje bezpieczeństwa i zgodności będą dostarczane przez okres wymagany umową i bezwzględnie obowiązującym prawem.
 
@@ -247,7 +247,7 @@ Jeśli jesteś uprawnionym konsumentem, co do zasady masz 14 dni na odstąpienie
 
 Patternly musi być zgodne z opisem, umówionym zakresem usługi płatnej, funkcjonalnością, kompatybilnością, dostępnością, ciągłością, bezpieczeństwem i aktualizacjami, których można rozsądnie oczekiwać na podstawie umowy i prawa. Brak zgodności zgłoś na ${vars.terms.complaintEmail.pl}. Możesz żądać doprowadzenia do zgodności w rozsądnym czasie i bez nadmiernych niedogodności.
 
-Po spełnieniu ustawowych przesłanek możesz żądać proporcjonalnego obniżenia ceny albo rozwiązać umowę i otrzymać należny zwrot. Środki przysługują wobec właściwego przedsiębiorcy i nie są zastępowane przez narzędzia transakcyjne Apple.
+Po spełnieniu ustawowych przesłanek możesz żądać proporcjonalnego obniżenia ceny albo rozwiązać umowę i otrzymać należny zwrot od właściwego przedsiębiorcy. Jeżeli kupisz przez Apple App Store, jego narzędzia transakcyjne nie zastępują tych środków.
 
 19. Reklamacje
 

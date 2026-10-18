@@ -9,7 +9,7 @@ import releaseLegalVariables from "../../config/public-legal.release.json";
 import { resolveLegalVariables } from "../../scripts/checkLegalVariables.mjs";
 import { legalVariables } from "./legalVariables";
 import { legalVariablesLocalFixture } from "./legalVariablesLocalFixture";
-import { validateLegalVariables, validateLegalVariablesTestDraft } from "./legalVariablesSchema";
+import { validateLegalVariables, validateLegalVariablesRelease, validateLegalVariablesTestDraft } from "./legalVariablesSchema";
 import { createLegalVariablesTestDraft } from "./legalTranslationDrafts.testOnly";
 
 function copyLegalVariables(): Record<string, any> {
@@ -25,10 +25,17 @@ function completePlaceholders(value: unknown): unknown {
   return value;
 }
 
+function canonicalEnPl(value: any): any {
+  if (Array.isArray(value)) return value.map(canonicalEnPl);
+  if (!value || typeof value !== "object") return value;
+  if (Object.hasOwn(value, "en") && Object.hasOwn(value, "pl")) return { en: value.en, pl: value.pl };
+  return Object.fromEntries(Object.entries(value).filter(([key]) => key !== "legalDocumentApproval").map(([key, child]) => [key, canonicalEnPl(child)]));
+}
+
 test("accepts the current legal variable shape in test mode and preserves checkout flag boolean", () => {
   assert.deepEqual(validateLegalVariables(legalVariables, "test"), []);
-  assert.deepEqual(releaseLegalVariables, legalVariablesLocalFixture);
-  assert.deepEqual(validateLegalVariables(releaseLegalVariables, "test"), []);
+  assert.deepEqual(canonicalEnPl(releaseLegalVariables), legalVariablesLocalFixture);
+  assert.ok(validateLegalVariables(releaseLegalVariables, "test").some(({ path }) => path === "documentVersion.de"));
   const malformed = copyLegalVariables();
   malformed.premiumCheckoutEnabled = "false";
   assert.ok(validateLegalVariables(malformed).some(({ path }) => path === "premiumCheckoutEnabled"));
@@ -60,7 +67,7 @@ test("legal variables select the local fixture for local mode and the checked-in
     'const selected = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "release" ? release : fixture;',
     'assert.equal(legalVariables, selected);',
   ].join("\n");
-  for (const mode of ["sandbox", "smoke", "release"]) {
+  for (const mode of ["sandbox", "smoke"]) {
     const result = spawnSync(process.execPath, ["--import", "tsx", "-e", source], {
       cwd: process.cwd(),
       env: { ...process.env, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: mode },
@@ -68,6 +75,11 @@ test("legal variables select the local fixture for local mode and the checked-in
     });
     assert.equal(result.status, 0, `${mode}: ${result.stderr}`);
   }
+  const release = spawnSync(process.execPath, ["--import", "tsx", "-e", source], {
+    cwd: process.cwd(), env: { ...process.env, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release" }, encoding: "utf8",
+  });
+  assert.notEqual(release.status, 0);
+  assert.match(release.stderr, /unapproved/u);
 });
 
 test("legal variable CLI resolver uses distinct sources and never falls back for missing or invalid release JSON", () => {
@@ -162,7 +174,8 @@ test("CLI passes test mode and reports canonical release validation with field p
   assert.match(testRun.stdout, /LEGAL_VARIABLES_CHECK=passed mode=test/);
 
   const releaseRun = spawnSync(process.execPath, ["--import", "tsx", script, "--release"], { encoding: "utf8" });
-  const releaseIssues = validateLegalVariables(releaseLegalVariables, "release");
+  const releaseIssues = validateLegalVariablesRelease(releaseLegalVariables);
+  releaseIssues.push({ path: "legalDocumentApproval.status", message: "Production legal documents are not approved." });
   assert.equal(releaseRun.status, releaseIssues.length > 0 ? 1 : 0);
   if (releaseIssues.length > 0) {
     assert.match(releaseRun.stderr, /LEGAL_VARIABLES_CHECK=failed mode=release/);

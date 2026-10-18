@@ -1,29 +1,44 @@
 import { legalTranslationDraftsTestOnly, createLegalVariablesTestDraft, renderLegalTranslationDraftTestOnly } from "./legalTranslationDrafts.testOnly";
-import { legalVariables } from "./legalVariables";
-import { privacyPolicy } from "./privacyPolicy";
-import { termsOfService } from "./termsOfService";
+import { legalVariables, type LegalVariables } from "./legalVariables";
+import { privacyPolicy, renderPrivacyPolicy } from "./privacyPolicy";
+import { termsOfService, renderTermsOfService } from "./termsOfService";
 import type { LegalTranslationLocale } from "./legalVariablesSchema";
 
 export type LegalDocumentKind = "privacyPolicy" | "termsOfService";
 export type LegalDocumentStatus = "canonical" | "unapproved-test-only" | "unavailable-unapproved";
+export type LegalDocumentEntry = Readonly<{ privacyPolicy: string; termsOfService: string; status: "canonical" | "unapproved-test-only" }>;
+export type LegalDocumentIndex = Readonly<Record<LegalTranslationLocale, LegalDocumentEntry>>;
 
-const testDraftVariables = createLegalVariablesTestDraft(legalVariables);
-const renderedTestDrafts = Object.fromEntries(
-  legalTranslationDraftsTestOnly.locales.map((locale) => [locale, renderLegalTranslationDraftTestOnly(locale, testDraftVariables)]),
-) as Record<(typeof legalTranslationDraftsTestOnly.locales)[number], { privacyPolicy: string; termsOfService: string }>;
+/** Builds the visible document index from one source. Release translations are usable only after explicit approval. */
+export function createLegalDocumentMap(source: Record<string, any>, releaseRuntime: boolean): LegalDocumentIndex {
+  if (releaseRuntime && source.legalDocumentApproval?.status !== "APPROVED") {
+    throw new Error("Release legal documents are unapproved.");
+  }
 
-/** The canonical visible-document index. Draft locale content is explicitly unapproved. */
-export const legalDocumentMap = Object.freeze({
-  en: Object.freeze({ privacyPolicy: privacyPolicy.en, termsOfService: termsOfService.en, status: "canonical" as const }),
-  pl: Object.freeze({ privacyPolicy: privacyPolicy.pl, termsOfService: termsOfService.pl, status: "canonical" as const }),
-  de: Object.freeze({ ...renderedTestDrafts.de, status: "unapproved-test-only" as const }),
-  fr: Object.freeze({ ...renderedTestDrafts.fr, status: "unapproved-test-only" as const }),
-  es: Object.freeze({ ...renderedTestDrafts.es, status: "unapproved-test-only" as const }),
-  it: Object.freeze({ ...renderedTestDrafts.it, status: "unapproved-test-only" as const }),
-  et: Object.freeze({ ...renderedTestDrafts.et, status: "unapproved-test-only" as const }),
-} satisfies Record<LegalTranslationLocale, { privacyPolicy: string; termsOfService: string; status: "canonical" | "unapproved-test-only" }>);
+  const canonicalSource = source as LegalVariables;
+  const privacy = releaseRuntime ? renderPrivacyPolicy(canonicalSource) : privacyPolicy;
+  const terms = releaseRuntime ? renderTermsOfService(canonicalSource) : termsOfService;
+  const translatedVariables = releaseRuntime ? source : createLegalVariablesTestDraft(source);
+  const translated = Object.fromEntries(
+    legalTranslationDraftsTestOnly.locales.map((locale) => [locale, renderLegalTranslationDraftTestOnly(locale, translatedVariables)]),
+  ) as Record<(typeof legalTranslationDraftsTestOnly.locales)[number], { privacyPolicy: string; termsOfService: string }>;
+  const translatedStatus = releaseRuntime ? "canonical" as const : "unapproved-test-only" as const;
+
+  return Object.freeze({
+    en: Object.freeze({ privacyPolicy: privacy.en, termsOfService: terms.en, status: "canonical" as const }),
+    pl: Object.freeze({ privacyPolicy: privacy.pl, termsOfService: terms.pl, status: "canonical" as const }),
+    de: Object.freeze({ ...translated.de, status: translatedStatus }),
+    fr: Object.freeze({ ...translated.fr, status: translatedStatus }),
+    es: Object.freeze({ ...translated.es, status: translatedStatus }),
+    it: Object.freeze({ ...translated.it, status: translatedStatus }),
+    et: Object.freeze({ ...translated.et, status: translatedStatus }),
+  });
+}
 
 const isReleaseRuntime = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "release";
+
+/** The canonical visible-document index. Local translation drafts remain explicitly unapproved. */
+export const legalDocumentMap = createLegalDocumentMap(legalVariables as unknown as Record<string, any>, isReleaseRuntime);
 
 export function getLegalDocument(locale: LegalTranslationLocale, kind: LegalDocumentKind, releaseRuntime = isReleaseRuntime) {
   const entry = legalDocumentMap[locale];

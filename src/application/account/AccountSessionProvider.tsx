@@ -10,6 +10,7 @@ import { clearPremiumCache, clearPremiumCacheForAccountInProfile, clearPremiumCa
 import type { PremiumPurchaseActor } from "./premiumPurchaseCoordinator";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { ensureAccountSessionGeneration, ensureRecoveryIssueSignInSession, getMeWithExchangedSession, prepareRecoveryIssueSession } from "./accountSessionExchange";
 import { createRecoveryOperationCoordinator, isRecoveryIdentityUnavailable, type RecoveryOperationSnapshot } from "./recoveryOperationCoordinator";
 import { createRecoveryIssuePublicationGate, readRecoveryIssueCommandIdentity } from "./recoveryIssueCommandGuard";
@@ -2025,11 +2026,14 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       try {
         const response = await apiClient.getEntitlements(stillCurrent);
         if (!stillCurrent()) return "pending" as const;
+        const observedItem = response?.entitlements?.[0];
+        markStartup(observedItem && typeof observedItem === "object" && "mapVersion" in observedItem && "sources" in observedItem
+          ? "premium:response_v2" : "premium:response_missing_v2");
         const identity = premiumIdentityForAccount(accountId);
         if (!identity) return "pending" as const;
-        if (!replacePremiumCacheFromFreshResponse(response, identity, Date.now())) return "pending" as const;
+        if (!replacePremiumCacheFromFreshResponse(response, identity, Date.now())) { markStartup("premium:response_rejected"); return "pending" as const; }
         return isPremiumAccessConfirmedOnline({ ...response.entitlements[0], serverObservedAt: response.serverObservedAt }) ? "verified" as const : "denied" as const;
-      } catch { return "pending" as const; }
+      } catch { if (stillCurrent()) markStartup("premium:refresh_failed"); return "pending" as const; }
     });
   }, [apiClient, authClient, sessionCoordinator]);
 
@@ -2059,11 +2063,11 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
 
   const authorizePremiumSessionStart = useCallback(async () => {
     const current = stateRef.current;
-    if (current.kind !== "authenticated" && current.kind !== "localOffline") return "denied" as const;
+    if (current.kind !== "authenticated" && current.kind !== "localOffline") { markStartup("premium:actor_denied"); return "denied" as const; }
     const accountId = current.kind === "authenticated" ? current.backendUser.id : current.accountId;
     const accountUid = current.user.uid;
     const identity = premiumIdentityForAccount(accountId);
-    if (!identity) return "unavailable" as const;
+    if (!identity) { markStartup("premium:scope_unavailable"); return "unavailable" as const; }
     if (current.kind === "localOffline") {
       let confirmedOffline = false;
       try { confirmedOffline = (await (await import("@react-native-community/netinfo")).default.fetch()).isInternetReachable === false; }
@@ -2072,7 +2076,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const allowed = hasOfflinePremiumAccess(identity, Date.now());
       return isCurrentLocalOfflineActor(current) ? (allowed ? "allowed" : "denied") : "unavailable" as const;
     }
-    return resolvePremiumSessionAdmission({
+    const admission = await resolvePremiumSessionAdmission({
       isConfirmedOffline: async () => (await import("@react-native-community/netinfo")).default.fetch().then((network) => network.isInternetReachable === false),
       hasOfflineAccess: () => {
         const latest = stateRef.current;
@@ -2082,6 +2086,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       },
       refresh: () => refreshPremiumEntitlement(accountId),
     });
+    markStartup(`premium:${admission}`);
+    return admission;
   }, [authClient, isCurrentLocalOfflineActor, refreshPremiumEntitlement]);
 
   const readCurrentPremiumAccess = useCallback(() => {

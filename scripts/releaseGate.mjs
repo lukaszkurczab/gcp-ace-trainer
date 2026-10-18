@@ -7,9 +7,10 @@ import { createRequire } from "node:module";
 import { verifyReleaseManifest } from "./releaseManifest.mjs";
 import { validateReleaseEvidence, validateRuntimeReceipt } from "./releaseEvidence.mjs";
 import { legalSourceFingerprint } from "./legalSourceFingerprint.mjs";
+import { legalDocumentApprovalIssue } from "./publicLegalApproval.mjs";
 
 const require = createRequire(import.meta.url);
-const { validateLegalVariables } = require("../src/legal/legalVariablesSchema.ts");
+const { validateLegalVariablesRelease } = require("../src/legal/legalVariablesSchema.ts");
 
 const root = process.cwd();
 let applicationRootInput = process.env.PATTERNLY_APPLICATION_ROOT ?? root;
@@ -252,20 +253,25 @@ function inspectPublicLegalVariables() {
     return { status: "malformed", path: publicLegalRelativePath, version: null, fingerprint: null, fieldPaths: [] };
   }
 
-  const issues = validateLegalVariables(value, "release");
+  const issues = validateLegalVariablesRelease(value);
+  const isExplicitlyUnapproved = value?.legalDocumentApproval?.status === "UNAPPROVED";
+  if (isExplicitlyUnapproved) issues.push({ path: "legalDocumentApproval.status", message: "Production legal documents are not approved." });
+  const approvalIssue = legalDocumentApprovalIssue(value);
+  if (approvalIssue) issues.push({ path: "legalDocumentApproval.renderedDocumentsSha256", message: approvalIssue });
   const fieldPaths = uniqueSorted(issues.map(({ path: fieldPath }) => fieldPath));
   const hasUnresolvedPlaceholders = issues.some(({ message }) => message === "Unresolved legal placeholder.");
-  const hasOtherIssues = issues.some(({ message }) => message !== "Unresolved legal placeholder.");
+  const hasOtherIssues = issues.some(({ message }) => message !== "Unresolved legal placeholder."
+    && message !== "Production legal documents are not approved.");
   const documentVersion = value?.documentVersion;
   const versionIsDatePair = documentVersion
     && typeof documentVersion === "object"
     && !Array.isArray(documentVersion)
-    && hasExactKeys(documentVersion, ["en", "pl"])
-    && [documentVersion.en, documentVersion.pl].every((version) => typeof version === "string" && /^\d{4}-\d{2}-\d{2}$/u.test(version));
+    && hasExactKeys(documentVersion, ["en", "pl", "de", "fr", "es", "it", "et"])
+    && Object.values(documentVersion).every((version) => typeof version === "string" && /^\d{4}-\d{2}-\d{2}$/u.test(version));
   return {
-    status: hasOtherIssues ? "invalid" : hasUnresolvedPlaceholders ? "incomplete" : "valid",
+    status: hasOtherIssues ? "invalid" : hasUnresolvedPlaceholders || isExplicitlyUnapproved ? "incomplete" : "valid",
     path: publicLegalRelativePath,
-    version: versionIsDatePair ? { en: documentVersion.en, pl: documentVersion.pl } : null,
+    version: versionIsDatePair ? documentVersion : null,
     fingerprint: canonicalHash(value),
     fieldPaths,
   };

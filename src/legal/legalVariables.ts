@@ -9,6 +9,10 @@ export type LegalVariables = typeof legalVariablesLocalFixture;
 
 const isReleaseRuntime = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "release";
 
+if (isReleaseRuntime && releaseLegalVariables.legalDocumentApproval?.status !== "APPROVED") {
+  throw new Error("Production legal documents are unapproved; release runtime is disabled.");
+}
+
 /** Legal content is public release data only in a release runtime. */
 export const legalVariables: LegalVariables = isReleaseRuntime
   ? (releaseLegalVariables as LegalVariables)

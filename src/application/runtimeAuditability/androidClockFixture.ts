@@ -1,7 +1,7 @@
 import { AppState } from "react-native";
 import { androidClockProbeFailure } from "./androidClockProbeReadiness";
-import { enabled, runId, receipt, captureAndroidClockProbeInventory } from "./androidClockProbeRuntime";
-import { createNativeEncryptedStoragePlatform, claimNativeForegroundClock, readNativeForegroundClockStorageProbe } from "../../infrastructure/storage/encryptedStorageNative";
+import { enabled, runId, receipt, captureAndroidClockProbeInventory, captureAndroidClockFaultPreservation } from "./androidClockProbeRuntime";
+import { createNativeEncryptedStoragePlatform, claimNativeForegroundClock, readNativeForegroundClockStorageProbe, runNativeForegroundClockFixtureFault } from "../../infrastructure/storage/encryptedStorageNative";
 import { foregroundTimerPhysicalKey } from "../../infrastructure/storage/profileStorageRouter";
 import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent } from "../../storage/repositories/profileStorageRepository";
 import { readActiveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
@@ -70,8 +70,8 @@ function open() {
 }
 
 
-/** Persisted running may describe a cold arm. Admit only a stable, actually
- * paused original owner; never pause or rewrite a production record here. */
+/** Admit only an explicitly paused record and a stable, already armed owner;
+ * never pause, arm or rewrite a production record here. */
 async function requirePausedProductionOwner() {
   const lease = captureActiveProfileStorageLease();
   if (!lease || !isActiveProfileStorageLeaseCurrent(lease) || AppState.currentState !== "active") throw androidClockProbeFailure("probe_foreground_unavailable");
@@ -79,22 +79,27 @@ async function requirePausedProductionOwner() {
   const timer = readActiveForegroundTimer(productionTrackAdmissionContext);
   if (!session && !timer) return;
   if (!session || !timer || timer.sessionId !== session.id || timer.trackId !== session.trackId) throw androidClockProbeFailure("probe_scope_unavailable");
-  const owner = getActiveForegroundClockForProbe(), raw = owner.read(), elapsed = owner.elapsed();
+  if (timer.running) throw androidClockProbeFailure("fixture_requires_session_exit");
+  let owner: ReturnType<typeof getActiveForegroundClockForProbe>, raw: string | undefined, elapsed: number;
+  try { owner = getActiveForegroundClockForProbe(); raw = owner.read(); elapsed = owner.elapsed(); }
+  catch { throw androidClockProbeFailure("fixture_production_owner_unavailable"); }
   let lifecycleChanged = false;
   const subscription = AppState.addEventListener("change", () => { lifecycleChanged = true; });
   try {
     await new Promise<void>(resolve => setTimeout(resolve, 100));
     if (lifecycleChanged || AppState.currentState !== "active" || !isActiveProfileStorageLeaseCurrent(lease) || getActiveForegroundClockForProbe() !== owner
       || JSON.stringify(readActiveTrainingSession(productionTrackAdmissionContext)) !== JSON.stringify(session) || owner.read() !== raw) throw androidClockProbeFailure("probe_scope_unavailable");
-    const after = owner.elapsed();
+    let after: number;
+    try { after = owner.elapsed(); } catch { throw androidClockProbeFailure("fixture_production_owner_unavailable"); }
     if (!Number.isSafeInteger(elapsed) || elapsed !== timer.accumulatedForegroundMs || after !== elapsed) throw androidClockProbeFailure("fixture_requires_session_exit");
   } finally { subscription.remove(); }
 }
 
 /** Separate SDK fixture, never substitutes for the selected user's T/S. */
-export async function seedAndroidClockFixture(scenario: Scenario) {
+export async function seedAndroidClockFixture(scenario: Scenario, beforeWrite: () => void) {
   if (!enabled || !SCENARIOS.includes(scenario) || configuration || configFile().exists || cleanupFile().exists || ownedFiles().length) throw androidClockProbeFailure("fixture_store_collision");
   await requirePausedProductionOwner();
+  beforeWrite();
   configuration = { runId: runId!, scenario, startedAt: new Date().toISOString(), originProfileSha256: profileSha() };
   const { root } = files(); root.create({ intermediates: true, idempotent: true });
   configFile().write(JSON.stringify(configuration));
@@ -116,7 +121,7 @@ function validateConfiguration(value: Configuration): void {
     || !/^[a-f0-9]{64}$/u.test(value.originProfileSha256) || Object.keys(value).length !== 4) throw androidClockProbeFailure("fixture_configuration_rejected");
 }
 
-export function restoreAndroidClockFixture() {
+export async function restoreAndroidClockFixture() {
   if (!enabled || configuration) return;
   // A cleanup marker is never interpreted as permission to reopen the handle.
   // configuration stays non-null in the requesting JS runtime, so this branch
@@ -145,17 +150,21 @@ export function restoreAndroidClockFixture() {
   configuration = value;
   if (configuration.originProfileSha256 !== profileSha() || ownedFiles().length !== 2) throw androidClockProbeFailure("fixture_namespace_rejected");
   open(); arm();
-  receipt("fixture-cold.json", { stage: "cold_before_sync", ...captureAndroidClockFixture() });
+  const snapshot = captureAndroidClockFixture();
+  const preservation = await captureAndroidClockFaultPreservation();
+  if (sha256Utf8(clock!.read()!) !== snapshot.timerEnvelopeSha256) throw androidClockProbeFailure("fixture_record_rejected");
+  receipt("fixture-cold.json", { stage: "cold_before_sync", ...snapshot, ...preservation });
 }
 
 export function captureAndroidClockFixture() {
   if (!enabled || !configuration || !clock || !current || configuration.originProfileSha256 !== profileSha()) throw androidClockProbeFailure("fixture_not_ready");
-  const state = decode(clock.read());
+  const raw = clock.read();
+  const state = decode(raw);
   const elapsedMs = clock.elapsed();
   return { profileSha256: sha256Utf8(runId!), sessionSha256: sha256Utf8(sessionId()), timerKind: configuration.scenario === "elapsed" ? "elapsedForeground" : "countdownForeground",
     configurationSha256: sha256Utf8(JSON.stringify({ scenario: configuration.scenario, countdownMs: configuration.scenario === "elapsed" ? undefined : 60_000 })), startedAt: configuration.startedAt,
     countdownMs: configuration.scenario === "elapsed" ? undefined : 60_000, durableElapsedMs: state.accumulatedForegroundMs, elapsedMs, checkpointRevision: state.checkpointRevision,
-    running: state.running, lastCheckpointAt: state.lastCheckpointAt, metrics: clock.metrics(),
+    timerEnvelopeSha256: sha256Utf8(raw!), running: state.running, lastCheckpointAt: state.lastCheckpointAt, metrics: clock.metrics(),
     storageProbe: readNativeForegroundClockStorageProbe(sha256Utf8(runId!)), inventory: captureAndroidClockProbeInventory(), fixture: true, scenario: configuration.scenario, observedWallMs: Date.now(), observedMonotonicMs: performance.now() };
 }
 export function enterAndroidClockFixture() { if (!clock) throw androidClockProbeFailure("fixture_not_ready"); clock.enter(); return captureAndroidClockFixture(); }
@@ -168,6 +177,32 @@ export function conflictAndroidClockFixture() {
   if (!rejected || clock.read() !== before) throw androidClockProbeFailure("fixture_cas_unverified");
   return { ...captureAndroidClockFixture(), conflictRejected: true, exactUnchanged: true };
 }
+export function faultAndroidClockFixture(scenario: string) {
+  const before = captureAndroidClockFixture();
+  if (!configuration || !["elapsed", "countdown"].includes(configuration.scenario)
+    || !["read", "write-before", "write-after", "readback", "backward"].includes(scenario)) throw androidClockProbeFailure("fixture_not_ready");
+  let result: unknown;
+  try { result = JSON.parse(runNativeForegroundClockFixtureFault(sha256Utf8(runId!), scenario)); }
+  catch { throw androidClockProbeFailure("fixture_native_fault_unavailable"); }
+  if (!result || typeof result !== "object" || Array.isArray(result)) throw androidClockProbeFailure("fixture_native_fault_unavailable");
+  const proof = result as Record<string, unknown>;
+  const afterEffect = scenario === "write-after" || scenario === "readback";
+  const expected = scenario === "read" ? "foreground_clock_read_failed"
+    : scenario === "backward" ? "foreground_clock_monotonic_invalid" : "foreground_clock_write_unknown";
+  const numbers = [proof.beforeRevision, proof.afterRevision, proof.beforeElapsedMs, proof.afterElapsedMs];
+  const faultTimerSha256 = proof.timerEnvelopeSha256;
+  const faultVerified = typeof faultTimerSha256 === "string" && /^[a-f0-9]{64}$/u.test(faultTimerSha256)
+    && proof.scenario === scenario && proof.firstCategory === expected
+    && proof.latchedCategory === (scenario === "read" || scenario === "backward" ? "foreground_clock_checkpoint_failed" : "foreground_clock_write_unknown")
+    && proof.deniedRetries === 2 && proof.segmentStopped === true && proof.afterRetriesUnchanged === true
+    && proof.backwardSample === (scenario === "backward") && proof.beforeEqualsAfter === !afterEffect
+    && numbers.every(value => Number.isSafeInteger(value) && Number(value) >= 0)
+    && proof.afterRevision === Number(proof.beforeRevision) + (afterEffect ? 1 : 0)
+    && Number(proof.afterElapsedMs) >= Number(proof.beforeElapsedMs);
+  // Fixed metadata only; no raw timer bytes or another storage handle.
+  return { ...before, faultProbe: proof, faultTimerSha256, faultVerified, inventory: captureAndroidClockProbeInventory() };
+}
+
 export function cleanupAndroidClockFixture(caseId: string) {
   if (!configuration || !clock || !platform || !slot || configuration.originProfileSha256 !== profileSha()
     || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/u.test(caseId)) throw androidClockProbeFailure("fixture_not_ready");

@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { legalDocumentMap, getLegalDocument } from "./legalDocumentMap";
+import releaseLegalVariables from "../../config/public-legal.release.json";
+import { createLegalDocumentMap, legalDocumentMap, getLegalDocument } from "./legalDocumentMap";
 import { legalTranslationDraftsTestOnly } from "./legalTranslationDrafts.testOnly";
 import { privacyPolicy } from "./privacyPolicy";
 import { termsOfService } from "./termsOfService";
@@ -22,6 +23,18 @@ test("visible legal documents index all seven locales directly", () => {
     assert.equal(getLegalDocument(locale, "privacyPolicy", false).content, legalDocumentMap[locale].privacyPolicy);
     assert.equal(getLegalDocument(locale, "termsOfService", false).content, legalDocumentMap[locale].termsOfService);
   }
+});
+
+test("synthetic approved seven-locale source maps all rendered locale documents as canonical", () => {
+  const source = structuredClone(releaseLegalVariables);
+  source.legalDocumentApproval.status = "APPROVED";
+  const map = createLegalDocumentMap(source, true);
+  for (const locale of TARGET_LOCALES) {
+    assert.equal(map[locale].status, "canonical");
+    assert.ok(map[locale].privacyPolicy.includes(source.privacy.controllerLegalName[locale]), `${locale} privacy document uses its canonical source value`);
+    assert.ok(map[locale].termsOfService.includes(source.terms.operatorLegalName[locale]), `${locale} terms document uses its canonical source value`);
+  }
+  assert.throws(() => createLegalDocumentMap(releaseLegalVariables, true), /unapproved/u);
 });
 
 test("unapproved locale documents fail closed in release and never fall back to English", () => {

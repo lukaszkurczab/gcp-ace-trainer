@@ -134,8 +134,14 @@ function assertRuntimeEnvironment(environment, mode) {
 
 function validateReleaseLegalVariables(legalVariables) {
   require("tsx/cjs");
-  const { validateLegalVariables } = require("./src/legal/legalVariablesSchema.ts");
-  const issues = validateLegalVariables(legalVariables, "release");
+  const { validateLegalVariablesRelease } = require("./src/legal/legalVariablesSchema.ts");
+  const issues = validateLegalVariablesRelease(legalVariables);
+  if (legalVariables?.legalDocumentApproval?.status !== "APPROVED") issues.push({ path: "legalDocumentApproval.status", message: "Production legal documents are not approved." });
+  else {
+    const { legalDocumentApprovalIssue } = require("./scripts/publicLegalApproval.cjs");
+    const approvalIssue = legalDocumentApprovalIssue(legalVariables);
+    if (approvalIssue) issues.push({ path: "legalDocumentApproval.renderedDocumentsSha256", message: approvalIssue });
+  }
   if (issues.length > 0) {
     const summary = issues.map(({ path: fieldPath, message }) => `${fieldPath}: ${message}`).join("\n");
     throw new Error(`Release legal variables are invalid:\n${summary}`);

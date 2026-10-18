@@ -22,7 +22,7 @@ Kohalikke õpiandmeid kaitsevad Patternly kasutatavad seadme salvestusruumi turv
 
 Konto puhul töötleb Patternly Firebase’i ja Patternly kasutajatunnuseid, e-posti aadressi, kinnitamise olekut, autentimisteenuse pakkujat ning turvasündmuste ajatemplid, et kontot luua ja kaitsta, päringuid autentida, toetatud andmeid sünkroonida, juurdepääsu taastada ja väärkasutust ennetada. Õiguslik alus on teenuselepinguga seotud teenuse osutamine ning vastutava töötleja õigustatud huvi teenuse turvalisuse vastu; säilitamisele kuuluvate kirjete suhtes kohaldatakse seadusest tulenevaid kohustusi.
 
-Apple, Google ja Firebase võivad töödelda autentimis- ja seadme tõendamise andmeid enda tingimuste alusel. GDPR-i artikli 14 tähenduses on nad ka allikad, kellelt Patternly võib saada identiteedi- ja teenusepakkuja tunnuseid, tagastamise korral e-posti aadressi ja nime ning seadme tõendamise või turvasignaale. Apple’iga sisselogimisel küsib Patternly e-posti ja nime õigusi ning piirab nende kasutamist autentimiseks ja konto haldamiseks tagastatud väljadega.
+Google ja Firebase töötlevad autentimis- ja seadme tõendamise andmeid enda tingimuste alusel. Kui Apple’iga sisselogimine muutub kättesaadavaks iOS-i hilisemas versioonis ja valid selle meetodi, võib Apple samuti töödelda autentimisandmeid enda tingimuste alusel. GDPR-i artikli 14 tähenduses võivad need teenusepakkujad olla allikad, kellelt Patternly saab identiteedi- ja teenusepakkuja tunnuseid, tagastamise korral e-posti aadressi ja nime ning seadme tõendamise või turvasignaale. Kui valid Apple’iga sisselogimise, küsib Patternly e-posti ja nime õigusi ning piirab nende kasutamist autentimiseks ja konto haldamiseks tagastatud väljadega.
 
 5. Õppimise ja sünkroonimise andmed
 
@@ -34,7 +34,7 @@ Kui sünkroonimine on lubatud, saadab Patternly taustateenusele valitud õpitee 
 
 Sisuteade võib sisaldada kategooriat, valikulist vabas vormis kirjeldust, juhuslikku esitamise tunnust, sisu ja paketi tunnuseid, vaadet, keelt, rakenduse järku, platvormi, aega ning App Checki või seadme tõendamise tokenit. Sisuteate vorm ei lisa kontot ega kontaktmeili. Vabas vormis kirjeldus võib siiski sisaldada isikuandmeid. Server saab ühenduse IP-aadressi ja muudab selle ühesuunaliseks piirangutunnuseks, mida kasutatakse ainult korduvate teadete piiramiseks. Ära lisa paroole ega tarbetuid tundlikke andmeid.
 
-Teateid töödeldakse sisu parandamiseks ja sisuteadete kanali kaitsmiseks. Õiguslik alus on vastutava töötleja õigustatud huvi GDPR-i artikli 6 lõike 1 punkti f alusel hoida sisu täpne ja kaitsta sisuteadete kanalit; võid töötlemisele GDPR-i artikli 21 alusel vastu vaielda. Kõiki sisuteateid säilitatakse alates nende saamisest {{privacy.contentReportRetentionDays}} päeva. IP-põhist ühesuunalist piirangutunnust säilitatakse ainult aktiivse piiranguaja jooksul, s.o {{privacy.reportRateLimitIdentifierRetentionSeconds}} sekundit. Kohapeal vastu võetud teade eemaldatakse pärast seda, kui server kinnitab selle kättesaamist. Kohalikus järjekorras olev kinnitamata teade eemaldatakse automaatselt {{privacy.localReportOutboxRetentionDays}} päeva pärast.
+Teateid töödeldakse sisu parandamiseks ja sisuteadete kanali kaitsmiseks. Õiguslik alus on vastutava töötleja õigustatud huvi GDPR-i artikli 6 lõike 1 punkti f alusel hoida sisu täpne ja kaitsta sisuteadete kanalit; võid töötlemisele GDPR-i artikli 21 alusel vastu vaielda. Kõiki sisuteateid säilitatakse alates nende saamisest {{privacy.contentReportRetentionDays}} päeva. Ühesuunalist IP-tunnust kasutatakse {{privacy.reportRateLimitIdentifierRetentionSeconds}} sekundi pikkuse päringupiirangu akna jõustamiseks. Iga uus vastu võetud teade, mis ei ole duplikaat, määrab tunnuse aegumisajaks {{privacy.reportRateLimitIdentifierRetentionSeconds}} sekundit pärast teate kättesaamist. Firestore TTL eemaldab aegunud kirjed asünkroonselt, mistõttu füüsiline kustutamine võib toimuda hiljem. Kohapeal vastu võetud teade eemaldatakse pärast seda, kui server kinnitab selle kättesaamist. Kohalikus järjekorras olev kinnitamata teade eemaldatakse automaatselt {{privacy.localReportOutboxRetentionDays}} päeva pärast.
 
 7. Turvalisus ja tehnilised andmed
 
@@ -46,13 +46,13 @@ Tegevuslogisid säilitatakse {{privacy.operationalLogRetentionDays}} päeva ja t
 
 Kontrollitud aktiivsed pilveteenuse volitatud töötlejad ja nende eesmärgid: {{privacy.activeCloudProcessors}}. Aktiivsed iseseisvad vastutavad töötlejad ja saajad: {{privacy.activeIndependentRecipients}}. E-kirjade edastamise teenusepakkuja: {{privacy.emailDeliveryProvider}}. Teenusepakkujate piirkonnad: {{privacy.hostingRegions}}. Väljapoole EMP-d tehtavate edastuste kaitsemeetmed: {{privacy.internationalTransferSafeguards}}.
 
-RevenueCati olek: {{privacy.revenueCatStatus}}. Apple võib App Store’i tehingu- ja tellimuskirjeid iseseisvalt säilitada. Patternly konto kustutamine ei tühista App Store’i tellimust ega eemalda Apple’i iseseisva vastutuse all olevaid kirjeid. Patternly vaatab oma volitatud töötlejad, saajad ja edastuskorrad üle iga kord, kui teenusepakkujad või nende töötlemiskohad muutuvad.
+RevenueCati olek: {{privacy.revenueCatStatus}}. Kui saad hiljem App Store’i kaudu tellimuse, võib Apple tehingu- ja tellimuskirjeid iseseisvalt säilitada. Patternly konto kustutamine ei tühista seda App Store’i tellimust ega eemalda Apple’i iseseisva vastutuse all olevaid kirjeid. Patternly vaatab oma volitatud töötlejad, saajad ja edastuskorrad üle iga kord, kui teenusepakkujad või nende töötlemiskohad muutuvad.
 
 9. Säilitamine ja konto kustutamine
 
-Konto ja sünkroonitud õpiandmeid hoitakse konto aktiivsuse ajal, välja arvatud juhul, kui kehtib lühem tähtaeg või varasem kehtiv taotlus. Konto kustutamisel eemaldatakse konto andmete alampuu, identiteediseosed ja autentimiskonto. Kustutamisel eemaldatakse vanad kontoga seotud sisuteated konto seosest. See ei tühista iseenesest poest ostetud tellimust.
+Konto ja sünkroonitud õpiandmeid hoitakse konto aktiivsuse ajal, välja arvatud juhul, kui kehtib lühem tähtaeg või varasem kehtiv taotlus. Konto kustutamisel eemaldatakse konto andmete alampuu, identiteediseosed ja autentimiskonto. Kustutamisel lahutatakse vanad kontoga seotud sisuteated kontoseosest. Kui saad hiljem tellimuse rakenduste poe kaudu, ei tühista konto kustutamine seda tellimust iseenesest.
 
-Pärast kustutamist säilitab Patternly võtmega HMAC-pseudonüümi ainult konto juhusliku taasloomise vältimiseks {{privacy.deletionTombstoneRetentionDays}} päeva. See on endiselt isikuandmestik, mitte anonüümne teave, kuid teenusepakkuja algset UID-d ei säilitata. Õiguslik alus on vastutava töötleja õigustatud huvi GDPR-i artikli 6 lõike 1 punkti f alusel; võid töötlemisele GDPR-i artikli 21 alusel vastu vaielda, võttes ühendust aadressil {{privacy.privacyEmail}}. Minimaalne kustutamise lõpuleviimise tõend sisaldab läbipaistmatut toimingu tunnust ja kinnitusnumbrit, kuupäeva ning tulemust. Seda võib pärast lõpetamist säilitada {{privacy.deletionEvidenceRetentionMonths}} kalendrikuud, et kontrollida toimingut kasutaja esitatud kinnitusnumbri alusel. See ei sisalda õpiandmeid. Piiratud dokumentatsiooni säilitatakse GDPR-i artikli 6 lõike 1 punkti c ning artiklites 5 lõige 2, 12 lõige 2, 17 ja 24 sätestatud vastutuse ja õiguste kohustuste raamistiku alusel; see ei kehtesta kindlat seadusest tulenevat säilitustähtaega. Patternly ei säilita pärast kustutamist üldist pettustevastast kirjet: konkreetse sündmusega seotud pettustevastane säilitamine vajab eraldi dokumenteeritud ohumudelit ning vajalikkuse ja õigustatud huvi hinnangut. Varukoopiate ja ajapunkti taastamise kustutamine: {{privacy.backupPurgeDisclosure}}.
+Pärast kustutamist kasutab Patternly võtmega HMAC-pseudonüümi ainult konto juhusliku taasloomise vältimiseks {{privacy.deletionTombstoneRetentionDays}} päeva alates algsest kustutamisajast, ilma seda aega uuendamata. See on endiselt isikuandmestik, mitte anonüümne teave, kuid teenusepakkuja algset UID-d ei säilitata. Õiguslik alus on vastutava töötleja õigustatud huvi GDPR-i artikli 6 lõike 1 punkti f alusel; võid töötlemisele GDPR-i artikli 21 alusel vastu vaielda, võttes ühendust aadressil {{privacy.privacyEmail}}. Minimaalne kustutamise lõpuleviimise tõend sisaldab läbipaistmatut toimingu tunnust ja kinnitusnumbrit, kuupäeva ning tulemust. Seda võib pärast lõpetamist säilitada {{privacy.deletionEvidenceRetentionMonths}} kalendrikuud, et kontrollida toimingut kasutaja esitatud kinnitusnumbri alusel. See ei sisalda õpiandmeid. Piiratud dokumentatsiooni säilitatakse GDPR-i artikli 6 lõike 1 punkti c ning artiklites 5 lõige 2, 12 lõige 2, 17 ja 24 sätestatud vastutuse ja õiguste kohustuste raamistiku alusel; see ei kehtesta kindlat seadusest tulenevat säilitustähtaega. Patternly ei säilita pärast kustutamist üldist pettustevastast kirjet: konkreetse sündmusega seotud pettustevastane säilitamine vajab eraldi dokumenteeritud ohumudelit ning vajalikkuse ja õigustatud huvi hinnangut. Varukoopiate ja ajapunkti taastamise kustutamine: {{privacy.backupPurgeDisclosure}}.
 
 10. Sinu õigused
 
@@ -97,7 +97,7 @@ Teenuse täiustamisel võivad funktsioonid ja sisu muutuda. Olulistest muudatust
 
 Mõnda funktsiooni saab kasutada külalisena, salvestades andmed seadmesse. Konto võib võimaldada toetatud andmete taastamist ja sünkroonimist. Vastutad oma konto kaudu tehtud tegevuse eest, välja arvatud juhul, kui teatad volitamata juurdepääsust viivitamata.
 
-Kontoteenuse leping sõlmitakse tähtajatult ja kehtib seni, kuni sina või operaator selle nende tingimuste kohaselt lõpetab. Patternly konto kustutamine lõpetab kontoteenuse, kuid ei tühista iseenesest eraldi App Store’i tellimust.
+Kontoteenuse leping sõlmitakse tähtajatult ja kehtib seni, kuni sina või operaator selle nende tingimuste kohaselt lõpetab. Patternly konto kustutamine lõpetab kontoteenuse. Kui ostad hiljem App Store’i kaudu tellimuse, ei tühista konto kustutamine seda iseenesest.
 
 Saad konto kustutada rakenduses oleva kustutamisvoo kaudu. Privaatsuspoliitika selgitab, milliseid andmeid see mõjutab, millised säilitamisreeglid kehtivad ja millised on kustutamise piirid.
 
@@ -115,13 +115,13 @@ Võid seadusega lubatud ulatuses tsiteerida piiratud osi, kuid ilma kirjaliku lo
 
 7. Premium ja tellimused
 
-Patternly Premium on igakuine automaatselt uuenev digiteenus, mida müüakse Apple App Store’i kaudu Poolas ja teistes Euroopa Liidu riikides, kus pakkumine on saadaval. Pakkumine on {{terms.premiumProductName}} (toote tunnus {{terms.premiumProductIdentifier}}). See sisaldab: {{terms.premiumServiceScope}}. Arveldusperiood on {{terms.premiumBillingPeriod}}. Prooviperioodi pole. Esialgne koguhind koos kohaldatavate maksudega on {{terms.premiumPriceIncludingTaxes}}; uuendamise hind koos kohaldatavate maksudega on {{terms.premiumRenewalPriceIncludingTaxes}} iga {{terms.premiumBillingPeriod}} eest. Enne tellimist kuvatakse ostuekraanil kehtivad hinnad, uuendamise periood, Premiumi ulatus, makseviis ja -aeg, teenuse algus ning maksekohustus.
+Uued Premiumi ostud on praegu keelatud, seega kehtivat tasulist pakkumist ei ole. Kui ostud hiljem lubatakse, on kavandatud pakkumine {{terms.premiumProductName}} (toote tunnus {{terms.premiumProductIdentifier}}), igakuine automaatselt uuenev digiteenus ilma prooviperioodita. Kavandatud hind koos kohaldatavate maksudega Poolas on {{terms.premiumPriceIncludingTaxes}}; kavandatud pikendamise hind on {{terms.premiumRenewalPriceIncludingTaxes}} iga {{terms.premiumBillingPeriod}} kohta. Need on Poola kavandatud hinnad, mitte praegune pakkumine; teiste riikide hinnad pole kinnitatud. Enne ostude lubamist tuleb selle pakkumise kohta esitada asjakohane müüja, kehtiv hind, pikendamisperiood, Premiumi ulatus, makseviis ja -aeg, teenuse algus ning maksekohustus.
 
-Tehingu müüja kokkulepe on järgmine: {{terms.merchantOfRecord}}. Apple pakub makse- ja tellimuse haldamise kanalit, kuid see ei vabasta operaatorit vastutusest Patternly vastavuse ega sinu seaduslike nõuete eest vastutava ettevõtja vastu.
+Praegune müüja kokkulepe on järgmine: {{terms.merchantOfRecord}}. Tulevase poe-põhise pakkumise müüja ja maksekorraldus pole kinnitatud. Kui tellimus tehakse tulevikus kättesaadavaks ja ostad selle Apple App Store’i kaudu, pakub Apple selle poe makse- ja tellimuse haldamise kanalit; see ei vabasta operaatorit vastutusest Patternly vastavuse ega sinu seaduslike nõuete eest vastutava müüja vastu.
 
-Tellimus uueneb automaatselt ainult enne ostu selgelt kuvatud tingimustel. Tulevased uuendamised saad peatada Apple’i konto seadetes. Rakenduse või Patternly konto kustutamine ei tühista App Store’i tellimust. Olulist hinnatõusu ei loeta kunagi vastuvõetuks üksnes Patternly kasutamise jätkamise tõttu; selleks on vaja kohaldatavat jaatava nõusoleku, uuesti ostmise või uuendamise korda.
+Tellimus uueneb ainult enne ostu selgelt näidatud tingimustel. Kui ostad selle hiljem Apple App Store’i kaudu, saad tulevased pikendamised peatada Apple’i konto seadetes ning rakenduse või Patternly konto kustutamine ei tühista seda App Store’i tellimust. Olulist hinnatõusu ei loeta kunagi vastuvõetuks üksnes Patternly kasutamise jätkamise tõttu; selleks on vaja kohaldatavat jaatava nõusoleku, uuesti ostmise või uuendamise korda.
 
-Apple võib platvormi kaudu tehingute tagasimakseid menetleda. Võid siiski esitada operaatorile kaebusi Patternly teenuse, selle vastavuse või seadusest tulenevate tarbijakaitsevahendite kohta.
+Kui ostad hiljem tellimuse Apple App Store’i kaudu, võib Apple tehingute tagasimakseid oma platvormil hallata. Patternly teenust, selle vastavust või sinu seaduslikke tarbijaõigusi puudutavad kaebused saad esitada ka operaatorile.
 
 Premiumi juurdepääs algab kohe pärast ostu ainult siis, kui oled eraldi ja sõnaselgelt taotlenud teenuse alustamist enne 14-päevase taganemistähtaja lõppu. Ühtegi valikut ei tohi olla ette märgitud. Kui taganed pärast teenuse algust, võidakse kohustusliku õiguse lubatud juhul nõuda proportsionaalset tasu kuni taganemiseni osutatud teenuse eest. Premiumi ei pakuta eraldi ühekordse digitaalse infosisu tarne vormis, seega ei palu Patternly sul sel alusel taganemisõigusest ilmajäämist kinnitada. Muud seadusest tulenevad taganemisõigused jäävad kehtima. Kaebuse esitamine ei piirdu 14 päevaga.
 
@@ -137,9 +137,9 @@ Sisuteate või tugisõnumi esitamisel kinnitad, et see on seaduslik ega sisalda 
 
 10. Peatamine ja lõpetamine
 
-Võid Patternly kasutamise lõpetada ja konto igal ajal kustutada, kuid platvormi tellimus tuleb eraldi tühistada. Operaator võib juurdepääsu proportsionaalselt piirata üksnes olulise rikkumise, kinnitatud turvaohu, ebaseadusliku kasutuse, maksmata jätmise või siduva õigusnõude tõttu.
+Võid Patternly kasutamise igal ajal lõpetada ja konto kustutada. Kui platvormi tellimus muutub hiljem kättesaadavaks, võib olla vaja see platvormi kaudu eraldi tühistada. Operaator võib juurdepääsu proportsionaalselt piirata ainult olulise rikkumise, kinnitatud turvaohu, ebaseadusliku kasutuse, maksmata jätmise või siduva õigusnõude tõttu.
 
-Kui kahju vältimiseks või seaduse täitmiseks pole vaja kohe tegutseda, selgitab operaator põhjust, teatab sellest mõistliku aja ette ja annab võimaluse rikkumine kõrvaldada. Võid esitada apellatsiooni aadressil {{terms.complaintEmail}}. Kui piirangu alus lõpeb, taastatakse juurdepääs. Peatamine ei kõrvalda seadusest tulenevaid vastavuse, tagasimakse, andmete tagastamise, kaebuse või tühistamise õigusi ega tühista iseenesest Apple’i tulevasi uuendamisi.
+Kui kahju vältimiseks või seaduse täitmiseks pole vaja kohe tegutseda, selgitab operaator põhjust, teatab sellest mõistliku aja ette ja annab võimaluse rikkumine kõrvaldada. Võid esitada apellatsiooni aadressil {{terms.complaintEmail}}. Kui piirangu alus lõpeb, taastatakse juurdepääs. Peatamine ei kõrvalda seadusest tulenevaid vastavuse, tagasimakse, andmete tagastamise, kaebuse või tühistamise õigusi. Kui ostad hiljem tellimuse Apple App Store’i kaudu, ei peata juurdepääsu piiramine iseenesest selle tulevasi pikendamisi.
 
 11. Vastutus ja seadusest tulenevad õigused
 
@@ -173,7 +173,7 @@ Operaator peab esitama kinnituse püsival andmekandjal ja säilitama auditeerita
 
 16. Tehnilised nõuded
 
-Tehnilised nõuded ja ühilduvus: {{terms.technicalRequirements}}. Konto autentimiseks, sünkroonimiseks, ostudeks, ostude taastamiseks ja operaatoriga suhtlemiseks on vaja internetiühendust. Toetatud võrguühenduseta funktsioonid võivad piirduda seadmes juba olevate andmetega.
+Tehnilised nõuded ja ühilduvus: {{terms.technicalRequirements}}. Konto autentimiseks, sünkroonimiseks ja operaatoriga suhtlemiseks on vaja internetiühendust. Kui poeostud lubatakse, on nende ostmiseks või taastamiseks vaja samuti internetiühendust. Toetatavad võrguühenduseta funktsioonid võivad piirduda seadmes juba olemasolevate andmetega.
 
 Toe ja uuenduste lubadus: {{terms.supportCommitment}}. Vajalikud turva- ja vastavusuuendused tarnitakse lepingu ja kohustusliku õiguse järgi nõutud perioodi jooksul.
 
@@ -185,7 +185,7 @@ Kui oled selleks õigustatud tarbija, on sul üldjuhul õigus kauglepingust 14 p
 
 Patternly peab vastama kirjeldusele, kokkulepitud tasulise teenuse ulatusele, funktsionaalsusele, ühilduvusele, ligipääsetavusele, järjepidevusele, turvalisusele ja uuendustele, mida võid lepingu ja kohustusliku õiguse alusel mõistlikult oodata. Kui teenus ei vasta neile nõuetele, teavita aadressil {{terms.complaintEmail}}. Võid nõuda vastavuse taastamist mõistliku aja jooksul ja olulise ebamugavuseta.
 
-Kui seaduses sätestatud tingimused on täidetud, võid nõuda proportsionaalset hinna alandamist või lepingu lõpetada ning saada asjakohase tagasimakse. Need õiguskaitsevahendid on suunatud vastutava ettevõtja vastu ning Apple’i tehingutööriistad neid ei asenda.
+Kui seaduses sätestatud tingimused on täidetud, võid nõuda vastutavalt müüjalt proportsionaalset hinnaalandust või lepingu lõpetada ja saada kohaldatava tagasimakse. Kui ostsid Apple App Store’i kaudu, ei asenda selle tehingutööriistad neid õiguskaitsevahendeid.
 
 19. Kaebused
 

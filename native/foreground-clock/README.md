@@ -45,8 +45,8 @@ node --import tsx --test src/infrastructure/storage/foregroundClockCapability.te
 The first test compiles and executes Foundation/C++ on macOS and explicitly
 skips other hosts. These tests do not execute UIKit, Nitro, MMKV, the native
 scheduler or recovery after process interruption. Actual pod target build,
-shared-handle ownership and native kill/resume remain separate checks described
-in [the PERSIST-11 report](../../docs/reports/persist11-probe-2026-10-12.md).
+shared-handle ownership and native kill/resume remain separate checks tracked through the
+[canonical documentation entry point](../../AGENTS.md).
 
 For the actual CocoaPods boundary, generate iOS in an isolated source checkout
 using the existing application configuration, retain the checked dependency lock,
@@ -313,11 +313,38 @@ selects the requested offset; `--background-ms` adds Home/resume while JS is
 blocked. Loss bounds use actual host intervals, including transport uncertainty.
 An uncertain effect must not be retried automatically.
 
+Production stalls first perform `prepare-stall`: full advancing-session validation
+and inventory happen before the timed request. A matching, one-use preparation
+expires after ten seconds (diagnostic freshness only; the product loss limit remains five seconds) and is invalidated by AppState changes. Consumption
+rechecks profile lease, owner, journal, immutable S content and all other keys,
+then samples the native clock last. The timed request uses an atomic rename of
+a complete case/run/protocol JSON file in this run's private receipt directory,
+written and renamed in one `run-as sh` stdin command. A bounded 50ms reader deletes and verifies the
+matching request before consumption. It refuses malformed/mismatched files
+without deleting them. This avoids the real background/active transition caused
+by a second Android URI launch. Expiry or a changed scope refuses before
+stalling; it never reconciles or retries a write. Fixed refusal categories distinguish request IO, scope ownership, session, keyset and value changes without copying data. The driver records both the
+preparation ACK and actual timed intervals; the loss equation remains unchanged.
+A wide transport interval is INCONCLUSIVE, never a relaxed five-second limit.
+The earliest cold observer runs synchronously at profile-storage readiness,
+before lifecycle composition can reconcile S or arm T. Its receipt records
+`profile_ready_before_lifecycle`; a refused observation is explicit and does
+not fall through to a later read. Diagnostic receipt failures cannot close the
+production profile. Cold and cleanup receipts include old and fresh PID/birth.
+
+`inventory` also observes validated account/profile/sync scope and paired stable
+control slots without adopting, transferring, signing out or resetting. It emits
+only named slot hashes and validated metadata, never credentials or record text.
+An enabled private UUID may include bounded startup timings. Compare a fresh
+baseline with the same actor and session; an older aggregate digest alone cannot
+attribute historical changes.
+
 For separate encrypted SDK fixtures, use `fixture-seed-elapsed` or
 `fixture-seed-countdown`, then `fixture-enter`, followed
 promptly by `stall-kill --subject fixture`. Seeding requires a production owner
-with two unchanged native elapsed samples, stable T/session/profile and no
-lifecycle transition. A cold arm may retain `running=true` without a segment;
+with an explicitly paused T and two unchanged samples from its already armed
+native owner, stable T/session/profile and no lifecycle transition. A cold arm
+may retain `running=true` without a segment; that is insufficient for seeding;
 the probe never pauses or rewrites production T. Cold launch restores only the owned
 fixture; it never seeds a missing store. Other bounded commands are
 `fixture-seed-cap`, `fixture-seed-overrun`, `fixture-pause`, `fixture-conflict`
@@ -341,7 +368,7 @@ build and modifies no device.
 `deriveAndroidClockProbeApk.py` accepts the original `--base-apk` and its
 `--expected-base-sha256`, exported `--bundle`/`--assets`, the reviewed
 `--expected-resource-count` and a new unsigned `--output`. It allows only the
-Hermes bundle payload to change, verifies resource mapping (including equivalent
+Hermes bundle payload to change by default, verifies resource mapping (including equivalent
 Android PNG crunching with pinned `pngjs`), and compares all other APK entry
 bytes. It neither reads credentials nor installs. Use Android SDK `zipalign
 -P 16 4`, then `apksigner sign` with the existing private keystore; pass passwords
@@ -350,5 +377,56 @@ manifest, native-library hashes and changed-entry scope again after signing.
 Only then use an authorized `adb install -r`, without clearing data. The result
 is a local diagnostic derivative of the named EAS artifact, with its own hash;
 it is not the original EAS APK or a release artifact.
+
+For a historical production countdown receipt missing only `countdownMs`, run
+`node scripts/qa/adjudicateAndroidCountdownProbe.mjs <private-case-directory>`.
+It requires an exact unchanged S envelope/content digest and matching configuration,
+profile, run and start; confirmed controlled process death and early cold read; and
+T-only inventory changes. It derives only the constant duration, writes a separate
+0600 `adjudication.json`, and never edits original receipts or raises the loss limit.
+New cold receipts contain the duration directly. Rejection cases are covered by
+`node --test scripts/qa/adjudicateAndroidCountdownProbe.test.mjs`.
+
+The Android fixture fault hook is absent by default. To compile both variants
+locally against the matching frozen SDK prefabs, use:
+
+```sh
+python3 scripts/qa/buildAndroidClockFixtureOwner.py \
+  --sdk <android-sdk> --prefab <matching-arm64-prefab-directory> \
+  --output <new-private-output> --run-id <explicit-probe-uuid>
+```
+
+The pinned NDK/CMake recipe records source/library hashes and private compiler logs;
+it does not install or sign. The UUID-gated variant permits five synchronous,
+one-shot experiments under the owner mutex, only against the exact encrypted
+fixture ID/key/session/generation and active segment. Use `fixture-fault-read`,
+`fixture-fault-write-before`, `fixture-fault-write-after`, `fixture-fault-readback`
+or `fixture-fault-backward` after an ordinary fixture seed/enter. The first small
+real probe must establish device binding before running the remaining scenarios.
+The driver verifies fault latch/no retry, original PID/birth through stop, fresh
+cold process, exact post-fault T digest and unchanged production inventory.
+For fault pairs only, a changed v2 Premium cache may be classified as
+`premium_observation_refresh`: both full records must validate against the same
+verified account/profile/UID, and every snapshot field except the two observation
+timestamps must hash identically. Observation times and the wall-time fence must
+not decrease; a fence increase is bounded by the prior maximum, server time or
+captured wall time plus 1 second. Raw cache hashes remain in both receipts.
+Invalid bindings fail even with identical inventory; normal verified binding
+revision advances are reported separately. Every other key remains byte-strict.
+Production prepared-stall guards and the general preservation comparator retain
+their original strict checks. Run the diagnostic comparator/readiness tests before
+using a new diagnostic derivative; a prior unannotated failure is not retroactively
+reclassified. Fixture cold capture rechecks exact T after the async binding read.
+Cleanup still requires its confirmed cold receipt. These are injected owner
+call-boundary exceptions and an injected backward monotonic sample, not physical
+MMKV disk failure, power loss or an observed hardware clock regression.
+
+For that private fixture APK only, the derivative tool also accepts the all-or-none
+`--native-library`, `--expected-native-sha256`, `--expected-base-native-sha256`, and
+`--readelf` options. It permits only the fixed arm64 foreground-clock library,
+checks ELF64/AArch64 identity and identical SONAME/dependencies, and preserves all
+other entries and resources. An identical bundle is permitted only with an explicit
+native replacement. Runtime ABI compatibility still requires the signed device
+probe. Preserve the original library APK and restore it in place after cleanup.
 
 Current acceptance results and the sole plan/state follow [AGENTS](../../AGENTS.md).
