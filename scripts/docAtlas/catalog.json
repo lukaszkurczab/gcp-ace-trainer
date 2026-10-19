@@ -935,8 +935,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/progress/store.ts": {
-      "description": "Trwała synchronizacja rekordów i rewizji w Firestore. Mieszany replay waliduje parę cel–plan z nowych zapisów i aktualnego counterpartu; pełne historyczne receipts i replay całego batcha zachowują wcześniejszy wynik.",
-      "reviewedHash": "15085659123465f871f2bf57092d4b27f7ef1ae89ceccf0122fc823db028d65f",
+      "description": "Trwała synchronizacja rekordów i rewizji w Firestore. Mieszany replay waliduje parę cel–plan z nowych zapisów i aktualnego counterpartu; pełne historyczne receipts i replay całego batcha zachowują wcześniejszy wynik. Staged adoption rozstrzyga klucze pary cel–plan wyłącznie w pętli grup: keep_account zachowuje konto, a keep_guest kolejkuje każdą rzeczywistą zmianę raz; niegrupowane rekordy przechodzą osobno.",
+      "reviewedHash": "4e780a19cfce484c7836ec4829acd9258ceff4dd00b24862207148958652aa3b",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/users/merge.ts": {
@@ -1611,7 +1611,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "844be83e22765567cb094430c1bade2acaee01724ae0e6b5d1d24d7890095100"
+      "reviewedDigest": "f5273e329a4fe6e3bc3ba0cc8dd799f1bcc65cbdf6a543274d9e372d87a03912"
     },
     {
       "name": "Treść od producenta do sesji",
