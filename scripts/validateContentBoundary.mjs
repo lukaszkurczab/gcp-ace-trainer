@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { validateBuiltContent, GENERATED_DIRECTORY, LOCAL_CLAUDE_INVENTORY } from "./syncBundledContentRelease.mjs";
+import { validateBuiltContent, GENERATED_DIRECTORY } from "./syncBundledContentRelease.mjs";
 
 /** Legacy identity field names are rejected at explicit input boundaries. */
 export const LEGACY_CONTENT_IDENTITY_ALLOWLIST = Object.freeze([
@@ -95,8 +95,8 @@ for (const pattern of [/algorithmContentGroups/, /defaultQuestionBank/, /HttpCon
 if (hasDirectFetchIngress(contentSource)) failures.push("Forbidden production ingress or diagnostic path remains: direct global fetch().");
 if (!source.includes("contentPackageRuntimeOwner.verifyBundledPackages")) failures.push("The canonical content preparation gate is missing.");
 try {
-  const result = await validateBuiltContent(join(root, GENERATED_DIRECTORY), { expectedInventory: LOCAL_CLAUDE_INVENTORY });
-  if (result.inventory.questionCount !== LOCAL_CLAUDE_INVENTORY.questionCount) failures.push("Canonical content inventory is incomplete.");
+  const result = await validateBuiltContent(join(root, GENERATED_DIRECTORY), {});
+  if (result.inventory.trackCount !== 9 || result.inventory.questionCount < 1) failures.push("Canonical content inventory is incomplete.");
 } catch (error) { failures.push(`Canonical generated content failed validation: ${error.message}`); }
 if (/from\s+["'][^"']*(?:tests\/|fixtures)[^"']*["']/.test(source)) failures.push("Production bundle imports a test fixture.");
 if (failures.length) { console.error(failures.join("\n")); process.exitCode = 1; } else console.log("CONTENT_BOUNDARY_CHECK=passed");

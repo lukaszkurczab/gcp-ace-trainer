@@ -429,4 +429,96 @@ other entries and resources. An identical bundle is permitted only with an expli
 native replacement. Runtime ABI compatibility still requires the signed device
 probe. Preserve the original library APK and restore it in place after cleanup.
 
+For ordinary Exam/Design absolute-deadline sessions, the private observer also
+records immutable start/config/deadline and a separate `deadlineSessions` result
+projection. The early cold stage `absolute_deadline_before_lifecycle` requires no
+T or journal and does not finalize anything. A later inventory and repeated cold
+start must separately establish terminal-result idempotency.
+
+After an actual small device capability probe has confirmed millisecond clock
+setting and restoration, reproduce a bounded wall step with:
+
+```sh
+python3 scripts/qa/androidDeadlineWallClockProbe.py \
+  --adb <adb> --run-id <explicit-probe-uuid> \
+  --expected-apk-sha256 <installed-diagnostic-apk-sha256> \
+  --output <new-private-case-directory> --offset-ms 1000
+```
+
+Repeat with `--offset-ms -1000` in a separate case. The tool accepts only those
+steps, an ordinary active Exam/Design session over 60 seconds from deadline, and
+an initially automatic clock. It checks both canonical/session projections,
+observes the actual wall/uptime discontinuity, captures unchanged S/config/start/
+deadline during the step, then restores projected prior wall time and automatic
+time in `finally`. Inventory deltas outside that deadline proof remain explicit
+for preservation review. Host termination or ADB loss can bypass restoration:
+check wall time, `auto_time` and `auto_time_zone` immediately after interruption.
+If only the final passive snapshot refuses while the clock has already been
+verified restored, `--resume-restored` validates the preserved before/during
+receipts and performs only the missing post-read. It writes a separate exclusive
+`adjudication.json`, never repeats the clock step or rewrites the original proof.
+Each controller sends one VIEW intent per observation. Inside that same request,
+the app waits for correlated identity-refresh spans to settle and retries only
+changed read observations against one captured lease/profile, sequentially within
+five seconds. A stale lease/profile, malformed trace or SDK error refuses the
+read; success at the read deadline also refuses. No VIEW retry reopens the proof
+barrier.
+No large jump, duration override, manual deadline edit or reset is part of this
+recipe. Natural duration and two post-deadline cold observations are still needed.
+
+For the natural absolute-deadline restart, use `androidDeadlineRecoveryProbe.py`
+with the same adb/run/APK/output arguments, `--expected-occurrences <UI count>`
+and `--action stop`. It requires an active ordinary Exam/Design session over one
+minute from its unchanged deadline and confirms process death. After the real
+deadline, `--action recover` cold-starts and verifies the early stored deadline,
+then waits passively for 30 seconds before one terminal observation with zero
+supplied answers and no S/D/T/journal. That delay is a test observation choice,
+not a product latency guarantee. Use
+`--action repeat` afterward for a second cold terminal-idempotency check. Reuse
+the same private output for those two follow-up actions. The tool refuses early
+recovery; it never changes time, duration or deadline and does not schedule a
+wakeup. Raw inventory and binding metadata still require their scoped preservation
+review. Canonical envelope revision/digest may rebase during account materialization;
+semantic terminal/result identity must remain exact.
+
+An `invalidated` account binding is not a timer verdict or proof of harmless
+materialization. Preserve the failed receipt and use only the ordinary positive
+identity-proof bootstrap; never write or restore a binding manually. If that
+later cold verifies the same account/UID and retains the exact terminal result,
+`node scripts/qa/adjudicateAndroidDeadlineRecovery.mjs <private-input.json>
+<new-adjudication.json>` can correlate the existing receipts without device
+operations. Input paths are `interruption`, `before`, `cold`, `firstTerminal`,
+`firstFailure`, `reproofCold` and `reproofTerminal`; marker cases must retain their
+APK-before/after receipts. `firstFailure` records the original recovered PID/birth,
+APK, failure category, terminal rows and `noManualBindingWrite`; `reproofCold`
+records the next ordinary cold receipt and fresh PID/birth. Keep those observations
+private. The tool checks distinct processes, exact identities/deadline/result,
+counts and absence of S/D/T/journal. It explicitly retains the first binding gap;
+it does not establish continuous verified identity. A further guarded repeat can
+use `--action repeat --prior-adjudication <path>` and retains that qualification.
+
+For an authorized local JS correction, use the frozen diagnostic source and its
+locked Expo/Hermes dependencies; preserve the sandbox environment fingerprint,
+entry point and exact content/legal pins. Export with the existing Expo CLI
+`export:embed --platform android --dev false --bytecode --max-workers 1`, explicit
+private bundle/assets paths and `--sourcemap-output`. Review the source-map delta
+before packaging. The non-secret packer makes the single runtime change explicit:
+
+```sh
+python3 scripts/qa/prepareAndroidClockJsDerivative.py \
+  --base-apk <retained-signed-base.apk> --expected-apk-sha256 <exact-base-sha256> \
+  --bundle <private-Hermes-bundle> --native-owner-sha256 <original-arm64-owner-sha256> \
+  --output <new-unsigned.apk>
+```
+
+It retains every other ZIP entry except actual signature metadata and rejects a
+changed native owner or bytecode format. Align with the pinned Android SDK's
+`zipalign -P 16`, sign with the already approved private keystore, then run
+`apksigner verify --verbose --print-certs` and compare the exact expected signer.
+Do not print passwords or put credentials in this repository. Invoke the packer
+again with the same base/bundle/owner arguments plus `--signed-apk <candidate.apk>`
+and `--output <new-runtime-verification.json>` to verify all post-signing runtime
+bytes. This second mode only reads APKs and writes the new receipt. These artifact
+checks do not replace device acceptance or authorize another EAS build/install.
+
 Current acceptance results and the sole plan/state follow [AGENTS](../../AGENTS.md).

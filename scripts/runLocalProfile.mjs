@@ -136,11 +136,12 @@ export async function runLocalProfile(argv = process.argv.slice(2), options = {}
     throw new Error(`Cannot load local ${profile} profile at ${profilePath}: ${reason}`);
   }
   const environment = validateLocalProfile(profile, { ...process.env, ...profileEnvironment });
+  await (options.prepareCurrentContent ?? (() => prepareCurrentContent(repositoryRoot)))();
   if (profile === "smoke") {
     await probeSmokeAuthEmulator(environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN, environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID, options.fetchImplementation);
     await probeSmokeApiReady(environment.EXPO_PUBLIC_PATTERNLY_API_ORIGIN, options.fetchImplementation);
   }
-  const child = spawn(options.command ?? "npx", ["expo", ...ACTIONS[action], ...extraArgs], {
+  const child = (options.spawn ?? spawn)(options.command ?? "npx", ["expo", ...ACTIONS[action], ...extraArgs], {
     cwd: repositoryRoot,
     env: environment,
     stdio: "inherit",
@@ -148,6 +149,20 @@ export async function runLocalProfile(argv = process.argv.slice(2), options = {}
   return await new Promise((resolveProcess, reject) => {
     child.once("error", reject);
     child.once("exit", (code, signal) => resolveProcess({ code: code ?? 1, signal }));
+  });
+}
+
+function prepareCurrentContent(repositoryRoot) {
+  return new Promise((resolvePreparation, rejectPreparation) => {
+    const child = spawn(process.execPath, [resolve(repositoryRoot, "scripts/syncBundledContentRelease.mjs"), "sync"], {
+      cwd: repositoryRoot,
+      env: process.env,
+      stdio: "inherit",
+    });
+    child.once("error", rejectPreparation);
+    child.once("exit", (code, signal) => code === 0
+      ? resolvePreparation()
+      : rejectPreparation(new Error(`Current content sync failed before Expo start (exit=${code ?? "signal"}, signal=${signal ?? "none"}).`)));
   });
 }
 

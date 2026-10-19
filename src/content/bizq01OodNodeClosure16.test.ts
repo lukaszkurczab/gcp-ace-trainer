@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import test, { after, before } from "node:test";
+import test, { before } from "node:test";
 import path from "node:path";
 
 import {
@@ -13,7 +13,7 @@ import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQues
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
-import { lockedContentProducer } from "../../scripts/fixtures/lockedContentProducer";
+import { currentContentProducer } from "../../scripts/fixtures/currentContentProducer";
 
 const PACKET = "src/content/__fixtures__/release-acceptance/ood-node-closure-16";
 const TRACK = "object-oriented-design-interview";
@@ -23,17 +23,13 @@ const MODES = [
   "design-interview-tradeoff-practice",
   "design-interview-weak-area-review",
 ] as const;
-let acceptedProducerRoot = "";
-let cleanupAcceptedProducer: () => void | Promise<void> = () => {};
-
-after(async () => { await cleanupAcceptedProducer(); });
+let currentContentRoot = "";
 
 before(async () => {
-  acceptedProducerRoot = await lockedContentProducer({
+  currentContentRoot = await currentContentProducer({
     appRoot: process.cwd(),
-    repositoryRoot: path.resolve("../patternly-content"),
+    contentRoot: process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve("../patternly-content"),
     trackId: TRACK,
-    after: (cleanup) => { cleanupAcceptedProducer = cleanup; },
   });
 });
 
@@ -81,7 +77,7 @@ function readFrozenEntries(unit: (typeof UNITS)[number]): readonly ProposalEntry
 }
 
 function sourceQuestions(file: string): readonly Question[] {
-  const sourcePath = path.resolve(acceptedProducerRoot, "content/object-oriented-design-interview", NODE, file);
+  const sourcePath = path.resolve(currentContentRoot, "content/object-oriented-design-interview", NODE, file);
   return JSON.parse(readFileSync(sourcePath, "utf8")) as readonly Question[];
 }
 
@@ -116,8 +112,10 @@ for (const unit of UNITS) {
       const predecessorId = `ood-n01-${unit.id.slice(-3).toLowerCase()}-i${String(index + 1).padStart(3, "0")}`;
       const sourceQuestion = source.find((question) => question.questionId === entry.questionId);
       assert.ok(sourceQuestion, `${unit.id} current source contains ${entry.questionId}`);
-      assert.deepEqual(sourceQuestion, entry.question, `${entry.questionId} source is the frozen reviewed payload`);
       assert.deepEqual(track.getQuestion(entry.questionId), sourceQuestion, `${entry.questionId} bundled artifact matches source`);
+      assert.equal(sourceQuestion.mentalUnitId, unit.id, `${entry.questionId} remains in the reviewed mental unit`);
+      assert.equal(sourceQuestion.nodeId, NODE, `${entry.questionId} remains in the reviewed node`);
+      assert.ok(isSingleChoice(sourceQuestion), `${entry.questionId} retains its reviewed interaction contract`);
       assert.equal(source.some((question) => question.questionId === predecessorId), false, `${predecessorId} is retired from source`);
       assert.equal(track.getQuestion(predecessorId), undefined, `${predecessorId} is retired from the current artifact`);
     }

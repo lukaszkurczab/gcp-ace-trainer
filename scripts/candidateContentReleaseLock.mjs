@@ -1,155 +1,37 @@
-import { createHash } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { EXPECTED_TRACK_IDS, SUCCESSOR_LEDGER_FILE_NAME, LOCK_FILE_NAME, validateBuiltContent } from "./syncBundledContentRelease.mjs";
+import { fileURLToPath } from "node:url";
+import { syncCanonicalContent } from "./syncBundledContentRelease.mjs";
 
 const APP_ROOT = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const DEFAULT_CONTENT_ROOT = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(APP_ROOT, "../patternly-content"));
-const CANDIDATE_PATH = "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json";
-const RELEASE_PATH = "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json";
-const BUNDLED_LOCK_PATH = "src/content/generated/canonical-content/content-lock.json";
-const OUTPUT_PATH = "integration/contracts/content-release/release.lock.json";
-const HISTORICAL_PATH = "integration/contracts/content-release/release.lock.historical-0024.json";
-const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const canonical = (value) => value === null || ["boolean", "number", "string"].includes(typeof value)
-  ? JSON.stringify(value)
-  : Array.isArray(value)
-    ? `[${value.map(canonical).join(",")}]`
-    : `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(",")}}`;
-const bytes = (value) => Buffer.from(`${canonical(value)}\n`);
 
-async function json(root, relativePath) {
-  return JSON.parse(await readFile(path.join(root, relativePath), "utf8"));
-}
-
-function verifiedBundledArtifacts(built) {
-  if (!built.files.has(SUCCESSOR_LEDGER_FILE_NAME)) throw new Error("Candidate release lock requires a verified training successor ledger.");
-  const lockBytes = built.files.get(LOCK_FILE_NAME);
-  if (!lockBytes) throw new Error("Candidate release lock requires the raw bundled content lock.");
-  return Object.freeze({ lockBytes, byTrack: new Map(built.lock.tracks.map((entry) => [entry.trackId, entry])) });
-}
-
-// Bootstrap only: bind the checkout pin to the app's current immutable bytes.
-// The existing candidate check after checkout still owns source/release proof.
-export async function readCandidateContentProducerPin({ appRoot = APP_ROOT, contentRoot = DEFAULT_CONTENT_ROOT } = {}) {
-  const lock = await json(appRoot, OUTPUT_PATH);
-  const keys = (value, expected) => value !== null && typeof value === "object" && !Array.isArray(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...expected].sort());
-  const hash = value => typeof value === "string" && /^[a-f0-9]{64}$/u.test(value);
-  const commit = value => typeof value === "string" && /^[a-f0-9]{40}$/u.test(value);
-  if (!keys(lock, ["schemaVersion", "repository", "bundleId", "candidateId", "candidateManifestPath", "releaseManifestPath", "releaseManifestSha256", "bundledContentLockSha256", "artifacts"]) || lock.schemaVersion !== 3 || lock.repository !== "lukaszkurczab/patternly-content" || !hash(lock.candidateId) || lock.bundleId !== `patternly-app-candidate-${lock.candidateId.slice(0, 12)}` || lock.candidateManifestPath !== CANDIDATE_PATH || lock.releaseManifestPath !== RELEASE_PATH || !hash(lock.releaseManifestSha256) || !hash(lock.bundledContentLockSha256) || !Array.isArray(lock.artifacts) || lock.artifacts.length !== EXPECTED_TRACK_IDS.length) {
-    throw new Error("Candidate release lock bootstrap metadata is invalid.");
-  }
-  const ids = lock.artifacts.map(artifact => artifact?.trackId);
-  if (JSON.stringify([...ids].sort()) !== JSON.stringify(EXPECTED_TRACK_IDS) || new Set(ids).size !== EXPECTED_TRACK_IDS.length) throw new Error("Candidate release lock bootstrap track identity is invalid.");
-  const pin = lock.artifacts[0].producerCommit;
-  for (const artifact of lock.artifacts) {
-    if (!keys(artifact, ["releaseId", "producerCommit", "sourceRepositoryCommit", "trackId", "contentVersion", "checksumSha256"]) || !commit(pin) || artifact.producerCommit !== pin || artifact.sourceRepositoryCommit !== pin || artifact.releaseId !== lock.artifacts[0].releaseId || typeof artifact.releaseId !== "string" || !/^[a-z][a-z0-9-]*$/u.test(artifact.releaseId) || typeof artifact.contentVersion !== "string" || !artifact.contentVersion.trim() || artifact.contentVersion.trim() !== artifact.contentVersion || !hash(artifact.checksumSha256)) throw new Error("Candidate release lock bootstrap artifact metadata is invalid.");
-  }
-  const built = await validateBuiltContent(path.join(appRoot, path.dirname(BUNDLED_LOCK_PATH)), { producerRoot: contentRoot });
-  const bundled = verifiedBundledArtifacts(built);
-  if (sha256(bundled.lockBytes) !== lock.bundledContentLockSha256) throw new Error("Candidate release lock bootstrap bundled content lock hash differs.");
-  const bundledTrackById = bundled.byTrack;
-  for (const artifact of lock.artifacts) {
-    const track = bundledTrackById.get(artifact.trackId);
-    if (!track || track.sha256 !== artifact.checksumSha256 || track.contentVersion !== artifact.contentVersion) throw new Error("Candidate release lock bootstrap bundled candidate artifact differs.");
-  }
-  return pin;
-}
-
-// Frozen history is a separate input, never an active schema-v2 fallback.
-export async function readHistoricalContentProducerPin({ appRoot = APP_ROOT } = {}) {
-  const frozenBytes = await readFile(path.join(appRoot, HISTORICAL_PATH));
-  if (sha256(frozenBytes) !== "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195") throw new Error("Frozen historical release lock hash differs.");
-  const pin = JSON.parse(frozenBytes).artifacts.at(-1)?.producerCommit;
-  if (typeof pin !== "string" || !/^[a-f0-9]{40}$/u.test(pin)) throw new Error("Frozen historical producer pin is invalid.");
-  return pin;
-}
-
-export async function createCandidateContentReleaseLock({ appRoot = APP_ROOT, contentRoot = DEFAULT_CONTENT_ROOT } = {}) {
-  const [candidate, release, built] = await Promise.all([
-    json(contentRoot, CANDIDATE_PATH),
-    json(contentRoot, RELEASE_PATH),
-    validateBuiltContent(path.join(appRoot, path.dirname(BUNDLED_LOCK_PATH)), { producerRoot: contentRoot }),
-  ]);
-  const { candidateIdFor } = await import(pathToFileURL(path.join(contentRoot, "scripts/review/candidate-manifest.mjs")).href);
-  if (candidate.status !== "draft_not_admitted" || candidateIdFor(candidate) !== candidate.candidateId || candidate.release.releaseId !== release.manifest.releaseId || candidate.release.sourceRepositoryCommit !== release.manifest.sourceRepositoryCommit) throw new Error("Candidate release identity is invalid.");
-  if (candidate.release.checksumSha256 !== sha256(bytes(release))) throw new Error("Candidate release checksum is stale.");
-  if (JSON.stringify(release.artifacts.map((artifact) => artifact.trackId)) !== JSON.stringify(EXPECTED_TRACK_IDS) || JSON.stringify(candidate.tracks.map((track) => track.trackId)) !== JSON.stringify(EXPECTED_TRACK_IDS)) throw new Error("Candidate release lock must bind exactly nine sorted canonical tracks.");
-  const bundled = verifiedBundledArtifacts(built);
-  const seenTrackIds = new Set();
-  const artifacts = release.artifacts.map((artifact) => {
-    const track = bundled.byTrack.get(artifact.trackId);
-    if (!track || seenTrackIds.has(artifact.trackId) || track.sha256 !== artifact.checksumSha256 || track.contentVersion !== artifact.contentVersion || track.questionCount !== artifact.questionCount) {
-      throw new Error(`Bundled candidate artifact differs from release artifact ${artifact.trackId}.`);
-    }
-    seenTrackIds.add(artifact.trackId);
-    const manifestTrack = candidate.tracks.find((entry) => entry.trackId === artifact.trackId);
-    if (!manifestTrack || manifestTrack.artifactPath !== artifact.artifactPath || manifestTrack.checksumSha256 !== artifact.checksumSha256 || manifestTrack.contentVersion !== artifact.contentVersion || manifestTrack.questionCount !== artifact.questionCount) throw new Error(`Candidate manifest track binding differs from release artifact ${artifact.trackId}.`);
-    return {
-      releaseId: release.manifest.releaseId,
-      producerCommit: release.manifest.sourceRepositoryCommit,
-      sourceRepositoryCommit: release.manifest.sourceRepositoryCommit,
-      trackId: artifact.trackId,
-      contentVersion: artifact.contentVersion,
-      checksumSha256: artifact.checksumSha256,
-    };
-  });
-  if (artifacts.length !== EXPECTED_TRACK_IDS.length || seenTrackIds.size !== EXPECTED_TRACK_IDS.length) throw new Error("Candidate release lock must bind exactly nine tracks.");
-  return {
-    schemaVersion: 3,
-    repository: "lukaszkurczab/patternly-content",
-    bundleId: `patternly-app-candidate-${candidate.candidateId.slice(0, 12)}`,
-    candidateId: candidate.candidateId,
-    candidateManifestPath: CANDIDATE_PATH,
-    releaseManifestPath: RELEASE_PATH,
-    releaseManifestSha256: sha256(bytes(release)),
-    bundledContentLockSha256: sha256(bundled.lockBytes),
-    artifacts,
-  };
-}
-
-export async function updateCandidateContentReleaseLock({ mode = "check", appRoot = APP_ROOT, contentRoot = DEFAULT_CONTENT_ROOT } = {}) {
-  const expected = bytes(await createCandidateContentReleaseLock({ appRoot, contentRoot }));
-  const output = path.join(appRoot, OUTPUT_PATH);
-  if (mode === "write") {
-    // Restore frozen history explicitly from Git; never derive it from the active lock.
-    await readHistoricalContentProducerPin({ appRoot });
-    await writeFile(output, expected);
-    return;
-  }
-  const actual = await readFile(output);
-  if (!actual.equals(expected)) throw new Error(`Candidate release lock is stale; run node scripts/candidateContentReleaseLock.mjs write.`);
+export async function verifyCandidateContentAdmission({ appRoot = APP_ROOT, contentRoot = DEFAULT_CONTENT_ROOT } = {}) {
+  const result = await syncCanonicalContent({ mode: "check", appRoot, producerRoot: contentRoot });
+  const releaseLock = JSON.parse(await (await import("node:fs/promises")).readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
+  return { sourceInputFingerprint: result.currentIdentity.sourceInputFingerprint, releaseId: releaseLock.releaseId, trackIds: result.currentIdentity.tracks.map((track) => track.trackId) };
 }
 
 export function parseCandidateContentReleaseLockArgs(argv = process.argv.slice(2)) {
-  const options = { mode: "check", appRoot: APP_ROOT, contentRoot: DEFAULT_CONTENT_ROOT };
-  const modes = new Set(["check", "write", "producer-pin", "historical-producer-pin"]);
-  let index = 0;
-  let hasContentRoot = false;
-  let hasAppRoot = false;
-  if (argv[index] && modes.has(argv[index])) options.mode = argv[index++];
+  const options = { appRoot: APP_ROOT, contentRoot: DEFAULT_CONTENT_ROOT };
+  let index = argv[0] === "check" ? 1 : 0;
   while (index < argv.length) {
-    if (argv[index] === "--content-root" && index + 1 < argv.length && !hasContentRoot) {
-      options.contentRoot = path.resolve(argv[index + 1]);
-      hasContentRoot = true;
+    const flag = argv[index];
+    if ((flag === "--content-root" || flag === "--app-root") && index + 1 < argv.length) {
+      const key = flag === "--content-root" ? "contentRoot" : "appRoot";
+      if (options[key] !== (key === "appRoot" ? APP_ROOT : DEFAULT_CONTENT_ROOT)) throw new Error(`Duplicate ${flag}`);
+      options[key] = path.resolve(argv[index + 1]);
       index += 2;
-    } else if (argv[index] === "--app-root" && index + 1 < argv.length && !hasAppRoot) {
-      options.appRoot = path.resolve(argv[index + 1]);
-      hasAppRoot = true;
-      index += 2;
-    } else throw new Error("Usage: node scripts/candidateContentReleaseLock.mjs [check|write|producer-pin|historical-producer-pin] [--content-root <patternly-content checkout>] [--app-root <application checkout>]");
+    } else throw new Error("Usage: node scripts/candidateContentReleaseLock.mjs check [--content-root <Patternly content root>] [--app-root <Patternly app root>]");
   }
   return options;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const options = parseCandidateContentReleaseLockArgs();
-  const { mode, appRoot, contentRoot } = options;
-  const run = mode === "producer-pin"
-    ? readCandidateContentProducerPin({ appRoot, contentRoot }).then(pin => process.stdout.write(`${pin}\n`))
-    : mode === "historical-producer-pin"
-      ? readHistoricalContentProducerPin({ appRoot }).then(pin => process.stdout.write(`${pin}\n`))
-      : updateCandidateContentReleaseLock({ mode, appRoot, contentRoot }).then(() => process.stdout.write(`candidate content release lock ${mode} passed\n`));
-  run.catch((error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 1; });
+  try {
+    const result = await verifyCandidateContentAdmission(parseCandidateContentReleaseLockArgs());
+    process.stdout.write(`current source matches installed APP bank; fingerprint=${result.sourceInputFingerprint}; tracks=${result.trackIds.length}\n`);
+  } catch (error) {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  }
 }

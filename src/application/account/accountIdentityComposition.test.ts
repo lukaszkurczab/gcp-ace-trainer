@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { pendingRevokeFailureState, accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, isLocalAccountStartupUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountState } from "./AccountSessionProvider";
+import { pendingRevokeFailureState, accountIdentityProofMatchesSubject, accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAccountIdentityProofInFlightForActor, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, isLocalAccountStartupUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, readVerifiedAccountIdentityFence, sameVerifiedAccountIdentityFence, shouldClearAccountIdentityProofLatch, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountIdentityProofInFlight, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { accountFinalizationPolicies, executeAccountFinalization } from "./accountFinalization";
 import { completeAccountBootstrap, prepareAuthenticatedAccountBootstrap } from "../bootstrap/accountBootstrap";
@@ -435,6 +435,71 @@ test("foreground identity publication keeps the latest account data and rejects 
   assert.equal(publishRefreshedAuthenticatedState(latest, { backendUser: { id: "backend-new" } as never, isCurrent: () => false, user: refreshedUser }), latest);
 });
 
+test("identity refresh requires exact /me subject and an unchanged verified profile binding fence", () => {
+  const lease = { profile: { id: "profile-a", kind: "account", accountId: "backend-a" }, generation: 7 } as const;
+  const binding = {
+    kind: "verified",
+    binding: {
+      schema: "patternly.account-binding.v1",
+      profileId: "profile-a",
+      profileKind: "account",
+      accountId: "backend-a",
+      firebaseUid: "uid-a",
+      verified: true,
+      verificationRevision: 12,
+      checksum: "binding-checksum-a",
+    },
+  } as const;
+  const fence = readVerifiedAccountIdentityFence(binding, lease, "backend-a", "uid-a");
+  assert.ok(fence);
+  assert.equal(sameVerifiedAccountIdentityFence(fence, fence), true);
+  assert.equal(sameVerifiedAccountIdentityFence(fence, { ...fence!, verificationRevision: 13 }), false);
+  assert.equal(sameVerifiedAccountIdentityFence(fence, { ...fence!, checksum: "binding-checksum-b" }), false);
+  assert.equal(sameVerifiedAccountIdentityFence(fence, { ...fence!, leaseGeneration: 8 }), false);
+  assert.equal(readVerifiedAccountIdentityFence({ kind: "invalidated" }, lease, "backend-a", "uid-a"), null);
+  assert.equal(readVerifiedAccountIdentityFence(binding, lease, "backend-a", "uid-b"), null);
+  assert.equal(readVerifiedAccountIdentityFence(binding, { ...lease, profile: { ...lease.profile, id: "profile-b" } }, "backend-a", "uid-a"), null);
+
+  const response = { user: { id: "backend-a", identity: { subject: "uid-a" } } } as never;
+  assert.equal(accountIdentityProofMatchesSubject(response, "backend-a", "uid-a"), true);
+  assert.equal(accountIdentityProofMatchesSubject({ user: { id: "backend-a", identity: { subject: "uid-b" } } } as never, "backend-a", "uid-a"), false);
+  assert.equal(accountIdentityProofMatchesSubject({ user: { id: "backend-b", identity: { subject: "uid-a" } } } as never, "backend-a", "uid-a"), false);
+
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  assert.match(provider, /identityProof\.barrier !== null[\s\S]*?kind: "backendUnavailable"/u);
+  assert.match(provider, /await readActiveAccountIdentityBinding\(identityLease\)[\s\S]*?!durableFence[\s\S]*?publishRefreshedAuthenticatedState/u);
+  assert.match(provider, /await readActiveAccountIdentityBinding\(lease\)[\s\S]*?sameVerifiedAccountIdentityFence\(initialFence, responseFence\)[\s\S]*?replacePremiumCacheFromFreshResponse/u);
+});
+
+test("synchronous Premium projection stays blocked for an unresolved same-actor identity proof", () => {
+  const active = { uid: "uid-a", accountId: "backend-a", generation: { uid: "uid-a", generation: 8 } } as const;
+  assert.equal(isAccountIdentityProofInFlightForActor(active, "uid-a", "backend-a"), true);
+  assert.equal(isAccountIdentityProofInFlightForActor({ ...active, generation: { uid: "uid-a", generation: 9 } }, "uid-a", "backend-a"), true,
+    "a same-actor generation advance must not expose the cached Premium projection while the old proof remains unresolved");
+  assert.equal(isAccountIdentityProofInFlightForActor(active, "uid-b", "backend-a"), false);
+  assert.equal(isAccountIdentityProofInFlightForActor(active, "uid-a", "backend-b"), false);
+  assert.equal(isAccountIdentityProofInFlightForActor(null, "uid-a", "backend-a"), false);
+
+  const flight = active as AccountIdentityProofInFlight;
+  const current = { uid: "uid-a", accountId: "backend-a", generation: flight.generation, isCurrent: true } as const;
+  assert.equal(shouldClearAccountIdentityProofLatch(flight, flight, false, current), false, "a failed proof cannot release the actor latch");
+  assert.equal(shouldClearAccountIdentityProofLatch(flight, flight, true, { ...current, generation: { uid: "uid-a", generation: 9 } }), false,
+    "a late proof from an older generation cannot release the latch");
+  assert.equal(shouldClearAccountIdentityProofLatch({ ...flight, generation: { uid: "uid-a", generation: 7 } }, flight, true, current), false,
+    "a completed older run cannot release a newer same-actor proof latch");
+  assert.equal(shouldClearAccountIdentityProofLatch(flight, flight, true, current), true,
+    "only the same current run after durable binding revalidation may release the latch");
+
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const readPremium = provider.slice(provider.indexOf("const readCurrentPremiumAccess"), provider.indexOf("const captureCurrentAuthenticatedActorFence"));
+  assert.ok(readPremium.indexOf("isAccountIdentityProofInFlightForActor") < readPremium.indexOf("readCachedPremiumAccess"));
+  assert.match(provider, /const identityProofFlight = Object\.freeze\(\{ uid: previousUser\.uid, accountId: expectedAccountId, generation \}\)[\s\S]*?if \(hasLiveDeletionAuthorization\(\)\)[\s\S]*?accountIdentityProofInFlightRef\.current = identityProofFlight/u);
+  assert.match(provider, /await readActiveAccountIdentityBinding\(identityLease\)[\s\S]*?identityProofFenceRevalidated = true[\s\S]*?finally\(\(\) => \{[\s\S]*?shouldClearAccountIdentityProofLatch\(pending, identityProofFlight, identityProofFenceRevalidated/u);
+  assert.doesNotMatch(provider, /if \(result\.kind === "failure"[\s\S]{0,160}accountIdentityProofInFlightRef\.current = null/u);
+  assert.match(provider, /if \(canContinue\(auth, auth\.getSnapshot\(\)\)\) setState\(sdkRefresh\.state\)/u);
+  assert.match(provider, /if \(canContinue\(auth, auth\.getSnapshot\(\)\)\) setState\(identityProof\.state\)/u);
+});
+
 test("queued identity refresh is rejected by the production guard after sign-out or UID switch", async () => {
   const token = { generation: 4, uid: "uid-a" } as const;
   const authenticated = {
@@ -492,6 +557,9 @@ test("email security composition delegates refresh to the global foreground owne
   assert.match(app, /<AccountForegroundRefreshSidecar \/>/u);
   assert.match(sidecar, /AppState\.addEventListener\("change"/u);
   assert.match(sidecar, /previousState !== "active" && nextState === "active"/u);
+  const foregroundRefresh = sidecar.slice(sidecar.indexOf("refresh: async (intent)"), sidecar.indexOf("AppState.addEventListener(\"change\""));
+  assert.match(foregroundRefresh, /beginStartupSpan\("account_foreground_refresh"\)[\s\S]*?await accountRef\.current\.refreshAccountIdentity\(\)[\s\S]*?markStartup\(`account_foreground_refresh:\$\{outcome\}`\)[\s\S]*?endSpan\(\)/u);
+  assert.ok(foregroundRefresh.indexOf("endSpan()") < foregroundRefresh.indexOf("await accountRef.current.refreshPremiumEntitlement"), "the identity span excludes Premium and recovery refreshes");
   assert.doesNotMatch(screen, /refreshIdentity|identityRefreshed|Refresh account details|Odśwież dane konta/u);
   assert.match(screen, /account\.refreshAccountIdentityFailure/u);
   assert.match(screen, /const requestedEmail = mode === "email" \? nextValue\.trim\(\)\.toLowerCase\(\) : ""/u);

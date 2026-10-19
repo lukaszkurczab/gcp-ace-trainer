@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import { EventEmitter } from "node:events";
 import { isLoopbackHttpOrigin, parseDotenv, probeSmokeApiReady, probeSmokeAuthEmulator, runLocalProfile, validateLocalProfile } from "./runLocalProfile.mjs";
 
 const smoke = Object.freeze({
@@ -97,10 +98,33 @@ test("failed smoke preflight cannot spawn Expo", async () => {
     await assert.rejects(() => runLocalProfile(["smoke", "start"], {
       repositoryRoot: root,
       command: "/no-such-expo-command",
+      prepareCurrentContent: async () => {},
       fetchImplementation: async (url) => url.pathname.includes("/config")
         ? { ok: true, json: async () => ({ signIn: { allowDuplicateEmails: false } }) }
         : { ok: false, json: async () => ({ status: "not_ready" }) },
     }), /smoke API is not ready/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("local Expo launches synchronize current content before starting the packager", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-current-content-launch-"));
+  try {
+    writeFileSync(join(root, ".env.sandbox.local"), "PATTERNLY_RUNTIME_MODE=sandbox\nEXPO_PUBLIC_PATTERNLY_RUNTIME_MODE=sandbox\n");
+    const order = [];
+    const result = await runLocalProfile(["sandbox", "start"], {
+      repositoryRoot: root,
+      prepareCurrentContent: async () => { order.push("sync"); },
+      spawn: () => {
+        order.push("expo");
+        const child = new EventEmitter();
+        queueMicrotask(() => child.emit("exit", 0, null));
+        return child;
+      },
+    });
+    assert.deepEqual(order, ["sync", "expo"]);
+    assert.deepEqual(result, { code: 0, signal: null });
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import test from "node:test";
 
@@ -16,8 +16,6 @@ const TRACK_ID = "claude-certified-architect-professional-certification";
 const NOW = "2026-10-11T12:00:00.000Z";
 const appRoot = process.cwd();
 const generatedRoot = resolve(appRoot, "src/content/generated/canonical-content");
-const sourceCandidatePath = resolve(appRoot, "../patternly-content/.temp/cc04-final-dist/claude-certified-architect-professional-certification.json");
-const sourceCandidateLockPath = resolve(appRoot, "../patternly-content/.temp/cc04-final-dist/content-lock.json");
 const trackIds = [
   "aws-certified-solutions-architect-associate",
   "backend-system-design-interview",
@@ -190,19 +188,22 @@ test("CC04 v3 rejects an ambiguous required-unit mapping before runtime selectio
   );
 });
 
-test("CC04 final source candidate probes all 53 units when the local candidate artifact is available", { skip: !existsSync(sourceCandidatePath) || !existsSync(sourceCandidateLockPath) }, async () => {
-  const artifact = JSON.parse(readFileSync(sourceCandidatePath, "utf8")) as CanonicalArtifact;
-  const candidateLockFile = JSON.parse(readFileSync(sourceCandidateLockPath, "utf8")) as CandidateLockFile;
-  const candidateLock = candidateLockFile.tracks.find((entry) => entry.trackId === TRACK_ID);
+test("current installed Claude bank reaches every completion unit through production Focus and resume", async () => {
+  const artifact = sourceArtifact(TRACK_ID) as CanonicalArtifact;
+  const candidateLock = sourceLocks().find((entry) => entry.trackId === TRACK_ID);
   assert.ok(candidateLock, "candidate content lock must contain Claude");
   const catalog = await buildCatalog(artifact, candidateLock);
   const track = catalog.getTrack(TRACK_ID);
-  assert.equal(track.questions.length, 918);
+  assert.equal(track.questions.length, candidateLock.questionCount, "all current locked questions reach the catalog");
   assert.equal(track.completionRule?.ruleVersion, 3);
   if (track.completionRule?.ruleVersion !== 3) throw new Error("CC04 candidate does not expose v3 unit coverage.");
   const runtime = createCanonicalTrainingFamilyRuntime(track);
   const requiredUnits = track.completionRule.chapters.flatMap((chapter) => chapter.units.map((unit) => ({ nodeId: chapter.nodeId, mentalUnitId: unit.mentalUnitId })));
-  assert.equal(requiredUnits.length, 53);
+  const unitKey = (unit: { nodeId: string; mentalUnitId: string }) => `${unit.nodeId}/${unit.mentalUnitId}`;
+  const currentUnits = new Set(requiredUnits.map(unitKey));
+  const establishedUnits = new Set((coverageData.questions as readonly FixtureIdentity[]).map(unitKey));
+  assert.equal(currentUnits.size, requiredUnits.length, "current completion units are unique");
+  for (const expected of establishedUnits) assert.ok(currentUnits.has(expected), `established completion unit remains reachable: ${expected}`);
   for (const [index, unit] of requiredUnits.entries()) {
     const expectedIds = questionIdsForUnit(track.questions, unit.nodeId, unit.mentalUnitId);
     assert.ok(expectedIds.length >= 4, `${unit.mentalUnitId} must have at least four reachable questions`);

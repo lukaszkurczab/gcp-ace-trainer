@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test, { beforeEach } from "node:test";
 
 import { ApplicationBootstrapStage, bootstrapApplication } from "./applicationBootstrap";
@@ -825,7 +826,7 @@ test("a local Free Guest can confirm exact-missing abandonment and recover its r
   assert.equal(premiumAdmissionCalls, 0);
 });
 
-test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, and explicit abandonment preserves its history", async () => {
+test("current OOD package verifies, an exact prior-version resume becomes typed unavailable, and explicit abandonment preserves its history", async () => {
   const owner = new ContentPackageRuntimeOwner(() => "test-profile", async () => []);
   const currentOnly = await bootstrapApplication(
     () => owner.verifyBundledPackages(),
@@ -834,8 +835,30 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   assert.deepEqual(currentOnly, { kind: "ready", activeSessionId: null });
 
   const current = owner.getPreparedDiscovery("object-oriented-design-interview").track;
-  assert.equal(current.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24-bizq02-v2");
-  assert.equal(current.artifactSha256, "015e21db498465602857d1461aa84ddd26546e665cd9225997e121eca790efe0");
+  const currentLock = JSON.parse(readFileSync("src/content/generated/canonical-content/content-lock.json", "utf8")) as {
+    tracks: readonly { trackId: string; contentVersion: string; sha256: string }[];
+  };
+  const installedOodPin = currentLock.tracks.find((entry) => entry.trackId === current.trackId);
+  assert.ok(installedOodPin, "the current APP bundle must retain its OOD lock record");
+  const successorLedger = JSON.parse(readFileSync("src/content/generated/canonical-content/content-successor-ledger.json", "utf8")) as {
+    tracks: readonly {
+      trackId: string;
+      training: Readonly<{ contentVersion: string; artifactSha256: string }>;
+      planningPolicy: Readonly<{ contentVersion: string; artifactSha256: string; policyVersion: string }>;
+    }[];
+  };
+  const installedOodSuccessor = successorLedger.tracks.find((entry) => entry.trackId === current.trackId);
+  assert.ok(installedOodSuccessor, "the installed OOD bundle must retain its exact training and planning-policy successor identities");
+  assert.deepEqual(
+    { contentVersion: current.contentVersion, artifactSha256: current.artifactSha256 },
+    { contentVersion: installedOodSuccessor.training.contentVersion, artifactSha256: installedOodSuccessor.training.artifactSha256 },
+    "the verified runtime package uses the current training identity from the installed successor ledger",
+  );
+  assert.deepEqual(
+    { trackId: installedOodPin.trackId, contentVersion: installedOodPin.contentVersion, sha256: installedOodPin.sha256 },
+    { trackId: current.trackId, contentVersion: installedOodSuccessor.planningPolicy.contentVersion, sha256: installedOodSuccessor.planningPolicy.artifactSha256 },
+    "the installed artifact lock continues to pin the distinct planning-policy projection",
+  );
   const questionId = "ood-n01-b01-i018";
   const question = current.getQuestion(questionId);
   assert.ok(question, "The current artifact must contain the exact historical session question.");

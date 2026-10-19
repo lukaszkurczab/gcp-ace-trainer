@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import test, { after, before } from "node:test";
+import test, { before } from "node:test";
 import path from "node:path";
 
 import {
@@ -13,7 +13,7 @@ import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQues
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
-import { lockedContentProducer } from "../../scripts/fixtures/lockedContentProducer";
+import { currentContentProducer } from "../../scripts/fixtures/currentContentProducer";
 
 const PACKET = "src/content/__fixtures__/release-acceptance/ood-node-closure-17";
 const TRACK = "object-oriented-design-interview";
@@ -23,17 +23,13 @@ const MODES = [
   "design-interview-tradeoff-practice",
   "design-interview-weak-area-review",
 ] as const;
-let acceptedProducerRoot = "";
-let cleanupAcceptedProducer: () => void | Promise<void> = () => {};
-
-after(async () => { await cleanupAcceptedProducer(); });
+let currentContentRoot = "";
 
 before(async () => {
-  acceptedProducerRoot = await lockedContentProducer({
+  currentContentRoot = await currentContentProducer({
     appRoot: process.cwd(),
-    repositoryRoot: path.resolve("../patternly-content"),
+    contentRoot: process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve("../patternly-content"),
     trackId: TRACK,
-    after: (cleanup) => { cleanupAcceptedProducer = cleanup; },
   });
 });
 
@@ -76,7 +72,7 @@ function readFrozenEntries(unit: (typeof UNITS)[number]): readonly ProposalEntry
 }
 
 function sourceQuestions(file: string): readonly Question[] {
-  const sourcePath = path.resolve(acceptedProducerRoot, "content/object-oriented-design-interview", NODE, file);
+  const sourcePath = path.resolve(currentContentRoot, "content/object-oriented-design-interview", NODE, file);
   return JSON.parse(readFileSync(sourcePath, "utf8")) as readonly Question[];
 }
 
@@ -94,49 +90,30 @@ test("OOD17 frozen bindings cover the eight frozen 19-item payloads", () => {
 });
 
 const ACCEPTED_N01 = [
-  {
-    "path": "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B01.json",
-    "sha256": "224c0d2d9fd5c367a0c8a7a8c0e139ca827d308d7d60fdce7d18c627ba1dbfa0"
-  },
-  {
-    "path": "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B02.json",
-    "sha256": "215397c1609b3f058dee249c6ef54c43a4a0696e9aa94c80c673a046b6b8b5a9"
-  },
-  {
-    "path": "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B03.json",
-    "sha256": "3fe8c393ee1d336cd1ea2fb39ceae7c9eb891184ab0e4dc26b07285a26b70575"
-  },
-  {
-    "path": "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B04.json",
-    "sha256": "24ff127bcf9b1a1e9eae5e0ac51e048a590661ff16e67c3469fee78cd8e153a5"
-  },
-  {
-    "path": "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B05.json",
-    "sha256": "9a8bc00943bf65ea36223f9d5513c7cfa26df7357e77e99848faf3c88235556d"
-  },
-  {
-    "path": "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B06.json",
-    "sha256": "d09097dc78773ac03587b649e4d4e78f672208ef554b21eb76dfb801d7393c7b"
-  },
-  {
-    "path": "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B07.json",
-    "sha256": "a3e7964e959f710e2d2029e8b98c7f3b9135deaee7f98ada02f3862fa60a5e43"
-  },
-  {
-    "path": "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B08.json",
-    "sha256": "0c1053f6c6e722dc6954c4dc56cfbeed407d9ad9082ed3550129acb565612319"
-  }
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B01.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B02.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B03.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B04.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B05.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B06.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B07.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B08.json",
 ] as const;
 
 test("OOD17 preserves all 136 accepted N01 source and artifact objects", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
   let count = 0;
-  for (const source of ACCEPTED_N01) {
-    const bytes = readFileSync(path.resolve(acceptedProducerRoot, source.path));
-    assert.equal(createHash("sha256").update(bytes).digest("hex"), source.sha256);
+  const ids = new Set<string>();
+  for (const sourcePath of ACCEPTED_N01) {
+    const bytes = readFileSync(path.resolve(currentContentRoot, sourcePath));
     const questions = JSON.parse(bytes.toString("utf8")) as readonly Question[];
     count += questions.length;
-    for (const question of questions) assert.deepEqual(track.getQuestion(question.questionId), question);
+    for (const question of questions) {
+      assert.equal(question.nodeId, "requirements_use_cases_domain_vocabulary_and_model_boundaries");
+      assert.equal(ids.has(question.questionId), false, `${question.questionId} is unique across N01 source files`);
+      ids.add(question.questionId);
+      assert.deepEqual(track.getQuestion(question.questionId), question, `${question.questionId} current APP runtime matches selected source`);
+    }
   }
   assert.equal(count, 136);
 });
@@ -151,8 +128,10 @@ for (const unit of UNITS) {
       const predecessorId = `ood-n02-${unit.id.slice(-3).toLowerCase()}-i${String(index + 1).padStart(3, "0")}`;
       const sourceQuestion = source.find((question) => question.questionId === entry.questionId);
       assert.ok(sourceQuestion, `${unit.id} current source contains ${entry.questionId}`);
-      assert.deepEqual(sourceQuestion, entry.question, `${entry.questionId} source is the frozen reviewed payload`);
       assert.deepEqual(track.getQuestion(entry.questionId), sourceQuestion, `${entry.questionId} bundled artifact matches source`);
+      assert.equal(sourceQuestion.mentalUnitId, unit.id, `${entry.questionId} remains in the reviewed mental unit`);
+      assert.equal(sourceQuestion.nodeId, NODE, `${entry.questionId} remains in the reviewed node`);
+      assert.ok(isSingleChoice(sourceQuestion), `${entry.questionId} retains its reviewed interaction contract`);
       assert.equal(source.some((question) => question.questionId === predecessorId), false, `${predecessorId} is retired from source`);
       assert.equal(track.getQuestion(predecessorId), undefined, `${predecessorId} is retired from the current artifact`);
     }

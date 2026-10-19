@@ -190,12 +190,8 @@ test("optional GCP simulation profile is strict, complete, immutable and covered
   assert.equal(familyConfig.schemaVersion, "patternly-certification-simulation-config-v1");
   const nodeIds = [...new Set(artifact.questions.map((question) => question.nodeId))].sort();
   assert.deepEqual(Object.keys(familyConfig.nodeDomainMap as object).sort(), nodeIds);
-  const evidence = familyConfig.nodeDomainMapEvidence as Record<string, unknown>;
-  assert.notEqual(evidence.contentVersion, gcp.entry.contentVersion);
-  assert.equal(evidence.artifactPath, `artifacts/tracks/${gcp.entry.trackId}/${String(evidence.contentVersion)}/track-artifact.json`);
-  assert.equal(evidence.itemCount, gcp.entry.questionCount);
-  assert.equal(evidence.nodeCount, nodeIds.length);
-  assert.equal(evidence.ambiguousNodeCount, 0);
+  assert.equal(Object.hasOwn(familyConfig, "nodeDomainMapEvidence"), false);
+  assert.ok(artifact.questions.every((question) => (familyConfig.nodeDomainMap as Record<string, string>)[question.nodeId] === question.contentDomainId));
   const sourceDerivedNode = Object.entries(familyConfig.nodeDomainMap as Record<string, string>).find(([, domain]) => domain === "gcp-ace-standard-domain-3")?.[0];
   assert.ok(sourceDerivedNode);
 
@@ -214,8 +210,8 @@ test("optional GCP simulation profile is strict, complete, immutable and covered
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMap as Record<string, string>)[nodeIds[0]!] = "unknown-domain"; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMap as Record<string, string>)[sourceDerivedNode!] = "gcp-ace-standard-domain-2"; },
     (copy: Record<string, unknown>) => { ((copy.questions as Array<Record<string, unknown>>).find((question) => question.nodeId === sourceDerivedNode)!).contentDomainId = "gcp-ace-standard-domain-2"; },
-    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMapEvidence as Record<string, unknown>).contentVersion = "foreign-version"; },
-    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMapEvidence as Record<string, unknown>).contentVersion = "../foreign"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; config.nodeDomainMapEvidence = { artifactPath: "../foreign", contentVersion: "foreign-version", itemCount: 1, nodeCount: 1, ambiguousNodeCount: 0 }; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; config.nodeDomainMapEvidence = { artifactPath: "artifacts/tracks/google-cloud-associate-cloud-engineer/gcp-published-2026.08.01/track-artifact.json", contentVersion: "../foreign", itemCount: 1, nodeCount: 1, ambiguousNodeCount: 0 }; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.questionCount as Record<string, unknown>).maximum = 0; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.interactionPolicy as Record<string, unknown>).feedbackTiming = "after_each_answer"; },
   ];

@@ -16,16 +16,20 @@ test("the production dimension checkbox callback retains every selected ID throu
   assert.ok(question);
   assert.equal(question.interaction.type, "complexity");
   if (question.interaction.type !== "complexity") throw new Error("Expected the authored complexity item.");
+  const expectedValueIds = { auxiliary_space: ["O(1)"], time: ["O(n)"] } as const;
+  assert.equal(question.answer.type, "complexity");
+  if (question.answer.type !== "complexity") throw new Error("Expected authored complexity answer data.");
+  assert.deepEqual(question.answer.selectedValueIdsByDimension, expectedValueIds, "the current fixed-alphabet frequency question has constant auxiliary space and linear scan time");
 
   let selected: Readonly<Record<string, readonly string[]>> = {};
-  const pressValue = (valueId: string) => {
+  const pressValue = (dimensionId: string, valueId: string) => {
     const element = PracticeDimensionValueButton({
       PressableComponent: PressableHost,
       TextComponent: TextHost,
-      accessibilityLabel: `Auxiliary space ${valueId}`,
-      checked: selected.auxiliary_space?.includes(valueId) ?? false,
+      accessibilityLabel: `${dimensionId} ${valueId}`,
+      checked: selected[dimensionId]?.includes(valueId) ?? false,
       editable: true,
-      onPress: () => { selected = toggleDimensionSelection(selected, "auxiliary_space", valueId); },
+      onPress: () => { selected = toggleDimensionSelection(selected, dimensionId, valueId); },
       style: undefined,
       text: valueId,
       textStyle: undefined,
@@ -35,21 +39,20 @@ test("the production dimension checkbox callback retains every selected ID throu
     pressable.onPress();
   };
 
-  pressValue("O(1)");
-  pressValue("O(26)");
-  assert.deepEqual(selected.auxiliary_space, ["O(1)", "O(26)"]);
-  if (question.answer.type !== "complexity") throw new Error("Expected authored complexity answer data.");
-  const timeAnswer = question.answer.selectedValueIdsByDimension.time;
-  assert.ok(timeAnswer);
-  const fullResponse = { type: "complexity" as const, selectedValueIdsByDimension: { ...selected, time: timeAnswer } };
-  const evaluation = track.interactions.evaluate(question, fullResponse);
+  pressValue("auxiliary_space", "O(1)");
+  pressValue("auxiliary_space", "O(n)");
+  assert.deepEqual(selected.auxiliary_space, ["O(1)", "O(n)"]);
+  const overselectedResponse = { type: "complexity" as const, selectedValueIdsByDimension: { ...selected, time: expectedValueIds.time } };
+  const partial = track.interactions.evaluate(question, overselectedResponse);
+  assert.equal(partial.complete, true);
+  assert.equal(partial.result?.kind, "partial", "the selected IDs survive the checkbox callback and canonical scoring recognizes the extra dimension value");
+
+  pressValue("auxiliary_space", "O(n)");
+  pressValue("time", "O(n)");
+  assert.deepEqual(selected, expectedValueIds);
+  const evaluation = track.interactions.evaluate(question, { type: "complexity", selectedValueIdsByDimension: selected });
   assert.equal(evaluation.complete, true);
   assert.equal(evaluation.result?.kind, "correct");
-
-  const oneSelected = { type: "complexity" as const, selectedValueIdsByDimension: { auxiliary_space: ["O(1)"], time: timeAnswer } };
-  const partial = track.interactions.evaluate(question, oneSelected);
-  assert.equal(partial.complete, true);
-  assert.equal(partial.result?.kind, "partial", "one accepted value remains a legal partial answer; the UI does not infer exact cardinality");
 
   const disabledElement = PracticeDimensionValueButton({
     PressableComponent: PressableHost,

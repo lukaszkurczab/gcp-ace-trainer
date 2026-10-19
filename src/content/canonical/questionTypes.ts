@@ -36,7 +36,8 @@ export type CanonicalCertificationSimulationConfig = Readonly<{
     feedbackTiming: "after_verified_finalization";
   }>;
   nodeDomainMap: Readonly<Record<string, string>>;
-  nodeDomainMapEvidence: Readonly<{ artifactPath: string; contentVersion: string; itemCount: number; nodeCount: number; ambiguousNodeCount: number }>;
+  /** Optional predecessor provenance carried by already-admitted bundles; current source uses the exact node/domain map above. */
+  nodeDomainMapEvidence?: Readonly<{ artifactPath: string; contentVersion: string; itemCount: number; nodeCount: number; ambiguousNodeCount: number }>;
 }>;
 
 export type CanonicalCodingInterviewSimulationConfig = Readonly<{

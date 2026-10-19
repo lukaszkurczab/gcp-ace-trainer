@@ -53,10 +53,13 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and exa
   assert.equal(gcp.simulationProfiles?.[0]?.profileId, "google-cloud-associate-cloud-engineer-certification-exam-v1");
   assert.equal(gcp.simulationProfiles?.[0]?.familyId, "certification");
   assert.equal(gcp.simulationProfiles?.[0]?.modeId, "certification-exam-simulation");
-  const evidence = gcp.simulationProfiles?.[0]?.familyConfig.nodeDomainMapEvidence;
-  assert.ok(evidence);
-  assert.notEqual(evidence.contentVersion, gcp.contentVersion, "the canonical policy version keeps its historical attribution pin");
-  assert.equal(evidence.artifactPath, `artifacts/tracks/${gcp.trackId}/${evidence.contentVersion}/track-artifact.json`);
+  const currentProfile = gcp.simulationProfiles?.[0];
+  assert.ok(currentProfile?.familyId === "certification");
+  if (currentProfile?.familyId === "certification") {
+    assert.equal(currentProfile.familyConfig.nodeDomainMapEvidence, undefined);
+    assert.deepEqual(Object.keys(currentProfile.familyConfig.nodeDomainMap).sort(), [...new Set(gcp.questions.map((question) => question.nodeId))].sort());
+    assert.ok(gcp.questions.every((question) => currentProfile.familyConfig.nodeDomainMap[question.nodeId] === question.contentDomainId));
+  }
   assert.equal(Object.isFrozen(gcp.simulationProfiles?.[0]?.familyConfig.nodeDomainMap), true);
   assert.equal(catalog.getTrack("aws-certified-solutions-architect-associate").simulationProfiles, undefined);
 });

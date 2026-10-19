@@ -12,7 +12,6 @@ import { createContentSessionPlanFingerprint } from "../../content/application/c
 import { selectPracticeQuestions } from "./practiceQuestionSelector";
 import { createTrainingSession, type CompletedTrainingSession, type TrainingAttempt, type TrainingSession } from "../../domain";
 import { projectCertificationPracticeReview } from "../certification/certificationPracticeReviewProjection";
-import { lockedContentProducer } from "../../../scripts/fixtures/lockedContentProducer";
 
 type CurrentProducerBuilder = Readonly<{
   buildTrack(options: Readonly<{ rootDirectory: string; outputRoot: string; trackId: string }>): Promise<Readonly<{
@@ -34,15 +33,14 @@ const PAIRS = Object.freeze([
 const NOW = "2026-10-08T12:00:00.000Z";
 const TAXONOMY_VERSION = "canonical-content-v1";
 
-test("BIZQ-05 GCP candidate relation metadata reaches actual Focus selection, immutable resume, and completed practice review", async (t) => {
+test("BIZQ-05 GCP candidate relation metadata reaches actual Focus selection, immutable resume, and completed practice review", async () => {
   const appRoot = process.cwd();
-  const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(appRoot, "../patternly-content");
-  const producerRoot = await lockedContentProducer({ appRoot, repositoryRoot: contentRoot, trackId: GCP_TRACK_ID, after: (cleanup) => t.after(cleanup) });
+  const contentRoot = resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? resolve(appRoot, "../patternly-content"));
   const generatedRoot = resolve(appRoot, "src/content/generated/canonical-content");
   const outputRoot = await mkdtemp(join(tmpdir(), "patternly-bizq05-related-practice-"));
   try {
-    const builder = await import(pathToFileURL(join(producerRoot, "scripts/build.mjs")).href) as unknown as CurrentProducerBuilder;
-    const current = await builder.buildTrack({ rootDirectory: producerRoot, outputRoot, trackId: GCP_TRACK_ID });
+    const builder = await import(pathToFileURL(join(contentRoot, "scripts/build.mjs")).href) as unknown as CurrentProducerBuilder;
+    const current = await builder.buildTrack({ rootDirectory: contentRoot, outputRoot, trackId: GCP_TRACK_ID });
     const candidateArtifact = JSON.parse(current.artifactBytes) as unknown;
     const lockFile = JSON.parse(readFileSync(join(generatedRoot, "content-lock.json"), "utf8")) as { tracks: CanonicalContentLockRecord[] };
     const bundledGcpLock = lockFile.tracks.find((entry) => entry.trackId === GCP_TRACK_ID);

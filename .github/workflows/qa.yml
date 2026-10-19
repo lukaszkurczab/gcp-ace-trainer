@@ -26,57 +26,14 @@ jobs:
           ref: master
           path: patternly-content
           fetch-depth: 0
-      - id: admitted-app
-        name: Read application identity from historical admission
-        working-directory: app
-        run: |
-          node --input-type=module <<'NODE'
-          import { appendFile, readFile } from "node:fs/promises";
-          const admission = JSON.parse(await readFile("../patternly-content/evidence/admissions/candidate-admission-v3.json", "utf8"));
-          const commit = admission.application?.frontendCommit;
-          if (typeof commit !== "string" || !/^[a-f0-9]{40}$/u.test(commit)) throw new Error("Admitted application commit is invalid.");
-          await appendFile(process.env.GITHUB_OUTPUT, `commit=${commit}\n`);
-          NODE
-      - name: Checkout admitted application artifacts
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.admitted-app.outputs.commit }}
-          path: app-admitted
-      - name: Bind active release lock to admitted application
-        working-directory: app
-        run: cmp integration/contracts/content-release/release.lock.json ../app-admitted/integration/contracts/content-release/release.lock.json
-      - id: content-lock
-        name: Read immutable content lock
-        working-directory: app
-        shell: bash
-        run: |
-          content_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin --app-root ../app-admitted)"
-          historical_producer_pin="$(node scripts/candidateContentReleaseLock.mjs historical-producer-pin)"
-          printf 'commit=%s\nhistorical-commit=%s\n' "$content_producer_pin" "$historical_producer_pin" >> "$GITHUB_OUTPUT"
-      - name: Checkout locked content producer
-        uses: actions/checkout@v4
-        with:
-          repository: lukaszkurczab/patternly-content
-          ref: ${{ steps.content-lock.outputs.historical-commit }}
-          path: patternly-content-historical
-          fetch-depth: 0
       - id: current-content
-        name: Record exact current and historical content inputs
+        name: Record exact current content input
         shell: bash
-        env:
-          EXPECTED_HISTORICAL_CONTENT_SHA: ${{ steps.content-lock.outputs.historical-commit }}
-          EXPECTED_CANDIDATE_SOURCE_SHA: ${{ steps.content-lock.outputs.commit }}
         run: |
           current_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content" rev-parse HEAD)"
-          historical_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content-historical" rev-parse HEAD)"
           [[ "$current_content_sha" =~ ^[a-f0-9]{40}$ ]]
-          [[ "$historical_content_sha" == "$EXPECTED_HISTORICAL_CONTENT_SHA" ]]
-          git -C "$GITHUB_WORKSPACE/patternly-content" cat-file -e "${EXPECTED_CANDIDATE_SOURCE_SHA}^{commit}"
-          printf 'Current content input: %s\nHistorical content input: %s\n' "$current_content_sha" "$historical_content_sha"
-          printf 'sha=%s\nhistorical-sha=%s\n' "$current_content_sha" "$historical_content_sha" >> "$GITHUB_OUTPUT"
-      - name: Verify candidate-bound content release lock
-        working-directory: app
-        run: node scripts/candidateContentReleaseLock.mjs check --app-root ../app-admitted
+          printf 'Current content input: %s\n' "$current_content_sha"
+          printf 'sha=%s\n' "$current_content_sha" >> "$GITHUB_OUTPUT"
       - name: Checkout current backend QA input
         uses: actions/checkout@v4
         with:
@@ -117,6 +74,21 @@ jobs:
       - name: Install backend QA dependencies
         working-directory: patternly-backend
         run: npm ci
+      - name: Install current content producer dependencies
+        working-directory: patternly-content
+        run: npm ci
+      - name: Sync the exact current content source into the application bank
+        working-directory: app
+        env:
+          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ steps.current-content.outputs.sha }}
+        run: node scripts/syncBundledContentRelease.mjs sync --content-root ../patternly-content
+      - name: Verify generated application outputs against current content source
+        working-directory: app
+        env:
+          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ steps.current-content.outputs.sha }}
+        run: node scripts/verifyDerivedContentWorkspace.mjs
       - name: Verify clean generated native platform contract
         working-directory: app
         env:
@@ -158,7 +130,6 @@ jobs:
         env:
           PATTERNLY_CONTENT_ROOT: ${{ github.workspace }}/patternly-content
           PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
-          PATTERNLY_CONTENT_HISTORICAL_ROOT: ${{ github.workspace }}/patternly-content-historical
           PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ steps.current-content.outputs.sha }}
         run: npm run baseline:report
 
@@ -178,57 +149,14 @@ jobs:
           ref: master
           path: patternly-content
           fetch-depth: 0
-      - id: admitted-app
-        name: Read application identity from historical admission
-        working-directory: app
-        run: |
-          node --input-type=module <<'NODE'
-          import { appendFile, readFile } from "node:fs/promises";
-          const admission = JSON.parse(await readFile("../patternly-content/evidence/admissions/candidate-admission-v3.json", "utf8"));
-          const commit = admission.application?.frontendCommit;
-          if (typeof commit !== "string" || !/^[a-f0-9]{40}$/u.test(commit)) throw new Error("Admitted application commit is invalid.");
-          await appendFile(process.env.GITHUB_OUTPUT, `commit=${commit}\n`);
-          NODE
-      - name: Checkout admitted application artifacts
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.admitted-app.outputs.commit }}
-          path: app-admitted
-      - name: Bind active release lock to admitted application
-        working-directory: app
-        run: cmp integration/contracts/content-release/release.lock.json ../app-admitted/integration/contracts/content-release/release.lock.json
-      - id: content-lock
-        name: Read immutable content lock
-        working-directory: app
-        shell: bash
-        run: |
-          content_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin --app-root ../app-admitted)"
-          historical_producer_pin="$(node scripts/candidateContentReleaseLock.mjs historical-producer-pin)"
-          printf 'commit=%s\nhistorical-commit=%s\n' "$content_producer_pin" "$historical_producer_pin" >> "$GITHUB_OUTPUT"
-      - name: Checkout locked content producer
-        uses: actions/checkout@v4
-        with:
-          repository: lukaszkurczab/patternly-content
-          ref: ${{ steps.content-lock.outputs.historical-commit }}
-          path: patternly-content-historical
-          fetch-depth: 0
       - id: current-content
-        name: Record exact current and historical content inputs
+        name: Record exact current content input
         shell: bash
-        env:
-          EXPECTED_HISTORICAL_CONTENT_SHA: ${{ steps.content-lock.outputs.historical-commit }}
-          EXPECTED_CANDIDATE_SOURCE_SHA: ${{ steps.content-lock.outputs.commit }}
         run: |
           current_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content" rev-parse HEAD)"
-          historical_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content-historical" rev-parse HEAD)"
           [[ "$current_content_sha" =~ ^[a-f0-9]{40}$ ]]
-          [[ "$historical_content_sha" == "$EXPECTED_HISTORICAL_CONTENT_SHA" ]]
-          git -C "$GITHUB_WORKSPACE/patternly-content" cat-file -e "${EXPECTED_CANDIDATE_SOURCE_SHA}^{commit}"
-          printf 'Current content input: %s\nHistorical content input: %s\n' "$current_content_sha" "$historical_content_sha"
-          printf 'sha=%s\nhistorical-sha=%s\n' "$current_content_sha" "$historical_content_sha" >> "$GITHUB_OUTPUT"
-      - name: Verify candidate-bound content release lock
-        working-directory: app
-        run: node scripts/candidateContentReleaseLock.mjs check --app-root ../app-admitted
+          printf 'Current content input: %s\n' "$current_content_sha"
+          printf 'sha=%s\n' "$current_content_sha" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1
@@ -238,10 +166,24 @@ jobs:
       - name: Install application dependencies
         working-directory: app
         run: npm ci
-      - name: Run pinned multi-track release round-trip
+      - name: Install content dependencies
+        working-directory: patternly-content
+        run: npm ci
+      - name: Sync the exact current content source into the application bank
         working-directory: app
         env:
-          PATTERNLY_CONTENT_HISTORICAL_ROOT: ${{ github.workspace }}/patternly-content-historical
+          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ steps.current-content.outputs.sha }}
+        run: node scripts/syncBundledContentRelease.mjs sync --content-root ../patternly-content
+      - name: Verify generated application outputs against current content source
+        working-directory: app
+        env:
+          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ steps.current-content.outputs.sha }}
+        run: node scripts/verifyDerivedContentWorkspace.mjs
+      - name: Run current-source multi-track release contract
+        working-directory: app
+        env:
           PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
           PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ steps.current-content.outputs.sha }}
         run: npm run test:content-release-cross-repo

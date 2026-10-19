@@ -8,7 +8,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import { renderProgressPlanSection } from '../../features/home/tabs/progressPlanSectionTestHarness.mjs';
 const require = createRequire(import.meta.url);
-const { acceptedQleProducer } = require('../../../scripts/fixtures/acceptedQleProducer.ts');
 const { contentPackageRuntimeOwner } = require('../contentPackageRuntimeOwner.ts');
 const { loadCanonicalRuntimeCatalog } = require('../../content/canonical/runtimeCatalog.ts');
 const { HomePlanSnapshotReader } = require('../homePlanSnapshotReader.ts');
@@ -624,37 +623,20 @@ test('clock rollback blocks real proposal resolve and acceptance before goal-pla
   assert.equal((await f.proposal.resolve(id, TRACK)).kind, 'ready');
 });
 
-test('current producer remains buildable while app bundle matches the admitted candidate exactly', async t => {
+test('current producer remains buildable while all nine APP artifacts and locks match current source', async t => {
   const outputRoot = await mkdtemp(path.join(os.tmpdir(), 'patternly-bizq02-current-parity-'));
   t.after(() => rm(outputRoot, { recursive: true, force: true }));
   const built = await buildAll({ rootDirectory: CONTENT, outputRoot });
   const bundleRoot = fileURLToPath(new URL('../../content/generated/canonical-content/', import.meta.url));
   const bundledLock = JSON.parse(await readFile(path.join(bundleRoot, 'content-lock.json'), 'utf8'));
-  const releaseLock = JSON.parse(await readFile(path.join(APP_ROOT, 'integration/contracts/content-release/release.lock.json'), 'utf8'));
-  const candidateRelease = JSON.parse(await readFile(path.join(CONTENT, releaseLock.releaseManifestPath), 'utf8'));
-  const candidateLockApi = await import(pathToFileURL(path.join(APP_ROOT, 'scripts/candidateContentReleaseLock.mjs')).href);
-  await assert.rejects(candidateLockApi.updateCandidateContentReleaseLock({ mode: 'check', appRoot: APP_ROOT, contentRoot: CONTENT }), /[Ii]nventory mismatch|differs from release artifact/u);
-  const qleSync = await import(pathToFileURL(path.join(APP_ROOT, 'scripts/syncBundledContentRelease.mjs')).href);
-  const acceptancePath = path.join(APP_ROOT, 'integration/contracts/content-release/local-claude/qle-v2-acceptance.json');
-  await assert.rejects(
-    qleSync.syncCanonicalContent({ mode: 'check', appRoot: APP_ROOT, producerRoot: CONTENT, localReviewedCandidate: acceptancePath }),
-    /Local candidate acceptance record is stale for current producer inputs|Claude candidate does not satisfy the accepted local inventory/u,
-    'the frozen acceptance must reject changed producer inputs or a changed Claude artifact',
-  );
-  const acceptedProducerRoot = await acceptedQleProducer(t, CONTENT);
-  await qleSync.syncCanonicalContent({ mode: 'check', appRoot: APP_ROOT, producerRoot: acceptedProducerRoot, localReviewedCandidate: acceptancePath });
   assert.equal(built.artifacts.length, 9);
   assert.equal(built.lock.tracks.length, 9);
-  assert.deepEqual(
-    bundledLock.tracks.filter(t => t.trackId !== 'claude-certified-architect-professional-certification').map(({ trackId, contentVersion, questionCount, sha256 }) => ({ trackId, contentVersion, questionCount, sha256 })),
-    candidateRelease.artifacts.filter(t => t.trackId !== 'claude-certified-architect-professional-certification').map(({ trackId, contentVersion, questionCount, checksumSha256 }) => ({
-      trackId, contentVersion, questionCount, sha256: checksumSha256,
-    })),
-    'eight frozen artifacts must match the active release; Claude local candidate is separately exact-validated',
-  );
+  assert.deepEqual(bundledLock, built.lock, 'the APP lock follows all nine current source identities');
   for (const artifact of built.artifacts) {
-    const bytes = await readFile(path.join(outputRoot, `${artifact.trackId}.json`), 'utf8');
-    const parsedArtifact = JSON.parse(bytes);
+    const sourceBytes = await readFile(path.join(outputRoot, `${artifact.trackId}.json`), 'utf8');
+    const bundledBytes = await readFile(path.join(bundleRoot, `${artifact.trackId}.json`), 'utf8');
+    assert.equal(bundledBytes, sourceBytes, `${artifact.trackId} APP bytes match current CONTENT build output`);
+    const parsedArtifact = JSON.parse(sourceBytes);
     assert.equal(parsedArtifact.schemaVersion, 'patternly-content-artifact-v2');
     assert.equal(parsedArtifact.completionRule.ruleVersion, artifact.trackId === 'claude-certified-architect-professional-certification' ? 3 : 2);
     assert.ok(parsedArtifact.completionRule.chapters.length > 0);

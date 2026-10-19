@@ -1,6 +1,22 @@
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { isPremiumCacheRecord } from "../../domain/entitlements/premiumEntitlement";
 
+/** Intent-based reads themselves cause an app return. Never classify an
+ * in-flight identity proof's deliberate tombstone as a settled account state. */
+export function requireAndroidClockProbeIdentitySettled(trace: Readonly<{ truncated: boolean;
+  events: readonly Readonly<{ stage: string; edge: string; span?: number }>[] }> | null): void {
+  if (!trace || trace.truncated) throw androidClockProbeFailure("probe_scope_unavailable");
+  const pending = new Set<number>();
+  for (const event of trace.events) {
+    if (event.stage !== "account_foreground_refresh") continue;
+    if (!Number.isSafeInteger(event.span) || event.span! <= 0) throw androidClockProbeFailure("probe_scope_unavailable");
+    if (event.edge === "begin" && !pending.has(event.span!)) pending.add(event.span!);
+    else if (event.edge === "end" && pending.has(event.span!)) pending.delete(event.span!);
+    else throw androidClockProbeFailure("probe_scope_unavailable");
+  }
+  if (pending.size) throw androidClockProbeFailure("probe_identity_refresh_pending");
+}
+
 /** Hash every entitlement field; only observation times may vary in a refresh.
  * Invalid/foreign cache gets no annotation and can never pass by raw-hash delta. */
 export function observeAndroidClockProbePremiumCache(raw: string, profileId: string, accountId: string | null | undefined, observedWallMs: number) {
@@ -21,8 +37,8 @@ export function requireAndroidClockProbePreparationCurrent(expiresAt: number, no
   if (!Number.isFinite(expiresAt) || !Number.isFinite(nowMs) || nowMs >= expiresAt) throw androidClockProbeFailure("probe_preparation_expired");
 }
 
-const RETRYABLE = new Set(["probe_session_unavailable", "probe_countdown_or_owner_unavailable", "probe_foreground_unavailable", "probe_timer_not_running", "probe_profile_unavailable", "fixture_not_ready", "foreground_clock_shared_handle_observation_busy"]);
-const CATEGORIES = new Set([...RETRYABLE, "probe_scope_unavailable", "probe_request_invalid", "probe_request_io_failed", "probe_request_delete_failed", "probe_prepared_owner_changed", "probe_prepared_keys_changed", "probe_prepared_value_changed", "probe_prepared_session_changed", "probe_not_advancing", "probe_preparation_required", "probe_preparation_expired", "probe_cold_profile_unavailable", "probe_cold_journal_pending", "fixture_production_owner_unavailable", "fixture_store_collision", "fixture_requires_session_exit", "fixture_record_rejected", "fixture_namespace_rejected", "fixture_encryption_rejected", "fixture_configuration_rejected", "fixture_cleanup_unverified", "fixture_cas_unverified", "fixture_native_fault_unavailable", "fixture_not_running", "foreground_clock_shared_handle_mismatch"]);
+const RETRYABLE = new Set(["probe_session_unavailable", "probe_countdown_or_owner_unavailable", "probe_foreground_unavailable", "probe_timer_not_running", "probe_profile_unavailable", "probe_identity_refresh_pending", "probe_observation_changed", "fixture_not_ready", "foreground_clock_shared_handle_observation_busy"]);
+const CATEGORIES = new Set([...RETRYABLE, "probe_scope_unavailable", "probe_read_timeout", "probe_request_invalid", "probe_request_io_failed", "probe_request_delete_failed", "probe_prepared_owner_changed", "probe_prepared_keys_changed", "probe_prepared_value_changed", "probe_prepared_session_changed", "probe_not_advancing", "probe_preparation_required", "probe_preparation_expired", "probe_cold_profile_unavailable", "probe_cold_journal_pending", "fixture_production_owner_unavailable", "fixture_store_collision", "fixture_requires_session_exit", "fixture_record_rejected", "fixture_namespace_rejected", "fixture_encryption_rejected", "fixture_configuration_rejected", "fixture_cleanup_unverified", "fixture_cas_unverified", "fixture_native_fault_unavailable", "fixture_not_running", "foreground_clock_shared_handle_mismatch"]);
 
 /** Preserve every canonical session field except the two fields changed by
  * ordinary foreground reconciliation. This observation never drives recovery. */
@@ -52,11 +68,15 @@ export function androidClockProbeErrorCategory(failure: unknown): string {
 
 /** Only repeats read-only readiness checks. Mutating commands and the stall
  * start run exactly once after this function has returned. */
-export async function waitForAndroidClockProbe<T>(read: () => T, timeoutMs = 2_000,
+export async function waitForAndroidClockProbe<T>(read: () => T | Promise<T>, timeoutMs = 2_000,
   port = { now: () => performance.now(), wait: () => new Promise<void>(resolve => setTimeout(resolve, 50)) }): Promise<T> {
   const deadline = port.now() + timeoutMs;
   for (;;) {
-    try { return read(); }
+    try {
+      const value = await read();
+      if (port.now() >= deadline) throw androidClockProbeFailure("probe_read_timeout");
+      return value;
+    }
     catch (failure) {
       if (!RETRYABLE.has(androidClockProbeErrorCategory(failure)) || port.now() >= deadline) throw failure;
       await port.wait();

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import test, { after, before } from "node:test";
+import test, { before } from "node:test";
 import path from "node:path";
 
 import {
@@ -13,7 +13,7 @@ import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQues
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
-import { lockedContentProducer } from "../../scripts/fixtures/lockedContentProducer";
+import { currentContentProducer } from "../../scripts/fixtures/currentContentProducer";
 
 const PACKET = "src/content/__fixtures__/release-acceptance/ood-node-closure-19";
 const REASON_AMENDMENT = `${PACKET}/reason-amendment-19a/PROPOSED-REASONS.json`;
@@ -27,17 +27,13 @@ const MODES = [
   "design-interview-tradeoff-practice",
   "design-interview-weak-area-review",
 ] as const;
-let acceptedProducerRoot = "";
-let cleanupAcceptedProducer: () => void | Promise<void> = () => {};
-
-after(async () => { await cleanupAcceptedProducer(); });
+let currentContentRoot = "";
 
 before(async () => {
-  acceptedProducerRoot = await lockedContentProducer({
+  currentContentRoot = await currentContentProducer({
     appRoot: process.cwd(),
-    repositoryRoot: path.resolve("../patternly-content"),
+    contentRoot: process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve("../patternly-content"),
     trackId: TRACK,
-    after: (cleanup) => { cleanupAcceptedProducer = cleanup; },
   });
 });
 
@@ -109,7 +105,7 @@ function readFrozenQuestions(unit: UnitPayload): readonly Question[] {
 }
 
 function sourceQuestions(file: string): readonly Question[] {
-  const sourcePath = path.resolve(acceptedProducerRoot, "content/object-oriented-design-interview", NODE, file);
+  const sourcePath = path.resolve(currentContentRoot, "content/object-oriented-design-interview", NODE, file);
   return JSON.parse(readFileSync(sourcePath, "utf8")) as readonly Question[];
 }
 
@@ -118,29 +114,29 @@ function isSingleChoice(question: Question): question is Extract<Question, { int
 }
 
 function sourcePath(relativePath: string): string {
-  return path.resolve(acceptedProducerRoot, relativePath);
+  return path.resolve(currentContentRoot, relativePath);
 }
 
 const ACCEPTED_N01 = [
-  ["content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B01.json", "224c0d2d9fd5c367a0c8a7a8c0e139ca827d308d7d60fdce7d18c627ba1dbfa0"],
-  ["content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B02.json", "215397c1609b3f058dee249c6ef54c43a4a0696e9aa94c80c673a046b6b8b5a9"],
-  ["content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B03.json", "3fe8c393ee1d336cd1ea2fb39ceae7c9eb891184ab0e4dc26b07285a26b70575"],
-  ["content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B04.json", "24ff127bcf9b1a1e9eae5e0ac51e048a590661ff16e67c3469fee78cd8e153a5"],
-  ["content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B05.json", "9a8bc00943bf65ea36223f9d5513c7cfa26df7357e77e99848faf3c88235556d"],
-  ["content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B06.json", "d09097dc78773ac03587b649e4d4e78f672208ef554b21eb76dfb801d7393c7b"],
-  ["content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B07.json", "a3e7964e959f710e2d2029e8b98c7f3b9135deaee7f98ada02f3862fa60a5e43"],
-  ["content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B08.json", "0c1053f6c6e722dc6954c4dc56cfbeed407d9ad9082ed3550129acb565612319"],
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B01.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B02.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B03.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B04.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B05.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B06.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B07.json",
+  "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B08.json",
 ] as const;
 
 const ACCEPTED_N02 = [
-  ["content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B01.json", "8d858a2491ea8c320d687efc7d427fa469df6bc227fd238b02fc19af0f8fcddf"],
-  ["content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B02.json", "03fa49cfcb122f03241f16b826716c8221fd809b3ff5e21706927245208f54f3"],
-  ["content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B03.json", "6a1ce440ba1ce098ebeb4decd991d8d270dd275c0c4f51bf78403ac9d77d89b1"],
-  ["content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B04.json", "17d4027ea20cab4946d0a10508798ed4db3f9cc264769f3bafb75bdbe44ab622"],
-  ["content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B05.json", "17907deacb33b6f1d6dac02c33e30625feef5f13fcf2f8ab2225f5160dc48f1e"],
-  ["content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B06.json", "ed0c5d818f351713fd891c0c470927e1515f120342be2a6e1d12491cb87be638"],
-  ["content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B07.json", "e71e17e0366922a268d536518917c9e6a8692a495b30cc88c4a9c042d0fab14f"],
-  ["content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B08.json", "a7187fd7159997b338285a732eb436cf799953d78a527ef1ce45b2612ed8e4b1"],
+  "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B01.json",
+  "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B02.json",
+  "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B03.json",
+  "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B04.json",
+  "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B05.json",
+  "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B06.json",
+  "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B07.json",
+  "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B08.json",
 ] as const;
 
 test("OOD19 frozen bindings cover all nine reviewed 18-item payloads", () => {
@@ -149,16 +145,21 @@ test("OOD19 frozen bindings cover all nine reviewed 18-item payloads", () => {
   assert.equal(count, 162);
 });
 
-test("OOD19 preserves all 136 accepted N01 and 152 accepted N02 source and runtime objects", async () => {
+test("OOD19 keeps all current N01 and N02 source objects byte-identical in runtime", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
-  for (const [accepted, expectedCount] of [[ACCEPTED_N01, 136], [ACCEPTED_N02, 152]] as const) {
+  for (const [accepted, expectedCount, nodeId] of [[ACCEPTED_N01, 136, N01_NODE], [ACCEPTED_N02, 152, N02_NODE]] as const) {
     let count = 0;
-    for (const [relativePath, sha256] of accepted) {
+    const ids = new Set<string>();
+    for (const relativePath of accepted) {
       const bytes = readFileSync(sourcePath(relativePath));
-      assert.equal(createHash("sha256").update(bytes).digest("hex"), sha256, `${relativePath} accepted source bytes`);
       const questions = JSON.parse(bytes.toString("utf8")) as readonly Question[];
       count += questions.length;
-      for (const question of questions) assert.deepEqual(track.getQuestion(question.questionId), question);
+      for (const question of questions) {
+        assert.equal(question.nodeId, nodeId, `${question.questionId} belongs to its source node`);
+        assert.equal(ids.has(question.questionId), false, `${question.questionId} is unique across source files`);
+        ids.add(question.questionId);
+        assert.deepEqual(track.getQuestion(question.questionId), question, `${question.questionId} current APP runtime matches selected source`);
+      }
     }
     assert.equal(count, expectedCount);
   }

@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
 // The app's TS modules use its existing CommonJS/tsx boundary.
 const runtimeRequire = createRequire(import.meta.url);
 const { createCanonicalQuestionCatalog } = runtimeRequire("../../content/canonical/questionCatalog.ts");
@@ -17,11 +20,25 @@ const { prepareCanonicalOptionOrder, projectCanonicalQuestionInSessionOrder, isC
 const { buildCanonicalInteractionViewModel, projectCanonicalChoiceFeedbackMessages } = runtimeRequire("./canonicalInteractionPresentation.ts");
 
 const appRoot = fileURLToPath(new URL("../../../", import.meta.url));
-const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? path.resolve(appRoot, "../patternly-content");
+const contentRoot = process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content");
 const trackId = "backend-system-design-interview";
-const proof = JSON.parse(readFileSync(path.join(contentRoot, "evidence/business-quality/besd-n03-20261018-repairs.json"), "utf8"));
-const questions = [1, 2, 3, 4].flatMap(unit => JSON.parse(readFileSync(path.join(contentRoot, `content/${trackId}/data_models_storage_selection_indexing_and_transactions/BESD-N03-B0${unit}.json`), "utf8")));
-const lineage = new Map(proof.items.map(item => [item.questionId, item]));
+const currentTrackPromise = (async () => {
+  const outputRoot = await mkdtemp(path.join(os.tmpdir(), "patternly-besd-n03-current-source-"));
+  try {
+    const { buildAll } = await import(pathToFileURL(path.join(contentRoot, "scripts/build.mjs")).href);
+    const source = await buildAll({ rootDirectory: contentRoot, outputRoot });
+    const artifact = JSON.parse(await readFile(path.join(outputRoot, `${trackId}.json`), "utf8"));
+    const lock = source.lock.tracks.find((entry) => entry.trackId === trackId);
+    assert.ok(lock, `current content build emits a ${trackId} lock`);
+    const catalog = await createCanonicalQuestionCatalog(artifact, lock, trackId, async (value) => sha256Utf8(value));
+    assert.deepEqual(catalog.questions, artifact.questions, "APP catalog preserves the current source-built question values");
+    const currentUnits = ["BESD-N03-B01", "BESD-N03-B02", "BESD-N03-B03", "BESD-N03-B04"];
+    const questions = catalog.questions.filter((question) => currentUnits.includes(question.mentalUnitId));
+    return { artifact, lock, catalog, questions };
+  } finally {
+    await rm(outputRoot, { recursive: true, force: true });
+  }
+})();
 
 // Execute the real card JSX with native components/hooks replaced by inert test
 // bindings. This checks its show/hide branches; it is not a native/device test.
@@ -53,25 +70,38 @@ function textNodes(element) {
   return element?.props ? textNodes(element.props.children) : [];
 }
 
-test("BESD N03: actual question-card JSX shows the 72 business invariants without author hints", () => {
+function assertNoAnswerLeak(view, question) {
+  const accepted = question.interaction.options.find((option) => option.optionId === question.answer.optionId);
+  assert.ok(accepted, `${question.questionId} accepted option exists`);
+  assert.equal(JSON.stringify(view.constraints).includes(accepted.text), false, `${question.questionId} does not disclose the accepted option in author hints`);
+  const interaction = view.interaction.model;
+  assert.ok(interaction.renderer.options.every((option) => option.selected === false), `${question.questionId} does not mark the accepted choice before submission`);
+  assert.equal(JSON.stringify(view).includes(question.feedback.reason), false, `${question.questionId} keeps its correction rationale after submission`);
+}
+
+test("BESD N03: APP card JSX shows all current B01-B04 constraints without leaking the answer", async () => {
+  const { questions } = await currentTrackPromise;
   const Card = loadQuestionCard();
   const presentation = findTrackDescriptor(trackId).presentation.practiceQuestion;
   assert.equal(presentation.constraints, "show");
-  assert.equal(questions.length, 72);
+  for (const unit of ["BESD-N03-B01", "BESD-N03-B02", "BESD-N03-B03", "BESD-N03-B04"]) {
+    assert.ok(questions.some((question) => question.mentalUnitId === unit), `${unit} has current invariant questions`);
+  }
   for (const question of questions) {
     const model = toCanonicalQuestionViewModel(question);
     const shown = textNodes(Card({ question: model, presentation })).join("\n");
-    const invariant = lineage.get(question.questionId).beforeQuestion.constraints[0];
-    assert.ok(shown.includes(invariant), question.questionId);
+    for (const constraint of question.constraints) assert.ok(shown.includes(constraint), `${question.questionId} displays authored business invariant: ${constraint}`);
     assert.doesNotMatch(shown, /the primary decision is/i);
-    assert.equal(shown.includes(question.interaction.options.find(option => option.optionId === question.answer.optionId).text), false);
-    assert.equal(shown.includes(question.feedback.reason), false);
+    assertNoAnswerLeak(model, question);
     assert.equal(textNodes(Card({ question: model, presentation })).filter(value => value === "• ").length, question.constraints.length);
+
     const hidden = textNodes(Card({ question: model, presentation: { ...presentation, constraints: "hide" } }));
-    assert.equal(hidden.includes("• "), false);
-    const injected = { ...model, constraints: [...model.constraints, lineage.get(question.questionId).beforeQuestion.constraints[2]] };
-    assert.match(textNodes(Card({ question: injected, presentation })).join("\n"), /the primary decision is/i,
-      "negative control proves the real renderer would expose the old hint");
+    assert.equal(hidden.includes("• "), false, `${question.questionId} hides constraints when presentation requires it`);
+
+    const acceptedText = question.interaction.options.find((option) => option.optionId === question.answer.optionId).text;
+    const leakedModel = { ...model, constraints: [...model.constraints, acceptedText] };
+    assert.throws(() => assertNoAnswerLeak(leakedModel, question), /does not disclose the accepted option/,
+      "negative control confirms the answer-leak assertion rejects a displayed correct choice");
   }
 });
 
@@ -97,7 +127,7 @@ function verifyScoringAndPresentation(selected, pin) {
         const result = scoreCanonicalQuestion(displayed, response);
         assert.equal(result.earnedPoints, expectedCorrect ? 1 : 0, `${question.questionId}/${option.optionId}`);
         assert.equal(result.kind, expectedCorrect ? "correct" : "incorrect");
-        const messages = question.feedback.messages.filter(message => message.kind === "wrong_option" && message.targetId === option.optionId);
+        const messages = (question.feedback.messages ?? []).filter(message => message.kind === "wrong_option" && message.targetId === option.optionId);
         assert.equal(messages.length, expectedCorrect ? 0 : 1);
         assert.deepEqual(projectCanonicalChoiceFeedbackMessages(displayed, response), messages);
         const selectedModel = buildCanonicalInteractionViewModel(displayed, response).model;
@@ -111,24 +141,14 @@ function verifyScoringAndPresentation(selected, pin) {
   }
 }
 
-test("BESD N03: 72 source questions preserve scoring, selection and option-specific feedback through saved shuffles", () => {
-  verifyScoringAndPresentation(questions, { contentVersion: proof.contentVersion, artifactSha256: "a".repeat(64) });
+test("BESD N03: all current business invariants preserve score and option feedback under saved shuffles", async () => {
+  const { questions, catalog } = await currentTrackPromise;
+  verifyScoringAndPresentation(questions, catalog);
 });
 
-test("BESD N03: isolated artifact passes the production app catalog boundary with exact source and retired identities", { skip: !process.env.BESD_N03_ARTIFACT_ROOT }, async () => {
-  const output = process.env.BESD_N03_ARTIFACT_ROOT;
-  const artifact = JSON.parse(readFileSync(path.join(output, `${trackId}.json`), "utf8"));
-  const lock = JSON.parse(readFileSync(path.join(output, "content-lock.json"), "utf8")).tracks.find(entry => entry.trackId === trackId);
-  const catalog = await createCanonicalQuestionCatalog(artifact, lock, trackId, async value => sha256Utf8(value));
-  assert.equal(catalog.questions.length, 1569);
-  assert.equal(catalog.contentVersion, proof.contentVersion);
-  assert.equal(catalog.artifactSha256, proof.artifactSha256);
+test("BESD N03: current source artifact passes the production APP catalog boundary", async () => {
+  const { artifact, lock, catalog, questions } = await currentTrackPromise;
+  assert.equal(catalog.contentVersion, artifact.contentVersion);
+  assert.equal(catalog.artifactSha256, lock.sha256);
   for (const question of questions) assert.deepEqual(catalog.getQuestionById(question.questionId), question);
-  for (const item of proof.items.filter(entry => entry.beforeQuestionId !== entry.questionId)) {
-    assert.equal(catalog.getQuestionById(item.beforeQuestionId), undefined);
-    const oldResponse = { type: "choice_single", optionId: item.beforeQuestion.answer.optionId };
-    assert.equal(scoreCanonicalQuestion(item.currentQuestion, oldResponse).kind, "incorrect");
-    assert.equal(scoreCanonicalQuestion(item.beforeQuestion, oldResponse).kind, "correct");
-  }
-  verifyScoringAndPresentation(questions, catalog);
 });

@@ -412,6 +412,9 @@ export function checkNotes(vault, manifest) {
 export async function runAtlas(command, { workspace = defaultWorkspace, vault, capture: preparedCapture } = {}) {
   if (!['preview', 'build', 'check', 'migrate-names'].includes(command)) throw new Error('atlas/invalid-command');
   workspace = realpathSync(workspace);
+  if (existsSync(safePath(workspace, 'patternly/.agent/private/docAtlas-retirement/journal.json'))) {
+    throw new Error('atlas/retirement-pending; resume retireOrphanNotes.mjs before rendering');
+  }
   if (preparedCapture && !reviewedCaptures.has(preparedCapture)) throw new Error('atlas/unknown-capture');
   if (preparedCapture && preparedCapture.snapshot.workspace !== workspace) throw new Error('atlas/snapshot-workspace-mismatch');
   if (command === 'check' && preparedCapture) throw new Error('atlas/check-requires-live-scan');

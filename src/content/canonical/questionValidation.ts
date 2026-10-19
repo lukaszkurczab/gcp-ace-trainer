@@ -254,9 +254,9 @@ function validateCodingInterviewSimulationConfig(value: unknown, questions: read
 }
 
 function validateCertificationSimulationConfig(value: unknown, questions: readonly unknown[], nodeIds: readonly string[], trackId: unknown, path: string, errors: string[]): void {
-  const configKeys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap", "nodeDomainMapEvidence"];
+  const configKeys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap"];
   const configPath = `${path}.familyConfig`;
-  if (!exact(value, configKeys, configKeys, configPath, errors)) return;
+  if (!exact(value, [...configKeys, "nodeDomainMapEvidence"], configKeys, configPath, errors)) return;
   if (value.schemaVersion !== "patternly-certification-simulation-config-v1") { errors.push(`${configPath}.schemaVersion: unsupported certification config version`); return; }
   if (!exact(value.source, ["url", "checkedDate", "guideVersion"], ["url", "checkedDate", "guideVersion"], `${configPath}.source`, errors)) return;
   text(value.source.url, `${configPath}.source.url`, errors); id(value.source.checkedDate, `${configPath}.source.checkedDate`, errors); text(value.source.guideVersion, `${configPath}.source.guideVersion`, errors);
@@ -297,18 +297,20 @@ function validateCertificationSimulationConfig(value: unknown, questions: readon
   if (sourceDomainsByNode.size !== nodeIds.length || [...sourceDomainsByNode.values()].some((nodeDomains) => nodeDomains.size !== 1)) errors.push(`${configPath}: source-derived per-question domains are incomplete or ambiguous`);
   const sourceNodeDomainMap = Object.fromEntries([...sourceDomainsByNode].map(([nodeId, nodeDomains]) => [nodeId, [...nodeDomains][0]]));
   if (JSON.stringify(Object.entries(value.nodeDomainMap).sort(([left], [right]) => left.localeCompare(right))) !== JSON.stringify(Object.entries(sourceNodeDomainMap).sort(([left], [right]) => left.localeCompare(right)))) errors.push(`${configPath}.nodeDomainMap: differs from source-derived per-question domains`);
-  const evidence = value.nodeDomainMapEvidence;
-  const evidenceKeys = ["artifactPath", "contentVersion", "itemCount", "nodeCount", "ambiguousNodeCount"];
-  if (!exact(evidence, evidenceKeys, evidenceKeys, `${configPath}.nodeDomainMapEvidence`, errors)) return;
-  const evidenceVersion = evidence.contentVersion;
-  const expectedEvidencePath = typeof trackId === "string" && typeof evidenceVersion === "string"
-    ? `artifacts/tracks/${trackId}/${evidenceVersion}/track-artifact.json`
-    : null;
-  if (typeof trackId !== "string" || typeof evidenceVersion !== "string" || !SAFE_CONTENT_VERSION.test(evidenceVersion) ||
-    !text(evidence.artifactPath, `${configPath}.nodeDomainMapEvidence.artifactPath`, errors) || evidence.artifactPath !== expectedEvidencePath ||
-    typeof evidence.nodeCount !== "number" || !Number.isSafeInteger(evidence.nodeCount) || evidence.nodeCount <= 0 || evidence.ambiguousNodeCount !== 0 ||
-    typeof evidence.itemCount !== "number" || !Number.isSafeInteger(evidence.itemCount) || evidence.itemCount < 1) {
-    errors.push(`${configPath}.nodeDomainMapEvidence: does not match its pinned artifact identity or complete mapping`);
+  if (Object.hasOwn(value, "nodeDomainMapEvidence")) {
+    const evidence = value.nodeDomainMapEvidence;
+    const evidenceKeys = ["artifactPath", "contentVersion", "itemCount", "nodeCount", "ambiguousNodeCount"];
+    if (!exact(evidence, evidenceKeys, evidenceKeys, `${configPath}.nodeDomainMapEvidence`, errors)) return;
+    const evidenceVersion = evidence.contentVersion;
+    const expectedEvidencePath = typeof trackId === "string" && typeof evidenceVersion === "string"
+      ? `artifacts/tracks/${trackId}/${evidenceVersion}/track-artifact.json`
+      : null;
+    if (typeof trackId !== "string" || typeof evidenceVersion !== "string" || !SAFE_CONTENT_VERSION.test(evidenceVersion) ||
+      !text(evidence.artifactPath, `${configPath}.nodeDomainMapEvidence.artifactPath`, errors) || evidence.artifactPath !== expectedEvidencePath ||
+      typeof evidence.nodeCount !== "number" || !Number.isSafeInteger(evidence.nodeCount) || evidence.nodeCount <= 0 || evidence.ambiguousNodeCount !== 0 ||
+      typeof evidence.itemCount !== "number" || !Number.isSafeInteger(evidence.itemCount) || evidence.itemCount < 1) {
+      errors.push(`${configPath}.nodeDomainMapEvidence: malformed optional predecessor provenance`);
+    }
   }
 }
 function deepFreeze<T>(value: T): T { if (value && typeof value === "object" && !Object.isFrozen(value)) { for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child); Object.freeze(value); } return value; }

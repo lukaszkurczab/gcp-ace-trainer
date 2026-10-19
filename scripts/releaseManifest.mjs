@@ -12,13 +12,13 @@ import { basename, dirname, isAbsolute, join, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { signingManifestBinding, validateReleaseEvidence } from "./releaseEvidence.mjs";
+import { currentContentWorktreeStatus } from "./currentContentWorktree.mjs";
 
 /**
  * GATE-03 portable release manifest contract.
  *
- * This module deliberately contains no repository-specific validators. Content
- * acceptance is delegated to the current candidate/admission modules in patternly-content and the
- * OpenAPI check is delegated to patternly-backend's `openapi:check` script.
+ * Current content identity is derived from canonical sources and matched to
+ * the installed APP bundle; it does not encode publication or deployment approval.
  */
 
 export const RELEASE_MANIFEST_SCHEMA_VERSION = "patternly-release-manifest-v2";
@@ -48,9 +48,7 @@ export const CANDIDATE_TRACK_IDS = Object.freeze([
 export const RELEASE_MANIFEST_REFERENCES = Object.freeze([
   Object.freeze({ repositoryRole: "application", path: "integration/contracts/content-release/release.lock.json" }),
   Object.freeze({ repositoryRole: "backend", path: "openapi/patternly-v1.json" }),
-  Object.freeze({ repositoryRole: "content", path: "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json" }),
-  Object.freeze({ repositoryRole: "content", path: "evidence/readiness/candidate-readiness-v2.json" }),
-  Object.freeze({ repositoryRole: "content", path: "evidence/admissions/candidate-admission-v3.json" }),
+  Object.freeze({ repositoryRole: "content", path: "scripts/content/current-source-identity.mjs" }),
 ]);
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
@@ -152,7 +150,7 @@ export function validateReleaseManifest(manifest) {
   exactArray(repositorySlugs, REPOSITORY_SLUGS, "Release manifest repository slugs");
 
   if (!Array.isArray(manifest.references) || manifest.references.length !== RELEASE_MANIFEST_REFERENCES.length) {
-    throw new Error("Release manifest must contain exactly four contract references.");
+    throw new Error("Release manifest must contain exactly three contract references.");
   }
   const referenceKeys = [];
   for (const [index, reference] of manifest.references.entries()) {
@@ -267,7 +265,12 @@ function repositoryHead(repositoryRoot, label) {
   return head;
 }
 
-function ensureCleanRepository(repositoryRoot, label) {
+function ensureCleanRepository(repositoryRoot, label, { allowDerivedContent = false } = {}) {
+  if (allowDerivedContent) {
+    const status = currentContentWorktreeStatus(repositoryRoot);
+    if (status.status === "unavailable" || status.status === "dirty") throwPathError(label, "worktree must be clean except for verified generated current-content outputs");
+    return;
+  }
   try {
     const porcelain = execFileSync("git", ["-C", repositoryRoot, "status", "--porcelain", "--untracked-files=all"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
     if (porcelain.trim()) throwPathError(label, "worktree must be clean");
@@ -308,7 +311,7 @@ function inspectRepositories(roots, expectedRepositories = undefined) {
   for (const definition of REPOSITORY_DEFINITIONS) {
     const root = roots[definition.role];
     const label = `${definition.role} repository`;
-    ensureCleanRepository(root, label);
+    ensureCleanRepository(root, label, { allowDerivedContent: definition.role === "application" });
     const head = repositoryHead(root, label);
     const expected = expectedRepositories?.find((repository) => repository.role === definition.role)?.commit;
     if (expected && head !== expected) throw new Error(`${label} HEAD is stale: declared commit does not match checkout HEAD.`);
@@ -389,16 +392,15 @@ function parseJson(bytes, label) {
   }
 }
 
-function validateReleaseLock(lock, { candidate, admission, trackIds, lockSha256 }) {
+function validateReleaseLock(lock, { currentIdentity, trackIds }) {
   if (!lock || typeof lock !== "object" || Array.isArray(lock)) throw new Error("Application release lock must be an object.");
-  if (lock.schemaVersion !== 3 || lock.repository !== "lukaszkurczab/patternly-content" || lock.candidateId !== candidate.candidateId) throw new Error("Application release lock identity is invalid.");
-  if (lock.candidateManifestPath !== "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json" || lock.releaseManifestPath !== "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json" || lock.releaseManifestSha256 !== candidate.release.checksumSha256) throw new Error("Application release lock candidate binding is stale.");
-  if (admission.application.releaseLockSha256 !== lockSha256 || admission.application.bundledContentLockSha256 !== lock.bundledContentLockSha256) throw new Error("Application release lock differs from the admitted application bytes.");
-  if (typeof lock.bundleId !== "string" || lock.bundleId.length === 0 || !Array.isArray(lock.artifacts)) throw new Error("Application release lock is incomplete.");
+  if (lock.schemaVersion !== 4 || lock.ownerPolicy !== "standing-owner-decision-2026-10-19-current-source" || lock.sourceInputFingerprint !== currentIdentity.sourceInputFingerprint || typeof lock.bundledSuccessorLedgerSha256 !== "string" || !SHA256_PATTERN.test(lock.bundledSuccessorLedgerSha256)) throw new Error("Application release lock does not bind the current canonical source identity.");
+  if (canonicalJson(lock.currentIdentity?.tracks) !== canonicalJson(currentIdentity.tracks)) throw new Error("Application release lock track identity differs from current canonical source.");
+  if (typeof lock.bundleId !== "string" || lock.bundleId.length === 0 || typeof lock.releaseId !== "string" || !Array.isArray(lock.artifacts)) throw new Error("Application release lock is incomplete.");
   if (lock.artifacts.length !== trackIds.length) throw new Error("Application release lock must cover exactly nine tracks.");
   const lockTrackIds = lock.artifacts.map((artifact) => artifact?.trackId).sort(compare);
   exactArray(lockTrackIds, [...trackIds].sort(compare), "Application release lock track scope");
-  const candidateByTrack = new Map(candidate.tracks.map((track) => [track.trackId, track]));
+  const currentByTrack = new Map(currentIdentity.tracks.map((track) => [track.trackId, track]));
   for (const artifact of lock.artifacts) {
     const trackId = artifact.trackId;
     for (const field of ["releaseId", "trackId", "contentVersion", "producerCommit", "sourceRepositoryCommit", "checksumSha256"]) {
@@ -407,39 +409,37 @@ function validateReleaseLock(lock, { candidate, admission, trackIds, lockSha256 
     commit(artifact.producerCommit, `Application release lock ${trackId} producerCommit`);
     commit(artifact.sourceRepositoryCommit, `Application release lock ${trackId} sourceRepositoryCommit`);
     sha(artifact.checksumSha256, `Application release lock ${trackId} checksumSha256`);
-    const candidateTrack = candidateByTrack.get(trackId);
-    const candidateArtifact = candidateTrack && {
-      releaseId: candidate.release.releaseId,
+    const currentTrack = currentByTrack.get(trackId);
+    const expectedArtifact = currentTrack && {
+      releaseId: lock.releaseId,
       trackId,
-      contentVersion: candidateTrack.contentVersion,
-      sourceRepositoryCommit: candidate.release.sourceRepositoryCommit,
-      checksumSha256: candidateTrack.checksumSha256,
+      contentVersion: currentTrack.contentVersion,
+      checksumSha256: currentTrack.artifactSha256,
     };
-    for (const field of ["releaseId", "trackId", "contentVersion", "sourceRepositoryCommit", "checksumSha256"]) {
-      if (artifact[field] !== candidateArtifact?.[field]) {
-        throw new Error(`Application release lock ${trackId} is incoherent with the accepted candidate.`);
+    for (const field of ["releaseId", "trackId", "contentVersion", "checksumSha256"]) {
+      if (artifact[field] !== expectedArtifact?.[field]) {
+        throw new Error(`Application release lock ${trackId} is incoherent with current canonical source.`);
       }
     }
+    if (artifact.artifactBytes !== currentTrack?.artifactBytes || artifact.questionCount !== currentTrack?.questionCount) throw new Error(`Application release lock ${trackId} size or count differs from current canonical source.`);
   }
   return lock;
 }
 
-async function loadAndValidateContentContracts(contentRoot, candidateBytes, readinessBytes, admissionBytes) {
-  const gateModulePath = join(contentRoot, "scripts/review/candidate-release-gate-v2.mjs");
+async function loadAndValidateContentContracts(applicationRoot, contentRoot) {
   try {
-    const gate = await import(pathToFileURL(gateModulePath).href);
-    const candidateFromReference = parseJson(candidateBytes, "Candidate Manifest");
-    const readinessFromReference = parseJson(readinessBytes, "Candidate Readiness");
-    const admissionFromReference = parseJson(admissionBytes, "Candidate Admission");
-    const verified = await gate.verifyCandidateReleaseEvidence({ root: contentRoot });
-    const candidate = await gate.runCandidateReleaseGate({ root: contentRoot });
-    if (canonicalJson(candidate) !== canonicalJson(candidateFromReference) || canonicalJson(verified.readiness) !== canonicalJson(readinessFromReference)) throw new Error("Current candidate references do not name the owning evidence bytes.");
-    const committedAdmission = parseJson(readFileSync(join(contentRoot, "evidence/admissions/candidate-admission-v3.json")), "Candidate Admission");
-    if (canonicalJson(committedAdmission) !== canonicalJson(admissionFromReference)) throw new Error("Candidate Admission reference does not name the owning evidence bytes.");
-    return { candidate, readiness: verified.readiness, admission: committedAdmission };
+    const identityModule = await import(pathToFileURL(join(contentRoot, "scripts/content/current-source-identity.mjs")).href);
+    const currentIdentity = await identityModule.computeCurrentSourceIdentity({ contentRoot });
+    const appVerifier = await import(pathToFileURL(fileURLToPath(new URL("./verifyBundledCurrentContent.mjs", import.meta.url))).href);
+    await appVerifier.verifyBundledCurrentContent({ root: applicationRoot });
+    const appLock = parseJson(readFileSync(join(applicationRoot, "integration/contracts/content-release/release.lock.json")), "Application current-content lock");
+    if (appLock.sourceInputFingerprint !== currentIdentity.sourceInputFingerprint || canonicalJson(appLock.currentIdentity.tracks) !== canonicalJson(currentIdentity.tracks)) throw new Error("Current source and installed APP bank differ.");
+    const bundledContent = await import(pathToFileURL(join(applicationRoot, "scripts/verifyBundledCurrentContent.mjs")).href);
+    await bundledContent.verifyBundledCurrentContent({ root: applicationRoot });
+    return { currentIdentity, candidateId: currentIdentity.sourceInputFingerprint, releaseId: appLock.releaseId, trackIds: currentIdentity.tracks.map((track) => track.trackId).sort(compare) };
   } catch (error) {
-    if (error?.message?.startsWith("ACC-02") || error?.message?.startsWith("Candidate") || error?.message?.startsWith("Release")) throw error;
-    throw new Error(`Current candidate admission validator rejected content evidence: ${error instanceof Error ? error.message : String(error)}`);
+    if (error?.code) throw error;
+    throw new Error(`Current canonical content does not match the installed APP bank: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -455,11 +455,11 @@ function runOwningOpenApiCheck(backendRoot) {
   }
 }
 
-function buildManifest({ commits, candidate, files, signingBinding }) {
+function buildManifest({ commits, candidateId, files, signingBinding }) {
   const manifest = {
     schemaVersion: RELEASE_MANIFEST_SCHEMA_VERSION,
     manifestId: "0".repeat(64),
-    candidateId: candidate.candidateId,
+    candidateId,
     trackIds: [...CANDIDATE_TRACK_IDS],
     repositories: REPOSITORY_DEFINITIONS.map((definition) => ({ ...definition, commit: commits[definition.role] })),
     references: RELEASE_MANIFEST_REFERENCES.map((reference) => ({
@@ -486,17 +486,9 @@ function loadSigningEvidence(evidenceRoot, roots, expectedApplicationCommit) {
   return { value, binding: signingManifestBinding(value) };
 }
 
-async function collectContracts(roots, candidatePathFiles) {
-  const candidateReference = candidatePathFiles
-    ? referenceFile(candidatePathFiles, "content", "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json")
-    : readRegularReference(roots.content, { repositoryRole: "content", path: "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json" });
-  const readinessReference = candidatePathFiles
-    ? referenceFile(candidatePathFiles, "content", "evidence/readiness/candidate-readiness-v2.json")
-    : readRegularReference(roots.content, { repositoryRole: "content", path: "evidence/readiness/candidate-readiness-v2.json" });
-  const admissionReference = candidatePathFiles
-    ? referenceFile(candidatePathFiles, "content", "evidence/admissions/candidate-admission-v3.json")
-    : readRegularReference(roots.content, { repositoryRole: "content", path: "evidence/admissions/candidate-admission-v3.json" });
-  return loadAndValidateContentContracts(roots.content, candidateReference.bytes, readinessReference.bytes, admissionReference.bytes);
+async function collectContracts(roots, referenceFiles) {
+  if (referenceFiles) referenceFile(referenceFiles, "content", "scripts/content/current-source-identity.mjs");
+  return loadAndValidateContentContracts(roots.application, roots.content);
 }
 
 function currentReferenceHashes(roots) {
@@ -540,9 +532,9 @@ export async function createReleaseManifest({
   const referenceMap = new Map(references.map((reference) => [`${reference.repositoryRole}:${reference.path}`, reference]));
   const lockReference = readRegularReference(repositoryRoots.application, RELEASE_MANIFEST_REFERENCES[0]);
   const lock = parseJson(lockReference.bytes, "Application release lock");
-  validateReleaseLock(lock, { ...contractState, trackIds: CANDIDATE_TRACK_IDS, lockSha256: sha256(lockReference.bytes) });
+  validateReleaseLock(lock, { ...contractState, trackIds: CANDIDATE_TRACK_IDS });
   runOwningOpenApiCheck(repositoryRoots.backend);
-  const manifest = buildManifest({ commits, candidate: contractState.candidate, files: referenceMap, signingBinding: signing.binding });
+  const manifest = buildManifest({ commits, candidateId: contractState.candidateId, files: referenceMap, signingBinding: signing.binding });
   writeFileSync(output, canonicalJsonBytes(manifest), { encoding: "utf8" });
   return { ...manifestSummary(manifest, "created"), path: output };
 }
@@ -578,12 +570,11 @@ export async function verifyReleaseManifest({
   for (const repository of manifest.repositories) if (commits[repository.role] !== repository.commit) throw new Error(`Release manifest ${repository.role} commit is stale.`);
   const files = resolveReferences(manifest, repositoryRoots);
   const contractState = await collectContracts(repositoryRoots, files);
-  if (contractState.candidate.candidateId !== manifest.candidateId) throw new Error("Release manifest candidateId is stale.");
-  exactArray(contractState.readiness.trackIds, manifest.trackIds, "Candidate Readiness track scope");
-  if (contractState.readiness.candidateId !== manifest.candidateId) throw new Error("Candidate Readiness candidateId is stale.");
+  if (contractState.candidateId !== manifest.candidateId) throw new Error("Release manifest candidateId is stale.");
+  exactArray(contractState.trackIds, manifest.trackIds, "Current source track scope");
   const lockReference = referenceFile(files, "application", "integration/contracts/content-release/release.lock.json");
   const lock = parseJson(lockReference.bytes, "Application release lock");
-  validateReleaseLock(lock, { ...contractState, trackIds: manifest.trackIds, lockSha256: sha256(lockReference.bytes) });
+  validateReleaseLock(lock, { ...contractState, trackIds: manifest.trackIds });
   const openApiReference = referenceFile(files, "backend", "openapi/patternly-v1.json");
   if (sha256(readFileSync(openApiReference.path)) !== openApiReference.reference.sha256) throw new Error("Backend OpenAPI hash changed during verification.");
   runOwningOpenApiCheck(repositoryRoots.backend);

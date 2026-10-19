@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { loadCanonicalRuntimeCatalog, scoreCanonicalQuestion, type Question } from "./canonical";
 import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
@@ -9,10 +11,13 @@ import { createCanonicalTrainingFamilyRuntime } from "../application/canonicalTr
 
 const trackId = "coding-interview-dsa-problem-solving";
 const questionId = "alg-contrast-binary-scan-correctness-006";
-const version = "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2-bizq03-planning-v2";
-const trainingVersion = "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2";
+const contentRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? fileURLToPath(new URL("../../../patternly-content", import.meta.url)));
+const sourceCatalog = JSON.parse(readFileSync(path.join(contentRoot, "content/catalog.json"), "utf8")) as { tracks: readonly { trackId: string; contentVersion: string }[] };
+const sourceTrack = sourceCatalog.tracks.find((track) => track.trackId === trackId)!;
+const successorLedger = JSON.parse(readFileSync(new URL("./generated/canonical-content/content-successor-ledger.json", import.meta.url), "utf8")) as { tracks: readonly { trackId: string; training: { contentVersion: string; artifactSha256: string }; planningPolicy: { contentVersion: string; artifactSha256: string } }[] };
+const currentIdentity = successorLedger.tracks.find((track) => track.trackId === trackId)!;
 const trackPromise = loadCanonicalRuntimeCatalog().then((catalog) => catalog.getTrack(trackId));
-const source = JSON.parse(readFileSync(new URL("../../../patternly-content/content/coding-interview-dsa-problem-solving/contrast_binary_search_vs_linear_scan/correctness_before_asymptotic_speed.json", import.meta.url), "utf8")) as Question[];
+const source = JSON.parse(readFileSync(path.join(contentRoot, "content/coding-interview-dsa-problem-solving/contrast_binary_search_vs_linear_scan/correctness_before_asymptotic_speed.json"), "utf8")) as Question[];
 
 function permutations(ids: readonly string[]): string[][] {
   return ids.length === 0 ? [[]] : ids.flatMap((id, index) => permutations(ids.filter((_, position) => position !== index)).map((tail) => [id, ...tail]));
@@ -20,9 +25,11 @@ function permutations(ids: readonly string[]): string[][] {
 
 test("current canonical bundle carries the exact reviewed source while pre-submit hides authored feedback", async () => {
   const track = await trackPromise, question = track.getQuestion(questionId)!;
-  assert.equal(track.contentVersion, version);
-  assert.equal(track.trainingIdentity?.contentVersion, trainingVersion);
-  assert.equal(track.planningPolicyIdentity?.contentVersion, version);
+  assert.equal(track.contentVersion, sourceTrack.contentVersion, "runtime uses the current canonical source version");
+  assert.equal(track.trainingIdentity?.contentVersion, currentIdentity.training.contentVersion);
+  assert.equal(track.trainingIdentity?.artifactSha256, currentIdentity.training.artifactSha256);
+  assert.equal(track.planningPolicyIdentity?.contentVersion, currentIdentity.planningPolicy.contentVersion);
+  assert.equal(track.planningPolicyIdentity?.artifactSha256, currentIdentity.planningPolicy.artifactSha256);
   assert.deepEqual(question, source.find((question) => question.questionId === questionId));
   const view = toCanonicalQuestionViewModel(question);
   assert.deepEqual(Object.keys(view).sort(), ["constraints", "interaction", "itemId", "prompt"]);

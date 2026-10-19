@@ -1,6 +1,33 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PREPARED_STALL_TTL_MS, requireAndroidClockProbePreparationCurrent, waitForAndroidClockProbe, androidClockProbeErrorCategory, androidClockProbeFailure, requireAndroidClockProbeAdvance, observeAndroidClockProbeSession, requireAndroidClockProbeSessionAdvance } from "./androidClockProbeReadiness";
+import { PREPARED_STALL_TTL_MS, requireAndroidClockProbePreparationCurrent, waitForAndroidClockProbe, androidClockProbeErrorCategory, androidClockProbeFailure, requireAndroidClockProbeAdvance, observeAndroidClockProbeSession, requireAndroidClockProbeSessionAdvance, requireAndroidClockProbeIdentitySettled } from "./androidClockProbeReadiness";
+
+test("identity readiness waits for all overlapping foreground refresh spans", () => {
+  const begin = (span: number) => ({ stage: "account_foreground_refresh", edge: "begin", span });
+  const end = (span: number) => ({ stage: "account_foreground_refresh", edge: "end", span });
+  requireAndroidClockProbeIdentitySettled({ truncated: false, events: [] });
+  requireAndroidClockProbeIdentitySettled({ truncated: false, events: [begin(1), begin(2), end(1), end(2)] });
+  assert.throws(() => requireAndroidClockProbeIdentitySettled({ truncated: false, events: [begin(1), begin(2), end(1)] }), /probe_identity_refresh_pending/);
+});
+
+test("intent read waits inside the same request for refresh settlement", async () => {
+  let now = 0, reads = 0;
+  await waitForAndroidClockProbe(() => {
+    reads++;
+    requireAndroidClockProbeIdentitySettled({ truncated: false, events: now < 100
+      ? [{ stage: "account_foreground_refresh", edge: "begin", span: 1 }]
+      : [{ stage: "account_foreground_refresh", edge: "begin", span: 1 }, { stage: "account_foreground_refresh", edge: "end", span: 1 }] });
+  }, 500, { now: () => now, wait: async () => { now += 50; } });
+  assert.equal(reads, 3);
+});
+
+test("missing, truncated or malformed identity trace cannot prove a settled read", () => {
+  for (const trace of [null, { truncated: true, events: [] },
+    { truncated: false, events: [{ stage: "account_foreground_refresh", edge: "end", span: 1 }] },
+    { truncated: false, events: [{ stage: "account_foreground_refresh", edge: "begin" }] }]) {
+    assert.throws(() => requireAndroidClockProbeIdentitySettled(trace), /probe_scope_unavailable/);
+  }
+});
 
 test("readiness survives the transient intent foreground transition without repeating an effect", async () => {
   let now = 0, reads = 0, effects = 0;
@@ -72,4 +99,28 @@ test("Premium observation hashes every entitlement field and refuses invalid or 
   assert.equal(observe(raw(), "profile", null, now), undefined);
   assert.equal(observe(raw(), "profile", "account", Number.NaN), undefined);
   assert.equal(JSON.stringify(baseline).includes('"account"'), false);
+});
+
+
+test("async observation retries are sequential; scope and SDK failures exit once", async () => {
+  let now = 0, calls = 0, active = 0;
+  const port = { now: () => now, wait: async () => { now += 50; } };
+  assert.equal(await waitForAndroidClockProbe(async () => {
+    assert.equal(active++, 0); await Promise.resolve(); active--; calls++;
+    if (calls === 1) throw androidClockProbeFailure("probe_observation_changed");
+    return "stable";
+  }, 500, port), "stable");
+  assert.equal(calls, 2);
+  for (const failure of [androidClockProbeFailure("probe_scope_unavailable"), Error("private-sdk-detail")]) {
+    calls = 0;
+    await assert.rejects(waitForAndroidClockProbe(async () => { calls++; throw failure; }, 500, port));
+    assert.equal(calls, 1);
+  }
+  assert.equal(androidClockProbeErrorCategory(Error("private-sdk-detail")), "probe_failed");
+});
+
+test("awaited success at the deadline is refused", async () => {
+  let now = 0;
+  await assert.rejects(waitForAndroidClockProbe(async () => { await Promise.resolve(); now = 500; return "late"; },
+    500, { now: () => now, wait: async () => {} }), /probe_read_timeout/);
 });

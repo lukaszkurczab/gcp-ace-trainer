@@ -15,10 +15,8 @@ import type { CanonicalArtifact, CanonicalContentLockRecord, CanonicalSimulation
 import { createCanonicalTrainingFamilyRuntime, createTrainingCatalog, createTrainingInteractionPort } from "../canonicalTrainingFamilyComposition";
 import { projectCertificationExamReview } from "./certificationExamReviewProjection";
 import { buildCertificationPracticeStartCommand } from "./certificationSessionFacade";
-import { lockedContentProducer } from "../../../scripts/fixtures/lockedContentProducer";
 
 const GCP = "google-cloud-associate-cloud-engineer";
-const FIXTURE_TRACK = "aws-certified-solutions-architect-associate";
 const NOW = "2026-10-15T12:00:00.000Z";
 const sha256 = (text: string) => createHash("sha256").update(text).digest("hex");
 const producerRepositoryRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? "../patternly-content");
@@ -36,13 +34,12 @@ async function admittedFixture(artifact: CanonicalArtifact, lock: CanonicalConte
 }
 
 async function buildGcp(t: Pick<TestContext, "after">) {
-  const producerRoot = await lockedContentProducer({ appRoot: process.cwd(), repositoryRoot: producerRepositoryRoot, trackId: GCP, after: (cleanup) => t.after(cleanup) });
   const outputRoot = await mkdtemp(path.join(tmpdir(), "patternly26-producer-"));
   t.after(() => rm(outputRoot, { recursive: true, force: true }));
-  const producer = await import(pathToFileURL(path.join(producerRoot, "scripts/build.mjs")).href) as {
+  const producer = await import(pathToFileURL(path.join(producerRepositoryRoot, "scripts/build.mjs")).href) as {
     buildTrack(options: { rootDirectory: string; outputRoot: string; trackId: string }): Promise<{ artifactBytes: string; lockEntry: CanonicalContentLockRecord }>;
   };
-  return producer.buildTrack({ rootDirectory: producerRoot, outputRoot, trackId: GCP });
+  return producer.buildTrack({ rootDirectory: producerRepositoryRoot, outputRoot, trackId: GCP });
 }
 
 async function exercise(track: CanonicalTrackRuntime, expectedCount: number, expectedDuration: number) {
@@ -103,17 +100,16 @@ test("a test-only Certification artifact profile drives a different count, durat
     ...original, profileId: "fixture-certification-profile", profileVersion: "7",
     familyConfig: { ...original.familyConfig, durationMinutes: 17, questionCount: { kind: "range", minimum: 7, maximum: 9 },
       blueprint: { kind: "weighted_sections", sections: original.familyConfig.blueprint.sections.map((section, index) => ({ ...section, weightPercent: [10, 20, 30, 40][index]! })) },
-      nodeDomainMapEvidence: { ...original.familyConfig.nodeDomainMapEvidence, artifactPath: `artifacts/tracks/${FIXTURE_TRACK}/${original.familyConfig.nodeDomainMapEvidence.contentVersion}/track-artifact.json` },
     },
   };
-  const fixture: CanonicalArtifact = { ...artifact, trackId: FIXTURE_TRACK, contentVersion: "test-only-certification-v7", questions: artifact.questions.map((question) => ({ ...question, trackId: FIXTURE_TRACK })), simulationProfiles: [profile] };
+  const fixture: CanonicalArtifact = { ...artifact, contentVersion: "test-only-certification-v7", simulationProfiles: [profile] };
   const lock = { ...built.lockEntry, trackId: fixture.trackId, contentVersion: fixture.contentVersion, sha256: sha256(JSON.stringify(fixture)) };
   const track = await admittedFixture(fixture, lock);
   const prepared = await exercise(track, 7, 17);
   const domainCounts = profile.familyConfig.blueprint.sections.map((section) => prepared.session.itemOrder.filter(({ item }) => track.getQuestion(item.questionId)!.contentDomainId === section.contentDomainId).length);
   assert.deepEqual(domainCounts, [1, 1, 2, 3]);
-  assert.throws(() => getProductSimulationModeConfig(GCP, [profile]), /unavailable|does not match/);
-  assert.throws(() => getProductSimulationModeConfig(FIXTURE_TRACK, [profile, profile]), /unavailable/);
+  assert.equal(getProductSimulationModeConfig(GCP, [profile]).profile, profile);
+  assert.throws(() => getProductSimulationModeConfig(GCP, [profile, profile]), /unavailable/);
   for (const mutate of [
     (copy: CanonicalSimulationProfile) => ({ ...copy, familyId: "coding_interview" }),
     (copy: CanonicalSimulationProfile) => ({ ...copy, familyConfig: { ...copy.familyConfig, durationMinutes: 0 } }),
@@ -125,6 +121,6 @@ test("a test-only Certification artifact profile drives a different count, durat
   }
   const firstDomain = profile.familyConfig.blueprint.sections[0]!.contentDomainId;
   const insufficient = { ...track, questions: track.questions.filter((question) => question.contentDomainId !== firstDomain) };
-  await assert.rejects(createCanonicalTrainingFamilyRuntime(insufficient).prepare({ trackId: FIXTURE_TRACK, modeId: profile.modeId, request: { sessionId: "undersized" }, attempts: [], reviews: [], now: NOW }), /source pool.*requires/);
-  assert.equal(buildCertificationPracticeStartCommand({ trackId: FIXTURE_TRACK, modeId: "certification-focus-practice" }).trackId, FIXTURE_TRACK);
+  await assert.rejects(createCanonicalTrainingFamilyRuntime(insufficient).prepare({ trackId: GCP, modeId: profile.modeId, request: { sessionId: "undersized" }, attempts: [], reviews: [], now: NOW }), /source pool.*requires/);
+  assert.equal(buildCertificationPracticeStartCommand({ trackId: GCP, modeId: "certification-focus-practice" }).trackId, GCP);
 });

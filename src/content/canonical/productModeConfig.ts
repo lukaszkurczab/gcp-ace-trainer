@@ -96,8 +96,8 @@ export function getProductSimulationModeConfig(trackId: string, profiles: readon
   if (certificationProfiles.length > 0) {
     const profile = certificationProfiles[0]!;
     if (certificationProfiles.length !== 1 || profile.familyId !== "certification" || profile.modeId !== "certification-exam-simulation" ||
-      !isCanonicalSafeIdentity(trackId) || !isCanonicalSafeIdentity(profile.profileId) || !isCanonicalSafeIdentity(profile.profileVersion) ||
-      !profile.familyConfig.nodeDomainMapEvidence || !isCanonicalSafeIdentity(profile.familyConfig.nodeDomainMapEvidence.contentVersion) || profile.familyConfig.nodeDomainMapEvidence.artifactPath !== `artifacts/tracks/${trackId}/${profile.familyConfig.nodeDomainMapEvidence.contentVersion}/track-artifact.json`) {
+      trackId !== "google-cloud-associate-cloud-engineer" ||
+      !isCanonicalSafeIdentity(trackId) || !isCanonicalSafeIdentity(profile.profileId) || !isCanonicalSafeIdentity(profile.profileVersion)) {
       throw new ProductModeUnavailableError(`Simulation profile for ${trackId} is unavailable or does not match its exact track, family and mode.`);
     }
     return Object.freeze({ config: Object.freeze({ kind: "certification_exam_simulation" as const, trackId, profileId: profile.profileId, familyId: profile.familyId, modeId: profile.modeId }), profile });

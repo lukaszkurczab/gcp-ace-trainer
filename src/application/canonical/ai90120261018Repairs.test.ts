@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { pathToFileURL } from "node:url";
 import path from "node:path";
 import test from "node:test";
 import { createCanonicalQuestionCatalog } from "../../content/canonical/questionCatalog";
@@ -11,7 +14,7 @@ import { prepareCanonicalOptionOrder, projectCanonicalQuestionInSessionOrder, is
 import { buildCanonicalInteractionViewModel, projectCanonicalChoiceFeedbackMessages } from "./canonicalInteractionPresentation";
 
 const trackId = "microsoft-azure-ai-fundamentals-ai-901";
-const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? path.resolve(process.cwd(), "../patternly-content");
+const contentRoot = process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? process.env.PATTERNLY_CONTENT_ROOT ?? path.resolve(process.cwd(), "../patternly-content");
 const unitRoot = path.join(contentRoot, "content", trackId, "responsible_ai_model_foundations_and_deployment_choices");
 const repaired = [1, 2, 3].flatMap(unit => JSON.parse(readFileSync(path.join(unitRoot, `AI901-N01-B0${unit}.json`), "utf8")) as Question[]);
 const expectedIds = [1, 2, 3].flatMap(unit => Array.from({ length: 12 }, (_, index) => `AI901-N01-B0${unit}-Q${String(index + 13).padStart(3, "0")}`));
@@ -71,14 +74,21 @@ test("AI901 repaired source uses production presentation, scoring and saved-orde
   verifyBoundary(repaired, { contentVersion: track.contentVersion, artifactSha256: "a".repeat(64) });
 });
 
-test("AI901 isolated candidate passes the app catalog integrity boundary and contains the exact repaired source", { skip: !process.env.AI901_REPAIR_ARTIFACT_ROOT }, async () => {
-  const artifactRoot = process.env.AI901_REPAIR_ARTIFACT_ROOT!;
+test("AI901 current source build passes APP integrity and contains every repaired question", async (t) => {
+  const artifactRoot = await mkdtemp(path.join(tmpdir(), "patternly-current-ai901-"));
+  t.after(() => rm(artifactRoot, { recursive: true, force: true }));
+  const { buildTrack } = await import(pathToFileURL(path.join(contentRoot, "scripts/build.mjs")).href);
+  await buildTrack({ rootDirectory: contentRoot, trackId, outputRoot: artifactRoot });
   const artifact = JSON.parse(readFileSync(path.join(artifactRoot, `${trackId}.json`), "utf8"));
   const lock = JSON.parse(readFileSync(path.join(artifactRoot, "content-lock.json"), "utf8")).tracks.find((entry: CanonicalContentLockRecord) => entry.trackId === trackId) as CanonicalContentLockRecord;
   const catalog = await createCanonicalQuestionCatalog(artifact, lock, trackId, async value => sha256Utf8(value));
   const selected = expectedIds.map(id => { const question = catalog.getQuestionById(id); assert.ok(question, id); return question; });
   for (const question of repaired) assert.deepEqual(catalog.getQuestionById(question.questionId), question);
-  assert.equal(catalog.questions.length, 752);
+  assert.equal(catalog.questions.length, lock.questionCount);
+  const appRoot = path.resolve("src/content/generated/canonical-content");
+  const appLock = JSON.parse(readFileSync(path.join(appRoot, "content-lock.json"), "utf8")).tracks.find((entry: CanonicalContentLockRecord) => entry.trackId === trackId);
+  assert.deepEqual(lock, appLock, "current producer and APP identity match");
+  assert.deepEqual(readFileSync(path.join(artifactRoot, `${trackId}.json`)), readFileSync(path.join(appRoot, `${trackId}.json`)));
   for (const unit of [1, 2, 3]) for (let index = 1; index <= 12; index++) {
     assert.equal(catalog.getQuestionById(`AI901-N01-B0${unit}-Q${String(index).padStart(3, "0")}`), undefined);
   }

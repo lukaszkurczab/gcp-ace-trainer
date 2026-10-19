@@ -8,10 +8,6 @@ import test from "node:test";
 
 const root = process.cwd();
 const sourceContentRoot = resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? join(root, "..", "patternly-content"));
-const HISTORICAL_APPLICATION_COMMIT = "e889b05d033d4cc4b7676d0ca3f224efc3fac115";
-const HISTORICAL_CONTENT_COMMIT = "8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03";
-const HISTORICAL_CANDIDATE_ID = "946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4";
-
 function run(enforce = false) {
   try {
     return {
@@ -111,52 +107,6 @@ const requiredExternalEvidenceIds = [
   "product-owner-go",
 ];
 
-function createRepositoryAt(name, sourceRoot, revision = null) {
-  const temporaryRoot = mkdtempSync(join(tmpdir(), `patternly-release-gate-${name}-`));
-  rmSync(temporaryRoot, { recursive: true, force: true });
-  const repositoryRoot = temporaryRoot;
-  execFileSync("git", ["clone", "--quiet", "--shared", sourceRoot, repositoryRoot]);
-  if (revision) execFileSync("git", ["checkout", "--quiet", "--detach", revision], { cwd: repositoryRoot });
-  return repositoryRoot;
-}
-
-function createHistoricalAdmittedContentRoot({ mutateReadiness = null, mutateCandidate = null, mutateAdmission = null } = {}) {
-  const contentRoot = createRepositoryAt("content-admitted", sourceContentRoot, HISTORICAL_CONTENT_COMMIT);
-  if (!mutateReadiness && !mutateCandidate && !mutateAdmission) return contentRoot;
-  const candidatePath = join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json");
-  const readinessPath = join(contentRoot, "evidence/readiness/candidate-readiness-v2.json");
-  const admissionPath = join(contentRoot, "evidence/admissions/candidate-admission-v3.json");
-  const candidate = JSON.parse(readFileSync(candidatePath, "utf8"));
-  const readiness = JSON.parse(readFileSync(readinessPath, "utf8"));
-  const admission = JSON.parse(readFileSync(admissionPath, "utf8"));
-  mutateCandidate?.(candidate);
-  mutateReadiness?.(readiness);
-  mutateAdmission?.(admission);
-  const changedPaths = [];
-  if (mutateCandidate) { writeFileSync(candidatePath, JSON.stringify(candidate)); changedPaths.push("reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"); }
-  if (mutateReadiness) { writeFileSync(readinessPath, JSON.stringify(readiness)); changedPaths.push("evidence/readiness/candidate-readiness-v2.json"); }
-  if (mutateAdmission) { writeFileSync(admissionPath, JSON.stringify(admission)); changedPaths.push("evidence/admissions/candidate-admission-v3.json"); }
-  execFileSync("git", ["add", ...changedPaths], { cwd: contentRoot });
-  execFileSync("git", ["-c", "user.name=release-gate-test", "-c", "user.email=release-gate-test@example.com", "commit", "-qm", "negative admission fixture"], { cwd: contentRoot });
-  return contentRoot;
-}
-
-function createCurrentLockApplicationRoot() {
-  const applicationRoot = mkdtempSync(join(tmpdir(), "patternly-release-gate-current-app-"));
-  execFileSync("git", ["init", "-q"], { cwd: applicationRoot });
-  const lockPath = "integration/contracts/content-release/release.lock.json";
-  const target = join(applicationRoot, lockPath);
-  mkdirSync(join(applicationRoot, "integration/contracts/content-release"), { recursive: true });
-  writeFileSync(target, readFileSync(join(root, lockPath)));
-  execFileSync("git", ["add", lockPath], { cwd: applicationRoot });
-  execFileSync("git", ["-c", "user.name=release-gate-test", "-c", "user.email=release-gate-test@example.com", "commit", "-qm", "current candidate lock"], { cwd: applicationRoot });
-  return applicationRoot;
-}
-
-function createHistoricalApplicationRoot() {
-  return createRepositoryAt("app-admitted", root, HISTORICAL_APPLICATION_COMMIT);
-}
-
 function createCleanApplicationRoot() {
   const applicationRoot = mkdtempSync(join(tmpdir(), "patternly-release-gate-app-clean-"));
   execFileSync("git", ["init", "-q"], { cwd: applicationRoot });
@@ -188,96 +138,39 @@ function writeApplicationLegal(applicationRoot, contents) {
   writeFileSync(join(configDirectory, "public-legal.release.json"), contents);
 }
 
-test("launch readiness report is deterministic and exposes the unresolved release blockers", () => {
-  const contentRoot = createHistoricalAdmittedContentRoot();
-  const applicationRoot = createHistoricalApplicationRoot();
-  try {
-    const first = runWithContentRoot(contentRoot, [], applicationRoot);
-    const second = runWithContentRoot(contentRoot, [], applicationRoot);
-    assert.equal(first.status, 0);
-    assert.equal(first.output, second.output);
-    const report = JSON.parse(first.output);
-    assert.equal(report.schemaVersion, "patternly-launch-readiness-v2");
-    assert.equal(report.stage, "go");
-    assert.equal(report.status, "not_ready");
-    // This frozen application predates the current retention schema.
-    assert.equal(report.publicLegalVariables.status, "invalid");
-    assert.ok(report.publicLegalVariables.fieldPaths.includes("privacy.contentReportRetentionDays"));
-    assert.equal(report.publicLegalVariables.path, "config/public-legal.release.json");
-    assert.deepEqual(report.publicLegalVariables.version, { en: "2026-09-05", pl: "2026-09-05" });
-    assert.match(report.publicLegalVariables.fingerprint, /^[a-f0-9]{64}$/u);
-    assert.ok(report.publicLegalVariables.fieldPaths.includes("terms.adrEntity.en"));
-    assert.ok(report.blockers.some((blocker) => blocker.kind === "public_legal_variables_invalid"));
-    assert.equal(JSON.stringify(report.publicLegalVariables).includes("TO BE COMPLETED"), false);
-    assert.equal(report.launchTrackIds.length, 9);
-    assert.ok(["clean", "dirty"].includes(report.applicationRepository.status));
-    assert.match(report.applicationRepository.headCommit, /^[a-f0-9]{40}$/u);
-    assert.match(report.contentReadiness.headCommit, /^[a-f0-9]{40}$/u);
-    assert.equal(report.applicationRepository.headCommit, HISTORICAL_APPLICATION_COMMIT);
-    assert.equal(report.contentReadiness.headCommit, HISTORICAL_CONTENT_COMMIT);
-    assert.equal(report.contentReadiness.candidateId, HISTORICAL_CANDIDATE_ID);
-    assert.equal(report.contentReleaseLock.bundleId, "patternly-app-candidate-946d3589abf9");
-    assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing", "public_legal_variables_invalid", "release_manifest_missing"].includes(blocker.kind)), true);
-    assert.ok(report.blockers.some((blocker) => blocker.kind === "release_manifest_missing"));
-    assert.deepEqual(
-      report.blockers.filter((blocker) => blocker.kind === "application_worktree_dirty").map((blocker) => blocker.kind),
-      report.applicationRepository.status === "dirty" ? ["application_worktree_dirty"] : [],
-    );
-    const externalBlockers = report.blockers.filter((blocker) => blocker.kind === "external_release_evidence_missing");
-    assert.equal(externalBlockers.length, requiredExternalEvidenceIds.length + 1);
-    assert.deepEqual(externalBlockers.map((blocker) => blocker.evidenceId).sort(), [...requiredExternalEvidenceIds, "physical-device-matrix"].sort());
-    assert.equal(report.contentReleaseLock.status, "valid");
-    assert.equal(report.contentReadiness.repository, "clean");
-    assert.match(report.contentReadiness.candidateId, /^[a-f0-9]{64}$/u);
-    assert.deepEqual(report.contentReadiness.trackIds, report.launchTrackIds);
-    assert.equal(report.externalEvidence.some((evidence) => evidence.id === "design-authority"), false);
-    assert.equal(report.blockers.some((blocker) => blocker.evidenceId === "design-authority"), false);
-    assert.equal(report.externalEvidence.find((evidence) => evidence.id === "signing-and-builds")?.status, "not_evidenced");
-    assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing" && blocker.evidenceId === "signing-and-builds"));
-    assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing"));
-    assert.equal(first.output.includes(root), false);
-  } finally {
-    rmSync(contentRoot, { recursive: true, force: true });
-    rmSync(applicationRoot, { recursive: true, force: true });
-  }
+test("current release report is deterministic, binds the installed bank and retains external blockers", () => {
+  const first = run();
+  const second = run();
+  assert.equal(first.status, 0);
+  assert.equal(first.output, second.output);
+  const report = JSON.parse(first.output);
+  assert.equal(report.schemaVersion, "patternly-launch-readiness-v2");
+  assert.equal(report.stage, "go");
+  assert.equal(report.status, "not_ready");
+  assert.equal(report.launchTrackIds.length, 9);
+  assert.equal(report.contentReleaseLock.status, "valid");
+  assert.equal(report.currentContentIdentity.sourceInputFingerprint, report.contentReleaseLock.sourceInputFingerprint);
+  assert.equal(report.blockers.some((blocker) => blocker.kind === "current_content_identity_failed"), false);
+  assert.equal(report.blockers.some((blocker) => blocker.kind === "release_manifest_missing"), true);
+  assert.equal(report.blockers.some((blocker) => blocker.kind === "application_worktree_dirty"), report.applicationRepository.status === "dirty");
+  const externalBlockers = report.blockers.filter((blocker) => blocker.kind === "external_release_evidence_missing");
+  assert.equal(externalBlockers.length, requiredExternalEvidenceIds.length + 1);
+  assert.deepEqual(externalBlockers.map((blocker) => blocker.evidenceId).sort(), [...requiredExternalEvidenceIds, "physical-device-matrix"].sort());
+  assert.equal(report.externalEvidence.some((evidence) => evidence.id === "design-authority"), false);
+  assert.equal(report.blockers.some((blocker) => blocker.evidenceId === "design-authority"), false);
+  assert.equal(first.output.includes(root), false);
 });
 
-test("immutable historical admission cannot be reused against the current app content lock", () => {
-  const contentRoot = createRepositoryAt("content-historical-admission", sourceContentRoot, HISTORICAL_CONTENT_COMMIT);
-  const applicationRoot = createCurrentLockApplicationRoot();
-  try {
-    const currentCandidate = JSON.parse(readFileSync(join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
-    const result = runWithContentRoot(contentRoot, [], applicationRoot);
-    assert.equal(result.status, 0);
-    const report = JSON.parse(result.output);
-    assert.equal(report.contentReadiness.candidateId, HISTORICAL_CANDIDATE_ID);
-    assert.equal(currentCandidate.candidateId, HISTORICAL_CANDIDATE_ID);
-    assert.equal(report.contentReleaseLock.status, "valid");
-    assert.ok(report.blockers.some((blocker) => blocker.kind === "content_readiness_artifact_mismatch"));
-  } finally {
-    rmSync(contentRoot, { recursive: true, force: true });
-    rmSync(applicationRoot, { recursive: true, force: true });
-  }
+test("current source identity matches the installed app bank without an archive admission record", () => {
+  const report = JSON.parse(run().output);
+  assert.equal(report.currentContentIdentity.sourceInputFingerprint, report.contentReleaseLock.sourceInputFingerprint);
+  assert.equal(report.currentContentIdentity.artifactDigests.length, 9);
+  assert.ok(report.currentContentIdentity.artifactDigests.every(({ sha256, bytes }) => /^[a-f0-9]{64}$/u.test(sha256) && Number.isSafeInteger(bytes) && bytes > 0));
+  assert.deepEqual(report.contentReleaseLock.trackIds, report.launchTrackIds);
+  assert.equal(report.blockers.some((blocker) => blocker.kind === "content_readiness_artifact_mismatch" || blocker.kind === "invalid_content_readiness_report"), false);
 });
 
-test("current reviewed candidate matches the current app content lock", () => {
-  const contentRoot = createRepositoryAt("content-current-reviewed", sourceContentRoot);
-  const applicationRoot = createCurrentLockApplicationRoot();
-  try {
-    const result = runWithContentRoot(contentRoot, [], applicationRoot);
-    assert.equal(result.status, 0);
-    const report = JSON.parse(result.output);
-    const candidate = JSON.parse(readFileSync(join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
-    assert.equal(report.contentReadiness.candidateId, candidate.candidateId);
-    assert.equal(report.blockers.some((blocker) => blocker.kind === "content_readiness_artifact_mismatch"), false);
-    assert.equal(report.blockers.some((blocker) => blocker.kind === "invalid_content_readiness_report"), false);
-  } finally {
-    rmSync(contentRoot, { recursive: true, force: true });
-    rmSync(applicationRoot, { recursive: true, force: true });
-  }
-});
-
-test("release readiness reports missing, malformed, and complete public legal configuration safely", () => {
+test("release readiness reports missing, malformed and unapproved public legal configuration safely", () => {
   const applicationRoot = createCleanApplicationRoot();
   try {
     let report = JSON.parse(runWithApplicationRoot(applicationRoot).output);
@@ -319,37 +212,25 @@ test("release readiness reports missing, malformed, and complete public legal co
     writeApplicationLegal(applicationRoot, JSON.stringify(invalidPrivacyPath));
     report = JSON.parse(runWithApplicationRoot(applicationRoot).output);
     assert.equal(report.publicLegalVariables.status, "invalid");
-    assert.deepEqual(report.publicLegalVariables.fieldPaths, ["publicLinks.privacyUrl"]);
+    assert.deepEqual(report.publicLegalVariables.fieldPaths, ["legalDocumentApproval.status", "publicLinks.privacyUrl"]);
 
     writeApplicationLegal(applicationRoot, JSON.stringify(releaseLegalFixture()));
     report = JSON.parse(runWithApplicationRoot(applicationRoot).output);
-    assert.equal(report.publicLegalVariables.status, "valid");
-    assert.deepEqual(report.publicLegalVariables.fieldPaths, []);
+    assert.equal(report.publicLegalVariables.status, "incomplete");
+    assert.deepEqual(report.publicLegalVariables.fieldPaths, ["legalDocumentApproval.status"]);
     assert.match(report.publicLegalVariables.fingerprint, /^[a-f0-9]{64}$/u);
-    assert.equal(report.blockers.some((blocker) => blocker.kind.startsWith("public_legal_variables_")), false);
+    assert.equal(report.blockers.some((blocker) => blocker.kind === "public_legal_variables_incomplete"), true);
   } finally {
     rmSync(applicationRoot, { recursive: true, force: true });
   }
 });
 
-test("launch readiness rejects a forged runtime admission", () => {
-  const trackId = "coding-interview-dsa-problem-solving";
-  const contentRoot = createHistoricalAdmittedContentRoot({ mutateAdmission: (admission) => { admission.tracks.find((track) => track.trackId === trackId).runtimeAdmission = "not_granted"; } });
-  try {
-    const result = runWithContentRoot(contentRoot);
-    assert.equal(result.status, 0);
-    const report = JSON.parse(result.output);
-    assert.equal(report.contentReadiness, null);
-    assert.ok(report.blockers.some((blocker) => blocker.kind === "invalid_content_readiness_report"));
-  } finally {
-    rmSync(contentRoot, { recursive: true, force: true });
-  }
-});
-
-test("release gate fails while the readiness report contains blockers", () => {
+test("release gate reports local blockers without promoting them into source identity failures", () => {
   const result = run(true);
   assert.equal(result.status, 1);
-  assert.equal(JSON.parse(result.output).status, "not_ready");
+  const report = JSON.parse(result.output);
+  assert.equal(report.status, "not_ready");
+  assert.equal(report.blockers.some((blocker) => blocker.kind === "current_content_identity_failed"), false);
 });
 
 test("enforced release gate requires a verified four-repository manifest", () => {
@@ -360,84 +241,43 @@ test("enforced release gate requires a verified four-repository manifest", () =>
   assert.ok(report.blockers.some((blocker) => blocker.kind === "release_manifest_missing"));
 });
 
-test("launch readiness fails closed when the content evidence checkout is dirty", () => {
+test("release readiness fails closed when the selected content checkout is dirty", () => {
   const contentRoot = mkdtempSync(join(tmpdir(), "patternly-release-gate-content-"));
   try {
     execFileSync("git", ["init", "-q"], { cwd: contentRoot });
-    mkdirSync(join(contentRoot, "evidence", "readiness"), { recursive: true });
-    writeFileSync(join(contentRoot, "evidence", "readiness", "candidate-readiness-v2.json"), JSON.stringify({
-      schemaVersion: "patternly-candidate-readiness-v2",
-      candidateId: "a".repeat(64),
-      trackIds: [],
-      tracks: [],
-    }));
     writeFileSync(join(contentRoot, "unreviewed-evidence.txt"), "must not be admitted\n");
 
     const result = runWithContentRoot(contentRoot);
     const report = JSON.parse(result.output);
-    assert.equal(report.contentReadiness, null);
-    assert.ok(report.blockers.some((blocker) => blocker.kind === "content_readiness_worktree_dirty"));
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "content_source_worktree_dirty"));
   } finally {
     rmSync(contentRoot, { recursive: true, force: true });
   }
 });
 
-test("explicit report output is written after inspection and does not dirty either worktree", () => {
-  const contentRoot = createHistoricalAdmittedContentRoot();
-  const applicationRoot = createHistoricalApplicationRoot();
+test("explicit report output is written after inspection without becoming an input", () => {
   const outputDirectory = mkdtempSync(join(tmpdir(), "patternly-release-report-"));
   const outputPath = join(outputDirectory, "report.json");
   try {
-    const result = runWithContentRoot(contentRoot, ["--output", outputPath], applicationRoot);
+    const result = runArgs(["--output", outputPath]);
     assert.equal(result.status, 0);
     assert.equal(readFileSync(outputPath, "utf8"), result.output);
     const report = JSON.parse(result.output);
-    assert.equal(report.contentReadiness.repository, "clean");
-    assert.equal(report.applicationRepository.headCommit, HISTORICAL_APPLICATION_COMMIT);
-    assert.equal(report.contentReadiness.headCommit, HISTORICAL_CONTENT_COMMIT);
-    assert.equal(execFileSync("git", ["status", "--porcelain"], { cwd: contentRoot, encoding: "utf8" }), "");
-    assert.equal(execFileSync("git", ["status", "--porcelain"], { cwd: applicationRoot, encoding: "utf8" }), "");
-    assert.ok(!report.blockers.some((blocker) => blocker.kind === "application_worktree_dirty"));
+    assert.equal(report.currentContentIdentity.sourceInputFingerprint, report.contentReleaseLock.sourceInputFingerprint);
+    assert.equal(report.blockers.some((blocker) => blocker.kind === "release_manifest_invalid"), false);
   } finally {
-    rmSync(contentRoot, { recursive: true, force: true });
-    rmSync(applicationRoot, { recursive: true, force: true });
     rmSync(outputDirectory, { recursive: true, force: true });
   }
 });
 
-test("owning validator rejects stale identity and malformed readiness semantics", () => {
-  const cases = [
-    ["manifest path", { mutateReadiness: (value) => { value.candidatePath = "wrong.json"; } }],
-    ["candidate id", { mutateReadiness: (value) => { value.candidateId = "b".repeat(64); } }],
-    ["fake approval", { mutateReadiness: (value) => { value.candidateApproval.decisionId = "fake"; } }],
-    ["artifact", { mutateReadiness: (value) => { value.tracks[0].artifactSha256 = "0".repeat(64); } }],
-    ["runtime", { mutateAdmission: (value) => { value.runtimeAdmission = "not_granted"; } }],
-    ["lock", { mutateAdmission: (value) => { value.application.releaseLockSha256 = "0".repeat(64); } }],
-    ["extra field", { mutateReadiness: (value) => { value.unexpected = true; } }],
-    ["manifest identity", { mutateCandidate: (value) => { value.tracks[0].familyId = "wrong"; } }],
-  ];
-  for (const [name, mutations] of cases) {
-    const contentRoot = createHistoricalAdmittedContentRoot(mutations);
-    try {
-      const report = JSON.parse(runWithContentRoot(contentRoot).output);
-      assert.equal(report.contentReadiness, null, name);
-      assert.ok(report.blockers.some((blocker) => blocker.kind === "invalid_content_readiness_report"), name);
-    } finally {
-      rmSync(contentRoot, { recursive: true, force: true });
-    }
-  }
-});
-
 test("enforced mode still writes a valid report before returning exit 1", () => {
-  const contentRoot = createHistoricalAdmittedContentRoot();
   const outputDirectory = mkdtempSync(join(tmpdir(), "patternly-release-report-"));
   const outputPath = join(outputDirectory, "report.json");
   try {
-    const result = runWithContentRoot(contentRoot, ["--enforce", "--output", outputPath]);
+    const result = runArgs(["--enforce", "--output", outputPath]);
     assert.equal(result.status, 1);
     assert.equal(JSON.parse(readFileSync(outputPath, "utf8")).status, "not_ready");
   } finally {
-    rmSync(contentRoot, { recursive: true, force: true });
     rmSync(outputDirectory, { recursive: true, force: true });
   }
 });

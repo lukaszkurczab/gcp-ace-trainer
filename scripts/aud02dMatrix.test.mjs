@@ -99,16 +99,15 @@ test("AUD-02D evidence scan removes later unsafe credential files after an earli
   }
 });
 
-test("AUD-02D matrix is exactly bound to the nine-track candidate lock", async () => {
+test("AUD-02D matrix is bound to installed runtime bytes and current source identity", async () => {
   const lock = JSON.parse(await readFile(path.join(ROOT, "integration/contracts/content-release/release.lock.json"), "utf8"));
   assert.deepEqual([...AUD02D_TRACK_IDS].sort(), lock.artifacts.map(({ trackId }) => trackId).sort());
   assert.equal(AUD02D_TRACK_IDS.length, 9);
   assert.equal(AUD02D_UDID, "7F315654-3175-4F3C-BB24-B0263F59360C");
   const bindings = await readAud02dBindings(ROOT);
-  assert.equal(bindings.candidateId, lock.candidateId);
+  assert.equal(bindings.sourceInputFingerprint, lock.sourceInputFingerprint);
   assert.match(bindings.appLockSha256, /^[a-f0-9]{64}$/u);
-  assert.match(bindings.bundledContentLockSha256, /^[a-f0-9]{64}$/u);
-  assert.deepEqual(Object.keys(bindings.contentBindings).sort(), ["admissionEvidenceSha256", "candidateManifestSha256", "readinessEvidenceSha256", "releaseManifestSha256"].sort());
+  assert.equal(bindings.releaseId, lock.releaseId);
 });
 
 test("Custom Practice matrix includes every 10/20/40 by timing combination", () => {

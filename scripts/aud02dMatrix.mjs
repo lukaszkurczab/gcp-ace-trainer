@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { CANDIDATE_TRACK_IDS } from "./releaseManifest.mjs";
 
 const APP_ROOT = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
@@ -24,21 +24,18 @@ export async function readAud02dBindings(appRoot = APP_ROOT, contentRoot = path.
   const lockBytes = await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"));
   const lock = JSON.parse(lockBytes.toString("utf8"));
   const trackIds = lock.artifacts.map(({ trackId }) => trackId).sort();
-  if (lock.schemaVersion !== 3 || trackIds.length !== 9 || new Set(trackIds).size !== 9 || trackIds.join("\n") !== [...AUD02D_TRACK_IDS].sort().join("\n")) {
-    throw new Error("AUD-02D requires the exact nine unique track IDs bound by the canonical candidate lock.");
+  if (lock.schemaVersion !== 4 || trackIds.length !== 9 || new Set(trackIds).size !== 9 || trackIds.join("\n") !== [...AUD02D_TRACK_IDS].sort().join("\n")) {
+    throw new Error("AUD-02D requires the exact nine unique track IDs bound by the current content lock.");
   }
-  const bundledLockBytes = await readFile(path.join(appRoot, "src/content/generated/canonical-content/content-lock.json"));
-  const contentBindings = Object.fromEntries(await Promise.all([
-    ["candidateManifestSha256", "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"],
-    ["releaseManifestSha256", "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json"],
-    ["readinessEvidenceSha256", "evidence/readiness/candidate-readiness-v2.json"],
-    ["admissionEvidenceSha256", "evidence/admissions/candidate-admission-v3.json"],
-  ].map(async ([key, relativePath]) => [key, hash(await readFile(path.join(contentRoot, relativePath)))])));
+  const identityModule = await import(pathToFileURL(path.join(contentRoot, "scripts/content/current-source-identity.mjs")).href);
+  const identity = await identityModule.computeCurrentSourceIdentity({ contentRoot });
+  const appVerifier = await import(pathToFileURL(path.join(appRoot, "scripts/verifyBundledCurrentContent.mjs")).href);
+  await appVerifier.verifyBundledCurrentContent({ root: appRoot });
+  if (identity.sourceInputFingerprint !== lock.sourceInputFingerprint || JSON.stringify(identity.tracks) !== JSON.stringify(lock.currentIdentity?.tracks)) throw new Error("AUD-02D current source differs from the installed application bank.");
   return Object.freeze({
-    candidateId: lock.candidateId,
+    sourceInputFingerprint: identity.sourceInputFingerprint,
     appLockSha256: hash(lockBytes),
-    bundledContentLockSha256: hash(bundledLockBytes),
-    contentBindings: Object.freeze(contentBindings),
+    releaseId: lock.releaseId,
     trackIds: Object.freeze(trackIds),
   });
 }

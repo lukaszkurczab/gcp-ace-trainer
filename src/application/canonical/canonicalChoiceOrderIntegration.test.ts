@@ -12,6 +12,7 @@ import { getReviewQueueItems, getTrainingAttempts, getTrainingSessions } from ".
 import { isCanonicalOptionOrder, prepareCanonicalOptionOrder } from "./canonicalOptionOrder";
 import { scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { canonicalInteractionRegistry } from "../../content/canonical/interactions/registry";
 
 
 const NOW = "2026-10-02T12:00:00.000Z";
@@ -62,10 +63,14 @@ async function refingerprint(session: TrainingSession): Promise<TrainingSession>
 
 test("all current actual items preserve control membership, ID answers and non-choice order without exposing an answer to the ranker", async () => {
   const catalog = await catalogPromise;
-  let choiceCount = 0, nonChoiceCount = 0;
+  const interactionCounts = new Map<string, number>();
+  let observedQuestionCount = 0;
   for (const trackId of catalog.tracks) {
     const track = catalog.getTrack(trackId);
     for (const question of track.questions) {
+      observedQuestionCount += 1;
+      const interactionType = question.interaction.type;
+      interactionCounts.set(interactionType, (interactionCounts.get(interactionType) ?? 0) + 1);
       const seed = `actual:${trackId}:${question.questionId}`;
       const order = prepareCanonicalOptionOrder(question, seed, track);
       assert.equal(isCanonicalOptionOrder(question, order), true, question.questionId);
@@ -74,13 +79,13 @@ test("all current actual items preserve control membership, ID answers and non-c
       assert.equal(isCanonicalOptionOrder(question, [...order, "foreign"]), false);
       assert.equal(isCanonicalOptionOrder(question, new Array(order.length)), false);
       if (question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") {
-        nonChoiceCount += 1;
-        const expected = question.interaction.type === "ordering" ? question.interaction.elements.map((element) => element.elementId) : question.interaction.dimensions.map((dimension) => dimension.dimensionId);
+        const expected = question.interaction.type === "ordering"
+          ? question.interaction.elements.map((element) => element.elementId)
+          : question.interaction.dimensions.map((dimension) => dimension.dimensionId);
         assert.deepEqual(order, expected);
         if (order.length > 1) assert.equal(isCanonicalOptionOrder(question, [...order].reverse()), false);
         continue;
       }
-      choiceCount += 1;
       const sourceIds = question.interaction.options.map((option) => option.optionId);
       assert.deepEqual([...order].sort(), [...sourceIds].sort());
       assert.equal(isCanonicalOptionOrder(question, [...order].reverse()), true);
@@ -97,7 +102,9 @@ test("all current actual items preserve control membership, ID answers and non-c
       assert.deepEqual(model.accessibility.controls.map((control) => control.id), order);
     }
   }
-  assert.deepEqual({ choiceCount, nonChoiceCount }, { choiceCount: 15090, nonChoiceCount: 1659 });
+  assert.deepEqual([...interactionCounts.keys()].sort(), [...canonicalInteractionRegistry.interactionTypes].sort());
+  for (const [interactionType, count] of interactionCounts) assert.ok(count > 0, `${interactionType} has current items`);
+  assert.equal(observedQuestionCount, catalog.tracks.reduce((total, trackId) => total + catalog.getTrack(trackId).questions.length, 0));
 });
 
 test("all real 29 practice modes and canonical simulation profiles prepare valid frozen orders with unchanged question selection", async () => {

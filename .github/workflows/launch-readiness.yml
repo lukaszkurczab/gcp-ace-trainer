@@ -54,18 +54,6 @@ jobs:
           path: app
           fetch-depth: 0
 
-      - name: Read historical content producer from application lock
-        id: historical-content-lock
-        working-directory: app
-        shell: bash
-        run: |
-          node -e '
-            const lock = require("./integration/contracts/content-release/release.lock.json");
-            const commit = lock.artifacts?.at(-1)?.producerCommit;
-            if (!/^[a-f0-9]{40}$/.test(commit ?? "")) process.exit(1);
-            process.stdout.write(`commit=${commit}\n`);
-          ' >> "$GITHUB_OUTPUT"
-
       - name: Checkout backend
         uses: actions/checkout@v4
         with:
@@ -82,15 +70,6 @@ jobs:
           path: patternly-content
           fetch-depth: 0
 
-      - name: Checkout historical content producer
-        id: checkout-historical-content
-        uses: actions/checkout@v4
-        with:
-          repository: lukaszkurczab/patternly-content
-          ref: ${{ steps.historical-content-lock.outputs.commit }}
-          path: patternly-content-historical
-          fetch-depth: 0
-
       - name: Checkout web
         uses: actions/checkout@v4
         with:
@@ -105,19 +84,16 @@ jobs:
           APPLICATION_COMMIT: ${{ inputs.application_commit }}
           BACKEND_COMMIT: ${{ inputs.backend_commit }}
           CONTENT_COMMIT: ${{ inputs.content_commit }}
-          HISTORICAL_CONTENT_COMMIT: ${{ steps.historical-content-lock.outputs.commit }}
           WEB_COMMIT: ${{ inputs.web_commit }}
         run: |
           set -euo pipefail
           test "$(git -C app rev-parse HEAD)" = "$APPLICATION_COMMIT"
           test "$(git -C patternly-backend rev-parse HEAD)" = "$BACKEND_COMMIT"
           test "$(git -C patternly-content rev-parse HEAD)" = "$CONTENT_COMMIT"
-          test "$(git -C patternly-content-historical rev-parse HEAD)" = "$HISTORICAL_CONTENT_COMMIT"
           test "$(git -C patternly-web rev-parse HEAD)" = "$WEB_COMMIT"
           test -z "$(git -C app status --porcelain --untracked-files=all)"
           test -z "$(git -C patternly-backend status --porcelain --untracked-files=all)"
           test -z "$(git -C patternly-content status --porcelain --untracked-files=all)"
-          test -z "$(git -C patternly-content-historical status --porcelain --untracked-files=all)"
           test -z "$(git -C patternly-web status --porcelain --untracked-files=all)"
 
       - uses: actions/setup-node@v4
@@ -159,6 +135,22 @@ jobs:
         working-directory: patternly-content
         run: npm ci
 
+      - name: Prepare the APP bank from the selected CONTENT source
+        id: prepare-current-content
+        working-directory: app
+        env:
+          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ inputs.content_commit }}
+        run: node scripts/syncBundledContentRelease.mjs sync --content-root ../patternly-content
+
+      - name: Verify exact derived APP content outputs
+        id: verify-current-content
+        working-directory: app
+        env:
+          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ inputs.content_commit }}
+        run: node scripts/verifyDerivedContentWorkspace.mjs
+
       - name: Install web dependencies
         id: install-web
         working-directory: patternly-web
@@ -174,7 +166,6 @@ jobs:
         continue-on-error: true
         working-directory: app
         env:
-          PATTERNLY_CONTENT_HISTORICAL_ROOT: ${{ github.workspace }}/patternly-content-historical
           PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
           PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ inputs.content_commit }}
         run: npm run qa:static
@@ -267,20 +258,17 @@ jobs:
           APPLICATION_COMMIT: ${{ inputs.application_commit }}
           BACKEND_COMMIT: ${{ inputs.backend_commit }}
           CONTENT_COMMIT: ${{ inputs.content_commit }}
-          HISTORICAL_CONTENT_COMMIT: ${{ steps.historical-content-lock.outputs.commit }}
           WEB_COMMIT: ${{ inputs.web_commit }}
         run: |
           set -euo pipefail
           test "$(git -C app rev-parse HEAD)" = "$APPLICATION_COMMIT"
           test "$(git -C patternly-backend rev-parse HEAD)" = "$BACKEND_COMMIT"
           test "$(git -C patternly-content rev-parse HEAD)" = "$CONTENT_COMMIT"
-          test "$(git -C patternly-content-historical rev-parse HEAD)" = "$HISTORICAL_CONTENT_COMMIT"
           test "$(git -C patternly-web rev-parse HEAD)" = "$WEB_COMMIT"
-          test -z "$(git -C app status --porcelain --untracked-files=all)"
           test -z "$(git -C patternly-backend status --porcelain --untracked-files=all)"
           test -z "$(git -C patternly-content status --porcelain --untracked-files=all)"
-          test -z "$(git -C patternly-content-historical status --porcelain --untracked-files=all)"
           test -z "$(git -C patternly-web status --porcelain --untracked-files=all)"
+          (cd app && PATTERNLY_CONTENT_CURRENT_ROOT="$GITHUB_WORKSPACE/patternly-content" PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA="$CONTENT_COMMIT" node scripts/verifyDerivedContentWorkspace.mjs)
 
       - name: Create candidate release manifest
         id: release-manifest-create
@@ -404,13 +392,13 @@ jobs:
         env:
           INPUTS_OUTCOME: ${{ steps.validate-inputs.outcome }}
           CHECKOUT_OUTCOME: ${{ steps.checkout-integrity.outcome }}
-          HISTORICAL_CONTENT_LOCK_OUTCOME: ${{ steps.historical-content-lock.outcome }}
-          HISTORICAL_CONTENT_CHECKOUT_OUTCOME: ${{ steps.checkout-historical-content.outcome }}
           JAVA_OUTCOME: ${{ steps.setup-java.outcome }}
           FIREBASE_OUTCOME: ${{ steps.install-firebase.outcome }}
           INSTALL_APPLICATION_OUTCOME: ${{ steps.install-application.outcome }}
           INSTALL_BACKEND_OUTCOME: ${{ steps.install-backend.outcome }}
           INSTALL_CONTENT_OUTCOME: ${{ steps.install-content.outcome }}
+          PREPARE_CURRENT_CONTENT_OUTCOME: ${{ steps.prepare-current-content.outcome }}
+          VERIFY_CURRENT_CONTENT_OUTCOME: ${{ steps.verify-current-content.outcome }}
           INSTALL_WEB_OUTCOME: ${{ steps.install-web.outcome }}
           INSTALL_WEB_BROWSER_OUTCOME: ${{ steps.install-web-browser.outcome }}
           APPLICATION_GATE_OUTCOME: ${{ steps.application-gate.outcome }}
@@ -435,13 +423,13 @@ jobs:
           for check in \
             "inputs=$INPUTS_OUTCOME" \
             "checkout=$CHECKOUT_OUTCOME" \
-            "historical-content-lock=$HISTORICAL_CONTENT_LOCK_OUTCOME" \
-            "historical-content-checkout=$HISTORICAL_CONTENT_CHECKOUT_OUTCOME" \
             "java=$JAVA_OUTCOME" \
             "firebase=$FIREBASE_OUTCOME" \
             "install-application=$INSTALL_APPLICATION_OUTCOME" \
             "install-backend=$INSTALL_BACKEND_OUTCOME" \
             "install-content=$INSTALL_CONTENT_OUTCOME" \
+            "prepare-current-content=$PREPARE_CURRENT_CONTENT_OUTCOME" \
+            "verify-current-content=$VERIFY_CURRENT_CONTENT_OUTCOME" \
             "install-web=$INSTALL_WEB_OUTCOME" \
             "install-web-browser=$INSTALL_WEB_BROWSER_OUTCOME" \
             "application-gate=$APPLICATION_GATE_OUTCOME" \

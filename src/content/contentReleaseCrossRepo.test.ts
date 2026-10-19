@@ -4,11 +4,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
-import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { loadCanonicalRuntimeCatalog } from "./canonical";
-import { acceptedQleProducer } from "../../scripts/fixtures/acceptedQleProducer";
 
 type CurrentProducerBuilder = Readonly<{
   buildAll(options: Readonly<{ rootDirectory: string; outputRoot: string }>): Promise<Readonly<{
@@ -53,98 +51,37 @@ const contentRoot = (environmentVariable: string): string => {
   return root;
 };
 
-const gitHead = (root: string): string => execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
-
-const expectedCurrentContentSha = (): string => {
-  const expectedSha = process.env.PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA;
-  assert.ok(expectedSha, "PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA is required");
-  assert.match(expectedSha, /^[a-f0-9]{40}$/u, "expected current content SHA must be a full commit SHA");
-  return expectedSha;
-};
-
-test("historical content release lock remains covered by frozen release manifests", () => {
-  const appRoot = process.cwd();
-  const historicalContentRoot = contentRoot("PATTERNLY_CONTENT_HISTORICAL_ROOT");
-  const lockPath = join(appRoot, "integration/contracts/content-release/release.lock.historical-0024.json");
-  const lockBytes = readFileSync(lockPath);
-  assert.equal(sha256Raw(lockBytes), "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195");
-  const releaseLock = JSON.parse(lockBytes.toString("utf8")) as {
-    schemaVersion: number;
-    repository: string;
-    artifacts: readonly HistoricalReleaseLockEntry[];
-    retainedArtifacts: readonly HistoricalReleaseLockEntry[];
-  };
-  assert.equal(releaseLock.schemaVersion, 2);
-  assert.equal(releaseLock.repository, "lukaszkurczab/patternly-content");
-  assert.equal(releaseLock.artifacts.length, 9);
-  assert.equal(gitHead(historicalContentRoot), releaseLock.artifacts.at(-1)!.producerCommit, "historical content checkout must match the locked producer commit");
-  assert.equal(new Set(releaseLock.artifacts.map((entry) => entry.trackId)).size, 9);
-  assert.equal(releaseLock.retainedArtifacts.length, 2);
-  assert.deepEqual(
-    new Set(releaseLock.retainedArtifacts.map((entry) => entry.trackId)),
-    new Set(["google-cloud-associate-cloud-engineer", "coding-interview-dsa-problem-solving"]),
-  );
-  assert.equal(new Set(releaseLock.retainedArtifacts.map((entry) => entry.trackId)).size, 2);
-
-  for (const entry of [...releaseLock.artifacts, ...releaseLock.retainedArtifacts]) {
-    const releasePath = join(historicalContentRoot, "artifacts/releases", entry.releaseId, "release.json");
-    const release = JSON.parse(readFileSync(releasePath, "utf8")) as HistoricalReleaseManifest;
-    assert.equal(release.manifest.releaseId, entry.releaseId);
-    assert.equal(release.manifest.sourceRepositoryCommit, entry.sourceRepositoryCommit);
-    const matches = release.artifacts.filter((artifact) => artifact.trackId === entry.trackId);
-    assert.equal(matches.length, 1);
-    const artifact = matches[0]!;
-    assert.equal(artifact.trackId, entry.trackId);
-    assert.equal(artifact.contentVersion, entry.contentVersion);
-    assert.equal(artifact.checksumSha256, entry.checksumSha256);
-    assert.equal(artifact.sourceRepositoryCommit, entry.sourceRepositoryCommit);
-    assert.equal(sha256Raw(artifact.artifactBytes), artifact.checksumSha256);
-    assert.equal(sha256Raw(artifact.artifactBytes), entry.checksumSha256);
-  }
-});
-
-test("current producer remains buildable while app artifacts stay pinned to the admitted candidate", async (t) => {
+test("current source identity is installed exactly in the APP runtime", async () => {
   const appRoot = process.cwd();
   const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
-  const expectedCurrentSha = expectedCurrentContentSha();
-  assert.equal(gitHead(currentContentRoot), expectedCurrentSha, "current content checkout must match its independently resolved SHA");
+  const identityApi = await import(pathToFileURL(join(currentContentRoot, "scripts/content/current-source-identity.mjs")).href) as unknown as {
+    computeCurrentSourceIdentity(options: { contentRoot: string }): Promise<{ sourceInputFingerprint: string; tracks: readonly unknown[] }>;
+  };
+  const identity = await identityApi.computeCurrentSourceIdentity({ contentRoot: currentContentRoot });
+  const releaseLock = JSON.parse(readFileSync(join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8")) as { sourceInputFingerprint: string; currentIdentity: { tracks: readonly unknown[] } };
+  assert.equal(releaseLock.sourceInputFingerprint, identity.sourceInputFingerprint);
+  assert.deepEqual(releaseLock.currentIdentity.tracks, identity.tracks);
+});
+
+test("current producer builds independently and matches every installed APP artifact byte", async (t) => {
+  const appRoot = process.cwd();
+  const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
   const outputRoot = await mkdtemp(join(tmpdir(), "patternly-odk096-current-bundle-"));
   try {
     const builder = await import(pathToFileURL(join(currentContentRoot, "scripts/build.mjs")).href) as unknown as CurrentProducerBuilder;
     const built = await builder.buildAll({ rootDirectory: currentContentRoot, outputRoot });
     const catalog = await loadCanonicalRuntimeCatalog();
     const generatedLock = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-lock.json"), "utf8")) as { schemaVersion: string; tracks: readonly { trackId: string; sha256: string; contentVersion: string; questionCount: number }[] };
-    const releaseLock = JSON.parse(readFileSync(join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8")) as {
-      releaseManifestPath: string;
-      artifacts: readonly { trackId: string; contentVersion: string; checksumSha256: string }[];
-    };
     assert.equal(generatedLock.schemaVersion, "patternly-content-lock-v1");
     assert.deepEqual([...catalog.tracks].sort(), [...built.lock.tracks.map((track) => track.trackId)].sort());
-    const candidateLockApi = await import(pathToFileURL(join(appRoot, "scripts/candidateContentReleaseLock.mjs")).href) as unknown as {
-      updateCandidateContentReleaseLock(options: { mode: "check"; appRoot: string; contentRoot: string }): Promise<void>;
-    };
-    await assert.rejects(candidateLockApi.updateCandidateContentReleaseLock({ mode: "check", appRoot, contentRoot: currentContentRoot }), /[Ii]nventory mismatch|differs from release artifact/u);
-    const candidateRelease = JSON.parse(readFileSync(join(currentContentRoot, releaseLock.releaseManifestPath), "utf8")) as {
-      artifacts: readonly { trackId: string; contentVersion: string; checksumSha256: string; questionCount: number }[];
-    };
-    const generated = generatedLock.tracks.map(({ trackId, contentVersion, questionCount, sha256 }) => ({ trackId, contentVersion, questionCount, sha256 }));
-    const published = candidateRelease.artifacts.map(({ trackId, contentVersion, questionCount, checksumSha256 }) => ({ trackId, contentVersion, questionCount, sha256: checksumSha256 }));
-    const claudeId = "claude-certified-architect-professional-certification";
-    if (generated.find(t => t.trackId === claudeId)?.sha256 !== published.find(t => t.trackId === claudeId)?.sha256) {
-      const acceptancePath = join(appRoot, "integration/contracts/content-release/local-claude/qle-v2-acceptance.json");
-      const acceptance = JSON.parse(readFileSync(acceptancePath, "utf8"));
-      assert.equal(acceptance.scope, "local_only"); assert.equal(acceptance.publication, "not_granted"); assert.equal(acceptance.releaseLockUpdate, false);
-      const sync = await import(pathToFileURL(join(appRoot, "scripts/syncBundledContentRelease.mjs")).href);
-      await assert.rejects(
-        sync.syncCanonicalContent({ mode: "check", appRoot, producerRoot: currentContentRoot, localReviewedCandidate: acceptancePath }),
-        /Local candidate acceptance record is stale for current producer inputs|Claude candidate does not satisfy the accepted local inventory/u,
-        "the frozen acceptance must reject changed producer inputs or a changed Claude artifact",
-      );
-      const acceptedProducerRoot = await acceptedQleProducer(t, currentContentRoot);
-      await sync.syncCanonicalContent({ mode: "check", appRoot, producerRoot: acceptedProducerRoot, localReviewedCandidate: acceptancePath });
-      assert.deepEqual(generated.filter(t => t.trackId !== claudeId), published.filter(t => t.trackId !== claudeId), "eight release artifacts remain exactly pinned");
-      assert.deepEqual(generated.find(t => t.trackId === claudeId), { trackId: claudeId, contentVersion: acceptance.candidate.artifact.contentVersion, questionCount: acceptance.candidate.artifact.questionCount, sha256: acceptance.candidate.artifact.artifactSha256 });
-    } else assert.deepEqual(generated, published, "all nine published artifacts remain exactly pinned");
+    assert.equal(built.artifacts.length, 9);
+    assert.deepEqual(generatedLock.tracks.map(({ trackId }) => trackId).sort(), built.lock.tracks.map(({ trackId }) => trackId).sort());
+    for (const sourceTrack of built.lock.tracks) {
+      const artifact = built.artifacts.find((entry) => entry.trackId === sourceTrack.trackId)!.artifact;
+      assert.equal(sourceTrack.questionCount, artifact.questions.length, `${sourceTrack.trackId} source question count matches its lock`);
+      assert.equal(sourceTrack.sha256, sha256Raw(readFileSync(join(outputRoot, `${sourceTrack.trackId}.json`))), `${sourceTrack.trackId} source output hash matches its lock`);
+      assert.equal(sourceTrack.sha256, sha256Raw(readFileSync(join(appRoot, "src/content/generated/canonical-content", `${sourceTrack.trackId}.json`))), `${sourceTrack.trackId} current source bytes are installed in APP`);
+    }
     for (const entry of generatedLock.tracks) {
       const track = catalog.getTrack(entry.trackId);
       assert.equal(track.artifactSha256, entry.sha256);
@@ -159,8 +96,6 @@ test("current producer remains buildable while app artifacts stay pinned to the 
 test("current canonical builder adds the planning policy while preserving the exact v1 training predecessor", async () => {
   const appRoot = process.cwd();
   const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
-  const expectedCurrentSha = expectedCurrentContentSha();
-  assert.equal(gitHead(currentContentRoot), expectedCurrentSha, "current content checkout must match its independently resolved SHA");
   const outputRoot = await mkdtemp(join(tmpdir(), "patternly-odk096-current-builder-"));
   try {
     const builder = await import(pathToFileURL(join(currentContentRoot, "scripts/build.mjs")).href) as unknown as CurrentProducerBuilder;

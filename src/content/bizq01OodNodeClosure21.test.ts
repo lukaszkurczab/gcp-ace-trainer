@@ -1,257 +1,617 @@
-import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import test from "node:test";
-import path from "node:path";
+import { registerCurrentOodCases } from "./__fixtures__/current-ood-runtime-cases";
 
-import {
-  composeCanonicalFeedback,
-  projectCanonicalChoiceFeedbackControls,
-} from "../application/canonical/canonicalInteractionPresentation";
-import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
-import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
-import successorLedger from "./generated/canonical-content/content-successor-ledger.json";
-import { scoreCanonicalQuestion } from "./canonical/questionScoring";
-import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
-
-const PACKET = "src/content/__fixtures__/release-acceptance/ood-remaining-closure-21";
-const MAP_PATH = `${PACKET}/ROOT-N05-PRODUCER-MAP.json`;
-const MAP_SHA256 = "0d95dbf77a32f657197fa4789166a24fd68edad81cd367e9ea7b29c8578e6b70";
-const PROOF_PATH = "../patternly-content/evidence/business-quality/bizq-01-ood-node-closure-21.json";
-const TRACK = "object-oriented-design-interview";
-const NODE = "object_creation_configuration_and_structural_patterns";
-const N01_NODE = "requirements_use_cases_domain_vocabulary_and_model_boundaries";
-const N02_NODE = "objects_responsibilities_encapsulation_and_invariants";
-const N03_NODE = "relationships_composition_ownership_lifecycle_and_dependencies";
-const N04_NODE = "interfaces_polymorphism_substitution_and_extensibility";
-const ORDINARY_N01_MODES = [
-  "design-interview-learn-framework",
-  "design-interview-tradeoff-practice",
-  "design-interview-weak-area-review",
-] as const;
-
-type SourceBinding = Readonly<{
-  sourceFile: string;
-  beforeSourceSha256: string;
-  sourceSha256: string;
-  nodeId: string;
-  mentalUnitId: string;
-}>;
-type SameIdCorrection = Readonly<{
-  sourceFile: string;
-  beforeSourceSha256: string;
-  sourceSha256: string;
-  beforeQuestionId: string;
-  questionId: string;
-  nodeId: string;
-  mentalUnitId: string;
-  learningObjective: string;
-  acceptedOptionId: string;
-  currentQuestion: Question;
-}>;
-type ProducerMap = Readonly<{
-  result: string;
-  registrySha256: string;
-  beforeContentVersion: string;
-  contentVersion: string;
-  beforeQuestionSetSha256: string;
-  questionSetSha256: string;
-  sourceFiles: readonly SourceBinding[];
-  replacements: readonly unknown[];
-  sameIdCorrections: readonly SameIdCorrection[];
-}>;
-type Proof = Readonly<{
-  schemaVersion: string;
-  trackId: string;
-  beforeContentVersion: string;
-  contentVersion: string;
-  beforeQuestionSetSha256: string;
-  questionSetSha256: string;
-  sourceFiles: readonly SourceBinding[];
-  replacements: readonly unknown[];
-  sameIdCorrections: readonly SameIdCorrection[];
-}>;
-type SingleChoiceQuestion = Extract<Question, { interaction: { type: "choice_single" } }>;
-
-function sha256(bytes: Buffer): string {
-  return createHash("sha256").update(bytes).digest("hex");
-}
-
-function isSingleChoice(question: Question): question is SingleChoiceQuestion {
-  return question.interaction.type === "choice_single" && question.answer.type === "choice_single";
-}
-
-function readMap(): ProducerMap {
-  const bytes = readFileSync(path.resolve(MAP_PATH));
-  assert.equal(sha256(bytes), MAP_SHA256, "root-frozen N05 producer-map bytes");
-  const map = JSON.parse(bytes.toString("utf8")) as ProducerMap;
-  assert.equal(map.result, "PASS");
-  assert.equal(map.registrySha256, "f7f50f13bb2f957c6f41442f1e6d79bb843a096fd7911b77103087fde71624ee");
-  assert.equal(map.beforeContentVersion, "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20");
-  assert.equal(map.contentVersion, "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21");
-  assert.equal(map.beforeQuestionSetSha256, "5b552f935cc3fa8bb142ccd38dc747a19a57823a8c7c8fd243fc786d43f0fe72");
-  assert.equal(map.questionSetSha256, "6d19a75e8eae86869b3ce31b63ad57a6be13fc30532c22e993db6fbc3d0d4d12");
-  assert.deepEqual(map.replacements, [], "the accepted N05 map retains all question IDs");
-  assert.equal(map.sourceFiles.length, 9);
-  assert.equal(map.sameIdCorrections.length, 153);
-  assert.equal(new Set(map.sameIdCorrections.map((entry) => entry.questionId)).size, 153);
-  for (const entry of map.sameIdCorrections) {
-    assert.equal(entry.beforeQuestionId, entry.questionId, `${entry.questionId} retains its question identity`);
-    assert.equal(entry.nodeId, NODE);
-    assert.match(entry.mentalUnitId, /^OOD-N05-B0[1-9]$/u);
-    assert.ok(entry.learningObjective.length > 0);
-    assert.equal(entry.currentQuestion.questionId, entry.questionId);
-    assert.equal(entry.currentQuestion.mentalUnitId, entry.mentalUnitId);
-    assert.equal(entry.currentQuestion.nodeId, NODE);
-    assert.equal(entry.currentQuestion.trackId, TRACK);
-  }
-  return map;
-}
-
-function readProof(): Proof {
-  const bytes = readFileSync(path.resolve(PROOF_PATH));
-  const proof = JSON.parse(bytes.toString("utf8")) as Proof;
-  assert.equal(proof.schemaVersion, "patternly-bizq-semantic-replacement-v1");
-  assert.equal(proof.trackId, TRACK);
-  return proof;
-}
-
-function sourcePath(sourceFile: string): string {
-  return path.resolve("../patternly-content", sourceFile);
-}
-
-test("OOD21 producer proof binds the frozen 153-item same-ID map and exact source files", () => {
-  const map = readMap();
-  const proof = readProof();
-  assert.equal(proof.beforeContentVersion, map.beforeContentVersion);
-  assert.equal(proof.contentVersion, map.contentVersion);
-  assert.equal(proof.beforeQuestionSetSha256, map.beforeQuestionSetSha256);
-  assert.equal(proof.questionSetSha256, map.questionSetSha256);
-  assert.deepEqual(proof.sourceFiles, map.sourceFiles, "the activated proof preserves every fixed source binding");
-  assert.deepEqual(proof.replacements, []);
-  assert.equal(proof.sameIdCorrections.length, 153);
-
-  const proofById = new Map(proof.sameIdCorrections.map((entry) => [entry.questionId, entry]));
-  const fileBindings = new Map(map.sourceFiles.map((binding) => [binding.sourceFile, binding]));
-  for (const [file, binding] of fileBindings) {
-    const bytes = readFileSync(sourcePath(file));
-    assert.equal(sha256(bytes), binding.sourceSha256, `${file} current raw source hash`);
-    const questions = JSON.parse(bytes.toString("utf8")) as readonly Question[];
-    assert.equal(questions.length, 17, `${file} item count`);
-    const expectedForFile = map.sameIdCorrections.filter((entry) => entry.sourceFile === file);
-    assert.equal(expectedForFile.length, 17, `${file} fixed map size`);
-    for (const expected of expectedForFile) {
-      const source = questions.find((question) => question.questionId === expected.questionId);
-      assert.ok(source, `${file} contains ${expected.questionId}`);
-      assert.deepEqual(source, expected.currentQuestion, `${expected.questionId} source matches the fixed map`);
-      const proofEntry = proofById.get(expected.questionId);
-      assert.ok(proofEntry, `proof contains ${expected.questionId}`);
-      assert.equal(proofEntry.sourceFile, expected.sourceFile);
-      assert.equal(proofEntry.sourceSha256, expected.sourceSha256);
-      assert.equal(proofEntry.beforeSourceSha256, expected.beforeSourceSha256);
-      assert.equal(proofEntry.acceptedOptionId, expected.acceptedOptionId);
-      assert.deepEqual(proofEntry.currentQuestion, expected.currentQuestion, `${expected.questionId} proof binds the reviewed whole object`);
-    }
-  }
-});
-
-test("OOD21 loaded runtime matches every fixed same-ID question object", async () => {
-  const map = readMap();
-  const runtime = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
-  const successor = successorLedger.tracks.find((entry) => entry.trackId === TRACK);
-  assert.ok(successor);
-  assert.deepEqual(runtime.trainingIdentity, {
-    contentVersion: successor.training.contentVersion,
-    artifactSha256: successor.training.artifactSha256,
-  });
-  assert.deepEqual(runtime.planningPolicyIdentity, successor.planningPolicy);
-  assert.equal(runtime.contentVersion, successor.planningPolicy.contentVersion);
-  assert.equal(runtime.artifactSha256, successor.planningPolicy.artifactSha256);
-  const questions = runtime.getQuestionsForNode(NODE);
-  assert.equal(questions.length, 153);
-  assert.deepEqual(
-    questions.map((question) => question.questionId).sort(),
-    map.sameIdCorrections.map((entry) => entry.questionId).sort(),
-    "runtime has exactly the fixed 153 retained question IDs",
-  );
-  for (const expected of map.sameIdCorrections) {
-    assert.deepEqual(runtime.getQuestion(expected.questionId), expected.currentQuestion, `${expected.questionId} runtime matches frozen proposal`);
-  }
-});
-
-test("OOD21 scoring, option-order reversal, feedback targets and pre-answer view use fixed IDs", () => {
-  const map = readMap();
-  for (const entry of map.sameIdCorrections) {
-    const expected = entry.currentQuestion;
-    assert.ok(isSingleChoice(expected), `${entry.questionId} remains a single-choice item`);
-    // Exercise the application scorer/presentation against the exact fixed
-    // source object. Runtime equality is independently checked above so this
-    // behavioral check remains useful in the pre-sync source21 window.
-    const question = expected;
-    assert.equal(expected.answer.optionId, entry.acceptedOptionId);
-
-    const optionIds = expected.interaction.options.map((option) => option.optionId);
-    assert.equal(new Set(optionIds).size, optionIds.length, `${entry.questionId} option IDs are unique within the question`);
-    assert.deepEqual(
-      (expected.feedback.messages ?? []).filter((message) => message.kind === "wrong_option").map((message) => message.targetId).sort(),
-      optionIds.filter((id) => id !== expected.answer.optionId).sort(),
-      `${entry.questionId} diagnoses each actual wrong option ID exactly once`,
-    );
-
-    const beforeAnswer = toCanonicalQuestionViewModel(question);
-    assert.deepEqual(Object.keys(beforeAnswer).sort(), ["constraints", "interaction", "itemId", "prompt"]);
-    assert.equal(beforeAnswer.itemId, entry.questionId);
-    assert.equal("answer" in beforeAnswer, false);
-    assert.equal("feedback" in beforeAnswer, false);
-    assert.equal(beforeAnswer.interaction.interactionType, "choice_single");
-    assert.deepEqual((beforeAnswer.interaction.model as { renderer: { kind: string; options: readonly { id: string; selected: boolean; text: string }[] } }).renderer, {
-      kind: "choice",
-      options: expected.interaction.options.map((option) => ({ id: option.optionId, selected: false, text: option.text })),
-    });
-
-    const reversed: SingleChoiceQuestion = {
-      ...question,
-      interaction: { ...question.interaction, options: [...question.interaction.options].reverse() },
-    };
-    for (const optionId of optionIds) {
-      const response = { type: "choice_single", optionId } as const;
-      const correct: boolean = optionId === expected.answer.optionId;
-      const score = scoreCanonicalQuestion(question, response);
-      assert.equal(score.kind, correct ? "correct" : "incorrect", `${entry.questionId}/${optionId}`);
-      assert.equal(score.earnedPoints, correct ? 1 : 0);
-      assert.deepEqual(scoreCanonicalQuestion(reversed, response), score, "score follows option ID when presentation order changes");
-
-      const feedback = composeCanonicalFeedback(question, response, scoreCanonicalQuestion(question, response));
-      assert.equal(feedback.correctness, correct ? "correct" : "incorrect");
-      assert.equal(feedback.reason, expected.feedback.reason);
-      assert.deepEqual(feedback.details, expected.feedback.details);
-      if (correct) {
-        assert.deepEqual(feedback.messages, []);
-      } else {
-        const expectedMessage: CanonicalFeedbackMessage | undefined = expected.feedback.messages?.find((message) => message.kind === "wrong_option" && message.targetId === optionId);
-        assert.ok(expectedMessage, `${entry.questionId}/${optionId} has exact feedback`);
-        assert.deepEqual(feedback.messages, [expectedMessage]);
-      }
-      const controls = projectCanonicalChoiceFeedbackControls(question, response);
-      assert.equal(controls.find((control) => control.id === optionId)?.state, correct ? "correct" : "incorrect");
-    }
-  }
-});
-
-test("OOD21 preserves accepted N01-N04 node counts and the exact ordinary N01 pools", async () => {
-  const map = readMap();
-  const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
-  const expectedN01 = track.getQuestionsForNode(N01_NODE).map((question) => question.questionId).sort();
-  assert.equal(expectedN01.length, 136);
-  assert.equal(track.getQuestionsForNode(N02_NODE).length, 152);
-  assert.equal(track.getQuestionsForNode(N03_NODE).length, 162);
-  assert.equal(track.getQuestionsForNode(N04_NODE).length, 162);
-  assert.equal(track.getQuestionsForNode(NODE).length, 153);
-  for (const modeId of ORDINARY_N01_MODES) {
-    const poolIds = track.getPool(modeId).map((question) => question.questionId).sort();
-    assert.deepEqual(poolIds, expectedN01, `${modeId} remains the exact accepted N01 pool`);
-    for (const entry of map.sameIdCorrections) {
-      assert.equal(poolIds.includes(entry.questionId), false, `${modeId} excludes N05 ${entry.questionId}`);
-    }
-  }
-});
+// Independent expected answers for current regression cases; historical bank snapshots are not test inputs.
+registerCurrentOodCases("OOD21", ["object_creation_configuration_and_structural_patterns"], [
+  [
+    "ood-n05-b01-i001",
+    "n05b01_01_choice"
+  ],
+  [
+    "ood-n05-b01-i002",
+    "n05b01_02_choice"
+  ],
+  [
+    "ood-n05-b01-i003",
+    "n05b01_03_choice"
+  ],
+  [
+    "ood-n05-b01-i004",
+    "n05b01_04_choice"
+  ],
+  [
+    "ood-n05-b01-i005",
+    "n05b01_05_choice"
+  ],
+  [
+    "ood-n05-b01-i006",
+    "n05b01_06_choice"
+  ],
+  [
+    "ood-n05-b01-i007",
+    "n05b01_07_choice"
+  ],
+  [
+    "ood-n05-b01-i008",
+    "n05b01_08_choice"
+  ],
+  [
+    "ood-n05-b01-i009",
+    "n05b01_09_choice"
+  ],
+  [
+    "ood-n05-b01-i010",
+    "n05b01_10_choice"
+  ],
+  [
+    "ood-n05-b01-i011",
+    "n05b01_11_choice"
+  ],
+  [
+    "ood-n05-b01-i012",
+    "n05b01_12_choice"
+  ],
+  [
+    "ood-n05-b01-i013",
+    "n05b01_13_choice"
+  ],
+  [
+    "ood-n05-b01-i014",
+    "n05b01_14_choice"
+  ],
+  [
+    "ood-n05-b01-i015",
+    "n05b01_15_choice"
+  ],
+  [
+    "ood-n05-b01-i016",
+    "n05b01_16_choice"
+  ],
+  [
+    "ood-n05-b01-i017",
+    "n05b01_17_choice"
+  ],
+  [
+    "ood-n05-b02-i001",
+    "n05b02_i001_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i002",
+    "n05b02_i002_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i003",
+    "n05b02_i003_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i004",
+    "n05b02_i004_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i005",
+    "n05b02_i005_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i006",
+    "n05b02_i006_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i007",
+    "n05b02_i007_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i008",
+    "n05b02_i008_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i009",
+    "n05b02_i009_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i010",
+    "n05b02_i010_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i011",
+    "n05b02_i011_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i012",
+    "n05b02_i012_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i013",
+    "n05b02_i013_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i014",
+    "n05b02_i014_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i015",
+    "n05b02_i015_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i016",
+    "n05b02_i016_validated_construction"
+  ],
+  [
+    "ood-n05-b02-i017",
+    "n05b02_i017_validated_construction"
+  ],
+  [
+    "ood-n05-b03-i001",
+    "n05b03_i001_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i002",
+    "n05b03_i002_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i003",
+    "n05b03_i003_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i004",
+    "n05b03_i004_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i005",
+    "n05b03_i005_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i006",
+    "n05b03_i006_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i007",
+    "n05b03_i007_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i008",
+    "n05b03_i008_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i009",
+    "n05b03_i009_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i010",
+    "n05b03_i010_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i011",
+    "n05b03_i011_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i012",
+    "n05b03_i012_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i013",
+    "n05b03_i013_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i014",
+    "n05b03_i014_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i015",
+    "n05b03_i015_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i016",
+    "n05b03_i016_copy_policy"
+  ],
+  [
+    "ood-n05-b03-i017",
+    "n05b03_i017_copy_policy"
+  ],
+  [
+    "ood-n05-b04-i001",
+    "n05b04_i001_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i002",
+    "n05b04_i002_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i003",
+    "n05b04_i003_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i004",
+    "n05b04_i004_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i005",
+    "n05b04_i005_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i006",
+    "n05b04_i006_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i007",
+    "n05b04_i007_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i008",
+    "n05b04_i008_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i009",
+    "n05b04_i009_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i010",
+    "n05b04_i010_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i011",
+    "n05b04_i011_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i012",
+    "n05b04_i012_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i013",
+    "n05b04_i013_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i014",
+    "n05b04_i014_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i015",
+    "n05b04_i015_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i016",
+    "n05b04_i016_boundary_policy"
+  ],
+  [
+    "ood-n05-b04-i017",
+    "n05b04_i017_boundary_policy"
+  ],
+  [
+    "ood-n05-b05-i001",
+    "n05b05_i001_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i002",
+    "n05b05_i002_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i003",
+    "n05b05_i003_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i004",
+    "n05b05_i004_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i005",
+    "n05b05_i005_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i006",
+    "n05b05_i006_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i007",
+    "n05b05_i007_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i008",
+    "n05b05_i008_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i009",
+    "n05b05_i009_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i010",
+    "n05b05_i010_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i011",
+    "n05b05_i011_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i012",
+    "n05b05_i012_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i013",
+    "n05b05_i013_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i014",
+    "n05b05_i014_protection_proxy"
+  ],
+  [
+    "ood-n05-b05-i015",
+    "n05b05_i015_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i016",
+    "n05b05_i016_wrapper_contract"
+  ],
+  [
+    "ood-n05-b05-i017",
+    "n05b05_i017_wrapper_contract"
+  ],
+  [
+    "ood-n05-b06-i001",
+    "n05b06_i001_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i002",
+    "n05b06_i002_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i003",
+    "n05b06_i003_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i004",
+    "n05b06_i004_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i005",
+    "n05b06_i005_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i006",
+    "n05b06_i006_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i007",
+    "n05b06_i007_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i008",
+    "n05b06_i008_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i009",
+    "n05b06_i009_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i010",
+    "n05b06_i010_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i011",
+    "n05b06_i011_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i012",
+    "n05b06_i012_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i013",
+    "n05b06_i013_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i014",
+    "n05b06_i014_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i015",
+    "n05b06_i015_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i016",
+    "n05b06_i016_composite_boundary"
+  ],
+  [
+    "ood-n05-b06-i017",
+    "n05b06_i017_composite_boundary"
+  ],
+  [
+    "ood-n05-b07-i001",
+    "n05b07_i001_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i002",
+    "n05b07_i002_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i003",
+    "n05b07_i003_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i004",
+    "n05b07_i004_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i005",
+    "n05b07_i005_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i006",
+    "n05b07_i006_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i007",
+    "n05b07_i007_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i008",
+    "n05b07_i008_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i009",
+    "n05b07_i009_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i010",
+    "n05b07_i010_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i011",
+    "n05b07_i011_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i012",
+    "n05b07_i012_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i013",
+    "n05b07_i013_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i014",
+    "n05b07_i014_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i015",
+    "n05b07_i015_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i016",
+    "n05b07_i016_separated_axes"
+  ],
+  [
+    "ood-n05-b07-i017",
+    "n05b07_i017_separated_axes"
+  ],
+  [
+    "ood-n05-b08-i001",
+    "n05b08_i001_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i002",
+    "n05b08_i002_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i003",
+    "n05b08_i003_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i004",
+    "n05b08_i004_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i005",
+    "n05b08_i005_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i006",
+    "n05b08_i006_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i007",
+    "n05b08_i007_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i008",
+    "n05b08_i008_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i009",
+    "n05b08_i009_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i010",
+    "n05b08_i010_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i011",
+    "n05b08_i011_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i012",
+    "n05b08_i012_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i013",
+    "n05b08_i013_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i014",
+    "n05b08_i014_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i015",
+    "n05b08_i015_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i016",
+    "n05b08_i016_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b08-i017",
+    "n05b08_i017_share_intrinsic_only"
+  ],
+  [
+    "ood-n05-b09-i001",
+    "n05b09_i001_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i002",
+    "n05b09_i002_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i003",
+    "n05b09_i003_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i004",
+    "n05b09_i004_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i005",
+    "n05b09_i005_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i006",
+    "n05b09_i006_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i007",
+    "n05b09_i007_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i008",
+    "n05b09_i008_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i009",
+    "n05b09_i009_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i010",
+    "n05b09_i010_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i011",
+    "n05b09_i011_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i012",
+    "n05b09_i012_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i013",
+    "n05b09_i013_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i014",
+    "n05b09_i014_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i015",
+    "n05b09_i015_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i016",
+    "n05b09_i016_validated_graph"
+  ],
+  [
+    "ood-n05-b09-i017",
+    "n05b09_i017_validated_graph"
+  ]
+], []);

@@ -1,15 +1,16 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { projectCanonicalSourceLinks } from "../application/canonical/canonicalSourceLinks";
 import { createCanonicalTrainingFamilyRuntime } from "../application/canonicalTrainingFamilyComposition";
 import { evaluatePackageCompletion } from "../domain/learning/packageCompletionRule";
 import { createTrainingAttempt } from "../domain/learning/trainingAttempt";
 import type { TrackId } from "../domain/learning/trackIdentity";
-import qleAcceptance from "../../integration/contracts/content-release/local-claude/qle-v2-acceptance.json";
 import retainedClaude from "./generated/retained-content/claude-pre-qle-v2.json";
-import frozenRelease from "../../integration/contracts/content-release/release.lock.json";
-import historicalRelease from "../../integration/contracts/content-release/release.lock.historical-0024.json";
 import { ContentPackageRuntimeOwner } from "../application/contentPackageRuntimeOwner";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
 import { initializeStorageMetadata } from "../storage/repositories/storageMetadataRepository";
@@ -18,20 +19,29 @@ import { productionTrackAdmissionContext } from "../application/tracks/trackAdmi
 
 
 const TRACK = "claude-certified-architect-professional-certification";
-const NOW = "2026-10-11T12:00:00.000Z";
+const NOW = "2026-10-19T12:00:00.000Z";
 
-test("QLE local Claude preserves CC05 resources, all53 units and its separate frozen release pin", async () => {
+test("current Claude preserves CC05 resources and all required completion units", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack(TRACK);
-  assert.equal(track.questions.length, 972);
-  const activeReleaseArtifact = frozenRelease.artifacts.find((artifact) => artifact.trackId === TRACK);
-  assert.ok(activeReleaseArtifact, "the formal release lock must bind Claude");
-  assert.equal(retainedClaude.lock.sha256, activeReleaseArtifact.checksumSha256, "the prior formal release pin remains exact");
-  assert.equal(track.artifactSha256, qleAcceptance.candidate.artifact.artifactSha256);
-  assert.equal(qleAcceptance.publication, "not_granted");
+  const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+  const contentRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content"));
+  const outputRoot = await mkdtemp(path.join(os.tmpdir(), "patternly-claude-current-source-"));
+  try {
+    const { buildAll } = await import(pathToFileURL(path.join(contentRoot, "scripts/build.mjs")).href);
+    const source = await buildAll({ rootDirectory: contentRoot, outputRoot });
+    const artifact = JSON.parse(await readFile(path.join(outputRoot, `${TRACK}.json`), "utf8"));
+    const lock = source.lock.tracks.find((entry: { trackId: string }) => entry.trackId === TRACK);
+    assert.ok(lock, "the current CONTENT builder emits the Claude lock");
+    assert.equal(track.contentVersion, lock.contentVersion);
+    assert.equal(track.artifactSha256, lock.sha256);
+    assert.deepEqual(track.questions, artifact.questions, "APP runtime questions match the validated current source build");
+  } finally {
+    await rm(outputRoot, { recursive: true, force: true });
+  }
   const rule = track.completionRule;
   assert.equal(rule?.ruleVersion, 3);
-  if (rule?.ruleVersion !== 3) throw new Error("The locally accepted Claude package requires unit coverage.");
+  if (rule?.ruleVersion !== 3) throw new Error("The current Claude package requires unit coverage.");
   assert.equal(rule.chapters.length, 7);
   assert.equal(rule.chapters.reduce((total, chapter) => total + chapter.minimumAttemptCount, 0), 260);
   const units = rule.chapters.flatMap((chapter) => chapter.units.map((unit) => ({ nodeId: chapter.nodeId, ...unit })));
@@ -63,10 +73,12 @@ test("QLE local Claude preserves CC05 resources, all53 units and its separate fr
 test("CC05 keeps historical answer identity intact and grants no current coverage or resume alias", async () => {
   const owner = new ContentPackageRuntimeOwner(() => null, async () => []);
   const { track, runtime } = await owner.resolveForPreparation({ trackId: TRACK, familyId: "certification", modeId: "certification-focus-practice" });
-  const previous = historicalRelease.artifacts.find((artifact) => artifact.trackId === TRACK)!;
-  const previousTraining = { contentVersion: "ccarp-2026.10.11-capacity-v1-bizq02-v2-bizq03-planning-v2-training", artifactSha256: "4cf89c3a8a8bd5576abea3b655d90a6362d0ac9ae0eda08894dcdb26a943e23a" };
-  const question = track.questions[0]!;
-  const oldItem = { trackId: TRACK as TrackId, questionId: question.questionId, ...previousTraining };
+  const retainedIdentity = { trackId: TRACK, contentVersion: retainedClaude.lock.contentVersion, artifactSha256: retainedClaude.lock.sha256 };
+  const retained = await owner.resolveExactArtifact(retainedIdentity);
+  assert.equal(retained.track.contentVersion, retainedIdentity.contentVersion);
+  assert.equal(retained.track.artifactSha256, retainedIdentity.artifactSha256);
+  const question = retained.track.questions[0]!;
+  const oldItem = { trackId: TRACK as TrackId, questionId: question.questionId, contentVersion: retainedIdentity.contentVersion, artifactSha256: retainedIdentity.artifactSha256 };
   const history = [createTrainingAttempt({ id: "cc05-history", sessionId: "old-session", occurrenceId: "old-occurrence", trackId: TRACK, modeId: "certification-focus-practice", item: oldItem, response: {}, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: oldItem, taxonomyOrSkillRefs: [] }, answeredAt: NOW, committedAt: NOW })];
   const before = JSON.stringify(history);
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
@@ -77,10 +89,11 @@ test("CC05 keeps historical answer identity intact and grants no current coverag
   assert.equal(completion.qualifyingAttemptCount, 0);
   assert.equal(completion.coverageDeficit, 212);
   assert.equal(JSON.stringify(history), before);
-  assert.notEqual(track.trainingIdentity?.artifactSha256, previous.checksumSha256);
-  assert.notEqual(track.artifactSha256, previousTraining.artifactSha256);
-  await assert.rejects(() => owner.resolveExactArtifact({ trackId: TRACK, ...previousTraining }), /unavailable/u);
-  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, history, "loading the new package and failing old exact resolution preserve stored historical attempts");
+  assert.notDeepEqual(track.trainingIdentity, { contentVersion: retainedIdentity.contentVersion, artifactSha256: retainedIdentity.artifactSha256 });
+  assert.notEqual(track.artifactSha256, retainedIdentity.artifactSha256);
+  const resolvedOldQuestion = await owner.resolveItem(oldItem);
+  assert.equal(resolvedOldQuestion.question.questionId, question.questionId);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, history, "resolving the retained exact package preserves stored historical attempts");
   const prepared = await runtime.prepare({ trackId: TRACK, modeId: "certification-focus-practice", request: { sessionId: "cc05-current", requestedLength: 10 }, attempts: [], reviews: [], now: NOW });
-  await assert.rejects(() => runtime.validateResume({ session: { ...prepared.session, contentVersion: previous.contentVersion, artifactSha256: previous.checksumSha256 }, draft: null }), /content identity is unavailable/u);
+  await assert.rejects(() => runtime.validateResume({ session: { ...prepared.session, contentVersion: retainedIdentity.contentVersion, artifactSha256: retainedIdentity.artifactSha256 }, draft: null }), /content identity is unavailable/u);
 });

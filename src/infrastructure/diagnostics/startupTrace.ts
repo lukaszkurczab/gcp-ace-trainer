@@ -16,6 +16,7 @@ export type StartupTraceStage =
   | "mode_artifact_questions"
   | "premium:response_v2" | "premium:response_missing_v2" | "premium:response_rejected" | "premium:refresh_failed"
   | "premium:actor_denied" | "premium:scope_unavailable" | "premium:allowed" | "premium:denied" | "premium:unavailable"
+  | "account_foreground_refresh" | "account_foreground_refresh:success" | "account_foreground_refresh:failure"
   | `recovery:${BootstrapRecoveryPendingStep | "idle"}`
   | `repository:${CanonicalRepositoryBootstrapStep}`
   | `account:${AccountStartupDiagnosticStage}`

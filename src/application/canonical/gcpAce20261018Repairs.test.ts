@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { pathToFileURL } from "node:url";
 import path from "node:path";
 import test from "node:test";
 import { createCanonicalQuestionCatalog } from "../../content/canonical/questionCatalog";
@@ -13,7 +16,7 @@ import { toCanonicalQuestionViewModel } from "../../features/practice/canonicalQ
 import { detailLines } from "../../features/practice/feedbackDetails";
 
 const trackId = "google-cloud-associate-cloud-engineer";
-const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? path.resolve(process.cwd(), "../patternly-content");
+const contentRoot = process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? process.env.PATTERNLY_CONTENT_ROOT ?? path.resolve(process.cwd(), "../patternly-content");
 const nodeId = "cloud_identity_workforce_federation_and_human_access";
 const questions = [1, 2, 3, 4, 5, 6, 7].flatMap(unit => JSON.parse(readFileSync(path.join(contentRoot, "content", trackId, nodeId, `GCPACE-N02-B0${unit}.json`), "utf8")) as Question[]);
 // Exact original audit ledger; b05-010 alone has a new semantic identity.
@@ -211,8 +214,14 @@ test("GCP semantic successor rejects the historical option identity instead of s
   assert.equal(isCanonicalResponseComplete(successor, { type: "choice_single", optionId: "revoke_subject_sessions" }), true);
 });
 
-test("GCP isolated built candidate passes app integrity validation and matches all 130 repaired source questions", { skip: !process.env.GCP_REPAIR_ARTIFACT_ROOT }, async () => {
-  const root = process.env.GCP_REPAIR_ARTIFACT_ROOT!;
+test("current GCP source build passes APP integrity validation and matches all 130 repaired source questions", async (t) => {
+  const root = await mkdtemp(path.join(tmpdir(), "patternly-current-gcp-runtime-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const appPath = path.resolve("src/content/generated/canonical-content");
+  const originalAppArtifact = readFileSync(path.join(appPath, `${trackId}.json`));
+  const originalAppLock = readFileSync(path.join(appPath, "content-lock.json"));
+  const { buildTrack } = await import(pathToFileURL(path.join(contentRoot, "scripts/build.mjs")).href);
+  await buildTrack({ rootDirectory: contentRoot, trackId, outputRoot: root });
   const artifact = JSON.parse(readFileSync(path.join(root, `${trackId}.json`), "utf8"));
   const lock = JSON.parse(readFileSync(path.join(root, "content-lock.json"), "utf8")).tracks.find((entry: CanonicalContentLockRecord) => entry.trackId === trackId) as CanonicalContentLockRecord;
   const catalog = await createCanonicalQuestionCatalog(artifact, lock, trackId, async value => sha256Utf8(value));
@@ -227,9 +236,11 @@ test("GCP isolated built candidate passes app integrity validation and matches a
     contentDomainId: sourceConfig.profile.nodeDomainMap[source.nodeId],
   });
   verifyRuntime(selected, catalog);
-  // Source validation must not install this candidate or mutate the current app pin.
-  const appLock = JSON.parse(readFileSync(path.resolve("src/content/generated/canonical-content/content-lock.json"), "utf8")).tracks.find((entry: CanonicalContentLockRecord) => entry.trackId === trackId);
-  assert.equal(appLock.sha256, "e399212abf92bac30edcfb1aa04b170306469a8b2a1eab57b8f80f1ee7b37d82");
-  assert.notEqual(catalog.artifactSha256, appLock.sha256);
-  assert.notEqual(catalog.contentVersion, appLock.contentVersion);
+  const appLock = JSON.parse(originalAppLock.toString("utf8")).tracks.find((entry: CanonicalContentLockRecord) => entry.trackId === trackId);
+  assert.deepEqual(lock, appLock, "fresh current producer identity matches the installed APP lock");
+  assert.equal(catalog.artifactSha256, appLock.sha256);
+  assert.equal(catalog.contentVersion, appLock.contentVersion);
+  assert.deepEqual(readFileSync(path.join(root, `${trackId}.json`)), originalAppArtifact, "current builder and APP have identical question bytes");
+  assert.deepEqual(readFileSync(path.join(appPath, `${trackId}.json`)), originalAppArtifact, "read-only source check leaves APP unchanged");
+  assert.deepEqual(readFileSync(path.join(appPath, "content-lock.json")), originalAppLock);
 });

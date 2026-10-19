@@ -2,7 +2,6 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, renameSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { createRequire } from "node:module";
-import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import "tsx/cjs";
 
@@ -17,7 +16,6 @@ const contentRoot = resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? resolv
 const webOutput = resolve(appRoot, "../patternly-web/src/generated/demoQuestions.json");
 const contentLockPath = resolve(appRoot, "src/content/generated/canonical-content/content-lock.json");
 const releaseLockPath = resolve(appRoot, "integration/contracts/content-release/release.lock.json");
-const admissionPath = resolve(contentRoot, "evidence/admissions/candidate-admission-v3.json");
 export const demos = Object.freeze([
   Object.freeze({
     trackId: "coding-interview-dsa-problem-solving",
@@ -61,25 +59,6 @@ function sortJson(value) {
   return value;
 }
 
-function assertSafeGitPath(path, label) {
-  if (typeof path !== "string" || path.length === 0 || path.startsWith("/") || path.includes("\\") || path.includes(":") || path.split("/").some((part) => part === "" || part === "." || part === ".." || part.startsWith("-"))) {
-    throw new Error(`Public demo admitted source unavailable: ${label} path is invalid.`);
-  }
-}
-
-export function readAdmittedCommitText(repository, commit, repositoryPath, label) {
-  assertSafeGitPath(repositoryPath, label);
-  try {
-    return execFileSync("git", ["-C", repository, "show", `${commit}:${repositoryPath}`], {
-      encoding: "utf8",
-      maxBuffer: 80 * 1024 * 1024,
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-  } catch {
-    throw new Error(`Public demo admitted source unavailable: pinned ${label} is missing or unreadable.`);
-  }
-}
-
 export function assertAdmittedSampleMatchesCurrentRuntime({ selection, admittedQuestion, currentTrack, currentFamilyId }) {
   if (currentFamilyId !== selection.familyId || currentTrack.trackId !== selection.trackId) {
     throw new Error("Public demo admitted source does not match the current canonical track family.");
@@ -96,11 +75,10 @@ export function assertAdmittedSampleMatchesCurrentRuntime({ selection, admittedQ
   }
 }
 
-export function buildPublicDemoProjection({ selection, question, sourceQuestion, track, runtimeFamilyId, generatedLock, releaseLock, admission, candidateManifest, sourceRelease, runtimeEvidence, admissionSha, releaseManifestSha, runtimeEvidenceSha, releaseLockSha, contentLockSha, producerCommit }) {
+export function buildPublicDemoProjection({ selection, question, sourceQuestion, track, runtimeFamilyId, generatedLock, releaseLock, currentIdentity, releaseLockSha, contentLockSha }) {
   const { trackId, familyId, nodeId, questionId, sourcePath, modeIds } = selection;
   const trackLock = generatedLock.tracks?.find((entry) => entry.trackId === trackId);
   const releaseEntry = releaseLock.artifacts?.find((entry) => entry.trackId === trackId);
-  const admissionTrack = admission.tracks?.find((entry) => entry.trackId === trackId);
   if (!track || track.trackId !== trackId || !question || question.questionId !== questionId) throw new Error("Public demo source item is missing or has an unexpected identity.");
   if (runtimeFamilyId !== familyId) throw new Error("Public demo source item resolved to an unexpected content family.");
   const issues = validateQuestion(question);
@@ -108,11 +86,9 @@ export function buildPublicDemoProjection({ selection, question, sourceQuestion,
   if (!sameJson(question, sourceQuestion)) throw new Error("Public demo source item does not match the canonical source file.");
   if (!trackLock || trackLock.sha256 !== track.artifactSha256 || trackLock.contentVersion !== track.contentVersion) throw new Error("Public demo artifact does not match the current app content lock.");
   if (!releaseEntry || releaseEntry.checksumSha256 !== track.artifactSha256 || releaseEntry.contentVersion !== track.contentVersion) throw new Error("Public demo artifact does not match the current content release lock.");
-  if (admission.publishingAdmission !== "granted" || admissionTrack?.publishingAdmission !== "granted" || admission.schemaVersion !== "patternly-candidate-admission-v3" || admission.release?.boundary !== "local_verified_artifacts_no_deployment" || admission.application?.bundledContentLockSha256 !== contentLockSha || admission.application?.releaseLockSha256 !== releaseLockSha || !admissionTrack || admissionTrack.runtimeAdmission !== "granted" || admissionTrack.artifactSha256 !== track.artifactSha256) throw new Error("Public demo source is outside the existing app admission evidence.");
-  if (candidateManifest?.candidateId !== admission.candidateId || candidateManifest?.release?.releaseId !== admission.release?.releaseId || sourceRelease?.manifest?.releaseId !== admission.release?.releaseId || sourceRelease?.artifacts?.find((entry) => entry.trackId === trackId)?.checksumSha256 !== track.artifactSha256 || !releaseManifestSha || releaseManifestSha !== admission.release?.checksumSha256) throw new Error("Public demo source does not match the existing candidate and release receipts.");
-  if (runtimeEvidence?.schemaVersion !== "patternly-runtime-admission-evidence-v3" || runtimeEvidence.status !== "passed" || runtimeEvidence.candidateId !== admission.candidateId || runtimeEvidence.frontendCommit !== admission.application?.frontendCommit || runtimeEvidence.bundledContentLock?.sha256 !== contentLockSha || runtimeEvidence.applicationReleaseLock?.sha256 !== releaseLockSha || !runtimeEvidenceSha || runtimeEvidenceSha !== admission.runtimeEvidence?.sha256) throw new Error("Public demo source has no matching existing app runtime admission evidence.");
-  if (admission.runtimeAdmission !== "granted" || !admissionSha) throw new Error("Public demo source has no matching existing runtime admission receipt.");
-  if (admission.release?.releaseId !== releaseEntry.releaseId || releaseEntry.producerCommit !== producerCommit || releaseEntry.producerCommit !== releaseEntry.sourceRepositoryCommit) throw new Error("Public demo producer does not match the locked current release.");
+  const currentTrack = currentIdentity?.tracks?.find((entry) => entry.trackId === trackId);
+  if (currentIdentity?.schemaVersion !== "patternly-current-content-identity-v1" || currentIdentity.sourceInputFingerprint !== releaseLock.sourceInputFingerprint || currentTrack?.artifactSha256 !== track.artifactSha256) throw new Error("Public demo source does not match the current canonical source identity.");
+  if (releaseEntry.releaseId !== releaseLock.releaseId || releaseEntry.producerCommit !== releaseEntry.sourceRepositoryCommit) throw new Error("Public demo artifact does not match current application release metadata.");
   for (const modeId of modeIds) {
     const mode = track.modes.find((entry) => entry.modeId === modeId);
     if (!mode || mode.availability !== "immediate" || mode.selection.kind !== "node" || mode.selection.nodeId !== nodeId || !track.getPool(modeId).some((entry) => entry.questionId === questionId)) throw new Error("Public demo item is outside the existing ordinary Free node practice pools.");
@@ -129,13 +105,8 @@ export function buildPublicDemoProjection({ selection, question, sourceQuestion,
       artifactSha256: track.artifactSha256,
       appContentLockSha256: contentLockSha,
       releaseLockSha256: releaseLockSha,
-      admissionPath: "patternly-content/evidence/admissions/candidate-admission-v3.json",
-      admissionSha256: admissionSha,
-      candidateId: admission.candidateId,
-      sourceReleaseSha256: releaseManifestSha,
-      runtimeEvidenceSha256: runtimeEvidenceSha,
+      sourceInputFingerprint: currentIdentity.sourceInputFingerprint,
       releaseId: releaseEntry.releaseId,
-      producerCommit,
       sourcePath,
       modeIds: [...modeIds],
     },
@@ -144,18 +115,13 @@ export function buildPublicDemoProjection({ selection, question, sourceQuestion,
   };
 }
 
-/** Historical bytes verify the current receipt; they never supply public question payloads. */
-export function assertSelectedArtifactAdmitted({ selection, currentBytes, admittedBytes, currentLock, admittedLock }) {
+/** The selected current application package must match its exact lock bytes. */
+export function assertSelectedArtifactAdmitted({ selection, currentBytes, currentLock, releaseLock }) {
   const current = currentLock.tracks?.find((entry) => entry.trackId === selection.trackId);
-  const admitted = admittedLock.tracks?.find((entry) => entry.trackId === selection.trackId);
-  if (!current || !admitted || !sameJson(current, admitted) || sha256(currentBytes) !== current.sha256 || !currentBytes.equals(admittedBytes)) {
-    throw new Error(`Public demo selected artifact differs from admission: ${selection.trackId}.`);
-  }
-}
-
-export function assertAdmissionCommitBindings({ admission, generatedLockBytes, releaseLockBytes, runtimeTestBytes, runtimeEvidence }) {
-  if (sha256(generatedLockBytes) !== admission.application?.bundledContentLockSha256 || sha256(releaseLockBytes) !== admission.application?.releaseLockSha256 || runtimeEvidence.runtimeTest?.path !== "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts" || sha256(runtimeTestBytes) !== runtimeEvidence.runtimeTest?.sha256) {
-    throw new Error("Public demo admission commit files differ from the existing receipt.");
+  if (!current || sha256(currentBytes) !== current.sha256) throw new Error(`Public demo selected artifact differs from the active app lock: ${selection.trackId}.`);
+  const release = releaseLock.artifacts?.find((entry) => entry.trackId === selection.trackId);
+  if (!release || release.checksumSha256 !== current.sha256 || release.contentVersion !== current.contentVersion || release.artifactBytes !== currentBytes.length || release.questionCount !== current.questionCount) {
+    throw new Error(`Public demo selected artifact differs from current release metadata: ${selection.trackId}.`);
   }
 }
 
@@ -177,46 +143,32 @@ export function assertPreviewSampleManifest(manifest, readImage = (path) => read
 export async function createPublicDemoCatalog() {
   const currentLockBytes = readBytes(contentLockPath, "app content lock");
   const currentReleaseBytes = readBytes(releaseLockPath, "app release lock");
-  const admissionBytes = readBytes(admissionPath, "candidate admission receipt");
-  const admission = JSON.parse(admissionBytes.toString("utf8"));
-  if (!/^[a-f0-9]{40}$/u.test(admission.application?.frontendCommit ?? "")) throw new Error("Public demo admission APP commit is invalid.");
-  const { validateCandidateAdmissionV3 } = await import(pathToFileURL(resolve(contentRoot, "scripts/review/candidate-admission-v3.mjs")).href);
-  const { candidateIdFor } = await import(pathToFileURL(resolve(contentRoot, "scripts/review/candidate-manifest.mjs")).href);
-  await validateCandidateAdmissionV3(admission, { root: contentRoot });
-  const candidateManifest = readJson(resolve(contentRoot, admission.candidatePath), "candidate manifest");
-  if (candidateIdFor(candidateManifest) !== admission.candidateId) throw new Error("Public demo candidate identity is invalid.");
-  const releaseManifestBytes = readBytes(resolve(contentRoot, admission.release.releasePath), "candidate release manifest");
-  const runtimeEvidenceBytes = readBytes(resolve(contentRoot, admission.runtimeEvidence.path), "app runtime admission evidence");
-  const sourceRelease = JSON.parse(releaseManifestBytes.toString("utf8"));
-  const runtimeEvidence = JSON.parse(runtimeEvidenceBytes.toString("utf8"));
-  const commit = admission.application.frontendCommit;
-  const generatedLockBytes = Buffer.from(readAdmittedCommitText(appRoot, commit, "src/content/generated/canonical-content/content-lock.json", "admitted app content lock"));
-  const releaseBytes = Buffer.from(readAdmittedCommitText(appRoot, commit, "integration/contracts/content-release/release.lock.json", "admitted app release lock"));
-  const runtimeTestBytes = Buffer.from(readAdmittedCommitText(appRoot, commit, "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts", "admission-time runtime test"));
-  assertAdmissionCommitBindings({ admission, generatedLockBytes, releaseLockBytes: releaseBytes, runtimeTestBytes, runtimeEvidence });
-  if (!currentReleaseBytes.equals(releaseBytes)) throw new Error("Public demo current release lock differs from the admitted release lock.");
+  const sourceIdentityModule = await import(pathToFileURL(resolve(contentRoot, "scripts/content/current-source-identity.mjs")).href);
+  const currentIdentity = await sourceIdentityModule.computeCurrentSourceIdentity({ contentRoot });
+  const appVerifier = await import(pathToFileURL(resolve(appRoot, "scripts/verifyBundledCurrentContent.mjs")).href);
+  await appVerifier.verifyBundledCurrentContent({ root: appRoot });
+  const generatedLockBytes = currentLockBytes;
   const generatedLock = JSON.parse(generatedLockBytes.toString("utf8"));
   const currentLock = JSON.parse(currentLockBytes.toString("utf8"));
-  const releaseLock = JSON.parse(releaseBytes.toString("utf8"));
+  const releaseLock = JSON.parse(currentReleaseBytes.toString("utf8"));
+  if (currentIdentity.sourceInputFingerprint !== releaseLock.sourceInputFingerprint || JSON.stringify(currentIdentity.tracks) !== JSON.stringify(releaseLock.currentIdentity?.tracks)) throw new Error("Current public demo source differs from the installed APP bank.");
   const previewImage = assertPreviewSampleManifest(readJson(resolve(appRoot, "../patternly-web/scripts/app-preview-manifest.json"), "public preview manifest"));
   const canonicalCatalog = await loadCanonicalRuntimeCatalog();
   const projections = [];
   for (const selection of [...demos, previewSample]) {
     const artifactPath = `src/content/generated/canonical-content/${selection.trackId}.json`;
     const currentBytes = readBytes(resolve(appRoot, artifactPath), "current selected artifact");
-    const admittedBytes = Buffer.from(readAdmittedCommitText(appRoot, commit, artifactPath, "admitted selected artifact"));
-    assertSelectedArtifactAdmitted({ selection, currentBytes, admittedBytes, currentLock, admittedLock: generatedLock });
+    assertSelectedArtifactAdmitted({ selection, currentBytes, currentLock, releaseLock });
     const { runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
     const track = canonicalCatalog.getTrack(selection.trackId);
     const question = track.getQuestion(selection.questionId);
-    const admittedQuestion = JSON.parse(admittedBytes.toString("utf8")).questions.find((entry) => entry.questionId === selection.questionId);
-    assertAdmittedSampleMatchesCurrentRuntime({ selection, admittedQuestion, currentTrack: track, currentFamilyId: runtime.familyId });
+    const activeQuestion = JSON.parse(currentBytes.toString("utf8")).questions.find((entry) => entry.questionId === selection.questionId);
+    assertAdmittedSampleMatchesCurrentRuntime({ selection, admittedQuestion: activeQuestion, currentTrack: track, currentFamilyId: runtime.familyId });
     const sourceQuestionFile = readJson(resolve(contentRoot, selection.sourcePath), "canonical source");
     const sourceQuestion = Array.isArray(sourceQuestionFile) ? sourceQuestionFile.find((entry) => entry.questionId === selection.questionId) : undefined;
-    const releaseEntry = releaseLock.artifacts?.find((entry) => entry.trackId === selection.trackId);
     projections.push(buildPublicDemoProjection({
-      selection, question, sourceQuestion, track, runtimeFamilyId: runtime.familyId, generatedLock, releaseLock, admission, candidateManifest, sourceRelease, runtimeEvidence,
-      admissionSha: sha256(admissionBytes), releaseManifestSha: sha256(releaseManifestBytes), runtimeEvidenceSha: sha256(runtimeEvidenceBytes), releaseLockSha: sha256(releaseBytes), contentLockSha: sha256(generatedLockBytes), producerCommit: releaseEntry?.producerCommit,
+      selection, question, sourceQuestion, track, runtimeFamilyId: runtime.familyId, generatedLock, releaseLock, currentIdentity,
+      releaseLockSha: sha256(currentReleaseBytes), contentLockSha: sha256(generatedLockBytes),
     }));
   }
   return {
@@ -226,7 +178,6 @@ export async function createPublicDemoCatalog() {
     publicSamples: projections.map((projection, index) => ({
       presentation: index < demos.length ? "interactive" : "image",
       ...projection.provenance,
-      admissionAppCommit: commit,
       ...(index === demos.length ? { imagePath: previewImage.path, imageSha256: previewImage.sha256 } : {}),
     })),
   };

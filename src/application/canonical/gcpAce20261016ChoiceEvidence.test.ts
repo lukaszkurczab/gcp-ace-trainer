@@ -4,8 +4,8 @@ import { loadCanonicalRuntimeCatalog, scoreCanonicalQuestion, type ChoiceSingleQ
 import { prepareCanonicalOptionOrder, projectCanonicalQuestionInSessionOrder, isCanonicalOptionOrder } from "./canonicalOptionOrder";
 import { buildCanonicalInteractionViewModel, projectCanonicalChoiceFeedbackMessages } from "./canonicalInteractionPresentation";
 
-// Closed ledger from the 2026-10-16 audit. These tests establish runtime mapping,
-// not semantic acceptance of the still-deferred source corrections.
+// Independent current cases from the 2026-10-16 audit, including the explicit
+// B05-010 → B05-019 semantic replacement accepted on 2026-10-18.
 const AUDITED_IDS = [
   "gcp-ace-gcpace-n02-b01-001",
   "gcp-ace-gcpace-n02-b01-002",
@@ -90,7 +90,7 @@ const AUDITED_IDS = [
   "gcp-ace-gcpace-n02-b05-007",
   "gcp-ace-gcpace-n02-b05-008",
   "gcp-ace-gcpace-n02-b05-009",
-  "gcp-ace-gcpace-n02-b05-010",
+  "gcp-ace-gcpace-n02-b05-019",
   "gcp-ace-gcpace-n02-b05-011",
   "gcp-ace-gcpace-n02-b05-012",
   "gcp-ace-gcpace-n02-b05-013",
@@ -141,6 +141,8 @@ const AUDITED_IDS = [
 
 test("GCP audit's exact 130 IDs preserve scoring, authored feedback and pre-submit option order across seeds", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack("google-cloud-associate-cloud-engineer");
+  assert.equal(track.getQuestion("gcp-ace-gcpace-n02-b05-010"), undefined, "old semantic identity is not aliased to the current question");
+  assert.deepEqual(track.getQuestion("gcp-ace-gcpace-n02-b05-019")?.answer, { optionId: "revoke_subject_sessions", type: "choice_single" });
   assert.equal(AUDITED_IDS.length, 130);
   assert.equal(new Set(AUDITED_IDS).size, 130);
   for (const id of AUDITED_IDS) {

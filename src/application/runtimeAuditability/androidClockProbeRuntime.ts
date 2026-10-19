@@ -99,6 +99,20 @@ export function observeAndroidClockProbeProfileReady(): void {
     if (hasPendingMutationJournal()) throw androidClockProbeFailure("probe_cold_journal_pending");
     const session = readActiveTrainingSession(productionTrackAdmissionContext);
     const timer = readActiveForegroundTimer(productionTrackAdmissionContext);
+    if (session?.configurationSnapshot.timer === "absoluteDeadline") {
+      const config = session.configurationSnapshot;
+      const known = (session.modeId === "certification-exam-simulation" && config.kind === "certificationSimulation")
+        || (session.modeId === "design-interview-simulation" && config.kind === "designInterviewSimulation");
+      if (!known || session.status !== "active" || timer || captureForegroundClockProbeStorage().getString(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) !== undefined
+        || typeof config.timerDeadlineAt !== "string" || !Number.isFinite(Date.parse(config.timerDeadlineAt))) throw androidClockProbeFailure("probe_scope_unavailable");
+      const inventory = captureAndroidClockProbeInventory();
+      if (!isActiveProfileStorageLeaseCurrent(lease)) throw androidClockProbeFailure("probe_cold_profile_unavailable");
+      save({ stage: "absolute_deadline_before_lifecycle", snapshotPhase: "profile_ready_before_lifecycle", profileSha256: sha256Utf8(lease.profile.id),
+        sessionSha256: sha256Utf8(session.id), configurationSha256: sha256Utf8(JSON.stringify(config)), startedAt: session.startedAt,
+        timerKind: config.timer, timerDeadlineAt: config.timerDeadlineAt, timerDurationMs: config.timerDurationMs, inventory, observedWallMs: Date.now() });
+      restored = true;
+      return;
+    }
     if (!session || !timer) throw androidClockProbeFailure("probe_scope_unavailable");
     const observed = { ...identity(timer, session), inventory: captureAndroidClockProbeInventory() };
     if (!isActiveProfileStorageLeaseCurrent(lease)) throw androidClockProbeFailure("probe_cold_profile_unavailable");

@@ -60,7 +60,7 @@ export async function projectCertificationExamReview(input: Readonly<{
     result.trackId !== session.trackId || session.modeId !== "certification-exam-simulation" || result.evidence.familyId !== "certification" ||
     session.actualLength !== targetCount || session.requestedLength !== targetCount || session.itemOrder.length !== targetCount || !session.planFingerprint ||
     session.contentVersion.trim().length === 0 || !/^[a-f0-9]{64}$/.test(session.artifactSha256) || !session.taxonomyVersion?.trim() ||
-    profile.familyConfig.nodeDomainMapEvidence.artifactPath !== `artifacts/tracks/${session.trackId}/${profile.familyConfig.nodeDomainMapEvidence.contentVersion}/track-artifact.json` || profile.modeId !== session.modeId || profile.familyId !== "certification" ||
+    profile.modeId !== session.modeId || profile.familyId !== "certification" ||
     session.configurationSnapshot.kind !== "certificationSimulation" || session.configurationSnapshot.simulationProfileId !== profile.profileId || session.configurationSnapshot.simulationProfileVersion !== profile.profileVersion) {
     return fail("Certification Exam result does not match its completed session and simulation profile.");
   }

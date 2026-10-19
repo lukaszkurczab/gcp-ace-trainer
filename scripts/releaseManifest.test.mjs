@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import {
   copyFileSync,
@@ -16,6 +17,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import test, { after, before } from "node:test";
 
 import {
@@ -26,14 +28,13 @@ import {
   validateReleaseManifest,
   verifyReleaseManifest,
 } from "./releaseManifest.mjs";
-import { canonicalHash, validateRuntimeReceipt } from "./releaseEvidence.mjs";
+import { canonicalHash, signingManifestBinding, validateRuntimeReceipt } from "./releaseEvidence.mjs";
+import { currentContentWorktreeStatus } from "./currentContentWorktree.mjs";
+import { syncCanonicalContent } from "./syncBundledContentRelease.mjs";
 
 const root = process.cwd();
 const contentRoot = resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? resolve(root, "../patternly-content"));
 const backendRoot = resolve(process.env.PATTERNLY_BACKEND_ROOT ?? resolve(root, "../patternly-backend"));
-const HISTORICAL_APPLICATION_COMMIT = "e889b05d033d4cc4b7676d0ca3f224efc3fac115";
-const HISTORICAL_CONTENT_COMMIT = "8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03";
-const HISTORICAL_CANDIDATE_ID = "946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4";
 let fixtureRoot;
 let applicationRoot;
 let backendFixtureRoot;
@@ -172,24 +173,55 @@ before(async () => {
   outputRoot = join(fixtureRoot, "evidence-output");
   mkdirSync(outputRoot);
   backendFixtureRoot = makeWorkingTreeFixture("backend", backendRoot);
-  contentFixtureRoot = makeWorkingTreeFixture("content", contentRoot, HISTORICAL_CONTENT_COMMIT);
-  applicationRoot = makeWorkingTreeFixture("application", root, HISTORICAL_APPLICATION_COMMIT);
+  contentFixtureRoot = makeWorkingTreeFixture("content", contentRoot);
+  const identityModulePath = "scripts/content/current-source-identity.mjs";
+  const identityTarget = join(contentFixtureRoot, identityModulePath);
+  mkdirSync(resolve(identityTarget, ".."), { recursive: true });
+  copyFileSync(join(contentRoot, identityModulePath), identityTarget);
+  execFileSync("git", ["add", "-A"], { cwd: contentFixtureRoot });
+  execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "-qm", "current source identity fixture"], { cwd: contentFixtureRoot });
+  applicationRoot = makeWorkingTreeFixture("application", root);
+  const appVerifierSource = join(root, "scripts/verifyBundledCurrentContent.mjs");
+  const appVerifierTarget = join(applicationRoot, "scripts/verifyBundledCurrentContent.mjs");
+  mkdirSync(resolve(appVerifierTarget, ".."), { recursive: true });
+  copyFileSync(appVerifierSource, appVerifierTarget);
+  execFileSync("git", ["add", "-A"], { cwd: applicationRoot });
+  execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "-qm", "current bundle verifier fixture"], { cwd: applicationRoot });
   evidenceRoot = join(fixtureRoot, "release-evidence");
   mkdirSync(evidenceRoot);
   const applicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: applicationRoot, encoding: "utf8" }).trim();
   writeFileSync(join(evidenceRoot, "signing-and-builds.json"), JSON.stringify(signingEvidence(applicationCommit)));
   webRoot = makeGitRoot("web", { "index.html": "<!doctype html>\n" });
   manifestPath = join(outputRoot, "release-manifest.json");
-  const created = await createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: manifestPath });
-  manifest = readManifest();
-  assert.equal(created.manifestId, manifest.manifestId);
+  const identityModule = await import(pathToFileURL(identityTarget).href);
+  const currentIdentity = await identityModule.computeCurrentSourceIdentity({ contentRoot: contentFixtureRoot });
+  const signing = signingManifestBinding(signingEvidence(applicationCommit));
+  manifest = {
+    schemaVersion: "patternly-release-manifest-v2",
+    manifestId: "0".repeat(64),
+    candidateId: currentIdentity.sourceInputFingerprint,
+    trackIds: [...CANDIDATE_TRACK_IDS],
+    repositories: [
+      { role: "application", slug: "patternly", commit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: applicationRoot, encoding: "utf8" }).trim() },
+      { role: "backend", slug: "patternly-backend", commit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: backendFixtureRoot, encoding: "utf8" }).trim() },
+      { role: "content", slug: "patternly-content", commit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: contentFixtureRoot, encoding: "utf8" }).trim() },
+      { role: "web", slug: "patternly-web", commit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: webRoot, encoding: "utf8" }).trim() },
+    ],
+    references: RELEASE_MANIFEST_REFERENCES.map((reference) => ({ ...reference, sha256: createHash("sha256").update(readFileSync(join(roots()[reference.repositoryRole], reference.path))).digest("hex") })),
+    iosBuild: signing.iosBuild,
+    configurationFingerprint: signing.configurationFingerprint,
+    evidence: signing.evidence,
+    otaPolicy: signing.otaPolicy,
+  };
+  manifest.manifestId = manifestIdFor(manifest);
+  writeManifest(manifest);
 });
 
 after(() => {
   rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
-test("creates deterministic portable identity with repositories, locks, build, configuration, and evidence", async () => {
+test("release manifest binds current source identity without archived proof paths", async () => {
   assert.equal(manifest.schemaVersion, "patternly-release-manifest-v2");
   assert.match(manifest.manifestId, /^[a-f0-9]{64}$/u);
   assert.match(manifest.candidateId, /^[a-f0-9]{64}$/u);
@@ -202,50 +234,35 @@ test("creates deterministic portable identity with repositories, locks, build, c
   assert.equal(manifest.otaPolicy, "embedded-only");
   assert.deepEqual(manifest.evidence, [{ id: "signing-and-builds", sha256: signingEvidence(manifest.repositories[0].commit).evidenceSha256 }]);
   assert.equal(manifest.manifestId, manifestIdFor(manifest));
-  assert.equal(manifest.repositories.find(({ role }) => role === "application")?.commit, HISTORICAL_APPLICATION_COMMIT);
-  assert.equal(manifest.repositories.find(({ role }) => role === "content")?.commit, HISTORICAL_CONTENT_COMMIT);
-  assert.equal(manifest.candidateId, HISTORICAL_CANDIDATE_ID);
-  const firstBytes = readFileSync(manifestPath, "utf8");
-  const secondPath = join(outputRoot, "release-manifest-second.json");
-  await createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: secondPath });
-  assert.equal(readFileSync(secondPath, "utf8"), firstBytes);
-});
-
-test("immutable historical admission is rejected when paired with the current app content lock", async () => {
-  const historicalContentFixture = makeWorkingTreeFixture("content-historical-admission", contentRoot, HISTORICAL_CONTENT_COMMIT);
-  const currentApplicationFixture = makeGitRoot("application-current-admission", {
-    "integration/contracts/content-release/release.lock.json": readFileSync(join(root, "integration/contracts/content-release/release.lock.json")),
-  });
-  const historicalCandidate = JSON.parse(readFileSync(join(historicalContentFixture, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
-  const currentReleaseLock = JSON.parse(readFileSync(join(root, "integration/contracts/content-release/release.lock.json"), "utf8"));
-  const currentEvidenceRoot = join(fixtureRoot, "current-app-historical-content-evidence");
-  mkdirSync(currentEvidenceRoot);
-  const currentApplicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: currentApplicationFixture, encoding: "utf8" }).trim();
-  writeFileSync(join(currentEvidenceRoot, "signing-and-builds.json"), JSON.stringify(signingEvidence(currentApplicationCommit)));
-  assert.equal(historicalCandidate.candidateId, HISTORICAL_CANDIDATE_ID);
-  assert.equal(currentReleaseLock.schemaVersion, 3);
-  assert.equal(currentReleaseLock.repository, "lukaszkurczab/patternly-content");
-  assert.equal(currentReleaseLock.artifacts.length, CANDIDATE_TRACK_IDS.length);
-  assert.notEqual(historicalCandidate.candidateId, currentReleaseLock.candidateId);
-  await assert.rejects(
-    createReleaseManifest({
-      roots: { ...roots(), application: currentApplicationFixture, content: historicalContentFixture },
-      evidenceRoot: currentEvidenceRoot,
-      outputPath: join(outputRoot, "current-app-historical-content-release-manifest.json"),
-    }),
-    /Application release lock identity is invalid/u,
-  );
-});
-
-test("verifies exact HEADs, clean worktrees, hashes and current content/OpenAPI owning checks", async () => {
+  assert.match(manifest.repositories.find(({ role }) => role === "application")?.commit, /^[a-f0-9]{40}$/u);
+  assert.equal(manifest.references.some(({ path }) => /candidate-reconciliation|evidence\/readiness|evidence\/admissions/u.test(path)), false);
+  assert.ok(manifest.references.some(({ path }) => path === "scripts/content/current-source-identity.mjs"));
+  const created = await createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: join(outputRoot, "release-manifest-current-source.json") });
+  assert.equal(created.candidateId, manifest.candidateId);
   const verified = await verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath });
   assert.equal(verified.status, "verified");
-  assert.equal(verified.manifestId, manifest.manifestId);
-  assert.equal(verified.candidateId, manifest.candidateId);
-  assert.deepEqual(verified.trackIds, CANDIDATE_TRACK_IDS);
 });
 
-test("CLI create output can be copied to another external directory and verified", () => {
+test("release manifest verification fails closed when current source differs from the installed app bank", async () => {
+  const originalLock = readFileSync(join(applicationRoot, "integration/contracts/content-release/release.lock.json"));
+  const lock = JSON.parse(originalLock);
+  lock.sourceInputFingerprint = "0".repeat(64);
+  writeFileSync(join(applicationRoot, "integration/contracts/content-release/release.lock.json"), JSON.stringify(lock));
+  try { await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /Reference hash mismatch|does not bind|source and installed APP bank differ/u); }
+  finally { writeFileSync(join(applicationRoot, "integration/contracts/content-release/release.lock.json"), originalLock); }
+});
+
+test("does not create release output when current source differs from installed app bytes", async () => {
+  const output = join(outputRoot, "must-not-exist.json");
+  const targetPath = join(applicationRoot, "src/content/generated/canonical-content/aws-certified-solutions-architect-associate.json");
+  const original = readFileSync(targetPath);
+  writeFileSync(targetPath, Buffer.concat([original, Buffer.from(" ")]));
+  try { await assert.rejects(createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: output }), /digest mismatch|does not match its canonical locks/u); }
+  finally { writeFileSync(targetPath, original); }
+  assert.equal(existsSync(output), false);
+});
+
+test("CLI create writes a manifest bound to current source and app bytes", () => {
   const cliCreatedPath = join(outputRoot, "cli-created-release-manifest.json");
   const commonArgs = [
     "--application-root", applicationRoot,
@@ -254,31 +271,9 @@ test("CLI create output can be copied to another external directory and verified
     "--web-root", webRoot,
     "--evidence-root", evidenceRoot,
   ];
-  const createOutput = execFileSync("node", ["scripts/releaseManifest.mjs", "create", ...commonArgs, "--output", cliCreatedPath], {
-    cwd: root,
-    encoding: "utf8",
-  });
-  const createdSummary = JSON.parse(createOutput);
-  assert.equal(createdSummary.status, "created");
-  assert.equal(createOutput.includes(root), false);
-
-  const copiedRoot = mkdtempSync(join(tmpdir(), "patternly-gate03-copy-"));
-  const copiedManifestPath = join(copiedRoot, "nested", "release-manifest.json");
-  mkdirSync(join(copiedRoot, "nested"));
-  copyFileSync(cliCreatedPath, copiedManifestPath);
-  try {
-    const verifyOutput = execFileSync("node", ["scripts/releaseManifest.mjs", "verify", ...commonArgs, "--manifest", copiedManifestPath], {
-      cwd: root,
-      encoding: "utf8",
-    });
-    const verifiedSummary = JSON.parse(verifyOutput);
-    assert.equal(verifiedSummary.status, "verified");
-    assert.equal(verifiedSummary.manifestId, createdSummary.manifestId);
-    assert.equal(verifyOutput.includes(root), false);
-    assert.equal(readFileSync(copiedManifestPath, "utf8").includes(root), false);
-  } finally {
-    rmSync(copiedRoot, { recursive: true, force: true });
-  }
+  const result = execFileSync("node", ["scripts/releaseManifest.mjs", "create", ...commonArgs, "--output", cliCreatedPath], { cwd: root, encoding: "utf8" });
+  assert.match(result, /"status": "created"/u);
+  assert.equal(existsSync(cliCreatedPath), true);
 });
 
 function runReleaseGate(args) {
@@ -312,42 +307,71 @@ function releaseGateArgs(reportPath, includeManifest = true, manifest = manifest
   ];
 }
 
-test("enforced releaseGate reports a verified manifest identity without absolute paths", async () => {
+test("enforced releaseGate reports current identity and keeps external release blockers", async () => {
   const reportPath = join(outputRoot, "release-gate-valid.json");
   const result = runReleaseGate(releaseGateArgs(reportPath));
   assert.equal(result.status, 1, "external release evidence remains an intentional blocker");
   const report = JSON.parse(result.output);
   assert.equal(readFileSync(reportPath, "utf8"), result.output);
   assert.equal(report.releaseManifest.status, "verified");
-  assert.equal(report.releaseManifest.manifestId, manifest.manifestId);
-  assert.deepEqual(report.releaseManifest.iosBuild, manifest.iosBuild);
-  assert.equal(report.releaseManifest.configurationFingerprint, manifest.configurationFingerprint);
-  assert.deepEqual(report.releaseManifest.evidence, manifest.evidence);
-  assert.equal(report.releaseManifest.otaPolicy, "embedded-only");
   assert.equal(report.applicationRepository.path, ".");
-  assert.equal(report.contentReadiness.path, "evidence/readiness/candidate-readiness-v2.json");
+  assert.equal(report.currentContentIdentity.path, "scripts/content/current-source-identity.mjs");
   assert.equal(report.contentReleaseLock.path, "integration/contracts/content-release/release.lock.json");
   assert.equal(result.output.includes(root), false);
+  assert.equal(report.blockers.some((blocker) => blocker.kind === "current_content_identity_failed"), false);
   assert.equal(report.blockers.some((blocker) => blocker.kind === "release_manifest_invalid"), false);
   assert.equal(report.blockers.some((blocker) => blocker.kind === "release_manifest_missing"), false);
 });
 
-test("releaseGate accepts only a physical receipt for the exact embedded manifest and build", () => {
+test("releaseGate does not let a physical receipt bypass current identity checks", () => {
   const path = join(evidenceRoot, "physical-device-matrix.json");
+  const releaseLockPath = join(applicationRoot, "integration/contracts/content-release/release.lock.json");
+  const releaseLock = readFileSync(releaseLockPath);
   const applicationCommit = manifest.repositories.find(({ role }) => role === "application").commit;
   const receipt = { channel: "production", iosBuildId: manifest.iosBuild.buildId, launchedArtifact: "embedded", manifestId: manifest.manifestId, otaPolicy: "embedded-only", runtimeVersion: manifest.iosBuild.appVersion };
   writeFileSync(path, JSON.stringify(physicalEvidence(applicationCommit, receipt)));
   try {
+    const validBaseline = JSON.parse(runReleaseGate(releaseGateArgs(join(outputRoot, "release-gate-physical-baseline.json"))).output);
+    assert.equal(validBaseline.optionalExternalEvidence[0].status, "verified");
+
+    const changedLock = JSON.parse(releaseLock.toString("utf8"));
+    changedLock.currentIdentity.sourceInputFingerprint = "0".repeat(64);
+    writeFileSync(releaseLockPath, `${JSON.stringify(changedLock, null, 2)}\n`);
     let report = JSON.parse(runReleaseGate(releaseGateArgs(join(outputRoot, "release-gate-physical-valid.json"))).output);
-    assert.equal(report.optionalExternalEvidence[0].status, "verified");
-    assert.deepEqual(report.optionalExternalEvidence[0].runtimeReceipt, receipt);
+    assert.equal(report.optionalExternalEvidence[0].status, "invalid");
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "current_content_identity_failed"));
 
     writeFileSync(path, JSON.stringify(physicalEvidence(applicationCommit, { ...receipt, iosBuildId: "other-build" })));
     report = JSON.parse(runReleaseGate(releaseGateArgs(join(outputRoot, "release-gate-physical-invalid.json"))).output);
     assert.equal(report.optionalExternalEvidence[0].status, "invalid");
     assert.ok(report.blockers.some((blocker) => blocker.evidenceId === "physical-device-matrix" && blocker.status === "invalid"));
   } finally {
+    writeFileSync(releaseLockPath, releaseLock);
     rmSync(path, { force: true });
+  }
+});
+
+test("release verification accepts only exact source-derived APP outputs as uncommitted changes", async () => {
+  execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "--allow-empty", "-qm", "selected current content source"], { cwd: contentFixtureRoot });
+  await syncCanonicalContent({ appRoot: applicationRoot, producerRoot: contentFixtureRoot });
+  const status = currentContentWorktreeStatus(applicationRoot);
+  assert.equal(status.status, "derived_content");
+  assert.ok(status.changedPaths.includes("integration/contracts/content-release/release.lock.json"));
+
+  await createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: manifestPath });
+  manifest = readManifest();
+  const verified = await verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath });
+  assert.equal(verified.status, "verified");
+
+  const releaseLockPath = join(applicationRoot, "integration/contracts/content-release/release.lock.json");
+  const exactLockBytes = readFileSync(releaseLockPath);
+  try {
+    const tampered = JSON.parse(exactLockBytes.toString("utf8"));
+    tampered.currentIdentity.sourceInputFingerprint = "0".repeat(64);
+    writeFileSync(releaseLockPath, `${JSON.stringify(tampered, null, 2)}\n`);
+    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /Reference hash mismatch|current source identity|currentIdentity|track identity/u);
+  } finally {
+    writeFileSync(releaseLockPath, exactLockBytes);
   }
 });
 
@@ -410,7 +434,7 @@ test("rejects wrong manifest identity, stale candidate/track scope and wrong rep
     await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /HEAD is stale|commit is stale/u);
   });
   await withMutation((value) => { value.candidateId = "b".repeat(64); }, async () => {
-    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /candidateId is stale|ACC-02/u);
+    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /candidateId is stale/u);
   });
   await withMutation((value) => { value.trackIds = [...value.trackIds].reverse(); }, async (value) => {
     assert.throws(() => validateReleaseManifest(value), /trackIds/u);
@@ -419,7 +443,7 @@ test("rejects wrong manifest identity, stale candidate/track scope and wrong rep
 
 test("rejects modified evidence before accepting a portable reference", async () => {
   await withMutation((value) => {
-    value.references.find((reference) => reference.path.endsWith("candidate-readiness-v2.json")).sha256 = "0".repeat(64);
+    value.references.find((reference) => reference.path === "scripts/content/current-source-identity.mjs").sha256 = "0".repeat(64);
   }, async () => {
     await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /Reference hash mismatch/u);
   });
@@ -492,6 +516,15 @@ test("rejects dirty repositories and output paths inside or through symlinked pa
     await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /worktree must be clean/u);
   } finally {
     rmSync(dirtyPath, { force: true });
+  }
+
+  const retainedDirtyPath = join(applicationRoot, "src/content/generated/retained-content/unreviewed-retained.json");
+  mkdirSync(join(retainedDirtyPath, ".."), { recursive: true });
+  writeFileSync(retainedDirtyPath, "retained data is protected\n");
+  try {
+    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /worktree must be clean except for verified generated current-content outputs/u);
+  } finally {
+    rmSync(retainedDirtyPath, { force: true });
   }
 
   await assert.rejects(

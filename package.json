@@ -7,6 +7,7 @@
   },
   "main": "expo/AppEntry",
   "scripts": {
+    "eas-build-pre-install": "node scripts/verifyBundledCurrentContent.mjs",
     "start": "node scripts/runLocalProfile.mjs",
     "android": "node scripts/runLocalProfile.mjs",
     "ios": "node scripts/runLocalProfile.mjs smoke ios",
@@ -19,7 +20,7 @@
     "web": "node scripts/runLocalProfile.mjs",
     "web:smoke": "node scripts/runLocalProfile.mjs smoke web",
     "web:sandbox": "node scripts/runLocalProfile.mjs sandbox web",
-    "qa:static": "npm run recovery:check && npm run typecheck && npm test && npm run validate:content-boundary && npm run validate:runtime-privacy-boundary",
+    "qa:static": "npm run sync:content-release && npm run recovery:check && npm run typecheck && npm test && npm run validate:content-boundary && npm run validate:runtime-privacy-boundary",
     "recovery:check": "node --import tsx scripts/checkRecoveryBaseline.mjs",
     "architecture:check": "node --import tsx scripts/checkArchitecture.ts",
     "check:legal-variables": "node --import tsx scripts/checkLegalVariables.mjs",
@@ -48,7 +49,9 @@
     "validate:runtime-privacy-boundary": "node scripts/validateRuntimePrivacyBoundary.mjs",
     "sync:content-release": "node scripts/syncBundledContentRelease.mjs sync",
     "check:content-release": "node scripts/syncBundledContentRelease.mjs check",
-    "check:retention-contract": "node --import tsx scripts/checkRetentionContract.mjs"
+    "check:retention-contract": "node --import tsx scripts/checkRetentionContract.mjs",
+    "prepare:eas-build": "node scripts/prepareEasBuild.mjs --prepare-only",
+    "eas:build": "node scripts/prepareEasBuild.mjs"
   },
   "dependencies": {
     "@react-native-community/netinfo": "^12.0.1",

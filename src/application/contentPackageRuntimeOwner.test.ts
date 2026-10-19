@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test, { before } from "node:test";
 import { getProductSimulationModeConfig } from "../content/canonical/productModeConfig";
 import { ContentPackageRuntimeOwner, contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
@@ -78,7 +79,7 @@ test("family admission and runtime catalog pins cannot be substituted independen
   }), /track mismatch/u);
 });
 
-test("verified current OOD v24 does not resolve an absent exact OOD v23 pin when retained packages are empty", async () => {
+test("verified current OOD identity does not resolve an absent exact prior-version pin when retained packages are empty", async () => {
   let retainedPackageLoads = 0;
   const owner = new ContentPackageRuntimeOwner(
     () => "test-profile",
@@ -86,8 +87,31 @@ test("verified current OOD v24 does not resolve an absent exact OOD v23 pin when
   );
   await owner.verifyBundledPackages();
   const current = owner.getPreparedDiscovery("object-oriented-design-interview").track;
-  assert.equal(current.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24-bizq02-v2");
-  assert.equal(current.artifactSha256, "015e21db498465602857d1461aa84ddd26546e665cd9225997e121eca790efe0");
+  const trackId = "object-oriented-design-interview";
+  const lock = JSON.parse(readFileSync("src/content/generated/canonical-content/content-lock.json", "utf8")) as {
+    tracks: readonly { trackId: string; contentVersion: string; sha256: string }[];
+  };
+  const installedLock = lock.tracks.find((entry) => entry.trackId === trackId);
+  assert.ok(installedLock, "the verified current APP bundle must contain its OOD content lock");
+  const successorLedger = JSON.parse(readFileSync("src/content/generated/canonical-content/content-successor-ledger.json", "utf8")) as {
+    tracks: readonly {
+      trackId: string;
+      training: Readonly<{ contentVersion: string; artifactSha256: string }>;
+      planningPolicy: Readonly<{ contentVersion: string; artifactSha256: string; policyVersion: string }>;
+    }[];
+  };
+  const currentSuccessor = successorLedger.tracks.find((entry) => entry.trackId === trackId);
+  assert.ok(currentSuccessor, "the current OOD bundle must declare its training and planning-policy identities");
+  const currentIdentity = { contentVersion: current.contentVersion, artifactSha256: current.artifactSha256 };
+  assert.deepEqual(currentIdentity, {
+    contentVersion: currentSuccessor.training.contentVersion,
+    artifactSha256: currentSuccessor.training.artifactSha256,
+  }, "the verified runtime catalog must use the installed current training identity");
+  assert.deepEqual(
+    { contentVersion: installedLock.contentVersion, artifactSha256: installedLock.sha256 },
+    { contentVersion: currentSuccessor.planningPolicy.contentVersion, artifactSha256: currentSuccessor.planningPolicy.artifactSha256 },
+    "the installed artifact lock pins the separate current planning-policy projection",
+  );
 
   await assert.rejects(
     owner.resolveExactArtifact({
@@ -99,6 +123,10 @@ test("verified current OOD v24 does not resolve an absent exact OOD v23 pin when
       && error.identity.trackId === "object-oriented-design-interview"
       && error.identity.contentVersion === "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
   );
+  assert.notDeepEqual(currentIdentity, {
+    contentVersion: "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
+    artifactSha256: "932b7370d7be44bb5274ad8bc5a31b45f0479b3ff4251160af1ed2b170ca80d7",
+  }, "the current package does not impersonate the exact prior-version history pin");
   assert.equal(retainedPackageLoads, 1);
 });
 

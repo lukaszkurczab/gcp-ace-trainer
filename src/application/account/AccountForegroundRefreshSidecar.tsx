@@ -1,4 +1,4 @@
-import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
+import { beginStartupSpan, markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { useEffect, useRef } from "react";
 import { AppState, Platform, type AppStateStatus } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
@@ -97,9 +97,19 @@ export function AccountForegroundRefreshSidecar() {
           && sessionGenerationRef.current === intent.sessionGeneration;
       },
       refresh: async (intent) => {
-        const result = await accountRef.current.refreshAccountIdentity();
+        const endSpan = beginStartupSpan("account_foreground_refresh");
+        let result: Awaited<ReturnType<AccountSessionContextValue["refreshAccountIdentity"]>>;
+        let outcome: "success" | "failure" = "failure";
+        try {
+          result = await accountRef.current.refreshAccountIdentity();
+          outcome = result.kind === "success" ? "success" : "failure";
+        } finally {
+          markStartup(`account_foreground_refresh:${outcome}`);
+          endSpan();
+        }
+        if (result.kind !== "success") return;
         const current = accountRef.current.state;
-        if (result.kind === "success" && current.kind === "authenticated" && current.user.uid === intent.uid) {
+        if (current.kind === "authenticated" && current.user.uid === intent.uid) {
           await accountRef.current.refreshPremiumEntitlement(current.backendUser.id);
           await accountRef.current.retryLearningPlanRecovery(current.backendUser.id);
         }

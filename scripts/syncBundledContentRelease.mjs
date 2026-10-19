@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { lstat, mkdtemp, readFile, readdir, realpath, rename, rm, writeFile } from "node:fs/promises";
+import { lstat, mkdtemp, open, readFile, readdir, realpath, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -17,72 +17,17 @@ export const EXPECTED_TRACK_IDS = Object.freeze([
   "microsoft-azure-ai-fundamentals-ai-901",
   "object-oriented-design-interview",
 ]);
-export const EXPECTED_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_695 });
-export const FROZEN_BASELINE_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 943, questionCount: 16_622 });
 export const CLAUDE_TRACK_ID = "claude-certified-architect-professional-certification";
-const PRE_QLE_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_695 });
-const FIRST_CASES_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_704 });
-export const LOCAL_CLAUDE_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_749 });
 export const GENERATED_DIRECTORY = "src/content/generated/canonical-content";
 export const LOCK_FILE_NAME = "content-lock.json";
 export const SUCCESSOR_LEDGER_FILE_NAME = "content-successor-ledger.json";
+export const RELEASE_LOCK_RELATIVE_PATH = "integration/contracts/content-release/release.lock.json";
 const LOCK_SCHEMA_VERSION = "patternly-content-lock-v1";
 const ARTIFACT_SCHEMA_VERSION = "patternly-content-artifact-v2";
 const SUCCESSOR_LEDGER_SCHEMA_VERSION = "patternly-content-successor-ledger-v1";
-const BESD_TRACK_ID = "backend-system-design-interview";
-const BESD_SUCCESSOR_PROOF = Object.freeze({
-  path: "evidence/business-quality/bizq-01-besd-cohort-15.json",
-  sha256: "548e65b0ec000419d719f7ba5da3ae7c3e1225fe5bb09917a11edef803af4cb3",
-  schemaVersion: "patternly-bizq-semantic-replacement-v1",
-  trackId: BESD_TRACK_ID,
-  beforeProducerCommit: "0f4e6912d7d0cdb1a1c41b9d7885d7e867f80f34",
-  beforeContentVersion: "backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2-bizq03-planning-v2",
-  beforeTraining: Object.freeze({
-    contentVersion: "backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2",
-    artifactSha256: "d7f2762e8cc71e41addb775a5221cf1b79cd5ef2e885a7cef8fce914069d1481",
-    questionCount: 1569,
-  }),
-  contentVersion: "backend-system-design-interview-authoring-v2026.10.11-bizq01-15-bizq02-v2-bizq03-planning-v2",
-  trainingSha256: "8bcd0856d97fbbd7902461b9e205818e0f806bde7eadf9fb373b339df0469899",
-  questionCount: 1569,
-  replacementCount: 134,
-});
-const CANDIDATE_PATH = "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json";
-const RELEASE_PATH = "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json";
-const READINESS_PATH = "evidence/readiness/current-candidate-readiness-v2.json";
 const HASH = /^[a-f0-9]{64}$/u;
 const TRACK_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const SAFE_CONTENT_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
-export const LOCAL_CANDIDATE_SCHEMA_VERSION = "patternly-local-content-candidate-acceptance-v1";
-const LOCAL_CLAUDE_EXPECTED = Object.freeze({
-  contentVersion: "ccarp-2026.10.14-qle-v2-full-path-identity-v2",
-  artifactSha256: "364ead796c19ee378e0ef7a5c47d80da69f0c3af694e2107d58ad6061f3ff80c",
-  questionCount: 972,
-  nodeCount: 7,
-  mentalUnitCount: 53,
-  ruleVersion: 3,
-});
-const LOCAL_REVIEW_EVIDENCE = Object.freeze([
-  Object.freeze({ repository: "patternly", path: "integration/contracts/content-release/local-claude/qle-v2-contract.md" }),
-  Object.freeze({ repository: "patternly", path: "src/content/generated/retained-content/claude-pre-qle-v2.json" }),
-  Object.freeze({ repository: "patternly", path: "src/content/generated/retained-content/claude-qle-v2-first-cases.json" }),
-  Object.freeze({ repository: "patternly", path: "src/content/generated/retained-content/claude-qle-v2-before-identity.json" }),
-  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-13-claude-qle-v2-coverage.json" }),
-  Object.freeze({ repository: "patternly", path: "integration/contracts/content-release/local-claude/claude-course-alignment-acceptance-2026-10-11.md" }),
-  Object.freeze({ repository: "patternly", path: "integration/contracts/content-release/local-claude/claude-unit-coverage-acceptance-2026-10-11.md" }),
-  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-claude-course-map.md" }),
-  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-claude-course-map.json" }),
-  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.md" }),
-  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.json" }),
-]);
-const LOCAL_FROZEN_RELEASE_PINS = Object.freeze([
-  Object.freeze({ repository: "patternly", path: "integration/contracts/content-release/release.lock.json" }),
-  Object.freeze({ repository: "patternly-content", path: "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json" }),
-  Object.freeze({ repository: "patternly-content", path: "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json" }),
-  Object.freeze({ repository: "patternly-content", path: "evidence/readiness/current-candidate-readiness-v2.json" }),
-  Object.freeze({ repository: "patternly-content", path: "evidence/candidate-decisions/current-candidate-decision-v2.json" }),
-  Object.freeze({ repository: "patternly-content", path: "evidence/admissions/candidate-admission-v3.json" }),
-]);
 const CODING_TRACK_ID = "coding-interview-dsa-problem-solving";
 const CODING_PROFILE_ID = "algorithms-interview-simulation-v1";
 const DESIGN_TRACK_IDS = Object.freeze(["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"]);
@@ -122,10 +67,11 @@ function fail(message) { throw new CanonicalContentSyncError(message); }
 function isRecord(value) { return value !== null && typeof value === "object" && !Array.isArray(value); }
 function exactKeys(value, expected) { return isRecord(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...expected].sort()); }
 function requireExactKeys(value, expected, label) { if (!exactKeys(value, expected)) fail(`${label} has an invalid shape`); }
-function validateCertificationSimulationConfig(config, { trackId, contentVersion, questions, nodeIds }) {
+function validateCertificationSimulationConfig(config, { questions, nodeIds, allowLegacyEvidence = false }) {
   const path = `simulationProfiles.certification.familyConfig`;
-  const configKeys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap", "nodeDomainMapEvidence"];
-  requireExactKeys(config, configKeys, path);
+  const configKeys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap"];
+  const legacyEvidenceKeys = [...configKeys, "nodeDomainMapEvidence"];
+  if (!exactKeys(config, configKeys) && !(allowLegacyEvidence && exactKeys(config, legacyEvidenceKeys))) fail(`${path} has an invalid shape`);
   if (config.schemaVersion !== "patternly-certification-simulation-config-v1") fail(`${path}.schemaVersion is unsupported`);
   requireExactKeys(config.source, ["url", "checkedDate", "guideVersion"], `${path}.source`);
   if ([config.source.url, config.source.checkedDate, config.source.guideVersion].some((value) => typeof value !== "string" || !value.trim())) fail(`${path}.source is invalid`);
@@ -160,12 +106,13 @@ function validateCertificationSimulationConfig(config, { trackId, contentVersion
   if (sourceDomainsByNode.size !== nodeIds.length || [...sourceDomainsByNode.values()].some((nodeDomains) => nodeDomains.size !== 1)) fail(`${path}: source-derived per-question domains are incomplete or ambiguous`);
   const sourceNodeDomainMap = Object.fromEntries([...sourceDomainsByNode].map(([nodeId, nodeDomains]) => [nodeId, [...nodeDomains][0]]));
   if (JSON.stringify(Object.entries(config.nodeDomainMap).sort()) !== JSON.stringify(Object.entries(sourceNodeDomainMap).sort())) fail(`${path}.nodeDomainMap differs from source-derived per-question domains`);
-  const evidence = config.nodeDomainMapEvidence;
-  requireExactKeys(evidence, ["artifactPath", "contentVersion", "itemCount", "nodeCount", "ambiguousNodeCount"], `${path}.nodeDomainMapEvidence`);
-  if (typeof evidence.contentVersion !== "string" || !SAFE_CONTENT_VERSION.test(evidence.contentVersion) ||
-    evidence.artifactPath !== `artifacts/tracks/${trackId}/${evidence.contentVersion}/track-artifact.json` ||
-    evidence.itemCount !== questions.length || evidence.nodeCount !== nodeIds.length || evidence.ambiguousNodeCount !== 0) {
-    fail(`${path}.nodeDomainMapEvidence does not match its pinned artifact identity or node coverage`);
+  if (Object.hasOwn(config, "nodeDomainMapEvidence")) {
+    if (!allowLegacyEvidence) fail(`${path}.nodeDomainMapEvidence is retired from current source`);
+    const evidence = config.nodeDomainMapEvidence;
+    requireExactKeys(evidence, ["artifactPath", "contentVersion", "itemCount", "nodeCount", "ambiguousNodeCount"], `${path}.nodeDomainMapEvidence`);
+    if (typeof evidence.artifactPath !== "string" || typeof evidence.contentVersion !== "string"
+      || !Number.isSafeInteger(evidence.itemCount) || !Number.isSafeInteger(evidence.nodeCount)
+      || !Number.isSafeInteger(evidence.ambiguousNodeCount)) fail(`${path}.nodeDomainMapEvidence is malformed`);
   }
 }
 function validateCodingSimulationConfig(config, { questions }) {
@@ -217,7 +164,7 @@ function validateDesignSimulationConfig(config, { trackId }) {
   if (JSON.stringify(config.outcomeEvaluation.machineEvaluable) !== JSON.stringify(["response_completeness"]) || config.outcomeEvaluation.semanticScoring !== "not_evaluated") fail(`${label}.outcomeEvaluation may evaluate completeness only`);
   if (!DESIGN_TRACK_IDS.includes(trackId)) fail(`${label} is not supported for ${trackId}`);
 }
-function validateSimulationProfiles(profiles, { trackId, contentVersion, questions }) {
+function validateSimulationProfiles(profiles, { trackId, questions, allowLegacyEvidence = false }) {
   if (!Array.isArray(profiles) || profiles.length === 0) fail(`Simulation profile metadata is malformed for ${trackId}`);
   if (!["google-cloud-associate-cloud-engineer", CODING_TRACK_ID, ...DESIGN_TRACK_IDS].includes(trackId) || profiles.length !== 1) fail(`Simulation profile family is unsupported for ${trackId}`);
   const profile = profiles[0];
@@ -238,7 +185,7 @@ function validateSimulationProfiles(profiles, { trackId, contentVersion, questio
   if (profile.familyId !== "certification") fail("GCP simulation profile family is unsupported");
   if (profile.modeId !== "certification-exam-simulation") fail("GCP simulation profile mode is not bound to Exam Simulation");
   const nodeIds = [...new Set(questions.map((question) => question.nodeId))].sort();
-  validateCertificationSimulationConfig(profile.familyConfig, { trackId, contentVersion, questions, nodeIds });
+  validateCertificationSimulationConfig(profile.familyConfig, { questions, nodeIds, allowLegacyEvidence });
 }
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
 function equalStringSets(actual, expected) { return JSON.stringify([...actual].sort()) === JSON.stringify([...expected].sort()); }
@@ -309,7 +256,7 @@ function parseJson(bytes, filePath) {
   try { return JSON.parse(bytes.toString("utf8")); } catch (error) { fail(`Invalid JSON in ${filePath}: ${error.message}`); }
 }
 
-export async function validateBuiltContent(directory, { expectedInventory = EXPECTED_INVENTORY, acceptedInventories = [], producerRoot } = {}) {
+export async function validateBuiltContent(directory, { expectedInventory = null, acceptedInventories = [], producerRoot, allowLegacySimulationEvidence = false } = {}) {
   const { validatePackageCompletionRule, PlanningPolicyError, validatePlanningPolicy } = await producerValidationModules(producerRoot);
   await inspectDirectory(directory, directory, "built content directory");
   const entries = await readdir(directory, { withFileTypes: true });
@@ -372,7 +319,7 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
       nodeIds.add(`${entry.trackId}\0${question.nodeId}`);
       mentalUnitIds.add(`${entry.trackId}\0${question.nodeId}\0${question.mentalUnitId}`);
     }
-    if (Object.hasOwn(artifact, "simulationProfiles")) validateSimulationProfiles(artifact.simulationProfiles, { trackId: entry.trackId, contentVersion: entry.contentVersion, questions: artifact.questions });
+    if (Object.hasOwn(artifact, "simulationProfiles")) validateSimulationProfiles(artifact.simulationProfiles, { trackId: entry.trackId, questions: artifact.questions, allowLegacyEvidence: allowLegacySimulationEvidence });
     files.set(`${entry.trackId}.json`, artifactBytes);
     parsedArtifacts.set(`${entry.trackId}.json`, artifact);
   }
@@ -387,318 +334,26 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
       const currentLock = lockByTrack.get(entry.trackId);
       const current = artifact && currentLock ? trackIdentityFromArtifact(artifact, currentLock.sha256) : null;
       if (!current || current.contentVersion !== entry.planningPolicy.contentVersion || current.artifactSha256 !== entry.planningPolicy.artifactSha256 || current.policyVersion !== entry.planningPolicy.policyVersion) fail(`Content successor ledger is stale for ${entry.trackId}`);
-      const isApprovedBESDSuccessor = entry.trackId === BESD_TRACK_ID && sameJsonValue(entry.training, {
-        contentVersion: BESD_SUCCESSOR_PROOF.contentVersion,
-        artifactSha256: BESD_SUCCESSOR_PROOF.trainingSha256,
-        questionCount: BESD_SUCCESSOR_PROOF.questionCount,
-      });
       const reconstructed = historicalTrainingProjection(artifact, entry.training.contentVersion);
-      if (isApprovedBESDSuccessor) {
-        if (artifact.contentVersion !== BESD_SUCCESSOR_PROOF.contentVersion || sha256(reconstructed) !== BESD_SUCCESSOR_PROOF.trainingSha256 || JSON.parse(reconstructed.toString("utf8")).questions.length !== BESD_SUCCESSOR_PROOF.questionCount) fail(`Content successor ledger training pin does not match ${entry.trackId}`);
-      } else if (sha256(reconstructed) !== entry.training.artifactSha256 || JSON.parse(reconstructed.toString("utf8")).questions.length !== entry.training.questionCount) fail(`Content successor ledger training pin does not match ${entry.trackId}`);
+      if (sha256(reconstructed) !== entry.training.artifactSha256 || JSON.parse(reconstructed.toString("utf8")).questions.length !== entry.training.questionCount) fail(`Content successor ledger training identity does not reconstruct exactly for ${entry.trackId}`);
     }
     files.set(SUCCESSOR_LEDGER_FILE_NAME, ledgerBytes);
   }
   const inventory = { trackCount: lock.tracks.length, nodeCount: nodeIds.size, mentalUnitCount: mentalUnitIds.size, questionCount: questionIds.size };
-  const accepted = [expectedInventory, ...acceptedInventories];
-  if (!accepted.some((entry) => JSON.stringify(inventory) === JSON.stringify(entry))) fail(`Inventory mismatch: expected ${canonicalJson(accepted)}, received ${JSON.stringify(inventory)}`);
+  const accepted = [expectedInventory, ...acceptedInventories].filter(Boolean);
+  if (accepted.length > 0 && !accepted.some((entry) => JSON.stringify(inventory) === JSON.stringify(entry))) fail(`Inventory mismatch: expected ${canonicalJson(accepted)}, received ${JSON.stringify(inventory)}`);
   return { lock, inventory, files };
 }
 
 async function defaultRunBuild({ producerRoot, outputRoot }) {
-  await execFileAsync(process.execPath, [path.join(producerRoot, "scripts", "build.mjs"), "build-all", "--root", producerRoot, "--output-root", outputRoot], { cwd: producerRoot, maxBuffer: 32 * 1024 * 1024 });
-}
-async function runTrackBuild({ producerRoot, outputRoot, trackId }) {
-  await execFileAsync(process.execPath, [path.join(producerRoot, "scripts", "build.mjs"), "build", "--track", trackId, "--root", producerRoot, "--output-root", outputRoot], { cwd: producerRoot, maxBuffer: 32 * 1024 * 1024 });
-}
-
-async function collectRegularFiles(root, relativePath, output = []) {
-  const absolutePath = path.join(root, relativePath);
-  const info = await lstat(absolutePath).catch((error) => { fail(`Cannot inspect canonical producer input ${relativePath}: ${error.message}`); });
-  if (info.isSymbolicLink()) fail(`Symbolic links are not allowed in canonical producer inputs: ${relativePath}`);
-  if (info.isFile()) {
-    output.push(relativePath.split(path.sep).join("/"));
-    return output;
-  }
-  if (!info.isDirectory()) fail(`Canonical producer input is not a regular file or directory: ${relativePath}`);
-  const entries = await readdir(absolutePath, { withFileTypes: true });
-  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
-    if (entry.name === ".git" || entry.name === "node_modules") continue;
-    await collectRegularFiles(root, path.join(relativePath, entry.name), output);
-  }
-  return output;
-}
-
-async function localProducerInputFingerprint(producerRoot) {
-  const roots = [
-    "content/catalog.json",
-    `content/${CLAUDE_TRACK_ID}`,
-    "config",
-    "schemas",
-    "package.json",
-    "package-lock.json",
-    "scripts/build.mjs",
-    "scripts/content",
-    "scripts/review",
-  ];
-  const paths = [];
-  for (const relativePath of roots) await collectRegularFiles(producerRoot, relativePath, paths);
-  const uniquePaths = [...new Set(paths)].sort();
-  const inputs = [];
-  for (const relativePath of uniquePaths) {
-    const bytes = await inspectRegularFile(path.join(producerRoot, relativePath), producerRoot, "canonical producer input");
-    inputs.push({ path: relativePath, sha256: sha256(bytes) });
-  }
-  return { sha256: sha256(Buffer.from(canonicalJson(inputs))), inputs };
-}
-
-function localTrackStats(artifact) {
-  const nodeIds = new Set(artifact.questions.map((question) => question.nodeId));
-  const mentalUnitIds = new Set(artifact.questions.map((question) => `${question.nodeId}\0${question.mentalUnitId}`));
-  return { questionCount: artifact.questions.length, nodeCount: nodeIds.size, mentalUnitCount: mentalUnitIds.size, ruleVersion: artifact.completionRule?.ruleVersion };
-}
-
-async function localReviewEvidenceHashes({ appRoot, producerRoot }) {
-  const output = [];
-  for (const evidence of LOCAL_REVIEW_EVIDENCE) {
-    const repositoryRoot = evidence.repository === "patternly" ? appRoot : producerRoot;
-    const bytes = await inspectRegularFile(path.join(repositoryRoot, evidence.path), repositoryRoot, "local candidate review evidence");
-    output.push({ ...evidence, sha256: sha256(bytes) });
-  }
-  return output;
-}
-
-async function localFrozenReleasePins({ appRoot, producerRoot }) {
-  const output = [];
-  for (const pin of LOCAL_FROZEN_RELEASE_PINS) {
-    const repositoryRoot = pin.repository === "patternly" ? appRoot : producerRoot;
-    const bytes = await inspectRegularFile(path.join(repositoryRoot, pin.path), repositoryRoot, "frozen release/admission pin");
-    output.push({ ...pin, sha256: sha256(bytes) });
-  }
-  return output;
-}
-
-async function localBaseSnapshot({ targetDirectory }) {
-  const loaded = await loadCurrentLocalBundle(targetDirectory);
-  const built = loaded.built;
-  const fileSha256s = Object.fromEntries([...built.files].map(([name, bytes]) => [name, sha256(bytes)]).sort(([left], [right]) => left.localeCompare(right)));
-  if (!built.files.has(SUCCESSOR_LEDGER_FILE_NAME)) fail("Local scoped candidate sync requires the current bundle successor ledger");
-  const ledger = parseSuccessorLedger(parseJson(built.files.get(SUCCESSOR_LEDGER_FILE_NAME), SUCCESSOR_LEDGER_FILE_NAME));
-  const priorClaudeTraining = ledger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID)?.training;
-  if (!priorClaudeTraining) fail("Current bundle has no Claude training predecessor pin");
-  return {
-    built,
-    fileSha256s,
-    priorClaudeTraining: structuredClone(priorClaudeTraining),
-    preservedLedgerEntries: structuredClone(ledger.tracks.filter((entry) => entry.trackId !== CLAUDE_TRACK_ID)),
-  };
-}
-
-async function buildLocalClaudeCandidateDescriptor({ appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), runBuild = runTrackBuild } = {}) {
-  const resolvedAppRoot = path.resolve(appRoot);
-  const resolvedProducerRoot = path.resolve(producerRoot);
-  const resolvedTarget = path.resolve(targetDirectory);
-  if (resolvedTarget !== path.join(resolvedAppRoot, GENERATED_DIRECTORY)) fail(`Target must be exactly ${GENERATED_DIRECTORY} within the application root`);
-  await assertSafeTargetBoundary(resolvedAppRoot, resolvedTarget);
-  await assertProducerRoot(resolvedProducerRoot);
-  const base = await localBaseSnapshot({ targetDirectory: resolvedTarget });
-  const sourceFingerprint = await localProducerInputFingerprint(resolvedProducerRoot);
-  const releasePins = await localFrozenReleasePins({ appRoot: resolvedAppRoot, producerRoot: resolvedProducerRoot });
-  const temporaryDirectory = await mkdtemp(path.join(path.dirname(resolvedTarget), `.claude-candidate-${process.pid}-`));
-  try {
-    await runBuild({ producerRoot: resolvedProducerRoot, outputRoot: temporaryDirectory, trackId: CLAUDE_TRACK_ID });
-    const verifiedFingerprint = await localProducerInputFingerprint(resolvedProducerRoot);
-    if (verifiedFingerprint.sha256 !== sourceFingerprint.sha256 || canonicalJson(verifiedFingerprint.inputs) !== canonicalJson(sourceFingerprint.inputs)) fail("Canonical producer inputs changed while the local candidate was being built");
-    const candidateArtifactPath = path.join(temporaryDirectory, `${CLAUDE_TRACK_ID}.json`);
-    const candidateLockPath = path.join(temporaryDirectory, LOCK_FILE_NAME);
-    const artifactBytes = await inspectRegularFile(candidateArtifactPath, temporaryDirectory, "built Claude candidate artifact");
-    const artifact = parseJson(artifactBytes, candidateArtifactPath);
-    const candidateLock = parseJson(await inspectRegularFile(candidateLockPath, temporaryDirectory, "built Claude candidate lock"), candidateLockPath);
-    const candidateLockTrack = candidateLock.tracks?.find((entry) => entry.trackId === CLAUDE_TRACK_ID);
-    if (!candidateLockTrack || candidateLockTrack.sha256 !== sha256(artifactBytes) || candidateLockTrack.contentVersion !== artifact.contentVersion || candidateLockTrack.questionCount !== artifact.questions?.length) fail("Built Claude candidate lock does not match its artifact");
-    const stats = localTrackStats(artifact);
-    const expectedStats = { questionCount: LOCAL_CLAUDE_EXPECTED.questionCount, nodeCount: LOCAL_CLAUDE_EXPECTED.nodeCount, mentalUnitCount: LOCAL_CLAUDE_EXPECTED.mentalUnitCount, ruleVersion: LOCAL_CLAUDE_EXPECTED.ruleVersion };
-    if (artifact.trackId !== CLAUDE_TRACK_ID || JSON.stringify(stats) !== JSON.stringify(expectedStats) || artifact.contentVersion !== LOCAL_CLAUDE_EXPECTED.contentVersion || sha256(artifactBytes) !== LOCAL_CLAUDE_EXPECTED.artifactSha256) fail(`Claude candidate does not satisfy the accepted local inventory: ${JSON.stringify(stats)}`);
-    const reviewEvidence = await localReviewEvidenceHashes({ appRoot: resolvedAppRoot, producerRoot: resolvedProducerRoot });
-    return {
-      descriptor: {
-        schemaVersion: "patternly-local-content-candidate-descriptor-v1",
-        scope: "local_only",
-        trackId: CLAUDE_TRACK_ID,
-        sourceFingerprint,
-        artifact: { contentVersion: artifact.contentVersion, artifactSha256: sha256(artifactBytes), ...stats },
-        base: { fileSha256s: base.fileSha256s, priorClaudeTraining: base.priorClaudeTraining, preservedLedgerEntries: base.preservedLedgerEntries },
-        reviewEvidence,
-        releasePins,
-      },
-      artifact,
-      artifactBytes,
-    };
-  } finally {
-    await rm(temporaryDirectory, { recursive: true, force: true });
-  }
-}
-
-export async function prepareLocalClaudeCandidate(options = {}) {
-  return (await buildLocalClaudeCandidateDescriptor(options)).descriptor;
-}
-
-function localCandidateSemanticDescriptor(value) {
-  const { base: _base, ...semantic } = value;
-  return semantic;
-}
-
-function validateLocalCandidateDescriptorShape(descriptor) {
-  requireExactKeys(descriptor, ["schemaVersion", "scope", "trackId", "sourceFingerprint", "artifact", "base", "reviewEvidence", "releasePins"], "local candidate descriptor");
-  if (descriptor.schemaVersion !== "patternly-local-content-candidate-descriptor-v1" || descriptor.scope !== "local_only" || descriptor.trackId !== CLAUDE_TRACK_ID) fail("Local candidate descriptor has an unsupported scope or track");
-  requireExactKeys(descriptor.artifact, Object.keys(LOCAL_CLAUDE_EXPECTED), "local Claude artifact identity");
-  if (canonicalJson(descriptor.artifact) !== canonicalJson(LOCAL_CLAUDE_EXPECTED)) fail("Local Claude artifact identity does not match the reviewed QLE-v2 local candidate");
-  requireExactKeys(descriptor.sourceFingerprint, ["sha256", "inputs"], "local producer input fingerprint");
-  if (!HASH.test(descriptor.sourceFingerprint.sha256) || !Array.isArray(descriptor.sourceFingerprint.inputs) || descriptor.sourceFingerprint.inputs.length < 1) fail("Local producer input fingerprint is invalid");
-  let previousPath = "";
-  for (const input of descriptor.sourceFingerprint.inputs) {
-    requireExactKeys(input, ["path", "sha256"], "local producer input fingerprint entry");
-    if (typeof input.path !== "string" || !input.path || input.path.startsWith("/") || input.path.split("/").includes("..") || input.path <= previousPath || !HASH.test(input.sha256)) fail("Local producer input fingerprint paths or hashes are invalid");
-    previousPath = input.path;
-  }
-  if (sha256(Buffer.from(canonicalJson(descriptor.sourceFingerprint.inputs))) !== descriptor.sourceFingerprint.sha256) fail("Local producer input fingerprint digest is inconsistent");
-  for (const [field, expected] of [["reviewEvidence", LOCAL_REVIEW_EVIDENCE], ["releasePins", LOCAL_FROZEN_RELEASE_PINS]]) {
-    const actual = descriptor[field];
-    if (!Array.isArray(actual) || actual.length !== expected.length) fail(`Local candidate ${field} has an invalid shape`);
-    actual.forEach((entry, index) => {
-      requireExactKeys(entry, ["repository", "path", "sha256"], `local candidate ${field}[${index}]`);
-      if (entry.repository !== expected[index].repository || entry.path !== expected[index].path || !HASH.test(entry.sha256)) fail(`Local candidate ${field}[${index}] does not match the approved path set`);
-    });
-  }
-}
-
-async function buildLocalMergedCandidate({ appRoot, producerRoot, targetDirectory, acceptanceRecord, runBuild = runTrackBuild }) {
-  const recordPath = acceptanceRecord;
-  const recordBytes = await inspectRegularFile(recordPath, path.dirname(path.resolve(recordPath)), "local candidate acceptance record");
-  const record = parseJson(recordBytes, recordPath);
-  requireExactKeys(record, ["schemaVersion", "scope", "decision", "publication", "releaseLockUpdate", "candidate"], "local candidate acceptance record");
-  if (record.schemaVersion !== LOCAL_CANDIDATE_SCHEMA_VERSION || record.scope !== "local_only" || record.decision !== "accepted_for_local_runtime" || record.publication !== "not_granted" || record.releaseLockUpdate !== false) fail("Local candidate acceptance record does not explicitly limit acceptance to local runtime");
-  const descriptor = record.candidate;
-  validateLocalCandidateDescriptorShape(descriptor);
-  const prepared = await buildLocalClaudeCandidateDescriptor({ appRoot, producerRoot, targetDirectory, runBuild });
-  const current = prepared.descriptor;
-  if (canonicalJson(localCandidateSemanticDescriptor(descriptor)) !== canonicalJson(localCandidateSemanticDescriptor(current))) fail("Local candidate acceptance record is stale for current producer inputs, artifact, review evidence, or release pins");
-  if (!isRecord(descriptor.base) || !exactKeys(descriptor.base, ["fileSha256s", "priorClaudeTraining", "preservedLedgerEntries"])) fail("Local candidate base snapshot has an invalid shape");
-  const baseNames = [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), LOCK_FILE_NAME, SUCCESSOR_LEDGER_FILE_NAME].sort();
-  if (!isRecord(descriptor.base.fileSha256s) || !equalStringSets(Object.keys(descriptor.base.fileSha256s), baseNames) || Object.values(descriptor.base.fileSha256s).some((digest) => !HASH.test(digest))) fail("Local candidate base snapshot must bind every generated file");
-  requireExactKeys(descriptor.base.priorClaudeTraining, ["contentVersion", "artifactSha256", "questionCount"], "local candidate prior Claude training pin");
-  if (!SAFE_CONTENT_VERSION.test(descriptor.base.priorClaudeTraining.contentVersion) || !HASH.test(descriptor.base.priorClaudeTraining.artifactSha256) || !Number.isSafeInteger(descriptor.base.priorClaudeTraining.questionCount) || descriptor.base.priorClaudeTraining.questionCount < 1) fail("Local candidate prior Claude training pin is invalid");
-  if (!Array.isArray(descriptor.base.preservedLedgerEntries) || descriptor.base.preservedLedgerEntries.length !== EXPECTED_TRACK_IDS.length - 1) fail("Local candidate must preserve the eight other ledger entries");
-  const currentBundle = await loadCurrentLocalBundle(targetDirectory);
-  const currentFileSha256s = Object.fromEntries([...currentBundle.files].map(([name, bytes]) => [name, sha256(bytes)]));
-  const baseMatches = canonicalJson(currentFileSha256s) === canonicalJson(descriptor.base.fileSha256s);
-
-  const temporaryDirectory = await mkdtemp(path.join(path.dirname(targetDirectory), `.claude-candidate-merge-${process.pid}-`));
-  {
-    try {
-    const claudeArtifactBytes = prepared.artifactBytes;
-    const claudeArtifact = prepared.artifact;
-    const claudeEntry = { trackId: CLAUDE_TRACK_ID, contentVersion: claudeArtifact.contentVersion, questionCount: claudeArtifact.questions.length, sha256: sha256(claudeArtifactBytes) };
-    const existingLock = parseJson(currentBundle.files.get(LOCK_FILE_NAME), LOCK_FILE_NAME);
-    const lock = { schemaVersion: LOCK_SCHEMA_VERSION, tracks: existingLock.tracks.filter((entry) => entry.trackId !== CLAUDE_TRACK_ID).concat(claudeEntry).sort((left, right) => left.trackId.localeCompare(right.trackId)) };
-    const previousLedger = parseSuccessorLedger(parseJson(currentBundle.files.get(SUCCESSOR_LEDGER_FILE_NAME), SUCCESSOR_LEDGER_FILE_NAME));
-    const preservedLedger = descriptor.base.preservedLedgerEntries;
-    const currentPreservedLedger = previousLedger.tracks.filter((entry) => entry.trackId !== CLAUDE_TRACK_ID);
-    if (canonicalJson(currentPreservedLedger) !== canonicalJson(preservedLedger)) fail("A non-Claude successor ledger entry changed after candidate review");
-    const priorClaudeTraining = previousLedger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID)?.training;
-    const newClaudeTraining = {
-      contentVersion: `${claudeArtifact.contentVersion}-training`,
-      artifactSha256: sha256(historicalTrainingProjection(claudeArtifact, `${claudeArtifact.contentVersion}-training`)),
-      questionCount: claudeArtifact.questions.length,
-    };
-    if (!SAFE_CONTENT_VERSION.test(newClaudeTraining.contentVersion)) fail("Local Claude training contentVersion is invalid");
-    const expectedClaudeLedger = { trackId: CLAUDE_TRACK_ID, training: newClaudeTraining, planningPolicy: { contentVersion: claudeArtifact.contentVersion, artifactSha256: claudeEntry.sha256, policyVersion: claudeArtifact.planningPolicy.policyVersion } };
-    const alreadyInstalled = canonicalJson(existingLock.tracks.find(entry => entry.trackId === CLAUDE_TRACK_ID)) === canonicalJson(claudeEntry)
-      && sha256(currentBundle.files.get(`${CLAUDE_TRACK_ID}.json`)) === claudeEntry.sha256
-      && canonicalJson(previousLedger.tracks.find(entry => entry.trackId === CLAUDE_TRACK_ID)) === canonicalJson(expectedClaudeLedger);
-    if (baseMatches && canonicalJson(priorClaudeTraining) !== canonicalJson(descriptor.base.priorClaudeTraining)) fail("Current Claude training pin differs from the reviewed predecessor");
-    if (!baseMatches && !alreadyInstalled) fail("Current bundle is neither the reviewed base nor the accepted local candidate");
-    const ledger = parseSuccessorLedger({
-      schemaVersion: SUCCESSOR_LEDGER_SCHEMA_VERSION,
-      tracks: previousLedger.tracks.map((entry) => entry.trackId === CLAUDE_TRACK_ID
-        ? expectedClaudeLedger
-        : entry),
-    });
-    const mergedFiles = new Map(currentBundle.files);
-    mergedFiles.set(`${CLAUDE_TRACK_ID}.json`, claudeArtifactBytes);
-    mergedFiles.set(LOCK_FILE_NAME, Buffer.from(canonicalJson(lock)));
-    mergedFiles.set(SUCCESSOR_LEDGER_FILE_NAME, Buffer.from(JSON.stringify(ledger)));
-    for (const [name, bytes] of mergedFiles) await writeFile(path.join(temporaryDirectory, name), bytes);
-    const validated = await validateBuiltContent(temporaryDirectory, { expectedInventory: LOCAL_CLAUDE_INVENTORY });
-    const expectedFileSha256s = Object.fromEntries([...validated.files].map(([name, bytes]) => [name, sha256(bytes)]));
-    for (const trackId of EXPECTED_TRACK_IDS.filter((id) => id !== CLAUDE_TRACK_ID)) {
-      const name = `${trackId}.json`;
-      if (!validated.files.get(name).equals(currentBundle.files.get(name))) fail(`Scoped local candidate changed an unrelated artifact: ${name}`);
-    }
-    for (const entry of descriptor.base.preservedLedgerEntries) {
-      const actual = ledger.tracks.find((candidate) => candidate.trackId === entry.trackId);
-      if (canonicalJson(actual) !== canonicalJson(entry)) fail(`Scoped local candidate changed an unrelated ledger entry: ${entry.trackId}`);
-    }
-    return { record, descriptor, currentBundle, baseMatches, alreadyInstalled, mergedFiles: validated.files, inventory: validated.inventory, ledger, expectedFileSha256s };
-    } finally {
-      await rm(temporaryDirectory, { recursive: true, force: true });
-    }
-  }
-}
-
-async function loadCurrentLocalBundle(targetDirectory) {
-  const preQle = await validateBuiltContent(targetDirectory, { expectedInventory: PRE_QLE_INVENTORY }).then(built => ({ built, inventory: PRE_QLE_INVENTORY })).catch(() => undefined);
-  if (preQle) return { ...preQle, files: preQle.built.files };
-  const oldValidation = await validateBuiltContent(targetDirectory, { expectedInventory: FROZEN_BASELINE_INVENTORY }).then((built) => ({ built, inventory: FROZEN_BASELINE_INVENTORY })).catch(() => undefined);
-  if (oldValidation) return { ...oldValidation, files: oldValidation.built.files };
-  const firstCases = await validateBuiltContent(targetDirectory, { expectedInventory: FIRST_CASES_INVENTORY }).then(built => ({ built, inventory: FIRST_CASES_INVENTORY })).catch(() => undefined);
-  if (firstCases) return { ...firstCases, files: firstCases.built.files };
-  const acceptedValidation = await validateBuiltContent(targetDirectory, { expectedInventory: LOCAL_CLAUDE_INVENTORY }).then((built) => ({ built, inventory: LOCAL_CLAUDE_INVENTORY })).catch((error) => { fail(`Current local bundle is not a valid accepted base or candidate: ${error.message}`); });
-  return { ...acceptedValidation, files: acceptedValidation.built.files };
-}
-async function recoverLocalTransaction({ targetDirectory, remove = rm, move = rename }) {
-  const backupDirectory = `${targetDirectory}.backup`;
-  const [targetKind, backupKind] = await Promise.all([pathKind(targetDirectory), pathKind(backupDirectory)]);
-  if (targetKind === "other" || backupKind === "other") fail("Local canonical bundle transaction paths must be directories");
-  if (targetKind === "missing" && backupKind === "directory") {
-    await loadCurrentLocalBundle(backupDirectory);
-    await move(backupDirectory, targetDirectory);
-    return;
-  }
-  if (targetKind !== "directory" || backupKind !== "directory") return;
-  let targetError;
-  try {
-    await loadCurrentLocalBundle(targetDirectory);
-  } catch (error) { targetError = error; }
-  if (!targetError) {
-    await remove(backupDirectory, { recursive: true, force: false });
-    return;
-  }
-  try { await loadCurrentLocalBundle(backupDirectory); }
-    catch (backupError) { fail(`Local bundle recovery failed for target (${targetError.message}) and backup (${backupError.message})`); }
-  const failedDirectory = `${targetDirectory}.failed-${randomUUID()}`;
-  await move(targetDirectory, failedDirectory);
-  await move(backupDirectory, targetDirectory);
-  await remove(failedDirectory, { recursive: true, force: false });
+  const producer = await import(pathToFileURL(path.join(producerRoot, "scripts", "build.mjs")).href);
+  return producer.buildAll({ rootDirectory: producerRoot, outputRoot });
 }
 async function producerHead(producerRoot) {
   const { stdout } = await execFileAsync("git", ["-C", producerRoot, "rev-parse", "HEAD"], { encoding: "utf8" });
   const head = stdout.trim();
   if (!/^[a-f0-9]{40}$/u.test(head)) fail("Cannot resolve the current patternly-content HEAD");
   return head;
-}
-async function producerContentSourceCommit(producerRoot) {
-  const { stdout } = await execFileAsync("git", ["-C", producerRoot, "log", "-1", "--format=%H", "--", "content"], { encoding: "utf8" });
-  const commit = stdout.trim();
-  if (!/^[a-f0-9]{40}$/u.test(commit)) fail("Cannot resolve the canonical content source commit");
-  return commit;
-}
-async function verifyProducerState(producerRoot) {
-  const { stdout } = await execFileAsync("git", [
-    "-C", producerRoot, "status", "--porcelain", "--untracked-files=all", "--",
-    "content", "schemas", "scripts/build.mjs", "scripts/content", "scripts/review", "evidence/business-quality/bizq-01-besd-cohort-15.json",
-  ], { encoding: "utf8" });
-  if (stdout.trim()) fail("Canonical producer inputs differ from patternly-content HEAD");
 }
 async function assertProducerRoot(producerRoot) {
   await inspectDirectory(producerRoot, path.dirname(producerRoot), "patternly-content checkout");
@@ -740,159 +395,34 @@ function canonicalJson(value) {
   return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
 }
 
-function sameJsonValue(left, right) { return canonicalJson(left) === canonicalJson(right); }
-
-// The descriptor is passed explicitly only so unit tests can verify the proof contract
-// with synthetic bytes. Production always supplies the module-private fixed descriptor.
-export function verifyApprovedTrainingSuccessor({ previousTraining, previousArtifact, currentArtifact, proof, descriptor }) {
-  if (!descriptor || !isRecord(proof) || !Array.isArray(proof.replacements)) fail("Approved BESD successor proof is missing or malformed");
-  if (!sameJsonValue(previousTraining, descriptor.beforeTraining)) fail("Training material changed for backend-system-design-interview; the v1 training predecessor cannot be silently replaced");
-  for (const [field, expected] of Object.entries({
-    schemaVersion: descriptor.schemaVersion,
-    trackId: descriptor.trackId,
-    beforeProducerCommit: descriptor.beforeProducerCommit,
-    beforeContentVersion: descriptor.beforeContentVersion,
-    contentVersion: descriptor.contentVersion,
-  })) if (proof[field] !== expected) fail(`Approved BESD successor proof ${field} differs from its fixed identity`);
-  if (proof.replacements.length !== descriptor.replacementCount || previousArtifact?.trackId !== descriptor.trackId || currentArtifact?.trackId !== descriptor.trackId) fail("Approved BESD successor proof does not bind the fixed cohort and track");
-
-  const previousById = new Map(previousArtifact.questions.map((question) => [question.questionId, question]));
-  const currentById = new Map(currentArtifact.questions.map((question) => [question.questionId, question]));
-  if (previousById.size !== previousArtifact.questions.length || currentById.size !== currentArtifact.questions.length || previousById.size !== currentById.size) fail("Approved BESD successor changed the question inventory");
-  const beforeIds = new Set();
-  const currentIds = new Set();
-  for (const replacement of proof.replacements) {
-    if (!isRecord(replacement) || typeof replacement.beforeQuestionId !== "string" || typeof replacement.questionId !== "string" || typeof replacement.mentalUnitId !== "string" || !isRecord(replacement.beforeQuestion) || !isRecord(replacement.currentQuestion)) fail("Approved BESD successor proof contains a malformed replacement");
-    if (beforeIds.has(replacement.beforeQuestionId) || currentIds.has(replacement.questionId)) fail("Approved BESD successor proof contains duplicate question identities");
-    beforeIds.add(replacement.beforeQuestionId);
-    currentIds.add(replacement.questionId);
-    const previousQuestion = previousById.get(replacement.beforeQuestionId);
-    const currentQuestion = currentById.get(replacement.questionId);
-    if (!previousQuestion || !currentQuestion || replacement.beforeQuestion.questionId !== replacement.beforeQuestionId || replacement.currentQuestion.questionId !== replacement.questionId || replacement.beforeQuestion.mentalUnitId !== replacement.mentalUnitId || replacement.currentQuestion.mentalUnitId !== replacement.mentalUnitId || !sameJsonValue(previousQuestion, replacement.beforeQuestion) || !sameJsonValue(currentQuestion, replacement.currentQuestion)) fail("Approved BESD successor proof differs from an exact predecessor or current question");
-  }
-  for (const [questionId, previousQuestion] of previousById) {
-    if (beforeIds.has(questionId)) continue;
-    const currentQuestion = currentById.get(questionId);
-    if (!currentQuestion || !sameJsonValue(previousQuestion, currentQuestion)) fail("Approved BESD successor changed a question outside its fixed cohort");
-  }
-  for (const questionId of currentById.keys()) if (!currentIds.has(questionId) && !previousById.has(questionId)) fail("Approved BESD successor introduced a question outside its fixed cohort");
-
-  const projection = historicalTrainingProjection(currentArtifact, descriptor.contentVersion);
-  if (JSON.parse(projection.toString("utf8")).questions.length !== descriptor.questionCount || sha256(projection) !== descriptor.trainingSha256) fail("Approved BESD successor does not match its exact successor training identity");
-  return Object.freeze({ contentVersion: descriptor.contentVersion, artifactSha256: descriptor.trainingSha256, questionCount: descriptor.questionCount });
-}
-
-export async function readApprovedBESDSuccessorProof(producerRoot, descriptor = BESD_SUCCESSOR_PROOF) {
-  if (!HASH.test(descriptor.sha256) || !HASH.test(descriptor.trainingSha256)) fail("Approved BESD successor pins are not finalized");
-  const proofPath = path.join(producerRoot, descriptor.path);
-  const proofBytes = await inspectRegularFile(proofPath, producerRoot, "approved BESD successor proof");
-  if (sha256(proofBytes) !== descriptor.sha256) fail("Approved BESD successor proof hash differs from its fixed pin");
-  return parseJson(proofBytes, descriptor.path);
-}
-
 function trackIdentityFromArtifact(artifact, sha256Value) {
   if (artifact.schemaVersion !== ARTIFACT_SCHEMA_VERSION || !artifact.planningPolicy || artifact.planningPolicy.schemaVersion !== "patternly-learning-planning-policy-v1") fail(`Track ${artifact.trackId} is not a versioned v2 planning-policy successor`);
   return Object.freeze({ contentVersion: artifact.contentVersion, artifactSha256: sha256Value, policyVersion: artifact.planningPolicy.policyVersion });
 }
 
-function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor, previousArtifacts, approvedBESDProof, reviewedCandidate }) {
+function deriveSuccessorLedger({ artifacts, lock, previousLedger }) {
   const lockByTrack = new Map(lock.tracks.map((entry) => [entry.trackId, entry]));
   const previousByTrack = previousLedger ? new Map(previousLedger.tracks.map((entry) => [entry.trackId, entry])) : null;
-  const predecessorByTrack = predecessor ? new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry])) : null;
   const tracks = [];
   for (const trackId of EXPECTED_TRACK_IDS) {
     const artifact = artifacts.get(`${trackId}.json`);
     const currentLock = lockByTrack.get(trackId);
     if (!artifact || !currentLock) fail(`Cannot derive content successor identity for ${trackId}`);
     const currentIdentity = trackIdentityFromArtifact(artifact, currentLock.sha256);
-    let training;
-    if (previousByTrack) {
-      const previous = previousByTrack.get(trackId);
-      const projection = historicalTrainingProjection(artifact, previous.training.contentVersion);
-      if (sha256(projection) !== previous.training.artifactSha256 || JSON.parse(projection.toString("utf8")).questions.length !== previous.training.questionCount) {
-        if (trackId === BESD_TRACK_ID && approvedBESDProof && previousArtifacts?.has(`${trackId}.json`)) {
-          training = verifyApprovedTrainingSuccessor({
-            previousTraining: previous.training,
-            previousArtifact: previousArtifacts.get(`${trackId}.json`),
-            currentArtifact: artifact,
-            proof: approvedBESDProof,
-            descriptor: BESD_SUCCESSOR_PROOF,
-          });
-        } else {
-          const reviewed = reviewedCandidate?.get(trackId);
-          if (!reviewed || reviewed.artifactSha256 !== currentLock.sha256 || reviewed.contentVersion !== currentIdentity.contentVersion ||
-            currentIdentity.contentVersion === previous.planningPolicy.contentVersion || reviewed.questionCount !== artifact.questions.length) {
-            fail(`Training material changed for ${trackId}; the v1 training predecessor cannot be silently replaced`);
-          }
-          const trainingVersion = `${currentIdentity.contentVersion}-training`;
-          if (!SAFE_CONTENT_VERSION.test(trainingVersion)) fail(`Reviewed training contentVersion is invalid for ${trackId}`);
-          training = Object.freeze({ contentVersion: trainingVersion, artifactSha256: sha256(historicalTrainingProjection(artifact, trainingVersion)), questionCount: artifact.questions.length });
-        }
-      } else {
-        training = previous.training;
-      }
-    } else {
-      const oldLock = predecessorByTrack?.get(trackId);
-      const oldBytes = predecessor?.artifacts.get(`${trackId}.json`);
-      if (!oldLock || !oldBytes || oldLock.contentVersion === currentIdentity.contentVersion || !HASH.test(oldLock.sha256)) fail(`Exact v1 training predecessor is unavailable for ${trackId}`);
-      const oldArtifact = parseJson(oldBytes, `HEAD:${GENERATED_DIRECTORY}/${trackId}.json`);
-      if (oldArtifact.schemaVersion !== "patternly-content-artifact-v1" || oldArtifact.trackId !== trackId || oldArtifact.contentVersion !== oldLock.contentVersion || oldLock.sha256 !== sha256(oldBytes)) fail(`HEAD training predecessor identity is invalid for ${trackId}`);
-      const reconstructed = historicalTrainingProjection(artifact, oldLock.contentVersion);
-      if (!reconstructed.equals(oldBytes) || sha256(reconstructed) !== oldLock.sha256 || oldArtifact.questions.length !== artifact.questions.length) fail(`v2 successor is not a byte-exact policy-only successor of APP HEAD for ${trackId}`);
-      training = Object.freeze({ contentVersion: oldLock.contentVersion, artifactSha256: oldLock.sha256, questionCount: oldLock.questionCount });
-    }
+    const currentTrainingBytes = historicalTrainingProjection(artifact, currentIdentity.contentVersion);
+    const previous = previousByTrack?.get(trackId);
+    const priorProjection = previous
+      ? historicalTrainingProjection(artifact, previous.training.contentVersion)
+      : undefined;
+    const policyOnlySuccessor = previous
+      && sha256(priorProjection) === previous.training.artifactSha256
+      && JSON.parse(priorProjection.toString("utf8")).questions.length === previous.training.questionCount;
+    const training = policyOnlySuccessor
+      ? previous.training
+      : Object.freeze({ contentVersion: currentIdentity.contentVersion, artifactSha256: sha256(currentTrainingBytes), questionCount: artifact.questions.length });
     tracks.push(Object.freeze({ trackId, training, planningPolicy: Object.freeze({ contentVersion: currentIdentity.contentVersion, artifactSha256: currentIdentity.artifactSha256, policyVersion: currentIdentity.policyVersion }) }));
   }
   return parseSuccessorLedger(Object.freeze({ schemaVersion: SUCCESSOR_LEDGER_SCHEMA_VERSION, tracks: Object.freeze(tracks) }));
-}
-
-export async function validateReviewedCandidate({ producerRoot, sourceCommit, artifacts, files, lock }) {
-  const { createCandidateReadinessV2 } = await import(pathToFileURL(path.join(producerRoot, "scripts/review/candidate-readiness-v2.mjs")).href);
-  const readiness = parseJson(await readFile(path.join(producerRoot, READINESS_PATH)), READINESS_PATH);
-  const expectedReadiness = await createCandidateReadinessV2({ root: producerRoot });
-  if (canonicalJson(readiness) !== canonicalJson(expectedReadiness)) fail("Reviewed candidate readiness is stale or invalid");
-  const candidate = parseJson(await readFile(path.join(producerRoot, CANDIDATE_PATH)), CANDIDATE_PATH);
-  const release = parseJson(await readFile(path.join(producerRoot, RELEASE_PATH)), RELEASE_PATH);
-  if (candidate.status !== "draft_not_admitted" || readiness.candidateApproval?.status !== "approved" || readiness.publishingAdmission !== "not_granted" || readiness.runtimeAdmission !== "not_granted" || readiness.appReleaseLockUpdated !== false) fail("Reviewed candidate must have approved readiness without publishing/runtime admission");
-  if (candidate.release?.sourceRepositoryCommit !== sourceCommit || readiness.sourceRepositoryCommit !== sourceCommit || release.manifest?.sourceRepositoryCommit !== sourceCommit) fail("Reviewed candidate source commit differs from the committed canonical content snapshot");
-  if (candidate.release?.releaseId !== release.manifest?.releaseId || candidate.release?.checksumSha256 !== createHash("sha256").update(Buffer.from(`${canonicalJson(release)}\n`)).digest("hex")) fail("Reviewed candidate release identity or checksum is stale");
-  const releaseTracks = new Map(release.artifacts.map((entry) => [entry.trackId, entry]));
-  const readinessTracks = new Map(readiness.tracks.map((entry) => [entry.trackId, entry]));
-  const lockTracks = new Map(lock.tracks.map((entry) => [entry.trackId, entry]));
-  if (releaseTracks.size !== EXPECTED_TRACK_IDS.length || readinessTracks.size !== EXPECTED_TRACK_IDS.length ||
-    JSON.stringify(release.artifacts.map((entry) => entry.trackId)) !== JSON.stringify(EXPECTED_TRACK_IDS) ||
-    JSON.stringify(readiness.tracks.map((entry) => entry.trackId)) !== JSON.stringify(EXPECTED_TRACK_IDS)) fail("Reviewed candidate does not bind the exact nine sorted canonical tracks");
-  const reviewed = new Map();
-  for (const trackId of EXPECTED_TRACK_IDS) {
-    const artifact = artifacts.get(`${trackId}.json`);
-    const actualLock = lockTracks.get(trackId);
-    const candidateTrack = releaseTracks.get(trackId);
-    const readyTrack = readinessTracks.get(trackId);
-    if (!candidateTrack || typeof candidateTrack.artifactPath !== "string") fail(`Reviewed candidate artifact path is missing for ${trackId}`);
-    const artifactBytes = await readFile(path.join(producerRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release", candidateTrack.artifactPath));
-    const actualSha = actualLock?.sha256;
-    if (!artifact || !actualLock || !candidateTrack || !readyTrack || !HASH.test(actualSha ?? "") ||
-      candidateTrack.checksumSha256 !== actualSha || candidateTrack.artifactBytes !== artifactBytes.length || sha256(artifactBytes) !== actualSha ||
-      !artifactBytes.equals(files.get(`${trackId}.json`)) || candidateTrack.contentVersion !== artifact.contentVersion ||
-      candidateTrack.questionCount !== artifact.questions.length || readyTrack.artifactSha256 !== actualSha ||
-      readyTrack.questionCount !== artifact.questions.length || readyTrack.trackId !== trackId) {
-      fail(`Reviewed candidate artifact does not exactly match the committed build for ${trackId}`);
-    }
-    reviewed.set(trackId, Object.freeze({ artifactSha256: actualSha, contentVersion: artifact.contentVersion, questionCount: artifact.questions.length }));
-  }
-  return reviewed;
-}
-
-async function defaultBootstrapPredecessor(appRoot) {
-  const prefix = `HEAD:${GENERATED_DIRECTORY}/`;
-  const [lockResult, ...artifactResults] = await Promise.all([
-    execFileAsync("git", ["-C", appRoot, "show", `${prefix}${LOCK_FILE_NAME}`], { encoding: "buffer", maxBuffer: 32 * 1024 * 1024 }),
-    ...EXPECTED_TRACK_IDS.map((trackId) => execFileAsync("git", ["-C", appRoot, "show", `${prefix}${trackId}.json`], { encoding: "buffer", maxBuffer: 32 * 1024 * 1024 })),
-  ]).catch((error) => { fail(`Cannot load the one-time APP HEAD predecessor for the training ledger: ${error.message}`); });
-  const lockBytes = Buffer.from(lockResult.stdout);
-  const lock = parseJson(lockBytes, `HEAD:${prefix}${LOCK_FILE_NAME}`);
-  const artifacts = new Map(EXPECTED_TRACK_IDS.map((trackId, index) => [`${trackId}.json`, Buffer.from(artifactResults[index].stdout)]));
-  return { lock, artifacts };
 }
 
 async function pathKind(candidate) {
@@ -902,171 +432,330 @@ async function pathKind(candidate) {
     return info.isDirectory() ? "directory" : "other";
   } catch (error) { if (error?.code === "ENOENT") return "missing"; throw error; }
 }
-async function recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, previousExpectedInventory = expectedInventory, producerRoot, remove = rm, move = rename }) {
-  const [targetKind, backupKind] = await Promise.all([pathKind(targetDirectory), pathKind(backupDirectory)]);
-  if (targetKind === "other" || backupKind === "other") fail("Canonical content transaction paths must be directories");
-  if (targetKind === "missing" && backupKind === "directory") await move(backupDirectory, targetDirectory);
-  else if (targetKind === "directory" && backupKind === "directory") {
-    await validateBuiltContent(targetDirectory, { expectedInventory, acceptedInventories: [previousExpectedInventory], producerRoot });
-    await remove(backupDirectory, { recursive: true, force: false });
-  }
-}
-async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInventory, previousExpectedInventory = expectedInventory, producerRoot, remove = rm, move = rename }) {
-  const backupDirectory = `${targetDirectory}.backup`;
-  await recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, previousExpectedInventory, producerRoot, remove, move });
-  const targetKind = await pathKind(targetDirectory);
-  let movedOld = false;
-  let installedNew = false;
-  try {
-    if (targetKind === "directory") { await move(targetDirectory, backupDirectory); movedOld = true; }
-    await move(stagedDirectory, targetDirectory);
-    installedNew = true;
-    await validateBuiltContent(targetDirectory, { expectedInventory, producerRoot });
-  } catch (error) {
-    const failedDirectory = `${targetDirectory}.failed-${randomUUID()}`;
-    try {
-      if (installedNew && await pathKind(targetDirectory) === "directory") await move(targetDirectory, failedDirectory);
-      if (movedOld && await pathKind(backupDirectory) === "directory") await move(backupDirectory, targetDirectory);
-      if (await pathKind(failedDirectory) === "directory") await remove(failedDirectory, { recursive: true, force: false });
-    } catch (rollbackError) { fail(`Canonical content replacement failed (${error.message}) and rollback failed: ${rollbackError.message}`); }
-    fail(`Canonical content replacement failed; previous directory restored: ${error.message}`);
-  }
-  if (movedOld) await remove(backupDirectory, { recursive: true, force: false });
+async function writeTransactionJournal(journalPath, journal) {
+  const temporaryPath = `${journalPath}.tmp-${randomUUID()}`;
+  await writeFile(temporaryPath, `${JSON.stringify(journal)}\n`, { flag: "wx" });
+  await rename(temporaryPath, journalPath);
 }
 
-export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, runTrackBuild: localTrackBuild = runTrackBuild, getProducerHead = producerHead, getProducerContentSourceCommit = producerContentSourceCommit, getBootstrapPredecessor = defaultBootstrapPredecessor, verifyProducer = verifyProducerState, expectedInventory = EXPECTED_INVENTORY, previousExpectedInventory = FROZEN_BASELINE_INVENTORY, reviewedCandidate = false, localReviewedCandidate, verifyReviewedCandidate: verifyCandidate = validateReviewedCandidate, remove = rm, move = rename } = {}) {
+async function directoryDigestManifest(directory) {
+  const names = (await readdir(directory, { withFileTypes: true })).map((entry) => entry.name).sort();
+  const manifest = {};
+  for (const name of names) {
+    const bytes = await inspectRegularFile(path.join(directory, name), directory, "transaction content file");
+    manifest[name] = sha256(bytes);
+  }
+  return manifest;
+}
+
+function manifestsEqual(left, right) { return canonicalJson(left) === canonicalJson(right); }
+
+async function recoverCurrentBank({ targetDirectory, targetLockFile, remove = rm, move = rename }) {
+  const journalPath = `${targetDirectory}.transaction.json`;
+  const backupDirectory = `${targetDirectory}.previous`;
+  const backupLockFile = `${targetLockFile}.previous`;
+  const [journalKind, directoryBackupKind, lockBackupKind] = await Promise.all([pathKind(journalPath), pathKind(backupDirectory), pathKind(backupLockFile)]);
+  if (journalKind === "missing") {
+    if (directoryBackupKind !== "missing" || lockBackupKind !== "missing") fail(`Recoverable content-sync backups exist without a transaction journal; preserve ${backupDirectory} and ${backupLockFile} and inspect before retrying`);
+    return;
+  }
+  if (journalKind !== "other") fail("Current-bank transaction journal must be a regular file");
+  const journalBytes = await inspectRegularFile(journalPath, path.dirname(journalPath), "current-bank transaction journal");
+  const journal = parseJson(journalBytes, journalPath);
+  const keys = ["schemaVersion", "phase", "targetDirectory", "targetLockFile", "backupDirectory", "backupLockFile", "stagedDirectory", "stagedLockFile", "previousDirectoryDigests", "previousLockSha256", "stagedDirectoryDigests", "stagedLockSha256"];
+  requireExactKeys(journal, keys, "current-bank transaction journal");
+  const stagedDirectory = path.resolve(String(journal.stagedDirectory ?? ""));
+  const stagedLockFile = path.resolve(String(journal.stagedLockFile ?? ""));
+  const stagedLockDirectory = path.dirname(stagedLockFile);
+  const contentStagePattern = /^\.canonical-content-build-[0-9]+-[A-Za-z0-9_-]+$/u;
+  const lockStagePattern = /^\.current-content-lock-[0-9]+-[A-Za-z0-9_-]+$/u;
+  if (journal.schemaVersion !== 1 || !["prepared", "committed"].includes(journal.phase)
+    || journal.targetDirectory !== targetDirectory || journal.targetLockFile !== targetLockFile
+    || journal.backupDirectory !== backupDirectory || journal.backupLockFile !== backupLockFile
+    || path.dirname(stagedDirectory) !== path.dirname(targetDirectory) || !contentStagePattern.test(path.basename(stagedDirectory))
+    || path.dirname(stagedLockDirectory) !== path.dirname(targetLockFile) || !lockStagePattern.test(path.basename(stagedLockDirectory))
+    || path.basename(stagedLockFile) !== "release.lock.json"
+    || !journal.previousDirectoryDigests || typeof journal.previousDirectoryDigests !== "object"
+    || !journal.stagedDirectoryDigests || typeof journal.stagedDirectoryDigests !== "object"
+    || !/^[a-f0-9]{64}$/u.test(journal.previousLockSha256 ?? "") || !/^[a-f0-9]{64}$/u.test(journal.stagedLockSha256 ?? "")) {
+    fail("Current-bank transaction journal is invalid; preserve its files and inspect before retrying");
+  }
+  const previousDirMatches = (manifest) => manifestsEqual(manifest, journal.previousDirectoryDigests);
+  const stagedDirMatches = (manifest) => manifestsEqual(manifest, journal.stagedDirectoryDigests);
+  const previousLockMatches = (bytes) => sha256(bytes) === journal.previousLockSha256;
+  const stagedLockMatches = (bytes) => sha256(bytes) === journal.stagedLockSha256;
+  try {
+    const targetDirectoryKind = await pathKind(targetDirectory);
+    const targetLockKind = await pathKind(targetLockFile);
+    let targetDirectoryManifest;
+    let backupDirectoryManifest;
+    if (targetDirectoryKind === "directory") targetDirectoryManifest = await directoryDigestManifest(targetDirectory);
+    if (directoryBackupKind === "directory") backupDirectoryManifest = await directoryDigestManifest(backupDirectory);
+    let targetLockBytes;
+    let backupLockBytes;
+    if (targetLockKind === "other") targetLockBytes = await inspectRegularFile(targetLockFile, path.dirname(targetLockFile), "transaction release lock");
+    if (lockBackupKind === "other") backupLockBytes = await inspectRegularFile(backupLockFile, path.dirname(backupLockFile), "transaction release-lock backup");
+
+    const stagedDirectoryExists = await pathKind(stagedDirectory) === "directory";
+    if (stagedDirectoryExists && !stagedDirMatches(await directoryDigestManifest(stagedDirectory))) fail("Interrupted current-bank sync found changed staging files; preserve the journal and backups for review");
+    const stagedLockExists = await pathKind(stagedLockFile) === "other";
+    if (stagedLockExists && !stagedLockMatches(await inspectRegularFile(stagedLockFile, stagedLockDirectory, "staged release lock"))) fail("Interrupted current-bank sync found a changed staged release lock; preserve the journal and backups for review");
+    if (await pathKind(stagedLockDirectory) === "directory") {
+      const lockStageEntries = await readdir(stagedLockDirectory);
+      if (lockStageEntries.some((entry) => entry !== "release.lock.json") || (stagedLockExists && lockStageEntries.length !== 1)) {
+        fail("Interrupted current-bank sync found unexpected files in the staged release-lock directory; preserve the journal and backups for review");
+      }
+      if (!stagedLockExists && lockStageEntries.length !== 0) fail("Interrupted current-bank sync found a non-empty staged release-lock directory without its lock; preserve the journal and backups for review");
+    }
+
+    const targetDirIsPrevious = targetDirectoryManifest && previousDirMatches(targetDirectoryManifest);
+    const targetDirIsStaged = targetDirectoryManifest && stagedDirMatches(targetDirectoryManifest);
+    const backupDirIsPrevious = backupDirectoryManifest && previousDirMatches(backupDirectoryManifest);
+    const targetLockIsPrevious = targetLockBytes && previousLockMatches(targetLockBytes);
+    const targetLockIsStaged = targetLockBytes && stagedLockMatches(targetLockBytes);
+    const backupLockIsPrevious = backupLockBytes && previousLockMatches(backupLockBytes);
+    if ((targetDirectoryManifest && !targetDirIsPrevious && !targetDirIsStaged)
+      || (backupDirectoryManifest && !backupDirIsPrevious)
+      || (targetLockBytes && !targetLockIsPrevious && !targetLockIsStaged)
+      || (backupLockBytes && !backupLockIsPrevious)) fail("Interrupted current-bank sync conflicts with concurrently changed target or backup bytes; preserve the journal and backups");
+
+    if (journal.phase === "committed") {
+      if (!targetDirIsStaged || !targetLockIsStaged) fail("Committed current-bank transaction no longer matches its staged digests; preserve the journal and backups");
+      if (directoryBackupKind === "directory") await remove(backupDirectory, { recursive: true, force: false });
+      if (lockBackupKind === "other") await remove(backupLockFile, { force: false });
+    } else {
+      if ((directoryBackupKind === "missing" && !targetDirIsPrevious)
+        || (directoryBackupKind === "directory" && targetDirIsPrevious && !targetDirIsStaged)
+        || (lockBackupKind === "missing" && !targetLockIsPrevious)
+        || (lockBackupKind === "other" && targetLockIsPrevious && !targetLockIsStaged)) fail("Interrupted current-bank sync lost or duplicated a previous target; preserve the journal and backups");
+      if (directoryBackupKind === "directory") {
+        if (targetDirectoryKind !== "missing") await remove(targetDirectory, { recursive: true, force: false });
+        await move(backupDirectory, targetDirectory);
+      }
+      if (lockBackupKind === "other") {
+        if (targetLockKind !== "missing") await remove(targetLockFile, { force: false });
+        await move(backupLockFile, targetLockFile);
+      }
+    }
+    if (stagedDirectoryExists) await remove(stagedDirectory, { recursive: true, force: false });
+    if (await pathKind(stagedLockDirectory) === "directory") await remove(stagedLockDirectory, { recursive: true, force: false });
+    await remove(journalPath, { force: false });
+  } catch (error) {
+    if (error instanceof CanonicalContentSyncError) throw error;
+    fail(`Interrupted current-bank sync is recoverable; automatic restoration stopped safely (${error.message}). Keep the transaction journal and .previous files intact before retrying`);
+  }
+}
+async function assertNoInterruptedTransaction({ targetDirectory, targetLockFile }) {
+  const paths = [`${targetDirectory}.transaction.json`, `${targetDirectory}.previous`, `${targetLockFile}.previous`];
+  const kinds = await Promise.all(paths.map(pathKind));
+  if (kinds.some((kind) => kind !== "missing")) fail(`An interrupted current-bank transaction needs recovery before check mode; inspect ${paths[0]} and its .previous backups`);
+}
+
+async function replaceCurrentBank({ stagedDirectory, targetDirectory, stagedLockFile, targetLockFile, expectedInventory, producerRoot, remove, move, expectedTargetDigests }) {
+  await recoverCurrentBank({ targetDirectory, targetLockFile, remove, move });
+  const current = await validateBuiltContent(targetDirectory, { expectedInventory: null, producerRoot, allowLegacySimulationEvidence: true });
+  const currentLock = await readFile(targetLockFile);
+  const currentDigests = Object.fromEntries([...current.files].map(([name, bytes]) => [name, sha256(bytes)]));
+  if (canonicalJson(currentDigests) !== canonicalJson(expectedTargetDigests.files) || sha256(currentLock) !== expectedTargetDigests.lock) fail("Installed content changed while the new bank was being prepared; nothing was replaced");
+  const targetBackup = `${targetDirectory}.previous`;
+  const lockBackup = `${targetLockFile}.previous`;
+  const journalPath = `${targetDirectory}.transaction.json`;
+  if (await pathKind(targetBackup) !== "missing" || await pathKind(lockBackup) !== "missing") fail("Current-bank sync found unexplained .previous files; inspect them before retrying");
+  const journal = { schemaVersion: 1, phase: "prepared", targetDirectory, targetLockFile, backupDirectory: targetBackup, backupLockFile: lockBackup, stagedDirectory, stagedLockFile, previousDirectoryDigests: expectedTargetDigests.files, previousLockSha256: expectedTargetDigests.lock, stagedDirectoryDigests: Object.fromEntries([...expectedTargetDigests.stagedFiles].map(([name, bytes]) => [name, sha256(bytes)])), stagedLockSha256: sha256(expectedTargetDigests.stagedLock) };
+  await writeTransactionJournal(journalPath, journal);
+  try {
+    await move(targetDirectory, targetBackup);
+    await move(targetLockFile, lockBackup);
+    await move(stagedDirectory, targetDirectory);
+    await move(stagedLockFile, targetLockFile);
+    const installed = await validateBuiltContent(targetDirectory, { expectedInventory, producerRoot });
+    const installedLock = await readFile(targetLockFile);
+    if (installed.files.size !== expectedTargetDigests.stagedFiles.size) fail("Installed content inventory differs from staged bank");
+    for (const [name, bytes] of expectedTargetDigests.stagedFiles) if (!installed.files.get(name)?.equals(bytes)) fail(`Installed canonical content differs from staged bytes: ${name}`);
+    if (!installedLock.equals(expectedTargetDigests.stagedLock)) fail("Installed content release metadata differs from staged bytes");
+    journal.phase = "committed";
+    await writeTransactionJournal(journalPath, journal);
+  } catch (error) {
+    try { await recoverCurrentBank({ targetDirectory, targetLockFile, remove, move }); }
+    catch (rollbackError) { fail(`Current bank replacement failed (${error.message}); recovery remains available in ${journalPath}: ${rollbackError.message}`); }
+    fail(`Current bank replacement failed; previous bank restored: ${error.message}`);
+  }
+  await remove(targetBackup, { recursive: true, force: false });
+  await remove(lockBackup, { force: false });
+  await remove(journalPath, { force: false });
+}
+async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoot, producerRoot = process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), targetLockFile = path.join(appRoot, RELEASE_LOCK_RELATIVE_PATH), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, getProducerHead = producerHead, getCurrentIdentity, getFreshSourceFingerprint, expectedInventory = null, remove = rm, move = rename } = {}) {
   if (mode !== "sync" && mode !== "check") fail(`Unknown mode: ${mode}`);
   const resolvedAppRoot = path.resolve(appRoot);
   const resolvedProducerRoot = path.resolve(producerRoot);
   const resolvedTarget = path.resolve(targetDirectory);
+  const resolvedLockFile = path.resolve(targetLockFile);
   if (!isWithin(resolvedAppRoot, resolvedTarget) || resolvedTarget !== path.join(resolvedAppRoot, GENERATED_DIRECTORY)) fail(`Target must be exactly ${GENERATED_DIRECTORY} within the application root`);
+  if (!isWithin(resolvedAppRoot, resolvedLockFile) || resolvedLockFile !== path.join(resolvedAppRoot, RELEASE_LOCK_RELATIVE_PATH)) fail(`Release lock target must be exactly ${RELEASE_LOCK_RELATIVE_PATH} within the application root`);
   await assertSafeTargetBoundary(resolvedAppRoot, resolvedTarget);
-  if (localReviewedCandidate) {
-    await recoverLocalTransaction({ targetDirectory: resolvedTarget, remove, move });
-    const local = await buildLocalMergedCandidate({ appRoot: resolvedAppRoot, producerRoot: resolvedProducerRoot, targetDirectory: resolvedTarget, acceptanceRecord: localReviewedCandidate, runBuild: localTrackBuild });
-    const actualSha256s = Object.fromEntries([...local.currentBundle.files].map(([name, bytes]) => [name, sha256(bytes)]));
-    const exactInstalled = canonicalJson(actualSha256s) === canonicalJson(local.expectedFileSha256s);
-    if (mode === "check") {
-      if (!exactInstalled) fail("Accepted local Claude candidate is not installed byte-for-byte");
-      return { mode, localOnly: true, inventory: local.inventory, ledger: local.ledger };
-    }
-    if (exactInstalled) return { mode, localOnly: true, inventory: local.inventory, ledger: local.ledger };
-    const latestFingerprint = await localProducerInputFingerprint(resolvedProducerRoot);
-    const latestPins = await localFrozenReleasePins({ appRoot: resolvedAppRoot, producerRoot: resolvedProducerRoot });
-    if (latestFingerprint.sha256 !== local.descriptor.sourceFingerprint.sha256 || canonicalJson(latestFingerprint.inputs) !== canonicalJson(local.descriptor.sourceFingerprint.inputs) || canonicalJson(latestPins) !== canonicalJson(local.descriptor.releasePins)) fail("Local candidate sources or frozen release pins changed before bundle replacement");
-    const targetBeforeReplace = await loadCurrentLocalBundle(resolvedTarget);
-    const targetBeforeReplaceSha256s = Object.fromEntries([...targetBeforeReplace.files].map(([name, bytes]) => [name, sha256(bytes)]));
-    if (canonicalJson(targetBeforeReplaceSha256s) !== canonicalJson(actualSha256s)) fail("Canonical bundle changed before local candidate replacement");
-    const stagedDirectory = await mkdtemp(path.join(path.dirname(resolvedTarget), `.claude-local-candidate-${process.pid}-`));
-    try {
-      for (const [name, bytes] of local.mergedFiles) await writeFile(path.join(stagedDirectory, name), bytes);
-      await replaceDirectory({ stagedDirectory, targetDirectory: resolvedTarget, expectedInventory: LOCAL_CLAUDE_INVENTORY, remove, move });
-      const installed = await validateBuiltContent(resolvedTarget, { expectedInventory: LOCAL_CLAUDE_INVENTORY });
-      for (const [name, bytes] of local.mergedFiles) if (!installed.files.get(name)?.equals(bytes)) fail(`Installed local candidate differs from accepted bytes: ${name}`);
-      return { mode, localOnly: true, inventory: installed.inventory, ledger: local.ledger };
-    } finally {
-      if (await pathKind(stagedDirectory) === "directory") await remove(stagedDirectory, { recursive: true, force: false });
-    }
-  }
-  const safeCheckTemporaryRoot = mode === "check" ? await assertSafeCheckTemporaryRoot(resolvedAppRoot, temporaryRoot) : undefined;
+  if (mode === "sync") await recoverCurrentBank({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile, remove, move });
+  else await assertNoInterruptedTransaction({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile });
   await assertProducerRoot(resolvedProducerRoot);
+  const initialTarget = await validateBuiltContent(resolvedTarget, { expectedInventory: null, producerRoot: resolvedProducerRoot, allowLegacySimulationEvidence: true });
+  const initialReleaseLock = await readFile(resolvedLockFile);
+  const expectedTargetDigests = {
+    files: Object.fromEntries([...initialTarget.files].map(([name, bytes]) => [name, sha256(bytes)])),
+    lock: sha256(initialReleaseLock),
+  };
+  const identityModule = getCurrentIdentity && getFreshSourceFingerprint
+    ? null
+    : await import(pathToFileURL(path.join(resolvedProducerRoot, "scripts/content/current-source-identity.mjs")).href);
+  const safeCheckTemporaryRoot = mode === "check" ? await assertSafeCheckTemporaryRoot(resolvedAppRoot, temporaryRoot) : undefined;
   const head = await getProducerHead(resolvedProducerRoot);
-  await verifyProducer(resolvedProducerRoot);
   const temporaryParent = mode === "sync" ? path.dirname(resolvedTarget) : safeCheckTemporaryRoot;
   const temporaryDirectory = await mkdtemp(path.join(temporaryParent, `.canonical-content-build-${process.pid}-`));
+  let lockStageDirectory;
   try {
-    await runBuild({ producerRoot: resolvedProducerRoot, outputRoot: temporaryDirectory });
+    const buildResult = await runBuild({ producerRoot: resolvedProducerRoot, outputRoot: temporaryDirectory });
     const built = await validateBuiltContent(temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
+    if (!buildResult?.artifacts || !buildResult?.lock) fail("Canonical source build did not return the identity-bearing build result");
+    const currentIdentity = await (getCurrentIdentity ?? identityModule.deriveCurrentSourceIdentity)({ contentRoot: resolvedProducerRoot, built: buildResult, sourceRepositoryCommit: head });
+    assertBuildMatchesIdentity(built.files, currentIdentity);
     const stagedArtifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, parseJson(built.files.get(`${trackId}.json`), `${trackId}.json`)]));
-    const sourceCommit = reviewedCandidate ? await getProducerContentSourceCommit(resolvedProducerRoot) : undefined;
-    const reviewedBindings = reviewedCandidate ? await verifyCandidate({ producerRoot: resolvedProducerRoot, sourceCommit, artifacts: stagedArtifacts, files: built.files, lock: built.lock }) : undefined;
     const targetKind = await pathKind(resolvedTarget);
     let previousLedger = null;
-    let predecessor = null;
-    let previousArtifacts = null;
     if (targetKind === "directory") {
-      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory, acceptedInventories: [previousExpectedInventory], producerRoot: resolvedProducerRoot });
-      const existingLedgerBytes = existing.files.get(SUCCESSOR_LEDGER_FILE_NAME);
-      previousArtifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, parseJson(existing.files.get(`${trackId}.json`), `${trackId}.json`)]));
-      if (existingLedgerBytes) previousLedger = parseSuccessorLedger(parseJson(existingLedgerBytes, path.join(resolvedTarget, SUCCESSOR_LEDGER_FILE_NAME)));
+      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory: null, producerRoot: resolvedProducerRoot, allowLegacySimulationEvidence: true });
+      const ledgerBytes = existing.files.get(SUCCESSOR_LEDGER_FILE_NAME);
+      if (ledgerBytes) previousLedger = parseSuccessorLedger(parseJson(ledgerBytes, path.join(resolvedTarget, SUCCESSOR_LEDGER_FILE_NAME)));
     }
-    if (!previousLedger) predecessor = await getBootstrapPredecessor(resolvedAppRoot);
-    if (!previousLedger && targetKind === "directory") {
-      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory, acceptedInventories: [previousExpectedInventory], producerRoot: resolvedProducerRoot });
-      const oldLockByTrack = new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry]));
-      for (const trackId of EXPECTED_TRACK_IDS) {
-        const oldLock = oldLockByTrack.get(trackId);
-        const oldBytes = predecessor.artifacts.get(`${trackId}.json`);
-        const currentBytes = existing.files.get(`${trackId}.json`);
-        const currentArtifact = parseJson(currentBytes, `${trackId}.json`);
-        const compatible = currentArtifact.schemaVersion === "patternly-content-artifact-v1"
-          ? currentBytes.equals(oldBytes)
-          : currentArtifact.schemaVersion === ARTIFACT_SCHEMA_VERSION && historicalTrainingProjection(currentArtifact, oldLock.contentVersion).equals(oldBytes);
-        if (!compatible) fail(`Existing bundled content does not match the exact APP HEAD training predecessor for ${trackId}`);
-      }
-    }
-    let approvedBESDProof;
-    if (previousLedger) {
-      const previousBESD = previousLedger.tracks.find((entry) => entry.trackId === BESD_TRACK_ID);
-      const currentBESD = stagedArtifacts.get(`${BESD_TRACK_ID}.json`);
-      const projection = historicalTrainingProjection(currentBESD, previousBESD.training.contentVersion);
-      if (sha256(projection) !== previousBESD.training.artifactSha256) approvedBESDProof = await readApprovedBESDSuccessorProof(resolvedProducerRoot);
-    }
-    const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger, predecessor, previousArtifacts, approvedBESDProof, reviewedCandidate: reviewedBindings });
+    const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger });
     await writeFile(path.join(temporaryDirectory, SUCCESSOR_LEDGER_FILE_NAME), JSON.stringify(ledger));
     const staged = await validateBuiltContent(temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
+    const releaseId = `patternly-current-${currentIdentity.sourceInputFingerprint.slice(0, 20)}`;
+    const releaseLock = buildCurrentReleaseLock({ currentIdentity, head, contentLockBytes: staged.files.get(LOCK_FILE_NAME), successorLedgerBytes: staged.files.get(SUCCESSOR_LEDGER_FILE_NAME), releaseId });
+    const stagedReleaseLock = Buffer.from(`${JSON.stringify(releaseLock)}\n`);
+    let stagedLockFile;
+    if (mode === "sync") {
+      lockStageDirectory = await mkdtemp(path.join(path.dirname(resolvedLockFile), `.current-content-lock-${process.pid}-`));
+      stagedLockFile = path.join(lockStageDirectory, "release.lock.json");
+      await writeFile(stagedLockFile, stagedReleaseLock);
+    }
+    const stagedFiles = new Map(staged.files);
+    const stagedTargetDigests = { ...expectedTargetDigests, stagedFiles, stagedLock: stagedReleaseLock };
     if (mode === "check") {
       await compareDirectories(resolvedTarget, temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
-      return { mode, head, ...staged, ledger };
+      if (!initialReleaseLock.equals(stagedReleaseLock)) fail("Current content release metadata differs from generated source; run sync:content-release");
+      return { mode, head, currentIdentity, ...staged, ledger };
     }
-    await replaceDirectory({ stagedDirectory: temporaryDirectory, targetDirectory: resolvedTarget, expectedInventory, previousExpectedInventory, producerRoot: resolvedProducerRoot, remove, move });
+
+    const freshnessDirectory = await mkdtemp(path.join(temporaryRoot, `.content-freshness-${process.pid}-`));
+    try {
+      const latestFingerprint = getFreshSourceFingerprint
+        ? await getFreshSourceFingerprint({ contentRoot: resolvedProducerRoot, outputRoot: freshnessDirectory })
+        : (await identityModule.buildCurrentSourceSnapshot({ contentRoot: resolvedProducerRoot, outputRoot: freshnessDirectory })).sourceInputFingerprint;
+      if (latestFingerprint !== currentIdentity.sourceInputFingerprint) fail("Canonical source changed while the current application bank was being prepared; bundle unchanged");
+    } finally {
+      if (await pathKind(freshnessDirectory) === "directory") await remove(freshnessDirectory, { recursive: true, force: false });
+    }
+    await replaceCurrentBank({ stagedDirectory: temporaryDirectory, targetDirectory: resolvedTarget, stagedLockFile, targetLockFile: resolvedLockFile, expectedInventory, producerRoot: resolvedProducerRoot, remove, move, expectedTargetDigests: stagedTargetDigests });
     const installed = await validateBuiltContent(resolvedTarget, { expectedInventory, producerRoot: resolvedProducerRoot });
     for (const [fileName, bytes] of staged.files) if (!installed.files.get(fileName)?.equals(bytes)) fail(`Installed canonical content differs from staged canonical bytes: ${fileName}`);
-    return { mode, head, ...staged, ledger };
+    return { mode, head, currentIdentity, ...staged, ledger };
   } finally {
     if (await pathKind(temporaryDirectory) === "directory") await remove(temporaryDirectory, { recursive: true, force: false });
+    if (typeof lockStageDirectory === "string" && await pathKind(lockStageDirectory) === "directory") await remove(lockStageDirectory, { recursive: true, force: false });
   }
 }
 
-function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <patternly-content checkout>] [--reviewed-candidate | --local-reviewed-candidate <acceptance.json>] | prepare-local-candidate --track <claude-track-id> [--content-root <patternly-content checkout>]"; }
-export function parseArgs(argv = process.argv.slice(2)) {
-  const prepare = argv[0] === "prepare-local-candidate";
-  const options = prepare ? { command: "prepare-local-candidate" } : { mode: "sync" };
-  let index = 0;
-  if (prepare) index += 1;
-  else if (argv[0] === "sync" || argv[0] === "check") options.mode = argv[index++];
-  while (index < argv.length) {
-    if (argv[index] === "--content-root" && index + 1 < argv.length) {
-      options.producerRoot = path.resolve(argv[index + 1]);
-      index += 2;
-    } else if (prepare && argv[index] === "--track" && index + 1 < argv.length && !options.trackId) {
-      options.trackId = argv[index + 1];
-      index += 2;
-    } else if (argv[index] === "--reviewed-candidate" && !options.reviewedCandidate) {
-      options.reviewedCandidate = true;
-      index += 1;
-    } else if (!prepare && argv[index] === "--local-reviewed-candidate" && index + 1 < argv.length && !options.localReviewedCandidate) {
-      options.localReviewedCandidate = path.resolve(argv[index + 1]);
-      index += 2;
-    } else fail(usage());
+async function acquireCurrentBankSyncLock(targetDirectory) {
+  const lockPath = `${targetDirectory}.sync.lock`;
+  const token = randomUUID();
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const handle = await open(lockPath, "wx", 0o600);
+      try { await handle.writeFile(`${JSON.stringify({ pid: process.pid, token })}\n`); }
+      catch (error) { await handle.close(); await rm(lockPath, { force: true }); throw error; }
+      return async () => {
+        await handle.close();
+        const lock = parseJson(await readFile(lockPath), lockPath);
+        if (lock?.token === token) await rm(lockPath, { force: false });
+      };
+    } catch (error) {
+      if (error?.code !== "EEXIST") throw error;
+      const info = await lstat(lockPath).catch((readError) => { if (readError?.code === "ENOENT") return null; throw readError; });
+      if (!info) continue;
+      if (info.isSymbolicLink() || !info.isFile()) fail("Current-bank sync lock is not a regular file; preserve it and inspect before retrying");
+      let lock;
+      try { lock = parseJson(await readFile(lockPath), lockPath); }
+      catch { fail("Current-bank sync lock has no verifiable owner; preserve it and inspect before retrying"); }
+      if (!Number.isSafeInteger(lock?.pid) || lock.pid < 1 || typeof lock.token !== "string") fail("Current-bank sync lock has no verifiable owner; preserve it and inspect before retrying");
+      try {
+        process.kill(lock.pid, 0);
+        fail(`A current-bank sync is already active (pid=${lock.pid}); wait for it to finish before retrying`);
+      } catch (signalError) {
+        if (signalError?.code !== "ESRCH") throw signalError;
+      }
+      await rm(lockPath, { force: false });
+    }
   }
-  if (prepare && options.trackId !== CLAUDE_TRACK_ID) fail(`prepare-local-candidate requires --track ${CLAUDE_TRACK_ID}`);
-  if (options.localReviewedCandidate && options.reviewedCandidate) fail("Local and release candidate modes cannot be combined");
+  fail("Could not acquire the current-bank sync lock; retry after checking for another sync process");
+}
+
+export async function syncCanonicalContent(options = {}) {
+  if ((options.mode ?? "sync") === "check") return syncCanonicalContentUnlocked(options);
+  const appRoot = path.resolve(options.appRoot ?? scriptRoot);
+  const targetDirectory = path.resolve(options.targetDirectory ?? path.join(appRoot, GENERATED_DIRECTORY));
+  const releaseLock = await acquireCurrentBankSyncLock(targetDirectory);
+  try { return await syncCanonicalContentUnlocked(options); }
+  finally { await releaseLock(); }
+}
+
+export function buildCurrentReleaseLock({ currentIdentity, head, contentLockBytes, successorLedgerBytes, releaseId }) {
+  if (currentIdentity?.schemaVersion !== "patternly-current-content-identity-v1" || !HASH.test(currentIdentity.sourceInputFingerprint ?? "") || !Array.isArray(currentIdentity.tracks) || currentIdentity.tracks.length !== EXPECTED_TRACK_IDS.length) fail("Cannot create release metadata without a complete current source identity");
+  return {
+    schemaVersion: 4,
+    ownerPolicy: currentIdentity.ownerPolicy,
+    bundleId: `patternly-app-${currentIdentity.sourceInputFingerprint.slice(0, 12)}`,
+    releaseId,
+    sourceInputFingerprint: currentIdentity.sourceInputFingerprint,
+    sourceRepositoryCommit: head,
+    currentIdentity,
+    bundledContentLockSha256: sha256(contentLockBytes),
+    bundledSuccessorLedgerSha256: sha256(successorLedgerBytes),
+    artifacts: currentIdentity.tracks.map((track) => ({
+      checksumSha256: track.artifactSha256,
+      artifactBytes: track.artifactBytes,
+      contentVersion: track.contentVersion,
+      questionCount: track.questionCount,
+      producerCommit: head,
+      releaseId,
+      sourceRepositoryCommit: head,
+      trackId: track.trackId,
+    })),
+  };
+}
+
+function assertBuildMatchesIdentity(files, identity) {
+  const rows = new Map(identity.tracks.map((track) => [track.trackId, track]));
+  for (const trackId of EXPECTED_TRACK_IDS) {
+    const row = rows.get(trackId);
+    const bytes = files.get(`${trackId}.json`);
+    if (!row || !bytes || row.artifactSha256 !== sha256(bytes) || row.artifactBytes !== bytes.length) fail(`Current source identity does not bind staged application bytes for ${trackId}`);
+  }
+  if (rows.size !== EXPECTED_TRACK_IDS.length) fail("Current source identity does not contain the exact nine-track set");
+}
+
+function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <patternly-content checkout>]"; }
+export function parseArgs(argv = process.argv.slice(2)) {
+  const options = { mode: "sync" };
+  let index = 0;
+  if (argv[0] === "sync" || argv[0] === "check") options.mode = argv[index++];
+  while (index < argv.length) {
+    if (argv[index] === "--content-root" && index + 1 < argv.length) { options.producerRoot = path.resolve(argv[index + 1]); index += 2; }
+    else fail(usage());
+  }
   return options;
 }
 async function runCli() {
-  const options = parseArgs();
-  if (options.command === "prepare-local-candidate") {
-    const descriptor = await prepareLocalClaudeCandidate({ producerRoot: options.producerRoot });
-    console.log(JSON.stringify(descriptor, null, 2));
-    return;
-  }
-  const result = await syncCanonicalContent(options);
+  const result = await syncCanonicalContent(parseArgs());
   console.log(`CANONICAL_CONTENT_${result.mode.toUpperCase()}=passed`);
-  if (result.localOnly) {
-    console.log("LOCAL_ONLY=true");
-    console.log(`CLAUDE_ARTIFACT_SHA256=${result.ledger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID).planningPolicy.artifactSha256}`);
-  } else console.log(`PATTERNLY_CONTENT_HEAD=${result.head}`);
+  console.log(`CURRENT_SOURCE_FINGERPRINT=${result.currentIdentity.sourceInputFingerprint}`);
   console.log(`CONTENT_INVENTORY=${result.inventory.trackCount}/${result.inventory.nodeCount}/${result.inventory.mentalUnitCount}/${result.inventory.questionCount}`);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) runCli().catch((error) => { console.error(error?.stack ?? error?.message ?? error); process.exitCode = 1; });

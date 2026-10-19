@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import dependencyGraph from "./architecture/dependencyGraph.ts";
 import architectureBoundaries from "./architecture/checkBoundaries.ts";
-import { validateBuiltContent, GENERATED_DIRECTORY, LOCAL_CLAUDE_INVENTORY } from "./syncBundledContentRelease.mjs";
+import { validateBuiltContent, GENERATED_DIRECTORY } from "./syncBundledContentRelease.mjs";
 
 const { createDependencyGraph } = dependencyGraph;
 const { runtimeTestSupportViolations } = architectureBoundaries;
@@ -143,7 +143,7 @@ const observedTestCount = (testSource.match(/\btest\s*\(\s*["']/g) ?? []).length
 if (observedTestCount === 0) fail("no active test cases are present.");
 
 for (const path of ["src/tracks/coding-interview/content", "src/features/questions/defaultQuestionBank.ts", "data/question-bank"]) if (existsSync(join(root, path))) fail(`production content remains in application: ${path}`);
-try { await validateBuiltContent(join(root, GENERATED_DIRECTORY), { expectedInventory: LOCAL_CLAUDE_INVENTORY }); }
+try { await validateBuiltContent(join(root, GENERATED_DIRECTORY), {}); }
 catch (error) { fail(`canonical content parity gate failed: ${error.message}`); }
 for (const pattern of [/algorithmContentGroups/, /defaultQuestionBank/, /HttpContentSource/, /ContentCacheRepository/, /loadTrackContent/]) if (pattern.test(activeSource)) fail(`obsolete content storage path remains: ${pattern}`);
 

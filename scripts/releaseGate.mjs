@@ -8,6 +8,7 @@ import { verifyReleaseManifest } from "./releaseManifest.mjs";
 import { validateReleaseEvidence, validateRuntimeReceipt } from "./releaseEvidence.mjs";
 import { legalSourceFingerprint } from "./legalSourceFingerprint.mjs";
 import { legalDocumentApprovalIssue } from "./publicLegalApproval.mjs";
+import { currentContentWorktreeStatus } from "./currentContentWorktree.mjs";
 
 const require = createRequire(import.meta.url);
 const { validateLegalVariablesRelease } = require("../src/legal/legalVariablesSchema.ts");
@@ -81,8 +82,6 @@ const contentRoot = realpathSync(resolve(contentRootInput));
 
 const applicationReleaseLockRelativePath = "integration/contracts/content-release/release.lock.json";
 const publicLegalRelativePath = "config/public-legal.release.json";
-const contentReadinessRelativePath = "evidence/readiness/candidate-readiness-v2.json";
-const contentAdmissionRelativePath = "evidence/admissions/candidate-admission-v3.json";
 const releaseEvidenceRelativeDirectory = "evidence/release";
 
 function isWithin(parent, child) {
@@ -167,7 +166,8 @@ function applicationHeadCommit() {
   return repositoryHeadCommit(applicationRoot);
 }
 
-function repositoryStatus(repositoryRoot) {
+function repositoryStatus(repositoryRoot, { allowDerivedContent = false } = {}) {
+  if (allowDerivedContent) return currentContentWorktreeStatus(repositoryRoot);
   try {
     const porcelain = execFileSync("git", ["-C", repositoryRoot, "status", "--porcelain", "--untracked-files=all"], { encoding: "utf8" });
     return { status: porcelain.trim() ? "dirty" : "clean", changedPathCount: porcelain.split("\n").filter(Boolean).length };
@@ -195,8 +195,11 @@ function inspectReleaseLock() {
   }
 
   const errors = [];
-  if (lock?.schemaVersion !== 3) errors.push("schemaVersion must be 3");
-  if (lock?.repository !== "lukaszkurczab/patternly-content") errors.push("repository must be lukaszkurczab/patternly-content");
+  if (lock?.schemaVersion !== 4) errors.push("schemaVersion must be 4");
+  if (lock?.ownerPolicy !== "standing-owner-decision-2026-10-19-current-source") errors.push("ownerPolicy does not identify the current-source policy");
+  if (!/^[a-f0-9]{64}$/u.test(lock?.sourceInputFingerprint ?? "")) errors.push("sourceInputFingerprint must be a current SHA-256 identity");
+  if (!/^[a-f0-9]{64}$/u.test(lock?.bundledSuccessorLedgerSha256 ?? "")) errors.push("bundledSuccessorLedgerSha256 must be a current SHA-256 hash");
+  if (lock?.currentIdentity?.sourceInputFingerprint !== lock?.sourceInputFingerprint) errors.push("currentIdentity does not match sourceInputFingerprint");
   if (typeof lock?.bundleId !== "string" || lock.bundleId.length === 0) errors.push("bundleId must be a non-empty string");
   if (!Array.isArray(lock?.artifacts) || lock.artifacts.length === 0) errors.push("artifacts must be a non-empty array");
 
@@ -215,16 +218,28 @@ function inspectReleaseLock() {
       if (typeof artifact.producerCommit !== "string" || !/^[a-f0-9]{40}$/.test(artifact.producerCommit)) errors.push(`${prefix}.producerCommit must be a 40-character lowercase commit SHA`);
       if (typeof artifact.sourceRepositoryCommit !== "string" || !/^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit)) errors.push(`${prefix}.sourceRepositoryCommit must be a 40-character lowercase commit SHA`);
       if (typeof artifact.checksumSha256 !== "string" || !/^[a-f0-9]{64}$/.test(artifact.checksumSha256)) errors.push(`${prefix}.checksumSha256 must be a 64-character lowercase SHA-256`);
+      if (!Number.isSafeInteger(artifact.artifactBytes) || artifact.artifactBytes < 1) errors.push(`${prefix}.artifactBytes must be a positive byte length`);
+      if (!Number.isSafeInteger(artifact.questionCount) || artifact.questionCount < 1) errors.push(`${prefix}.questionCount must be a positive question count`);
     }
   }
   if (new Set(trackIds).size !== trackIds.length) errors.push("artifacts.trackId values must be unique");
+  const identityTrackIds = lock?.currentIdentity?.tracks?.map((track) => track.trackId) ?? [];
+  if (JSON.stringify(identityTrackIds) !== JSON.stringify(uniqueSorted(trackIds))) errors.push("currentIdentity track scope differs from artifacts");
+  if (Array.isArray(lock?.artifacts) && Array.isArray(lock?.currentIdentity?.tracks)) {
+    const rows = new Map(lock.currentIdentity.tracks.map((track) => [track.trackId, track]));
+    for (const artifact of lock.artifacts) {
+      const row = rows.get(artifact.trackId);
+      if (row?.artifactSha256 !== artifact.checksumSha256 || row?.artifactBytes !== artifact.artifactBytes || row?.contentVersion !== artifact.contentVersion || row?.questionCount !== artifact.questionCount || artifact.releaseId !== lock.releaseId) errors.push(`current identity differs from artifact ${artifact.trackId}`);
+    }
+  }
 
   return {
     repositoryRole: "application",
     status: errors.length === 0 ? "valid" : "invalid",
     path: applicationReleaseLockRelativePath,
     schemaVersion: lock?.schemaVersion ?? null,
-    repository: lock?.repository ?? null,
+    sourceInputFingerprint: lock?.sourceInputFingerprint ?? null,
+    currentIdentity: lock?.currentIdentity ?? null,
     bundleId: lock?.bundleId ?? null,
     trackIds: uniqueSorted(trackIds),
     errors,
@@ -292,7 +307,7 @@ function externalEvidenceStatus(id, expectedApplicationCommit, verifiedManifest 
 }
 
 const blockers = [];
-const applicationRepository = repositoryStatus(applicationRoot);
+const applicationRepository = repositoryStatus(applicationRoot, { allowDerivedContent: true });
 const applicationCommit = applicationHeadCommit();
 const publicLegalVariables = inspectPublicLegalVariables();
 if (publicLegalVariables.status === "missing") blockers.push({ kind: "public_legal_variables_missing", path: publicLegalVariables.path });
@@ -306,7 +321,7 @@ else if (publicLegalVariables.status === "incomplete" || publicLegalVariables.st
   });
 }
 if (applicationRepository.status === "unavailable") blockers.push({ kind: "application_repository_unavailable", error: applicationRepository.error });
-if (applicationRepository.status === "dirty") blockers.push({ kind: "application_worktree_dirty", changedPathCount: applicationRepository.changedPathCount });
+if (applicationRepository.status === "dirty") blockers.push({ kind: "application_worktree_dirty", changedPathCount: applicationRepository.changedPathCount, unexpectedPaths: applicationRepository.unexpectedPaths });
 const contentReleaseLock = inspectReleaseLock();
 const lockedTrackIds = contentReleaseLock.trackIds;
 if (contentReleaseLock.status === "unavailable") blockers.push({ kind: "unreadable_content_release_lock", error: contentReleaseLock.error });
@@ -314,50 +329,21 @@ if (contentReleaseLock.status === "invalid") blockers.push({ kind: "invalid_cont
 if (contentReleaseLock.status === "valid" && lockedTrackIds.length !== 9) blockers.push({ kind: "invalid_content_release_scope", actual: lockedTrackIds });
 const launchTrackIds = contentReleaseLock.status === "valid" && lockedTrackIds.length === 9 ? lockedTrackIds : [];
 
-let readiness = null;
-let candidate = null;
-const readinessPath = resolve(contentRoot, contentReadinessRelativePath);
+let currentContentIdentity = null;
 try {
-  const gate = await import(pathToFileURL(resolve(contentRoot, "scripts/review/candidate-release-gate-v2.mjs")));
-  const verified = await gate.verifyCandidateReleaseEvidence({ root: contentRoot });
-  candidate = await gate.runCandidateReleaseGate({ root: contentRoot });
-  readiness = verified.readiness;
+  const identityModule = await import(pathToFileURL(resolve(contentRoot, "scripts/content/current-source-identity.mjs")).href);
+  const identity = await identityModule.computeCurrentSourceIdentity({ contentRoot });
+  const bundled = await import(pathToFileURL(resolve(root, "scripts/verifyBundledCurrentContent.mjs")).href);
+  const installed = await bundled.verifyBundledCurrentContent({ root: applicationRoot });
+  if (identity.sourceInputFingerprint !== contentReleaseLock.sourceInputFingerprint || JSON.stringify(identity.tracks) !== JSON.stringify(contentReleaseLock.currentIdentity?.tracks)) throw new Error("current source differs from installed APP content");
+  currentContentIdentity = { sourceRepositoryCommit: installed.sourceRepositoryCommit, sourceInputFingerprint: identity.sourceInputFingerprint, releaseId: installed.releaseId, artifactDigests: installed.artifactDigests };
 } catch (error) {
-  blockers.push({ kind: existsSync(readinessPath) ? "invalid_content_readiness_report" : "unreadable_content_readiness_report", error: portableError(error) });
-  candidate = null;
-  readiness = null;
+  blockers.push({ kind: "current_content_identity_failed", error: portableError(error) });
 }
 
 const contentRepository = { ...contentRepositoryStatus(), headCommit: repositoryHeadCommit(contentRoot) };
-if (contentRepository.status === "unavailable") blockers.push({ kind: "content_readiness_repository_unavailable", error: contentRepository.error });
-if (contentRepository.status === "dirty") blockers.push({ kind: "content_readiness_worktree_dirty", changedPathCount: contentRepository.changedPathCount });
-
-if (readiness) {
-  const reportScope = readiness.trackIds;
-  if (JSON.stringify(reportScope) !== JSON.stringify(launchTrackIds)) blockers.push({ kind: "content_readiness_scope_mismatch", expected: launchTrackIds, actual: reportScope });
-  const byTrackId = new Map(candidate.tracks.map((track) => [track?.trackId, track]));
-  const admission = readJson(resolve(contentRoot, contentAdmissionRelativePath));
-  const admissionByTrackId = new Map(admission.tracks.map((track) => [track?.trackId, track]));
-  const lockByTrackId = new Map((contentReleaseLock.status === "valid" ? readJson(releaseLockPath).artifacts : []).map((artifact) => [artifact.trackId, artifact]));
-  for (const trackId of launchTrackIds) {
-    const track = byTrackId.get(trackId);
-    if (!track) {
-      blockers.push({ kind: "missing_track_readiness", trackId });
-      continue;
-    }
-    const lockedArtifact = lockByTrackId.get(trackId);
-    const artifactMatchesLock = lockedArtifact
-      && lockedArtifact.releaseId === candidate.release.releaseId
-      && lockedArtifact.trackId === track.trackId
-      && lockedArtifact.contentVersion === track.contentVersion
-      && lockedArtifact.sourceRepositoryCommit === candidate.release.sourceRepositoryCommit
-      && lockedArtifact.checksumSha256 === track.checksumSha256;
-    if (!artifactMatchesLock) blockers.push({ kind: "content_readiness_artifact_mismatch", trackId });
-    const admitted = admissionByTrackId.get(trackId);
-    if (admitted?.publishingAdmission !== "granted") blockers.push({ kind: "publishing_admission_missing", trackId, actual: admitted?.publishingAdmission ?? null });
-    if (admitted?.runtimeAdmission !== "granted") blockers.push({ kind: "runtime_admission_missing", trackId, actual: admitted?.runtimeAdmission ?? null });
-  }
-}
+if (contentRepository.status === "unavailable") blockers.push({ kind: "content_source_repository_unavailable", error: contentRepository.error });
+if (contentRepository.status === "dirty") blockers.push({ kind: "content_source_worktree_dirty", changedPathCount: contentRepository.changedPathCount });
 
 if (contentReleaseLock.status === "valid" && JSON.stringify(lockedTrackIds) !== JSON.stringify(launchTrackIds)) blockers.push({ kind: "application_release_lock_scope_mismatch", expected: launchTrackIds, actual: lockedTrackIds });
 
@@ -428,7 +414,7 @@ const report = {
   launchTrackIds,
   applicationRepository: { repositoryRole: "application", path: ".", headCommit: applicationCommit, ...applicationRepository },
   publicLegalVariables,
-  contentReadiness: readiness ? { repositoryRole: "content", path: contentReadinessRelativePath, candidateId: readiness.candidateId, trackIds: readiness.trackIds, headCommit: contentRepository.headCommit, repository: contentRepository.status } : null,
+  currentContentIdentity: currentContentIdentity ? { repositoryRole: "content", path: "scripts/content/current-source-identity.mjs", ...currentContentIdentity, headCommit: contentRepository.headCommit, repository: contentRepository.status } : null,
   contentReleaseLock,
   applicationReleaseLockTrackIds: lockedTrackIds,
   releaseManifest,
