@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "84bf9349f65de60ea5bddfec00433c07e0328164",
+      "head": "4ab5d405de46ee273a6b04654bee15f4ac8f0c6d",
       "files": [
         {
           "path": ".easignore",
@@ -2785,8 +2785,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "b471844b18e9c6cde51520bf941beca673ec7b43634ce6f253942551ab9592d9",
-          "bytes": 96821,
+          "sha256": "56615f4bd031889a96d19013bbb19e94f44e463e2a0a078593e80bf4543f1329",
+          "bytes": 97468,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2797,7 +2797,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 1682
+          "lines": 1687
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -68670,7 +68670,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "3074975851b3cf4a78f11cb5e15fea13fa179c1f",
+      "head": "02cc4f9124514e2f0278555aa3c2c489642716e2",
       "files": [
         {
           "path": ".dockerignore",
@@ -77565,8 +77565,8 @@
         },
         {
           "path": "tests/retentionCompletion.emulator.test.ts",
-          "sha256": "3c275e978a43b651ab5c6ae2d904e1d889fb1d8eafadb7f585783c386179f53b",
-          "bytes": 16268,
+          "sha256": "7324968be454bd7ed677f5f3bab5ba35b45524b4d3c7a90d7f96a3a67aff377a",
+          "bytes": 18436,
           "symbols": [],
           "imports": [
             {
@@ -77625,12 +77625,11 @@
             "legacy privacy archives and their secrets obey calendar/working caps without physical deletion",
             "legal review minimizes only unneeded evidence, preserves ongoing dispute, and requires finality plus execution",
             "legacy incident caps distinguish working copies, necessary breach evidence and held evidence; annual review is actionable",
-            "operational next working day skips weekends without changing legal deadlines",
             "closing a held nonbreach preserves full evidence; release minimizes it without extending the core expiry",
             "claim close cannot discard fields that are already protected by a hold",
             "account response reader hides an expired legacy extension secret even when provider TTL is still in the future"
           ],
-          "lines": 170
+          "lines": 199
         },
         {
           "path": "tests/retentionPolicy.test.ts",
@@ -97897,7 +97896,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "b471844b18e9c6cde51520bf941beca673ec7b43634ce6f253942551ab9592d9",
+  "catalogHash": "56615f4bd031889a96d19013bbb19e94f44e463e2a0a078593e80bf4543f1329",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "298cb2b6dd7aa62ca8a0e5c8aa711167263555a2d545b0ddde99f6a4e058adfb",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "73ab4a7734e7caa22ca9151924c3ac872193c317e2a5a7a0c58acb657453b5d9",
@@ -99380,7 +99379,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "edfcf1e8692620db21d6e565ef0f2eb39aba0f5f567e2ce0c3261127f80d127d",
     "Atlas/Struktura/patternly-backend/src/modules/tracks/tracks — folder backend · src › modules.md": "1f814cf9a829b553b4d4446da8e3e16a9ba4b88dfc4baca70d827ceb04744f6d",
     "Atlas/Struktura/patternly-backend/src/modules/users/users — folder backend · src › modules.md": "5831a8600600b8b0c8d32fc15a17498c320dde69b56bf7c22d422820080f331b",
-    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "d82ba7d4b3b1e1c672ddf85b2eebf7a1c3d348279fb59658516370b75da9f319",
+    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "675f53a9e7b7168b8f249652ce959c1e58e018d55cfd732ba70e6be4576e8bc3",
     "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "e2e16f34143e9c23b6126b2cdcf0988d82e589ffe4e29e9b24a36e845a844667",
     "Atlas/Struktura/patternly-backend/_Pliki/package.json — backend.md": "0b4594ff63a0c346f5145e5c0300d893b1f54803e5f8aa798a4aae4b26928ea9",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/apply-firestore-ttl.mjs — backend · scripts.md": "0ab27e8a9999d22ea08527d988df9e75b9b9016da261227677aed6a7109c2836",
@@ -99553,7 +99552,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/recordFingerprint.test.ts — backend · tests.md": "2f34b5e45fe142cdb5f8d9701a19f4fd2d8dce59eea190bec8db29b6f0450c83",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/recoveryOperationCipher.test.ts — backend · tests.md": "1fd50a57df1aab244bc52f7d2652c5b3a676ba9c1a2a0444e281260b39dd4f03",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/recoveryRouteGuards.test.ts — backend · tests.md": "66d3d8be337246fb4f095f43a8a561a5e0f81226033aa33735af1b7997ddeaf1",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/retentionCompletion.emulator.test.ts — backend · tests.md": "47aa06d30e017497d77f24ea6570c07fa32a7b49690003629ffd6614d5581600",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/retentionCompletion.emulator.test.ts — backend · tests.md": "9081a8d094cc311320b1486322c548cd22298418b65145469670b5dbb646a4f3",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/retentionPolicy.test.ts — backend · tests.md": "f6357dd1ab957287d2e845c92d2f97bc8d8300f7ccb16cb7829cdd8c0febddff",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/retentionPurge.emulator.test.ts — backend · tests.md": "e0c6ad5ba8948882ed4a21abf4c22d4baac6252dafdc0e10a3cf3452b80dc44c",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/retentionPurgeCli.test.ts — backend · tests.md": "f6c1851ab167615a37b4e763da5b26cdc6e0e274dc52126c3f61bd1c2d90ec73",

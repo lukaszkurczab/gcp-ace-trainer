@@ -1582,6 +1582,11 @@
       "description": "Izolowany runner demo dla PAT-CODE-001: uruchamia Auth/Firestore oraz testy mieszanego replay, storage, receipts i request contracts; korzysta ze wspólnego bezpiecznego runnera emulatorów.",
       "reviewedHash": "8276a8f4bd08094e3743c1c572f23c138e9ec6129cc8a2461503a343f023c3df",
       "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/tests/retentionCompletion.emulator.test.ts": {
+      "description": "Regresje emulatora dla kolejek operatora, logicznej retencji archiwów i sekretów, legal hold oraz przeglądów. PAT-CODE-003 ustala lokalny zegar Date, sprawdza piątek/sobotę/niedzielę → poniedziałek UTC przed terminem, na granicy i po niej oraz wyłączenie ręcznie potwierdzonego przeglądu. Po każdym przypadku resetuje zegar; nie zmienia reguł produkcyjnych ani nie dowodzi retencji usługi.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "7324968be454bd7ed677f5f3bab5ba35b45524b4d3c7a90d7f96a3a67aff377a"
     }
   },
   "flows": [
@@ -1666,7 +1671,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "f30f13bbf9aa03dd872c2f9ebfdb32e7868a66f59526101dcf886846e28cca9c"
+      "reviewedDigest": "983fa3a58eecbb34a2a10fd597bbf54c39d67e46d57ccaca9e345a7a385202fa"
     },
     {
       "name": "Witryna, demo i panel",
