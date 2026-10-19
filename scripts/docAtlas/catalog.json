@@ -1390,14 +1390,14 @@
       "reviewedHash": "8ac4a31511a8848667846f2c228c4e07f61397e46e66c454034f32af62908da9"
     },
     "patternly-backend/src/modules/account-lifecycle/firestoreAccountErasure.ts": {
-      "description": "Wspólny katalog kasowania i kontroli odczytu: logiczna blokada tożsamości trwa 7 dni od pierwotnego usunięcia, także dla poprawnych starych znaczników 45-dniowych. Fizyczne TTL jest asynchroniczne; zgłoszenia i wnioski tracą powiązanie z kontem, a nie całą historię.",
+      "description": "Wspólny erase i końcowy readback obejmują users/{uid} oraz accounts/{uid}, root i potomków także pod brakującymi rodzicami. Każdy zapis przechodzi przez assertWriteAllowed/fence; niezgodne accountId root zatrzymuje cleanup. Zlicza accountTreeDocuments. Blokada tożsamości trwa 7 dni od pierwotnego usunięcia, także dla poprawnych starych znaczników 45-dniowych; fizyczne TTL jest asynchroniczne. Zgłoszenia i wnioski tracą powiązanie z kontem, a nie całą historię.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "f8212d556c4a3bb0cdbbd6b3f87f63824c93a2e15f3897be1ac49fabd3a1a2d6"
+      "reviewedHash": "26250fa352d755700de789113c643a3c643cc126e44f24c5a22b87c4bbc4e701"
     },
     "patternly-backend/src/modules/account-lifecycle/offlineDeletionRestore.ts": {
-      "description": "Model uzgadniania usunięć wyłącznie w emulatorze: stały projekt demo, nazwane bazy źródłowa/docelowa, kontrola zamrożenia, odcisków i ścisłego okna 7 dni. Odmawia przy niezakończonym kasowaniu; nie zapewnia produkcyjnego PITR ani uzgodnienia retencji wniosków prawnych.",
+      "description": "Model uzgadniania usunięć wyłącznie w emulatorze: stały projekt demo, nazwane bazy źródłowa/docelowa, kontrola zamrożenia, odcisków i ścisłego okna 7 dni. Wspólny helper usuwa także staged accounts/{uid}; receipt sumuje accountTreeDocuments i uwzględnia je w affectedAccountCount. Odmawia przy niezakończonym kasowaniu; nie zapewnia produkcyjnego PITR ani uzgodnienia retencji wniosków prawnych.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "4418200ed18c22f6b3a0ef251e7a9eae396f9e32c0c65999f9b9920f51d01c94"
+      "reviewedHash": "31e9c9b566830d90c0a305f743bcf9c945c40b9715ac03b24b8059fc21ad0d6a"
     },
     "patternly-backend/src/modules/users/store.ts": {
       "description": "Registration checks deletion candidates against exact provider/keyVersion/HMAC-derived document ID before honoring TTL expiry; malformed/mismatched markers fail closed.",
@@ -1460,9 +1460,9 @@
       "reviewedHash": "b93fdce49dc29755e115ef17edd0944aada48a262889f5bc4ad32408da74d5f3"
     },
     "patternly-backend/tests/accountDeletionRestore.emulator.ts": {
-      "description": "Sprawdza lokalny emulator-only restore reconciliation, drift/freeze, granicę wieku i failure cases; nie potwierdza produkcyjnego odtworzenia.",
+      "description": "Sprawdza lokalny emulator-only restore reconciliation, drift/freeze, granicę wieku i failure cases. Seeduje staged dane pod brakującym rootem/transferem/rekordem, sprawdza fizyczne usunięcie i accountTreeDocuments w receipt. Nie potwierdza produkcyjnego odtworzenia.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "a5e40da709d0617905aadbf92fbbd7790c3f58d550002ef1d572e89abb6571d1"
+      "reviewedHash": "9d493c77549b334bb19026184855f1d9a08ca126f57d99850c7a9bb3cf8d042f"
     },
     "patternly-backend/tests/deletedIdentityR01.emulator.ts": {
       "description": "Dowodzi w emulatorze usunięcia starego UID i odmowy odtworzenia prawa/progressu po rejestracji same-email nowym UID.",
@@ -1485,9 +1485,9 @@
       "reviewedHash": "593ef92d0865534f0e1dd1d24c575db94e6e80a4454012ce1f86a13105df4a53"
     },
     "patternly-backend/tests/firestore.emulator.test.ts": {
-      "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore.",
+      "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore. PAT-CODE-011 dodaje fizyczny readback staged drzewa, brakujących rodziców, blokadę complete/proof przy residualach, częściowy cleanup i retry/takeover z odmową staremu workerowi oraz konflikt accountId. Dwa osobne błędy fixture PAT-CODE-012 pozostają nierozwiązane.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "81c408dfae43f17b6c825bd4025a6714c19468082e1f02586e332e63d1b26880"
+      "reviewedHash": "fc73338bb7192edffe4a56791a78736b5525bbd39264d405d141ecce2877c093"
     },
     "patternly-backend/tests/fixtures/accountLifecycleCrashWorker.ts": {
       "description": "Worker fixture używany przez crash/retry deletion suite; test support only.",
@@ -1587,6 +1587,11 @@
       "description": "Regresje emulatora dla kolejek operatora, logicznej retencji archiwów i sekretów, legal hold oraz przeglądów. PAT-CODE-003 ustala lokalny zegar Date, sprawdza piątek/sobotę/niedzielę → poniedziałek UTC przed terminem, na granicy i po niej oraz wyłączenie ręcznie potwierdzonego przeglądu. Po każdym przypadku resetuje zegar; nie zmienia reguł produkcyjnych ani nie dowodzi retencji usługi.",
       "flow": "Dane, prywatność i zgłoszenia",
       "reviewedHash": "7324968be454bd7ed677f5f3bab5ba35b45524b4d3c7a90d7f96a3a67aff377a"
+    },
+    "patternly-backend/tests/stagedErasureFixtures.ts": {
+      "description": "Izolowany seed danych staged pod accounts/{uid}: transfer, pełne rekordy state, chunks, decisions, results, markers i idempotency. Zwraca referencje do fizycznego readback; wariant missingParents pomija root/transfer i dodaje głębszą sierotę. To fixture katalogu przechowywania dla deletion i offline restore, bez uruchamiania staged adoption ani operacji na rzeczywistym koncie.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "fd2748a71139c97b285e3cf515dc3c7d6d9734f0326c0efb8224e6799fe484ab"
     }
   },
   "flows": [
@@ -1671,7 +1676,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "983fa3a58eecbb34a2a10fd597bbf54c39d67e46d57ccaca9e345a7a385202fa"
+      "reviewedDigest": "46aba7cde278c1ceb36648f0af919be669524adc03beb2a989105b8acc59a93d"
     },
     {
       "name": "Witryna, demo i panel",
