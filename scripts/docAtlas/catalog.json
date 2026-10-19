@@ -1485,9 +1485,9 @@
       "reviewedHash": "593ef92d0865534f0e1dd1d24c575db94e6e80a4454012ce1f86a13105df4a53"
     },
     "patternly-backend/tests/firestore.emulator.test.ts": {
-      "description": "Emulator regression dla readback/erasure katalogu danych użytkownika; nie jest proof backup restore.",
+      "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "109e00b20f20be598f4bff499f50650a89b85bc908be2653f41e9effa9dbe3ac"
+      "reviewedHash": "81c408dfae43f17b6c825bd4025a6714c19468082e1f02586e332e63d1b26880"
     },
     "patternly-backend/tests/fixtures/accountLifecycleCrashWorker.ts": {
       "description": "Worker fixture używany przez crash/retry deletion suite; test support only.",
@@ -1666,7 +1666,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "b45ff5550c54410c8ff33b26b3c9868bc776b9345f16640f27c3064c4d16b612"
+      "reviewedDigest": "f30f13bbf9aa03dd872c2f9ebfdb32e7868a66f59526101dcf886846e28cca9c"
     },
     {
       "name": "Witryna, demo i panel",

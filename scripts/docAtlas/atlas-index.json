@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "f60c33514e74169c11a0a80dc63432527d816a5c",
+      "head": "84bf9349f65de60ea5bddfec00433c07e0328164",
       "files": [
         {
           "path": ".easignore",
@@ -2785,8 +2785,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "ea9b8debf788c4a5bae005e5a369625dabe01e6e68fe8fc28a71af8d988964bd",
-          "bytes": 96587,
+          "sha256": "b471844b18e9c6cde51520bf941beca673ec7b43634ce6f253942551ab9592d9",
+          "bytes": 96821,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -68670,7 +68670,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "839ea3884bd58f4a9f964ccea5ed1b2bf7c62a29",
+      "head": "3074975851b3cf4a78f11cb5e15fea13fa179c1f",
       "files": [
         {
           "path": ".dockerignore",
@@ -75411,8 +75411,8 @@
         },
         {
           "path": "tests/firestore.emulator.test.ts",
-          "sha256": "109e00b20f20be598f4bff499f50650a89b85bc908be2653f41e9effa9dbe3ac",
-          "bytes": 146114,
+          "sha256": "81c408dfae43f17b6c825bd4025a6714c19468082e1f02586e332e63d1b26880",
+          "bytes": 147259,
           "symbols": [],
           "imports": [
             {
@@ -75521,7 +75521,7 @@
               "specifier": "../src/modules/legal-requests/store.js",
               "kind": "type",
               "target": "src/modules/legal-requests/store.ts",
-              "line": 328
+              "line": 337
             }
           ],
           "jsonKeys": [],
@@ -75586,7 +75586,7 @@
             "a verify-only predecessor key completes an Auth-deleted operation after rotation",
             "account-owned writers reject a tombstoned or missing user after authentication"
           ],
-          "lines": 2182
+          "lines": 2198
         },
         {
           "path": "tests/fixtures/accountLifecycleCrashWorker.ts",
@@ -76810,8 +76810,8 @@
         },
         {
           "path": "tests/premiumPurchaseAdmission.test.ts",
-          "sha256": "b1b59ed3276b45898e1200970c91eae86ff3f014e5ee1a091a34a308907c05d4",
-          "bytes": 4073,
+          "sha256": "31750c524ce74f620121c416796af6539ea7c459fef93e0b82a15d918cbbb72f",
+          "bytes": 4247,
           "symbols": [],
           "imports": [
             {
@@ -78340,8 +78340,8 @@
         },
         {
           "path": "tests/smtpPrivacyEmailSender.test.ts",
-          "sha256": "8ad7934c7d471edb078b4565e0a6cde84350d4f9e067b43185cfe9e43a92f417",
-          "bytes": 5279,
+          "sha256": "0828e10c60b753dd3abd51f3f98dd4f418d38542d4c131566306582a3684e46f",
+          "bytes": 5298,
           "symbols": [],
           "imports": [
             {
@@ -97897,7 +97897,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "ea9b8debf788c4a5bae005e5a369625dabe01e6e68fe8fc28a71af8d988964bd",
+  "catalogHash": "b471844b18e9c6cde51520bf941beca673ec7b43634ce6f253942551ab9592d9",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "298cb2b6dd7aa62ca8a0e5c8aa711167263555a2d545b0ddde99f6a4e058adfb",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "73ab4a7734e7caa22ca9151924c3ac872193c317e2a5a7a0c58acb657453b5d9",
@@ -99380,7 +99380,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "edfcf1e8692620db21d6e565ef0f2eb39aba0f5f567e2ce0c3261127f80d127d",
     "Atlas/Struktura/patternly-backend/src/modules/tracks/tracks — folder backend · src › modules.md": "1f814cf9a829b553b4d4446da8e3e16a9ba4b88dfc4baca70d827ceb04744f6d",
     "Atlas/Struktura/patternly-backend/src/modules/users/users — folder backend · src › modules.md": "5831a8600600b8b0c8d32fc15a17498c320dde69b56bf7c22d422820080f331b",
-    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "7de3a4cea95ab1714b2120b4c20925ee236e6ecf089aab1af02d02bcc418e6e1",
+    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "d82ba7d4b3b1e1c672ddf85b2eebf7a1c3d348279fb59658516370b75da9f319",
     "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "e2e16f34143e9c23b6126b2cdcf0988d82e589ffe4e29e9b24a36e845a844667",
     "Atlas/Struktura/patternly-backend/_Pliki/package.json — backend.md": "0b4594ff63a0c346f5145e5c0300d893b1f54803e5f8aa798a4aae4b26928ea9",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/apply-firestore-ttl.mjs — backend · scripts.md": "0ab27e8a9999d22ea08527d988df9e75b9b9016da261227677aed6a7109c2836",
@@ -99517,7 +99517,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deletedIdentityR01.emulator.ts — backend · tests.md": "6fa8907c2df23c0e5bae2c33315382c5c56610a3699cfa48d0cf57cb5e6c77a1",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deployment.test.ts — backend · tests.md": "a28775546362beeb540453c1f0e29f4cfaa014d95d8a2c43d05477e97461889f",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/environment.test.ts — backend · tests.md": "7721d8395419ab3a8ca1466e706bea327a51cde7fb0c3304d40d3ee282f8a69a",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/firestore.emulator.test.ts — backend · tests.md": "2153c296758435c19ff60231d1f780478f2d571e4a6600d71ab18d717c2998db",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/firestore.emulator.test.ts — backend · tests.md": "787b24a1fcc65340c3be3cb7a7134a0be63ce90d470fdc71f68416d8be632f33",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/accountLifecycleCrashWorker.ts — backend · tests › fixtures.md": "fe19340da3f0774061755f3ea37bf77d553daf783a0201a471a97251d4f69098",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/gcsPackageFixture.ts — backend · tests › fixtures.md": "f9d0e819743d80d88ccc98f9788486a903aef5f929f1d80a2914575248d1bcc6",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/premiumSnapshot.ts — backend · tests › fixtures.md": "26b2a33abe9a831b8034e9bbffbfff5c9553ad070d2b77f510e340f1dcd81309",
@@ -99538,7 +99538,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/opsOperator.emulator.test.ts — backend · tests.md": "f9ad43aa58dd3e4824233b3725222e033017f1b770dc3faee766fd896f29f766",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/premiumDualStore.emulator.test.ts — backend · tests.md": "a88203183cb91f9be8d5bf28ba503b6cd2297fbbe07524aeeb0ac7452ae4f60b",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/premiumMap.test.ts — backend · tests.md": "eac256a0defe17ff43c4a34d3697e435a50fd8b7242e0c1b9e736723d3b54cd3",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/premiumPurchaseAdmission.test.ts — backend · tests.md": "7e3d2a8fc49de9c7e531d0d45f16d7c155ddd221dd3d6e10fb626fb742604218",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/premiumPurchaseAdmission.test.ts — backend · tests.md": "40c20506e6014fc462de7abd0e808b45b05883dba6ac39787dfe166586b9fe89",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/privacyRequestContracts.test.ts — backend · tests.md": "b4ec971b60c6c9ddc1c02822c96dd3948a6e1b9a3003cd2f60c1fa895d4e326a",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/privacyRequestDelivery.emulator.test.ts — backend · tests.md": "8c65df5ce280bb5baa467658e6027ab040f2974b4336a32e131d42ffcd3e8e17",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/privacyRequests.test.ts — backend · tests.md": "26a811bd157125d3f0f48c23d2de85c26a077d979a97e6e4e2ff78f4f0fdafa2",
@@ -99567,7 +99567,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/sec07SessionRevocation.emulator.test.ts — backend · tests.md": "c6d94f6912b831b46f3d94dcc1d024b4cc40b657c426c1040532f2b79f7d03ce",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/securityIncidentContracts.test.ts — backend · tests.md": "0018e05961491a62540e3becd7f561953996c4668b5e5283a8e9cff72c8e4d67",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/securityIncidents.test.ts — backend · tests.md": "8d00bd7afa7a984b239eaddf3a38bf4231e71ce3dcd43d5cfec610beaa8b3772",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/smtpPrivacyEmailSender.test.ts — backend · tests.md": "e01c73358651ee4275a66c83161e30c46bf65ece5c03cad9abda69c447526020",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/smtpPrivacyEmailSender.test.ts — backend · tests.md": "a40ceab0c2410c03cefeef4eeee59fd1febeec84f91d2c51df296344a989bce6",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/support.ts — backend · tests.md": "a7fa3c30edd561d14119550f032d01116d963b81e3717764ebdea7f736ed3119",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/syncMutationReceipts.emulator.test.ts — backend · tests.md": "b478093867f501c3d33730692ffc44d764e0e9ecf3ffc863df574d276648bf90",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/usersStoreLegacyDeletedIdentities.test.ts — backend · tests.md": "5d0aadae0b2a1eb3e3c8f6820685b464fb4c1085aa5ce4208f1f7374e4344627",
