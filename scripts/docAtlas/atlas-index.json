@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "9013743ea26ef5e90a792af9087676fbe5b39655",
+      "head": "50f4c9ca99ed601821bef6a7970709aa67d82cda",
       "files": [
         {
           "path": ".easignore",
@@ -2785,8 +2785,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "51556b8631dd42e49e9bb6394317e92cdd0518662d7a62d3bd51279a08505136",
-          "bytes": 99022,
+          "sha256": "c309cd8ece441b4b5c592759739ea411db58f1941b6504f38899123fe383b8ac",
+          "bytes": 100571,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2797,7 +2797,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 1692
+          "lines": 1702
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -69359,23 +69359,27 @@
         },
         {
           "path": "scripts/isolated-emulator-test-runner.d.mts",
-          "sha256": "59b2a4152e3c91c88aec336d0357b73421db0cc7794f69cb641aff3ef8b8cd6a",
-          "bytes": 294,
+          "sha256": "8e09f476178cdd3e795eb4f548d810d512592772b69df70da6b0eede51487b77",
+          "bytes": 760,
           "symbols": [
+            "resolveIsolatedEmulatorPorts",
             "validateIsolatedEmulatorConfiguration",
+            "validateIsolatedEmulatorRuntime",
             "runIsolatedEmulatorTests"
           ],
           "imports": [],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 9
+          "lines": 21
         },
         {
           "path": "scripts/isolated-emulator-test-runner.mjs",
-          "sha256": "1107c50229899013835a4bc394cdc76e4d9706a44787a76fccd0f447ede6fddd",
-          "bytes": 3518,
+          "sha256": "7b50a1fb457855ee85b2cdf644499d369f46fb38341daa34c6dab9beb0bfffe5",
+          "bytes": 4099,
           "symbols": [
+            "resolveIsolatedEmulatorPorts",
             "validateIsolatedEmulatorConfiguration",
+            "validateIsolatedEmulatorRuntime",
             "runIsolatedEmulatorTests"
           ],
           "imports": [
@@ -69412,7 +69416,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 60
+          "lines": 66
         },
         {
           "path": "scripts/lint.mjs",
@@ -74296,8 +74300,8 @@
         },
         {
           "path": "tests/accountLifecycleCrash.emulator.test.ts",
-          "sha256": "593ef92d0865534f0e1dd1d24c575db94e6e80a4454012ce1f86a13105df4a53",
-          "bytes": 8142,
+          "sha256": "537d83b2573d0b0ac93cdbd9c93f42220ed835cde82e425a80e09905607cb916",
+          "bytes": 7984,
           "symbols": [],
           "imports": [
             {
@@ -74355,33 +74359,39 @@
               "line": 9
             },
             {
+              "specifier": "../scripts/isolated-emulator-test-runner.mjs",
+              "kind": "static",
+              "target": "scripts/isolated-emulator-test-runner.d.mts",
+              "line": 10
+            },
+            {
               "specifier": "../src/infrastructure/firebase/adminAuth.js",
               "kind": "static",
               "target": "src/infrastructure/firebase/adminAuth.ts",
-              "line": 10
+              "line": 11
             },
             {
               "specifier": "../src/infrastructure/firestore/paths.js",
               "kind": "static",
               "target": "src/infrastructure/firestore/paths.ts",
-              "line": 11
+              "line": 12
             },
             {
               "specifier": "../src/infrastructure/security/pseudonymKeyRing.js",
               "kind": "static",
               "target": "src/infrastructure/security/pseudonymKeyRing.ts",
-              "line": 12
+              "line": 13
             },
             {
               "specifier": "../src/modules/account-lifecycle/store.js",
               "kind": "static",
               "target": "src/modules/account-lifecycle/store.ts",
-              "line": 13
+              "line": 14
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 126
+          "lines": 124
         },
         {
           "path": "tests/accountWireContract.test.ts",
@@ -75620,8 +75630,8 @@
         },
         {
           "path": "tests/fixtures/accountLifecycleCrashWorker.ts",
-          "sha256": "8d8607df4c6796be3896e903f1e274f5fea51e2fbfbce09127de17c4e8402096",
-          "bytes": 2604,
+          "sha256": "c7669ba0c64733398919e40cb6430897fcd7e5ecefd00a7e9113932a62e5e291",
+          "bytes": 2463,
           "symbols": [],
           "imports": [
             {
@@ -75637,22 +75647,28 @@
               "line": 2
             },
             {
+              "specifier": "../../scripts/isolated-emulator-test-runner.mjs",
+              "kind": "static",
+              "target": "scripts/isolated-emulator-test-runner.d.mts",
+              "line": 3
+            },
+            {
               "specifier": "../../src/infrastructure/firebase/adminAuth.js",
               "kind": "static",
               "target": "src/infrastructure/firebase/adminAuth.ts",
-              "line": 3
+              "line": 4
             },
             {
               "specifier": "../../src/infrastructure/security/pseudonymKeyRing.js",
               "kind": "static",
               "target": "src/infrastructure/security/pseudonymKeyRing.ts",
-              "line": 4
+              "line": 5
             },
             {
               "specifier": "../../src/modules/account-lifecycle/store.js",
               "kind": "static",
               "target": "src/modules/account-lifecycle/store.ts",
-              "line": 5
+              "line": 6
             }
           ],
           "jsonKeys": [],
@@ -75793,8 +75809,8 @@
         },
         {
           "path": "tests/isolatedEmulatorRunner.test.ts",
-          "sha256": "d4af93a2fdbec3113583ba358c5fdfd976dba0d674e9fad784698604f924e61b",
-          "bytes": 1306,
+          "sha256": "d3eed907dd3e78f86c21576261c5f498414d25cc11737352cc60e09e693bb3a4",
+          "bytes": 4080,
           "symbols": [],
           "imports": [
             {
@@ -75824,9 +75840,11 @@
           ],
           "jsonKeys": [],
           "testNames": [
+            "isolated runner and B4 runtime guards share default and explicit-base ports",
+            "B4 runtime guard rejects invalid base, mismatched ports, foreign project, and non-loopback before SDK setup",
             "isolated gate accepts the canonical configuration and rejects shared projects or dangerous config drift"
           ],
-          "lines": 22
+          "lines": 59
         },
         {
           "path": "tests/isolatedProgressFixture.emulator.test.ts",
@@ -97975,7 +97993,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "51556b8631dd42e49e9bb6394317e92cdd0518662d7a62d3bd51279a08505136",
+  "catalogHash": "c309cd8ece441b4b5c592759739ea411db58f1941b6504f38899123fe383b8ac",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "9c717839b11db15fbbf77384313cb5e1be9cd0e1c0b14ce619cdc926bb3a0ec2",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "73ab4a7734e7caa22ca9151924c3ac872193c317e2a5a7a0c58acb657453b5d9",
@@ -99422,7 +99440,7 @@
     "Atlas/Struktura/patternly-backend/config/config — folder backend.md": "32837c266446b715f3ef9f5a161e73c96797ed86b717a138224ebfb21730894d",
     "Atlas/Struktura/patternly-backend/docs/docs — folder backend.md": "75c7267de3ec4bf3ff65efc1594beb71d2e76d3182d6060c86b5427a4d2c0d07",
     "Atlas/Struktura/patternly-backend/openapi/openapi — folder backend.md": "02c86f267c012877af063b1cc0aaa795ea74f896451b29f9ab04c709a010a67c",
-    "Atlas/Struktura/patternly-backend/scripts/scripts — folder backend.md": "9ef3010cc3da71aaabca39b2f7b0176eb5455ab18f156e1b7c1a86bfe0cbbb00",
+    "Atlas/Struktura/patternly-backend/scripts/scripts — folder backend.md": "93f14a5151b561bc0ed846642871a225837c4bf4df66ae1bdecd20d7e491a966",
     "Atlas/Struktura/patternly-backend/scripts/qa/qa — folder backend · scripts.md": "0293d6756da8b6393dd2299786d9ed6accb2b2a5a7d3a6f376d60b35da6949dd",
     "Atlas/Struktura/patternly-backend/scripts/qa/backports/backports — folder backend · scripts › qa.md": "168797b78f25db68af3f309baa65a5dc807fcff7304fe2044af068af20a046d3",
     "Atlas/Struktura/patternly-backend/src/src — folder backend.md": "c4d7c097b0ea424dff9577c7a110085ab463250be96be1b3a2f9357b2178121a",
@@ -99458,8 +99476,8 @@
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "edfcf1e8692620db21d6e565ef0f2eb39aba0f5f567e2ce0c3261127f80d127d",
     "Atlas/Struktura/patternly-backend/src/modules/tracks/tracks — folder backend · src › modules.md": "1f814cf9a829b553b4d4446da8e3e16a9ba4b88dfc4baca70d827ceb04744f6d",
     "Atlas/Struktura/patternly-backend/src/modules/users/users — folder backend · src › modules.md": "5831a8600600b8b0c8d32fc15a17498c320dde69b56bf7c22d422820080f331b",
-    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "0758901bf95e0ee079d22636c04cad1c40f1e8684753120c9e3610627ad35b44",
-    "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "e2e16f34143e9c23b6126b2cdcf0988d82e589ffe4e29e9b24a36e845a844667",
+    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "7e0d11fac475138f16182eb5c90fdce022255ec54930a31325049c6a41b4852c",
+    "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "70914330bfd756dc21cd05640cf4c45eeb99b5b2c747b444f1c7f127becc081a",
     "Atlas/Struktura/patternly-backend/_Pliki/package.json — backend.md": "0b4594ff63a0c346f5145e5c0300d893b1f54803e5f8aa798a4aae4b26928ea9",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/apply-firestore-ttl.mjs — backend · scripts.md": "0ab27e8a9999d22ea08527d988df9e75b9b9016da261227677aed6a7109c2836",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/check-firestore-ttl.mjs — backend · scripts.md": "bf1198c8f99c9cc3b38411a81b856b3061c0757416e706b2bcba7b5fa722750c",
@@ -99471,8 +99489,8 @@
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/dev-smoke.ts — backend · scripts.md": "d6c37b0fcca7d44915eec65cd5e999a94a31d0f96e198e6219ee77edbd9ce3d4",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/devAdminBoundary.test.mjs — backend · scripts.md": "f8f57c4377a51250fcc5e3459a03c71bad2fbd9f0dd378e815d7a60300e3093e",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/generate-openapi.ts — backend · scripts.md": "c5081499845200b5cc1bbbb08bd5d9a6c51d034fca2fd460462751f5e83788c8",
-    "Atlas/Struktura/patternly-backend/scripts/_Pliki/isolated-emulator-test-runner.d.mts — backend · scripts.md": "95d8198f6da92844bae8174077a3c090e8adfd2584e726dcfac9ab3015b9f426",
-    "Atlas/Struktura/patternly-backend/scripts/_Pliki/isolated-emulator-test-runner.mjs — backend · scripts.md": "e38a47d772ba5a9e6ac30ba09ab597266c952d3cca3d95188c12277e2cfa58cc",
+    "Atlas/Struktura/patternly-backend/scripts/_Pliki/isolated-emulator-test-runner.d.mts — backend · scripts.md": "0c9b45a750c9681242d06b1d4b78c748e3e05067dbad5fff60a55661b4538656",
+    "Atlas/Struktura/patternly-backend/scripts/_Pliki/isolated-emulator-test-runner.mjs — backend · scripts.md": "8b5d2bc8b3269e57a51e79c64f07458cc3c925b55ec7fbfbcf0511fd022cd35d",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/lint.mjs — backend · scripts.md": "7bb5f7aef5a2b2b6369630f49c267d12f102c382e13305cc9b3d9ec70a1fcd30",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/localAdminEnvironment.mjs — backend · scripts.md": "0e5884581f7fb753e5b2b8c44d52b7073a868b06e736878881f983a321cb6855",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/localSmoke.ts — backend · scripts.md": "013fc013734e83db11d4513060d4fe5f4baab5ec128eb2c5889afbba455355c2",
@@ -99579,7 +99597,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/users/_Pliki/merge.ts — backend · src › modules › users.md": "57fbd9c54415b6d4d14603473631de31a05f8a330b868ec0b2817369de0969de",
     "Atlas/Struktura/patternly-backend/src/modules/users/_Pliki/store.ts — backend · src › modules › users.md": "801b1b2a4b97ea6504da56eb23c2f8bae655010625e0a1adbade7129dc5b184b",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/accountDeletionRestore.emulator.ts — backend · tests.md": "c5daa6572021a279823d8b11b3ace0979919f17147808d0f52efb439b2e6aec5",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/accountLifecycleCrash.emulator.test.ts — backend · tests.md": "74bb73021b695a5b45751ff38f9ad73e560942acdbfeb4edc5af643348801d13",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/accountLifecycleCrash.emulator.test.ts — backend · tests.md": "3016145f13400b9624cf242ae250b00e4ab452f0c83af9bfb74ce5ca714c0516",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/accountWireContract.test.ts — backend · tests.md": "7b3a5ae2b704c65a298d5de90600bf9419a62d123f6079a821868b57d6d0588c",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/adminStore.test.ts — backend · tests.md": "016ab045fbb583219e9258c46bebdc61d0f1ba06c90eec04eeb8b13254c44703",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/adoptionTransfer.emulator.test.ts — backend · tests.md": "bfa6cfd9a22423e4c1758c9df6597c690e5b0ec4d5ca147b3db3cff9467dad48",
@@ -99596,11 +99614,11 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deployment.test.ts — backend · tests.md": "a28775546362beeb540453c1f0e29f4cfaa014d95d8a2c43d05477e97461889f",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/environment.test.ts — backend · tests.md": "7721d8395419ab3a8ca1466e706bea327a51cde7fb0c3304d40d3ee282f8a69a",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/firestore.emulator.test.ts — backend · tests.md": "713ddd42f3e1cb738af7e561196984a6a1706c908a4230d16fb8f4ca5876b3b1",
-    "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/accountLifecycleCrashWorker.ts — backend · tests › fixtures.md": "fe19340da3f0774061755f3ea37bf77d553daf783a0201a471a97251d4f69098",
+    "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/accountLifecycleCrashWorker.ts — backend · tests › fixtures.md": "4a2f607a74e3eab5ee1fc228e6745bc97c6e39f572b5ebb43a4da6e5a47f8eee",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/gcsPackageFixture.ts — backend · tests › fixtures.md": "f9d0e819743d80d88ccc98f9788486a903aef5f929f1d80a2914575248d1bcc6",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/premiumSnapshot.ts — backend · tests › fixtures.md": "26b2a33abe9a831b8034e9bbffbfff5c9553ad070d2b77f510e340f1dcd81309",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/goalPlanMixedReplay.emulator.test.ts — backend · tests.md": "e3b1c3512639522ec1104389cf55836a2e7e9e71368f48ac53f35899055b031c",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/isolatedEmulatorRunner.test.ts — backend · tests.md": "ae4a74aac260aef4ea710d928eea10e8083e7aedf15fa24b64fca13c0b6a176e",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/isolatedEmulatorRunner.test.ts — backend · tests.md": "16b168dca2139e984360d7b682ed3ce51c28ac1c51c9c06722659f7e51b5c359",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/isolatedProgressFixture.emulator.test.ts — backend · tests.md": "02b52400266c48acc6138c78525097d517d0597edda45cce3581466a0c3ce876",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/legalRequestContracts.test.ts — backend · tests.md": "471dd61a3d09fd65a2e854c1c66d6feca2aca5811447a98236b36f8013b86299",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/legalRequests.emulator.test.ts — backend · tests.md": "d70ed4dbd1a9e84deb6d4a8ef88438896c69153739a7f97c53f89392a7f0226a",

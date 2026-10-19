@@ -1405,9 +1405,9 @@
       "reviewedHash": "081f4b27242f2ac8e6873286509d48eb4ef1ac791ad374a1ec130eacce47028b"
     },
     "patternly-backend/scripts/isolated-emulator-test-runner.mjs": {
-      "description": "Uruchamia wskazane emulator suites wyłącznie dla demo project i loopback, z walidacją stałej konfiguracji/nazw DB oraz izolowanym zestawem portów; nie jest adapterem produkcyjnym.",
+      "description": "Uruchamia izolowane suites wyłącznie dla projektu demo i loopback. Jeden resolver zachowuje Auth19119/Firestore18119 bez bazy; jawna baza wyznacza auth=base, firestore=base+1, hub=base+2 i logging=base+3. Wspólny guard runtime wymaga zgodnego projektu i dokładnych endpointów przed inicjalizacją SDK parenta/workera B4; zajęte porty zatrzymują runner przed startem emulatorów.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "1107c50229899013835a4bc394cdc76e4d9706a44787a76fccd0f447ede6fddd"
+      "reviewedHash": "7b50a1fb457855ee85b2cdf644499d369f46fb38341daa34c6dab9beb0bfffe5"
     },
     "patternly-web/scripts/publicLegalTestArtifact.mjs": {
       "description": "Buduje wyłącznie synthetic legal fixture testOnly z danymi testowymi; nie tworzy zatwierdzonego eksportu produkcyjnego.",
@@ -1480,9 +1480,9 @@
       "reviewedHash": "95de0e91000c2df1b4dcf44e33218a168c253e6308915baa7737ebfbe45c197b"
     },
     "patternly-backend/tests/accountLifecycleCrash.emulator.test.ts": {
-      "description": "Emulator crash/retry regresja dla guarded account-deletion lifecycle; potwierdza wyłącznie tę lokalną ścieżkę.",
+      "description": "Parent izolowanych prób B4 revoke/deletion: przed initializeApp sprawdza środowisko wspólnym guardem. Po IPC o rzeczywistym efekcie Admin SDK zabija worker przez SIGKILL, sprawdza trwały checkpoint, naturalny lease, recovery tego samego ID/proofId i terminalny replay bez kolejnego efektu; zachowuje obce konto.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "593ef92d0865534f0e1dd1d24c575db94e6e80a4454012ce1f86a13105df4a53"
+      "reviewedHash": "537d83b2573d0b0ac93cdbd9c93f42220ed835cde82e425a80e09905607cb916"
     },
     "patternly-backend/tests/firestore.emulator.test.ts": {
       "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore. PAT-CODE-011 dodaje fizyczny readback staged drzewa, brakujących rodziców, blokadę complete/proof przy residualach, częściowy cleanup i retry/takeover z odmową staremu workerowi oraz konflikt accountId. Dwa osobne błędy fixture PAT-CODE-012 pozostają nierozwiązane.",
@@ -1490,9 +1490,9 @@
       "reviewedHash": "fc73338bb7192edffe4a56791a78736b5525bbd39264d405d141ecce2877c093"
     },
     "patternly-backend/tests/fixtures/accountLifecycleCrashWorker.ts": {
-      "description": "Worker fixture używany przez crash/retry deletion suite; test support only.",
+      "description": "Worker IPC B4: przed initializeApp wymaga wspólnej konfiguracji demo/loopback oraz kanału IPC. Wykonuje rzeczywisty efekt Admin SDK revoke/deletion i zatrzymuje się po potwierdzeniu IPC przed finalizacją operacji, umożliwiając SIGKILL z parenta.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "8d8607df4c6796be3896e903f1e274f5fea51e2fbfbce09127de17c4e8402096"
+      "reviewedHash": "c7669ba0c64733398919e40cb6430897fcd7e5ecefd00a7e9113932a62e5e291"
     },
     "patternly-web/scripts/public-legal.test.mjs": {
       "description": "Sprawdza walidację artefaktu legal na fixtures; test pass nie stanowi zatwierdzenia ani produkcyjnej publikacji.",
@@ -1592,6 +1592,16 @@
       "description": "Izolowany seed danych staged pod accounts/{uid}: transfer, pełne rekordy state, chunks, decisions, results, markers i idempotency. Zwraca referencje do fizycznego readback; wariant missingParents pomija root/transfer i dodaje głębszą sierotę. To fixture katalogu przechowywania dla deletion i offline restore, bez uruchamiania staged adoption ani operacji na rzeczywistym koncie.",
       "flow": "Dane, prywatność i zgłoszenia",
       "reviewedHash": "fd2748a71139c97b285e3cf515dc3c7d6d9734f0326c0efb8224e6799fe484ab"
+    },
+    "patternly-backend/scripts/isolated-emulator-test-runner.d.mts": {
+      "description": "Deklaruje kontrakt wspólnego resolvera portów, walidacji konfiguracji emulatorów i środowiska runtime oraz runnera izolowanych testów. Parent i worker B4 importują ten sam kontrakt zamiast utrzymywać osobne domyślne wyliczenia.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "8e09f476178cdd3e795eb4f548d810d512592772b69df70da6b0eede51487b77"
+    },
+    "patternly-backend/tests/isolatedEmulatorRunner.test.ts": {
+      "description": "Sprawdza wspólną konfigurację runnera i guardów B4: domyślne19119/18119, override przez PATTERNLY_ISOLATED_TEST_PORT_BASE, granice bazy i odmowę błędnych baz/portów, obcego lub niezgodnego projektu, hosta spoza loopback i driftu konfiguracji emulatorów.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "d3eed907dd3e78f86c21576261c5f498414d25cc11737352cc60e09e693bb3a4"
     }
   },
   "flows": [
@@ -1676,7 +1686,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "46aba7cde278c1ceb36648f0af919be669524adc03beb2a989105b8acc59a93d"
+      "reviewedDigest": "2595874bc07521b15cedba4e9d04a7ce562e88262ffa2e2da3d2bd0cb84d3797"
     },
     {
       "name": "Witryna, demo i panel",
