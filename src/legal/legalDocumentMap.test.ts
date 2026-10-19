@@ -2,11 +2,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+import { legalDocumentApprovalIssue, renderCanonicalLegalDocuments, renderedDocumentsSha256 } from "../../scripts/publicLegalApproval.mjs";
 import releaseLegalVariables from "../../config/public-legal.release.json";
 import { createLegalDocumentMap, legalDocumentMap, getLegalDocument } from "./legalDocumentMap";
 import { legalTranslationDraftsTestOnly } from "./legalTranslationDrafts.testOnly";
 import { privacyPolicy } from "./privacyPolicy";
 import { termsOfService } from "./termsOfService";
+import { validateLegalVariablesRelease } from "./legalVariablesSchema";
 import { TARGET_LOCALES } from "../preferences/localeResolver";
 
 test("visible legal documents index all seven locales directly", () => {
@@ -26,8 +28,14 @@ test("visible legal documents index all seven locales directly", () => {
 });
 
 test("synthetic approved seven-locale source maps all rendered locale documents as canonical", () => {
-  const source = structuredClone(releaseLegalVariables);
-  source.legalDocumentApproval.status = "APPROVED";
+  const source = {
+    ...structuredClone(releaseLegalVariables),
+    legalDocumentApproval: { status: "APPROVED", renderedDocumentsSha256: "" },
+  };
+  for (const locale of TARGET_LOCALES) source.privacy.processingRegisterDisclosure[locale] = `Synthetic release disclosure ${locale}`;
+  source.legalDocumentApproval.renderedDocumentsSha256 = renderedDocumentsSha256(renderCanonicalLegalDocuments(source));
+  assert.equal(legalDocumentApprovalIssue(source), null);
+  assert.deepEqual(validateLegalVariablesRelease(source), []);
   const map = createLegalDocumentMap(source, true);
   for (const locale of TARGET_LOCALES) {
     assert.equal(map[locale].status, "canonical");

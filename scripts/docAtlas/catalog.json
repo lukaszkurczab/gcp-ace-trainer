@@ -872,8 +872,8 @@
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/legal/legalVariables.ts": {
-      "description": "Wybiera źródło zmiennych prawnych i waliduje kontrakt. Wydanie wymaga jawnego APPROVED oraz zgodnego SHA-256 dokładnie wyrenderowanych 14 dokumentów; bieżące drafty pozostają UNAPPROVED.",
-      "reviewedHash": "55e6fa666ac9996bbe3f9432768b721aded01179cbcc1975722a9f52a425bf1e",
+      "description": "Wybiera lokalną fixture smoke/sandbox lub release JSON; release runtime wymaga statusu APPROVED. Jawny wspólny typ poszerza literalne wartości fixture do string/boolean i obejmuje opcjonalne surowe metadane approval. Pełna walidacja schematu oraz powiązania SHA-256 14 dokumentów pozostaje w istniejących bramkach rejestracji/build/export; typ nie jest zgodą prawną.",
+      "reviewedHash": "cd548fcadcbed68fef35c2fe5536da8f6fca85dfbbe51cb6996de53eacf19030",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/scripts/checkWorkspaceDocs.mjs": {
@@ -1380,9 +1380,9 @@
       "reviewedHash": "0619af4b9fd8d8321cf4e048aa44c1c71f231afed9a8274ef2f36047af2a1877"
     },
     "patternly/src/legal/legalDocumentMap.ts": {
-      "description": "Projektuje legal documents dla runtime: production gating wymaga zatwierdzenia; tłumaczenia DE/FR/ES/IT/ET są jawnie test-only/unapproved, dopóki review nie zostanie zamknięty.",
+      "description": "Mapuje wspólnie typowane dane legal bez podwójnego rzutowania lub any na siedem dokumentów locale. EN/PL lokalnie są canonical, pozostałe locale mają unapproved-test-only; w release po jawnym APPROVED mapowane są dokumenty ze źródła release jako canonical. Getter odmawia draftów w release. Nie nadaje zatwierdzenia ani nie zastępuje bramek eksportu.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "6d63f12f80e80b23703dc51402ddd43f40df16970cfa00ba03ca612f79360835"
+      "reviewedHash": "3dc0f033347b00c76a565c8fddf54ad0ab8c81d6b8b6b7029624533f775642da"
     },
     "patternly/src/legal/legalVariablesSchema.ts": {
       "description": "Waliduje strukturę 7 locale, placeholdery i schemat approval (status plus rendered document SHA); walidacja schematu nie jest oceną prawną.",
@@ -1435,9 +1435,9 @@
       "reviewedHash": "2193433b0cee6f2e337102a103725399f8a8a6fb63cff7c602bd6f4b5f94e418"
     },
     "patternly/src/legal/providerRegistrationDocuments.ts": {
-      "description": "Udostępnia EN/PL terms/privacy tylko gdy runtime ma canonical documents; release odmawia przy niezatwierdzonych dokumentach.",
+      "description": "Wiąże EN/PL Terms i Privacy z wersją danych dla smoke/sandbox/release. Release waliduje pełny schemat i odczytuje typowane approval bez supresji; niezatwierdzone lub niekompletne dane zwracają unavailable. Pozostałe locale rejestracji pozostają niedostępne.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "9b834e679fecb83ac7b844b319a40b961f94964c050c597a25133270200d3109"
+      "reviewedHash": "374e1e4c75708872c584f3a3d4b0c284689b8e4a6fe8fde1d669dd2026f6f47c"
     },
     "patternly-backend/package.json": {
       "description": "Dodaje wąskie polecenia izolowanych emulator suites dla usunięcia, expiry i offline restore; nie uruchamia produkcyjnej operacji.",
@@ -1485,9 +1485,9 @@
       "reviewedHash": "537d83b2573d0b0ac93cdbd9c93f42220ed835cde82e425a80e09905607cb916"
     },
     "patternly-backend/tests/firestore.emulator.test.ts": {
-      "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore. PAT-CODE-011 dodaje fizyczny readback staged drzewa, brakujących rodziców, blokadę complete/proof przy residualach, częściowy cleanup i retry/takeover z odmową staremu workerowi oraz konflikt accountId. Dwa osobne błędy fixture PAT-CODE-012 pozostają nierozwiązane.",
+      "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore. PAT-CODE-011 dodaje fizyczny readback staged drzewa, brakujących rodziców, blokadę complete/proof przy residualach, częściowy cleanup i retry/takeover z odmową staremu workerowi oraz konflikt accountId. PAT-CODE-012 rozdziela aktywny, prawidłowo wygasły oraz malformed tombstone; stary worker wywołuje obecny cleanup i rzeczywisty fence, z odmową oraz pełnym readback bez zmiany potomka, użytkownika i aktualnej operacji. Nie zmienia readera ani retencji.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "fc73338bb7192edffe4a56791a78736b5525bbd39264d405d141ecce2877c093"
+      "reviewedHash": "9effd9b9a69669e36d12fa9ebd9efdc0537aa931814c43792680cbc2264d1cd9"
     },
     "patternly-backend/tests/fixtures/accountLifecycleCrashWorker.ts": {
       "description": "Worker IPC B4: przed initializeApp wymaga wspólnej konfiguracji demo/loopback oraz kanału IPC. Wykonuje rzeczywisty efekt Admin SDK revoke/deletion i zatrzymuje się po potwierdzeniu IPC przed finalizacją operacji, umożliwiając SIGKILL z parenta.",
@@ -1545,8 +1545,8 @@
       "reviewedHash": "48d291a35d32ea94912295eeb7c5f417f283a0f612aca531a624432aec1ee9f3"
     },
     "patternly/integration/contracts/content-release/release.lock.json": {
-      "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów oraz wykonane kontrole techniczne. Schema v4 nie nadaje zgody na publikację ani oceny semantycznej.",
-      "reviewedHash": "3a809729e3382b0569aee70bacd75a325844344373a6c6294feda9978d811b84"
+      "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów oraz kontrole techniczne. Synchronizacja PAT-CODE-008 aktualizuje wyłącznie provenance do czystego bieżącego CONTENT, przy niezmienionych fingerprint/wersjach/checksumach. Schema v4 nie nadaje zgody na publikację ani oceny semantycznej.",
+      "reviewedHash": "5004b30a97d8f0e497962d346cf5ce780a062d3132d423c8d897499cc4424e9c"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -1602,6 +1602,16 @@
       "description": "Sprawdza wspólną konfigurację runnera i guardów B4: domyślne19119/18119, override przez PATTERNLY_ISOLATED_TEST_PORT_BASE, granice bazy i odmowę błędnych baz/portów, obcego lub niezgodnego projektu, hosta spoza loopback i driftu konfiguracji emulatorów.",
       "flow": "Dane, prywatność i zgłoszenia",
       "reviewedHash": "d3eed907dd3e78f86c21576261c5f498414d25cc11737352cc60e09e693bb3a4"
+    },
+    "patternly/src/legal/legalDocumentMap.test.ts": {
+      "description": "Regresje mapy siedmiu locale, draftów i odmowy release bez zatwierdzenia. Syntetyczne APPROVED ma SHA-256 związany z 14 wyrenderowanymi dokumentami przez istniejący helper, a mapa sprawdza wartości przekazanego źródła. Testy nie zmieniają rzeczywistego approval ani treści źródłowych.",
+      "reviewedHash": "dc32a23d4654691fb6b6d782b9aec352ed183a1961bc5e0aa8f96974ba02e3d7",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly/src/legal/providerRegistrationDocuments.test.ts": {
+      "description": "Regresje smoke/sandbox EN/PL i odmowy nieobsługiwanych locale. Świeży proces wybiera syntetyczne zatwierdzone źródło release z rzeczywistym SHA-256 14 dokumentów; UNAPPROVED lub brak supportUrl odmawia bez lokalnego fallbacku. JSON podmieniany wyłącznie w pamięci testu, bez zmiany release config.",
+      "reviewedHash": "7890dac3f1aff1ba19d18c9930f0a46b3a24016620b2fb202537d4f7c2b6146b",
+      "flow": "Dane, prywatność i zgłoszenia"
     }
   },
   "flows": [
@@ -1686,7 +1696,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "2595874bc07521b15cedba4e9d04a7ce562e88262ffa2e2da3d2bd0cb84d3797"
+      "reviewedDigest": "e158586f89a5e12644411ce5a614c4986a7023fa64000d231255832f3d867fc1"
     },
     {
       "name": "Witryna, demo i panel",
@@ -1695,7 +1705,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "79be42a230dab99525acf350e3f0dc1593223427aff8845bc79dbf18688dd679"
+      "reviewedDigest": "9c44aa157ecd092eb9d270962eca98220740ca3c03e51b0a015954d7be3f0249"
     }
   ]
 }

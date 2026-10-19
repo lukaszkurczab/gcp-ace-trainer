@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "50f4c9ca99ed601821bef6a7970709aa67d82cda",
+      "head": "42ae1c95ae5daaf152f595d08986ee13cd60e378",
       "files": [
         {
           "path": ".easignore",
@@ -993,7 +993,7 @@
         },
         {
           "path": "integration/contracts/content-release/release.lock.json",
-          "sha256": "3a809729e3382b0569aee70bacd75a325844344373a6c6294feda9978d811b84",
+          "sha256": "5004b30a97d8f0e497962d346cf5ce780a062d3132d423c8d897499cc4424e9c",
           "bytes": 8592,
           "symbols": [],
           "imports": [],
@@ -2785,8 +2785,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "c309cd8ece441b4b5c592759739ea411db58f1941b6504f38899123fe383b8ac",
-          "bytes": 100571,
+          "sha256": "3d8339170401546e8c0f41f4fa3166e8f7c38192c6741e27610f8f33569f1366",
+          "bytes": 102473,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2797,7 +2797,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 1702
+          "lines": 1712
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -58333,8 +58333,8 @@
         },
         {
           "path": "src/legal/legalDocumentMap.test.ts",
-          "sha256": "c61fadc220708c8c05e9757ac9e1339bdeac6ca0f2ef4257fe2ece24977e256b",
-          "bytes": 4684,
+          "sha256": "dc32a23d4654691fb6b6d782b9aec352ed183a1961bc5e0aa8f96974ba02e3d7",
+          "bytes": 5315,
           "symbols": [],
           "imports": [
             {
@@ -58356,40 +58356,52 @@
               "line": 3
             },
             {
+              "specifier": "../../scripts/publicLegalApproval.mjs",
+              "kind": "static",
+              "target": "scripts/publicLegalApproval.mjs",
+              "line": 5
+            },
+            {
               "specifier": "../../config/public-legal.release.json",
               "kind": "static",
               "target": "config/public-legal.release.json",
-              "line": 5
+              "line": 6
             },
             {
               "specifier": "./legalDocumentMap",
               "kind": "static",
               "target": "src/legal/legalDocumentMap.ts",
-              "line": 6
+              "line": 7
             },
             {
               "specifier": "./legalTranslationDrafts.testOnly",
               "kind": "static",
               "target": "src/legal/legalTranslationDrafts.testOnly.ts",
-              "line": 7
+              "line": 8
             },
             {
               "specifier": "./privacyPolicy",
               "kind": "static",
               "target": "src/legal/privacyPolicy.ts",
-              "line": 8
+              "line": 9
             },
             {
               "specifier": "./termsOfService",
               "kind": "static",
               "target": "src/legal/termsOfService.ts",
-              "line": 9
+              "line": 10
+            },
+            {
+              "specifier": "./legalVariablesSchema",
+              "kind": "static",
+              "target": "src/legal/legalVariablesSchema.ts",
+              "line": 11
             },
             {
               "specifier": "../preferences/localeResolver",
               "kind": "static",
               "target": "src/preferences/localeResolver.ts",
-              "line": 10
+              "line": 12
             }
           ],
           "jsonKeys": [],
@@ -58400,12 +58412,12 @@
             "visible legal screens request the selected locale directly",
             "rendered dispute and support clauses preserve consumer venue and statutory rights"
           ],
-          "lines": 72
+          "lines": 80
         },
         {
           "path": "src/legal/legalDocumentMap.ts",
-          "sha256": "6d63f12f80e80b23703dc51402ddd43f40df16970cfa00ba03ca612f79360835",
-          "bytes": 3244,
+          "sha256": "3dc0f033347b00c76a565c8fddf54ad0ab8c81d6b8b6b7029624533f775642da",
+          "bytes": 3135,
           "symbols": [
             "LegalDocumentKind",
             "LegalDocumentStatus",
@@ -58449,7 +58461,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 50
+          "lines": 49
         },
         {
           "path": "src/legal/legalTranslationDrafts.de.testOnly.ts",
@@ -58564,11 +58576,12 @@
         },
         {
           "path": "src/legal/legalVariables.ts",
-          "sha256": "55e6fa666ac9996bbe3f9432768b721aded01179cbcc1975722a9f52a425bf1e",
-          "bytes": 824,
+          "sha256": "cd548fcadcbed68fef35c2fe5536da8f6fca85dfbbe51cb6996de53eacf19030",
+          "bytes": 1532,
           "symbols": [
             "LegalLocale",
             "localReportOutboxRetentionDays",
+            "LegalDocumentApproval",
             "LegalVariables",
             "legalVariables"
           ],
@@ -58588,7 +58601,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 20
+          "lines": 34
         },
         {
           "path": "src/legal/legalVariablesLocalFixture.ts",
@@ -58738,8 +58751,8 @@
         },
         {
           "path": "src/legal/providerRegistrationDocuments.test.ts",
-          "sha256": "17f54377deb904982734d7c046fa219d4205aa974c50249b97ae86cef124f022",
-          "bytes": 1823,
+          "sha256": "7890dac3f1aff1ba19d18c9930f0a46b3a24016620b2fb202537d4f7c2b6146b",
+          "bytes": 4930,
           "symbols": [],
           "imports": [
             {
@@ -58755,29 +58768,60 @@
               "line": 2
             },
             {
+              "specifier": "node:child_process",
+              "kind": "static",
+              "resolution": "external",
+              "line": 3
+            },
+            {
+              "specifier": "../../scripts/publicLegalApproval.mjs",
+              "kind": "static",
+              "target": "scripts/publicLegalApproval.mjs",
+              "line": 5
+            },
+            {
+              "specifier": "../../config/public-legal.release.json",
+              "kind": "static",
+              "target": "config/public-legal.release.json",
+              "line": 6
+            },
+            {
+              "specifier": "../preferences/localeResolver",
+              "kind": "static",
+              "target": "src/preferences/localeResolver.ts",
+              "line": 7
+            },
+            {
+              "specifier": "./legalVariablesSchema",
+              "kind": "static",
+              "target": "src/legal/legalVariablesSchema.ts",
+              "line": 8
+            },
+            {
               "specifier": "./providerRegistrationDocuments",
               "kind": "static",
               "target": "src/legal/providerRegistrationDocuments.ts",
-              "line": 4
+              "line": 10
             },
             {
               "specifier": "../infrastructure/runtime/runtimeMode",
               "kind": "type",
               "target": "src/infrastructure/runtime/runtimeMode.ts",
-              "line": 5
+              "line": 11
             }
           ],
           "jsonKeys": [],
           "testNames": [
             "provider registration binds the complete canonical English and Polish documents to their loaded versions",
-            "provider registration fails closed for draft locales and incomplete release legal configuration"
+            "provider registration fails closed for draft locales and incomplete release legal configuration",
+            "release registration uses approved release data and refuses unapproved or incomplete data without local fallback"
           ],
-          "lines": 31
+          "lines": 86
         },
         {
           "path": "src/legal/providerRegistrationDocuments.ts",
-          "sha256": "9b834e679fecb83ac7b844b319a40b961f94964c050c597a25133270200d3109",
-          "bytes": 2379,
+          "sha256": "374e1e4c75708872c584f3a3d4b0c284689b8e4a6fe8fde1d669dd2026f6f47c",
+          "bytes": 2315,
           "symbols": [
             "ProviderRegistrationDocuments",
             "ProviderRegistrationDocumentsResult",
@@ -68674,7 +68718,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "e681a9c5e093c7e505b669cdc2059ee384528a54",
+      "head": "30a4adab9341d23bf45397d60d1c4d2353f69374",
       "files": [
         {
           "path": ".dockerignore",
@@ -75437,8 +75481,8 @@
         },
         {
           "path": "tests/firestore.emulator.test.ts",
-          "sha256": "fc73338bb7192edffe4a56791a78736b5525bbd39264d405d141ecce2877c093",
-          "bytes": 154046,
+          "sha256": "9effd9b9a69669e36d12fa9ebd9efdc0537aa931814c43792680cbc2264d1cd9",
+          "bytes": 155069,
           "symbols": [],
           "imports": [
             {
@@ -75626,7 +75670,7 @@
             "staged erasure resumes partial cleanup and rejects the old worker after fence takeover",
             "staged erasure refuses conflicting root ownership without changing its descendants"
           ],
-          "lines": 2295
+          "lines": 2313
         },
         {
           "path": "tests/fixtures/accountLifecycleCrashWorker.ts",
@@ -97993,7 +98037,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "c309cd8ece441b4b5c592759739ea411db58f1941b6504f38899123fe383b8ac",
+  "catalogHash": "3d8339170401546e8c0f41f4fa3166e8f7c38192c6741e27610f8f33569f1366",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "9c717839b11db15fbbf77384313cb5e1be9cd0e1c0b14ce619cdc926bb3a0ec2",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "73ab4a7734e7caa22ca9151924c3ac872193c317e2a5a7a0c58acb657453b5d9",
@@ -98009,7 +98053,7 @@
     "Atlas/Struktura/patternly/docs/specs/business-quality/business-quality — folder aplikacja · docs › specs.md": "399088ea04f373a654bc70e66e5811d4b14d8e82d1f977f8ae95e6b1ff31b3d3",
     "Atlas/Struktura/patternly/integration/integration — folder aplikacja.md": "9352b764f445ad653cfff8e6b31847b04a242eda62b8f5bd3624fab11da36888",
     "Atlas/Struktura/patternly/integration/contracts/contracts — folder aplikacja · integration.md": "8dd7fbeb444019ab54039320563e4b5a4c07a02349ff4164d80832fb118ccc7b",
-    "Atlas/Struktura/patternly/integration/contracts/content-release/content-release — folder aplikacja · integration › contracts.md": "40a1fe893925b8f59298badc54796e02b403ff067a542ca3285b29915eae772e",
+    "Atlas/Struktura/patternly/integration/contracts/content-release/content-release — folder aplikacja · integration › contracts.md": "bc54b0ee3a1fdfb2317d2757b4825986ab737abfb4feebd8247a2ae8d06423a6",
     "Atlas/Struktura/patternly/integration/contracts/content-release/local-claude/local-claude — folder aplikacja · integration › contracts › content-release.md": "a0186f24993ee45f13af74fe3675788b536e52286089d923aee1bc37f963c089",
     "Atlas/Struktura/patternly/integration/contracts/record-fingerprint/record-fingerprint — folder aplikacja · integration › contracts.md": "4498c2ea2cf52db26cfa152ca78214cb93d74eb1152be91ac1573c9f33c781e5",
     "Atlas/Struktura/patternly/native/native — folder aplikacja.md": "e5b001d7db6190a9e6d42a7830f65ccec5e0f06403a0ae96ab40c14c727629d6",
@@ -98116,7 +98160,7 @@
     "Atlas/Struktura/patternly/src/infrastructure/runtime/runtime — folder aplikacja · src › infrastructure.md": "622a2a06ccf86ef99dcce5d9551e0306c735c446eb265a877237344bffafdae1",
     "Atlas/Struktura/patternly/src/infrastructure/security/security — folder aplikacja · src › infrastructure.md": "dc54f3f1d902cbae20ff0340c6b4bb81a7b1415fa4ec87b6cf55887cb30ed676",
     "Atlas/Struktura/patternly/src/infrastructure/storage/storage — folder aplikacja · src › infrastructure.md": "162768f1d3fc014841131770984319965b7e0accff70fd9f4189ffba67db6b0b",
-    "Atlas/Struktura/patternly/src/legal/legal — folder aplikacja · src.md": "13d51099df0c726963c506c91048a22e1bc97a2c5779fc22dabcb8af67892139",
+    "Atlas/Struktura/patternly/src/legal/legal — folder aplikacja · src.md": "7251e8b973a45bc2a3549daf8411a7064c73e3d023fd139ba0005d0ea5bac5fc",
     "Atlas/Struktura/patternly/src/locales/locales — folder aplikacja · src.md": "fad33eab08b22ba2d529d481814caf0d0715055ef053f9e4e8fbfeaafc644d57",
     "Atlas/Struktura/patternly/src/locales/de/de — folder aplikacja · src › locales.md": "acde6ad5386639c83cf1ae9376c8f1a99651e04f134b05447698870b19bcd864",
     "Atlas/Struktura/patternly/src/locales/en/en — folder aplikacja · src › locales.md": "04589a55e280f5fb8f843a6f371ed43957c7af3ea66d8c08b5856a313a0b7e9b",
@@ -98143,8 +98187,8 @@
     "Atlas/Struktura/patternly/src/utils/utils — folder aplikacja · src.md": "01306f6c5f4d80ddd1f3f0f0dbd84350045b5c98f876e1bfce73b01be5cd7603",
     "Atlas/Struktura/patternly/_Pliki/app.config.js — aplikacja.md": "85cd0fb3cb9c327cf3f093d282032d7056f8fb36b0b7f37097e80c224a40942c",
     "Atlas/Struktura/patternly/_Pliki/App.tsx — aplikacja.md": "08a73fa6f1b3c22a674806c980f7480ed532c5990b0f764069026e59a8d287ff",
-    "Atlas/Struktura/patternly/config/_Pliki/public-legal.release.json — aplikacja · config.md": "b346015f0179fece3bceef20f17db8340d20885a3eeb4739f5ad1c00f9c13490",
-    "Atlas/Struktura/patternly/integration/contracts/content-release/_Pliki/release.lock.json — aplikacja · integration › contracts › content-release.md": "483d22bd339b58e81f39f16d18ee985cb03914db82436da5b4e5b28024d35233",
+    "Atlas/Struktura/patternly/config/_Pliki/public-legal.release.json — aplikacja · config.md": "8bc8d9333c5cdc143af3e8ceb68e8f5b1a25da7c63f43850028daf9082d530af",
+    "Atlas/Struktura/patternly/integration/contracts/content-release/_Pliki/release.lock.json — aplikacja · integration › contracts › content-release.md": "15a398ac8ed959228cec56ae0fe3c33097356ad80534caa69ca9e33f0cd39a4c",
     "Atlas/Struktura/patternly/_Pliki/metro.config.js — aplikacja.md": "017aac134043ae6d1f73a9ada266b7de6ff7f049b09dba73835ae59c53cd5c85",
     "Atlas/Struktura/patternly/native/foreground-clock/android/_Pliki/build.gradle — aplikacja · native › foreground-clock › android.md": "fbaa3be5ce8af6f7bea6bc81c33b17355acfcc28adc5125154588984e402cc4c",
     "Atlas/Struktura/patternly/native/foreground-clock/android/_Pliki/CMakeLists.txt — aplikacja · native › foreground-clock › android.md": "99bf6e0ee7af150d9a448dd3bd105e0fbb0be61e1e3ab8abc21df53255033ede",
@@ -98222,7 +98266,7 @@
     "Atlas/Struktura/patternly/scripts/_Pliki/prepareQ13LocalActor.test.mjs — aplikacja · scripts.md": "4573d980054e6e1c59e32793f8282c406e5b156783105732860c7d13849af0bd",
     "Atlas/Struktura/patternly/scripts/_Pliki/providerAuthFixtureMetro.test.mjs — aplikacja · scripts.md": "b1f31e15be45921c8febcaa6d785d2cd5da59b9d77a5f34712c9d5412c8eb5c7",
     "Atlas/Struktura/patternly/scripts/_Pliki/publicLegalApproval.cjs — aplikacja · scripts.md": "5e7565d6e7ea418fcd3421f77a2fd35c47eb6861fa10c0d584ade292e050e6ca",
-    "Atlas/Struktura/patternly/scripts/_Pliki/publicLegalApproval.mjs — aplikacja · scripts.md": "ceeac9e2a042c98e08512a1e4799dc09e7edf7741fa6fdf317a4e21f3296e558",
+    "Atlas/Struktura/patternly/scripts/_Pliki/publicLegalApproval.mjs — aplikacja · scripts.md": "dafe43f435be10e12220053ec9bfd5512d3f05f004ee1c3e15f0181312f13a6b",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/adjudicateAndroidCountdownProbe.mjs — aplikacja · scripts › qa.md": "2f0757f351a81d5ba55c5ad7d14b3540c98b76c3312038139acc9d935ccb75ff",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/adjudicateAndroidCountdownProbe.test.mjs — aplikacja · scripts › qa.md": "ece79f5fa63bf612c0e52666e985ced5db10fe7954a29c454a76075dde7bfe64",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/adjudicateAndroidDeadlineRecovery.mjs — aplikacja · scripts › qa.md": "12b5d04d57e603310f7e46ddededd2e95ee9edecf3b8a7e625c4da62bd7b41c8",
@@ -99201,21 +99245,21 @@
     "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/mmkvClient.ts — aplikacja · src › infrastructure › storage.md": "92307d6e9068d376e05f68d6bd573a1281b73ba6cdf4462bde7e47fccba2822f",
     "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/profileStorageRouter.test.ts — aplikacja · src › infrastructure › storage.md": "6608dbf32cc6300c54f0b7c47352ac8a5bc06fa4049ca1207d58602819105a06",
     "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/profileStorageRouter.ts — aplikacja · src › infrastructure › storage.md": "6d0d110c476a89192dbd53ef09dd69d091e71d0a9efe4b5e88089841787d9247",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalDocumentMap.test.ts — aplikacja · src › legal.md": "7fa39f711d7016e7df1a1550572ad60b3b188ec95d290542ce890c3bf7e36ba0",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalDocumentMap.ts — aplikacja · src › legal.md": "56cc477e3814d008fb6d0c6779169601a16eeb6344dec0e73301091626181522",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalDocumentMap.test.ts — aplikacja · src › legal.md": "c4d899b8660ea200876c71950359c7c0032c80d09fd7ebaaa4e2686d6cfc4db8",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalDocumentMap.ts — aplikacja · src › legal.md": "3206d8664b732deb0d894e0e9c33beffe8c83455f80b151d496ecd37cb93b501",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.de.testOnly.ts — aplikacja · src › legal.md": "ea19936c9efc40eeada2d9da5cd954d397258b6e5c942eee2442a4507acf9c07",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.es.testOnly.ts — aplikacja · src › legal.md": "2fa616f2e796a8e95300e0d895bbbbd58061e2409a8dbb20bf65612c173d1c9d",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.et.testOnly.ts — aplikacja · src › legal.md": "84715dfa1b78047f672faafc1799d2616bf3e5a63607658ead69e7dc85ec2388",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.fr.testOnly.ts — aplikacja · src › legal.md": "17920b18abdb8a114b9e40a38a161c7e45180b1c443601954d2621e8d988dbd5",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.it.testOnly.ts — aplikacja · src › legal.md": "5a88c5b51986d980dd3f597065d3ff69517fe75a4d30e1781f739d09831e01ba",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.testOnly.ts — aplikacja · src › legal.md": "62d2c111937425607c913f40186e5abc85e7af10bc6e56a415851fc361bf6ac4",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariables.ts — aplikacja · src › legal.md": "8377242d60201bb59293c41824e27a764fefe1200fd49631cd25b68ecb72edb4",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariables.ts — aplikacja · src › legal.md": "277fa8989eb02aaa036141ed07ffcf4d85e04eb38771f3de9318801a6d7d1a7b",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariablesLocalFixture.ts — aplikacja · src › legal.md": "15e8632816177281ff9f20a703ea6b6af5080167058b8268ee41df5fdd995fac",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariablesSchema.test.ts — aplikacja · src › legal.md": "12c93f0522785ae86d586e6e9501ad3cefcea8897618a722c97de76da16f8695",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariablesSchema.ts — aplikacja · src › legal.md": "7c50e3be7250eb946af9dc7b11f9be4b81b2ed17b1d6fee59761d697aa9ff358",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariablesSchema.ts — aplikacja · src › legal.md": "695b26233a8480e4f202ddf757d4974724c7bd2cd2ee816d84c26996823035ca",
     "Atlas/Struktura/patternly/src/legal/_Pliki/privacyPolicy.ts — aplikacja · src › legal.md": "9518913fe928a95383b9581229a1d92254e11a17c07c3897ebcf2761e5d46474",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/providerRegistrationDocuments.test.ts — aplikacja · src › legal.md": "d9811cb46e2d2328b71cef867acd4ccdff7c945e9bd815becbbecbc0fc0ca0b5",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/providerRegistrationDocuments.ts — aplikacja · src › legal.md": "77a1da7d4d8c02f78778f46dc729f8374af73750a48695088a803f3849bcc5bc",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/providerRegistrationDocuments.test.ts — aplikacja · src › legal.md": "6e81327e0b8b89b8c01ddd9e39fc48f556afb39da859cb629cc78feabe351ef1",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/providerRegistrationDocuments.ts — aplikacja · src › legal.md": "a33ec011cbf2323af499f14f7fdb8890e18b33c5713d2621f0a42236a2f162cf",
     "Atlas/Struktura/patternly/src/legal/_Pliki/termsOfService.ts — aplikacja · src › legal.md": "1eb32a8c8dec8dbbf7f4c2cb576a435e1175cbc1354067ed9289b0983beb0134",
     "Atlas/Struktura/patternly/src/locales/de/_Pliki/account.json — aplikacja · src › locales › de.md": "a7ce62f547878f49c006a21a69de42aa55b489ff3a5e30b0a941fd385b32de75",
     "Atlas/Struktura/patternly/src/locales/de/_Pliki/appearance.json — aplikacja · src › locales › de.md": "cd9f08bf13bdf3b0dce164c6a6d016b70440d6900928dfd132f318d03d69f21c",
@@ -99289,7 +99333,7 @@
     "Atlas/Struktura/patternly/src/preferences/_Pliki/AppPreferencesProvider.tsx — aplikacja · src › preferences.md": "9364d74f1412ff63f6111b4ae47a789103839212db4f051481ac71bfbb87b35f",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/index.ts — aplikacja · src › preferences.md": "fb9392b0bf10fc8d5817768d6c344c8311300d27fcd4003cd65f10e7eebef099",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/localeResolver.test.ts — aplikacja · src › preferences.md": "f35272b78a3682601b01a9ce41e3d5a729f50329ceecedf3d3ce0c704831ef04",
-    "Atlas/Struktura/patternly/src/preferences/_Pliki/localeResolver.ts — aplikacja · src › preferences.md": "6857df4e888e1ebb865e78ccce1dd74abeec750a9ccb795014e7b2f0ca830e67",
+    "Atlas/Struktura/patternly/src/preferences/_Pliki/localeResolver.ts — aplikacja · src › preferences.md": "e5380a17125fe4fc20b1c15063e492385cd5fa67d6b9e92c40f683c64496ad62",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/notificationPresentation.test.ts — aplikacja · src › preferences.md": "7261bbc366118e7d79dd1b88aa879aa6b0433b063be6f2e5b13d679efbc36e43",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/notificationSettingsPresentation.ts — aplikacja · src › preferences.md": "e5091477edd3b0e924155736a914114334cfece1d4465745920f19e50bcc592c",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/notificationSettingsState.test.ts — aplikacja · src › preferences.md": "3fe795b2f87bef99f1ed2aff00218a138687289cb1e66603ad1ca39b12198b65",
@@ -99476,7 +99520,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "edfcf1e8692620db21d6e565ef0f2eb39aba0f5f567e2ce0c3261127f80d127d",
     "Atlas/Struktura/patternly-backend/src/modules/tracks/tracks — folder backend · src › modules.md": "1f814cf9a829b553b4d4446da8e3e16a9ba4b88dfc4baca70d827ceb04744f6d",
     "Atlas/Struktura/patternly-backend/src/modules/users/users — folder backend · src › modules.md": "5831a8600600b8b0c8d32fc15a17498c320dde69b56bf7c22d422820080f331b",
-    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "7e0d11fac475138f16182eb5c90fdce022255ec54930a31325049c6a41b4852c",
+    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "9df72b3f82088e5add69d43d050f78dd070ad7a5417be8d883e077cc4a382df5",
     "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "70914330bfd756dc21cd05640cf4c45eeb99b5b2c747b444f1c7f127becc081a",
     "Atlas/Struktura/patternly-backend/_Pliki/package.json — backend.md": "0b4594ff63a0c346f5145e5c0300d893b1f54803e5f8aa798a4aae4b26928ea9",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/apply-firestore-ttl.mjs — backend · scripts.md": "0ab27e8a9999d22ea08527d988df9e75b9b9016da261227677aed6a7109c2836",
@@ -99613,7 +99657,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deletedIdentityR01.emulator.ts — backend · tests.md": "6fa8907c2df23c0e5bae2c33315382c5c56610a3699cfa48d0cf57cb5e6c77a1",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deployment.test.ts — backend · tests.md": "a28775546362beeb540453c1f0e29f4cfaa014d95d8a2c43d05477e97461889f",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/environment.test.ts — backend · tests.md": "7721d8395419ab3a8ca1466e706bea327a51cde7fb0c3304d40d3ee282f8a69a",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/firestore.emulator.test.ts — backend · tests.md": "713ddd42f3e1cb738af7e561196984a6a1706c908a4230d16fb8f4ca5876b3b1",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/firestore.emulator.test.ts — backend · tests.md": "d5ce55492dcff935ebb52be64dad43a7fd20abae23db21cadd1d37938d2934ac",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/accountLifecycleCrashWorker.ts — backend · tests › fixtures.md": "4a2f607a74e3eab5ee1fc228e6745bc97c6e39f572b5ebb43a4da6e5a47f8eee",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/gcsPackageFixture.ts — backend · tests › fixtures.md": "f9d0e819743d80d88ccc98f9788486a903aef5f929f1d80a2914575248d1bcc6",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/premiumSnapshot.ts — backend · tests › fixtures.md": "26b2a33abe9a831b8034e9bbffbfff5c9553ad070d2b77f510e340f1dcd81309",

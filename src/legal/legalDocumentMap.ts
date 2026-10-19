@@ -10,14 +10,13 @@ export type LegalDocumentEntry = Readonly<{ privacyPolicy: string; termsOfServic
 export type LegalDocumentIndex = Readonly<Record<LegalTranslationLocale, LegalDocumentEntry>>;
 
 /** Builds the visible document index from one source. Release translations are usable only after explicit approval. */
-export function createLegalDocumentMap(source: Record<string, any>, releaseRuntime: boolean): LegalDocumentIndex {
+export function createLegalDocumentMap(source: LegalVariables, releaseRuntime: boolean): LegalDocumentIndex {
   if (releaseRuntime && source.legalDocumentApproval?.status !== "APPROVED") {
     throw new Error("Release legal documents are unapproved.");
   }
 
-  const canonicalSource = source as LegalVariables;
-  const privacy = releaseRuntime ? renderPrivacyPolicy(canonicalSource) : privacyPolicy;
-  const terms = releaseRuntime ? renderTermsOfService(canonicalSource) : termsOfService;
+  const privacy = releaseRuntime ? renderPrivacyPolicy(source) : privacyPolicy;
+  const terms = releaseRuntime ? renderTermsOfService(source) : termsOfService;
   const translatedVariables = releaseRuntime ? source : createLegalVariablesTestDraft(source);
   const translated = Object.fromEntries(
     legalTranslationDraftsTestOnly.locales.map((locale) => [locale, renderLegalTranslationDraftTestOnly(locale, translatedVariables)]),
@@ -38,7 +37,7 @@ export function createLegalDocumentMap(source: Record<string, any>, releaseRunti
 const isReleaseRuntime = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "release";
 
 /** The canonical visible-document index. Local translation drafts remain explicitly unapproved. */
-export const legalDocumentMap = createLegalDocumentMap(legalVariables as unknown as Record<string, any>, isReleaseRuntime);
+export const legalDocumentMap = createLegalDocumentMap(legalVariables, isReleaseRuntime);
 
 export function getLegalDocument(locale: LegalTranslationLocale, kind: LegalDocumentKind, releaseRuntime = isReleaseRuntime) {
   const entry = legalDocumentMap[locale];

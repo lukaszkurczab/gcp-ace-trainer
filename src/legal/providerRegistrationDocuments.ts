@@ -30,7 +30,7 @@ export function resolveProviderRegistrationDocuments(
   const termsVersion = legalVariables.documentVersion[locale]?.trim();
   const privacyVersion = legalVariables.documentVersion[locale]?.trim();
   const releaseIssues = runtimeMode === "release" ? validateLegalVariablesRelease(legalVariables) : [];
-  if (runtimeMode === "release" && (legalVariables as unknown as { legalDocumentApproval?: { status?: string } }).legalDocumentApproval?.status !== "APPROVED") {
+  if (runtimeMode === "release" && legalVariables.legalDocumentApproval?.status !== "APPROVED") {
     releaseIssues.push({ path: "legalDocumentApproval.status", message: "Production legal documents are not approved." });
   }
   if (terms.status !== "canonical" || privacy.status !== "canonical"
