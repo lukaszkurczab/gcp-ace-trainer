@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "25c15ef77b2c3dd08aa97b65f4ff26fa92dd0c85",
+      "head": "0b3f1d782b6dc4458cb801ac45440522215d0ab1",
       "files": [
         {
           "path": ".easignore",
@@ -993,8 +993,8 @@
         },
         {
           "path": "integration/contracts/content-release/release.lock.json",
-          "sha256": "f973b6714556b9a156a2ed524351d67ed82dd700bbd9bdc4a8df4fd0bebfc18e",
-          "bytes": 8574,
+          "sha256": "3a809729e3382b0569aee70bacd75a325844344373a6c6294feda9978d811b84",
+          "bytes": 8592,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2785,7 +2785,7 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "0e5400c6a0c62e6dff70661ba312f1061ae8768c9621dfe99c13bd68ceb5adfd",
+          "sha256": "00e00c7c247cba88ca3401fc821245854bb04d5634cf771c460b9b7266ede6b0",
           "bytes": 95528,
           "symbols": [],
           "imports": [],
@@ -38932,8 +38932,8 @@
         },
         {
           "path": "src/content/generated/canonical-content/aws-certified-solutions-architect-associate.json",
-          "sha256": "350dc44eed14c7087bfdd79196d84d5ca16c606b449536f8c35078b4116a6fc6",
-          "bytes": 6825599,
+          "sha256": "04d823fc82d4cb52d685bbc03d5619bbb8ba1330208e3bf0aacea795c808794e",
+          "bytes": 6832628,
           "symbols": [],
           "imports": [],
           "jsonKeys": [],
@@ -38972,8 +38972,8 @@
         },
         {
           "path": "src/content/generated/canonical-content/content-lock.json",
-          "sha256": "6d4478fe46000976cf9306a2bf7ce2d702cb4e9e52770165aa7d32a905d4ec67",
-          "bytes": 2397,
+          "sha256": "4ed0674fc9304561097d3d1bd360abd69fdd6c677bba2b45c9d5188e08ab01aa",
+          "bytes": 2406,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -38985,8 +38985,8 @@
         },
         {
           "path": "src/content/generated/canonical-content/content-successor-ledger.json",
-          "sha256": "5bfc70dc3e9e340319935f8f09ee14c4bfa22735ad94fe4f17be692706a46792",
-          "bytes": 4974,
+          "sha256": "24faa3cc8bae10f8f122e6eeb300a02bac26999f21862ddefda29b627e89d1f7",
+          "bytes": 4983,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -68616,30 +68616,6 @@
         {
           "path": "[lokalne pliki środowiska lub kluczy — nazwy ukryte]",
           "reason": "private-or-dependency-output"
-        },
-        {
-          "path": "scripts/fixtures/acceptedQleProducer.ts",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/fixtures/lockedContentProducer.ts",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "src/content/__fixtures__/release-acceptance/ood-remaining-closure-21/ROOT-N05-PRODUCER-MAP.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "src/content/__fixtures__/release-acceptance/ood-remaining-closure-22/ROOT-N06-PRODUCER-MAP.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "src/content/__fixtures__/release-acceptance/ood-remaining-closure-23/ROOT-N07-PRODUCER-MAP.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "src/content/__fixtures__/release-acceptance/ood-remaining-closure-24/ROOT-N24-PRODUCER-MAP.json",
-          "reason": "deleted-in-worktree"
         }
       ],
       "boundaries": [
@@ -68694,7 +68670,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "eb5c7ecacfc3dd2d812ad28ae85c0b4cc9a118b4",
+      "head": "839ea3884bd58f4a9f964ccea5ed1b2bf7c62a29",
       "files": [
         {
           "path": ".dockerignore",
@@ -78699,7 +78675,7 @@
       ]
     },
     "patternly-content": {
-      "head": "89bcf2e10a02f6da8bc002222e0382a10fb9a908",
+      "head": "c2a69ff60168d9614b743f4e5d643ff3d9fae8d7",
       "files": [
         {
           "path": ".gitattributes",
@@ -79732,8 +79708,8 @@
         },
         {
           "path": "content/aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/amazon_mq_protocol_preserving_integration.json",
-          "sha256": "24d429920ac7bb23ec44f59e16ea2265614d402db7240306390a519017b8cc29",
-          "bytes": 54009,
+          "sha256": "28cabd064f3964fbbbc8983d2a4bc4407fb6c9c069e448b5793b35513e508516",
+          "bytes": 55066,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -79744,8 +79720,8 @@
         },
         {
           "path": "content/aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/api_gateway_and_appsync_integration_boundaries.json",
-          "sha256": "580e85b193ebe1037f0ec5f0494b7da3326e8e4d9931ea41039a47c2f24242e1",
-          "bytes": 51713,
+          "sha256": "ace658b5f5c85307fc3ce59461dc9916bd5c916bdde3194b36f5eb06705e26a9",
+          "bytes": 52722,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -79756,8 +79732,8 @@
         },
         {
           "path": "content/aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/eventbridge_routing_and_event_buses.json",
-          "sha256": "e0f10fd8cda9f495363c0d19b3d6a75c06fc66749ce4f68164d4958732d53d64",
-          "bytes": 48490,
+          "sha256": "d8b582ead1c521d954a0c5f5d732a2d3333931d505bfd7a6c42b156e7cedc2c1",
+          "bytes": 51715,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -79768,8 +79744,8 @@
         },
         {
           "path": "content/aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/retry_buffering_throttling_and_async_failure_isolation.json",
-          "sha256": "7f1f65b57b009b902c5452ac240d85646ff49cd28448895188ae5568710b3b14",
-          "bytes": 51474,
+          "sha256": "8bc77bbb2cda07ca6a96d75434d76a48cb7817598bafc10e8b21a143fae16039",
+          "bytes": 52630,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -79792,8 +79768,8 @@
         },
         {
           "path": "content/aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/sqs_queue_patterns_and_dead_letter_handling.json",
-          "sha256": "1a4e18462fba49a9f90e46fa89d5d36ce5216ebf1bf47ecb0b27c94ac348fd6d",
-          "bytes": 49462,
+          "sha256": "04f6f7fca3237e1c56304e1a310a353dfd359781dd423e1667dae451d809dfe4",
+          "bytes": 50035,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -82540,8 +82516,8 @@
         },
         {
           "path": "content/catalog.json",
-          "sha256": "aa53e69d0f745da797ec541ed13b65d9f2ede61bf7d3f4052d5921aa5002d8f6",
-          "bytes": 38182,
+          "sha256": "abff3287ee1c9a1548985afb7907a3b896716a13a846ebab188ce1cbd3370667",
+          "bytes": 38191,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -94965,6 +94941,109 @@
           "lines": 65
         },
         {
+          "path": "tests/saa-20261019-consumer.test.mjs",
+          "sha256": "b7ad3dbbd15cd9c9469ce432926b8005ef28dd654cc0bc90cc4c887c5126f32c",
+          "bytes": 5623,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "node:fs/promises",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "node:path",
+              "kind": "static",
+              "resolution": "external",
+              "line": 3
+            },
+            {
+              "specifier": "node:url",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
+              "specifier": "node:test",
+              "kind": "static",
+              "resolution": "external",
+              "line": 5
+            },
+            {
+              "specifier": "node:crypto",
+              "kind": "static",
+              "resolution": "external",
+              "line": 6
+            },
+            {
+              "specifier": "../scripts/content/question-contract.mjs",
+              "kind": "static",
+              "target": "scripts/content/question-contract.mjs",
+              "line": 7
+            },
+            {
+              "specifier": "./helpers/current-question-bank.mjs",
+              "kind": "static",
+              "target": "tests/helpers/current-question-bank.mjs",
+              "line": 8
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [
+            "AWS source → canonical build → APP payload/current lock → consumer catalog is exact"
+          ],
+          "lines": 83,
+          "dynamicLoads": 1
+        },
+        {
+          "path": "tests/saa-20261019-targeted-corrections.test.mjs",
+          "sha256": "8ed8c76f899f8215f45f20c0b7d63e941bfadeebdb52772261d697d7337415af",
+          "bytes": 7577,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "node:test",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "../scripts/content/question-contract.mjs",
+              "kind": "static",
+              "target": "scripts/content/question-contract.mjs",
+              "line": 3
+            },
+            {
+              "specifier": "./helpers/current-question-bank.mjs",
+              "kind": "static",
+              "target": "tests/helpers/current-question-bank.mjs",
+              "line": 4
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [
+            "P01: domain isolation uses Classic resources; Custom FIFO remains a legal per-group counterexample",
+            "P02: authored Standard example reports two failures; FIFO stops at record 3 and includes unprocessed 4–10; throw fails the batch",
+            "P03: private REST ingress is distinct from HTTP/Regional private backend integration",
+            "P04: six exercises keep Classic rule/archive boundaries and distinct Custom retention/retry/DLQ contracts",
+            "P05: four realistic alternatives remove the longest-correct cue and explain the actual rejected IDs"
+          ],
+          "lines": 114
+        },
+        {
           "path": "tests/shared-contract.test.mjs",
           "sha256": "a6f3c56bc3dc584e7b46d66b77b2cefc0aa7be6cf5b61a87edd6bc8b2b230fb8",
           "bytes": 27464,
@@ -95293,1392 +95372,7 @@
         "tests/fixtures",
         "tests/helpers"
       ],
-      "excluded": [
-        {
-          "path": ".github/workflows/content-publishing.yml",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": ".github/workflows/real-content-release.yml",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/bundled-free-nodes/aws-certified-solutions-architect-associate/aws-certified-solutions-architect-associate-free-node-0003/package.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/bundled-free-nodes/backend-system-design-interview/backend-system-design-interview-free-node-0003/package.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/bundled-free-nodes/claude-certified-architect-professional-certification/claude-certified-architect-professional-certification-free-node-0001/package.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/bundled-free-nodes/coding-interview-dsa-problem-solving/coding-interview-dsa-problem-solving-free-node-0005/package.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/bundled-free-nodes/frontend-system-design-interview/frontend-system-design-interview-free-node-0003/package.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/bundled-free-nodes/google-cloud-associate-cloud-engineer/google-cloud-associate-cloud-engineer-free-node-0006/package.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/bundled-free-nodes/microsoft-azure-administrator-associate-az-104/microsoft-azure-administrator-associate-az-104-free-node-0004/package.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/bundled-free-nodes/microsoft-azure-ai-fundamentals-ai-901/microsoft-azure-ai-fundamentals-ai-901-free-node-0004/package.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/bundled-free-nodes/object-oriented-design-interview/object-oriented-design-interview-free-node-0003/package.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/premium-nodes/aws-certified-solutions-architect-associate/identity_federation_and_root_access/0f42e4208dac416e8db99c1024a1c9c7f0aac728d3d0122124c91a0b5659abf5/10935a7d50a4ef4f3fda59f53c0c9ce98b1e5207bc093a1424179a817b07aa1a.gzip",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/premium-nodes/aws-certified-solutions-architect-associate/identity_federation_and_root_access/0f42e4208dac416e8db99c1024a1c9c7f0aac728d3d0122124c91a0b5659abf5/derivation.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/premium-nodes/aws-certified-solutions-architect-associate/identity_federation_and_root_access/0f42e4208dac416e8db99c1024a1c9c7f0aac728d3d0122124c91a0b5659abf5/manifest.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/releases/patternly-claude-ccarp-2026-09-03-01/release.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/releases/patternly-launch-2026-08-25-01/release.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/tracks/coding-interview-dsa-problem-solving/coding-interview-dsa-problem-solving-0004/track-artifact.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "artifacts/tracks/google-cloud-associate-cloud-engineer/google-cloud-associate-cloud-engineer-authoring-v2026.08.11/track-artifact.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "config/free-node-inventory-pins.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.md",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "docs/evidence/content-audits/2026-10-11-claude-course-map.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "docs/evidence/content-audits/2026-10-11-claude-course-map.md",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "docs/evidence/content-audits/2026-10-13-claude-qle-v2-coverage.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/admissions/candidate-admission-v3.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/admissions/runtime/8385357bf7dfd91d8f157a1e8adde737237b96d422f64dcea7e134e90d6a52bd-c1509bfa8192dd6c29cbdc717233a1365adb7346.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/admissions/runtime/946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4-13ddc7f0a1e522457650ef6ece2bb972df63c586.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/admissions/runtime/9a1ae78ad702612f33d523ab5581e7e5fe5bd6fd2bd42a7a94d892a0b907deda-4e018fd10d62a60a26fa17581ec1d61f3f2989d2.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/admissions/runtime/9a1ae78ad702612f33d523ab5581e7e5fe5bd6fd2bd42a7a94d892a0b907deda-f5fd24660802750bdb71298c6a828033fe2369fe.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/admissions/runtime/d4e6842ada67f8b198476f9bb7f665c2c6d4987228cb749728d65fb3b6fb44fa-4047e8d883e92b3bf8f6d2fbe5d5f62471d7bc70.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/admissions/runtime/d6e2f2f202790bec0d14614c855e87a5a7e40ddb1bfe7ca5346a1bbbd3b78b09-9d6e664ef3814a22c431af4f917f2191f2938bb0.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/admissions/runtime/f37ade5cdb98fb72cd0ef85fd2f1eb0c4e0f274f1c33e7a881b3333b95a2e7c7-28647d6214cff79f7450cb09b27f39cec9d8c30b.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/admissions/runtime/f37ade5cdb98fb72cd0ef85fd2f1eb0c4e0f274f1c33e7a881b3333b95a2e7c7-88494dd0378ca639f79c5c75e81a33a3214b1980.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/aws-certified-solutions-architect-associate/build-reports/patternly-launch-2026-08-25-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/aws-certified-solutions-architect-associate/technical/73e7867c3d86324832e16db4d76d201b1f9c9639-f514318ea98017f287e876154f80c423b1175f51f718e3259bc6fd01b9bd0569.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/backend-system-design-interview/build-reports/patternly-launch-2026-08-25-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/backend-system-design-interview/technical/73e7867c3d86324832e16db4d76d201b1f9c9639-e0079494366c8fde4e2390b0804cdeff8fd4facd5d73b383f372bc6d57882606.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/bundled-free-node-package-acceptance-v2.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/ai901-20261018-repairs.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/besd-n03-20261018-repairs.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-besd-cohort-15.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-besd-seed-cohort-14.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-besd-slice-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-coding-source-copy-04.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-node-closure-16.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-node-closure-17.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-node-closure-19.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-node-closure-20.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-node-closure-21.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-node-closure-22.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-node-closure-23.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-node-closure-24.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-reason-amendment-19a.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-source-11.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-source-12.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-01-ood-unit-cohort-13.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/bizq-05-gcp-question-relations-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/ccarp-20261017-targeted-corrections.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/dsa-20261018-conditional-verification.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/dsa-20261018-targeted-corrections.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/fesd-n08-20261011.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/.gitignore",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/README.md",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/aggregate.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/current-source-binding.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/invalidated/ood-n09-b03-b06.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/invalidated/ood-n09-b08-reconciliation.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/invalidated/ood-n09-b08.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/invalidated/ood-n09-reconciliation.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/inventory.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/inventory.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/manifest.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/ai901.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/aws.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/az104.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/backend-design.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/claude.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-backtracking-base.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-backtracking-state.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-binary-answer.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-boundaries.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-duplicate-control.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-duplicate-handling.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-enumerate-choices.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-frequency-state.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-grid-search.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-indexed-scans.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-normalization.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-output-space.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-partitioning.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-path-undo.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-pruning.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-recognize-signal.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-sequence-shape.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/dsa-stable-compaction.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/gcp.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/ood-reconciled-n09.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/reviews/ood.jsonl",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/rubric.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/full-content-audit-2026-10-02/verify.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/gcp-ace-20261018-targeted-corrections.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/ood-20261013-explanation-corrections.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/saa-20261010-aws-targeted-corrections.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/business-quality/saa-20261010-aws-targeted-corrections.md",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/candidate-decisions/aws-02-codex-decision-v2.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/candidate-decisions/bizq-02-codex-decision-v2.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/candidate-decisions/current-candidate-decision-v2.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/canonical-content-approvals/claude-20261007-historical-questions.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/canonical-content-approvals/claude-cc02-blind-answer-text-v1.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/canonical-content-approvals/claude-cc02-historical-before.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/canonical-content-approvals/claude-cc03-question-baseline.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/canonical-content-approvals/odk-096-aws-free-node-v1.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slot-track-plans/aws-certified-solutions-architect-associate.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slot-track-plans/google-cloud-associate-cloud-engineer.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slot-track-plans/hashicorp-terraform-associate-004.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slot-track-plans/kubernetes-cloud-native-associate-kcna.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slot-track-plans/microsoft-azure-administrator-associate-az-104.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slot-track-plans/microsoft-azure-ai-fundamentals-ai-901.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slots-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slots-independent-qa.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slots/google-cloud-associate-cloud-engineer--setup_environment.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slots/hashicorp-terraform-associate-004--state_backends_and_drift.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/planned-item-slots/microsoft-azure-ai-fundamentals-ai-901--foundry_prompts_and_model_clients.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-ai901-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-ai901-independent-qa.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-aws-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-aws-independent-qa.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-aws-source-http-check.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-az104-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-az104-independent-qa.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-az104-source-http-check.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-gcp-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-gcp-independent-qa.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-kcna-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-kcna-independent-qa.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-terraform-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage03-terraform-independent-qa.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/certification/stage04-independent-qa.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/claude-certified-architect-professional-certification/build-reports/patternly-claude-ccarp-2026-09-03-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/claude-certified-architect-professional-certification/technical/e88c08dcd163dab7c7b562ef1f2a26160860d07b-4525db867fe9f720736c56494dbc4845cf93aafba81c6c7ffa4eb9b6899317cf.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/build-reports/patternly-launch-2026-08-25-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/simulation/algorithms-interview-simulation-v1-381b936d6bcc26ae60815e4f4db3c79de7a3c8f2-2c8a41f5e6dfc7524761dc54853744c5e6f7cb7fbcde88bb7c5522bb70f6bb59.coverage.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/simulation/algorithms-interview-simulation-v1-a55aba079851d3adfbad035be2b898ce46565a3e-d614ecbb82a0bcc80e82fc74d7bb7847dbeb327d764c270782045ced6252e14d.coverage.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/simulation/algorithms-interview-simulation-v1-c27b79cf7b00fd202cbc8d992f9a2ed9a610341f-fd67df4a989876422f56a2a4ff7677026a0e525d7d42b62d6cc050244a0dcfa4.coverage.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/simulation/algorithms-interview-simulation-v1-c5ef48385cade05d5ce2e1f8c6db578419fca870-43c15736a1a5d248f3f5e516d5650515cc615730282959b8cf6606df6f9e0268.coverage.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/simulation/algorithms-interview-simulation-v1-c778ae15aac53830ee2dba618550ae86dfbd8cf2-3999c1b2a6afb8366768836bcf63823e43a87473d8bc873a19003a17d3a7739f.coverage.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/simulation/algorithms-interview-simulation-v1-dd7e97b94cf635e0ec85b408bb9fc897abaf34c9-aef2e56fdd24cacc41b1c37b265457666de6c502c493ab5511652b5510f25b5c.coverage.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/simulation/algorithms-interview-simulation-v1-f58bf5f23ad14c23e52f484113b9b883eba21c5e-5136fabef29bb266186911eb0ecea0c7d93e81ff4dbb85fc6d9688ef168f01c7.coverage.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/technical/381b936d6bcc26ae60815e4f4db3c79de7a3c8f2-2c8a41f5e6dfc7524761dc54853744c5e6f7cb7fbcde88bb7c5522bb70f6bb59.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/technical/73e7867c3d86324832e16db4d76d201b1f9c9639-fdb92c6582a57ab12bbf19970fbd27fa1848e95415ae2be70259e42653a70b52.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/technical/a55aba079851d3adfbad035be2b898ce46565a3e-d614ecbb82a0bcc80e82fc74d7bb7847dbeb327d764c270782045ced6252e14d.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/technical/c27b79cf7b00fd202cbc8d992f9a2ed9a610341f-fd67df4a989876422f56a2a4ff7677026a0e525d7d42b62d6cc050244a0dcfa4.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/technical/c5ef48385cade05d5ce2e1f8c6db578419fca870-43c15736a1a5d248f3f5e516d5650515cc615730282959b8cf6606df6f9e0268.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/technical/c778ae15aac53830ee2dba618550ae86dfbd8cf2-3999c1b2a6afb8366768836bcf63823e43a87473d8bc873a19003a17d3a7739f.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/technical/dd7e97b94cf635e0ec85b408bb9fc897abaf34c9-aef2e56fdd24cacc41b1c37b265457666de6c502c493ab5511652b5510f25b5c.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/coding-interview-dsa-problem-solving/technical/f58bf5f23ad14c23e52f484113b9b883eba21c5e-5136fabef29bb266186911eb0ecea0c7d93e81ff4dbb85fc6d9688ef168f01c7.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/content-acceptance/acc-01-baseline-v1.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/content-acceptance/candidate-manifest-v1.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/authoring-handoff.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/catalogue-summary.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/defects.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/final-audit.md",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/graph-reconciliation.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/mode-feasibility.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/objective-coverage-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/overlap-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/source-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.09/volume-audit.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.11/authoring-handoff.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/2026.08.11/design-direct-slot-independent-qa.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/curriculum/certification-correction/stage-manifest.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/licenses/Apache-2.0.txt",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/licenses/CC-BY-4.0.txt",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/02/02523f8a404c1fe5f0dd613b62400cdd7bc5c0c894656eb7d5c1c9a0be3a3241",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/05/057bb74706c93355c5b5d783a2a7bea86cf0b3f90367f8cc79d833033a9fd936",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/14/142f0dc07e59c25efa316b41376d750f9a23112a02195ab675441f62138f84aa",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/16/16bce9725caaf674c6b31eb19aa1b40c307d9c569cc6056a7bb523b8f03b51e8",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/1a/1a5bd756270014e328e457f34403c8841f2f697d5c91947ef858dc4ee7715292",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/27/274a42827221b9c86391601c287a0f8513ab572ee52a542c51ed5996181f7a62",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/27/279fa59e42b604f8d6714da717da579226ac326af7be49281d10996d737e862c",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/28/28783714f42f68e623936ec63cbd7a2430524ecfe7ad063f0d4f2a9a88a85b42",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/2b/2b85433c6d70ee910603d88e4b547d8ea06fa1e9664834ac982dafd259f5b2d8",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/2e/2e762d98a28154875b68d0d8c12b66276c0f59e335e0fe687e167ac15b28ee1b",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/30/3014c4014d78ab6661620500b20789f18de8653736e9e8d15ef71c340b39e7fa",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/30/3049a64c65ca8bf0c2eff286e135b6730fc40faf5ee767f5271e1713b6db2387",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/37/3723f209a1c4ec45280a3d864a165d8bc069548135a40218b4e47f078a3b3d06",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/37/375923c71d05dd99d650bc5cf0021bc6251f7a178a01a27ee3ea8a656f50d966",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/38/38fa82d1a5b1b586d47013e96d032df6c3286eb1153d2d89fecdf7d52722080c",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/39/3940cc6e650fc23d16291f8b24db7f54067393411954baf5902fbde6d154d403",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/39/39dbbe1bd34a71d70a2c17ae10a67855ba5e28866d403c6bb933d6d78c8b8619",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/3b/3b8b32367463926ca80269522499f9e02c3b582ee2e1c6bfeb3c006ffed9f1ee",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/3e/3e13021382fcdda5cacc95957042be56dbbafe55da500935e3067e546d3b8343",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/3e/3e8446f47e26a3928ebdd5eb05120b14cd8798c2b17acee5d0f189bf37242e3a",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/42/42c252771b264205e76663820b07f7f1b26a947b5278bad7c150d4d86cae200a",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/43/43f85416178944c3256820706861fd0977df6e7226d5642fd8fee9f03d212bf3",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/48/48fa145bc962a4c54fd5fe9e20a05db462673cb595858c76e49ab7bc12bbbca0",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/4b/4b25756046714a03160a239547f32c089146c0c44042b3df95b9499d11272edb",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/4c/4c932f4316b8791191e5a17404dae5c4b7dc1d38c0479883157264ddd91ff9ae",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/4d/4d48c00511f3524958190b5fae2a127afe080b6f5cfe73e3849c5d50879baec6",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/4d/4daa04153f44116329c176235e82078db7283c12de4916f2c44893a72d786fee",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/50/50143636c75c6d359e9a618c33656ecc6e2376bf3291b7284ac867c0dbfcbb14",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/51/510afa56501321f05458c2df38aa921a9d03c63c0cfff14182cf595df03d0705",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/53/5358dc29669ad5a5bbbe34b8ff0af258b8815b8660fa116ba3ce9ba8cd98b435",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/53/5380bc6be9017d838dbf558a62c6e51648c953685081bebc63c1476fdb8afe41",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/55/5575f4669a2a9b6be6c58cf91823c15f0bea426052514ba9b785151177d38b72",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/62/62b48292424f094261728e8fc1703c7d3427e557ecd383125b075f4e20c539ce",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/69/69535258cb13660758b5c843415a8dadbabf5ec0d8477d2d95f37d55f2321364",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/6a/6a42fb2ad5ce3e36863dfb075df4dd5da144c2777d0ed9d25cb8ba149f88e86f",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/6a/6a9c5987b658b7bc4cc1e1c16c9892a844e8e1d800bc61500decd684e3340a88",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/70/70c44928ff22900e1693235fb9d90ed93a552821874fd7204b3c3a3186e3c06e",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/73/736b5e6a5b372aafdb38af7d41ca0667c14b26ef77458ed8808633cd59adeb0c",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/74/741ad0e3ce5b36b6968888b2bb7a1d0216956bbdb8a7bf787535c2d146ba4aa7",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/76/760b675fcf3e2e43d8da162081215f869d409accead6184532516837f08e5bf8",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/76/761cd503253b0f7b5a46fc453a209cdf5d899154dc1d550aabab1badcf35eac0",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/76/76235d1efe48e5932bd642822e6251beba683b11f1aaf390f5373767b444094e",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/77/77477dc13c94c070a8fbc763faac45e4fc8e3d27631d2d9fb166c8587f7298bb",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/78/785e6244815ed457ceb0a9109e0ead34a114fd89b09c0689174a5b421eed8512",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/8d/8d288d612c8e8563d257f360cefa196279c73fa215dd7b1af1470b3c3621a287",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/94/9441bc69684050768ec44d4c1ad88c84ad2951d7cd76a629d9fed2cbb027e8d9",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/95/959100a88807127bc349f74c9fb2a9728b0be11c96e7ba275151a8b6b79ec3a6",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/98/982a98d030dd36faac6ee81efaacf22e62d0785bddbd166a16c5b673dfc9d974",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/98/98761424e129b1317ab2d4b458ecd343e2cab13bbe09651d62d68e54f332667d",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/9c/9ce648e420fe8d4aadbbe78637aa34a4588330ccd88a9b6af8e1949bf8f330e1",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/9e/9e1ee74b2d09081633819091e0b26b1a13593b333d2402fbcaed5df426dd4b65",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/ad/ad0512a9aba0eb852175e09d0778fb425b0be0a6cf77584fe6d94d5e1fef68d6",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/ae/ae54bc9b4eab112662c05dcb543d6aa438049b8632067f347efc7ed6f2c98e90",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/b1/b17ce407963d86fb5304c9d2d8a4861528aca57c1f3d6db4a9dcd76aec13b73a",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/ba/ba03a5cfedcbbe2b3c945fffe37c2ae2df10f61b46f64ab0ca9cecf1f0754730",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/be/bedd2fc0bbd98a0f6dce124d17b5de952f6eba48e817ab6e62b33c3c2fc460f6",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/d2/d2138cbc6c2e3edf0f93786ae592636932d118329ba339f50deb565c1bb5a317",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/da/daa2927e67ca4612da5f36916aca0104ac9709aaa1b00b50561ae121104ba268",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/db/db03535563b527cc00c3b188f6f3f6cdbffc5d674a369072ca0a24047ea9a03d",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/dd/dde0fa33c6b9f6734b652c45f31b1ad0280f0e54bb045702b7999502a9c7a5de",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/de/de03a643c6b64f0d9e772275c6fe436678608f10a5e86f63dd36976c0e51638a",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/df/df9a9d20fd3ffc46f5836e29d2c19c1a56a6ec016e3f76be162a6fd39e781e82",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e0/e00fcb82f232b6727c455eead6c83dfd194ed60d47d6c9be28b22bc33590ef5c",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e0/e037ecf48d5508b297a75cb25b443ad3d0f8bf74535bb2cf5f06d82ee06f249d",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e0/e07b631634099af3311454cdfcc954a4797215ceb68b014c817a69cf0f6718f0",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e1/e14ab899c2be5c1c06f9cf7848c1c45ea129c5f90372d5380311e6f205f19c8f",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e2/e22b1f0bde62facb921624dd79b2b755009ba28bb709769b25c6c8fdfdc4509f",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e2/e24e4c6dffd3c4f3e118cef20c90a764d20233f1b6f6d0d941a634699e1b6156",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e5/e54c63a6c335b70c762f51e892d00962b6c0a285046a32a1268deeb9008c02f1",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e5/e5a6cc165abd4aaed9647f538a763a3d1b86df12242c0c9e64cebf27618cd00a",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e7/e7026323f63c8aaa8ce8320a318373279fc7a9c2e0666e1370b3b446d11ca639",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/e8/e8022359f153da52e248cb4ef93bc0383daa27d16238aa65d185958e3bfb8f7a",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/ea/ea54e22c9ca1e5ed9307d84cb573d01b866032ee7001cb77196cac58e8d766a6",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/f7/f71aa587602ee79e32d6171c7a2ec0e79ed26dc1b5a91fab0e8267388f6c9767",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/f8/f82b7ccb46a8b3cb9f121f95b5f6a4e1f6d1fd375db53ac9b857f8d05803e647",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/f8/f8fb9785c8ccd17cb50a5729950fc520c04149666bd399372c0dba408d237ada",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/f8/f8fc82f2d6812c1eadf8f1bd13896a01ac47d725052244ef93516395984a5cd1",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/fb/fb3a92aa8c2fb3d9be2c0bbc9912d8f6696a9d531e4235458730059cabf11e23",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/design-interview/source-captures/sha256/fd/fdfe964a7819e6e22f52c110225726f2cb5b9a46c6ca245173283da0cbfd5a0c",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/frontend-system-design-interview/build-reports/patternly-launch-2026-08-25-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/frontend-system-design-interview/technical/73e7867c3d86324832e16db4d76d201b1f9c9639-f8f71070035db5e46806de1c716a8a8118475006c0cb01c6b3f946937d61f13d.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/google-cloud-associate-cloud-engineer/build-reports/patternly-launch-2026-08-25-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/google-cloud-associate-cloud-engineer/technical/73e7867c3d86324832e16db4d76d201b1f9c9639-ed1adeae85a1472c02d8962a1f8f93109c43011ce37b35f7e00ffa9f66d3d5c9.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/human-content-approvals/manifest.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/microsoft-azure-administrator-associate-az-104/build-reports/patternly-launch-2026-08-25-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/microsoft-azure-administrator-associate-az-104/technical/73e7867c3d86324832e16db4d76d201b1f9c9639-e404a0e091d43f4f924c534a15f7d1c46bfada3ed6ae919d03444ff03ab8a014.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/microsoft-azure-ai-fundamentals-ai-901/build-reports/patternly-launch-2026-08-25-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/microsoft-azure-ai-fundamentals-ai-901/technical/73e7867c3d86324832e16db4d76d201b1f9c9639-7637e2749da9072efb804004a64c6bf4250b5e567bf7bd31afd9c6ab4af761cb.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/aws-saa-targeted-corrections.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/bizq01-besd-cohorts.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/bizq01-besd-slice.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/bizq01-coding-source-copy.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/bizq01-ood.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/bizq05-gcp-relation-amendment.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/claude-historical.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/current-producer-banks.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/fesd-n08.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/migration-verifier/simp03-snapshot.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/object-oriented-design-interview/build-reports/patternly-launch-2026-08-25-01.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/object-oriented-design-interview/technical/73e7867c3d86324832e16db4d76d201b1f9c9639-d7f4b346f4110c8aad59d805f68037b526d3744f06a7a768772b770bfec9e731.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/readiness/bizq-02-candidate-readiness-v2.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/readiness/candidate-readiness-v2.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/readiness/candidate-readiness.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/readiness/current-candidate-readiness-v2.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/review-packets/aws-certified-solutions-architect-associate.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/review-packets/backend-system-design-interview.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/review-packets/claude-certified-architect-professional-certification.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/review-packets/coding-interview-dsa-problem-solving.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/review-packets/frontend-system-design-interview.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/review-packets/google-cloud-associate-cloud-engineer.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/review-packets/microsoft-azure-administrator-associate-az-104.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/review-packets/microsoft-azure-ai-fundamentals-ai-901.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "evidence/review-packets/object-oriented-design-interview.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/aws-certified-solutions-architect-associate.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/backend-system-design-interview.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/claude-certified-architect-professional-certification.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/coding-interview-dsa-problem-solving.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/frontend-system-design-interview.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/google-cloud-associate-cloud-engineer.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/microsoft-azure-administrator-associate-az-104.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/microsoft-azure-ai-fundamentals-ai-901.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/object-oriented-design-interview.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "schemas/product/free-node-inventory-pins.schema.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "schemas/review/content-acceptance-baseline.schema.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "schemas/review/content-approval-record.schema.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "schemas/review/content-candidate-decision-v2.schema.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "schemas/review/content-candidate-draft-v2.schema.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "schemas/review/content-candidate-manifest.schema.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "schemas/review/content-candidate-readiness-v2.schema.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "schemas/review/content-release-envelope-v2.schema.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "schemas/review/human-content-approval-manifest.schema.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/content/add-claude-course-links.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/content/verify-gcp-attribution-history.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/content/verify-migration.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/product/validate-bundled-free-nodes.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/review/candidate-admission-v3.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/review/candidate-draft-v2.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/review/candidate-manifest.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/review/candidate-readiness-v2.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/review/candidate-release-gate-v2.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/review/content-acceptance-baseline.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/review/content-approval.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "scripts/review/historical-artifact-evidence.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/bizq01-besd-cohort-15.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/bizq01-besd-seed-cohort-14.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/bizq01-migration-proof.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/bizq01-ood-node-closure-20.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/bizq01-ood-node-closure-21.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/bizq01-ood-node-closure-22.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/bizq01-ood-node-closure-23.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/bizq01-ood-node-closure-24.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/candidate-admission-current.integration.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/candidate-admission-v3.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/candidate-draft-v2.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/candidate-readiness-v2.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/candidate-release-gate-v2.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/fesd-n08-migration-proof.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/fixtures/migration-evidence-m05-baseline.json",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/helpers/current-migration-fixture.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/helpers/ood-correction-migration-fixture.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/helpers/pre-qle-producer-fixture.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/helpers/simp03-canonical-fixture.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/migration-evidence-aws.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/migration-evidence-bizq01-besd-slice.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/migration-evidence-bizq05.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/migration-evidence-claude.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/migration-evidence-current-producer-banks.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/migration-evidence-m05-remaining.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/migration-evidence-simp03.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/odk096-canonical-approval.test.mjs",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "tests/ood-20261013-migration-proof.test.mjs",
-          "reason": "deleted-in-worktree"
-        }
-      ],
+      "excluded": [],
       "boundaries": [
         {
           "path": ".git",
@@ -96707,7 +95401,7 @@
       ]
     },
     "patternly-web": {
-      "head": "5dfdc817b24619d3cb62c0fd53fac9973e39de67",
+      "head": "20a67218167ce20a7dc1af77a434819fce896bb3",
       "files": [
         {
           "path": ".firebaserc",
@@ -99127,9 +97821,9 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "0e5400c6a0c62e6dff70661ba312f1061ae8768c9621dfe99c13bd68ceb5adfd",
+  "catalogHash": "00e00c7c247cba88ca3401fc821245854bb04d5634cf771c460b9b7266ede6b0",
   "notes": {
-    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "e55ad90ba0850bf8969f8467bd7b46f58555f15bf44e66603aa2fc43609b3860",
+    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "298cb2b6dd7aa62ca8a0e5c8aa711167263555a2d545b0ddde99f6a4e058adfb",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "73ab4a7734e7caa22ca9151924c3ac872193c317e2a5a7a0c58acb657453b5d9",
     "Atlas/Struktura/patternly/~2E~github/workflows/workflows — folder aplikacja · ~2E~github.md": "9662313dfc9d7e3c3c0a7c868b146b2277fa6f03a6da500c768a99cd908f5e99",
     "Atlas/Struktura/patternly/~2E~maestro/~2E~maestro — folder aplikacja.md": "5cd3b70adfe089bcdef37e449048527643b42030fb2d557cbd17a5f166bac85a",
@@ -99213,7 +97907,7 @@
     "Atlas/Struktura/patternly/src/content/contracts/contracts — folder aplikacja · src › content.md": "f029aa8ecce24659f5874107dd96205d2ee7fda244aa68c685b67499af25a077",
     "Atlas/Struktura/patternly/src/content/errors/errors — folder aplikacja · src › content.md": "fb2d1ae15b0326fc42fa113fb3795091ec72e1cc97f61a6c89c9f4df93c2905f",
     "Atlas/Struktura/patternly/src/content/generated/generated — folder aplikacja · src › content.md": "c11664ab362d8a64f940120858a2db7401952aca9cbdf4e5238c47ed2a787383",
-    "Atlas/Struktura/patternly/src/content/generated/canonical-content/canonical-content — folder aplikacja · src › content › generated.md": "7d464165ea0d0f7a99f0f89a502e5c33f40b725cf6c8c08929d0068e3da07af5",
+    "Atlas/Struktura/patternly/src/content/generated/canonical-content/canonical-content — folder aplikacja · src › content › generated.md": "d8ef92b8056c1a187368e889ef673ca39e3702950950e459f0000bccfe1ff5ae",
     "Atlas/Struktura/patternly/src/content/generated/retained-content/retained-content — folder aplikacja · src › content › generated.md": "ef2bc0a1650b963d46a65e5698cfb5ae255c1e8ec17cf4f426c4dccb491bacd3",
     "Atlas/Struktura/patternly/src/content/runtime/runtime — folder aplikacja · src › content.md": "51e7d947965548fb05079fba7fac8f5ed437b742ad279b8569d33cdc117a10ac",
     "Atlas/Struktura/patternly/src/domain/domain — folder aplikacja · src.md": "551a002c2e9dc5663b16ce760a205031f080a30e4dce97e10fd545105757d04d",
@@ -99278,7 +97972,7 @@
     "Atlas/Struktura/patternly/_Pliki/app.config.js — aplikacja.md": "85cd0fb3cb9c327cf3f093d282032d7056f8fb36b0b7f37097e80c224a40942c",
     "Atlas/Struktura/patternly/_Pliki/App.tsx — aplikacja.md": "08a73fa6f1b3c22a674806c980f7480ed532c5990b0f764069026e59a8d287ff",
     "Atlas/Struktura/patternly/config/_Pliki/public-legal.release.json — aplikacja · config.md": "b3ded1cb1f4c2980616da1b04f9c3ce851ccf00957d2737512e4fac39abd2dd6",
-    "Atlas/Struktura/patternly/integration/contracts/content-release/_Pliki/release.lock.json — aplikacja · integration › contracts › content-release.md": "20d7c35d5cfad85c42627799f028f3c3badb123590505f32b8a7b5a56aef2b70",
+    "Atlas/Struktura/patternly/integration/contracts/content-release/_Pliki/release.lock.json — aplikacja · integration › contracts › content-release.md": "483d22bd339b58e81f39f16d18ee985cb03914db82436da5b4e5b28024d35233",
     "Atlas/Struktura/patternly/_Pliki/metro.config.js — aplikacja.md": "017aac134043ae6d1f73a9ada266b7de6ff7f049b09dba73835ae59c53cd5c85",
     "Atlas/Struktura/patternly/native/foreground-clock/android/_Pliki/build.gradle — aplikacja · native › foreground-clock › android.md": "fbaa3be5ce8af6f7bea6bc81c33b17355acfcc28adc5125154588984e402cc4c",
     "Atlas/Struktura/patternly/native/foreground-clock/android/_Pliki/CMakeLists.txt — aplikacja · native › foreground-clock › android.md": "99bf6e0ee7af150d9a448dd3bd105e0fbb0be61e1e3ab8abc21df53255033ede",
@@ -99949,12 +98643,12 @@
     "Atlas/Struktura/patternly/src/content/_Pliki/dsa20261018AuthoringIntegration.test.ts — aplikacja · src › content.md": "c4a9fd2ba5857ff145c17c9b501d74cb16d881b9f8440fb7cd59d476e2dbe343",
     "Atlas/Struktura/patternly/src/content/errors/_Pliki/contentErrors.ts — aplikacja · src › content › errors.md": "5202e76e15bcb27357a4ee40b52537428405195a1e31c21dc7346293eeb4e779",
     "Atlas/Struktura/patternly/src/content/errors/_Pliki/index.ts — aplikacja · src › content › errors.md": "8c7439309aaa5837e1372f4338cadf0ff9749983eb27f877d16441ea56de5622",
-    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/aws-certified-solutions-architect-associate.json — aplikacja · src › content › generated › canonical-content.md": "f20efc99d0b2a708e686942446b81e6aea45d68678e15149f6329a009a9cc16a",
+    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/aws-certified-solutions-architect-associate.json — aplikacja · src › content › generated › canonical-content.md": "5db9d141a7543b4de459f5aedf420b3a0aa563e8e50ebb29b32bc9ee04fc5fe8",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/backend-system-design-interview.json — aplikacja · src › content › generated › canonical-content.md": "52f75b66c8b3d594d7c480564e59c18c2eec650b981f3d1d929242b7f6222f33",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/claude-certified-architect-professional-certification.json — aplikacja · src › content › generated › canonical-content.md": "303393894ec0b25b25e94d319c5545166fd4a2e081ce260721d4ef6cce6589bf",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/coding-interview-dsa-problem-solving.json — aplikacja · src › content › generated › canonical-content.md": "01240b490ec4fc1ba91ce5118016815e5e2f6a7be40803da8bef0fd84cfff4a1",
-    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/content-lock.json — aplikacja · src › content › generated › canonical-content.md": "b781dc76160607d7ff1ae4a353125725f168604c163235523b42986470dac69b",
-    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/content-successor-ledger.json — aplikacja · src › content › generated › canonical-content.md": "f98ab7da931974cdaf4e9ead04048ef6ba642d6640c94dd99c35a1af6b6b3fc0",
+    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/content-lock.json — aplikacja · src › content › generated › canonical-content.md": "0d3149927a7fa16eff43051a1ee42ac3eedb358afebc7cc885fbb91456918b41",
+    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/content-successor-ledger.json — aplikacja · src › content › generated › canonical-content.md": "660bc5932b2e9f4ab88513d75cbf141aea2d7da2dbbf0dcbfce50b62bbc94126",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/frontend-system-design-interview.json — aplikacja · src › content › generated › canonical-content.md": "768667d77e1cc104c6f846808b961dae7b12796c8a5216ad8512e989155328d6",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/google-cloud-associate-cloud-engineer.json — aplikacja · src › content › generated › canonical-content.md": "d64cbf1b4860a82bfe728970f3d92fa0206358f5cb923af9910adba5436b0016",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/microsoft-azure-administrator-associate-az-104.json — aplikacja · src › content › generated › canonical-content.md": "dedb51101b94949ae23c70718de9d6e7ed2f1e12dd49551ddbeda030c403899e",
@@ -100799,7 +99493,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/support.ts — backend · tests.md": "983d10a9ed7a280e2f97e4818fe7a4d2cbd40b3378d0479a549951aa0ffdda36",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/syncMutationReceipts.emulator.test.ts — backend · tests.md": "b478093867f501c3d33730692ffc44d764e0e9ecf3ffc863df574d276648bf90",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/usersStoreLegacyDeletedIdentities.test.ts — backend · tests.md": "5d0aadae0b2a1eb3e3c8f6820685b464fb4c1085aa5ce4208f1f7374e4344627",
-    "Atlas/Struktura/patternly-content/treści — repozytorium.md": "e4bd02df9532ab0663bc67cfc54f457e02a1e0627372e83741661e5fc7c565f8",
+    "Atlas/Struktura/patternly-content/treści — repozytorium.md": "fa8c23478a49fe038ececc4dc98607639e7e1497b21b541a1e199cef6baa8eaa",
     "Atlas/Struktura/patternly-content/~2E~github/~2E~github — folder treści.md": "a4afcd839748fb732b20274205ef1480d51457254f54d72fdfeaa4f13b3df648",
     "Atlas/Struktura/patternly-content/~2E~github/workflows/workflows — folder treści · ~2E~github.md": "3a09bf51ab1197286be98f023c63f30c99bcf0636431e550fb0009f537194eac",
     "Atlas/Struktura/patternly-content/config/config — folder treści.md": "168854c19cf48c63266630ce5ce84fbea8b75de1eab0ff2209875da447fd1fe4",
@@ -100963,7 +99657,7 @@
     "Atlas/Struktura/patternly-content/supplements/supplements — folder treści.md": "b39bff7471477ed53498bfcf15ba7ff5eb2420b1725f9c315ee88ed52c4c6f72",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/claude-certified-architect-professional-certification — folder treści · supplements.md": "89bbb2d23575bd4c209b4e3c64a3c2774e40184a74c27444d536bf407152f8f0",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/cc02-course-supplement-v1/cc02-course-supplement-v1 — folder treści · supplements › claude-certified-architect-professional-certification.md": "d396bc1ebbc8e47022570649ed1e73bd322ea9b4f3311e16daa23f7294105fe2",
-    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "7f24fc6cc4685b8696150bd1d7130d7a725ecefcb241ad77c306f1edfda0b171",
+    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "c4b7ca9b68fc01e2851935a3267dfae57d7c705b077bcaf151cfc104952aa958",
     "Atlas/Struktura/patternly-content/tests/fixtures/fixtures — folder treści · tests.md": "87e7017933c98001387fca0b3e659a661b86ed5edae4a7fd39b118587545bd7c",
     "Atlas/Struktura/patternly-content/tests/helpers/helpers — folder treści · tests.md": "a069a95cbc760db5dc1bb23a67298af2217257666b684910255a0e3668048c28",
     "Atlas/Struktura/patternly-content/config/_Pliki/bundled-free-node-packages.json — treści · config.md": "17df9910886011314e993c1260fa2a5421c1d931fd7ea3ee5092f12074ae3490",
@@ -100976,7 +99670,7 @@
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/case-recipe.mjs — treści · scripts › content.md": "7968d215e7610bfc0f3e1ed27cccf973c6e79d99b9f843d8a23c12c0ba068189",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/current-source-identity.mjs — treści · scripts › content.md": "82ab62f72a8c5d96f4eeb63da2feb17ef1af3cedf5e0b9857ab6c61014359444",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/planning-policy.mjs — treści · scripts › content.md": "1ce008601048f3597cc771ef38810d5d31c6c017b43872e71a1e9ea5b39a0c6b",
-    "Atlas/Struktura/patternly-content/scripts/content/_Pliki/question-contract.mjs — treści · scripts › content.md": "f77c8ee4c0e7de02114f1fb8cf64f88d3f190840bf9e74cdc9b8148187067df1",
+    "Atlas/Struktura/patternly-content/scripts/content/_Pliki/question-contract.mjs — treści · scripts › content.md": "fdd095d7f028e3231804bb02cf4e8ff11203b64b8dfdc9b03f5b15f885b8f281",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/track-runtime-bindings.mjs — treści · scripts › content.md": "ae3c6877dbcaf74b64382d078fa98bb53a075fbfdac6a86b8ef4e222ddbcb2ae",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/verify-claude-feedback-presentation.mjs — treści · scripts › content.md": "78d08f12892b37ea730be93a09cc11a935a05ebe9176ef313a2f3c112dc3e046",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/verify-claude-runtime-ingress.mjs — treści · scripts › content.md": "b0ccb674549a625d830aa05e0c3a37139e435b2ff1c8a034376b117c4f2dba31",
@@ -101014,7 +99708,7 @@
     "Atlas/Struktura/patternly-content/tests/_Pliki/fesd-n08-repair.test.mjs — treści · tests.md": "1ad4efbb411e9baa9f4c95586164c9bd954b232fba69db5c3b9efdac02f53002",
     "Atlas/Struktura/patternly-content/tests/fixtures/_Pliki/applicationContractSnapshot.mjs — treści · tests › fixtures.md": "5011fe3fc23079b0f2baf6e24e10e73b7647798cfc0e90e772dab6961253ab6a",
     "Atlas/Struktura/patternly-content/tests/_Pliki/gcp-ace-20261018-repairs.test.mjs — treści · tests.md": "fcc21557360dc0ae6b351ac38ca32b93bbf295db988cd90df6522a72f07ad411",
-    "Atlas/Struktura/patternly-content/tests/helpers/_Pliki/current-question-bank.mjs — treści · tests › helpers.md": "21ae4f200c6e6b8e1d660ec9938f6779ef234aa4824ded38280c44ad18af9cb8",
+    "Atlas/Struktura/patternly-content/tests/helpers/_Pliki/current-question-bank.mjs — treści · tests › helpers.md": "28ac8e8dcd033e49018580d2ef3228b7fa8f2da9ed1137c474075d891d46f57a",
     "Atlas/Struktura/patternly-content/tests/_Pliki/model-evaluation-inventory.test.mjs — treści · tests.md": "67eb7b6b2e730afbdd0e67af02cdaf0d21b23c762ec6a564f060da394aa320f7",
     "Atlas/Struktura/patternly-content/tests/_Pliki/odk097-design-session-matrix.test.mjs — treści · tests.md": "eea7669a8723c3d4e1a3e3f4b1e38a6e946a75bdfc9adbe2ad305a7632555759",
     "Atlas/Struktura/patternly-content/tests/_Pliki/odk123-claude-focus-feedback.test.mjs — treści · tests.md": "a3415581672977e03d03ad83db657bffc23d71647fbb10808b41eb2cd0488df3",
@@ -101024,6 +99718,8 @@
     "Atlas/Struktura/patternly-content/tests/_Pliki/primary-strata-readiness.test.mjs — treści · tests.md": "17146f0d44d0f935bbc47c3466447158086fb81fcc2dc32469d6f41c93f03c2d",
     "Atlas/Struktura/patternly-content/tests/_Pliki/qleReplacementIdentity.test.mjs — treści · tests.md": "6a8d4275ee0bcc937f741413e06ae85dfe671cbcb6835936b3f0e7e52e2fdd53",
     "Atlas/Struktura/patternly-content/tests/_Pliki/saa-20261010-targeted-corrections.test.mjs — treści · tests.md": "bde014487c331609524b5e638054e8e29c4577a80609b31dd0385526f02d2d16",
+    "Atlas/Struktura/patternly-content/tests/_Pliki/saa-20261019-consumer.test.mjs — treści · tests.md": "87900fae7930fce1b6dcf3b001901242250b9044914fbf64a4fc57e124011977",
+    "Atlas/Struktura/patternly-content/tests/_Pliki/saa-20261019-targeted-corrections.test.mjs — treści · tests.md": "9b6c544c04c5ccdfc8ff17decd826f1ca0cad4257eecdedfce86357cf5bc01d4",
     "Atlas/Struktura/patternly-content/tests/_Pliki/shared-contract.test.mjs — treści · tests.md": "4fcd4331e06e8f33ca62a6d3633a91f1acfec02cabdec3a04d2f14e719ba664f",
     "Atlas/Struktura/patternly-content/tests/_Pliki/simp03-phase-a.test.mjs — treści · tests.md": "c4b34ae3fa7ada3b69ae24d18057d4993961fcc5e33d3f448c894cfd54a3ffd0",
     "Atlas/Struktura/patternly-content/tests/_Pliki/simp03-verifier.test.mjs — treści · tests.md": "d68d8c9a38c731134b6ca0811e51789b097d09ef4c446b6ab1aea4a4a86a8ad9",

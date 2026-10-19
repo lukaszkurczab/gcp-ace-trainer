@@ -1546,7 +1546,7 @@
     },
     "patternly/integration/contracts/content-release/release.lock.json": {
       "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów oraz wykonane kontrole techniczne. Schema v4 nie nadaje zgody na publikację ani oceny semantycznej.",
-      "reviewedHash": "f973b6714556b9a156a2ed524351d67ed82dd700bbd9bdc4a8df4fd0bebfc18e"
+      "reviewedHash": "3a809729e3382b0569aee70bacd75a325844344373a6c6294feda9978d811b84"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -1606,7 +1606,7 @@
         "patternly-content",
         "patternly-backend/src/modules/content"
       ],
-      "reviewedDigest": "85d8476a04a02808ba399a36787b8bd548e13b834a75f988e180e92a58afcbef"
+      "reviewedDigest": "63c455d31a6471aec90c2a267fccef17852927cb6cb9c9997237f318ed7fc009"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
