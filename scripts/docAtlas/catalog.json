@@ -935,8 +935,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/progress/store.ts": {
-      "description": "Trwała obsługa synchronizacji rekordów i rewizji w Firestore.",
-      "reviewedHash": "fefb22e54322062a61a1cbca36818b44da7f7348c0f800c0d3a5c2917bd72bec",
+      "description": "Trwała synchronizacja rekordów i rewizji w Firestore. Mieszany replay waliduje parę cel–plan z nowych zapisów i aktualnego counterpartu; pełne historyczne receipts i replay całego batcha zachowują wcześniejszy wynik.",
+      "reviewedHash": "15085659123465f871f2bf57092d4b27f7ef1ae89ceccf0122fc823db028d65f",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/users/merge.ts": {
@@ -1572,6 +1572,16 @@
       "flow": "Sesja, odpowiedź i trwały wynik",
       "description": "Przygotowuje prywatną pochodną APK z jedyną zmianą Hermes bundle i sprawdza wszystkie pozostałe ZIP payloady oraz original native DSO. Tryb signed-apk weryfikuje runtime po podpisaniu; bez usług, kluczy lub instalacji.",
       "reviewedHash": "b088207cee27cb763cf5747e62028ccfdc960bf3a862b748425c88eadc027f62"
+    },
+    "patternly-backend/tests/goalPlanMixedReplay.emulator.test.ts": {
+      "description": "Regresja PAT-CODE-001: rzeczywisty Firestore i uwierzytelniony HTTP przez loopback; historyczne duplikaty z nową mutacją, tombstones, aktualny żywy counterpart, atomowa odmowa bez zapisów i zachowanie replay całych batchy.",
+      "reviewedHash": "158de2fc42b16520406a93f054b93ff58dc54f90136fcca3e5325486a877fcf9",
+      "flow": "Konto, Gość i synchronizacja"
+    },
+    "patternly-backend/scripts/run-goal-plan-mixed-replay-tests.mjs": {
+      "description": "Izolowany runner demo dla PAT-CODE-001: uruchamia Auth/Firestore oraz testy mieszanego replay, storage, receipts i request contracts; korzysta ze wspólnego bezpiecznego runnera emulatorów.",
+      "reviewedHash": "8276a8f4bd08094e3743c1c572f23c138e9ec6129cc8a2461503a343f023c3df",
+      "flow": "Konto, Gość i synchronizacja"
     }
   },
   "flows": [
@@ -1596,7 +1606,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "1e1927e4ec17102caa0ed33cc08ecf127b780485b5c8c0874de727998e8fa30f"
+      "reviewedDigest": "844be83e22765567cb094430c1bade2acaee01724ae0e6b5d1d24d7890095100"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -1656,7 +1666,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "19adde429dacadc6cacaf6552262544b9de640f4ef5598db98e9c673fefec657"
+      "reviewedDigest": "b45ff5550c54410c8ff33b26b3c9868bc776b9345f16640f27c3064c4d16b612"
     },
     {
       "name": "Witryna, demo i panel",
