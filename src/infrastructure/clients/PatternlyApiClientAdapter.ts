@@ -1,3 +1,5 @@
+import { canonicalJsonV1 } from "../../domain/identity/canonicalSerialization";
+import { sha256Utf8 } from "../../domain/identity/sha256";
 import { parseContentPackageDescriptor } from "./contentPackageDescriptor";
 import { isAccountWireState } from "../../domain/account/accountWireState";
 import { normalizeLegacyTerminalSessionRead } from "../../domain/account/terminalSessionWire";
@@ -22,6 +24,9 @@ const PROGRESS_RECORD_TYPES = new Set(["active_track", "training_session_summary
 const ADOPTION_CASES = new Set(["emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "divergentRecord", "blocked"]);
 const BLOCKING_REASONS = new Set(["active_session", "journal_recovery"]);
 const SYNC_CONFLICT_CODES = new Set(["version_conflict", "content_identity_schema_conflict", "mutation_id_reuse", "progress_generation_conflict", "authorization_generation_conflict"]);
+// At most 32 MiB of UTF-16 character payload retained by this optional cache.
+// Larger histories still download and materialize normally on every read.
+const MAX_PROGRESS_CACHE_CODE_UNITS = 16 * 1024 * 1024;
 
 function contentIdentitySchemaConflict(): never {
   throw new PatternlyApiClientError("server_error", 409, "content_identity_schema_conflict");
@@ -233,8 +238,82 @@ function validateSyncRequest(value: unknown): value is SyncRequestDto {
   return true;
 }
 
-function parseProgressPage(value: unknown): ProgressResponseDto {
-  if (!isPlainRecord(value) || !hasExactKeys(value, ["accountRevision", "generation", "records", "nextPageToken"])) return invalidResponse();
+type ProgressSnapshotCache = Readonly<{ token: string | null; scope: string; revision: number; generation: number; serialized: string }>;
+
+/** Shared bounded cache serializer. Failure never replaces a valid full read or ACK. */
+function createProgressSnapshotSerializer() {
+  let parts: string[] | null = [];
+  let codeUnits = 256;
+  return {
+    append(records: readonly ProgressRecordDto[]): void {
+      if (parts === null) return;
+      try {
+        const chunk = JSON.stringify(records).slice(1, -1);
+        codeUnits += chunk.length + 1;
+        if (codeUnits > MAX_PROGRESS_CACHE_CODE_UNITS) parts = null;
+        else if (chunk.length > 0) parts.push(chunk);
+      } catch { parts = null; }
+    },
+    finish(revision: number, generation: number): string | null {
+      if (parts === null) return null;
+      try { return `{"accountRevision":${revision},"generation":${generation},"nextPageToken":null,"records":[${parts.join(",")}]}`; }
+      catch { return null; }
+    },
+  };
+}
+
+// Same canonical preimage as BACKEND progressDocumentId; complete normalized
+// identity is also used for replacements before inserting new hashed IDs.
+function progressRecordKey(record: Pick<ProgressRecordDto, "kind" | "recordType" | "trackId" | "targetId">): string {
+  return canonicalJsonV1({ kind: record.kind, recordType: record.recordType, targetId: record.targetId, trackId: record.trackId });
+}
+
+function composeProgressSnapshot(cached: ProgressSnapshotCache, request: SyncRequestDto, response: SyncResponseDto & Readonly<{ snapshotScope?: string }>): ProgressSnapshotCache | null {
+  if (response.snapshotScope !== cached.scope || cached.revision !== request.expectedAccountRevision
+    || response.duplicates.length !== 0 || response.applied.length !== request.mutations.length
+    || response.accountRevision !== cached.revision + response.applied.length) return null;
+  try {
+    const previous = JSON.parse(cached.serialized) as ProgressResponseDto;
+    const records = [...previous.records];
+    const indexes = new Map(records.map((record, index) => [progressRecordKey(record), index]));
+    const mutations = new Map(request.mutations.map((mutation) => [mutation.mutationId, mutation]));
+    if (indexes.size !== records.length || mutations.size !== request.mutations.length) return null;
+    const seenMutations = new Set<string>();
+    const seenKeys = new Set<string>();
+    const inserted: ProgressRecordDto[] = [];
+    for (const record of response.applied) {
+      const mutation = mutations.get(record.lastMutationId);
+      const key = progressRecordKey(record);
+      if (!mutation || seenMutations.has(record.lastMutationId) || seenKeys.has(key)
+        || record.kind !== mutation.kind || record.recordType !== mutation.recordType || record.targetId !== mutation.targetId || record.trackId !== mutation.trackId
+        || record.fingerprint !== mutation.fingerprint || canonicalJson(record.state) !== canonicalJson(mutation.state)
+        || record.version !== (mutation.expectedVersion ?? 0) + 1) return null;
+      const index = indexes.get(key);
+      if ((index === undefined ? null : records[index]!.version) !== mutation.expectedVersion) return null;
+      seenMutations.add(record.lastMutationId); seenKeys.add(key);
+      if (index === undefined) inserted.push(record); else records[index] = record;
+    }
+    // Existing updates preserve their IDs. Binary insertion hashes only the
+    // new record and O(log N) comparison keys, rather than the whole history.
+    for (const record of inserted) {
+      const id = sha256Utf8(progressRecordKey(record));
+      let low = 0; let high = records.length;
+      while (low < high) {
+        const mid = (low + high) >>> 1;
+        if (sha256Utf8(progressRecordKey(records[mid]!)) < id) low = mid + 1; else high = mid;
+      }
+      records.splice(low, 0, record);
+    }
+    const serializer = createProgressSnapshotSerializer();
+    for (let index = 0; index < records.length; index += 100) serializer.append(records.slice(index, index + 100));
+    const serialized = serializer.finish(response.accountRevision, cached.generation);
+    return serialized === null ? null : { ...cached, token: null, revision: response.accountRevision, serialized };
+  } catch { return null; }
+}
+
+function parseProgressPage(value: unknown): ProgressResponseDto & Readonly<{ snapshotToken: string; snapshotScope: string }> {
+  if (!isPlainRecord(value) || !hasExactKeys(value, ["accountRevision", "generation", "records", "nextPageToken", "snapshotToken", "snapshotScope"])) return invalidResponse();
+  if (!isSha256(value.snapshotToken) || !isSha256(value.snapshotScope)) return invalidResponse();
   if (!isFiniteNonNegativeInteger(value.accountRevision) || !isFiniteNonNegativeInteger(value.generation) || !Array.isArray(value.records) || value.records.length > 100) return invalidResponse();
   if (!(value.nextPageToken === null || (typeof value.nextPageToken === "string" && value.nextPageToken.length > 0))) return invalidResponse();
   const records = value.records.map((record) => {
@@ -245,6 +324,7 @@ function parseProgressPage(value: unknown): ProgressResponseDto {
     return normalized;
   });
   return { accountRevision: value.accountRevision as number, generation: value.generation as number,
+    snapshotToken: value.snapshotToken as string, snapshotScope: value.snapshotScope as string,
     nextPageToken: value.nextPageToken as string | null, records };
 }
 
@@ -265,8 +345,9 @@ function parseSyncConflictError(value: unknown): Readonly<{ code: string; detail
   return { code: error.code };
 }
 
-function parseSyncResponse(value: unknown): SyncResponseDto {
-  if (!hasExactKeys(value, ["accountRevision", "applied", "duplicates", "conflicts"])) return invalidResponse();
+function parseSyncResponse(value: unknown): SyncResponseDto & Readonly<{ snapshotScope?: string }> {
+  if (!isPlainRecord(value) || !hasExactKeys(value, ["accountRevision", "applied", "duplicates", "conflicts", ...(value.snapshotScope === undefined ? [] : ["snapshotScope"])])) return invalidResponse();
+  if (value.snapshotScope !== undefined && !isSha256(value.snapshotScope)) return invalidResponse();
   if (!isFiniteNonNegativeInteger(value.accountRevision) || !Array.isArray(value.applied) || value.applied.length > 100
     || !Array.isArray(value.duplicates) || value.duplicates.length > 100 || !Array.isArray(value.conflicts) || value.conflicts.length !== 0) return invalidResponse();
   value.applied.forEach((record) => validateProgressRecord(record));
@@ -737,6 +818,9 @@ export function createPatternlyApiClient(input: Readonly<{
   const fetchImplementation = input.fetchImplementation ?? fetch;
   const getAppCheckToken = input.getAppCheckToken ?? getPatternlyAppCheckToken;
   const timeoutMs = input.timeoutMs ?? 10_000;
+  // Keep one complete, server-validated sweep. Serialization isolates nested
+  // state from consumers; this is disposable memory, never an offline source.
+  let progressSnapshot: ProgressSnapshotCache | null = null;
 
   type AuthenticationMode = "none" | "optional" | "required";
   async function requestJson<T>(path: string, method: "GET" | "POST" | "PATCH", body?: unknown, authentication: AuthenticationMode = "required", extraHeaders: Readonly<Record<string, string>> = {}, isCurrent: () => boolean = () => true): Promise<T> {
@@ -908,26 +992,52 @@ export function createPatternlyApiClient(input: Readonly<{
     getPurchaseCases: async (isCurrent) => parsePurchaseCases(await requestJson<unknown>("/v1/purchase-cases", "GET", undefined, "required", {}, isCurrent)),
     getEntitlements: (isCurrent) => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET", undefined, "required", {}, isCurrent),
     getProgress: async () => {
-      const records: ProgressRecordDto[] = [];
-      let pageToken: string | null = null;
-      let accountRevision: number | null = null;
-      let generation: number | undefined;
-      for (let page = 0; page < 1_001; page += 1) {
-        const query: string = pageToken === null
-          ? "/v1/progress?pageSize=100"
-          : `/v1/progress?pageSize=100&pageToken=${encodeURIComponent(pageToken)}`;
-        const response = parseProgressPage(await requestJson<unknown>(query, "GET"));
-        if (accountRevision === null) {
-          accountRevision = response.accountRevision;
-          generation = response.generation;
-        } else if (response.accountRevision !== accountRevision || response.generation !== generation) {
-          throw new PatternlyApiClientError("server_error", 409, "progress_generation_conflict");
+      const cached = progressSnapshot;
+      try {
+        const records: ProgressRecordDto[] = [];
+        let pageToken: string | null = null;
+        let accountRevision: number | null = null;
+        let generation: number | undefined;
+        let snapshotToken: string | undefined;
+        let snapshotScope: string | undefined;
+        const serializer = createProgressSnapshotSerializer();
+        for (let page = 0; page < 1_001; page += 1) {
+          const query: string = pageToken === null
+            ? `/v1/progress?pageSize=100&conditional=1${!cached ? "" : cached.token !== null ? `&knownSnapshot=${cached.token}` : `&knownScope=${cached.scope}&knownRevision=${cached.revision}`}`
+            : `/v1/progress?pageSize=100&conditional=1&pageToken=${encodeURIComponent(pageToken)}`;
+          const payload = await requestJson<unknown>(query, "GET");
+          if (isPlainRecord(payload) && payload.unchanged === true) {
+            if (page !== 0 || !cached || !hasExactKeys(payload, ["accountRevision", "generation", "snapshotToken", "snapshotScope", "unchanged"])
+              || !isSha256(payload.snapshotToken) || payload.snapshotScope !== cached.scope
+              || (cached.token !== null && payload.snapshotToken !== cached.token)
+              || payload.accountRevision !== cached.revision || payload.generation !== cached.generation) return invalidResponse();
+            if (progressSnapshot === cached) progressSnapshot = { ...cached, token: payload.snapshotToken as string };
+            return JSON.parse(cached.serialized) as ProgressResponseDto;
+          }
+          const response = parseProgressPage(payload);
+          if (accountRevision === null) {
+            accountRevision = response.accountRevision;
+            generation = response.generation;
+            snapshotToken = response.snapshotToken;
+            snapshotScope = response.snapshotScope;
+          } else if (response.accountRevision !== accountRevision || response.generation !== generation || response.snapshotToken !== snapshotToken || response.snapshotScope !== snapshotScope) {
+            throw new PatternlyApiClientError("server_error", 409, "progress_generation_conflict");
+          }
+          serializer.append(response.records);
+          records.push(...response.records);
+          pageToken = response.nextPageToken ?? null;
+          if (pageToken === null) {
+            const result = { accountRevision: accountRevision ?? 0, records: Object.freeze(records), generation, nextPageToken: null };
+            const serialized = serializer.finish(result.accountRevision, generation!);
+            progressSnapshot = serialized === null ? null : { token: snapshotToken!, scope: snapshotScope!, revision: result.accountRevision, generation: generation!, serialized };
+            return result;
+          }
         }
-        records.push(...response.records);
-        pageToken = response.nextPageToken ?? null;
-        if (pageToken === null) return { accountRevision: accountRevision ?? 0, records: Object.freeze(records), generation, nextPageToken: null };
+        throw new PatternlyApiClientError("invalid_response");
+      } catch (error) {
+        if (progressSnapshot === cached) progressSnapshot = null;
+        throw error;
       }
-      throw new PatternlyApiClientError("invalid_response");
     },
     exportAccountData: () => requestJson<AccountDataExportDto>("/v1/account-data/export", "GET"),
     createPrivacyRequest: async (right, narrative) => parsePrivacyRequestEnvelope(await requestJson<unknown>("/v1/privacy-requests", "POST", { right, ...(narrative === undefined ? {} : { narrative }) })),
@@ -943,8 +1053,12 @@ export function createPatternlyApiClient(input: Readonly<{
     getLegalRequest: async (requestId) => parseLegalRequestEnvelope(await requestJson<unknown>(`/v1/legal-requests/${encodeURIComponent(requestId)}`, "GET")),
     syncProgress: async (body: SyncRequestDto) => {
       validateSyncRequest(body);
-      const response = await requestJson<unknown>("/v1/progress/sync", "POST", body);
-      return parseSyncResponse(response);
+      const cached = progressSnapshot;
+      const response = parseSyncResponse(await requestJson<unknown>("/v1/progress/sync", "POST", body, "required",
+        cached ? { "x-patternly-progress-cache": "1" } : {}));
+      if (cached && progressSnapshot === cached) progressSnapshot = composeProgressSnapshot(cached, body, response) ?? cached;
+      // The scope is transport proof, not a new durable ACK field.
+      return { accountRevision: response.accountRevision, applied: response.applied, duplicates: response.duplicates, conflicts: response.conflicts };
     },
     previewAccountAdoption: async (body: GuestMergeSnapshotRequestDto) => {
       validateGuestSnapshot(body);

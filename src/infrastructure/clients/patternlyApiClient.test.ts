@@ -526,7 +526,7 @@ test("canonical progress transport has no protocol query or version labels", asy
   const client = createTestClient({
     fetchImplementation: async (url, init) => {
       calls.push({ body: init?.body ? JSON.parse(String(init.body)) : undefined, method: init?.method ?? "", url: String(url) });
-      if (String(url).includes("/v1/progress?")) return new Response(JSON.stringify({ accountRevision: 0, generation: 0, records: [], nextPageToken: null }), { status: 200 });
+      if (String(url).includes("/v1/progress?")) return new Response(JSON.stringify({ accountRevision: 0, generation: 0, snapshotToken: FINGERPRINT, snapshotScope: FINGERPRINT, records: [], nextPageToken: null }), { status: 200 });
       if (String(url).endsWith("/v1/progress/sync")) return new Response(JSON.stringify({ accountRevision: 1, applied: [], duplicates: [], conflicts: [] }), { status: 200 });
       return new Response(JSON.stringify({ status: "ok", service: "patternly-backend" }), { status: 200 });
     },
@@ -535,7 +535,7 @@ test("canonical progress transport has no protocol query or version labels", asy
   await client.getProgress();
   await client.syncProgress(canonicalSyncRequest());
   assert.deepEqual(calls.map(({ method, url }) => [method, url]), [
-    ["GET", `${API_ORIGIN}/v1/progress?pageSize=100`],
+    ["GET", `${API_ORIGIN}/v1/progress?pageSize=100&conditional=1`],
     ["POST", `${API_ORIGIN}/v1/progress/sync`],
   ]);
   const body = calls[1]?.body as Record<string, unknown>;
@@ -582,7 +582,7 @@ test("client turns removed identity metadata in a response into a schema conflic
     lastMutationId: "mutation-canonical-0001",
     updatedAt: "2026-09-12T10:00:00.000Z",
   };
-  const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ accountRevision: 1, generation: 0, records: [record], nextPageToken: null }), { status: 200 }) });
+  const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ accountRevision: 1, generation: 0, snapshotToken: FINGERPRINT, snapshotScope: FINGERPRINT, records: [record], nextPageToken: null }), { status: 200 }) });
   await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "server_error" && error.serverCode === "content_identity_schema_conflict");
 });
 
@@ -594,13 +594,13 @@ test("progress sweep preserves opaque tokens and returns only the complete datas
   const opaque = "cursor/+?=";
   const client = createTestClient({ fetchImplementation: async (url) => {
     urls.push(String(url));
-    return new Response(JSON.stringify({ accountRevision: 2, generation: 3, records: urls.length === 1 ? [first] : [second], nextPageToken: urls.length === 1 ? opaque : null }), { status: 200 });
+    return new Response(JSON.stringify({ accountRevision: 2, generation: 3, snapshotToken: FINGERPRINT, snapshotScope: FINGERPRINT, records: urls.length === 1 ? [first] : [second], nextPageToken: urls.length === 1 ? opaque : null }), { status: 200 });
   } });
   const response = await client.getProgress();
   assert.deepEqual(response.records, [first, second]);
   assert.equal(response.accountRevision, 2);
   assert.equal(response.generation, 3);
-  assert.deepEqual(urls, [`${API_ORIGIN}/v1/progress?pageSize=100`, `${API_ORIGIN}/v1/progress?pageSize=100&pageToken=${encodeURIComponent(opaque)}`]);
+  assert.deepEqual(urls, [`${API_ORIGIN}/v1/progress?pageSize=100&conditional=1`, `${API_ORIGIN}/v1/progress?pageSize=100&conditional=1&pageToken=${encodeURIComponent(opaque)}`]);
 });
 
 test("progress sweep rejects a later-page conflict instead of returning partial facts", async () => {
@@ -609,7 +609,7 @@ test("progress sweep rejects a later-page conflict instead of returning partial 
     const client = createTestClient({ fetchImplementation: async () => {
       pages++;
       if (pages === 2 && scenario === "serverConflict") return new Response(JSON.stringify({ error: { code: "progress_generation_conflict" } }), { status: 409 });
-      return new Response(JSON.stringify({ accountRevision: pages === 2 && scenario === "revision" ? 2 : 1, generation: pages === 2 && scenario === "generation" ? 1 : 0, records: [], nextPageToken: pages === 1 ? "opaque-next-page" : null }), { status: 200 });
+      return new Response(JSON.stringify({ accountRevision: pages === 2 && scenario === "revision" ? 2 : 1, generation: pages === 2 && scenario === "generation" ? 1 : 0, snapshotToken: FINGERPRINT, snapshotScope: FINGERPRINT, records: [], nextPageToken: pages === 1 ? "opaque-next-page" : null }), { status: 200 });
     } });
     await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "server_error" && error.status === 409 && error.serverCode === "progress_generation_conflict");
     assert.equal(pages, 2);
@@ -711,5 +711,173 @@ test("profile change wins over rejected credential or network awaits before fail
     } });
     await assert.rejects(client.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node", () => current), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "profile_changed", stage);
     assert.equal(calls, stage === "token" || stage === "appcheck" ? 0 : stage === "descriptor" ? 1 : 2);
+  }
+});
+
+function conditionalProgressRecord(trackId = "coding-interview-dsa-problem-solving") {
+  const { mutationId: _mutationId, expectedVersion: _expectedVersion, ...record } = activeTrackMutation();
+  return { ...record, trackId, state: { trackId }, version: 1, lastMutationId: "conditional-mutation-0001", updatedAt: "2026-10-12T00:00:00.000Z" };
+}
+const jsonResponse = (value: unknown) => new Response(JSON.stringify(value), { status: 200 });
+
+test("conditional progress isolates nested cached facts and still requests fresh authorization", async () => {
+  const token = "a".repeat(64); const urls: string[] = []; let authCalls = 0;
+  const client = createTestClient({ getIdToken: async () => { authCalls++; return "id-token"; }, fetchImplementation: async (url) => {
+    urls.push(String(url));
+    return jsonResponse(urls.length === 1
+      ? { accountRevision: 1, generation: 0, snapshotToken: token, snapshotScope: token, records: [conditionalProgressRecord()], nextPageToken: null }
+      : { accountRevision: 1, generation: 0, snapshotToken: token, snapshotScope: token, unchanged: true });
+  } });
+  const first = await client.getProgress();
+  (first.records[0]!.state as { trackId: string }).trackId = "consumer-corruption";
+  const second = await client.getProgress();
+  assert.equal(second.records[0]!.state.trackId, "coding-interview-dsa-problem-solving");
+  (second.records[0]!.state as { trackId: string }).trackId = "second-corruption";
+  assert.equal((await client.getProgress()).records[0]!.state.trackId, "coding-interview-dsa-problem-solving");
+  assert.equal(new URL(urls[1]!).searchParams.get("knownSnapshot"), token);
+  assert.equal(authCalls, 3);
+});
+
+test("conditional progress rejects unseeded, mismatched and malformed unchanged responses", async () => {
+  for (const patch of [{ snapshotToken: "b".repeat(64) }, { snapshotScope: "b".repeat(64) }, { accountRevision: 2 }, { generation: 2 }, { records: [] }]) {
+    let calls = 0; const urls: string[] = []; const token = "a".repeat(64);
+    const client = createTestClient({ fetchImplementation: async (url) => {
+      urls.push(String(url)); calls++;
+      return jsonResponse(calls === 1 || calls === 3
+        ? { accountRevision: 1, generation: 0, snapshotToken: token, snapshotScope: token, records: [], nextPageToken: null }
+        : { accountRevision: 1, generation: 0, snapshotToken: token, snapshotScope: token, unchanged: true, ...patch });
+    } });
+    await client.getProgress();
+    await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+    await client.getProgress();
+    assert.equal(new URL(urls[2]!).searchParams.has("knownSnapshot"), false, "failed reads discard their cache without fallback");
+  }
+  const unseeded = createTestClient({ fetchImplementation: async () => jsonResponse({ accountRevision: 0, generation: 0, snapshotToken: "a".repeat(64), snapshotScope: FINGERPRINT, unchanged: true }) });
+  await assert.rejects(unseeded.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});
+
+test("incomplete or mixed snapshot sweeps never become a conditional baseline", async () => {
+  for (const failure of ["transport", "snapshot", "unchanged"]) {
+    let calls = 0; const urls: string[] = [];
+    const client = createTestClient({ fetchImplementation: async (url) => {
+      calls++; urls.push(String(url));
+      if (calls === 2 && failure === "transport") throw new Error("offline");
+      if (calls === 2 && failure === "unchanged") return jsonResponse({ accountRevision: 1, generation: 0, snapshotToken: "a".repeat(64), snapshotScope: FINGERPRINT, unchanged: true });
+      return jsonResponse({ accountRevision: 1, generation: 0, snapshotToken: (calls === 2 ? "b" : "a").repeat(64), snapshotScope: FINGERPRINT, records: [], nextPageToken: calls === 1 ? "next" : null });
+    } });
+    await assert.rejects(client.getProgress());
+    await client.getProgress();
+    assert.equal(new URL(urls[2]!).searchParams.has("knownSnapshot"), false);
+  }
+});
+
+test("one adapter cannot reuse account A facts for account B at the same revision and generation", async () => {
+  let actor = "a"; const seen: string[] = [];
+  const client = createTestClient({ getIdToken: async () => actor, fetchImplementation: async (url, init) => {
+    const subject = new Headers(init?.headers).get("authorization")!.slice(7);
+    const token = subject.repeat(64); seen.push(subject);
+    const common = { accountRevision: 1, generation: 0, snapshotToken: token, snapshotScope: token };
+    return jsonResponse(new URL(String(url)).searchParams.get("knownSnapshot") === token
+      ? { ...common, unchanged: true }
+      : { ...common, records: [conditionalProgressRecord(subject === "a" ? "coding-interview-dsa-problem-solving" : "backend-system-design-interview")], nextPageToken: null });
+  } });
+  assert.equal((await client.getProgress()).records[0]!.trackId, "coding-interview-dsa-problem-solving");
+  actor = "b";
+  assert.equal((await client.getProgress()).records[0]!.trackId, "backend-system-design-interview");
+  assert.equal((await client.getProgress()).records[0]!.trackId, "backend-system-design-interview");
+  assert.deepEqual(seen, ["a", "b", "b"]);
+});
+
+test("concurrent completion can only cause a cache miss after a newer revision", async () => {
+  let release!: (response: Response) => void; let dispatched!: () => void;
+  const dispatchedPromise = new Promise<void>((resolve) => { dispatched = resolve; });
+  let calls = 0; const urls: string[] = [];
+  const full = (revision: number) => jsonResponse({ accountRevision: revision, generation: 0, snapshotToken: String(revision).repeat(64), snapshotScope: FINGERPRINT, records: [], nextPageToken: null });
+  const client = createTestClient({ fetchImplementation: async (url) => {
+    calls++; urls.push(String(url));
+    if (calls === 1) { dispatched(); return new Promise<Response>((resolve) => { release = resolve; }); }
+    return full(2);
+  } });
+  const old = client.getProgress(); await dispatchedPromise;
+  assert.equal((await client.getProgress()).accountRevision, 2);
+  release(full(1)); assert.equal((await old).accountRevision, 1);
+  assert.equal((await client.getProgress()).accountRevision, 2);
+  assert.equal(new URL(urls[2]!).searchParams.get("knownSnapshot"), "1".repeat(64));
+});
+
+
+test("conditional reads reject tokenless full pages instead of downgrading the contract", async () => {
+  const client = createTestClient({ fetchImplementation: async () => jsonResponse({ accountRevision: 0, generation: 0, records: [], nextPageToken: null }) });
+  await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});
+
+test("oversize cache and serialization failure preserve a complete validated read without seeding cache", async () => {
+  for (const failure of ["oversize", "serialization"] as const) {
+    const record = conditionalProgressRecord(failure === "oversize" ? "x".repeat(1024) : undefined);
+    const pages = failure === "oversize" ? 100 : 1;
+    const pageRecords = Array.from({ length: failure === "oversize" ? 100 : 1 }, () => record);
+    const urls: string[] = [];
+    const client = createTestClient({ fetchImplementation: async (url) => {
+      urls.push(String(url));
+      return jsonResponse({ accountRevision: 1, generation: 0, snapshotToken: FINGERPRINT, snapshotScope: FINGERPRINT, records: pageRecords, nextPageToken: urls.length % pages === 0 ? null : `page-${urls.length}` });
+    } });
+    const original = JSON.stringify;
+    if (failure === "serialization") JSON.stringify = ((value: unknown, ...args: unknown[]) => {
+      if (Array.isArray(value) && value[0]?.targetId === "current") throw new Error("cache-serialization-fixture");
+      return Reflect.apply(original, JSON, [value, ...args]);
+    }) as typeof JSON.stringify;
+    try {
+      for (let read = 0; read < 2; read++) {
+        const result = await client.getProgress();
+        assert.equal(result.records.length, pages * pageRecords.length);
+        assert.deepEqual(result.records[0], record);
+        assert.deepEqual(result.records.at(-1), record);
+      }
+      assert.equal(new URL(urls[pages]!).searchParams.has("knownSnapshot"), false);
+    } finally { JSON.stringify = original; }
+  }
+});
+
+test("a fresh same-scope exact ACK composes history but still requires backend revision confirmation", async () => {
+  const scope = FINGERPRINT; const token = "b".repeat(64); const requests: URL[] = [];
+  const record = { ...conditionalProgressRecord(), lastMutationId: "mutation-canonical-0001" };
+  let progressReads = 0;
+  const client = createTestClient({ fetchImplementation: async (url, init) => {
+    const parsed = new URL(String(url)); requests.push(parsed);
+    if (parsed.pathname.endsWith("/sync")) {
+      assert.equal(new Headers(init?.headers).get("x-patternly-progress-cache"), "1");
+      return jsonResponse({ accountRevision: 1, applied: [record], duplicates: [], conflicts: [], snapshotScope: scope });
+    }
+    if (++progressReads === 1) return jsonResponse({ accountRevision: 0, generation: 0, snapshotToken: token, snapshotScope: scope, records: [], nextPageToken: null });
+    return jsonResponse({ accountRevision: 1, generation: 0, snapshotToken: "c".repeat(64), snapshotScope: scope, unchanged: true });
+  } });
+  await client.getProgress();
+  const ack = await client.syncProgress(canonicalSyncRequest());
+  assert.deepEqual(Object.keys(ack).sort(), ["accountRevision", "applied", "conflicts", "duplicates"], "ephemeral transport proof never becomes a durable ACK field");
+  assert.deepEqual((await client.getProgress()).records, [record]);
+  assert.equal(requests[2]!.searchParams.get("knownScope"), scope);
+  assert.equal(requests[2]!.searchParams.get("knownRevision"), "1");
+  await client.getProgress();
+  assert.equal(requests[3]!.searchParams.get("knownSnapshot"), "c".repeat(64), "confirmed compositions return to exact metadata validators");
+});
+
+test("unproven, partial or inconsistent ACKs cannot promote cached progress", async () => {
+  const record = { ...conditionalProgressRecord(), lastMutationId: "mutation-canonical-0001" };
+  const patches = [
+    { snapshotScope: undefined }, { snapshotScope: "b".repeat(64) }, { accountRevision: 2 },
+    { applied: [] }, { duplicates: [record.lastMutationId] },
+    { applied: [{ ...record, version: 2 }] }, { applied: [{ ...record, fingerprint: "b".repeat(64) }] },
+    { applied: [{ ...record, lastMutationId: "mutation-another-0001" }] },
+  ];
+  for (const patch of patches) {
+    let reads = 0; const urls: URL[] = [];
+    const client = createTestClient({ fetchImplementation: async (url) => {
+      const parsed = new URL(String(url)); urls.push(parsed);
+      if (parsed.pathname.endsWith("/sync")) return jsonResponse({ accountRevision: 1, applied: [record], duplicates: [], conflicts: [], snapshotScope: FINGERPRINT, ...patch });
+      return jsonResponse({ accountRevision: reads++ === 0 ? 0 : 1, generation: 0, snapshotToken: FINGERPRINT, snapshotScope: FINGERPRINT, records: reads === 1 ? [] : [record], nextPageToken: null });
+    } });
+    await client.getProgress(); await client.syncProgress(canonicalSyncRequest());
+    assert.deepEqual((await client.getProgress()).records, [record]);
+    assert.equal(urls[2]!.searchParams.has("knownScope"), false, "full read is required when ACK provenance/completeness fails");
   }
 });

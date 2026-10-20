@@ -732,8 +732,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/infrastructure/clients/PatternlyApiClientAdapter.ts": {
-      "description": "Adapter wywołań API z walidacją odpowiedzi i ograniczeniami transportu; wspólna granica z kontraktem backendu.",
-      "reviewedHash": "7fd1a2534cabed17df627ca690f43ed32f692f9f969f3b0386886b1773fc48c7",
+      "description": "Adapter API z walidacją transportu i danych. getProgress wymaga zgodnych snapshotToken/snapshotScope; zachowuje jeden izolowany kompletny JSON do16Mi code units. syncProgress może uzupełnić go tylko dokładnymi ACK o tym samym dowodzie konta/auth/generacji pochodzącym ze świeżej transakcji backendu. Końcowy GET potwierdza scope+rewizję, po czym wraca do dokładnego znacznika updateTime. Wspólny serializer i kanoniczny documentId zachowują granicę pamięci i kolejność; brak proof/replay/zmiana z drugiego klienta wymaga pełnego odczytu. Brak trwałego cache lub offline fallbacku.",
+      "reviewedHash": "d3d62141d66d1297dae638209003e3f402c8ac7f16ea416a6ad9ce1e8f4c3e89",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/infrastructure/storage/mmkvClient.ts": {
@@ -890,13 +890,13 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly-backend/src/api/app.ts": {
-      "description": "Rejestruje rzeczywiste endpointy i ich zabezpieczenia; łączy kontrakt HTTP z magazynami modułów. Duża koncentracja tras to kandydat do analizy kosztu utrzymania, nie dowód defektu.",
-      "reviewedHash": "fce09b2eab4e10c0116d84a5237e4aa101830ef72a34ad87dff1e5563ab7c0a2",
+      "description": "Rejestruje endpointy i ich guardy. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; obie ścieżki używają tych samych odmów konta/autoryzacji. Opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK; brak opt-in zachowuje kształt starszego kontraktu.",
+      "reviewedHash": "182a72b17aacba1043496c279aa8ca258bce3c3a8784ddf3cebc23fe896fb33f",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi.ts": {
-      "description": "Kanoniczny katalog metod i ścieżek HTTP oraz schematów i profili bezpieczeństwa.",
-      "reviewedHash": "3ce338d29dcde8895da84a2ba6d7d14a2f41df57d7d17fcdd90a9d436d9bdba8",
+      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Progress opisuje snapshotScope/snapshotToken oraz warunkową kontrolę rewizji. Sync dokumentuje opcjonalny proof ze świeżej transakcji i jego brak w historycznym replay/duplicates; nie zmienia trwałych receipts.",
+      "reviewedHash": "36105e1748d07460785daeaf8196de304d076f3b14e9ac4997e16dd8f9794c4f",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi-validator.ts": {
@@ -930,13 +930,13 @@
       "flow": "Premium i zakup"
     },
     "patternly-backend/src/modules/progress/contracts.ts": {
-      "description": "Kontrakt rekordów synchronizacji, tożsamości treści i dopuszczalnych mutacji.",
-      "reviewedHash": "53653e1ef05cad693efeff74cdca4ebb79ae1069f991e86c510a07ca69250a3e",
+      "description": "Kontrakt synchronizacji, tożsamości treści i mutacji. ProgressReadCondition rozdziela dokładny knownSnapshot od pary knownScope/knownRevision. Opcjonalny snapshotScope w SyncBatchResult jest wyłącznie nietrwałym dowodem świeżej transakcji, bez migracji historycznych receipts/ACK.",
+      "reviewedHash": "d112e001a3911d4448ef1cb8d1a4fcdfd7cb409feb66faf688284702bee08859",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/progress/store.ts": {
-      "description": "Trwała synchronizacja rekordów i rewizji w Firestore. Mieszany replay waliduje parę cel–plan z nowych zapisów i aktualnego counterpartu; pełne historyczne receipts i replay całego batcha zachowują wcześniejszy wynik. Staged adoption rozstrzyga klucze pary cel–plan wyłącznie w pętli grup: keep_account zachowuje konto, a keep_guest kolejkuje każdą rzeczywistą zmianę raz; niegrupowane rekordy przechodzą osobno.",
-      "reviewedHash": "4e780a19cfce484c7836ec4829acd9258ceff4dd00b24862207148958652aa3b",
+      "description": "Trwała synchronizacja rekordów i rewizji w Firestore. Mieszany replay waliduje parę cel–plan z nowych zapisów i aktualnego counterpartu; pełne historyczne receipts i replay całego batcha zachowują wcześniejszy wynik. Staged adoption rozstrzyga klucze pary cel–plan wyłącznie w pętli grup: keep_account zachowuje konto, a keep_guest kolejkuje każdą rzeczywistą zmianę raz; niegrupowane rekordy przechodzą osobno. readPage pomija query tylko po zgodności dokładnego snapshotToken lub scope+rewizji, zachowując oba pre/post getAll i odmowy. applyBatch wylicza opt-in proof tylko w udanej świeżej próbie transakcji z jej konta/auth/aktywnej generacji; zapisany result receipt i replay pozostają bez proof.",
+      "reviewedHash": "f83c191df953e1c9a9a720c930552f91820c043f0082850986b4baffef681ac7",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/users/merge.ts": {
@@ -1635,9 +1635,9 @@
       "reviewedHash": "ea292eb3014751b50adef3ddee0e8121f3b0d53fbc34cbaceebcd2307a3f5908"
     },
     "patternly-backend/scripts/qa/measure-cost02-client-matrix.mjs": {
-      "description": "Odtwarzalna macierz COST-02: produkcyjne fasady klienta, journalowane commity, Fastify inject i lokalne Firebase Auth/Firestore. Mierzy HTTP, SDK snapshots, zatwierdzone zapisy, bytes, retry i Node CPU/sampledRSS. Probe chronią przed podwójnym zliczaniem SDK; RevenueCat i transport GCS są fixture, nie usługowym odbiorem.",
+      "description": "Odtwarzalna macierz COST-02 na rzeczywistym React/Auth SDK/adapterze/Fastify/AdminSDK i emulatorach. COST03_COMPARE=1 dodaje4powtórzenia historii, COST03_CHANGED_COMPARE=1 kolejne4próby:1kanoniczny zapis i kompletny odczyt0/100/1000/10000historii z zachowaniem każdej wcześniejszej treści. Oryginalny retry po bezpośrednim reset/bind nie ustanawia cache; cold fixture restartuje AuthSDK przy tym samym adapterze. Liczniki snapshotów/zapisów/JSON/CPU nie są billingiem providera.",
       "flow": "Konto, Gość i synchronizacja",
-      "reviewedHash": "6dbeaabb11548188c4549b78edbdf78515adbf2660a60beddc4891064b1cd4c9"
+      "reviewedHash": "e1ae622e977e52438abffcb4fe5663717a9aa914f31a20fec14fc36d405e3b9a"
     },
     "patternly-backend/scripts/run-cost02-client-matrix.mjs": {
       "description": "Uruchamia jedną izolowaną macierz COST-02 na demo/loopback przez istniejący runner emulatorów; wymaga jawnego pinu HEAD aplikacji. Nie uruchamia sandboxa chmurowego.",
@@ -1673,6 +1673,26 @@
       "description": "Pochodzenie wersjonowanej historycznej fixture gzip 71523 B, używanej do powtarzalnego pomiaru pakietu COST-02. NOT_APPROVED/NOT_DEPLOYABLE i bez ustalonej zgodności z bieżącym APP; nie jest archiwum bieżących banków ani zgodą publikacyjną.",
       "flow": "Konto, Gość i synchronizacja",
       "reviewedHash": "eb7abb466f90f75edb7bc02add2df61162e51cd0bfdfc4707b25bc4733d05781"
+    },
+    "patternly-backend/scripts/qa/verify-progress-paging-client.mjs": {
+      "description": "Rzeczywisty backend, APP adapter i reset/odtworzenie212rekordów w pamięciowym storage. COST03_VERIFY_JOURNALED_SYNC=1 dodatkowo uruchamia produkcyjny journal start/answer/completion i accountDataService:215rekordów,212historycznych dokładnie zachowanych, outbox0,1POST+1potwierdzającyGETunchanged. Nie dowodzi natywnego dysku.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "fd64723f125d29ce1b584bb2caf56ed933e948ab60faa9b3c4963d422955e7ff"
+    },
+    "patternly-backend/scripts/run-cost03-tests.mjs": {
+      "description": "Uruchamia jedną izolowaną serię testów COST-03 na demo/loopback przez istniejący runner; wymaga jawnego pinu APP i nie korzysta z chmury.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "2d07f13e58487b64641b2dd3077a33599cb068570aad0807c01eea333a38271d"
+    },
+    "patternly-backend/tests/cost03Client.emulator.test.mjs": {
+      "description": "Integracja APP↔Fastify↔AdminSDK: zmieniony i niezmieniony snapshot, multi-batch i update, dokładna kolejność jak fresh reader, A→B→A podczas token acquisition, drugi klient, utrata ACK po commit/replay, generation collision i proof z udanej próby SDK retry, revoke/delete/lease oraz błędne zapytania. Wyłącznie demo/loopback.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "17dfcdc5b09e502c047e9654ce64fbac248d0bf23054183be07b78c32135aa40"
+    },
+    "patternly-backend/scripts/qa/cost03/compare.mjs": {
+      "description": "Porównuje identyczne lineage/workloady COST-02 oraz4powtórzenia i opcjonalne4zmienione sync. Chroni HTTP/SDK/Auth/write/delete liczniki; pokazuje scenariuszowy koszt reads/JSONegress/request count na1000operacji ze snapshotu stawek COST-02. Dla kontynuacji przyjmuje już odebrany baseline niezmienionych odczytów. Czas/RSS są lokalne, bez CPU billing lub whole-project/native cold forecast.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "695f2a0bf0ef6bcf650935ed142857fffaf84a99a4f3d93f859472d8f77a122b"
     }
   },
   "flows": [
@@ -1697,7 +1717,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "f5273e329a4fe6e3bc3ba0cc8dd799f1bcc65cbdf6a543274d9e372d87a03912"
+      "reviewedDigest": "d92363f3c11cc86d2eeda39a84ba118a6f16760fd00c64c1f379cc63a2413e90"
     },
     {
       "name": "Treść od producenta do sesji",
