@@ -1628,6 +1628,51 @@
       "description": "Sprawdza zwykły plan FESD tradeoff-40: normalny submit poprawnej i błędnej kolejności, trwałą próbę, memory rebind i resume. Chroni dokładny porządek oraz komunikaty relacji; nie jest próbą natywnego urządzenia lub selektora N09.",
       "flow": "Sesja, odpowiedź i trwały wynik",
       "reviewedHash": "414fea820609e9c6c1a816a46b6dfd85572780c5dea823f67fdb8bbd9d370f64"
+    },
+    "patternly/scripts/qa/measureCost02LifecycleTriggers.mjs": {
+      "description": "Mierzy efekty produkcyjnego React sidecar dla cold/warm JS, idle, foreground i reconnect konta/Gościa. Kontroluje źródła AppState/NetInfo oraz pamięciowy SecureStore; prawdziwy Firebase SDK ogranicza transport do emulatora i rejestruje nazwy RPC. Nie mierzy natywnego uruchomienia ani dysku.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "ea292eb3014751b50adef3ddee0e8121f3b0d53fbc34cbaceebcd2307a3f5908"
+    },
+    "patternly-backend/scripts/qa/measure-cost02-client-matrix.mjs": {
+      "description": "Odtwarzalna macierz COST-02: produkcyjne fasady klienta, journalowane commity, Fastify inject i lokalne Firebase Auth/Firestore. Mierzy HTTP, SDK snapshots, zatwierdzone zapisy, bytes, retry i Node CPU/sampledRSS. Probe chronią przed podwójnym zliczaniem SDK; RevenueCat i transport GCS są fixture, nie usługowym odbiorem.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "6dbeaabb11548188c4549b78edbdf78515adbf2660a60beddc4891064b1cd4c9"
+    },
+    "patternly-backend/scripts/run-cost02-client-matrix.mjs": {
+      "description": "Uruchamia jedną izolowaną macierz COST-02 na demo/loopback przez istniejący runner emulatorów; wymaga jawnego pinu HEAD aplikacji. Nie uruchamia sandboxa chmurowego.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "712a0603170327b74a92d9d8d5f862c0dee29c26a1318abf8fd485ab3bdefc2f"
+    },
+    "patternly-backend/scripts/qa/measure-progress-paging.ts": {
+      "description": "Pomocniczy baseline paginacji: seed kanonicznych attemptState i historie 0/100/1000/10000, pierwsza strona oraz pełny sweep. Rozdziela query, getAll i transakcyjne odczyty, retry, bajty oraz lokalny Node CPU/RSS. Snapshoty SDK nie są potwierdzonymi jednostkami rachunku.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "8d4d8a1d83c8aeae4baef45c5b13b0c09348d0f273faf997c77d54a0f3cc3662"
+    },
+    "patternly-backend/scripts/qa/cost02/cost02-build-input.mjs": {
+      "description": "Przekształca dokładnie jedną macierz JSON lub jej wiersz z logu runnera w sanitowane wejście sześciu profili kosztowych. Wiąże SHA wejścia i macierzy, wybiera właściwe flow, odejmuje osadzony sweep i oddziela GCS payload od odpowiedzi APP; skale uploadu są jawnym wyprowadzeniem z applyBatch.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "d3d191371120b98b6b6b0155ab323d62e9df454e59521a1ec9b65885b4b426b3"
+    },
+    "patternly-backend/scripts/qa/cost02/cost02-model.mjs": {
+      "description": "Kalkulator 30 dni dla jawnych profili DAU/CCU: automatic min0/min1, reuse/concurrency, listowe ceny Warsaw/USD, Firestore, egress, GCS, Auth MAU, Registry, Secret Manager i założone PITR. Rozdziela stały koszt, średnią atrybucję, marginalny przyrost 1000 sesji i wrażliwość. Czas usługi, occupancy i startup są założeniami, nie pomiarem Cloud Run.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "29b06e03f9acb0867623e10665cb15f8dc711e20c2fafafa1acdfbf942dc72d4"
+    },
+    "patternly-backend/scripts/qa/cost02/cost02-prices.json": {
+      "description": "Publiczne stawki listowe USD dla Warsaw/europe-central2 sprawdzone 20.10.2026, oficjalne URL i regionalne ekstrakcje z hashami. Lokalne ścieżki surowych snapshotów są nieprzenośnymi lokalizatorami; bez FX/VAT i automatycznego odliczenia współdzielonych ulg.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "c83cac56bb4de794720823811d95b747166547a7090011857474f1fc1be26215"
+    },
+    "patternly-backend/scripts/qa/cost02/cost02-model-input.schema.json": {
+      "description": "Schemat wejścia kalkulatora COST-02: metryki, jawne profile i lineage pomiaru; dopuszcza osobno oznaczony przykład ręczny bez udawania danych pomiarowych.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "2edfa12ecf12ed7dfe26426c2138c188f4a3292021bbd6aaca1606bb314f3962"
+    },
+    "patternly-backend/tests/fixtures/cost02-package/provenance.json": {
+      "description": "Pochodzenie wersjonowanej historycznej fixture gzip 71523 B, używanej do powtarzalnego pomiaru pakietu COST-02. NOT_APPROVED/NOT_DEPLOYABLE i bez ustalonej zgodności z bieżącym APP; nie jest archiwum bieżących banków ani zgodą publikacyjną.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "eb7abb466f90f75edb7bc02add2df61162e51cd0bfdfc4707b25bc4733d05781"
     }
   },
   "flows": [
