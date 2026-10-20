@@ -135,7 +135,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   footerSimulation: {
     justifyContent: "flex-end",
-    minHeight: 361,
     gap: spacing.sm,
     paddingVertical: spacing.lg,
   },

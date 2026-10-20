@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AccessibilityInfo, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { AccessibilityInfo, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Icon, IconButton } from "../../../components";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
@@ -17,16 +18,19 @@ type SimulationQuestionNavigatorProps = Readonly<{
   onDismiss: () => void;
   onOccurrencePress: (occurrenceId: string) => Promise<SimulationNavigatorSelectionResult>;
   positions?: readonly SimulationNavigatorPosition[];
+  finishAction?: Readonly<{ disabled: boolean; onPress: () => void; testID: string }>;
   visible: boolean;
 }>;
 
 /** The navigator is a separate modal surface; it only asks its owning route to perform a canonical jump. */
-export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, positions, visible }: SimulationQuestionNavigatorProps) {
+export function SimulationQuestionNavigator({ finishAction, onDismiss, onOccurrencePress, positions, visible }: SimulationQuestionNavigatorProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
   const { t } = useTranslation("common");
+  const insets = useSafeAreaInsets();
   const [feedback, setFeedback] = useState<NavigatorFeedback>(null);
   const [savingOccurrenceId, setSavingOccurrenceId] = useState<string | null>(null);
+  const finishAfterDismiss = useRef(false);
   const reduceMotion = useReducedMotion();
   const columns = navigatorGridColumns(fontScale);
   const validPositions = hasCanonicalSimulationNavigator(positions) ? positions : [];
@@ -44,10 +48,15 @@ export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, posi
   }
 
   return (
-    <Modal animationType={reduceMotion ? "none" : "slide"} onRequestClose={onDismiss} transparent visible={visible}>
+    <Modal animationType={reduceMotion ? "none" : "slide"} onDismiss={() => {
+      if (finishAfterDismiss.current) {
+        finishAfterDismiss.current = false;
+        finishAction?.onPress();
+      }
+    }} onRequestClose={onDismiss} transparent visible={visible}>
       <View style={styles.backdrop}>
         <Pressable accessibilityLabel={t("Close question navigator")} accessibilityRole="button" onPress={onDismiss} style={styles.dismissArea} />
-        <View accessibilityViewIsModal style={styles.sheet}>
+        <View accessibilityViewIsModal style={[styles.sheet, { paddingBottom: Math.max(spacing.md, insets.bottom) }]}>
           <View style={styles.handleWrap}><View style={styles.handle} /></View>
           <View style={styles.header}>
             <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Question navigator")}</Text>
@@ -55,14 +64,20 @@ export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, posi
           </View>
           <View style={styles.summaryRow}>
             <Text maxFontSizeMultiplier={2} style={styles.answeredSummary}>{`${validPositions.filter((position) => position.answered).length} ${t("answered")}`}</Text>
-            <View accessible={false} style={styles.summaryDot} />
             <Text maxFontSizeMultiplier={2} style={styles.unansweredSummary}>{`${validPositions.filter((position) => !position.answered).length} ${t("unanswered")}`}</Text>
+            <View style={styles.flaggedSummary}><Icon color={styles.flagIcon.color} name="flag" size={16} /><Text maxFontSizeMultiplier={2} style={styles.unansweredSummary}>{`${validPositions.filter((position) => position.flagged).length} ${t("Flagged")}`}</Text></View>
           </View>
           {feedback ? <NavigatorFeedbackBanner feedback={feedback} onRetry={() => void select(feedback.occurrenceId)} /> : null}
           {savingOccurrenceId ? <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.saving}><Text maxFontSizeMultiplier={2} style={styles.savingText}>{t("Saving response…")}</Text></View> : null}
           <ScrollView contentContainerStyle={styles.grid} style={styles.gridScroll}>
             {validPositions.map((position, index) => <NavigatorCell columns={columns} disabled={Boolean(savingOccurrenceId) || feedback?.kind === "save_failed"} frozen={feedback?.kind === "save_failed"} index={index} key={position.occurrenceId} onPress={() => void select(position.occurrenceId)} position={position} />)}
           </ScrollView>
+          {finishAction ? <View style={styles.footer}><Button disabled={finishAction.disabled || Boolean(savingOccurrenceId) || feedback?.kind === "save_failed"} onPress={() => {
+            // iOS presents the confirmation only after this native modal has closed.
+            if (Platform.OS === "ios") finishAfterDismiss.current = true;
+            onDismiss();
+            if (Platform.OS !== "ios") finishAction.onPress();
+          }} testID={finishAction.testID} variant="secondary">{t("Finish exam")}</Button></View> : null}
         </View>
       </View>
     </Modal>
@@ -100,13 +115,19 @@ export function useReducedMotion(): boolean {
 function NavigatorCell({ columns, disabled, frozen = false, index, onPress, position }: Readonly<{ columns: number; disabled: boolean; frozen?: boolean; index: number; onPress: () => void; position: SimulationNavigatorPosition }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const { width } = useWindowDimensions();
+  const cellWidth = Math.floor((width - 2 - spacing.xl * 2 - spacing.sm * (columns - 1)) / columns);
   const isAnswered = position.answered;
   const isCurrent = position.state === "current";
   const effectiveDisabled = disabled || frozen;
-  return <Pressable accessibilityLabel={t(navigatorCellLabel(position, index, frozen))} accessibilityRole="button" accessibilityState={{ disabled: effectiveDisabled, selected: frozen ? false : isCurrent }} disabled={effectiveDisabled} onPress={onPress} style={({ pressed }) => [styles.cell, { height: columns === 5 ? 56 : 48, width: columns === 5 ? 56 : 48 }, frozen ? styles.frozenCell : null, !frozen && isAnswered ? styles.answeredCell : null, !frozen && isCurrent ? styles.currentCell : null, pressed && !effectiveDisabled ? styles.pressedCell : null]} testID={runtimeSelectors.simulation.navigator(position.occurrenceId)}><Text maxFontSizeMultiplier={2} style={[styles.cellText, frozen ? styles.frozenCellText : null, !frozen && isCurrent ? styles.currentCellText : null]}>{index + 1}</Text><Text maxFontSizeMultiplier={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.stateMarker}>{navigatorStateLabel(position, frozen)}</Text></Pressable>;
+  return <Pressable accessibilityLabel={t(navigatorCellLabel(position, index, frozen))} accessibilityRole="button" accessibilityState={{ disabled: effectiveDisabled, selected: frozen ? false : isCurrent }} disabled={effectiveDisabled} onPress={onPress} style={({ pressed }) => [styles.cell, { height: columns === 5 ? 56 : 64, width: cellWidth }, frozen ? styles.frozenCell : null, !frozen && isAnswered ? styles.answeredCell : null, !frozen && isCurrent ? styles.currentCell : null, pressed && !effectiveDisabled ? styles.pressedCell : null]} testID={runtimeSelectors.simulation.navigator(position.occurrenceId)}><Text maxFontSizeMultiplier={2} style={[styles.cellText, frozen ? styles.frozenCellText : null, !frozen && isCurrent ? styles.currentCellText : null]}>{index + 1}</Text>{position.flagged ? <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.cellFlag}><Icon color={styles.flagIcon.color} name="flag" size={12} /></View> : null}<Text maxFontSizeMultiplier={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.stateMarker}>{navigatorStateLabel(position, frozen)}</Text></Pressable>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  cellFlag: { position: "absolute", right: 4, top: 4 },
+  flagIcon: { color: palette.danger },
+  flaggedSummary: { alignItems: "center", flexDirection: "row", gap: spacing.xs },
+  footer: { paddingHorizontal: spacing.xl, paddingTop: spacing.sm },
   answeredCell: { borderColor: palette.primary, borderWidth: 1.5 },
   backdrop: { backgroundColor: palette.effects.reviewScrim, flex: 1, justifyContent: "flex-end" },
   cell: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, justifyContent: "center", overflow: "hidden", position: "relative" },
@@ -134,8 +155,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   savingText: { ...typography.small, color: palette.primary },
   sheet: { backgroundColor: palette.elevatedSurface, borderColor: palette.borderStrong, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderWidth: 1, gap: 0, maxHeight: "88%", padding: 0 },
   stateMarker: { height: 0, opacity: 0, width: 0 },
-  summaryDot: { backgroundColor: palette.textSecondary, borderRadius: radius.pill, height: 3, width: 3 },
-  summaryRow: { alignItems: "center", flexDirection: "row", gap: spacing.lg, paddingBottom: spacing.lg, paddingHorizontal: spacing.xl, paddingTop: spacing.sm },
+  summaryRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.md, paddingBottom: spacing.lg, paddingHorizontal: spacing.xl, paddingTop: spacing.sm },
   title: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
   answeredSummary: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 16 },
   unansweredSummary: { color: palette.textSecondary, fontSize: 12, fontWeight: "500", lineHeight: 16 },

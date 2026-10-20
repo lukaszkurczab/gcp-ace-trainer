@@ -6,6 +6,7 @@ import { createExamActionLane } from "./examActionLane";
 import { settleCommittedExamNavigation } from "./examNavigationRefresh";
 import { shouldClearPendingExamWrite, type PendingExamWrite } from "./examPendingWrite";
 import type { CertificationExamProjection } from "../../application/certification";
+import { certificationQuestionPresentation } from "../../application/certification/certificationQuestionPresentation";
 
 const screen = readFileSync("src/features/exam/ExamScreen.tsx", "utf8");
 
@@ -25,7 +26,7 @@ test("exam response changes persist the canonical choice response before publish
   assert.match(screen, /accessibilityState=\{\{ checked: selected, disabled: actionPending \|\| resolutionRequired \}\}/);
   assert.match(screen, /if \(shouldClearPendingExamWrite\(attempted, refreshed\)\) setPendingExamWrite\(null\)/);
   assert.match(screen, /await retryCertificationExamDraftSave\(\)/);
-  assert.match(screen, /<PracticeQuestionCard question=\{\{ constraints: projection\.question\.constraints, itemId: projection\.question\.questionId, prompt: projection\.question\.prompt \}\} \/>/);
+  assert.match(screen, /<PracticeQuestionCard question=\{\{ constraints: projection\.question\.constraints, itemId: projection\.question\.questionId, prompt: projection\.question\.prompt \}\} presentation=\{\{ \.\.\.questionPresentation, constraints: "hide" \}\} \/>/);
 });
 
 test("an unavailable refresh after an uncertain exam save retains the attempted response until exact confirmation", () => {
@@ -79,4 +80,27 @@ test("exam actions describe navigation and finish confirmation, including unansw
   assert.match(screen, /const unansweredCount = projection\.session\.itemOrder\.filter/);
   assert.match(screen, /runtimeSelectors\.simulation\.action\(projection\.session\.id, "finish"\)/);
   assert.match(screen, /answered: answered\.has\(item\.occurrenceId\)/);
+});
+
+test("exam keeps finish reachable through the navigator and the final-question action", () => {
+  const actions = screen.slice(screen.indexOf("actionBar={("), screen.indexOf('layout="exam"'));
+  assert.match(actions, /projection\.ordinal === projection\.total \? \([\s\S]*setFinishVisible\(true\)[\s\S]*"Finish exam"[\s\S]*\) : \([\s\S]*goToIndex\(projection\.ordinal\)[\s\S]*"Next"/);
+  assert.doesNotMatch(actions, /"Question navigator"|"Flag question"|leadingIcon/);
+  assert.match(screen, /onPositionPress=\{\(\) => setNavigatorVisible\(true\)\}/);
+  assert.match(screen, /positionAccessibilityLabel=\{`\$\{t\("Question navigator"\)\}, \$\{t\("Question"\)\} \$\{projection\.ordinal\} \$\{t\("of"\)\} \$\{projection\.total\}`\}/);
+  assert.match(screen, /positionDisabled=\{actionPending \|\| resolutionRequired\}/);
+  assert.match(screen, /finishAction=\{\{[\s\S]*disabled: actionPending \|\| resolutionRequired,[\s\S]*setFinishVisible\(true\)/);
+  assert.match(screen, /headerRight: headerProjection/);
+  assert.match(screen, /accessibilityState=\{\{ selected: headerFlagged, disabled: headerFlagDisabled \}\}/);
+  assert.match(screen, /onPress=\{\(\) => void toggleFlag\(\)\}/);
+  const header = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
+  assert.match(header, /trailingAction=\{options\.headerRight\?\./);
+});
+
+test("exam presentation keeps the track variant while hiding repeated constraints", () => {
+  assert.match(screen, /const questionPresentation = certificationQuestionPresentation\(projection\.session\.trackId\)/);
+  const structured = certificationQuestionPresentation("claude-certified-architect-professional-certification");
+  assert.equal(structured.variant, "structuredCertificationPrompt");
+  assert.equal(structured.focusFeedback, true);
+  assert.deepEqual({ ...structured, constraints: "hide" }, { variant: "structuredCertificationPrompt", constraints: "hide", focusFeedback: true });
 });

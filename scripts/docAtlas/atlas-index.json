@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "15376323407e2909fa19f9eb1da0fe0737d4f60c",
+      "head": "4c08ea69a807cf93af9b3e7e65d2528fe5091419",
       "files": [
         {
           "path": ".easignore",
@@ -2825,8 +2825,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "cdd45fd5b32db49058f18f427207969cd0c6bace9fe666bac7aa1abe00afc03a",
-          "bytes": 133881,
+          "sha256": "de90e1fbdb33cb65108a3bfb131a51227907319b6f2ead8a8ca3c953e4021a53",
+          "bytes": 134475,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -32723,8 +32723,8 @@
         },
         {
           "path": "src/components/AppShellHeader.tsx",
-          "sha256": "c9efbd7a8c1af113def2e297d4991b0f35b7e20af2901e9640857d809d7c97d9",
-          "bytes": 2486,
+          "sha256": "8a19e29490fdf80635f9b6aa9a4dfe216940fec1bb1c54617ef556257b4f6a96",
+          "bytes": 2741,
           "symbols": [
             "AppShellHeader"
           ],
@@ -32736,45 +32736,51 @@
               "line": 1
             },
             {
+              "specifier": "react",
+              "kind": "type",
+              "resolution": "external",
+              "line": 2
+            },
+            {
               "specifier": "react-native-safe-area-context",
               "kind": "static",
               "resolution": "external",
-              "line": 2
+              "line": 3
             },
             {
               "specifier": "../theme",
               "kind": "static",
               "target": "src/theme/index.ts",
-              "line": 4
+              "line": 5
             },
             {
               "specifier": "./PatternlyMark",
               "kind": "static",
               "target": "src/components/PatternlyMark.tsx",
-              "line": 5
+              "line": 6
             },
             {
               "specifier": "./BackLink",
               "kind": "static",
               "target": "src/components/BackLink.tsx",
-              "line": 6
+              "line": 7
             },
             {
               "specifier": "../preferences",
               "kind": "static",
               "target": "src/preferences/index.ts",
-              "line": 7
+              "line": 8
             },
             {
               "specifier": "../theme",
               "kind": "type",
               "target": "src/theme/index.ts",
-              "line": 8
+              "line": 9
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 82
+          "lines": 86
         },
         {
           "path": "src/components/BackLink.tsx",
@@ -34227,8 +34233,8 @@
         },
         {
           "path": "src/components/Screen.tsx",
-          "sha256": "129c87fabeeee1ca6ac2de5a47739e0814e7607b90673634984a9238860ecadd",
-          "bytes": 5250,
+          "sha256": "c135c4c8e940a8eebe2d037d8481594343263fc1695d11a456f1ed1161e4f292",
+          "bytes": 5230,
           "symbols": [
             "Screen"
           ],
@@ -34284,7 +34290,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 149
+          "lines": 148
         },
         {
           "path": "src/components/ScreenHeader.tsx",
@@ -34637,8 +34643,8 @@
         },
         {
           "path": "src/components/visualShell.test.ts",
-          "sha256": "f8790ddc1f38339f1300a7048093b88d801c809613f3ede505177351d8fcfbdb",
-          "bytes": 28089,
+          "sha256": "b3923d20e2def78db06c1cb69c25d2b21b6193bd0a6af4c9da889a5fab8b1e6a",
+          "bytes": 28118,
           "symbols": [],
           "imports": [
             {
@@ -43179,8 +43185,8 @@
         },
         {
           "path": "src/features/coding-interview/session/SessionShell.tsx",
-          "sha256": "8d3aa18a6c59dc8a53e5439c056b5d05cefa6288c6da905e7c0ba9d6ad931972",
-          "bytes": 8729,
+          "sha256": "e08c2397493e889933b80783c1990cf04c2708bad9a467756e87d8427b4ed781",
+          "bytes": 9805,
           "symbols": [
             "SessionShell"
           ],
@@ -43236,7 +43242,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 212
+          "lines": 221
         },
         {
           "path": "src/features/exam/certificationExamReviewFixtureCommand.test.ts",
@@ -44061,8 +44067,8 @@
         },
         {
           "path": "src/features/exam/ExamScreen.navigation.test.ts",
-          "sha256": "66df4324bd29f04b4e8ab815f94df3626839ebecc43c1dc7851bd8b1e3da831c",
-          "bytes": 4956,
+          "sha256": "1f7a4436b643708a53e4b24199b5a371cdc282cf76c18504fad0a526d9c13fd9",
+          "bytes": 7077,
           "symbols": [],
           "imports": [
             {
@@ -44106,6 +44112,12 @@
               "kind": "type",
               "target": "src/application/certification/index.ts",
               "line": 8
+            },
+            {
+              "specifier": "../../application/certification/certificationQuestionPresentation",
+              "kind": "static",
+              "target": "src/application/certification/certificationQuestionPresentation.ts",
+              "line": 9
             }
           ],
           "jsonKeys": [],
@@ -44115,14 +44127,16 @@
             "an unavailable refresh after an uncertain exam save retains the attempted response until exact confirmation",
             "all exam draft writes and navigation share one in-flight action lane",
             "a durable navigator move closes the navigator while a failed projection read exposes retry",
-            "exam actions describe navigation and finish confirmation, including unanswered questions"
+            "exam actions describe navigation and finish confirmation, including unanswered questions",
+            "exam keeps finish reachable through the navigator and the final-question action",
+            "exam presentation keeps the track variant while hiding repeated constraints"
           ],
-          "lines": 83
+          "lines": 107
         },
         {
           "path": "src/features/exam/ExamScreen.tsx",
-          "sha256": "a19d24fcd7f03654401a509c85ae46f6088b661800e63336d29df7d49b33c360",
-          "bytes": 29903,
+          "sha256": "08c4d10e064f1340c19a18df96ccc6de94b35797f9ad6779a15aa5017e737473",
+          "bytes": 31589,
           "symbols": [
             "ExamLoadingSkeleton",
             "ExamScreen"
@@ -44165,93 +44179,99 @@
               "line": 20
             },
             {
+              "specifier": "../../application/certification/certificationQuestionPresentation",
+              "kind": "static",
+              "target": "src/application/certification/certificationQuestionPresentation.ts",
+              "line": 21
+            },
+            {
               "specifier": "../../components",
               "kind": "static",
               "target": "src/components/index.ts",
-              "line": 21
+              "line": 22
             },
             {
               "specifier": "../../constants",
               "kind": "static",
               "target": "src/constants/index.ts",
-              "line": 22
+              "line": 23
             },
             {
               "specifier": "../../navigation",
               "kind": "type",
               "target": "src/navigation/index.ts",
-              "line": 23
+              "line": 24
             },
             {
               "specifier": "../../preferences",
               "kind": "static",
               "target": "src/preferences/index.ts",
-              "line": 24
+              "line": 25
             },
             {
               "specifier": "../../theme",
               "kind": "static",
               "target": "src/theme/index.ts",
-              "line": 25
+              "line": 26
             },
             {
               "specifier": "../../testing/runtimeSelectors",
               "kind": "static",
               "target": "src/testing/runtimeSelectors.ts",
-              "line": 26
+              "line": 27
             },
             {
               "specifier": "../practice/PracticeQuestionCard",
               "kind": "static",
               "target": "src/features/practice/PracticeQuestionCard.tsx",
-              "line": 27
+              "line": 28
             },
             {
               "specifier": "../coding-interview/session/SessionShell",
               "kind": "static",
               "target": "src/features/coding-interview/session/SessionShell.tsx",
-              "line": 28
+              "line": 29
             },
             {
               "specifier": "../simulation/navigator/SimulationQuestionNavigator",
               "kind": "static",
               "target": "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
-              "line": 29
+              "line": 30
             },
             {
               "specifier": "../simulation/simulationProjection",
               "kind": "type",
               "target": "src/features/simulation/simulationProjection.ts",
-              "line": 30
+              "line": 31
             },
             {
               "specifier": "./examActionLane",
               "kind": "static",
               "target": "src/features/exam/examActionLane.ts",
-              "line": 31
+              "line": 32
             },
             {
               "specifier": "./examNavigationRefresh",
               "kind": "static",
               "target": "src/features/exam/examNavigationRefresh.ts",
-              "line": 32
+              "line": 33
             },
             {
               "specifier": "./examReadOwner",
               "kind": "static",
               "target": "src/features/exam/examReadOwner.ts",
-              "line": 33
+              "line": 34
             },
             {
               "specifier": "./examPendingWrite",
               "kind": "static",
               "target": "src/features/exam/examPendingWrite.ts",
-              "line": 34
+              "line": 35
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 520
+          "lines": 551
         },
         {
           "path": "src/features/exam/resultScorePresentation.test.mjs",
@@ -54242,8 +54262,8 @@
         },
         {
           "path": "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
-          "sha256": "fe9fa8f46c03fd739d18e88a033f819158fa4ebfeef996a341f045449e304a18",
-          "bytes": 10671,
+          "sha256": "07e0bae69fbf0606170468c1c03441b38be62eb1691ae421600e1147ab7efaa3",
+          "bytes": 12376,
           "symbols": [
             "SimulationQuestionNavigator",
             "useReducedMotion"
@@ -54268,57 +54288,63 @@
               "line": 3
             },
             {
+              "specifier": "react-native-safe-area-context",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
               "specifier": "../../../components",
               "kind": "static",
               "target": "src/components/index.ts",
-              "line": 5
+              "line": 6
             },
             {
               "specifier": "../../../preferences",
               "kind": "static",
               "target": "src/preferences/index.ts",
-              "line": 6
+              "line": 7
             },
             {
               "specifier": "../../../theme",
               "kind": "type",
               "target": "src/theme/index.ts",
-              "line": 7
+              "line": 8
             },
             {
               "specifier": "../../../theme",
               "kind": "static",
               "target": "src/theme/index.ts",
-              "line": 8
+              "line": 9
             },
             {
               "specifier": "../simulationProjection",
               "kind": "type",
               "target": "src/features/simulation/simulationProjection.ts",
-              "line": 9
+              "line": 10
             },
             {
               "specifier": "../simulationViewModel",
               "kind": "static",
               "target": "src/features/simulation/simulationViewModel.ts",
-              "line": 10
+              "line": 11
             },
             {
               "specifier": "./navigatorPresentation",
               "kind": "static",
               "target": "src/features/simulation/navigator/navigatorPresentation.ts",
-              "line": 11
+              "line": 12
             },
             {
               "specifier": "../../../testing/runtimeSelectors",
               "kind": "static",
               "target": "src/testing/runtimeSelectors.ts",
-              "line": 12
+              "line": 13
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 143
+          "lines": 163
         },
         {
           "path": "src/features/simulation/operation/SimulationOperationPanel.tsx",
@@ -54372,8 +54398,8 @@
         },
         {
           "path": "src/features/simulation/sessionShellFooterGeometry.test.ts",
-          "sha256": "37853cb979346a305ca86848777d715c750603c5e9d15192e238a5163fd830e1",
-          "bytes": 1792,
+          "sha256": "7904785ba5cf42cad5ee4a022d8d3452c791d3f475d1c9a8ca7af4233229b106",
+          "bytes": 1842,
           "symbols": [],
           "imports": [
             {
@@ -54397,9 +54423,9 @@
           ],
           "jsonKeys": [],
           "testNames": [
-            "practice SessionShell uses natural action geometry while simulation keeps its fixed footer"
+            "SessionShell keeps action footers pinned without oversized simulation clearance"
           ],
-          "lines": 24
+          "lines": 25
         },
         {
           "path": "src/features/simulation/sessionShellLargeText.test.ts",
@@ -54469,8 +54495,8 @@
         },
         {
           "path": "src/features/simulation/simulationNavigator.test.ts",
-          "sha256": "acd8628ad74af13d6ffeabf6b00e7fa8fc1d30bca5812ca3da8e979d098452ee",
-          "bytes": 3170,
+          "sha256": "446927e42ecd76b8d1d95e27ddcc49d45fef5668d72c8782e32f0f54ccfe8376",
+          "bytes": 3873,
           "symbols": [],
           "imports": [
             {
@@ -54506,9 +54532,10 @@
           ],
           "jsonKeys": [],
           "testNames": [
-            "simulation question navigator has the approved states, accessible labels, and large-text grid adaptation"
+            "simulation question navigator has the approved states, accessible labels, and large-text grid adaptation",
+            "exam navigator finish waits for iOS dismissal and remains blocked during response recovery"
           ],
-          "lines": 46
+          "lines": 56
         },
         {
           "path": "src/features/simulation/simulationOperationSurface.test.ts",
@@ -61162,8 +61189,8 @@
         },
         {
           "path": "src/navigation/RootNavigator.tsx",
-          "sha256": "61516b2198240b900ffad285b0248a8b504fcc1d1004422133c14a58b0919989",
-          "bytes": 20244,
+          "sha256": "f4be177cffb9f028f1e4643dafe90347314015d5e3d83c21dba0e36a647f255b",
+          "bytes": 20358,
           "symbols": [
             "RootNavigator"
           ],
@@ -61495,7 +61522,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 383
+          "lines": 384
         },
         {
           "path": "src/navigation/shellModel.test.ts",
@@ -69363,7 +69390,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "f17600ef818de4224c32a4cb4d2d073a672f3ba3",
+      "head": "f4846c75c796d43132bd51109fa45745d6486517",
       "files": [
         {
           "path": ".dockerignore",
@@ -100288,7 +100315,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "cdd45fd5b32db49058f18f427207969cd0c6bace9fe666bac7aa1abe00afc03a",
+  "catalogHash": "de90e1fbdb33cb65108a3bfb131a51227907319b6f2ead8a8ca3c953e4021a53",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "2a2d0e6a5c7467bcf5e109ea5cf3d67b310e9cac8f7f97d3ce2f773fdd5525dc",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -100355,7 +100382,7 @@
     "Atlas/Struktura/patternly/src/assets/brand/app-icon/app-icon — folder aplikacja · src › assets › brand.md": "a46ded6057b58e642eb24d7c755c283ecc2b54267d085b238fc8cab4590d136e",
     "Atlas/Struktura/patternly/src/assets/brand/mark/mark — folder aplikacja · src › assets › brand.md": "217d23e86912284431870109456e360cacfe7a39ecf6297fa3ca251f45d0bf4b",
     "Atlas/Struktura/patternly/src/assets/icons/icons — folder aplikacja · src › assets.md": "f7e136728ee82ab375388ec6dbed21e33efc8e6bfea1cd1fb1ae14ec71d76a1d",
-    "Atlas/Struktura/patternly/src/components/components — folder aplikacja · src.md": "508aeb40944c6c8c1ca7f377f04ed4e390db5ece4c09408a1e264c5b743226bb",
+    "Atlas/Struktura/patternly/src/components/components — folder aplikacja · src.md": "a2d1ea0819a58a8b00237f834f289272db4437601744f68d54f9343362c393a9",
     "Atlas/Struktura/patternly/src/constants/constants — folder aplikacja · src.md": "bba3f0639727d05d072c1cb36d3b5cbd205743e3c9bf4a640b028c876dcfdd3b",
     "Atlas/Struktura/patternly/src/content/content — folder aplikacja · src.md": "54e2007a0f5d296d7cfafac0cb4e1a089abf263eb12d00ae812219c6a600d69f",
     "Atlas/Struktura/patternly/src/content/__fixtures__/__fixtures__ — folder aplikacja · src › content.md": "306a1069e3b701025010388952165fabed264877d491a778562b685f0874b2e4",
@@ -100388,7 +100415,7 @@
     "Atlas/Struktura/patternly/src/features/account/account — folder aplikacja · src › features.md": "022ce5fdd2fab3454f05560de7e145c7be9a3051d62e20c93d642806ae464f84",
     "Atlas/Struktura/patternly/src/features/coding-interview/coding-interview — folder aplikacja · src › features.md": "668d23c649e12f17d1d738e9985b82a4c34386e2e313fb15817d8a94b0c3299f",
     "Atlas/Struktura/patternly/src/features/coding-interview/session/session — folder aplikacja · src › features › coding-interview.md": "75175bb02b0b6b888e525840a604cda634bac82ffffbb747938998515f604a44",
-    "Atlas/Struktura/patternly/src/features/exam/exam — folder aplikacja · src › features.md": "cd5baf2270b715f2b1ba664424cc0c358f433e11c241f46e4917c2e9daf052db",
+    "Atlas/Struktura/patternly/src/features/exam/exam — folder aplikacja · src › features.md": "b7b947a8908ad73263c2505aea363d0d26824a22751034d4e623b25b514de55e",
     "Atlas/Struktura/patternly/src/features/home/home — folder aplikacja · src › features.md": "e6fbc8d348c265abadb603a4593003137a7ee5f824b2a37e5ea574f11ba3e298",
     "Atlas/Struktura/patternly/src/features/home/tabs/tabs — folder aplikacja · src › features › home.md": "c6efb65e654ca5d9766b3f6a23967d0fb37f46d28d5fe07e6344a7d089dd909d",
     "Atlas/Struktura/patternly/src/features/navigation/navigation — folder aplikacja · src › features.md": "6f7407633332be642e1e2354e3ac9e34b5090986e876e94c8483b9375c175b70",
@@ -100396,7 +100423,7 @@
     "Atlas/Struktura/patternly/src/features/premium/premium — folder aplikacja · src › features.md": "932e22d707c9190654e6acc95d5f9c7cc048ff8e29e6b4ed29be4c05b305bfaf",
     "Atlas/Struktura/patternly/src/features/reports/reports — folder aplikacja · src › features.md": "e488a75196e74ea1bf16e3c225173ce1f3ed6e5beb3bf883faa3c958ea82e90c",
     "Atlas/Struktura/patternly/src/features/review/review — folder aplikacja · src › features.md": "fadd14da1e907a79eb4404e3fd7e6f3acd52926fe3d76d3be3f7356350c22666",
-    "Atlas/Struktura/patternly/src/features/simulation/simulation — folder aplikacja · src › features.md": "35c6015e27cb3b4a6a99751ebb8187772aa63e150a46a00b25194e241e3dd8db",
+    "Atlas/Struktura/patternly/src/features/simulation/simulation — folder aplikacja · src › features.md": "87ce50f58a8d5571b68f1f9997dea746454f394a81c99ff976848ddf775d5db4",
     "Atlas/Struktura/patternly/src/features/simulation/navigator/navigator — folder aplikacja · src › features › simulation.md": "23e6dbc61a9038b4f001a1f3e665a47e86256a2689359456d774d06827e19b53",
     "Atlas/Struktura/patternly/src/features/simulation/operation/operation — folder aplikacja · src › features › simulation.md": "768b66de9b32f4fdd1f8d22e11a5790ea9bcdb7a910f149d8b479f0eba94c505",
     "Atlas/Struktura/patternly/src/i18n/i18n — folder aplikacja · src.md": "007bc642d7dd12884a58f91c8ff0174e6491ae345e7d13fbff6b4140a0630724",
@@ -100420,7 +100447,7 @@
     "Atlas/Struktura/patternly/src/locales/fr/fr — folder aplikacja · src › locales.md": "edef7be71248afd52ad721ca709606c49762a7ccfe02836053b033b65d00bf39",
     "Atlas/Struktura/patternly/src/locales/it/it — folder aplikacja · src › locales.md": "148c02b8180f567ee08faf228fb4b86c2c349b52fa130fe3fb1056dbaf0e01e6",
     "Atlas/Struktura/patternly/src/locales/pl/pl — folder aplikacja · src › locales.md": "fc9691987750b325c68e18f2c461a8855aa0c5fca838fb36b3263d2f74d290f2",
-    "Atlas/Struktura/patternly/src/navigation/navigation — folder aplikacja · src.md": "05fb9fc4734436a82c0c0de5a7b482b7a7cf1add4169c7783aac612e0440e86e",
+    "Atlas/Struktura/patternly/src/navigation/navigation — folder aplikacja · src.md": "f1cb00fdead88215dcdf896ed4d67803d6e6b05b5b28883b45911c7da1546e27",
     "Atlas/Struktura/patternly/src/preferences/preferences — folder aplikacja · src.md": "629dfc570025b2c42b79b06b805ab3540b228c204ab6e9a2168b5502664ecbe5",
     "Atlas/Struktura/patternly/src/storage/storage — folder aplikacja · src.md": "05a0e71b2769ed89a96bc9e2e4bb89d0d7096b5f39846c89d09d04e860d25936",
     "Atlas/Struktura/patternly/src/storage/contracts/contracts — folder aplikacja · src › storage.md": "ff3a2cbdc1940b17b19ef7aa6733375ed0ac8b32c45ae2af5d17757cfcd41a92",
@@ -100766,7 +100793,7 @@
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationPracticeReviewProjection.ts — aplikacja · src › application › certification.md": "d1680a0bfbc6c2262c2f1b0656be618b7849ed91be75dbec0db6c428517095d0",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationPremiumRouteLifecycle.test.ts — aplikacja · src › application › certification.md": "7910c2b3e76523a3a897915482c19009470d89ff830d0edac6741699b1a748a0",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationProfileContract.test.ts — aplikacja · src › application › certification.md": "be6c7aa8999237a6d77191ec398c07e233e0a87719b58522c542275187829aa0",
-    "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationQuestionPresentation.ts — aplikacja · src › application › certification.md": "344b9d5e9c6bab94b94b17c4958d9128e9da144798a4ee5e06df2b625fadd508",
+    "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationQuestionPresentation.ts — aplikacja · src › application › certification.md": "9d454d0b0282961ef3211b12c2e19de921053e0192bf002e1f6495b6d5bbbfa1",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationReviewCommands.test.ts — aplikacja · src › application › certification.md": "b1b6d8d16fa0f2a091d9d33f4e433d11c2cab23e16adc948da2aea0149d00c3f",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationReviewCommands.ts — aplikacja · src › application › certification.md": "963e9b4bb651e310d7b802dd1bfa92f06bf673b9082973c85c2a3a1954fbc731",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationSessionFacade.ts — aplikacja · src › application › certification.md": "8c586519e50f9bf4b09d0399db060b6bff0735ad38a15ddc59c7642173414a1d",
@@ -100999,7 +101026,7 @@
     "Atlas/Struktura/patternly/src/components/_Pliki/AmbientBackdrop.tsx — aplikacja · src › components.md": "ca3ba3c03adcb456309810acc9c50d8d940119b8fa3d3472e042773cd22f8344",
     "Atlas/Struktura/patternly/src/components/_Pliki/AnswerOption.tsx — aplikacja · src › components.md": "b38be22a12db76fdde5e08152cc39185eb5ef683b758c9786c7aa26b3a4c42e0",
     "Atlas/Struktura/patternly/src/components/_Pliki/answerOptionTextHeight.test.ts — aplikacja · src › components.md": "84c411fa637c8f7aa9d7efd239c48d5c5d9b46fb1c700d50a7e85de94225dc75",
-    "Atlas/Struktura/patternly/src/components/_Pliki/AppShellHeader.tsx — aplikacja · src › components.md": "6cdd845d7ebe8b964fd5074f01a8d8458f75a24d5159d54c2f75b82abbb5f8e2",
+    "Atlas/Struktura/patternly/src/components/_Pliki/AppShellHeader.tsx — aplikacja · src › components.md": "5bb18c6ecff2134b179ec1af513cda2d31a75d8e4e540401dc018e43c162b638",
     "Atlas/Struktura/patternly/src/components/_Pliki/BackLink.tsx — aplikacja · src › components.md": "da95b16af6b49608942272db20083debaf2a495be5d4a789b6e43a205b69a9be",
     "Atlas/Struktura/patternly/src/components/_Pliki/Badge.tsx — aplikacja · src › components.md": "4635291d57bfe5476b056a1c2062c6238307bd7e3a55aeb0913fbf24f749a762",
     "Atlas/Struktura/patternly/src/components/_Pliki/BottomTabBar.tsx — aplikacja · src › components.md": "81a47ed1a2aa63cf3c7719f9651501569adf50eb23b777ea3ec33aea426ccb23",
@@ -101024,7 +101051,7 @@
     "Atlas/Struktura/patternly/src/components/_Pliki/PublicLinkRow.tsx — aplikacja · src › components.md": "0116ed435d9f0f539563cd3eef20fbdf75a0878047b67590fc6cd15b3b35d879",
     "Atlas/Struktura/patternly/src/components/_Pliki/ReviewLoadingSkeleton.tsx — aplikacja · src › components.md": "8b953f634cc69460039eaaea65e8c5c7533197f2565a310b5043a3e1d65ca3da",
     "Atlas/Struktura/patternly/src/components/_Pliki/ReviewUnavailableSurface.tsx — aplikacja · src › components.md": "50a6317ab3f99b63bf9bc78011b7c061e9f22b2cc57880103e7fb0ad9e4056bd",
-    "Atlas/Struktura/patternly/src/components/_Pliki/Screen.tsx — aplikacja · src › components.md": "4643f9e4ba7e916106615ffc0ced0f9777a8ac037c2de2a794095a740cc0dc27",
+    "Atlas/Struktura/patternly/src/components/_Pliki/Screen.tsx — aplikacja · src › components.md": "b394bb5607eb2a8472a1dcebd4f06e51e29291d3529cdbe758590456a63aa0d9",
     "Atlas/Struktura/patternly/src/components/_Pliki/ScreenHeader.tsx — aplikacja · src › components.md": "e22461035717dcf6064f822034f2bc1e0d93e87e13f464bc9aff995ec37a9732",
     "Atlas/Struktura/patternly/src/components/_Pliki/SectionHeader.tsx — aplikacja · src › components.md": "ef73dabf919956983ca681c350f1df608920e7d3d59e44e936b04dcc1a9cc8d1",
     "Atlas/Struktura/patternly/src/components/_Pliki/SessionResultOverview.tsx — aplikacja · src › components.md": "5b13cf437fc1afb763ef76298384af6939643c8dd74d083b2bc829e07a93be24",
@@ -101034,7 +101061,7 @@
     "Atlas/Struktura/patternly/src/components/_Pliki/SkeletonShape.tsx — aplikacja · src › components.md": "a990e3448268129c11f4229303e81f3d5564481fa00127d75d54666a74412f30",
     "Atlas/Struktura/patternly/src/components/_Pliki/textLayoutHeight.ts — aplikacja · src › components.md": "dc9f18cb07cd7bdee9290b9d949b198329886127a701d5b94bc4a8c9c17f6ce8",
     "Atlas/Struktura/patternly/src/components/_Pliki/trackIcon.ts — aplikacja · src › components.md": "70edda12beaf491a9a89875129e3a9648f62fb93d637d0a7fe8d242dd1574be8",
-    "Atlas/Struktura/patternly/src/components/_Pliki/visualShell.test.ts — aplikacja · src › components.md": "4a32c809ee2da06e88f31fb6f0d0b61bd0adab7bbe17c25a16f3073fca6a928c",
+    "Atlas/Struktura/patternly/src/components/_Pliki/visualShell.test.ts — aplikacja · src › components.md": "adba62bc2514febceb978a9392bf8d5fb2cfcf2292a465dce9f09da8ef936db9",
     "Atlas/Struktura/patternly/src/constants/_Pliki/exam.ts — aplikacja · src › constants.md": "8f945d14dec09276d4cb961192c3f64aeb6bb8f9104f83df826bbcb6719c6bfe",
     "Atlas/Struktura/patternly/src/constants/_Pliki/index.ts — aplikacja · src › constants.md": "bb007e35ed2b7a024e1934e2647bce77513f96362590d563126cb9b75f24db8e",
     "Atlas/Struktura/patternly/src/constants/_Pliki/routes.ts — aplikacja · src › constants.md": "aea4059fe8edfd21369e01892a0d8930dcb98f4b6ad184a792e6652b97976df3",
@@ -101220,7 +101247,7 @@
     "Atlas/Struktura/patternly/src/features/account/_Pliki/recoveryOperationPresentation.ts — aplikacja · src › features › account.md": "0c36f3d9ddbbcd0de5900deb923affc70d1e220b0f62cbc98ab9512cc09942c0",
     "Atlas/Struktura/patternly/src/features/account/_Pliki/useAccountCommand.ts — aplikacja · src › features › account.md": "60b9ad6d30b115c1964017ced980963e4eace48a611e87c769b2c0aebd3d5501",
     "Atlas/Struktura/patternly/src/features/coding-interview/session/_Pliki/sessionAccessibility.ts — aplikacja · src › features › coding-interview › session.md": "4e0f83ead74ea323c26dba8fbd40bbf599e3a5c1eb1dee49bf2df00b2e58d8fb",
-    "Atlas/Struktura/patternly/src/features/coding-interview/session/_Pliki/SessionShell.tsx — aplikacja · src › features › coding-interview › session.md": "3f88879b9dc45f5ed1d704c2f934608d795581d650a3f4cd34289ae2390ac88b",
+    "Atlas/Struktura/patternly/src/features/coding-interview/session/_Pliki/SessionShell.tsx — aplikacja · src › features › coding-interview › session.md": "b6fad2df09fe35410d39adcf9399aafb2eddcaa735cccae838475512710f9828",
     "Atlas/Struktura/patternly/src/features/exam/_Pliki/certificationExamReviewFixtureCommand.test.ts — aplikacja · src › features › exam.md": "270582412c78593a611579761b4be127295489b278b12da60f35cef699991325",
     "Atlas/Struktura/patternly/src/features/exam/_Pliki/certificationExamReviewFixtureCommand.ts — aplikacja · src › features › exam.md": "af12e7dc5f2f356480afc6543a8f459287cbe5637b46ace2125170533c0df134",
     "Atlas/Struktura/patternly/src/features/exam/_Pliki/certificationExamReviewFixtureNavigator.tsx — aplikacja · src › features › exam.md": "12c912fbd86f534a3617fa61462953368e00f275eecb741a4c15d6e93335b080",
@@ -101238,8 +101265,8 @@
     "Atlas/Struktura/patternly/src/features/exam/_Pliki/examReadOwner.ts — aplikacja · src › features › exam.md": "f39f46677baa323dfa129917ba68d595dff517350549e46d067403b75b95ece1",
     "Atlas/Struktura/patternly/src/features/exam/_Pliki/examReviewPresentation.test.ts — aplikacja · src › features › exam.md": "808a4eaefaa217e1a1c22d39d13b34a2ea3b6675da60bb14c5ba9e673f489f75",
     "Atlas/Struktura/patternly/src/features/exam/_Pliki/ExamReviewScreen.tsx — aplikacja · src › features › exam.md": "df592781756ecb0e83f145f5b264ec4db8b81c11c4f8da6752a11244992f2d2f",
-    "Atlas/Struktura/patternly/src/features/exam/_Pliki/ExamScreen.navigation.test.ts — aplikacja · src › features › exam.md": "d810d6832545dc8e97764507f21e55f72961d068f1a03a3f0517d87f79363882",
-    "Atlas/Struktura/patternly/src/features/exam/_Pliki/ExamScreen.tsx — aplikacja · src › features › exam.md": "f9eba37ecf2f4aabc10a9d853a231bf65e4c56b33cf7ed443404b8517384fad5",
+    "Atlas/Struktura/patternly/src/features/exam/_Pliki/ExamScreen.navigation.test.ts — aplikacja · src › features › exam.md": "ca103c55b0314ea049b665584f1716188355c90bb6abdb600045657a7fd0fe9a",
+    "Atlas/Struktura/patternly/src/features/exam/_Pliki/ExamScreen.tsx — aplikacja · src › features › exam.md": "af1e5c6ff1a2bbd94dc45e3e167d26ad337cb8b64286c512380288b0e2855e26",
     "Atlas/Struktura/patternly/src/features/exam/_Pliki/resultScorePresentation.test.mjs — aplikacja · src › features › exam.md": "978ca6f6614547689a0462fac7bf8bed7539b034da38dc3bbf8786980af64cb6",
     "Atlas/Struktura/patternly/src/features/exam/_Pliki/resultScorePresentationTestHarness.mjs — aplikacja · src › features › exam.md": "c21a8d6cd1ad5d94b6e343977294978e4f44d434e70c8a7c70cc5921cb78dbc4",
     "Atlas/Struktura/patternly/src/features/exam/_Pliki/ResultScreen.tsx — aplikacja · src › features › exam.md": "940c0a3b5824fd0f4e6b6c84c76be43d456c0e68be88b5466edde7682ea352ac",
@@ -101398,12 +101425,12 @@
     "Atlas/Struktura/patternly/src/features/simulation/_Pliki/localResponseDraft.test.ts — aplikacja · src › features › simulation.md": "e1274d6d32b1eb1cd7c75982964cc5e24fe29e9a030a4afa82822de329dbc804",
     "Atlas/Struktura/patternly/src/features/simulation/_Pliki/localResponseDraft.ts — aplikacja · src › features › simulation.md": "2e7427882a044c00d0756af53a4999339674c19acc913f0f5b431104ed198ad7",
     "Atlas/Struktura/patternly/src/features/simulation/navigator/_Pliki/navigatorPresentation.ts — aplikacja · src › features › simulation › navigator.md": "c6a0e91b21100219b24dea1006876e6431fb237c74a108be82988fceb0ff1d54",
-    "Atlas/Struktura/patternly/src/features/simulation/navigator/_Pliki/SimulationQuestionNavigator.tsx — aplikacja · src › features › simulation › navigator.md": "ea4e4706b6c58f42c3eebac6e9c5e3b918c51f51703d9c35982873feb11615aa",
+    "Atlas/Struktura/patternly/src/features/simulation/navigator/_Pliki/SimulationQuestionNavigator.tsx — aplikacja · src › features › simulation › navigator.md": "9e6ceb49a876bce1730f2b6b91abb72f75db752d9f004ab9f9c06ff5a7cea05b",
     "Atlas/Struktura/patternly/src/features/simulation/operation/_Pliki/SimulationOperationPanel.tsx — aplikacja · src › features › simulation › operation.md": "18f7f1c2af5120b11e05245f781219d769b726b9524e4ff53be2abc45b4328ca",
-    "Atlas/Struktura/patternly/src/features/simulation/_Pliki/sessionShellFooterGeometry.test.ts — aplikacja · src › features › simulation.md": "c60c5ddbab2d1ea1dd1d85501db1ffdb1bc8011c8acff894bc0317876b461823",
+    "Atlas/Struktura/patternly/src/features/simulation/_Pliki/sessionShellFooterGeometry.test.ts — aplikacja · src › features › simulation.md": "44247e744c72358b748c9f448be5863dc262f9ca5258da175960eaee1f3bb461",
     "Atlas/Struktura/patternly/src/features/simulation/_Pliki/sessionShellLargeText.test.ts — aplikacja · src › features › simulation.md": "8f277683ef2eb3358f52e3b39fb1ff5d1fffb720e9876f4cdd823fd4172276ce",
     "Atlas/Struktura/patternly/src/features/simulation/_Pliki/simulationFinalQuestionAction.test.ts — aplikacja · src › features › simulation.md": "49f24e99117f8e93ea2f1bf826b683929a4e915126054e6e1f89c4b2c86e310f",
-    "Atlas/Struktura/patternly/src/features/simulation/_Pliki/simulationNavigator.test.ts — aplikacja · src › features › simulation.md": "d732615c0495f60516b6333e197e2476b96817681352a3ddcde22491568dac72",
+    "Atlas/Struktura/patternly/src/features/simulation/_Pliki/simulationNavigator.test.ts — aplikacja · src › features › simulation.md": "3d69cc7ba471fe0413c7e04aecb7b76802c5b8236e84be847dbefdf030f3e2c8",
     "Atlas/Struktura/patternly/src/features/simulation/_Pliki/simulationOperationSurface.test.ts — aplikacja · src › features › simulation.md": "b3150206d8e4f69dcf9092afd7bf6718ab2aef9f57e52a76ff0a748391f2985e",
     "Atlas/Struktura/patternly/src/features/simulation/_Pliki/simulationProjection.ts — aplikacja · src › features › simulation.md": "77f4a6779b3e988e76a764bb270dfe699a6813d509ab6b74f24838db2358e533",
     "Atlas/Struktura/patternly/src/features/simulation/_Pliki/simulationResultPresentation.test.ts — aplikacja · src › features › simulation.md": "77f4230d6b8dee63013274c9c85a6f2ee2337e3f4dfc9bdcca64aa1347780727",
@@ -101581,7 +101608,7 @@
     "Atlas/Struktura/patternly/src/navigation/_Pliki/languageSettingsAuditCommand.ts — aplikacja · src › navigation.md": "c05bacb7ccbcf6307e7df19791ed3255a1e6b04efc80ae1cd2f59a3967987342",
     "Atlas/Struktura/patternly/src/navigation/_Pliki/loadingStateOwnership.test.ts — aplikacja · src › navigation.md": "4ea299a72f6c011c3cfd2b1bf74b558ade1d04f758c93759386509e5fc130022",
     "Atlas/Struktura/patternly/src/navigation/_Pliki/navigationDependencyCycle.test.ts — aplikacja · src › navigation.md": "9f02ec050ef16eaad1f887b72946b6f238d44c41e20b0f6b60c2b08d9ced4d1b",
-    "Atlas/Struktura/patternly/src/navigation/_Pliki/RootNavigator.tsx — aplikacja · src › navigation.md": "58b5a5eaee4d4a0de5882cde18f25ea2091bb5db69bea63fd281ba4ef7b2e77d",
+    "Atlas/Struktura/patternly/src/navigation/_Pliki/RootNavigator.tsx — aplikacja · src › navigation.md": "826e4fd1956a7f93f7c75b8f9ed4f23ea7f9ebf8e8911821235ec325e461c53b",
     "Atlas/Struktura/patternly/src/navigation/_Pliki/shellModel.test.ts — aplikacja · src › navigation.md": "a892f25d80a21246386d5873ebf4a000a8b2cc710ca55433bc85d3e150b4a685",
     "Atlas/Struktura/patternly/src/navigation/_Pliki/startupLoadingSurface.test.ts — aplikacja · src › navigation.md": "b6c78cc9023c3f0eca2e3a83ceb3b92fe852741a1f5e42a895d06e0a39f0f671",
     "Atlas/Struktura/patternly/src/navigation/_Pliki/types.ts — aplikacja · src › navigation.md": "3d35b656ba5984998f216c8607bf6d2257e25da04352c8615e933f8d12820bd1",

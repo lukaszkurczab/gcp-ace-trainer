@@ -208,6 +208,7 @@ export function RootNavigator() {
               backAction={back ? { destinationLabel, onPress: () => navigation.goBack() } : undefined}
               context={options.title}
               placement="stack"
+              trailingAction={options.headerRight?.({ canGoBack: Boolean(back), tintColor: colors.textPrimary })}
             />
           );
         },

@@ -136,7 +136,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
   assert.match(emailChangePending, /<Screen\s+backAction=\{\{ onPress: \(\) => navigation\.goBack\(\) \}\} edges=\{\["top", "bottom"\]\}/);
   assert.match(source("src/features/home/LegalInformationScreen.tsx"), /screenHeader=\{\{ onBack: \(\) => navigation\.goBack\(\)/);
 
-  assert.match(source("src/features/coding-interview/session/SessionShell.tsx"), /<Screen[\s\S]*edges=\{\["top", "bottom"\]\}/);
+  assert.match(source("src/features/coding-interview/session/SessionShell.tsx"), /<Screen[\s\S]*edges=\{isExamLayout \? \["bottom"\] : \["top", "bottom"\]\}/);
   assert.match(source("src/features/practice/PracticeSessionSurface.tsx"), /<SessionShell\b/);
   assert.match(source("src/features/simulation/SimulationSessionSurface.tsx"), /<SessionShell\b/);
 });
@@ -258,7 +258,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
   assert.match(screen, /footerSticky:\s*\{[\s\S]*?paddingBottom:\s*spacing\.md[\s\S]*?paddingTop:\s*spacing\.md/);
   assert.match(screen, /footerSession:\s*\{[\s\S]*?paddingVertical:\s*spacing\.md/);
   assert.doesNotMatch(screen, /footerSession:\s*\{[\s\S]*?minHeight:\s*228/);
-  assert.match(screen, /footerSimulation:\s*\{[\s\S]*?minHeight:\s*361/);
+  assert.doesNotMatch(screen, /footerSimulation:\s*\{[^}]*minHeight:/);
   assert.match(screen, /header\?: ReactNode/);
   assert.match(header, /placement === "stack"[\s\S]*<SafeAreaView edges=\{\["top"\]\}/);
   assert.doesNotMatch(source("src/features/coding-interview/session/SessionShell.tsx"), /SafeAreaView|ScrollView/);

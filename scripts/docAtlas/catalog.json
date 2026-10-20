@@ -687,8 +687,8 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/navigation/RootNavigator.tsx": {
-      "description": "Rejestruje stos ekranów i warunki wejścia konta. Zawiera również wejścia fixture/audytu ograniczone warunkami DEV i smoke. Nagłówek powrotu korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny. TopicRoadmap nazywa faktyczny ekran Choose topic.",
-      "reviewedHash": "61516b2198240b900ffad285b0248a8b504fcc1d1004422133c14a58b0919989",
+      "description": "Rejestruje stos ekranów i warunki wejścia konta. Zawiera również wejścia fixture/audytu ograniczone warunkami DEV i smoke. Nagłówek powrotu korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny. TopicRoadmap nazywa faktyczny ekran Choose topic. Opcjonalne headerRight przekazuje do trailingAction wspólnego nagłówka, dzięki czemu flaga egzaminu nie wymaga osobnej powłoki.",
+      "reviewedHash": "f4be177cffb9f028f1e4643dafe90347314015d5e3d83c21dba0e36a647f255b",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/constants/routes.ts": {
@@ -1190,8 +1190,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/exam/ExamScreen.tsx": {
-      "description": "Ekran egzaminu certyfikacyjnego z przebiegiem sesji.",
-      "reviewedHash": "a19d24fcd7f03654401a509c85ae46f6088b661800e63336d29df7d49b33c360",
+      "description": "Runner egzaminu certyfikacyjnego: kompaktowy wariant SessionShell, flaga w nagłówku, licznik otwierający nawigator i Previous/Next lub Finish exam na ostatnim pytaniu. Zachowuje prezentację ścieżki z certificationQuestionPresentation; ukrywa tylko powtarzalne constraints w widoku egzaminu. Wcześniejsze zakończenie w nawigatorze przechodzi przez istniejące potwierdzenie; czas, zapis, recovery i scoring pozostają we właścicielach aplikacji.",
+      "reviewedHash": "08c4d10e064f1340c19a18df96ccc6de94b35797f9ad6779a15aa5017e737473",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/exam/ExamReviewScreen.tsx": {
@@ -1808,9 +1808,9 @@
       "reviewedHash": "0f300efed5d9f16b8e2a985da7fdc186471532ff1ccfb78d64d980214249e80b"
     },
     "patternly/src/components/AppShellHeader.tsx": {
-      "description": "Dla istniejącej akcji powrotu renderuje wyłącznie wspólny BackLink; bez znaku Patternly i kontekstu ścieżki. Stack zachowuje safe area. Nagłówek bez akcji powrotu może zachować markę; nie tworzy fikcyjnego celu.",
+      "description": "Wspólny nagłówek: BackLink nazywa rzeczywisty cel, a opcjonalna trailingAction mieści akcję bieżącego ekranu, np. flagę egzaminu. Wiersz powrotu nie dodaje marki ani kontekstu ścieżki. Stack zachowuje górny safe area; bez akcji powrotu nagłówek może zachować markę.",
       "flow": "Start aplikacji i nawigacja",
-      "reviewedHash": "c9efbd7a8c1af113def2e297d4991b0f35b7e20af2901e9640857d809d7c97d9"
+      "reviewedHash": "8a19e29490fdf80635f9b6aa9a4dfe216940fec1bb1c54617ef556257b4f6a96"
     },
     "patternly/src/components/ScreenHeader.tsx": {
       "description": "Przewijany tytuł bieżącego ekranu z potrzebnym opisem i opcjonalnym kontekstem. Nawigację powrotną przejął jawny stały slot Screen.backAction; ScreenHeader nie tworzy drugiego BackLink. Warianty korzystają z istniejących tokenów typografii.",
@@ -1863,7 +1863,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "f0a6a1081628ed74cfaa5361928353b283f43b6347726c0d0ef247f610cbd894"
+      "reviewedDigest": "9bd33d609b69ae4da51036d3f9ad7d1da5ad77b55017d05d2c8c08afab87d84e"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -1900,7 +1900,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "50ba63ef918a1a13f6bc3b6bdf424baf3b1451edfcbf3b14ceabb795a1f1f6da"
+      "reviewedDigest": "9918eceb14e845c91223162ca83d22ee09e53e2141f753531012cebd95fd3670"
     },
     {
       "name": "Cel, plan i postęp",

@@ -25,8 +25,8 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.match(source, /<ScrollView contentContainerStyle=\{styles\.grid\} style=\{styles\.gridScroll\}>/);
   assert.match(source, /position\.answered/);
   assert.match(source, /testID=\{runtimeSelectors\.simulation\.navigator\(position\.occurrenceId\)\}/);
-  assert.match(source, /height: columns === 5 \? 56 : 48/);
-  assert.match(source, /width: columns === 5 \? 56 : 48/);
+  assert.match(source, /height: columns === 5 \? 56 : 64/);
+  assert.match(source, /width: cellWidth/);
   assert.match(source, /cell:\s*\{[\s\S]*backgroundColor:\s*palette\.elevatedSurface/);
   assert.match(source, /cellText:\s*\{[\s\S]*fontSize:\s*12[\s\S]*lineHeight:\s*16/);
   assert.match(source, /frozenCell:\s*\{\s*borderColor:\s*palette\.border\s*\}/);
@@ -42,4 +42,14 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.match(source, /operationNotice:\s*\{[\s\S]*?borderRadius:\s*radius\.lg[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
   assert.match(source, /saveFailureStack:\s*\{\s*gap:\s*spacing\.md/);
   assert.match(source, /Try again/);
+});
+
+test("exam navigator finish waits for iOS dismissal and remains blocked during response recovery", () => {
+  assert.match(source, /finishAction\?: Readonly/);
+  assert.match(source, /disabled=\{finishAction\.disabled \|\| Boolean\(savingOccurrenceId\) \|\| feedback\?\.kind === "save_failed"\}/);
+  assert.match(source, /Platform\.OS === "ios"\) finishAfterDismiss\.current = true/);
+  assert.match(source, /onDismiss=\{\(\) => \{[\s\S]*finishAfterDismiss\.current = false;[\s\S]*finishAction\?\.onPress\(\)/);
+  assert.match(source, /Platform\.OS !== "ios"\) finishAction\.onPress\(\)/);
+  assert.match(source, /position\.flagged \? <View accessibilityElementsHidden/);
+  assert.match(source, /t\("Flagged"\)/);
 });

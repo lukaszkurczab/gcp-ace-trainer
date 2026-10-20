@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { ReactNode, RefObject } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
-import { Screen } from "../../../components";
+import { Icon, Screen } from "../../../components";
 import { spacing, typography } from "../../../theme";
 import type { SessionMetricPresentation } from "./sessionAccessibility";
 import { useThemedStyles } from "../../../preferences";
@@ -12,12 +12,13 @@ type SessionShellProps = Readonly<{
   actionBar?: ReactNode;
   children: ReactNode;
   headerAction?: ReactNode;
-  layout?: "practice" | "simulation" | "simulationSaved" | "simulationConfirmation";
+  layout?: "practice" | "simulation" | "simulationSaved" | "simulationConfirmation" | "exam";
   modeTestID?: string;
   modeLabel?: string;
   onPositionPress?: () => void;
   position?: SessionMetricPresentation;
   positionAccessibilityLabel?: string;
+  positionDisabled?: boolean;
   positionTestID?: string;
   progress?: number;
   progressTestID?: string;
@@ -43,6 +44,7 @@ export function SessionShell({
   onPositionPress,
   position,
   positionAccessibilityLabel,
+  positionDisabled = false,
   positionTestID,
   progress,
   progressTestID,
@@ -54,6 +56,7 @@ export function SessionShell({
   const { t } = useTranslation("common");
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
+  const isExamLayout = layout === "exam";
   const isSimulationLayout = layout === "simulation" || layout === "simulationSaved" || layout === "simulationConfirmation";
   const isSavedSimulationLayout = layout === "simulationSaved";
   const isConfirmationSimulationLayout = layout === "simulationConfirmation";
@@ -65,28 +68,28 @@ export function SessionShell({
 
   return (
     <Screen
-      edges={["top", "bottom"]}
+      edges={isExamLayout ? ["bottom"] : ["top", "bottom"]}
       scrollFocus={scrollFocus}
       footer={footer}
-      footerVariant={layout === "practice" ? "session" : "simulation"}
+      footerVariant={layout === "practice" || isExamLayout ? "session" : "simulation"}
       header={(
         <>
           {headerAction ? <View style={styles.headerAction}>{headerAction}</View> : null}
-          <View style={[styles.topBar, isSimulationLayout ? styles.topBarSimulation : null, isLargeSimulationLayout ? styles.topBarLargeSimulation : null]}>
+          <View style={[styles.topBar, isSimulationLayout ? styles.topBarSimulation : null, isLargeSimulationLayout ? styles.topBarLargeSimulation : null, isExamLayout ? styles.topBarExam : null]}>
             <View accessible={Boolean(timer)} accessibilityElementsHidden={!timer} accessibilityLabel={timer?.accessibilityLabel} accessibilityRole={timer ? "timer" : undefined} importantForAccessibility={timer ? "yes" : "no-hide-descendants"} style={[styles.topSlot, isSimulationLayout ? styles.topSlotSimulation : null]} testID={timerTestID}>
               {timer ? <Text key={`timer:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.topText, isLargeSimulationLayout ? styles.topTextLargeSimulation : null]}>{timer.label}</Text> : null}
             </View>
             <View style={[styles.modeSlot, isSimulationLayout ? styles.modeSlotSimulation : null]}>
-              {modeLabel ? <Text accessibilityLabel={modeLabel} ellipsizeMode="clip" key={`mode:${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.modeText, isSimulationLayout ? styles.modeTextSimulation : null]} testID={modeTestID}>{modeLabel}</Text> : null}
+              {modeLabel ? <Text accessibilityLabel={modeLabel} ellipsizeMode="clip" key={`mode:${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={isExamLayout ? undefined : 2} style={[styles.modeText, isSimulationLayout ? styles.modeTextSimulation : null, isExamLayout ? styles.modeTextExam : null]} testID={modeTestID}>{modeLabel}</Text> : null}
             </View>
-            <PositionSlot isConfirmationSimulationLayout={isConfirmationSimulationLayout} isSavedSimulationLayout={isSavedSimulationLayout} isSimulationLayout={isSimulationLayout} onPress={onPositionPress} position={position} positionAccessibilityLabel={positionAccessibilityLabel} positionTestID={positionTestID} styles={styles} />
+            <PositionSlot disabled={positionDisabled} isExamLayout={isExamLayout} isConfirmationSimulationLayout={isConfirmationSimulationLayout} isSavedSimulationLayout={isSavedSimulationLayout} isSimulationLayout={isSimulationLayout} onPress={onPositionPress} position={position} positionAccessibilityLabel={positionAccessibilityLabel} positionTestID={positionTestID} styles={styles} />
           </View>
           <View accessible={verifiedProgress !== null} accessibilityElementsHidden={verifiedProgress === null} accessibilityLabel={verifiedProgress === null ? undefined : t("Session progress")} accessibilityRole={verifiedProgress === null ? undefined : "progressbar"} accessibilityValue={verifiedProgress === null ? undefined : { max: 100, min: 0, now: Math.round(verifiedProgress * 100) }} importantForAccessibility={verifiedProgress === null ? "no-hide-descendants" : "yes"} style={[styles.progressTrack, isSimulationLayout ? styles.progressTrackSimulation : null, isConfirmationSimulationLayout ? styles.progressTrackConfirmation : null]} testID={progressTestID}>
             {verifiedProgress === null ? null : <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.progressFill, { width: `${verifiedProgress * 100}%` }]} />}
           </View>
         </>
       )}
-      style={[styles.content, isSimulationLayout ? styles.contentSimulation : null]}
+      style={[styles.content, isSimulationLayout ? styles.contentSimulation : null, isExamLayout ? styles.contentExam : null]}
     >
       <View style={[styles.sessionContent, isSimulationLayout ? styles.simulationContent : null, isSavedSimulationLayout ? styles.simulationContentSaved : null]} testID={rootTestID}>
         {children}
@@ -96,6 +99,10 @@ export function SessionShell({
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  contentExam: { paddingTop: spacing.lg },
+  topBarExam: { gap: spacing.sm, minHeight: 44, paddingVertical: 0 },
+  modeTextExam: { fontSize: 12, lineHeight: 16 },
+  positionButtonExam: { alignItems: "center", borderColor: palette.border, borderRadius: 12, borderWidth: 1, flexDirection: "row", gap: spacing.xs, minHeight: 44, paddingHorizontal: spacing.sm },
   headerAction: { alignItems: "flex-start", paddingHorizontal: spacing.xl, paddingBottom: spacing.sm },
   simulationActionRegion: {
     minHeight: 80,
@@ -191,7 +198,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
 });
 
-function PositionSlot({ isConfirmationSimulationLayout, isSavedSimulationLayout, isSimulationLayout, onPress, position, positionAccessibilityLabel, positionTestID, styles }: Readonly<{
+function PositionSlot({ disabled, isExamLayout, isConfirmationSimulationLayout, isSavedSimulationLayout, isSimulationLayout, onPress, position, positionAccessibilityLabel, positionTestID, styles }: Readonly<{
+  disabled: boolean;
+  isExamLayout: boolean;
   isConfirmationSimulationLayout: boolean;
   isSavedSimulationLayout: boolean;
   isSimulationLayout: boolean;
@@ -205,7 +214,7 @@ function PositionSlot({ isConfirmationSimulationLayout, isSavedSimulationLayout,
   const style = [styles.topSlot, styles.positionSlot, isSimulationLayout ? styles.topSlotSimulation : null];
   const content = position ? <Text key={`position:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.topText, isSavedSimulationLayout || isConfirmationSimulationLayout ? styles.topTextLargeSimulation : null]}>{position.label}</Text> : null;
   if (onPress && position) {
-    return <Pressable accessibilityLabel={positionAccessibilityLabel ?? position.accessibilityLabel} accessibilityRole="button" onPress={onPress} style={style} testID={positionTestID}>{content}</Pressable>;
+    return <Pressable accessibilityLabel={positionAccessibilityLabel ?? position.accessibilityLabel} accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[style, isExamLayout ? styles.positionButtonExam : null]} testID={positionTestID}>{isExamLayout ? <Icon color={styles.topText.color} name="grid" size={16} /> : null}{content}{isExamLayout ? <Icon color={styles.topText.color} name="chevron-down" size={14} /> : null}</Pressable>;
   }
   return <View accessible={Boolean(position)} accessibilityElementsHidden={!position} accessibilityLabel={position?.accessibilityLabel} importantForAccessibility={position ? "yes" : "no-hide-descendants"} style={style} testID={positionTestID}>{content}</View>;
 }

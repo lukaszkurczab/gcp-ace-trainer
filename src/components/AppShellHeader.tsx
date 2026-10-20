@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import type { ReactNode } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { spacing, typography } from "../theme";
@@ -14,16 +15,17 @@ type AppShellHeaderProps = {
     onPress: () => void;
   }>;
   context?: string;
+  trailingAction?: ReactNode;
   placement?: "inline" | "stack" | "back";
 };
 
-export function AppShellHeader({ backAction, context, placement = "inline" }: AppShellHeaderProps) {
+export function AppShellHeader({ backAction, context, placement = "inline", trailingAction }: AppShellHeaderProps) {
   const styles = useThemedStyles(createStyles);
   const { colorMode } = useAppPreferences();
   if (backAction) {
-    const link = <BackLink {...backAction} />;
-    if (placement === "stack") return <SafeAreaView edges={["top"]} style={styles.stackSafeArea}><View style={styles.stackHeader}>{link}</View></SafeAreaView>;
-    return <View>{link}</View>;
+    const link = <View style={styles.backSlot}><BackLink {...backAction} /></View>;
+    if (placement === "stack") return <SafeAreaView edges={["top"]} style={styles.stackSafeArea}><View style={[styles.stackHeader, styles.header]}>{link}{trailingAction}</View></SafeAreaView>;
+    return <View style={styles.header}>{link}{trailingAction}</View>;
   }
 
   const header = (
@@ -35,6 +37,7 @@ export function AppShellHeader({ backAction, context, placement = "inline" }: Ap
           {context ? <Text accessibilityLabel={context} maxFontSizeMultiplier={2} style={styles.headerMeta}>{context}</Text> : null}
         </View>
       </View>
+      {trailingAction}
     </View>
   );
 
@@ -43,6 +46,7 @@ export function AppShellHeader({ backAction, context, placement = "inline" }: Ap
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  backSlot: { flex: 1, minWidth: 0 },
   header: {
     alignItems: "center",
     flexDirection: "row",
