@@ -1,6 +1,6 @@
 {
   "schemaVersion": "patternly-atlas-catalog-v1",
-  "date": "2026-10-18",
+  "date": "2026-10-20",
   "areas": [
     {
       "prefix": "patternly",
@@ -1545,8 +1545,9 @@
       "reviewedHash": "48d291a35d32ea94912295eeb7c5f417f283a0f612aca531a624432aec1ee9f3"
     },
     "patternly/integration/contracts/content-release/release.lock.json": {
-      "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów oraz kontrole techniczne. Synchronizacja PAT-CODE-008 aktualizuje wyłącznie provenance do czystego bieżącego CONTENT, przy niezmienionych fingerprint/wersjach/checksumach. Schema v4 nie nadaje zgody na publikację ani oceny semantycznej.",
-      "reviewedHash": "5004b30a97d8f0e497962d346cf5ce780a062d3132d423c8d897499cc4424e9c"
+      "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów, lineage producenta oraz wykonane kategorie kontroli. Partia FESD N09 aktualizuje artefakt Frontend, lock i ledger oraz provenance do commitu CONTENT; pozostałe osiem payloadów jest niezmienione. Schema v4 nie nadaje semantic approval ani zgody na publikację.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "b3415d4a4254050f7846b9dc7885a4611a1e4b1006c47c1046e346290bc96378"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -1612,6 +1613,21 @@
       "description": "Regresje smoke/sandbox EN/PL i odmowy nieobsługiwanych locale. Świeży proces wybiera syntetyczne zatwierdzone źródło release z rzeczywistym SHA-256 14 dokumentów; UNAPPROVED lub brak supportUrl odmawia bez lokalnego fallbacku. JSON podmieniany wyłącznie w pamięci testu, bez zmiany release config.",
       "reviewedHash": "7890dac3f1aff1ba19d18c9930f0a46b3a24016620b2fb202537d4f7c2b6146b",
       "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly/src/application/design-interview/designInterviewSessionFacade.ts": {
+      "description": "Projektuje i koordynuje praktykę Design Interview na dokładnej treści sesji. Po materializacji próby rozdziela stany kontrolek choice od komunikatów ordering i matrix; zachowuje odpowiedź oraz feedback po wznowieniu.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "c3a82612c3bc4334d721f7cdea10ce5a336f40635f612e65a4a6169e334db4f8"
+    },
+    "patternly/src/content/canonical/interactions/decisionMatrix.ts": {
+      "description": "Waliduje, punktuje i przedstawia macierz decyzji. Komunikaty dotyczą wybranych błędnych wartości lub rzeczywiście brakujących accepted values; niepełna odpowiedź nie ujawnia feedbacku submit.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "356a2c46fe72deb9e7eb612f9dc5a1d809eb0e308f113236cc6ad8206ed5d424"
+    },
+    "patternly/src/application/canonical/canonicalOrderingPracticeResume.test.ts": {
+      "description": "Sprawdza zwykły plan FESD tradeoff-40: normalny submit poprawnej i błędnej kolejności, trwałą próbę, memory rebind i resume. Chroni dokładny porządek oraz komunikaty relacji; nie jest próbą natywnego urządzenia lub selektora N09.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "414fea820609e9c6c1a816a46b6dfd85572780c5dea823f67fdb8bbd9d370f64"
     }
   },
   "flows": [
@@ -1646,7 +1662,7 @@
         "patternly-content",
         "patternly-backend/src/modules/content"
       ],
-      "reviewedDigest": "63c455d31a6471aec90c2a267fccef17852927cb6cb9c9997237f318ed7fc009"
+      "reviewedDigest": "d9541e8348fb6d514922beb25b8a4b5cd12c35abbd678ff612181cb62f13700c"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -1661,7 +1677,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "b491023e1fdeef88c1333effaffe3af7f05b62190e70046f00fd4251b1f5780f"
+      "reviewedDigest": "b9a70da463cc6455e8fd7992598c8694951276a888f9a5f4df4023a0f090ac8f"
     },
     {
       "name": "Cel, plan i postęp",
@@ -1696,7 +1712,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "e158586f89a5e12644411ce5a614c4986a7023fa64000d231255832f3d867fc1"
+      "reviewedDigest": "fe5279fda94a7ab08a06c915ac31a98c51d67c57ebe3803ec40aeab94e9fd072"
     },
     {
       "name": "Witryna, demo i panel",

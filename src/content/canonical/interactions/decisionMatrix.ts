@@ -29,7 +29,14 @@ export function decisionMatrixDiagnostics(question: DecisionMatrixQuestion, resp
   const selected = response.selectedValueIdsByDimension;
   return Object.freeze(question.interaction.dimensions.flatMap((dimension) => {
     const values = selected[dimension.dimensionId]!, accepted = new Set(dimension.acceptedValueIds);
-    return (question.feedback.messages ?? []).filter((message) => message.kind === "wrong_value" && message.targetId.startsWith(`${dimension.dimensionId}|`) && !values.includes(message.targetId.slice(dimension.dimensionId.length + 1)) || message.kind === "omitted_dimension" && message.targetId === dimension.dimensionId && values.length !== accepted.size);
+    return (question.feedback.messages ?? []).filter((message) => {
+      if (message.kind === "wrong_value" && message.targetId.startsWith(`${dimension.dimensionId}|`)) {
+        const valueId = message.targetId.slice(dimension.dimensionId.length + 1);
+        return values.includes(valueId) && !accepted.has(valueId);
+      }
+      return message.kind === "omitted_dimension" && message.targetId === dimension.dimensionId
+        && dimension.acceptedValueIds.some((valueId) => !values.includes(valueId));
+    });
   }));
 }
 

@@ -84,7 +84,10 @@ export async function getDesignInterviewPracticeProjection(): Promise<DesignInte
   if (materializedAttempt) {
     const projected = exact.interactions.projectFeedback(question.questionId, materializedAttempt.response);
     if (!projected) throw new TrainingApplicationFailure("verification_failure", "The exact Design interaction feedback is unavailable.");
-    feedback = Object.freeze({ controls: projectInteractionControls(exact.interactions.projectDiagnostics(question.questionId, materializedAttempt.response)), result: materializedAttempt.result.kind, reason: projected.reason, details: projected.details, sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback: projected }), ...(projected.messages === undefined ? {} : { messages: projected.messages }) });
+    const controls = question.interactionType === "choice_single" || question.interactionType === "choice_multiple"
+      ? projectInteractionControls(exact.interactions.projectDiagnostics(question.questionId, materializedAttempt.response))
+      : Object.freeze([]);
+    feedback = Object.freeze({ controls, result: materializedAttempt.result.kind, reason: projected.reason, details: projected.details, sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback: projected }), ...(projected.messages === undefined ? {} : { messages: projected.messages }) });
   }
   const [operation, time] = await Promise.all([lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)), getForegroundSessionTimerFacade().projection(session)]);
   const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response }) : null;
