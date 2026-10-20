@@ -10,6 +10,7 @@ import type { PatternlyApiClient } from "../../infrastructure/clients/PatternlyA
 const accountId = "deletion-account";
 const uid = "removed-firebase-user";
 const proofId = "proof-exact";
+const prepareNoopRemoteDeletion = async (_accountId: string) => undefined;
 
 test.afterEach(() => {
   closeActiveProfileStorage();
@@ -73,17 +74,17 @@ for (const binding of [uid, null]) test(`proof-only cleanup with ${binding ? "ve
   const unsubscribe = onKeyValueStorageReady(() => { ready += 1; });
   let preparation = 0;
   try {
-    const result = await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => { preparation += 1; return true; }, () => true);
+    const result = await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => { preparation += 1; return true; }, async () => { f.calls.push("detach"); }, () => true);
     assert.deepEqual(result, { accountId, result: { ok: true, proofId } });
-    assert.deepEqual(f.calls, ["status", "proof"]);
+    assert.deepEqual(f.calls, ["detach", "status", "proof"], "the SDK is detached before the status endpoint can resume provider deletion");
     assert.equal(preparation, 1);
     assert.equal(ready, 0);
     assert.equal(getActiveStorageProfileOrNull(), null);
     assert.equal(f.learningKeys().length, 0);
     assert.deepEqual(getPreparedAccountDeletionState(f.selected.id), { ...f.marker, status: "complete", proofId });
     f.assertProtected();
-    assert.equal(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, () => true), null);
-    assert.equal(f.calls.length, 2);
+    assert.equal(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, prepareNoopRemoteDeletion, () => true), null);
+    assert.equal(f.calls.length, 3, "the completed marker still drains the local SDK lane but does not request status again");
   } finally { unsubscribe(); }
 });
 
@@ -96,7 +97,7 @@ for (const scenario of ["offline", "pending", "wrong-operation", "wrong-proof", 
   if (scenario === "wrong-proof") api.getDeletionProof = async () => ({ status: "deleted", operationId: f.marker.operationId, proofId: "different-proof" });
   if (scenario === "proof-offline") api.getDeletionProof = async () => { throw Error("offline"); };
   let preparations = 0;
-  const result = await resumeSelectedAccountDeletionWithoutAuth(api, async () => { preparations += 1; return true; }, () => true);
+  const result = await resumeSelectedAccountDeletionWithoutAuth(api, async () => { preparations += 1; return true; }, prepareNoopRemoteDeletion, () => true);
   assert.equal(result?.result.ok, false);
   assert.equal(preparations, 0);
   assert.equal(getActiveStorageProfileOrNull(), null);
@@ -109,10 +110,19 @@ test("an auth/selection change during status resolution fences cleanup", async (
   const f = await fixture();
   let current = true;
   const api = { ...f.api, getDeletionOperationStatus: async () => { current = false; return { status: "complete" as const, operationId: f.marker.operationId, proofId }; } };
-  assert.equal((await resumeSelectedAccountDeletionWithoutAuth(api, async () => true, () => current))?.result.ok, false);
+  assert.equal((await resumeSelectedAccountDeletionWithoutAuth(api, async () => true, prepareNoopRemoteDeletion, () => current))?.result.ok, false);
   assert.equal(f.learningKeys().length, 2);
   assert.equal(getActiveStorageProfileOrNull(), null);
   assert.deepEqual(getPreparedAccountDeletionState(f.selected.id), f.marker);
+});
+
+test("failed RevenueCat detach prevents signed-out deletion status resolution", async () => {
+  const f = await fixture();
+  const result = await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, async () => { throw Error("RevenueCat logout failed"); }, () => true);
+  assert.deepEqual(result, { accountId, result: { ok: false, failure: "remoteDeletionPending" } });
+  assert.deepEqual(f.calls, []);
+  assert.deepEqual(getPreparedAccountDeletionState(f.selected.id), f.marker);
+  f.assertProtected();
 });
 
 test("a replaced marker during proof resolution is preserved", async () => {
@@ -124,19 +134,19 @@ test("a replaced marker during proof resolution is preserved", async () => {
     closeActiveProfileStorage();
     return { status: "deleted" as const, operationId: f.marker.operationId, proofId };
   } };
-  assert.equal((await resumeSelectedAccountDeletionWithoutAuth(api, async () => true, () => true))?.result.ok, false);
+  assert.equal((await resumeSelectedAccountDeletionWithoutAuth(api, async () => true, prepareNoopRemoteDeletion, () => true))?.result.ok, false);
   assert.deepEqual(getPreparedAccountDeletionState(f.selected.id), replacement);
   assert.equal(f.learningKeys().length, 2);
 });
 
 test("cleanup failure retains proof and exact ID for a cold preparation retry", async () => {
   const f = await fixture();
-  const failure = await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => false, () => true);
+  const failure = await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => false, prepareNoopRemoteDeletion, () => true);
   assert.deepEqual(failure, { accountId, result: { ok: false, failure: "localCleanupFailure" } });
   assert.equal(getActiveStorageProfileOrNull(), null);
   assert.deepEqual(getPreparedAccountDeletionState(f.selected.id), { ...f.marker, status: "localCleanupPending", proofId, lastFailureCode: "local_cleanup_failure" });
   await prepareProfileStorage();
-  assert.deepEqual(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, () => true), { accountId, result: { ok: true, proofId } });
+  assert.deepEqual(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, prepareNoopRemoteDeletion, () => true), { accountId, result: { ok: true, proofId } });
   assert.equal(f.learningKeys().length, 0);
   f.assertProtected();
 });
@@ -146,11 +156,11 @@ test("missing marker and a selected Guest never request status or create deletio
   activatePreparedProfile(f.selected.id, "account");
   updateAccountDeletionState(f.marker, { status: "failed" });
   closeActiveProfileStorage();
-  assert.equal(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, () => true), null);
+  assert.equal(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, prepareNoopRemoteDeletion, () => true), null);
   await selectPreparedAccountProfile("foreign-account");
-  assert.equal(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, () => true), null);
+  assert.equal(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, prepareNoopRemoteDeletion, () => true), null);
   await selectPreparedGuestProfile();
-  assert.equal(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, () => true), null);
+  assert.equal(await resumeSelectedAccountDeletionWithoutAuth(f.api, async () => true, prepareNoopRemoteDeletion, () => true), null);
   assert.deepEqual(f.calls, []);
   assert.equal(f.learningKeys().length, 2);
   assert.equal(getActiveStorageProfileOrNull(), null);

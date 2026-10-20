@@ -40,6 +40,7 @@ function fixture() {
     readPremiumSnapshot: () => premiumSnapshot,
   };
   const gateway: RevenueCatGateway = {
+    isConfigured: async () => false, getAppUserID: async () => "", logOut: async () => ({}),
     configure: async () => {}, getOfferings: async () => ({ current: null }), managementURL: async () => null,
     getCustomerInfo: async () => ({ activeSubscriptions }), restorePurchases: async () => { events.push("restore"); return { activeSubscriptions }; },
     purchasePackage: async () => {

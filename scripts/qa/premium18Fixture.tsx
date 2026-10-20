@@ -33,6 +33,7 @@ function Fixture() {
     let access: PremiumVerification = config.scenario === "active" ? "verified" : "denied";
     const events: string[] = [];
     const adapter = createPurchasesAdapter({
+      isConfigured: async () => false, getAppUserID: async () => "", logOut: async () => ({}),
       configure: async () => {}, getOfferings: async () => ({ current: { monthly: pkg } }),
       getCustomerInfo: async () => ({ activeSubscriptions: access === "verified" ? [pkg.product.identifier] : [] }),
       purchasePackage: async () => {

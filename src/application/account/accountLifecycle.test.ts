@@ -5,7 +5,7 @@ import test, { beforeEach } from "node:test";
 import { createPatternlyApiClient, PatternlyApiClientError, type AdoptionPreviewResponseDto, type PatternlyApiClient, type ProgressMutationDto, type ProgressRecordDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { clearAccountDeletionOwnedLocalData, clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, inspectAccountSyncConflict, loadAccountDataSession, readLocalAccountDataSession, resolveAccountSyncConflict, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion } from "./accountDataService";
+import { clearAccountDeletionOwnedLocalData, clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount as deleteBoundAccountService, dismissAccountLearningPlanRecovery, inspectAccountSyncConflict, loadAccountDataSession, readLocalAccountDataSession, resolveAccountSyncConflict, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion as retryPendingAccountDeletionService } from "./accountDataService";
 import { activatePreparedProfile, captureActiveProfileStorageLease, closeActiveProfileStorage, MemoryKeyValueStorage, prepareProfileStorage, selectPreparedAccountProfile, setProfileStoragePreparationFactoryForTests, installKeyValueStorageForTests, writeActiveAccountIdentityBinding } from "../../infrastructure/storage/mmkvClient";
 import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
@@ -22,6 +22,9 @@ const accountId = "55555555-5555-4555-8555-555555555555";
 const uid = "firebase-fixture-uid";
 const TEST_ARTIFACT_SHA256 = "a".repeat(64);
 const prepareDeletionLocalState = async () => true;
+const prepareNoopRemoteDeletion = async (_accountId: string) => undefined;
+const deleteBoundAccount = (client: PatternlyApiClient, targetAccountId: string, targetUid: string, prepareLocal: () => Promise<boolean>) => deleteBoundAccountService(client, targetAccountId, targetUid, prepareLocal, prepareNoopRemoteDeletion);
+const retryPendingAccountDeletion = (client: PatternlyApiClient, targetAccountId: string, targetUid: string, prepareLocal: () => Promise<boolean>) => retryPendingAccountDeletionService(client, targetAccountId, targetUid, prepareLocal, prepareNoopRemoteDeletion);
 
 function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
   return {
@@ -332,6 +335,19 @@ test("deletion retries after a revoked or stale session and leaves a verified lo
 
   // A later app start can identify this UID as deleted without relying on a stale bearer token.
   assert.equal(getAccountDeletionState()?.status, "complete");
+});
+
+test("RevenueCat detach failure keeps the durable deletion pending and prevents backend deletion or status resolution", async () => {
+  let deleteCalls = 0;
+  let statusCalls = 0;
+  const client = api({
+    deleteAccount: async () => { deleteCalls++; return { status: "deleted", operationId: "unexpected", proofId: "unexpected" }; },
+    getDeletionOperationStatus: async (operationId) => { statusCalls++; return { status: "pending", operationId, proofId: null }; },
+  });
+  const result = await deleteBoundAccountService(client, accountId, uid, prepareDeletionLocalState, async () => { throw Error("RevenueCat logout failed"); });
+  assert.deepEqual(result, { ok: false, failure: "remoteDeletionPending" });
+  assert.deepEqual([deleteCalls, statusCalls], [0, 0]);
+  assert.equal(getAccountDeletionState()?.status, "remotePending");
 });
 
 test("deletion cleanup removes the complete canonical learning namespace while preserving device records and recovery markers", async () => {

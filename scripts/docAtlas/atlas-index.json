@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "053c2883dcc81d15cd7297420ce3a1c937b67b22",
+      "head": "f77753fd593e326fcae647f4bd21e0067e13b6f4",
       "files": [
         {
           "path": ".easignore",
@@ -2785,8 +2785,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "9c2c6f87dda69196317674b9253c6b319bbac66118478f4df1978b801186b4f7",
-          "bytes": 115828,
+          "sha256": "caad2d54f702e3bda2fe2847c7538de7d92dbd2a1025b2e0d1ce9fd3562dcb7c",
+          "bytes": 119248,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2797,7 +2797,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 1823
+          "lines": 1843
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -7863,8 +7863,8 @@
         },
         {
           "path": "scripts/qa/premium18Fixture.tsx",
-          "sha256": "c7bb76e2f546667d4004a72493dd40b00840ffd7243995b123cdb7cbc0bef3c3",
-          "bytes": 9179,
+          "sha256": "38c4c94e9dcddd31663cc291bb46efb6fbd7b0aa1f8973f18a3cb90d464434c6",
+          "bytes": 9274,
           "symbols": [],
           "imports": [
             {
@@ -7960,7 +7960,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 100
+          "lines": 101
         },
         {
           "path": "scripts/qa/premium18FixtureCommand.mjs",
@@ -11583,8 +11583,8 @@
         },
         {
           "path": "src/application/account/accountCommandGuards.test.ts",
-          "sha256": "5f73dfa5482e40aaa52ca92c02b6a80d940aac2f90f8c727b3f236c3fa9c325a",
-          "bytes": 19456,
+          "sha256": "045f0fede2979b8ba8fbc09c0c6605a3dabbac01c087188cf7f67c6da3374344",
+          "bytes": 19821,
           "symbols": [],
           "imports": [
             {
@@ -11637,7 +11637,7 @@
             "a prompt callback during an active refresh keeps queued refresh and submit serialized",
             "auth command composition keeps provider credentials and hold-only deletion wiring"
           ],
-          "lines": 516
+          "lines": 518
         },
         {
           "path": "src/application/account/accountCommandGuards.ts",
@@ -11914,8 +11914,8 @@
         },
         {
           "path": "src/application/account/accountDataService.ts",
-          "sha256": "46c942de453c6bffe9a7358a156e8f24fd5ba28f603c52e7ceecffa95665c7ff",
-          "bytes": 117195,
+          "sha256": "1ef11c278c436122bb4b176692af2474cf542544a85da2fd3da0afbbea570b67",
+          "bytes": 118193,
           "symbols": [
             "accountDataRecordFingerprint",
             "clearAccountDeletionOwnedLocalData",
@@ -11937,6 +11937,7 @@
             "retryLearningPlanRecovery",
             "toGuestMergePartitionRecords",
             "PrepareAccountDeletionLocalState",
+            "PrepareAccountDeletionRemote",
             "deleteBoundAccount",
             "retryPendingAccountDeletion",
             "SignedOutDeletionResolution",
@@ -12152,7 +12153,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 1821
+          "lines": 1834
         },
         {
           "path": "src/application/account/accountEmailChangeFailure.test.ts",
@@ -12563,8 +12564,8 @@
         },
         {
           "path": "src/application/account/accountLifecycle.test.ts",
-          "sha256": "35ca0c1b10e5a70c3bac3a4fbc83bb3ee1162561b8454a02123c2c83cc9e858b",
-          "bytes": 168919,
+          "sha256": "1d73797fc3c40b103371fb66dd3c5cbb2444b470f2e641bf8395676c228dcc22",
+          "bytes": 170407,
           "symbols": [],
           "imports": [
             {
@@ -12655,163 +12656,163 @@
               "specifier": "../../domain",
               "kind": "static",
               "target": "src/domain/index.ts",
-              "line": 646
+              "line": 662
             },
             {
               "specifier": "../learningMutations/commitSessionLifecycle",
               "kind": "static",
               "target": "src/application/learningMutations/commitSessionLifecycle.ts",
-              "line": 647
+              "line": 663
             },
             {
               "specifier": "../learningMutations/commitTrainingSessionStart",
               "kind": "static",
               "target": "src/application/learningMutations/commitTrainingSessionStart.ts",
-              "line": 648
+              "line": 664
             },
             {
               "specifier": "../../infrastructure/storage/mmkvClient",
               "kind": "static",
               "target": "src/infrastructure/storage/mmkvClient.ts",
-              "line": 649
+              "line": 665
             },
             {
               "specifier": "../../storage/keys",
               "kind": "static",
               "target": "src/storage/keys.ts",
-              "line": 650
+              "line": 666
             },
             {
               "specifier": "./accountDataService",
               "kind": "static",
               "target": "src/application/account/accountDataService.ts",
-              "line": 651
+              "line": 667
             },
             {
               "specifier": "../learningPlan/LearningPlanEditorCoordinator",
               "kind": "static",
               "target": "src/application/learningPlan/LearningPlanEditorCoordinator.ts",
-              "line": 652
+              "line": 668
             },
             {
               "specifier": "../learningPlan/LearningPlanProposalCoordinator",
               "kind": "type",
               "target": "src/application/learningPlan/LearningPlanProposalCoordinator.ts",
-              "line": 653
+              "line": 669
             },
             {
               "specifier": "../../storage/repositories/activeTrackRepository",
               "kind": "static",
               "target": "src/storage/repositories/activeTrackRepository.ts",
-              "line": 654
+              "line": 670
             },
             {
               "specifier": "../../storage/repositories/trainingSessionRepository",
               "kind": "static",
               "target": "src/storage/repositories/trainingSessionRepository.ts",
-              "line": 655
+              "line": 671
             },
             {
               "specifier": "../../storage/repositories/trainingAttemptRepository",
               "kind": "static",
               "target": "src/storage/repositories/trainingAttemptRepository.ts",
-              "line": 656
+              "line": 672
             },
             {
               "specifier": "../../storage/repositories/trainingSessionResultRepository",
               "kind": "static",
               "target": "src/storage/repositories/trainingSessionResultRepository.ts",
-              "line": 657
+              "line": 673
             },
             {
               "specifier": "../../storage/repositories/trainingSessionDraftRepository",
               "kind": "static",
               "target": "src/storage/repositories/trainingSessionDraftRepository.ts",
-              "line": 658
+              "line": 674
             },
             {
               "specifier": "../../storage/repositories/accountDataRepository",
               "kind": "static",
               "target": "src/storage/repositories/accountDataRepository.ts",
-              "line": 659
+              "line": 675
             },
             {
               "specifier": "../../storage/repositories/mutationJournalRepository",
               "kind": "static",
               "target": "src/storage/repositories/mutationJournalRepository.ts",
-              "line": 660
+              "line": 676
             },
             {
               "specifier": "../../storage/repositories/goalRepository",
               "kind": "static",
               "target": "src/storage/repositories/goalRepository.ts",
-              "line": 661
+              "line": 677
             },
             {
               "specifier": "../../storage/repositories/learningPlanRepository",
               "kind": "static",
               "target": "src/storage/repositories/learningPlanRepository.ts",
-              "line": 662
+              "line": 678
             },
             {
               "specifier": "../../storage/repositories/learningPlanInputSnapshot",
               "kind": "static",
               "target": "src/storage/repositories/learningPlanInputSnapshot.ts",
-              "line": 663
+              "line": 679
             },
             {
               "specifier": "../../testing/journalTestSupport",
               "kind": "static",
               "target": "src/testing/journalTestSupport.ts",
-              "line": 664
+              "line": 680
             },
             {
               "specifier": "../canonicalTrainingFamilyComposition",
               "kind": "static",
               "target": "src/application/canonicalTrainingFamilyComposition.ts",
-              "line": 665
+              "line": 681
             },
             {
               "specifier": "../../content/canonical/runtimeCatalog",
               "kind": "static",
               "target": "src/content/canonical/runtimeCatalog.ts",
-              "line": 666
+              "line": 682
             },
             {
               "specifier": "../../content/canonical/questionTypes",
               "kind": "type",
               "target": "src/content/canonical/questionTypes.ts",
-              "line": 667
+              "line": 683
             },
             {
               "specifier": "../learningMutations",
               "kind": "static",
               "target": "src/application/learningMutations/index.ts",
-              "line": 668
+              "line": 684
             },
             {
               "specifier": "../learningMutations/recoverPendingMutation",
               "kind": "static",
               "target": "src/application/learningMutations/recoverPendingMutation.ts",
-              "line": 669
+              "line": 685
             },
             {
               "specifier": "../../storage/repositories/reviewQueueRepository",
               "kind": "static",
               "target": "src/storage/repositories/reviewQueueRepository.ts",
-              "line": 670
+              "line": 686
             },
             {
               "specifier": "../tracks/trackAdmissionContext",
               "kind": "static",
               "target": "src/application/tracks/trackAdmissionContext.ts",
-              "line": 671
+              "line": 687
             },
             {
               "specifier": "../tracks/trackAdmissionContext",
               "kind": "static",
               "target": "src/application/tracks/trackAdmissionContext.ts",
-              "line": 672
+              "line": 688
             }
           ],
           "jsonKeys": [],
@@ -12824,6 +12825,7 @@
             "a persisted authoritative identity denial is not converted to offline success, while App Check and recent-auth denials remain scoped",
             "identity denial retries preserve pending local mutations and an exact proof clear changes no sync facts",
             "deletion retries after a revoked or stale session and leaves a verified local tombstone",
+            "RevenueCat detach failure keeps the durable deletion pending and prevents backend deletion or status resolution",
             "deletion cleanup removes the complete canonical learning namespace while preserving device records and recovery markers",
             "a completed marker from an earlier account does not block a later bound account",
             "a preflight journal failure does not create a deletion operation and pending retry cannot start one",
@@ -12874,7 +12876,7 @@
             "a durable adoption confirmation blocks a new learning commit",
             "unreadable mutation journal blocks discard before deleting guest data"
           ],
-          "lines": 2603
+          "lines": 2619
         },
         {
           "path": "src/application/account/accountLocalReset.test.ts",
@@ -13225,8 +13227,8 @@
         },
         {
           "path": "src/application/account/AccountSessionProvider.tsx",
-          "sha256": "7f2bc2a8b5558f21b291b495c284e086b3e5cd90958cf1d9fcff0624d6a4ea0e",
-          "bytes": 244618,
+          "sha256": "01379f048298c5721cb991cfd2d869f20e0645365adb79699ff5bc74bedad7b1",
+          "bytes": 245091,
           "symbols": [
             "completeUnrecognizedPersistedAuthSignOut",
             "AccountSessionGenerationStaleError",
@@ -13347,297 +13349,303 @@
               "line": 10
             },
             {
+              "specifier": "../../infrastructure/purchases",
+              "kind": "static",
+              "target": "src/infrastructure/purchases/index.ts",
+              "line": 11
+            },
+            {
               "specifier": "./premiumRefreshQueue",
               "kind": "static",
               "target": "src/application/account/premiumRefreshQueue.ts",
-              "line": 11
+              "line": 12
             },
             {
               "specifier": "./premiumSessionAdmission",
               "kind": "static",
               "target": "src/application/account/premiumSessionAdmission.ts",
-              "line": 12
+              "line": 13
             },
             {
               "specifier": "../../infrastructure/diagnostics/startupTrace",
               "kind": "static",
               "target": "src/infrastructure/diagnostics/startupTrace.ts",
-              "line": 13
+              "line": 14
             },
             {
               "specifier": "./accountSessionExchange",
               "kind": "static",
               "target": "src/application/account/accountSessionExchange.ts",
-              "line": 14
+              "line": 15
             },
             {
               "specifier": "./recoveryOperationCoordinator",
               "kind": "static",
               "target": "src/application/account/recoveryOperationCoordinator.ts",
-              "line": 15
+              "line": 16
             },
             {
               "specifier": "./recoveryIssueCommandGuard",
               "kind": "static",
               "target": "src/application/account/recoveryIssueCommandGuard.ts",
-              "line": 16
+              "line": 17
             },
             {
               "specifier": "../../infrastructure/security/recoveryOperationVault",
               "kind": "static",
               "target": "src/infrastructure/security/recoveryOperationVault.ts",
-              "line": 17
+              "line": 18
             },
             {
               "specifier": "./pendingSessionRevocation",
               "kind": "static",
               "target": "src/application/account/pendingSessionRevocation.ts",
-              "line": 18
+              "line": 19
             },
             {
               "specifier": "../../infrastructure/clients/patternlyAppCheckToken",
               "kind": "static",
               "target": "src/infrastructure/clients/patternlyAppCheckToken.ts",
-              "line": 19
+              "line": 20
             },
             {
               "specifier": "../../infrastructure/clients/localSmokeAppCheck",
               "kind": "static",
               "target": "src/infrastructure/clients/localSmokeAppCheck.ts",
-              "line": 20
+              "line": 21
             },
             {
               "specifier": "../contentReports",
               "kind": "static",
               "target": "src/application/contentReports/index.ts",
-              "line": 21
+              "line": 22
             },
             {
               "specifier": "../../infrastructure/firebase/firebaseAuthClient",
               "kind": "static",
               "target": "src/infrastructure/firebase/firebaseAuthClient.ts",
-              "line": 22
+              "line": 23
             },
             {
               "specifier": "../../infrastructure/firebase/publicConfig",
               "kind": "static",
               "target": "src/infrastructure/firebase/publicConfig.ts",
-              "line": 23
+              "line": 24
             },
             {
               "specifier": "./accountDataService",
               "kind": "static",
               "target": "src/application/account/accountDataService.ts",
-              "line": 24
+              "line": 25
             },
             {
               "specifier": "../learningMutations",
               "kind": "static",
               "target": "src/application/learningMutations/index.ts",
-              "line": 25
+              "line": 26
             },
             {
               "specifier": "../../storage/repositories/profileStorageRepository",
               "kind": "static",
               "target": "src/storage/repositories/profileStorageRepository.ts",
-              "line": 26
+              "line": 27
             },
             {
               "specifier": "../../infrastructure/storage/profileStorageRouter",
               "kind": "type",
               "target": "src/infrastructure/storage/profileStorageRouter.ts",
-              "line": 27
+              "line": 28
             },
             {
               "specifier": "./profileStoragePreparationContext",
               "kind": "static",
               "target": "src/application/account/profileStoragePreparationContext.tsx",
-              "line": 28
+              "line": 29
             },
             {
               "specifier": "./profileStartupCoordination",
               "kind": "static",
               "target": "src/application/account/profileStartupCoordination.ts",
-              "line": 29
+              "line": 30
             },
             {
               "specifier": "../../storage/repositories/accountLifecycleRepository",
               "kind": "static",
               "target": "src/storage/repositories/accountLifecycleRepository.ts",
-              "line": 30
+              "line": 31
             },
             {
               "specifier": "../../storage/repositories/guestInstallationRepository",
               "kind": "static",
               "target": "src/storage/repositories/guestInstallationRepository.ts",
-              "line": 31
+              "line": 32
             },
             {
               "specifier": "../../infrastructure/storage/localLogoutControl",
               "kind": "type",
               "target": "src/infrastructure/storage/localLogoutControl.ts",
-              "line": 32
+              "line": 33
             },
             {
               "specifier": "./providerFirstUseCoordinator",
               "kind": "static",
               "target": "src/application/account/providerFirstUseCoordinator.ts",
-              "line": 33
+              "line": 34
             },
             {
               "specifier": "../bootstrap/accountBootstrap",
               "kind": "reexport",
               "target": "src/application/bootstrap/accountBootstrap.ts",
-              "line": 34
+              "line": 35
             },
             {
               "specifier": "../bootstrap/accountBootstrap",
               "kind": "static",
               "target": "src/application/bootstrap/accountBootstrap.ts",
-              "line": 35
+              "line": 36
             },
             {
               "specifier": "./accountFinalization",
               "kind": "static",
               "target": "src/application/account/accountFinalization.ts",
-              "line": 36
+              "line": 37
             },
             {
               "specifier": "../../legal/providerRegistrationDocuments",
               "kind": "static",
               "target": "src/legal/providerRegistrationDocuments.ts",
-              "line": 37
+              "line": 38
             },
             {
               "specifier": "../../preferences/localeResolver",
               "kind": "type",
               "target": "src/preferences/localeResolver.ts",
-              "line": 38
+              "line": 39
             },
             {
               "specifier": "./accountActorIdentityFence",
               "kind": "static",
               "target": "src/application/account/accountActorIdentityFence.ts",
-              "line": 39
+              "line": 40
             },
             {
               "specifier": "./profileStartupCoordination",
               "kind": "reexport",
               "target": "src/application/account/profileStartupCoordination.ts",
-              "line": 41
+              "line": 42
             },
             {
               "specifier": "../../storage/repositories/accountLifecycleRepository",
               "kind": "static",
               "target": "src/storage/repositories/accountLifecycleRepository.ts",
-              "line": 368
+              "line": 369
             },
             {
               "specifier": "../../infrastructure/identity/sha256",
               "kind": "static",
               "target": "src/infrastructure/identity/sha256.ts",
-              "line": 369
+              "line": 370
             },
             {
               "specifier": "../../infrastructure/runtime/runtimeMode",
               "kind": "static",
               "target": "src/infrastructure/runtime/runtimeMode.ts",
-              "line": 370
+              "line": 371
             },
             {
               "specifier": "../../storage/repositories/guestAccessRepository",
               "kind": "static",
               "target": "src/storage/repositories/guestAccessRepository.ts",
-              "line": 371
+              "line": 372
             },
             {
               "specifier": "../../storage/repositories/guestInstallationRepository",
               "kind": "static",
               "target": "src/storage/repositories/guestInstallationRepository.ts",
-              "line": 372
+              "line": 373
             },
             {
               "specifier": "./accountCommandGuards",
               "kind": "static",
               "target": "src/application/account/accountCommandGuards.ts",
-              "line": 373
+              "line": 374
             },
             {
               "specifier": "./accountDataExportService",
               "kind": "static",
               "target": "src/application/account/accountDataExportService.ts",
-              "line": 374
+              "line": 375
             },
             {
               "specifier": "../../content/application/nodePackageInstaller",
               "kind": "static",
               "target": "src/content/application/nodePackageInstaller.ts",
-              "line": 375
+              "line": 376
             },
             {
               "specifier": "../../legal/legalVariables",
               "kind": "static",
               "target": "src/legal/legalVariables.ts",
-              "line": 376
+              "line": 377
             },
             {
               "specifier": "../operationalDiagnostics",
               "kind": "static",
               "target": "src/application/operationalDiagnostics.ts",
-              "line": 377
+              "line": 378
             },
             {
               "specifier": "./profilePreparationHandoff",
               "kind": "static",
               "target": "src/application/account/profilePreparationHandoff.ts",
-              "line": 378
+              "line": 379
             },
             {
               "specifier": "../../preferences/reconcileDeviceReminder",
               "kind": "dynamic",
               "target": "src/preferences/reconcileDeviceReminder.ts",
-              "line": 44
+              "line": 45
             },
             {
               "specifier": "../notificationPreferences",
               "kind": "dynamic",
               "target": "src/application/notificationPreferences.ts",
-              "line": 51
+              "line": 52
             },
             {
               "specifier": "../../infrastructure/notifications/expoNotificationPlatform",
               "kind": "dynamic",
               "target": "src/infrastructure/notifications/expoNotificationPlatform.ts",
-              "line": 52
+              "line": 53
             },
             {
               "specifier": "expo-crypto",
               "kind": "require",
               "resolution": "external",
-              "line": 622
+              "line": 623
             },
             {
               "specifier": "expo-crypto",
               "kind": "type",
               "resolution": "external",
-              "line": 622
+              "line": 623
             },
             {
               "specifier": "@react-native-community/netinfo",
               "kind": "dynamic",
               "resolution": "external",
-              "line": 2155
+              "line": 2156
             },
             {
               "specifier": "@react-native-community/netinfo",
               "kind": "dynamic",
               "resolution": "external",
-              "line": 2185
+              "line": 2186
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 3900
+          "lines": 3909
         },
         {
           "path": "src/application/account/accountStartupDiagnosticWiring.test.ts",
@@ -14133,8 +14141,8 @@
         },
         {
           "path": "src/application/account/premiumPurchaseCoordinator.test.ts",
-          "sha256": "ad659dde9c1840d434fc807f7d8d7db44ce8ea06bbc37c0d03aa5983930ca51e",
-          "bytes": 16956,
+          "sha256": "f9e6c27f98b275fdb02486f018642889cf6b99cd8259cab219f4eb26902f9fc5",
+          "bytes": 17049,
           "symbols": [],
           "imports": [
             {
@@ -14199,7 +14207,7 @@
             "bound candidate plus denied backend/empty store cannot invite a second subscription",
             "restore cancellation does not cancel an original pending purchase or show a failure"
           ],
-          "lines": 231
+          "lines": 232
         },
         {
           "path": "src/application/account/premiumPurchaseCoordinator.ts",
@@ -14995,8 +15003,8 @@
         },
         {
           "path": "src/application/account/signedOutDeletionRecovery.test.ts",
-          "sha256": "d6ce108fc3ce4ee0ee00f5cd0031b57ef886627935ddd47b434356bc5f682738",
-          "bytes": 9701,
+          "sha256": "4bb0c74faabfafcb4d2bae572ce85dba984267cfde13c0c0435af777fcc0809d",
+          "bytes": 10761,
           "symbols": [],
           "imports": [
             {
@@ -15051,11 +15059,12 @@
           "jsonKeys": [],
           "testNames": [
             "an auth/selection change during status resolution fences cleanup",
+            "failed RevenueCat detach prevents signed-out deletion status resolution",
             "a replaced marker during proof resolution is preserved",
             "cleanup failure retains proof and exact ID for a cold preparation retry",
             "missing marker and a selected Guest never request status or create deletion"
           ],
-          "lines": 158
+          "lines": 168
         },
         {
           "path": "src/application/account/storageRecoveryAuditCommand.test.ts",
@@ -15382,8 +15391,8 @@
         },
         {
           "path": "src/application/bootstrap/accountBootstrap.ts",
-          "sha256": "4ee52371c06793074318b3336d5eae114919553ddb668d9968bb4260b55fd1bf",
-          "bytes": 40678,
+          "sha256": "c5673718e708fb22f73da1e32375e4df814fb085e453828e9cf54b89af81bb72",
+          "bytes": 40795,
           "symbols": [
             "AccountBootstrapPreparationPorts",
             "AccountBootstrapCompletionPorts",
@@ -15514,39 +15523,45 @@
               "line": 19
             },
             {
-              "specifier": "../account/AccountSessionProvider",
-              "kind": "type",
-              "target": "src/application/account/AccountSessionProvider.tsx",
-              "line": 32
+              "specifier": "../../infrastructure/purchases",
+              "kind": "static",
+              "target": "src/infrastructure/purchases/index.ts",
+              "line": 20
             },
             {
               "specifier": "../account/AccountSessionProvider",
               "kind": "type",
               "target": "src/application/account/AccountSessionProvider.tsx",
-              "line": 46
+              "line": 33
             },
             {
               "specifier": "../account/AccountSessionProvider",
               "kind": "type",
               "target": "src/application/account/AccountSessionProvider.tsx",
-              "line": 49
+              "line": 47
             },
             {
               "specifier": "../account/AccountSessionProvider",
               "kind": "type",
               "target": "src/application/account/AccountSessionProvider.tsx",
-              "line": 57
+              "line": 50
+            },
+            {
+              "specifier": "../account/AccountSessionProvider",
+              "kind": "type",
+              "target": "src/application/account/AccountSessionProvider.tsx",
+              "line": 58
             },
             {
               "specifier": "../operationalDiagnostics",
               "kind": "type",
               "target": "src/application/operationalDiagnostics.ts",
-              "line": 202
+              "line": 203
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 704
+          "lines": 705
         },
         {
           "path": "src/application/bootstrap/applicationBootstrap.test.ts",
@@ -56890,8 +56905,8 @@
         },
         {
           "path": "src/infrastructure/purchases/index.test.ts",
-          "sha256": "37ce5dbf15b77cd2d1f5545d6d0cef1e40622203cffdd71309d0fd773157551a",
-          "bytes": 12003,
+          "sha256": "1f4ae57715fe5ac0e7345e61196f6e38daea1f907d4db05ecdc917b673517abc",
+          "bytes": 15611,
           "symbols": [],
           "imports": [
             {
@@ -56923,15 +56938,20 @@
             "pending, cancel, ambiguous store error and failed restore remain distinct",
             "checkout false blocks the effect and offerings, preserves restore and manage without an offering",
             "shared lane prevents a new account configuration during an old store sheet",
+            "account deletion blocks queued SDK configure and actions synchronously",
+            "account deletion lane barrier waits for already-dispatched SDK work",
+            "account deletion logs out only the exact configured RevenueCat identity",
+            "deletion resolves native gateway state after the JavaScript wrapper cache is empty",
+            "RevenueCat logout failure rejects the deletion barrier",
             "actor and deadline are checked after asynchronous configure, before store effect",
             "provider subscription is an invalidation and is removed on cleanup"
           ],
-          "lines": 126
+          "lines": 181
         },
         {
           "path": "src/infrastructure/purchases/index.ts",
-          "sha256": "2b24a22947beacc8e45b50f56aaafd216516e291d55c13f82b27bdce02b21a31",
-          "bytes": 13558,
+          "sha256": "b83730a345ce1058b827b4c306d70a115589fa0d6fc60f72e849f5941e62f43d",
+          "bytes": 15108,
           "symbols": [
             "PurchaseStatus",
             "PurchaseResult",
@@ -56942,6 +56962,8 @@
             "RevenueCatGateway",
             "RevenueCatLogCategory",
             "readRevenueCatLogCategory",
+            "prepareRevenueCatAccountDeletion",
+            "isRevenueCatAccountDeletionBlocked",
             "createRevenueCatGateway",
             "IOS_PREMIUM_BINDING",
             "readPurchaseConfig",
@@ -56972,24 +56994,24 @@
               "specifier": "react-native-purchases",
               "kind": "require",
               "resolution": "external",
-              "line": 68
+              "line": 94
             },
             {
               "specifier": "react-native-purchases",
               "kind": "type",
               "resolution": "external",
-              "line": 68
+              "line": 94
             },
             {
               "specifier": "react-native-purchases",
               "kind": "type",
               "resolution": "external",
-              "line": 77
+              "line": 106
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 217
+          "lines": 246
         },
         {
           "path": "src/infrastructure/purchases/logPrivacy.test.ts",
@@ -68926,7 +68948,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "ddf52efe0c8812cc370746e73e79d36ffe1347b1",
+      "head": "e9262ec6cc1a8a5e72d0e5af5ec35e903521898c",
       "files": [
         {
           "path": ".dockerignore",
@@ -71695,6 +71717,29 @@
           "lines": 9
         },
         {
+          "path": "scripts/run-rc-customer-deletion-tests.mjs",
+          "sha256": "95386c96df425439141e7067f2d0fc02b4fc7fb03cc3781a95746a2597954910",
+          "bytes": 1122,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:path",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "./isolated-emulator-test-runner.mjs",
+              "kind": "static",
+              "target": "scripts/isolated-emulator-test-runner.d.mts",
+              "line": 2
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [],
+          "lines": 24
+        },
+        {
           "path": "scripts/run-record-fingerprint-client.mjs",
           "sha256": "6dd855fb2e3bdc2362e12293a9dc9d6b674e50572440cabff1255686ecf00d4a",
           "bytes": 451,
@@ -72307,8 +72352,8 @@
         },
         {
           "path": "src/config/environment.ts",
-          "sha256": "42f0ea79e4211f9ada25ebb4d4d6f645c317a9d638899decefbbc12ab1155680",
-          "bytes": 15350,
+          "sha256": "fb58afa48f937c665ccb277e8fc282c25d4364e69c766fa6eb0b7c9c9e573f3f",
+          "bytes": 15527,
           "symbols": [
             "ADMIN_CONTENT_RELEASE_ID_PATTERN",
             "Environment",
@@ -72342,7 +72387,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 266
+          "lines": 269
         },
         {
           "path": "src/config/premiumMap.ts",
@@ -72714,8 +72759,8 @@
         },
         {
           "path": "src/infrastructure/firestore/stores.ts",
-          "sha256": "7fcd51e4c2ea26deb1d5c2d7d1f15c9d5bc0c71863223952dfec1e33746f8e3a",
-          "bytes": 6402,
+          "sha256": "028a10be06d8effef19d8aec16a6a967b994a8b804993918dc6defc8521f0fef",
+          "bytes": 7035,
           "symbols": [
             "BackendStores",
             "createFirestoreStores"
@@ -72872,21 +72917,33 @@
               "line": 25
             },
             {
+              "specifier": "../revenuecat/customerDeletion.js",
+              "kind": "static",
+              "target": "src/infrastructure/revenuecat/customerDeletion.ts",
+              "line": 26
+            },
+            {
               "specifier": "../../modules/legal-requests/store.js",
               "kind": "static",
               "target": "src/modules/legal-requests/store.ts",
-              "line": 26
+              "line": 27
             },
             {
               "specifier": "../../modules/billing/revenuecatWebhookStore.js",
               "kind": "type",
               "target": "src/modules/billing/revenuecatWebhookStore.ts",
-              "line": 43
+              "line": 44
+            },
+            {
+              "specifier": "../../modules/account-lifecycle/store.js",
+              "kind": "type",
+              "target": "src/modules/account-lifecycle/store.ts",
+              "line": 48
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 94
+          "lines": 104
         },
         {
           "path": "src/infrastructure/firestore/values.ts",
@@ -73062,6 +73119,26 @@
           "jsonKeys": [],
           "testNames": [],
           "lines": 519
+        },
+        {
+          "path": "src/infrastructure/revenuecat/customerDeletion.ts",
+          "sha256": "beda617477a3ed5ebc08c4663114bb0007bff63c499a616e756507c1900abebb",
+          "bytes": 11240,
+          "symbols": [
+            "RevenueCatCustomerDeletionOutcome",
+            "RevenueCatCustomerDeletionClient",
+            "RevenueCatCustomerDeletionConfig",
+            "RevenueCatCustomerDeletionFetch",
+            "RevenueCatCustomerDeletionOptions",
+            "RevenueCatCustomerDeletionStage",
+            "RevenueCatCustomerDeletionFailureKind",
+            "RevenueCatCustomerDeletionError",
+            "createRevenueCatCustomerDeletionClient"
+          ],
+          "imports": [],
+          "jsonKeys": [],
+          "testNames": [],
+          "lines": 211
         },
         {
           "path": "src/infrastructure/security/pseudonymKeyRing.ts",
@@ -73269,9 +73346,10 @@
         },
         {
           "path": "src/modules/account-lifecycle/store.ts",
-          "sha256": "4175ce8b00bfc8c291ed0421bb7236e9936efb1f6b62f1cf66c0b0a308b52c7c",
-          "bytes": 107372,
+          "sha256": "8b4781f7eb5609bd68dc7865ddc0d2f1f8d11e954f145fa27dd4ff14c814e8b6",
+          "bytes": 112136,
           "symbols": [
+            "RevenueCatDeletionRuntime",
             "AccountLifecycleStore",
             "FirestoreAccountLifecycleStore"
           ],
@@ -73359,11 +73437,17 @@
               "kind": "type",
               "target": "src/modules/account-lifecycle/recoveryOperationCipher.ts",
               "line": 22
+            },
+            {
+              "specifier": "../../infrastructure/revenuecat/customerDeletion.js",
+              "kind": "type",
+              "target": "src/infrastructure/revenuecat/customerDeletion.ts",
+              "line": 24
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 1600
+          "lines": 1662
         },
         {
           "path": "src/modules/admin/store.ts",
@@ -75066,8 +75150,8 @@
         },
         {
           "path": "tests/accountLifecycleCrash.emulator.test.ts",
-          "sha256": "537d83b2573d0b0ac93cdbd9c93f42220ed835cde82e425a80e09905607cb916",
-          "bytes": 7984,
+          "sha256": "9ec20949733406eebea3b0b47a00fceff6437cd4ff9b07a92eec06c1b2c2b821",
+          "bytes": 8005,
           "symbols": [],
           "imports": [
             {
@@ -75149,9 +75233,9 @@
               "line": 13
             },
             {
-              "specifier": "../src/modules/account-lifecycle/store.js",
+              "specifier": "./revenueCatDeletionFixture.js",
               "kind": "static",
-              "target": "src/modules/account-lifecycle/store.ts",
+              "target": "tests/revenueCatDeletionFixture.ts",
               "line": 14
             }
           ],
@@ -75484,8 +75568,8 @@
         },
         {
           "path": "tests/aud08Recovery.emulator.test.ts",
-          "sha256": "cf8549b226ab6857979e9f182e178ebcf2a54421c2a7dc6cc569b16f95747913",
-          "bytes": 63189,
+          "sha256": "43c9f9a18ced0aa75c6255a4d66ab35193354c63ab83119836642fe3a70d735a",
+          "bytes": 63363,
           "symbols": [],
           "imports": [
             {
@@ -75561,9 +75645,9 @@
               "line": 12
             },
             {
-              "specifier": "../src/modules/account-lifecycle/store.js",
+              "specifier": "./revenueCatDeletionFixture.js",
               "kind": "static",
-              "target": "src/modules/account-lifecycle/store.ts",
+              "target": "tests/revenueCatDeletionFixture.ts",
               "line": 13
             },
             {
@@ -75596,7 +75680,7 @@
             "current-session deletion fences a late remint before it can publish a recovery result",
             "current-session ACK fences an in-flight remint and leaves no late ciphertext"
           ],
-          "lines": 972
+          "lines": 974
         },
         {
           "path": "tests/ch03Acceptance.emulator.test.mjs",
@@ -76290,8 +76374,8 @@
         },
         {
           "path": "tests/firestore.emulator.test.ts",
-          "sha256": "9effd9b9a69669e36d12fa9ebd9efdc0537aa931814c43792680cbc2264d1cd9",
-          "bytes": 155069,
+          "sha256": "bc19681313df24c0e357ebc8dc7fc7f49046af26c62a9aabfb9232522fb9f8ba",
+          "bytes": 155534,
           "symbols": [],
           "imports": [
             {
@@ -76379,9 +76463,9 @@
               "line": 14
             },
             {
-              "specifier": "../src/modules/account-lifecycle/store.js",
+              "specifier": "./revenueCatDeletionFixture.js",
               "kind": "static",
-              "target": "src/modules/account-lifecycle/store.ts",
+              "target": "tests/revenueCatDeletionFixture.ts",
               "line": 15
             },
             {
@@ -76479,12 +76563,12 @@
             "staged erasure resumes partial cleanup and rejects the old worker after fence takeover",
             "staged erasure refuses conflicting root ownership without changing its descendants"
           ],
-          "lines": 2313
+          "lines": 2319
         },
         {
           "path": "tests/fixtures/accountLifecycleCrashWorker.ts",
-          "sha256": "c7669ba0c64733398919e40cb6430897fcd7e5ecefd00a7e9113932a62e5e291",
-          "bytes": 2463,
+          "sha256": "6f78d40e95e9f052b757bd8cf6ffc563d799729941c9c71a9004a6cbf0d974c0",
+          "bytes": 2482,
           "symbols": [],
           "imports": [
             {
@@ -76518,9 +76602,9 @@
               "line": 5
             },
             {
-              "specifier": "../../src/modules/account-lifecycle/store.js",
+              "specifier": "../revenueCatDeletionFixture.js",
               "kind": "static",
-              "target": "src/modules/account-lifecycle/store.ts",
+              "target": "tests/revenueCatDeletionFixture.ts",
               "line": 6
             }
           ],
@@ -76672,6 +76756,47 @@
           "jsonKeys": [],
           "testNames": [],
           "lines": 9
+        },
+        {
+          "path": "tests/fixtures/rcCustomerDeletionCrashWorker.ts",
+          "sha256": "53f0c780fc4a43cd5d4effd58cb3d6ad38af2c577b346e8316d167238748d04a",
+          "bytes": 1867,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "firebase-admin/app",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "firebase-admin/firestore",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "../../src/infrastructure/firebase/adminAuth.js",
+              "kind": "static",
+              "target": "src/infrastructure/firebase/adminAuth.ts",
+              "line": 3
+            },
+            {
+              "specifier": "../../src/infrastructure/security/pseudonymKeyRing.js",
+              "kind": "static",
+              "target": "src/infrastructure/security/pseudonymKeyRing.ts",
+              "line": 4
+            },
+            {
+              "specifier": "../../src/modules/account-lifecycle/store.js",
+              "kind": "static",
+              "target": "src/modules/account-lifecycle/store.ts",
+              "line": 5
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [],
+          "lines": 32
         },
         {
           "path": "tests/goalPlanMixedReplay.emulator.test.ts",
@@ -78398,6 +78523,101 @@
           "lines": 88
         },
         {
+          "path": "tests/rcCustomerDeletion.emulator.ts",
+          "sha256": "b9f0a1c857f2498d88991b53b82f4c87596eeffbefeb57808abda3532776c44a",
+          "bytes": 16766,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "node:crypto",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "node:child_process",
+              "kind": "static",
+              "resolution": "external",
+              "line": 3
+            },
+            {
+              "specifier": "node:path",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
+              "specifier": "node:test",
+              "kind": "static",
+              "resolution": "external",
+              "line": 5
+            },
+            {
+              "specifier": "firebase-admin/app",
+              "kind": "static",
+              "resolution": "external",
+              "line": 6
+            },
+            {
+              "specifier": "firebase-admin/auth",
+              "kind": "static",
+              "resolution": "external",
+              "line": 7
+            },
+            {
+              "specifier": "firebase-admin/firestore",
+              "kind": "static",
+              "resolution": "external",
+              "line": 8
+            },
+            {
+              "specifier": "../scripts/isolated-emulator-test-runner.mjs",
+              "kind": "static",
+              "target": "scripts/isolated-emulator-test-runner.d.mts",
+              "line": 9
+            },
+            {
+              "specifier": "../src/infrastructure/firestore/paths.js",
+              "kind": "static",
+              "target": "src/infrastructure/firestore/paths.ts",
+              "line": 10
+            },
+            {
+              "specifier": "../src/infrastructure/firebase/adminAuth.js",
+              "kind": "static",
+              "target": "src/infrastructure/firebase/adminAuth.ts",
+              "line": 11
+            },
+            {
+              "specifier": "../src/infrastructure/security/pseudonymKeyRing.js",
+              "kind": "static",
+              "target": "src/infrastructure/security/pseudonymKeyRing.ts",
+              "line": 12
+            },
+            {
+              "specifier": "../src/modules/account-lifecycle/store.js",
+              "kind": "static",
+              "target": "src/modules/account-lifecycle/store.ts",
+              "line": 13
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [
+            "uses the backend AppUserID and bound project, then leaves only a minimal terminal receipt",
+            "missing key leaves own account pending after Auth deletion; same secret and project resume successfully",
+            "provider errors before and after a modeled effect preserve account data until a receipt is persisted",
+            "a killed process after the fake provider effect resumes with the same ID and secret",
+            "wrong project cannot call another project's client; legacy unbound operation fails closed"
+          ],
+          "lines": 243
+        },
+        {
           "path": "tests/recordFingerprint.test.ts",
           "sha256": "7ae774392562b558c75c319d3cb9d742c8e9dd8e9301bd500f9a6d42f08a1b32",
           "bytes": 1556,
@@ -78742,9 +78962,35 @@
           "lines": 23
         },
         {
+          "path": "tests/revenueCatDeletionFixture.ts",
+          "sha256": "cb1aefcb78dc6b5e6ce88b1e306899fa94e03487582bbd4b8d2c452c54522ddb",
+          "bytes": 831,
+          "symbols": [
+            "absentRevenueCatCustomerFixture",
+            "FixtureAccountLifecycleStore"
+          ],
+          "imports": [
+            {
+              "specifier": "../src/modules/account-lifecycle/store.js",
+              "kind": "static",
+              "target": "src/modules/account-lifecycle/store.ts",
+              "line": 1
+            },
+            {
+              "specifier": "../src/modules/account-lifecycle/store.js",
+              "kind": "type",
+              "target": "src/modules/account-lifecycle/store.ts",
+              "line": 2
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [],
+          "lines": 16
+        },
+        {
           "path": "tests/revenuecatClient.test.ts",
-          "sha256": "4fa0d69e3ef2103a6641029969465b1d9b273fbfbad969b9895a30fe734361e5",
-          "bytes": 15209,
+          "sha256": "aa5209532cbf193c30c51d87650f7a23d454a56fff020cca629d2c5938f03b68",
+          "bytes": 15353,
           "symbols": [],
           "imports": [
             {
@@ -78795,7 +79041,48 @@
             "promotional access remains constrained to the configured test customer and cutoff",
             "paid reader never substitutes its v1 credential for a missing v2 credential"
           ],
-          "lines": 280
+          "lines": 282
+        },
+        {
+          "path": "tests/revenuecatCustomerDeletion.test.ts",
+          "sha256": "7260d9305cdb1bcb1efaac2d7738f32da4df2fe38a40594ba79d607af81af920",
+          "bytes": 12382,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "node:test",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "../src/infrastructure/revenuecat/customerDeletion.js",
+              "kind": "static",
+              "target": "src/infrastructure/revenuecat/customerDeletion.ts",
+              "line": 3
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [
+            "searches exact App User ID, reads aliases, and deletes one resolved V2 customer",
+            "supports a canonical anonymous customer only when its complete aliases include the account ID",
+            "does not treat an anonymous canonical ID or self-alias as proof of the requested account ID",
+            "returns absent for a successful empty search without running the delete fence",
+            "rechecks absence after DELETE 404 and treats only a successful empty search as absent",
+            "rejects bad project binding, multiple customers, foreign canonical IDs, and foreign aliases",
+            "follows all aliases pages and rejects unsafe or incomplete pagination",
+            "does not issue DELETE after fence failure while alias reads are in flight",
+            "classifies provider errors without copying response bodies",
+            "rejects malformed delete acknowledgements and timeout safely",
+            "does not allow live network traffic to fixture origins"
+          ],
+          "lines": 182
         },
         {
           "path": "tests/revenuecatEntitlements.emulator.test.ts",
@@ -79128,8 +79415,8 @@
         },
         {
           "path": "tests/sec07SessionRevocation.emulator.test.ts",
-          "sha256": "fb6d29d0b3b121db681753652b500100b756b5ef3477832babd8db67ee701c5d",
-          "bytes": 13222,
+          "sha256": "869e79390daca50a0ecc397f477798388eea66656eab8de84024917e8da14037",
+          "bytes": 13243,
           "symbols": [],
           "imports": [
             {
@@ -79169,9 +79456,9 @@
               "line": 6
             },
             {
-              "specifier": "../src/modules/account-lifecycle/store.js",
+              "specifier": "./revenueCatDeletionFixture.js",
               "kind": "static",
-              "target": "src/modules/account-lifecycle/store.ts",
+              "target": "tests/revenueCatDeletionFixture.ts",
               "line": 7
             },
             {
@@ -79392,8 +79679,8 @@
         },
         {
           "path": "tests/support.ts",
-          "sha256": "572653bc23fbb6f949b8f83a5469457a1cc22a3726c6e9979ae774d5dacd1e59",
-          "bytes": 11850,
+          "sha256": "ebf84d967c3402f649aea42c66d6fa7ce1a0b9783b3f9227d9b6f3e9df5aa5b6",
+          "bytes": 11965,
           "symbols": [
             "sessionRevocationId",
             "TEST_APP_CHECK_TOKEN",
@@ -79413,105 +79700,111 @@
           ],
           "imports": [
             {
-              "specifier": "node:crypto",
+              "specifier": "./revenueCatDeletionFixture.js",
               "kind": "static",
-              "resolution": "external",
+              "target": "tests/revenueCatDeletionFixture.ts",
               "line": 1
             },
             {
-              "specifier": "firebase-admin/auth",
+              "specifier": "node:crypto",
               "kind": "static",
               "resolution": "external",
               "line": 2
             },
             {
-              "specifier": "firebase-admin/firestore",
+              "specifier": "firebase-admin/auth",
               "kind": "static",
               "resolution": "external",
               "line": 3
             },
             {
+              "specifier": "firebase-admin/firestore",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
               "specifier": "../src/api/app.js",
               "kind": "static",
               "target": "src/api/app.ts",
-              "line": 4
+              "line": 5
             },
             {
               "specifier": "../src/config/environment.js",
               "kind": "static",
               "target": "src/config/environment.ts",
-              "line": 5
+              "line": 6
             },
             {
               "specifier": "../src/infrastructure/firestore/client.js",
               "kind": "static",
               "target": "src/infrastructure/firestore/client.ts",
-              "line": 6
+              "line": 7
             },
             {
               "specifier": "../src/infrastructure/firestore/stores.js",
               "kind": "static",
               "target": "src/infrastructure/firestore/stores.ts",
-              "line": 7
+              "line": 8
             },
             {
               "specifier": "../src/infrastructure/firebase/verifier.js",
               "kind": "static",
               "target": "src/infrastructure/firebase/verifier.ts",
-              "line": 8
+              "line": 9
             },
             {
               "specifier": "firebase-admin/firestore",
               "kind": "type",
               "resolution": "external",
-              "line": 51
+              "line": 52
             },
             {
               "specifier": "../src/modules/billing/revenuecatWebhookStore.js",
               "kind": "type",
               "target": "src/modules/billing/revenuecatWebhookStore.ts",
-              "line": 55
+              "line": 56
             },
             {
               "specifier": "../src/infrastructure/email/smtpPrivacyEmailSender.js",
               "kind": "type",
               "target": "src/infrastructure/email/smtpPrivacyEmailSender.ts",
-              "line": 62
+              "line": 63
             },
             {
               "specifier": "../src/infrastructure/revenuecat/client.js",
               "kind": "type",
               "target": "src/infrastructure/revenuecat/client.ts",
-              "line": 62
+              "line": 63
             },
             {
               "specifier": "../src/modules/content/packages.js",
               "kind": "type",
               "target": "src/modules/content/packages.ts",
-              "line": 62
+              "line": 63
             },
             {
               "specifier": "firebase-admin/firestore",
               "kind": "type",
               "resolution": "external",
-              "line": 62
+              "line": 63
             },
             {
               "specifier": "../src/modules/content/packages.js",
               "kind": "type",
               "target": "src/modules/content/packages.ts",
-              "line": 62
+              "line": 63
             },
             {
               "specifier": "../src/modules/billing/revenuecatWebhookStore.js",
               "kind": "type",
               "target": "src/modules/billing/revenuecatWebhookStore.ts",
-              "line": 66
+              "line": 67
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 201
+          "lines": 202
         },
         {
           "path": "tests/syncMutationReceipts.emulator.test.ts",
@@ -79770,7 +80063,7 @@
       ]
     },
     "patternly-content": {
-      "head": "45f5028ab1d0ef7a2c78d531140b093ba9a7a525",
+      "head": "3de2e730a3a630aabb7c4552ffaa18ad96bcfa77",
       "files": [
         {
           "path": ".gitattributes",
@@ -96722,7 +97015,7 @@
       ]
     },
     "patternly-web": {
-      "head": "20a67218167ce20a7dc1af77a434819fce896bb3",
+      "head": "f93a313ddc5f206a43dfac09d5e845dc87037cd4",
       "files": [
         {
           "path": ".firebaserc",
@@ -99270,7 +99563,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "9c2c6f87dda69196317674b9253c6b319bbac66118478f4df1978b801186b4f7",
+  "catalogHash": "caad2d54f702e3bda2fe2847c7538de7d92dbd2a1025b2e0d1ce9fd3562dcb7c",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "5070379c21f97176fdeb82052a6bf8da2745d45ba12b051c70e81529bde83286",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -99308,15 +99601,15 @@
     "Atlas/Struktura/patternly/scripts/docAtlas/docAtlas — folder aplikacja · scripts.md": "3624d341451e4ce3ca58cce5e011039bd726e09bd43806ba4b9f22a21f719452",
     "Atlas/Struktura/patternly/scripts/fixtures/fixtures — folder aplikacja · scripts.md": "1134fbd8512af188081474a324584c1eb8dbbd0931f5fa52175c4b94f1617ca2",
     "Atlas/Struktura/patternly/scripts/fixtures/foregroundSchedulerProbe/foregroundSchedulerProbe — folder aplikacja · scripts › fixtures.md": "c95649acf8e6878916c4cd32c8d6056d75b25672d83a56b321427ac47d7b90a6",
-    "Atlas/Struktura/patternly/scripts/qa/qa — folder aplikacja · scripts.md": "ddf3a78ff010c2bd91d2b3e0dacbad7d8c6df263c72de4798d43aaac74a497b3",
+    "Atlas/Struktura/patternly/scripts/qa/qa — folder aplikacja · scripts.md": "58d67f588739ccea4423ebca9e74ee5fbb80f41b66550265d45b7ae8234acdfe",
     "Atlas/Struktura/patternly/scripts/qa/flows/flows — folder aplikacja · scripts › qa.md": "9f5f33ff4af8df6147f6035132aab47eece70a8e49357c75d48d3bf476913d5e",
     "Atlas/Struktura/patternly/scripts/qa/flows/premium18/premium18 — folder aplikacja · scripts › qa › flows.md": "01b95bdc0482b275c95fae75f835e18ce9f7e6dcfed08e26d0c5bd94ac50d537",
     "Atlas/Struktura/patternly/scripts/qa/soloHome23/soloHome23 — folder aplikacja · scripts › qa.md": "4a487b302e124f50d416ddb17d74487958a19380e75bbd09c31f39e386b779d5",
     "Atlas/Struktura/patternly/scripts/qa/soloUi22/soloUi22 — folder aplikacja · scripts › qa.md": "65cd2ad0358010e396e4f2baf6c4fa4bbe4363186ed23d8ca8ef55b7c5766076",
     "Atlas/Struktura/patternly/src/src — folder aplikacja.md": "2693a04733f07b80e985c5b1b9b01f1528cf58537951943b490e87487ca1d98b",
     "Atlas/Struktura/patternly/src/application/application — folder aplikacja · src.md": "3f06d83d4201fcad3ce18a2d1f0ce4bf6161b0180e9d7b9a1917967d6a1fff8e",
-    "Atlas/Struktura/patternly/src/application/account/account — folder aplikacja · src › application.md": "a51f14f6cc9366b93d8c099c2e873467b34bd1ec3a0103611885a772c819394d",
-    "Atlas/Struktura/patternly/src/application/bootstrap/bootstrap — folder aplikacja · src › application.md": "a4a7b2f9deca7e0c608ad9cd5c8f3766c6af6aeec6ba086fcac0cd123c567cee",
+    "Atlas/Struktura/patternly/src/application/account/account — folder aplikacja · src › application.md": "8f4065e20d2893f9853b1bc549da07fb2afbd9443f3f340083003fe06756e78c",
+    "Atlas/Struktura/patternly/src/application/bootstrap/bootstrap — folder aplikacja · src › application.md": "b7a87c3581fd18c13ae3c6940df6c2990599d13d457bc65f9080117c5a6dbb6e",
     "Atlas/Struktura/patternly/src/application/canonical/canonical — folder aplikacja · src › application.md": "bc5235c64e0f242d9bd67e8a737120e3ba4e3f8fcb8f4f0b7a3ccf8989f5efef",
     "Atlas/Struktura/patternly/src/application/certification/certification — folder aplikacja · src › application.md": "ec8374ed3fc3086fe673be0fd11e032d08f51975c4c9ce77df5bed4de78101aa",
     "Atlas/Struktura/patternly/src/application/coding-interview/coding-interview — folder aplikacja · src › application.md": "dcac228016698d4d2be7dd45be1812b2d1fe54dd2f67b11e13eafb61afe6c2a5",
@@ -99389,7 +99682,7 @@
     "Atlas/Struktura/patternly/src/infrastructure/firebase/firebase — folder aplikacja · src › infrastructure.md": "b93c9a75b5d703544d5f7bb2dca7fcae4e4c5a2533a3876e7b08a01a30d3f035",
     "Atlas/Struktura/patternly/src/infrastructure/identity/identity — folder aplikacja · src › infrastructure.md": "af3a4e2261bd204b21ca2eeabfd28fe647c507c0608448d015286ec90ac2f0a4",
     "Atlas/Struktura/patternly/src/infrastructure/notifications/notifications — folder aplikacja · src › infrastructure.md": "af88947489cb956bf8cdf3c36eb43a95068a2c51ff8406d73616480ff9b66fde",
-    "Atlas/Struktura/patternly/src/infrastructure/purchases/purchases — folder aplikacja · src › infrastructure.md": "dfa1cb367a5b4cceac17f8305d3ace98402dd1383c34804eee97411b30792f48",
+    "Atlas/Struktura/patternly/src/infrastructure/purchases/purchases — folder aplikacja · src › infrastructure.md": "edb697df8ed2a4226c7944aa2d97a60a12fa29a73bbc4d507e8147f0674787e1",
     "Atlas/Struktura/patternly/src/infrastructure/runtime/runtime — folder aplikacja · src › infrastructure.md": "bb2c763ebf5253844a1e59bcbdd6e30357903d59c55a97187eeb12cd316ed8f4",
     "Atlas/Struktura/patternly/src/infrastructure/security/security — folder aplikacja · src › infrastructure.md": "08bda0d4a912cd2e5891d227efd87e5253a534174bd03f835b5f96dfbdaabee7",
     "Atlas/Struktura/patternly/src/infrastructure/storage/storage — folder aplikacja · src › infrastructure.md": "13b3f9857af89c623889149f46e860f5d601051ed03d1ed37bb61b9a73d5798e",
@@ -99562,7 +99855,7 @@
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/openNativeListPerformanceMenu.mjs — aplikacja · scripts › qa.md": "a53690639512f236d78025100453048dae1b4629e85459739247a16bbbec0057",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/openNativeRegularReview.mjs — aplikacja · scripts › qa.md": "7d33dbec90bad42b1521e570ccf8d30672e22b10731705db4b4aef7f84ca8819",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/openNativeRegularReview.test.mjs — aplikacja · scripts › qa.md": "23e074d33dc0e5de5c13ba084cb01644c87b2b307f52f1a87fdc25cbb0b1bd35",
-    "Atlas/Struktura/patternly/scripts/qa/_Pliki/premium18Fixture.tsx — aplikacja · scripts › qa.md": "3c0f5c6f8df3b6a63dea0c309f793a4bc6b96fef4a9ddf875a8443466dd2c1ec",
+    "Atlas/Struktura/patternly/scripts/qa/_Pliki/premium18Fixture.tsx — aplikacja · scripts › qa.md": "0d3bcaf2420da7e0c557dd63ccd5528d8e9407339651397fc405a261d78ce708",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/premium18FixtureCommand.mjs — aplikacja · scripts › qa.md": "f1a262cb4feeafabb1ad676e3f982baf66f5dbcf6e1e7d91254af438bf8b3549",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/prepareAndroidClockJsDerivative.py — aplikacja · scripts › qa.md": "3cfe341d9856674d7c52a2ae332ffcba08462ee579100b32a1147371726c3bc7",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/prepareEnvironmentIsolationIos.mjs — aplikacja · scripts › qa.md": "7156cb91b56a0c19a2fc66575d2c5033ec352f9e9c8f26a58982c7cce12a9508",
@@ -99635,14 +99928,14 @@
     "Atlas/Struktura/patternly/scripts/_Pliki/writeAndroidLocalProperties.mjs — aplikacja · scripts.md": "45a67f73c88ec3f0eef10b91c0138f8cd21e2465ccf45c2616be87cabbbb813a",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountActorIdentityFence.test.ts — aplikacja · src › application › account.md": "2f14041354a531deed065cd2281b3ee531c3f640c9ea4546c0d937b121c29e34",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountActorIdentityFence.ts — aplikacja · src › application › account.md": "b55989b00835ccfa12da7b3460fc7a16377d2c9954aa6f98ef88c5ea8c00db79",
-    "Atlas/Struktura/patternly/src/application/account/_Pliki/accountCommandGuards.test.ts — aplikacja · src › application › account.md": "7e560d1dc4d5efb13010172cd3fff980b355a6308034aa1fad6a45337663f407",
+    "Atlas/Struktura/patternly/src/application/account/_Pliki/accountCommandGuards.test.ts — aplikacja · src › application › account.md": "752c7d0010ad3d634b2b2a42408790ddb152028589ff59209345c854e56418e1",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountCommandGuards.ts — aplikacja · src › application › account.md": "7f4700c3e741155dd143329beef18b1941ddcd203e4a5102563c92fd034d4df6",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountDataContract.test.ts — aplikacja · src › application › account.md": "eae6bcfad8c378f10066ededc2a5777399e1a7106f55da7085dc6dc363609415",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountDataExportFailure.test.ts — aplikacja · src › application › account.md": "f7f4d20d61374e2ed05367bd382d6b01d40f983873989bbbae4951c17416ac30",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountDataExportService.test.ts — aplikacja · src › application › account.md": "99b9008d66bce83a647d8e3586eca2569642e69f03c1fadab25d1a71966618bc",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountDataExportService.ts — aplikacja · src › application › account.md": "9c4ccf575b070d5516119c06f70ab0d9569da43c140c19e9f714e81e366ce07b",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountDataService.test.ts — aplikacja · src › application › account.md": "527511846c135c30fe0045d59c5edc413d53a4e4fd3cab3e1c293786d5555ded",
-    "Atlas/Struktura/patternly/src/application/account/_Pliki/accountDataService.ts — aplikacja · src › application › account.md": "5c8a8d1268cc2f81de268323391a89dc903d538cec4f8198d45df687bee57377",
+    "Atlas/Struktura/patternly/src/application/account/_Pliki/accountDataService.ts — aplikacja · src › application › account.md": "feedc277fafc66797ab0c7205b06dfb3f907e90a133c40e48ed9e1ae836bb0c0",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountEmailChangeFailure.test.ts — aplikacja · src › application › account.md": "c8062ecc40f0960d094f878a161d4c1eae25c4bc9e307f6fcb2db1109d3e5ed4",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountFinalization.test.ts — aplikacja · src › application › account.md": "7960e735993094d9ceb73c6234139bb0f0097d656519607b1628d8c0cd333940",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountFinalization.ts — aplikacja · src › application › account.md": "507ddf8a7970c18fbe574dc37017fd0324f2d26ba40eed9c9ffbef872f8fcb89",
@@ -99651,14 +99944,14 @@
     "Atlas/Struktura/patternly/src/application/account/_Pliki/AccountForegroundRefreshSidecar.tsx — aplikacja · src › application › account.md": "f26ba021ad5641d401be9c785053a72599ccf110366780592b4a68079ec38f16",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountGoalJourneyE2E.test.ts — aplikacja · src › application › account.md": "e00749f5688484ca1d96e6ec13c84ad309e7b0705ce7b3fdc31c21c7ad6eaf26",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountIdentityComposition.test.ts — aplikacja · src › application › account.md": "daa3f64f865a829598eeea8fe032c4a415979545463025513c28e4aefb464472",
-    "Atlas/Struktura/patternly/src/application/account/_Pliki/accountLifecycle.test.ts — aplikacja · src › application › account.md": "8524ea8c3dd57a8007b3c326ab71ca45efe79ae486e2d5c564698e7f98b635e4",
+    "Atlas/Struktura/patternly/src/application/account/_Pliki/accountLifecycle.test.ts — aplikacja · src › application › account.md": "6787106517704c8922b0124fc71e5c8c4fb8c0141407878a7300e6cffe79b556",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountLocalReset.test.ts — aplikacja · src › application › account.md": "5a6c5bfd89c496cab4e85ae3fa3a412098b2a6f04e7c8ce71b47b8cd09d24a46",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountReconnect.test.ts — aplikacja · src › application › account.md": "f3ff229e13ac13d3d1c983ec8c9fa822fa5a3a1dcd8a5074fdfa248f16cda9ac",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountReconnect.ts — aplikacja · src › application › account.md": "d6cd696e8b75e8f378c0480fea75877a4461e33489839e2f1e14eb961bb6c9c0",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountRecoveryCodeFailureContract.test.ts — aplikacja · src › application › account.md": "086e7f00b7bac3522998a4c8c07c9aa33c346ae649b640d96b88a4010c93138d",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountSessionExchange.test.ts — aplikacja · src › application › account.md": "9f63c4fa666626105e051c192bfd3cb07051f9702028fc810cf708bb1e3da8ec",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountSessionExchange.ts — aplikacja · src › application › account.md": "f818f3ed1e0775c987152e6b559c4d7daf54977f59d3df5a414cf2d0b3c173ec",
-    "Atlas/Struktura/patternly/src/application/account/_Pliki/AccountSessionProvider.tsx — aplikacja · src › application › account.md": "3dafe7baa8b854683ccd66c4ef8eff6343e3b1cc525a49df2f9152a5f6b65b07",
+    "Atlas/Struktura/patternly/src/application/account/_Pliki/AccountSessionProvider.tsx — aplikacja · src › application › account.md": "8a7b2e33eb1c418befbc0e96e7d49c662d80bdaa4328fee74c511fa144718840",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/accountStartupDiagnosticWiring.test.ts — aplikacja · src › application › account.md": "5e1fd94f3829fa3fe3d5ad9c9e8824cb5ce98776e3b970fb47e8c8b749ff4f57",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/guestEntryLifecycleDiagnostics.test.ts — aplikacja · src › application › account.md": "56f81195cec35bcc41b46f9aa7accfd8f30658d65982f70fb11858e8883fe312",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/guestTransitionLock.test.ts — aplikacja · src › application › account.md": "5b12ab6b3ffae37542afd7af30ca7c35fd254a10b5b40e4ed6f720eda2c4b7e1",
@@ -99671,7 +99964,7 @@
     "Atlas/Struktura/patternly/src/application/account/_Pliki/premiumEntitlementIdentity.test.ts — aplikacja · src › application › account.md": "b2914a61067a876d57aadb5cdca5fa0d7b9a9a6cdf73e711c67c383591474599",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/premiumEntitlementIdentity.ts — aplikacja · src › application › account.md": "f9e465b459dbcc2e828a51457db8cb65b0e9fafa5fb5e5cb6aba4ee9f61e6ce3",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/premiumPurchaseComposition.ts — aplikacja · src › application › account.md": "dc64297e4237c8c5187b336387140747bb5c3c28eed9ec34eabeec845031d54b",
-    "Atlas/Struktura/patternly/src/application/account/_Pliki/premiumPurchaseCoordinator.test.ts — aplikacja · src › application › account.md": "a1d906af548cbfe22ea337a25dc500184a7596f73a17928fdd2b9a9e2eb33e2d",
+    "Atlas/Struktura/patternly/src/application/account/_Pliki/premiumPurchaseCoordinator.test.ts — aplikacja · src › application › account.md": "6493a557d7ca6647bb32fc2176521e725f45296a2c26c7ca926690e566e2687f",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/premiumPurchaseCoordinator.ts — aplikacja · src › application › account.md": "864ff0814ce3217ce0eddb892a593e5c2d9aa5fae01af9b7d1e9a73bf48a88f3",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/premiumRefreshQueue.test.ts — aplikacja · src › application › account.md": "d398f8c6c1252efba47eaa5a95373b578e616e2ca79e9fe93dc6c2f3b3ae9244",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/premiumRefreshQueue.ts — aplikacja · src › application › account.md": "bf4ba0b8b5d15430f6db12079c908cf3487e2293a79364507009aee24f0a0068",
@@ -99692,14 +99985,14 @@
     "Atlas/Struktura/patternly/src/application/account/_Pliki/recoveryIssueCommandGuard.ts — aplikacja · src › application › account.md": "3430832e426d27147530401cd95397033e900d5963de61d44e7dfdd00a7b8c69",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/recoveryOperationCoordinator.test.ts — aplikacja · src › application › account.md": "fb5450bd26b0a72f3021d3b8c8cb76bf8fc36a0e3a81f5bfcf7de703778c67c7",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/recoveryOperationCoordinator.ts — aplikacja · src › application › account.md": "e43f68d77458e507b072572e153b899563434bda0049afd3c2e5276642058d1e",
-    "Atlas/Struktura/patternly/src/application/account/_Pliki/signedOutDeletionRecovery.test.ts — aplikacja · src › application › account.md": "bcbf4c40da88af0d1d832e68869969828aa6791bcede920101840af2d49126f3",
+    "Atlas/Struktura/patternly/src/application/account/_Pliki/signedOutDeletionRecovery.test.ts — aplikacja · src › application › account.md": "da95b9f44f8bb7889f1ed80fe748fd525b0328d24af56f9134aa87148c44bc30",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/storageRecoveryAuditCommand.test.ts — aplikacja · src › application › account.md": "7d5c4fb3adb433f890a1aefef58bf4349235430c5366dbbf42b6ba6727298146",
     "Atlas/Struktura/patternly/src/application/account/_Pliki/storageRecoveryAuditCommand.ts — aplikacja · src › application › account.md": "1b8ccd8965d2c4eb42d825395c473ec5cb5fc45f66f158a25a44c001d7504e03",
     "Atlas/Struktura/patternly/src/application/_Pliki/activityReadModels.test.ts — aplikacja · src › application.md": "1854bad5296e027a198be6d19211a909ae29f8c6f7b846eb4f8e1e9ee70aa6c4",
     "Atlas/Struktura/patternly/src/application/_Pliki/activityReadModels.ts — aplikacja · src › application.md": "7c4b183aadf8215c2b44b88e0a74d4a0cb6401498409b7e5e724e9099a0978bc",
     "Atlas/Struktura/patternly/src/application/_Pliki/appPreferences.ts — aplikacja · src › application.md": "7c1a237a9aa5f5d45eee50ed0731f9d56bb52ae96c79033457dd05ab09f04448",
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/accountBootstrap.test.ts — aplikacja · src › application › bootstrap.md": "5980a86b3018bcf1b2a70d4ffdc718fb0a709d2ce3627759ca191e63ae3eb690",
-    "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/accountBootstrap.ts — aplikacja · src › application › bootstrap.md": "7b3869f6de8045813c52dd9221870e5183d165226c476f24f68c526c00bd24e8",
+    "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/accountBootstrap.ts — aplikacja · src › application › bootstrap.md": "122bc7737549c60f65049bd7536f2290a636528b50b90bd7d07c27d27ba3f362",
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/applicationBootstrap.test.ts — aplikacja · src › application › bootstrap.md": "77ed2886f103c95e5f39ccb092351c9e9966ad401661b3ebe7dc2d37d24a18bf",
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/applicationBootstrap.ts — aplikacja · src › application › bootstrap.md": "3d6a51fb154e911dbdd5bd99e22e65972b79175594885e2c69d0954e53ad62d3",
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/deadlineClockDiscontinuity.test.ts — aplikacja · src › application › bootstrap.md": "b03468353ff46a8fd664203ef6173cba62c43083cf858d6a89d0e909a939af11",
@@ -100451,8 +100744,8 @@
     "Atlas/Struktura/patternly/src/infrastructure/identity/_Pliki/trainingSessionIdentityFormat.ts — aplikacja · src › infrastructure › identity.md": "ff108bdaf0e4714b67829db781dca55f80bafa11e3e8823b3f292a3cc64be9ec",
     "Atlas/Struktura/patternly/src/infrastructure/notifications/_Pliki/expoNotificationPlatform.test.ts — aplikacja · src › infrastructure › notifications.md": "c545395afb38ba0a27684694dddc9e91f562d258dfbfe97c7b4b3b3fea89987d",
     "Atlas/Struktura/patternly/src/infrastructure/notifications/_Pliki/expoNotificationPlatform.ts — aplikacja · src › infrastructure › notifications.md": "712ddda02ace8f32022a0dac6aa412a00347bdb2384e14b57628617794acb74b",
-    "Atlas/Struktura/patternly/src/infrastructure/purchases/_Pliki/index.test.ts — aplikacja · src › infrastructure › purchases.md": "bed95c0101fa529e68364930f53143753b6548f6b7e737407b4b1fcd0be4f0aa",
-    "Atlas/Struktura/patternly/src/infrastructure/purchases/_Pliki/index.ts — aplikacja · src › infrastructure › purchases.md": "e0be340002a6ce2928cc5693a3fd87b548cb194aa1d622026a14467a4470ffc6",
+    "Atlas/Struktura/patternly/src/infrastructure/purchases/_Pliki/index.test.ts — aplikacja · src › infrastructure › purchases.md": "08089d5f4efdc2f4779d889ff65c0754fd7648540364b061bef7d2bfe706bc53",
+    "Atlas/Struktura/patternly/src/infrastructure/purchases/_Pliki/index.ts — aplikacja · src › infrastructure › purchases.md": "e10b6f86435e62db1772e1c24bda15d3d5ea8cfe15b82031f2c8efce7e4eb72c",
     "Atlas/Struktura/patternly/src/infrastructure/purchases/_Pliki/logPrivacy.test.ts — aplikacja · src › infrastructure › purchases.md": "1e6341119ba7b7bc6d534db2d6ea1811d4951fa154f025e1cf46e8d0053e4f83",
     "Atlas/Struktura/patternly/src/infrastructure/runtime/_Pliki/environmentEntry.test.ts — aplikacja · src › infrastructure › runtime.md": "f90044a8cbd4020f676be621bb8254160cab43a7311cbc2218c76f3a2ad1fd6a",
     "Atlas/Struktura/patternly/src/infrastructure/runtime/_Pliki/EnvironmentGate.tsx — aplikacja · src › infrastructure › runtime.md": "b1f8cbfbc2bc9aa229c6abc2b9215b9216695f083c963b3e045c7667728ddc57",
@@ -100714,33 +101007,33 @@
     "Atlas/Struktura/patternly/src/utils/_Pliki/domain.ts — aplikacja · src › utils.md": "ec87e0c85df66b825d57ca2851e1782e9d8b51da8a575c41ed728aa8e75438a5",
     "Atlas/Struktura/patternly/src/utils/_Pliki/index.ts — aplikacja · src › utils.md": "7e8d703414bf1e2404bf8f881d60ef8932575e7c3e212f996f42fc3ccbb6b488",
     "Atlas/Struktura/patternly/src/utils/_Pliki/scoring.ts — aplikacja · src › utils.md": "85ca9b59fa23e95125b02a8dfea32d53fef82a8c26a05028a05063040874aa1f",
-    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "33c11e2372eb3de73118a3e6d3cb1a438c369fae1ee413df74e959925c9e25ab",
+    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "4ab9c133b5f9b24b90b02592f46e39b429022fc688fd0efd357d51cd0bba610d",
     "Atlas/Struktura/patternly-backend/~2E~github/~2E~github — folder backend.md": "e64f622f16d18f655302cdf67100031ffa4d2c7a7be085e71fe99c00eb518ceb",
     "Atlas/Struktura/patternly-backend/~2E~github/workflows/workflows — folder backend · ~2E~github.md": "47fe4c54f08c2690cec420e363589b7db0e11900fcaca733bcc731e719b78e7d",
     "Atlas/Struktura/patternly-backend/config/config — folder backend.md": "538edba0cdb492902ca647e275eb82f8fca925c7fb4720ac12d6b2afec3ea52d",
     "Atlas/Struktura/patternly-backend/docs/docs — folder backend.md": "83252869d24c507676486b825d1fc97713ec190ca4bc84ef47250b63d392e421",
     "Atlas/Struktura/patternly-backend/openapi/openapi — folder backend.md": "db0fc48d563ba04e2b6a5624acc5b25147a5c37617a1902b694b381f8a925d76",
-    "Atlas/Struktura/patternly-backend/scripts/scripts — folder backend.md": "fbd55c645c58801db8abb3619ac9819f981d7ef4efdb0ef3f9579156f775c611",
+    "Atlas/Struktura/patternly-backend/scripts/scripts — folder backend.md": "566b49fb9e18160ca47603ff3703496ec1fd96cefe044d6bc024160102d6de41",
     "Atlas/Struktura/patternly-backend/scripts/qa/qa — folder backend · scripts.md": "61feead1acb32a12367dfd462ff401a8545c9b30b80e43ea74e028248d0e731e",
     "Atlas/Struktura/patternly-backend/scripts/qa/backports/backports — folder backend · scripts › qa.md": "f7c6b1f1a3c31d7b139237d6c055e886776e38b691c032f54d4dd4287fe9cad9",
     "Atlas/Struktura/patternly-backend/scripts/qa/cost02/cost02 — folder backend · scripts › qa.md": "b0fb1800c8c4bb0740e0e16a3f58f3429e9d8671119be4249c74be2f6bfc2ae3",
     "Atlas/Struktura/patternly-backend/scripts/qa/cost03/cost03 — folder backend · scripts › qa.md": "e736131278b0fc4d1a602a30709419793f1719b0f0535cfd89ed86166bbae3c0",
-    "Atlas/Struktura/patternly-backend/src/src — folder backend.md": "18050964a0be268ac1423f2665b121b7c3c7853ab8d81d21d926eed6df6eb2df",
+    "Atlas/Struktura/patternly-backend/src/src — folder backend.md": "b4ff9bbf3b202bce31fa3351cb86f37dc62afcf9a309dbfbfc5437f1730270a2",
     "Atlas/Struktura/patternly-backend/src/api/api — folder backend · src.md": "2bf959430b913612ac53fec97931186d157cba70efa7ef5e3247a6dd4ba359e3",
-    "Atlas/Struktura/patternly-backend/src/config/config — folder backend · src.md": "e7c7125e12184e9cf6e0d759e9e26834460d823467e47ee89394c8806b1ef8e5",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/infrastructure — folder backend · src.md": "6f454faa7270442b36e14b93fddd10f62b7abc1ca82beff89bfa3b7f6bd262e8",
+    "Atlas/Struktura/patternly-backend/src/config/config — folder backend · src.md": "049b26f96722688c203bdcbfb7aba2e9b59e9535caf117159ac03276cfb28c17",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/infrastructure — folder backend · src.md": "a8de7600f25db7746a8b994595d135be0d2acc03f2c112922a4c7b4810bee9d3",
     "Atlas/Struktura/patternly-backend/src/infrastructure/content/content — folder backend · src › infrastructure.md": "155ea6b05a1371e33da25486c46cb1b7e7be848b7b9b82cc5124ca0853edc38b",
     "Atlas/Struktura/patternly-backend/src/infrastructure/email/email — folder backend · src › infrastructure.md": "2ecc616c050e7fb7acce33c85c0929c962295bf85ad7826ea136cc50b308bdfa",
     "Atlas/Struktura/patternly-backend/src/infrastructure/firebase/firebase — folder backend · src › infrastructure.md": "062ecb04536bfe86eaa51e5739808007dff6c1dd8260509292c01089ab063bae",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/firestore — folder backend · src › infrastructure.md": "31aa8e128545f552b1b31ab7e0364691cb7508e1ff526a27ac3c2588bbc387d8",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/firestore — folder backend · src › infrastructure.md": "dc46eb19a5a6f5def406d70153d50fbcd87ad4b383742f12ea1daf866aeb1973",
     "Atlas/Struktura/patternly-backend/src/infrastructure/identity/identity — folder backend · src › infrastructure.md": "632bd53aea38617947d31997c049263aa6aaebe47ebb211001b02b0265f61b1c",
     "Atlas/Struktura/patternly-backend/src/infrastructure/logging/logging — folder backend · src › infrastructure.md": "0b3f1210376521706c6708abfe47834dae76f7eb0c6a1671642b5820ce963364",
     "Atlas/Struktura/patternly-backend/src/infrastructure/operator/operator — folder backend · src › infrastructure.md": "e7322107f21224b7cb42dc6ebf6941d0c872423602f48ad3fb8b1175754831f3",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/revenuecat/revenuecat — folder backend · src › infrastructure.md": "176ae9be077fedc0d6768066ed6554b36080026dbb8ef50f7b354cc76c2d0b45",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/revenuecat/revenuecat — folder backend · src › infrastructure.md": "4b4763b8c5b272a26b10acba37266e67180ec3301463cbcedbc4e061577a183e",
     "Atlas/Struktura/patternly-backend/src/infrastructure/security/security — folder backend · src › infrastructure.md": "b93f1e7fded9fb14d2cb4dec57c8f9a8f92971399d849613ae55d9e8a8af8a55",
     "Atlas/Struktura/patternly-backend/src/infrastructure/time/time — folder backend · src › infrastructure.md": "27f3abf3f5525e4b0308dcbae6b17aa4a756829cc51b1074dcb4328bfc110341",
     "Atlas/Struktura/patternly-backend/src/modules/modules — folder backend · src.md": "c3d9d8a8ccac5f15ae35f131cd359ad7f42a5488512445daf023ad44049acd5f",
-    "Atlas/Struktura/patternly-backend/src/modules/account-lifecycle/account-lifecycle — folder backend · src › modules.md": "f3c01407170a59e7046accf66f1c25041b9ac675e5dbdecce7423e3b7eeed71a",
+    "Atlas/Struktura/patternly-backend/src/modules/account-lifecycle/account-lifecycle — folder backend · src › modules.md": "e47aa6ccfb688ee2005e28d6bd3009f206e192eb430ae7de17813b54932f904d",
     "Atlas/Struktura/patternly-backend/src/modules/admin/admin — folder backend · src › modules.md": "12209f3794b56fc3d192682b392fecffacd129babd94b275af4e0f9a195a237e",
     "Atlas/Struktura/patternly-backend/src/modules/auth/auth — folder backend · src › modules.md": "2cd687083de629f3d624bf4b4c99b49292ab5a6378c10d600d6aa839d64f6229",
     "Atlas/Struktura/patternly-backend/src/modules/billing/billing — folder backend · src › modules.md": "f52c7c81d7811df426ed1b840785ea06ac2a17e9354f9d80c325ebbc7f230f1d",
@@ -100758,8 +101051,8 @@
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "d93d346546da561396b63d20eb55db1698203b892511367bacc006b23eecd3ba",
     "Atlas/Struktura/patternly-backend/src/modules/tracks/tracks — folder backend · src › modules.md": "e0639e0e8c0e7a47a19dd51429b730714072ed540ba4e541f2ad8b314812b90c",
     "Atlas/Struktura/patternly-backend/src/modules/users/users — folder backend · src › modules.md": "952a38f7f4c04b0e6e555650a390398fb16d50355b5459205f83e05f0f7856c3",
-    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "237fd2a32d8404244ed4aa27b04e3d268325757edbaf7b6d940cf613883186b4",
-    "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "8967c319bf51f94dd2b1335dc0378dcf7a470a85abc61e8f83a8d6d23f0ab029",
+    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "cb072f60afd701f153bc1de07a018ab59a848c5ac70dcbb75d2b420a631ce90c",
+    "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "607881277c1a4d77bf46ae9fd8e39b4d6ef28a17d540b9952487d666d887da6d",
     "Atlas/Struktura/patternly-backend/tests/fixtures/cost02-package/cost02-package — folder backend · tests › fixtures.md": "b77eadc82eddc23841df6ffeb9e4c0ec9682c3ba45c096f58d51bbc636a1b25c",
     "Atlas/Struktura/patternly-backend/_Pliki/package.json — backend.md": "e5daed063ae5b8c424742c6c724097a043782d37551c19c6d0ba6366f2934b02",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/apply-firestore-ttl.mjs — backend · scripts.md": "c2eab7966ac1c7327d1ba357d319e9bdce867a6597bb183465e76b55eba45433",
@@ -100772,7 +101065,7 @@
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/dev-smoke.ts — backend · scripts.md": "058e7efffbe5912686cdf90cdefd3c7729116dfb6d05b99ef35eacc4d85bbe28",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/devAdminBoundary.test.mjs — backend · scripts.md": "2afa3f6d800021b53934d94734b590743c12b7fd5d41d0e3d32b3a93a65f386d",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/generate-openapi.ts — backend · scripts.md": "17d2162f92a24578f97f7f71f0674c7c9dd7e25b2be07ccd1b3a875558da1cc3",
-    "Atlas/Struktura/patternly-backend/scripts/_Pliki/isolated-emulator-test-runner.d.mts — backend · scripts.md": "9dea813b94379540b874e1c88292d17f23244d8ac1c168b23da59e78d57d4e82",
+    "Atlas/Struktura/patternly-backend/scripts/_Pliki/isolated-emulator-test-runner.d.mts — backend · scripts.md": "520c5adcc29cf84936e5f4e7c23c8759f50fbeb6e67f7e595abf2a4b1e02edcd",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/isolated-emulator-test-runner.mjs — backend · scripts.md": "e360226eb2b3b740baed5ff7b229aa6e7c5bf41c5bfee37e47029078f44ce00b",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/lint.mjs — backend · scripts.md": "2126b027e75eb419a95fb65c01906ac2312f1ff26c0a19d460a7c6e7f8acad81",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/localAdminEnvironment.mjs — backend · scripts.md": "185c3b76cde2a15f731e931f1e944cdea6628624d43292fc0cfd71ea2134cbe3",
@@ -100817,6 +101110,7 @@
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-progress-paging-measurement.mjs — backend · scripts.md": "b39d87cfd30a80af4db0ed893f1daa04c04d1d64cbff8a2d392220a8d29eba8c",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-progress-paging-probe.mjs — backend · scripts.md": "3cdf9373cf131c25484b7c8b43f0e0236db797cf3fb40711d3bfc0440e16aff8",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-purchase-receipt-tests.mjs — backend · scripts.md": "2596918d7d48c1e9f14ea7e9b8b37e86ecc7d1f18c2eb05ebfc0ad15d3ea0f90",
+    "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-rc-customer-deletion-tests.mjs — backend · scripts.md": "ce93cddc11c8fb15bd4356bf748160e356d159c0a5efe9a468831925243066e3",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-record-fingerprint-client.mjs — backend · scripts.md": "8887413095214e4dad2cb4c5aaf9fcbab8d34a940725d63e6ed2839d6b8525d6",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-recovery-emulator-tests.mjs — backend · scripts.md": "53e9dbb145fc438fdf306b51bc65656e2056d39c787d24a7322405631fcf64eb",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-retention-completion-tests.mjs — backend · scripts.md": "2f4889cb6490ed63f5d04ac3bd2b1ce80a169b59db229b29a1bee708436e2cbd",
@@ -100829,31 +101123,32 @@
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/openapi.ts — backend · src › api.md": "55b401468248afa56f2a8d70b41683f65b47aac00f68ee4f295995b638ea73c8",
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/route-contract.ts — backend · src › api.md": "8dded5d24b101e90cf2845b7eec76f9c723d24ba758b52a49f9010351c6d3b2c",
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/security-probes.ts — backend · src › api.md": "72f712702beaab28bf7b93b4991a5ae42570638c9fb376320234d1480489f73c",
-    "Atlas/Struktura/patternly-backend/src/config/_Pliki/environment.ts — backend · src › config.md": "a7575cafc40f24c7d599a7501dcf99ffa7df732abcdd37b9269c6407b7557dd7",
+    "Atlas/Struktura/patternly-backend/src/config/_Pliki/environment.ts — backend · src › config.md": "63ac0fb29f88629e892a7c7e3bf1b9b4c2a15cf7c5e106119be510fdd3a5c528",
     "Atlas/Struktura/patternly-backend/src/config/_Pliki/premiumMap.ts — backend · src › config.md": "f7ab89b2e669582aa89ee2509d3da4740905bbbe03409cb40f5d07bd2a9c9fee",
     "Atlas/Struktura/patternly-backend/src/config/_Pliki/sandboxPromotionalAccess.ts — backend · src › config.md": "483267fae55599ff2a94763a599b6a58a97926c45205f9410eef032b5d7d56e4",
     "Atlas/Struktura/patternly-backend/src/_Pliki/index.ts — backend · src.md": "a81f73164c08a8dd659b5c8c7fe01546e5e4a1a0ae0037bea62ac3679cc7750b",
     "Atlas/Struktura/patternly-backend/src/infrastructure/content/_Pliki/gcsContentPackageStorage.ts — backend · src › infrastructure › content.md": "2577a0161651d308abd7c143788cbe1bdb9c52064c1dfddc24fce1b278520b0a",
     "Atlas/Struktura/patternly-backend/src/infrastructure/email/_Pliki/smtpPrivacyEmailSender.ts — backend · src › infrastructure › email.md": "7897fac8bda5b8d1c0a51303423ce144a9fc4b89e12377931fa88a218cfedb47",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/firebase/_Pliki/adminAuth.ts — backend · src › infrastructure › firebase.md": "591eefb61bb10ab33e62d2eeb41e862566ec50c175725e8b1100ed29659505b5",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/firebase/_Pliki/adminAuth.ts — backend · src › infrastructure › firebase.md": "d6149a75f2bb7ff11c097474f9bf94db2671a2f440d589ccaf1e7660a82195b1",
     "Atlas/Struktura/patternly-backend/src/infrastructure/firebase/_Pliki/appCheckVerifier.ts — backend · src › infrastructure › firebase.md": "6a008cc45114dec1d9bd91158c98e75c7d26e8737ad140fb720bcfe5d27d4e72",
     "Atlas/Struktura/patternly-backend/src/infrastructure/firebase/_Pliki/verifier.ts — backend · src › infrastructure › firebase.md": "4ee03df3255aead99dd4d486695ed4f40492b0f87c7a9755d6e71b6cb16da0b8",
     "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/client.ts — backend · src › infrastructure › firestore.md": "982e50efe63d025cab738de86b6e61d7150bab490a3b1da6e2e1fdf811b46059",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/paths.ts — backend · src › infrastructure › firestore.md": "f7d42eace702b0c3c77b3d063d9ea6ed8ea900a8b863effb752fe1186f320416",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/stores.ts — backend · src › infrastructure › firestore.md": "7fb363b1204b774880e12afb7de6a0adfbce41592eae4c543e05783ea2370000",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/paths.ts — backend · src › infrastructure › firestore.md": "f8dcc5cfcc91f2ccc59054e266184b950f44b212ba38f8d2b2e6a0bc342dd9d1",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/stores.ts — backend · src › infrastructure › firestore.md": "e5de89b5058e66423c5f30a9657270d4d2eacfc074730875d4dc9c497b8201fc",
     "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/values.ts — backend · src › infrastructure › firestore.md": "2f54dc7e0029462f916df1419e31be43f55f325282262460e6cbacccf4d29e4b",
     "Atlas/Struktura/patternly-backend/src/infrastructure/identity/_Pliki/canonicalJson.ts — backend · src › infrastructure › identity.md": "773ae774e701aaacf17564b3be9c0ff0f5c60a710befaa2fad80fcb31fa18826",
     "Atlas/Struktura/patternly-backend/src/infrastructure/identity/_Pliki/recordFingerprint.ts — backend · src › infrastructure › identity.md": "74254193a4de28fff3754ca2f8e413ca5df0d017e9498262888a7d97f6a14c32",
     "Atlas/Struktura/patternly-backend/src/infrastructure/logging/_Pliki/logger.ts — backend · src › infrastructure › logging.md": "2d19ef61750c5192f02b2d58c3c86e63fd49d6da70ceccf76e4be6a53fc972d6",
     "Atlas/Struktura/patternly-backend/src/infrastructure/operator/_Pliki/oidcVerifier.ts — backend · src › infrastructure › operator.md": "8305028167168f4e8d22e76ffe1578c30f774cf1e1e61b4351392cc2680b1ed4",
     "Atlas/Struktura/patternly-backend/src/infrastructure/revenuecat/_Pliki/client.ts — backend · src › infrastructure › revenuecat.md": "7ab587eaeaef74886f0a970df12daf2961444605f9aef0ffb58cd417fb18b069",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/security/_Pliki/pseudonymKeyRing.ts — backend · src › infrastructure › security.md": "e345058c4efee081a3dfa444a1e8a17be50458b90ff6040511b55bd28c4e5c7f",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/revenuecat/_Pliki/customerDeletion.ts — backend · src › infrastructure › revenuecat.md": "ae0de31ca48f344ddc87edd2032787922dcece3ef02b3de6508e37caa3b50350",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/security/_Pliki/pseudonymKeyRing.ts — backend · src › infrastructure › security.md": "08ef1b75ea02f1191bb6ac6c6bd2d46f1b9862b99a1bb530dfaccf057a3ef5c0",
     "Atlas/Struktura/patternly-backend/src/infrastructure/time/_Pliki/utcCalendar.ts — backend · src › infrastructure › time.md": "54c3b0eecb2a677aeca1631bdd0a213b26070a14247be97978a65cf84f32e4f8",
     "Atlas/Struktura/patternly-backend/src/modules/account-lifecycle/_Pliki/contracts.ts — backend · src › modules › account-lifecycle.md": "c55f6005cb1fbe97b45b4b8ab02d4ad18c5dcaefa2068510358c311e6332bb7d",
     "Atlas/Struktura/patternly-backend/src/modules/account-lifecycle/_Pliki/firestoreAccountErasure.ts — backend · src › modules › account-lifecycle.md": "2c64c1ed4c2605cd712235621efcf984226466d3d9e41901db5f66c4ad817cdf",
     "Atlas/Struktura/patternly-backend/src/modules/account-lifecycle/_Pliki/offlineDeletionRestore.ts — backend · src › modules › account-lifecycle.md": "e1f39d953f19d3df4bd4de89f92f5c6a88e2933e93cb372f89dadb7c4b15cc88",
     "Atlas/Struktura/patternly-backend/src/modules/account-lifecycle/_Pliki/recoveryOperationCipher.ts — backend · src › modules › account-lifecycle.md": "edcaf5da8fc46f597443f2537144060745c8801a8dde3ec43874a9664feff02b",
-    "Atlas/Struktura/patternly-backend/src/modules/account-lifecycle/_Pliki/store.ts — backend · src › modules › account-lifecycle.md": "3dd2a27318c2a092f3137b863a072b309d9b783bba85d8886a1b150df8a2996a",
+    "Atlas/Struktura/patternly-backend/src/modules/account-lifecycle/_Pliki/store.ts — backend · src › modules › account-lifecycle.md": "a7c349fb0d1b0c7bce86a0ca4d87e98524549652d20ea03383a771771ccbdbac",
     "Atlas/Struktura/patternly-backend/src/modules/admin/_Pliki/store.ts — backend · src › modules › admin.md": "9d6c4b74d487f76c9177228c97c2793ed89966b629311e0772abb531da0b3659",
     "Atlas/Struktura/patternly-backend/src/modules/auth/_Pliki/authorizationGeneration.ts — backend · src › modules › auth.md": "7e638f9bb5f9689617f5a403103f0d8ec4ccff05dd1987b0bfb187f0deef588f",
     "Atlas/Struktura/patternly-backend/src/modules/auth/_Pliki/contracts.ts — backend · src › modules › auth.md": "3485ee9bfe13f3784f65140ea00bbe8576ba4f5169d1bbce2882d0cfa94c873a",
@@ -100890,13 +101185,13 @@
     "Atlas/Struktura/patternly-backend/src/modules/users/_Pliki/merge.ts — backend · src › modules › users.md": "5c0037fdeb845ab91d60c0ecbddad1b83a4d758b19be0796d665367085bae33b",
     "Atlas/Struktura/patternly-backend/src/modules/users/_Pliki/store.ts — backend · src › modules › users.md": "40554ab2a0bd6b5dee0633502949ecca2faec3267a2758ccd833cbf2253ef486",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/accountDeletionRestore.emulator.ts — backend · tests.md": "ad316bf7d05f65db43cf0d1a88fdf142525ad05c7b59f6703d173f741023fbfa",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/accountLifecycleCrash.emulator.test.ts — backend · tests.md": "1807e12e748d56f2fa6fb5562a145e3a514b5a80ee2868fd330032ef9608134d",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/accountLifecycleCrash.emulator.test.ts — backend · tests.md": "d932094e9527f2596944091345abb8b3435a39f9d2c1e50b4a3151a0e235e937",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/accountWireContract.test.ts — backend · tests.md": "61c10fd1e90b9fbfa34eeb25c91adccd3c26e79095ec928e5822a9111365c285",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/adminStore.test.ts — backend · tests.md": "d4e520c0ddd8c19221c7de5dfa290f46e5966ee8eff58424f7d94c15cd0b796f",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/adoptionTransfer.emulator.test.ts — backend · tests.md": "3484a63ebb866801c91bdf24b04af7bf69da25c7fdb15e212a1563eef1d87736",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/adoptionTransfer.test.ts — backend · tests.md": "9dd1c178b9127177d23aabb3a64c99af21546fd09e2072dcdeee0ae4b569756b",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/appObservability.test.ts — backend · tests.md": "c608df47360b3eef33548bf16e446d40323cd2fa0f1af179ff171d6143b7c27f",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/aud08Recovery.emulator.test.ts — backend · tests.md": "12a490c6a3e0a2e1c7ac7304bbcdc2877c0d212c4389ad93ade1496f33a38e35",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/aud08Recovery.emulator.test.ts — backend · tests.md": "7d5e7c18c41443503e6988815d486dbe2ca43575a5dcff92d00315e3e8b3e1e4",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/ch03Acceptance.emulator.test.mjs — backend · tests.md": "88e5817e45ba4b23da35de07b8f888368a3c4eb8dab7c70c16eb0174b5e7c711",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/ch03StoredEnums.emulator.test.ts — backend · tests.md": "dfb4f4eb72d5d06d610c625e6ada11e26ef2d23f3635eeef892771fb728a1e8e",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/contentPackages.emulator.test.ts — backend · tests.md": "a01edaea8617ac167c980de117e4682149283bba0d050cf1ae6262b07d307822",
@@ -100907,11 +101202,12 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deletedIdentityR01.emulator.ts — backend · tests.md": "3e27326312117da0a5208d4847fda44f84afa1264ff4f97c415baae99692e012",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deployment.test.ts — backend · tests.md": "282a1effe352e8855ee2f8b25f5243fcafded04a0f9d3986912fa827f2937e53",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/environment.test.ts — backend · tests.md": "a16826eaa99708abc4444c0e9a4465a7b081830a4b6d8641dac64d2ec156457b",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/firestore.emulator.test.ts — backend · tests.md": "7b4e48d36bcf2f39d9a8f1eb556e09449f1c1951e4548732ca13137b75953d40",
-    "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/accountLifecycleCrashWorker.ts — backend · tests › fixtures.md": "4f89f7b4ec46c45cf61458da0a6e88b248dd6ee60e7355f83594a897f3927164",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/firestore.emulator.test.ts — backend · tests.md": "c067c524a8b01366af9466d7f498348c8fa9507dbcdc971966e1252f1e629682",
+    "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/accountLifecycleCrashWorker.ts — backend · tests › fixtures.md": "1830e2e22c7dcbe9c9329a541b903b454744db74fcc92ee3eeff1b72490a5e43",
     "Atlas/Struktura/patternly-backend/tests/fixtures/cost02-package/_Pliki/provenance.json — backend · tests › fixtures › cost02-package.md": "add566bfc2d9fa85738ea90e34511b1b8bbb5bdb21b3807ed8c95ac3946aa401",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/gcsPackageFixture.ts — backend · tests › fixtures.md": "37522f0b08365bdc8ccabce35138630fb9c58d94a1931d631f0fde68da9b1b27",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/premiumSnapshot.ts — backend · tests › fixtures.md": "69b40ebf40b15ada3dccbe11a651dea85567bc002a25d459656b357e52a85a8a",
+    "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/rcCustomerDeletionCrashWorker.ts — backend · tests › fixtures.md": "2d365db45bf13b5caed24e67beab379abd7d76efae8594bd6a977e417cd88bda",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/goalPlanMixedReplay.emulator.test.ts — backend · tests.md": "3da44ebcf40257cb7da053c750a1a73d71996ac9552300e531318a7ae4a776ff",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/isolatedEmulatorRunner.test.ts — backend · tests.md": "2cdc9954ff5ec4cfb1a0f799824d1432877e8dd1aee4c89562d0471ec1b14e82",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/isolatedProgressFixture.emulator.test.ts — backend · tests.md": "264c7e159d705c7f36dc851e0061cb33ce3e55eba416143c9e93ca9ac03a9aa2",
@@ -100941,6 +101237,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/pseudonymKeyRing.test.ts — backend · tests.md": "ff7628906f17e456383be2218cd745864c1152121869cdc52a53298a676a9d82",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/purchaseReceiptDelivery.emulator.test.ts — backend · tests.md": "25b76026d02c31f6f0810d3c8f5e0dc00563ca27526a1053a1bf6fbacad9e26e",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/purchaseReceiptSmtp.test.ts — backend · tests.md": "e9767a0ef46cc5b5772b84d7855061a783a29a208e0d251a7e9082cf77c7d787",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/rcCustomerDeletion.emulator.ts — backend · tests.md": "818796ce485873e98b44dc97e0ebc3646635fa90b4f401c72df18dd3d00b9e8a",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/recordFingerprint.test.ts — backend · tests.md": "3120679073659d386dab9b3ada0fd58132bf249607d09919b76f20c721d024a8",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/recoveryOperationCipher.test.ts — backend · tests.md": "71bce5f255ddc27a9cb1c55b7998e5c479b81dfe9947bb66883a2944d153290a",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/recoveryRouteGuards.test.ts — backend · tests.md": "6ffe1a1a9a0f6f709f6405b16056a6d9a1cd99ec8d6aab1969420a600fd75a87",
@@ -100948,19 +101245,21 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/retentionPolicy.test.ts — backend · tests.md": "97e47ec8612ad8c4ec7ac99f3ca834bc933b5dcd2d4b129cc928d23032afc071",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/retentionPurge.emulator.test.ts — backend · tests.md": "b48c1204ab5a957846e02677914a38d2fdac009bd322e0e351750ae1b420b432",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/retentionPurgeCli.test.ts — backend · tests.md": "031e533dce7588527288004aef4aa1b0ebc756b2037aae41645958cdeab9e0c6",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/revenuecatClient.test.ts — backend · tests.md": "513e376c8b82cab8fc320d596dc4c7196b6d4362a715c97e6fa3b67d5d08a9e1",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/revenueCatDeletionFixture.ts — backend · tests.md": "52f2714d1ca5ee75c7f73204865a71276069738f43b01748aa3d548deabf9020",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/revenuecatClient.test.ts — backend · tests.md": "48e429e764d0f65a43c439dc4852e0409c40c2ceca3c60e52274e9b86ccca743",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/revenuecatCustomerDeletion.test.ts — backend · tests.md": "ace551288c1fc8da64808dd0d063ddfa0ea1ebebce93388719ded6a57950590f",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/revenuecatEntitlements.emulator.test.ts — backend · tests.md": "8b28dcd7e7457d7e18ea5a16006a0dfc2e9a07f17b2a7492f46cdb4420329993",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/revenuecatSafetyRegression.test.ts — backend · tests.md": "eb3413663602ef27c52f45254cde72b0e88048b4d40b66b78f973df855cb8825",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/revenuecatWebhook.emulator.test.ts — backend · tests.md": "628d6830335c3f6e8be4b048b19547b6fbdca8e19e49d2e3242c0121c8d8a9c3",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/revenuecatWebhook.test.ts — backend · tests.md": "b20e9c5d1fd9c98961ff8056bdf4d7607c942ddd09f7542fff3e90c11dccf989",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/sandboxPromotionalAccess.test.ts — backend · tests.md": "8d7f611910b745b708cb20a8664e822a9e381ff22d3e57d05e27a01c695fd9b4",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/sandboxPromotionalPackages.emulator.test.ts — backend · tests.md": "438bf7c8237d8f27623d1b4668ae58277d2ce4db53d1d14314d864bb898f1906",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/sec07SessionRevocation.emulator.test.ts — backend · tests.md": "7ccc1224b2688d27e361059b275ba72d493088825093e2a11ab3b591e70fa250",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/sec07SessionRevocation.emulator.test.ts — backend · tests.md": "b881abd4b0ab9388a7a0d02d48e35c3847f4a1e512b3ec122f553547b6ff76dd",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/securityIncidentContracts.test.ts — backend · tests.md": "8f25495307a3112b41a0eb17bada3299d23bd3dd272a7583c987a2f819ee5189",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/securityIncidents.test.ts — backend · tests.md": "bf923789608d0ad4efe717511dfb29acdc3734d63308487b3f32bc42a288b402",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/smtpPrivacyEmailSender.test.ts — backend · tests.md": "030abf750205652440f5757cf30415ded67c0ef0e5271661172c2c53cc11cfed",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/stagedErasureFixtures.ts — backend · tests.md": "d4689a76676d3ff6997ea68397b3e5fe36e4f1e59cefbd632bb525b6be80afb6",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/support.ts — backend · tests.md": "89cb380a09c6716b2cffd17ee7573b72de8079a8211097eda9901022aad0176c",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/support.ts — backend · tests.md": "8ac614abfe382838bb2800793791c4c271496d91cf7d7c7c420aac737b89ef66",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/syncMutationReceipts.emulator.test.ts — backend · tests.md": "ff10d6ab44ef53267954b53243d8eb2977a15110fb7d3cef17bbc94c44a98396",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/usersStoreLegacyDeletedIdentities.test.ts — backend · tests.md": "9eeda20850ea18c13806cb4b5a14c2c20e48d13315035162f28f1498f0f20490",
     "Atlas/Struktura/patternly-content/treści — repozytorium.md": "553a76c4c690365e3c9f80337fc0120d2e388cfba23ddb5e3b4b4aa8408c6386",
@@ -101213,6 +101512,7 @@
     "Atlas/Struktura/patternly-web/src/generated/generated — folder witryna · src.md": "b6bdc2b8b59841a1d898499adefcdba1e335f51888eaf9db92d0499c19df6f91",
     "Atlas/Struktura/patternly-web/src/hooks/hooks — folder witryna · src.md": "d617dd21ea94ee463f561580ea784176df4ca08e5c709a8fe9e49a0ad597e217",
     "Atlas/Struktura/patternly-web/src/pages/pages — folder witryna · src.md": "0e84976686e468548f864e706f351bc3c874672bd77b0f267bf746c3093d7a5d",
+    "Atlas/Struktura/patternly-web/~2E~github/workflows/_Pliki/verify.yml — witryna · ~2E~github › workflows.md": "4611c66cfb9ccdc77bd1c6df3f0e1056bd95cfde713f722845e705b602d62040",
     "Atlas/Struktura/patternly-web/_Pliki/admin.css — witryna.md": "d09f7132ee8a772033a6f8f0f40c43241906a781484e65169af5a68f5cc01c35",
     "Atlas/Struktura/patternly-web/assets/brand/mark/_Pliki/patternly-mark-mint.svg — witryna · assets › brand › mark.md": "841d1cc84826f918b5d7e39e398cfeedcf750af2e6b2855deeeb8cbe459c6c34",
     "Atlas/Struktura/patternly-web/assets/icons/_Pliki/cloud.svg — witryna · assets › icons.md": "a4893c476acacf4f34f04f75641923f53d6e0951f70c3e4983e638289072afd1",
@@ -101232,6 +101532,8 @@
     "Atlas/Struktura/patternly-web/scripts/_Pliki/basic-text-contrast.mjs — witryna · scripts.md": "0328eb4e125245bbdfe864a7f15967d1febb763bbc4278e039acc736d9bfabf6",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/build-local.mjs — witryna · scripts.md": "a1b97cd93d42494024c70beac37e3b06d921717a14008d389a7cefc0e0f7899f",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/check-canonical-demo.mjs — witryna · scripts.md": "2ef7af3262ff6cc5898a87264ae3e2326797d7d9fd2efb0c33acb33a1ca54cb5",
+    "Atlas/Struktura/patternly-web/scripts/_Pliki/current-demo-contract.mjs — witryna · scripts.md": "8f0b696b8c539e17edcba507017fe04acb6e3c52ea031f02610c1b6812944b34",
+    "Atlas/Struktura/patternly-web/scripts/_Pliki/current-demo-contract.test.mjs — witryna · scripts.md": "759babdb9056e6309770ac78cb2d49255c18febaebc6a0fa517247caa69505ea",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/demo-question.browser.test.mjs — witryna · scripts.md": "97c504957ef78c52e2835300d9194724c2ea59af72a641a4a878bace0d7cd057",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/demo-site.browser.test.mjs — witryna · scripts.md": "a6e8c402c435b9699c8a3bcc15e407d5847aa96d171bd0ed62f0afe6795e2920",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/dev-local.mjs — witryna · scripts.md": "311fe5ad27541816df226ce1d9abf92017da799401ae282d33efc5b93892f6aa",
@@ -101274,9 +101576,6 @@
     "Atlas/Struktura/patternly-web/src/_Pliki/publicPages.js — witryna · src.md": "3fb1e55191a0e0088c700890c258948c83abb7e49499ea046540447b23f65cfd",
     "Atlas/Struktura/patternly-web/src/_Pliki/publicTrackPages.js — witryna · src.md": "b12d0bf4e9f4fb8e95f2cc58bb380f3304028fd41916fe0eccc20fe9bb623b58",
     "Atlas/Struktura/patternly-web/_Pliki/styles.css — witryna.md": "ba8f384a34031c63e66b3ab72cdb1421884c349c4b56543abf4ebde2d73c82bb",
-    "Atlas/Struktura/patternly-web/_Pliki/vite.config.js — witryna.md": "7b5f1f460d3d06711e5f272c83316510780ea88ac74896427c3ebe109fdfc4f2",
-    "Atlas/Struktura/patternly-web/~2E~github/workflows/_Pliki/verify.yml — witryna · ~2E~github › workflows.md": "4611c66cfb9ccdc77bd1c6df3f0e1056bd95cfde713f722845e705b602d62040",
-    "Atlas/Struktura/patternly-web/scripts/_Pliki/current-demo-contract.mjs — witryna · scripts.md": "8f0b696b8c539e17edcba507017fe04acb6e3c52ea031f02610c1b6812944b34",
-    "Atlas/Struktura/patternly-web/scripts/_Pliki/current-demo-contract.test.mjs — witryna · scripts.md": "759babdb9056e6309770ac78cb2d49255c18febaebc6a0fa517247caa69505ea"
+    "Atlas/Struktura/patternly-web/_Pliki/vite.config.js — witryna.md": "7b5f1f460d3d06711e5f272c83316510780ea88ac74896427c3ebe109fdfc4f2"
   }
 }

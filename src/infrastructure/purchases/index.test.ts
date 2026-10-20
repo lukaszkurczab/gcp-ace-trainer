@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createPurchasesAdapter, readPurchaseConfig, type RevenueCatGateway, type RevenueCatPackage, type StoreBinding } from "./index";
+import { createPurchasesAdapter, isRevenueCatAccountDeletionBlocked, prepareRevenueCatAccountDeletion, readPurchaseConfig, type RevenueCatGateway, type RevenueCatPackage, type StoreBinding } from "./index";
 
 const IOS: StoreBinding = { platform: "ios", store: "APP_STORE", appId: "fixture-ios", rcProductId: "fixture-rc-ios", storeProductId: "com.lkurczab.patternly.premium.monthly", basePlanId: null };
 const PLAY: StoreBinding = { platform: "android", store: "PLAY_STORE", appId: "fixture-play", rcProductId: "fixture-rc-play", storeProductId: "fixture_play_monthly", basePlanId: "monthly" };
 const pkg = (overrides: Record<string, unknown> = {}) => ({ identifier: "monthly", store: "APP_STORE" as const, purchaseProductIdentifier: "com.lkurczab.patternly.premium.monthly", product: { identifier: "com.lkurczab.patternly.premium.monthly", priceString: "€9.99", introPrice: null, discounts: [], productType: "AUTO_RENEWABLE_SUBSCRIPTION", subscriptionPeriod: "P1M", ...overrides } });
 const options = { config: { apiKey: "key", accountId: "account", binding: IOS }, checkoutEnabled: true };
 function gateway(overrides: Partial<RevenueCatGateway> = {}): RevenueCatGateway {
-  return { configure: async () => {}, getOfferings: async () => ({ current: { monthly: pkg() } }), purchasePackage: async () => ({ productIdentifier: pkg().product.identifier, transaction: { productIdentifier: pkg().product.identifier, transactionIdentifier: "exact-T" } }), restorePurchases: async () => ({ activeSubscriptions: [] }), getCustomerInfo: async () => ({ activeSubscriptions: [] }), managementURL: async () => "https://apps.apple.com/account/subscriptions", ...overrides };
+  return { isConfigured: async () => false, getAppUserID: async () => "", logOut: async () => ({}), configure: async () => {}, getOfferings: async () => ({ current: { monthly: pkg() } }), purchasePackage: async () => ({ productIdentifier: pkg().product.identifier, transaction: { productIdentifier: pkg().product.identifier, transactionIdentifier: "exact-T" } }), restorePurchases: async () => ({ activeSubscriptions: [] }), getCustomerInfo: async () => ({ activeSubscriptions: [] }), managementURL: async () => "https://apps.apple.com/account/subscriptions", ...overrides };
 }
 
 test("SDK config requires a key/account, independently of checkout", () => {
@@ -104,6 +104,61 @@ test("shared lane prevents a new account configuration during an old store sheet
   assert.deepEqual(events, ["config:A", "buy:A"]);
   release(); await buying; await restoring;
   assert.deepEqual(events, ["config:A", "buy:A", "done:A", "config:B"]);
+});
+
+test("account deletion blocks queued SDK configure and actions synchronously", async () => {
+  let configured = 0, restored = 0;
+  const adapter = createPurchasesAdapter(gateway({
+    configure: async () => { configured++; },
+    restorePurchases: async () => { restored++; return { activeSubscriptions: [] }; },
+  }), { ...options, config: { ...options.config, accountId: "account-gate-test" } });
+  await prepareRevenueCatAccountDeletion("account-gate-test", null);
+  assert.equal(isRevenueCatAccountDeletionBlocked("account-gate-test"), true);
+  assert.equal((await adapter.restorePurchases()).status, "unavailable");
+  assert.deepEqual([configured, restored], [0, 0]);
+});
+
+test("account deletion lane barrier waits for already-dispatched SDK work", async () => {
+  let release!: () => void;
+  let completed = false;
+  const paused = new Promise<void>((resolve) => { release = resolve; });
+  const adapter = createPurchasesAdapter(gateway({
+    restorePurchases: async () => { await paused; completed = true; return { activeSubscriptions: [] }; },
+  }), { ...options, config: { ...options.config, accountId: "account-barrier-test" } });
+  const restore = adapter.restorePurchases();
+  await new Promise((resolve) => setImmediate(resolve));
+  let drained = false;
+  const barrier = prepareRevenueCatAccountDeletion("account-barrier-test", null).then(() => { drained = true; });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(drained, false);
+  release();
+  await Promise.all([restore, barrier]);
+  assert.equal(completed, true);
+  assert.equal(drained, true);
+});
+
+test("account deletion logs out only the exact configured RevenueCat identity", async () => {
+  const events: string[] = [];
+  const matching = gateway({ isConfigured: async () => true, getAppUserID: async () => "account-detach-test", logOut: async () => { events.push("logout"); } });
+  await prepareRevenueCatAccountDeletion("account-detach-test", matching);
+  assert.deepEqual(events, ["logout"]);
+
+  events.length = 0;
+  await prepareRevenueCatAccountDeletion("account-unconfigured-test", gateway({ isConfigured: async () => false, getAppUserID: async () => { events.push("read-id"); return "account-unconfigured-test"; }, logOut: async () => { events.push("logout"); } }));
+  await prepareRevenueCatAccountDeletion("account-foreign-test", gateway({ isConfigured: async () => true, getAppUserID: async () => { events.push("read-id"); return "another-account"; }, logOut: async () => { events.push("logout"); } }));
+  assert.deepEqual(events, ["read-id"]);
+});
+
+test("deletion resolves native gateway state after the JavaScript wrapper cache is empty", async () => {
+  let loads = 0, logouts = 0;
+  const configuredNativeGateway = gateway({ isConfigured: async () => true, getAppUserID: async () => "account-after-reload", logOut: async () => { logouts++; } });
+  await prepareRevenueCatAccountDeletion("account-after-reload", undefined, () => { loads++; return configuredNativeGateway; });
+  assert.deepEqual([loads, logouts], [1, 1]);
+});
+
+test("RevenueCat logout failure rejects the deletion barrier", async () => {
+  await assert.rejects(prepareRevenueCatAccountDeletion("account-detach-failure-test", gateway({ isConfigured: async () => true, getAppUserID: async () => "account-detach-failure-test", logOut: async () => { throw Error("offline"); } })));
+  assert.equal(isRevenueCatAccountDeletionBlocked("account-detach-failure-test"), true);
 });
 
 test("actor and deadline are checked after asynchronous configure, before store effect", async () => {

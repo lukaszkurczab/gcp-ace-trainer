@@ -26,6 +26,9 @@ export type RevenueCatPackage = Readonly<{
   subscriptionOption?: SubscriptionOption;
 }>;
 export type RevenueCatGateway = Readonly<{
+  isConfigured(): Promise<boolean>;
+  getAppUserID(): Promise<string>;
+  logOut(): Promise<unknown>;
   configure(config: { apiKey: string; appUserID: string }): Promise<void>;
   getOfferings(): Promise<{ current: { monthly?: RevenueCatPackage | null } | null }>;
   purchasePackage(pkg: RevenueCatPackage): Promise<unknown>;
@@ -55,10 +58,33 @@ function sanitizeRevenueCatLog(level: unknown): void {
 }
 
 let sdkTail: Promise<void> = Promise.resolve();
+const revenueCatDeletionBlockedAccountIds = new Set<string>();
 function inSdkLane<T>(work: () => Promise<T>): Promise<T> {
   const result = sdkTail.then(work, work);
   sdkTail = result.then(() => undefined, () => undefined);
   return result;
+}
+
+/** Synchronously blocks this account, then waits for SDK work already in the shared lane to settle. */
+export function prepareRevenueCatAccountDeletion(
+  accountId: string,
+  gateway?: RevenueCatGateway | null,
+  loadGateway: () => RevenueCatGateway = createRevenueCatGateway,
+): Promise<void> {
+  if (typeof accountId !== "string" || accountId.trim() === "") throw new TypeError("revenuecat_deletion_account_invalid");
+  revenueCatDeletionBlockedAccountIds.add(accountId);
+  return inSdkLane(async () => {
+    // A JS reload can clear this module cache while native Purchases remains
+    // configured, so resolve the wrapper before deciding there is no SDK state.
+    const activeGateway = gateway === undefined ? nativeGateway ?? loadGateway() : gateway;
+    if (!activeGateway || !await activeGateway.isConfigured()) return;
+    const currentAccountId = await activeGateway.getAppUserID();
+    if (currentAccountId === accountId) await activeGateway.logOut();
+  });
+}
+
+export function isRevenueCatAccountDeletionBlocked(accountId: string): boolean {
+  return revenueCatDeletionBlockedAccountIds.has(accountId);
 }
 
 /** The installed SDK types define the original operation's transaction, never CustomerInfo history. */
@@ -69,6 +95,9 @@ export function createRevenueCatGateway(): RevenueCatGateway {
   // Install before any SDK call. configure otherwise installs its raw console handler.
   Purchases.setLogHandler(sanitizeRevenueCatLog);
   nativeGateway = {
+    isConfigured: () => Purchases.isConfigured(),
+    getAppUserID: () => Purchases.getAppUserID(),
+    logOut: () => Purchases.logOut(),
     configure: async (config) => {
       if (!await Purchases.isConfigured()) Purchases.configure(config);
       else if (await Purchases.getAppUserID() !== config.appUserID) await Purchases.logIn(config.appUserID);
@@ -131,7 +160,7 @@ export function createPurchasesAdapter(gateway: RevenueCatGateway, options: {
       || (binding.store === "PLAY_STORE" && binding.platform === "android" && typeof binding.basePlanId === "string" && binding.basePlanId.trim() !== ""))
     && [binding.appId, binding.rcProductId, binding.storeProductId].every((value) => typeof value === "string" && value.trim() !== "");
   const setup = async (): Promise<PurchaseResult> => {
-    if (!current()) return { status: "unavailable" };
+    if (!current() || isRevenueCatAccountDeletionBlocked(options.config.accountId)) return { status: "unavailable" };
     if ((platform !== "ios" && platform !== "android") || !bindingValid) return { status: "unavailable" };
     if (!options.config.apiKey.trim() || !options.config.accountId.trim()) return { status: "misconfigured" };
     try {
@@ -142,7 +171,7 @@ export function createPurchasesAdapter(gateway: RevenueCatGateway, options: {
   const call = <T extends PurchaseResult>(action: () => Promise<T>, canDispatch: () => boolean = current): Promise<T | PurchaseResult> => inSdkLane(async () => {
     const configured = await setup();
     if (configured.status !== "success") return configured;
-    if (!current() || !canDispatch()) return { status: "unavailable" };
+    if (!current() || isRevenueCatAccountDeletionBlocked(options.config.accountId) || !canDispatch()) return { status: "unavailable" };
     return action();
   });
   const read = (action: () => Promise<unknown>): Promise<PurchaseResult> => call(async () => {

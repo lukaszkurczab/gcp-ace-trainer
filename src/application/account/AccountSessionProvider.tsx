@@ -8,6 +8,7 @@ import { premiumIdentityForAccount } from "./premiumEntitlementIdentity";
 import type { TrackId } from "../../domain";
 import { clearPremiumCache, clearPremiumCacheForAccountInProfile, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, readCachedPremiumAccess, readCachedPremiumSnapshot, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import type { PremiumPurchaseActor } from "./premiumPurchaseCoordinator";
+import { prepareRevenueCatAccountDeletion } from "../../infrastructure/purchases";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
 import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
@@ -1552,7 +1553,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
             pendingPreparation.resolveCompletion({ kind: "failure", failure: "revokedSession" });
           }
           const canResumeDeletion = () => live && !observerDetached && eventRevision === authObserverRevision && configuredAuth.getSnapshot() === null;
-          const deletionRecovery = await resumeSelectedAccountDeletionWithoutAuth(client, disableAccountRemindersForDeletion, canResumeDeletion);
+          const deletionRecovery = await resumeSelectedAccountDeletionWithoutAuth(client, disableAccountRemindersForDeletion, prepareRevenueCatAccountDeletion, canResumeDeletion);
           if (!canResumeDeletion()) return;
           if (deletionRecovery) {
             publish(deletionRecovery.result.ok ? { kind: "signedOut" } : { kind: "deletionPending", user: null, accountId: deletionRecovery.accountId,
@@ -2282,7 +2283,15 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     const lease = captureActiveProfileStorageLease();
     if (!apiClient || !fence || !lease || current.kind !== "authenticated") return null;
     const accountId = current.backendUser.id;
-    const isCurrent = () => fence.isCurrent() && isActiveProfileStorageLeaseCurrent(lease);
+    const isCurrent = () => {
+      const latest = stateRef.current;
+      const deletion = getAccountDeletionState();
+      return fence.isCurrent()
+        && isActiveProfileStorageLeaseCurrent(lease)
+        && latest.kind === "authenticated"
+        && latest.backendUser.id === accountId
+        && deletion?.accountId !== accountId;
+    };
     const guarded = async <T,>(work: () => Promise<T>): Promise<T> => {
       if (!isCurrent()) throw Error("purchase_actor_changed");
       const result = await work();
@@ -3403,7 +3412,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         const result = await deleteBoundAccount(api, state.backendUser.id, user.uid, async () => {
           if (!await invalidateAccountBindingForConfirmedDeletion({ accountId: state.backendUser.id, uid: user.uid, canContinue })) return false;
           return disableAccountRemindersForDeletion();
-        });
+        }, prepareRevenueCatAccountDeletion);
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         if (!result.ok) {
           setState({ kind: "authenticated", backendUser: state.backendUser, user, accountData: { ...state.accountData, status: result.failure === "remoteDeletionPending" ? "remoteDeletionPending" : result.failure === "localCleanupFailure" ? "localCleanupPending" : state.accountData.status, lastFailureCode: result.failure } });
@@ -3433,7 +3442,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (!user && stateRef.current.kind === "deletionPending" && stateRef.current.user === null) {
         const expectedAccount = stateRef.current.accountId;
         const canContinue = () => auth.getSnapshot() === null && stateRef.current.kind === "deletionPending" && stateRef.current.user === null && stateRef.current.accountId === expectedAccount;
-        const recovery = await resumeSelectedAccountDeletionWithoutAuth(api, disableAccountRemindersForDeletion, canContinue);
+        const recovery = await resumeSelectedAccountDeletionWithoutAuth(api, disableAccountRemindersForDeletion, prepareRevenueCatAccountDeletion, canContinue);
         if (!recovery || !canContinue()) return { kind: "failure", failure: "remoteDeletionPending" };
         if (!recovery.result.ok) {
           setState({ kind: "deletionPending", user: null, accountId: recovery.accountId, status: recovery.result.failure === "localCleanupFailure" ? "localCleanupPending" : "remoteDeletionPending", failure: recovery.result.failure });
@@ -3464,7 +3473,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         const result = await retryPendingAccountDeletion(api, accountId, user.uid, async () => {
           if (!await invalidateAccountBindingForConfirmedDeletion({ accountId, uid: user.uid, canContinue })) return false;
           return disableAccountRemindersForDeletion();
-        });
+        }, prepareRevenueCatAccountDeletion);
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         if (!result) return { kind: "failure", failure: "providerUnavailable" };
         if (!result.ok) {

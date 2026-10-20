@@ -17,6 +17,7 @@ import { createPendingSessionRevocationDrain, drainPendingSessionRevocations } f
 import { getMeWithExchangedSession } from "../account/accountSessionExchange";
 import { accountFinalizationPolicies, type AccountFinalizationOptions } from "../account/accountFinalization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
+import { prepareRevenueCatAccountDeletion } from "../../infrastructure/purchases";
 
 type Ref<T> = { current: T };
 type BootstrapCommonPorts = Readonly<{
@@ -579,7 +580,7 @@ async function reconcileAuthenticatedUser(
       // cannot create a new deletion operation here.
       if (deletion.status === "remotePending" || deletion.status === "remoteDeleted" || deletion.status === "localCleanupPending") {
         if (!canContinue()) return;
-        const recovered = await retryPendingAccountDeletion(api, deletion.accountId, user.uid, disableAccountRemindersForDeletion);
+        const recovered = await retryPendingAccountDeletion(api, deletion.accountId, user.uid, disableAccountRemindersForDeletion, prepareRevenueCatAccountDeletion);
         if (!canContinue()) return;
         if (recovered?.ok) {
           await auth.signOut();

@@ -482,6 +482,7 @@ test("auth command composition keeps provider credentials and hold-only deletion
   assert.match(authClient, /refreshAccountIdentity/);
 
   assert.match(provider, /prepareDeletion: \(credentials\)/);
+  assert.match(provider, /const deletion = getAccountDeletionState\(\);[\s\S]*?deletion\?\.accountId !== accountId/u, "premium actors become stale while the durable deletion marker exists");
   assert.match(provider, /deleteAccount: \(\) =>/);
   assert.match(provider, /deletionAuthorization\.consume\(user\.uid, token\.generation\)/);
   assert.match(provider, /async function disableAccountRemindersForDeletion\(\): Promise<boolean>/);
@@ -495,9 +496,10 @@ test("auth command composition keeps provider credentials and hold-only deletion
     assert.ok(callback.includes("async () => {"), `${name} serializes invalidation before cleanup`);
     assert.ok(callback.includes("if (!await invalidateAccountBindingForConfirmedDeletion"), `${name} blocks cleanup if the tombstone cannot be verified`);
     assert.ok(invalidation >= 0 && reminderDisable > invalidation, `${name} disables reminders only after identity binding invalidation`);
+    assert.match(callback, /prepareRevenueCatAccountDeletion/u, `${name} gates and drains RevenueCat before the backend deletion request`);
   }
   assert.equal([...provider.matchAll(/retryPendingAccountDeletion\(api,/g)].length, 1, "manual retry remains a provider command");
-  assert.match(bootstrap, /retryPendingAccountDeletion\(api, deletion\.accountId, user\.uid, disableAccountRemindersForDeletion\)/u);
+  assert.match(bootstrap, /retryPendingAccountDeletion\(api, deletion\.accountId, user\.uid, disableAccountRemindersForDeletion, prepareRevenueCatAccountDeletion\)/u);
   assert.match(provider, /issueRecoveryCodes: \(credentials: FirebaseAuthCredentials\)/);
   assert.match(provider, /next: "verificationSent"/);
   assert.match(provider, /holdAccountIdentityRefresh/);
