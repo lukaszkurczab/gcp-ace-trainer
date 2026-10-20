@@ -2785,8 +2785,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "a0c2750d874c926930c9ba36bef0bd83665e1d7900c4a25bc118e1e2702e103b",
-          "bytes": 112109,
+          "sha256": "77b26f7283868fb3ee2e6b341578831ada68e9a54bf5efb44125a2b88c57485a",
+          "bytes": 115828,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2797,7 +2797,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 1793
+          "lines": 1823
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -96733,13 +96733,13 @@
         },
         {
           "path": ".github/workflows/verify.yml",
-          "sha256": "38345f6e77670948d6b4aa2941c8830402e5030036fdc18e0e682a2472fd3362",
-          "bytes": 3374,
+          "sha256": "5f08efa147f36bb93cf868a72072c0690930f4bdd086fbf4931324d616d2b6ac",
+          "bytes": 3866,
           "symbols": [],
           "imports": [],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 101
+          "lines": 115
         },
         {
           "path": ".gitignore",
@@ -97388,6 +97388,122 @@
           "lines": 19
         },
         {
+          "path": "scripts/current-demo-contract.mjs",
+          "sha256": "9d0751afce1d4aec553d9d28c9d3c8322b44ecb3b5fdef382918f2466f546470",
+          "bytes": 3262,
+          "symbols": [
+            "readJson",
+            "currentDemoCatalog",
+            "assertCurrentDemoCatalog",
+            "verifyCurrentDemoCatalog",
+            "assertCaptureQuestion",
+            "verifyCaptureQuestion"
+          ],
+          "imports": [
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "node:crypto",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "node:child_process",
+              "kind": "static",
+              "resolution": "external",
+              "line": 3
+            },
+            {
+              "specifier": "node:fs",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
+              "specifier": "node:path",
+              "kind": "static",
+              "resolution": "external",
+              "line": 5
+            },
+            {
+              "specifier": "node:url",
+              "kind": "static",
+              "resolution": "external",
+              "line": 6
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [],
+          "lines": 49
+        },
+        {
+          "path": "scripts/current-demo-contract.test.mjs",
+          "sha256": "7ce4619bf9cc4b1b448e5fdee3f52468f9b0d8d1e26a0a44dd4456b0a33684af",
+          "bytes": 3259,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "node:test",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "node:crypto",
+              "kind": "static",
+              "resolution": "external",
+              "line": 3
+            },
+            {
+              "specifier": "node:child_process",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
+              "specifier": "node:fs",
+              "kind": "static",
+              "resolution": "external",
+              "line": 5
+            },
+            {
+              "specifier": "node:path",
+              "kind": "static",
+              "resolution": "external",
+              "line": 6
+            },
+            {
+              "specifier": "node:url",
+              "kind": "static",
+              "resolution": "external",
+              "line": 7
+            },
+            {
+              "specifier": "./current-demo-contract.mjs",
+              "kind": "static",
+              "target": "scripts/current-demo-contract.mjs",
+              "line": 8
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [
+            "actual current-source catalog and historical image question pass",
+            "capture binds exact historical bank and selected question, independent of current bank digest"
+          ],
+          "lines": 45
+        },
+        {
           "path": "scripts/demo-question.browser.test.mjs",
           "sha256": "bd75380a6ed5a6322b3500c2cee7dcc62d24ba554086703db69fed4d12652b02",
           "bytes": 8646,
@@ -97994,56 +98110,62 @@
         },
         {
           "path": "scripts/record-local-acceptance.mjs",
-          "sha256": "7d796721f53e0fd2e78a5be17fc6926f69a6ddd444ed72da5394e04165b673e0",
-          "bytes": 4944,
+          "sha256": "ac17bd9e168344f3cdf719ac2e230e69a135dc226fc6d6d68d9d00c600c7bea2",
+          "bytes": 5146,
           "symbols": [],
           "imports": [
             {
-              "specifier": "node:assert/strict",
+              "specifier": "./current-demo-contract.mjs",
               "kind": "static",
-              "resolution": "external",
+              "target": "scripts/current-demo-contract.mjs",
               "line": 1
             },
             {
-              "specifier": "node:crypto",
+              "specifier": "node:assert/strict",
               "kind": "static",
               "resolution": "external",
               "line": 2
             },
             {
-              "specifier": "node:child_process",
+              "specifier": "node:crypto",
               "kind": "static",
               "resolution": "external",
               "line": 3
             },
             {
-              "specifier": "node:fs",
+              "specifier": "node:child_process",
               "kind": "static",
               "resolution": "external",
               "line": 4
             },
             {
-              "specifier": "node:path",
+              "specifier": "node:fs",
               "kind": "static",
               "resolution": "external",
               "line": 5
             },
             {
-              "specifier": "node:url",
+              "specifier": "node:path",
               "kind": "static",
               "resolution": "external",
               "line": 6
             },
             {
+              "specifier": "node:url",
+              "kind": "static",
+              "resolution": "external",
+              "line": 7
+            },
+            {
               "specifier": "./publicLegalTestArtifact.mjs",
               "kind": "static",
               "target": "scripts/publicLegalTestArtifact.mjs",
-              "line": 7
+              "line": 8
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 63
+          "lines": 66
         },
         {
           "path": "scripts/seo-content.browser.test.mjs",
@@ -98133,44 +98255,50 @@
         },
         {
           "path": "scripts/verify-demo-bundle.mjs",
-          "sha256": "1c26c906de47a1691623cf8b376b5e252e7198e98ee48f3d8ededbf86cd5fe92",
-          "bytes": 4615,
+          "sha256": "a11722443ac2aa69d7c957c6ae06ae3cd6ef52cfb78d8d424d7949c580a89586",
+          "bytes": 4600,
           "symbols": [],
           "imports": [
             {
-              "specifier": "node:assert/strict",
+              "specifier": "./current-demo-contract.mjs",
               "kind": "static",
-              "resolution": "external",
+              "target": "scripts/current-demo-contract.mjs",
               "line": 1
             },
             {
-              "specifier": "node:crypto",
+              "specifier": "node:assert/strict",
               "kind": "static",
               "resolution": "external",
               "line": 2
             },
             {
-              "specifier": "node:fs/promises",
+              "specifier": "node:crypto",
               "kind": "static",
               "resolution": "external",
               "line": 3
             },
             {
-              "specifier": "node:path",
+              "specifier": "node:fs/promises",
               "kind": "static",
               "resolution": "external",
               "line": 4
             },
             {
-              "specifier": "node:url",
+              "specifier": "node:path",
               "kind": "static",
               "resolution": "external",
               "line": 5
+            },
+            {
+              "specifier": "node:url",
+              "kind": "static",
+              "resolution": "external",
+              "line": 6
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 56
+          "lines": 57
         },
         {
           "path": "scripts/verify-local.mjs",
@@ -98511,8 +98639,8 @@
         },
         {
           "path": "src/generated/demoQuestions.json",
-          "sha256": "631a51e7240d067351f65612317cd533478fc495a56b4a3224b61c4b623cdb81",
-          "bytes": 13935,
+          "sha256": "6a23cf1a7bf622ea283c665f239d36f43c8ae49beb2dda65da22ed2bf26b65f9",
+          "bytes": 13953,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -99139,7 +99267,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "a0c2750d874c926930c9ba36bef0bd83665e1d7900c4a25bc118e1e2702e103b",
+  "catalogHash": "77b26f7283868fb3ee2e6b341578831ada68e9a54bf5efb44125a2b88c57485a",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "5070379c21f97176fdeb82052a6bf8da2745d45ba12b051c70e81529bde83286",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -101066,20 +101194,20 @@
     "Atlas/Struktura/patternly-content/tests/_Pliki/shared-contract.test.mjs — treści · tests.md": "f74581c9fb5850e6e258a07d4d3b6ded9ad4ca7dc17b059e14c86722d486cdcc",
     "Atlas/Struktura/patternly-content/tests/_Pliki/simp03-phase-a.test.mjs — treści · tests.md": "d1d5e40bf41030cfa5ce8d768306115a0dcd1a3d47c2a9c42b79944fbd3fcd91",
     "Atlas/Struktura/patternly-content/tests/_Pliki/simp03-verifier.test.mjs — treści · tests.md": "b33a0071c1f0c4a7cbada779d646e2775d60371193c9d960304b6ec5cae4fc4f",
-    "Atlas/Struktura/patternly-web/witryna — repozytorium.md": "11f8feaccab07f4376487bbdf9fe2ddfd90cf5cc15dcbe7775820f0f107609da",
+    "Atlas/Struktura/patternly-web/witryna — repozytorium.md": "daae8b9a5b164366ea002a8df3c8c48db120f2690eac09eae6e94e3fae43e259",
     "Atlas/Struktura/patternly-web/~2E~github/~2E~github — folder witryna.md": "073adabc3f9117d8ab2af154ab2fc0bd868d5d5bd53b66a6320cf715a1135ebb",
-    "Atlas/Struktura/patternly-web/~2E~github/workflows/workflows — folder witryna · ~2E~github.md": "d99d91e11af702b8ad63cf5797e6882e9acc698af6c0e7dbf47fe92c958ce23b",
+    "Atlas/Struktura/patternly-web/~2E~github/workflows/workflows — folder witryna · ~2E~github.md": "6950b427848389268876cca48026197addf7684ecddd25607cbafae30d1c2f8f",
     "Atlas/Struktura/patternly-web/assets/assets — folder witryna.md": "373bc134896ca6d1f9e670dce9c30ec1b4452f385f8df72207a4dd2e1c6f3458",
     "Atlas/Struktura/patternly-web/assets/brand/brand — folder witryna · assets.md": "cef507b6ff40a98a10c6dde4c9a80d96c17686a906586360f88b691c6607e8b0",
     "Atlas/Struktura/patternly-web/assets/brand/mark/mark — folder witryna · assets › brand.md": "0b19837d0a3e1e89b98bef3ba4f0580fb97fb5f29403f7dad9ddfe9e19e7565f",
     "Atlas/Struktura/patternly-web/assets/icons/icons — folder witryna · assets.md": "80094d7377cbb5be7b4f5941207f2a0e4f4164912a04c5f340b19d3b281f1544",
     "Atlas/Struktura/patternly-web/public/public — folder witryna.md": "5aef863165108fcc0b404f21e3986a5597a136c8329819b10208919cac662fa5",
     "Atlas/Struktura/patternly-web/public/app-preview/app-preview — folder witryna · public.md": "0b190671e1324235cd05803357d2e581bfffa02ecd651974b64020eac75f9149",
-    "Atlas/Struktura/patternly-web/scripts/scripts — folder witryna.md": "1377bcc1ec0f02e2b48b54919100254420fd6156791fb2b7d96a28aa5d5a9d5c",
+    "Atlas/Struktura/patternly-web/scripts/scripts — folder witryna.md": "cb41e60d94c4723881e3fb2d2b1a1457627ca97e299fc959c695ee3e29adff90",
     "Atlas/Struktura/patternly-web/scripts/admin-behavior/admin-behavior — folder witryna · scripts.md": "5eebb5a93bc7fd6578c84c9583598d21b6a67ef31f0f93fb075a16ad4d777417",
     "Atlas/Struktura/patternly-web/src/src — folder witryna.md": "c450a09646517d941aba99083e67ee289697997e1453333df6a55a19b7b01216",
     "Atlas/Struktura/patternly-web/src/components/components — folder witryna · src.md": "3f589d0b75e9842cb1783e0f9c491656a3ebafed68ff8f47b00a39d2eff04643",
-    "Atlas/Struktura/patternly-web/src/generated/generated — folder witryna · src.md": "21fe74a912290943c567bef9bc49c9d1dac2c5aa3d4cc7f049cfa40d07dd02e4",
+    "Atlas/Struktura/patternly-web/src/generated/generated — folder witryna · src.md": "b6bdc2b8b59841a1d898499adefcdba1e335f51888eaf9db92d0499c19df6f91",
     "Atlas/Struktura/patternly-web/src/hooks/hooks — folder witryna · src.md": "d617dd21ea94ee463f561580ea784176df4ca08e5c709a8fe9e49a0ad597e217",
     "Atlas/Struktura/patternly-web/src/pages/pages — folder witryna · src.md": "0e84976686e468548f864e706f351bc3c874672bd77b0f267bf746c3093d7a5d",
     "Atlas/Struktura/patternly-web/_Pliki/admin.css — witryna.md": "d09f7132ee8a772033a6f8f0f40c43241906a781484e65169af5a68f5cc01c35",
@@ -101113,9 +101241,9 @@
     "Atlas/Struktura/patternly-web/scripts/_Pliki/public-site.browser.test.mjs — witryna · scripts.md": "85dff2ecc8ac81f70a7d3ae83baff9a849c8449f26af8c5fa5ea78552d0b877d",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/public-site.mjs — witryna · scripts.md": "55faceb8a289242072837ae0e568de344cb975f5c431ca6b28b20249069dd553",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/publicLegalTestArtifact.mjs — witryna · scripts.md": "fc7385c1d0e44af680ecbad9017a1af0933bec1aa8bcd5b151970dc75c388953",
-    "Atlas/Struktura/patternly-web/scripts/_Pliki/record-local-acceptance.mjs — witryna · scripts.md": "f86cbdf36017add59e5f58d73d8786e26417a52cf136b8a9ef77fb23a1eaa519",
+    "Atlas/Struktura/patternly-web/scripts/_Pliki/record-local-acceptance.mjs — witryna · scripts.md": "0032be9913e18cc4e4b02c2beffa3cc9b2f65cdef30358dd2755351a978c626f",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/seo-content.browser.test.mjs — witryna · scripts.md": "8de8068d0e063ad4a27fe9285041080c4844a17ca69ce640771fa8c9b48725e7",
-    "Atlas/Struktura/patternly-web/scripts/_Pliki/verify-demo-bundle.mjs — witryna · scripts.md": "097b3ff7f06c169f4e09b403c81844bb8a8cb7c4eb2bf9a08125b15f3816cb04",
+    "Atlas/Struktura/patternly-web/scripts/_Pliki/verify-demo-bundle.mjs — witryna · scripts.md": "3239def4486868eb9c442a6efeae58062f75909f0b4ad691ec96e5997a1a37f7",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/verify-local.mjs — witryna · scripts.md": "2d28835d53707c09fa295ad8753f69050445c4d8787fe89a6263a02211d7625d",
     "Atlas/Struktura/patternly-web/src/_Pliki/adminConfig.js — witryna · src.md": "afa5facb9624eedaba7c6d423309ecf3555db683d0c84715fe452de626345fbc",
     "Atlas/Struktura/patternly-web/src/_Pliki/adminMain.jsx — witryna · src.md": "8880746176eaa8b21c33215879aa6fd3e49a1d558b0d35cf90e697c9bbc15ccd",
@@ -101129,7 +101257,7 @@
     "Atlas/Struktura/patternly-web/src/components/_Pliki/LegalRequestsPanel.jsx — witryna · src › components.md": "cdecb75f1bb950dcc706f5348be62542a1c96ddd27d8584a25ee97002995d2c6",
     "Atlas/Struktura/patternly-web/src/components/_Pliki/PrivacyRequestsPanel.jsx — witryna · src › components.md": "ac3df8108ca8174cd2998377a5ca643b2cb3ffe0fe3995d42f04004141f89770",
     "Atlas/Struktura/patternly-web/src/components/_Pliki/SecurityIncidentsPanel.jsx — witryna · src › components.md": "bd34393b75bd8bef9cc687b5a28df0a0e0acdfb80e65672e786290fa4577682f",
-    "Atlas/Struktura/patternly-web/src/generated/_Pliki/demoQuestions.json — witryna · src › generated.md": "bbecebe2e9297ac3d84095f1c6bee67f02d801779eb59c888748a71a9b7ee20d",
+    "Atlas/Struktura/patternly-web/src/generated/_Pliki/demoQuestions.json — witryna · src › generated.md": "d96cef9f9f04364a91e7d1787d62acf60d7228c129623f686bcff923b6222448",
     "Atlas/Struktura/patternly-web/src/hooks/_Pliki/useClientReady.js — witryna · src › hooks.md": "4da0d91f0008951c64685391cb1c5299df9b30c30fd0de7a02c7413f76c73e54",
     "Atlas/Struktura/patternly-web/src/hooks/_Pliki/useReveal.jsx — witryna · src › hooks.md": "cd3763115eaa6061197e03441c6ea3e8701d6f995ff68eec1a21fe0724637dd3",
     "Atlas/Struktura/patternly-web/src/_Pliki/main.jsx — witryna · src.md": "d48c19810116a86262a7272560ea0dc3c4569a2f12d66338a06b546b1d21fefb",
@@ -101143,6 +101271,9 @@
     "Atlas/Struktura/patternly-web/src/_Pliki/publicPages.js — witryna · src.md": "3fb1e55191a0e0088c700890c258948c83abb7e49499ea046540447b23f65cfd",
     "Atlas/Struktura/patternly-web/src/_Pliki/publicTrackPages.js — witryna · src.md": "b12d0bf4e9f4fb8e95f2cc58bb380f3304028fd41916fe0eccc20fe9bb623b58",
     "Atlas/Struktura/patternly-web/_Pliki/styles.css — witryna.md": "ba8f384a34031c63e66b3ab72cdb1421884c349c4b56543abf4ebde2d73c82bb",
-    "Atlas/Struktura/patternly-web/_Pliki/vite.config.js — witryna.md": "7b5f1f460d3d06711e5f272c83316510780ea88ac74896427c3ebe109fdfc4f2"
+    "Atlas/Struktura/patternly-web/_Pliki/vite.config.js — witryna.md": "7b5f1f460d3d06711e5f272c83316510780ea88ac74896427c3ebe109fdfc4f2",
+    "Atlas/Struktura/patternly-web/~2E~github/workflows/_Pliki/verify.yml — witryna · ~2E~github › workflows.md": "4611c66cfb9ccdc77bd1c6df3f0e1056bd95cfde713f722845e705b602d62040",
+    "Atlas/Struktura/patternly-web/scripts/_Pliki/current-demo-contract.mjs — witryna · scripts.md": "8f0b696b8c539e17edcba507017fe04acb6e3c52ea031f02610c1b6812944b34",
+    "Atlas/Struktura/patternly-web/scripts/_Pliki/current-demo-contract.test.mjs — witryna · scripts.md": "759babdb9056e6309770ac78cb2d49255c18febaebc6a0fa517247caa69505ea"
   }
 }

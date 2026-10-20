@@ -1693,6 +1693,36 @@
       "description": "Porównuje identyczne lineage/workloady COST-02 oraz4powtórzenia i opcjonalne4zmienione sync. Chroni HTTP/SDK/Auth/write/delete liczniki; pokazuje scenariuszowy koszt reads/JSONegress/request count na1000operacji ze snapshotu stawek COST-02. Dla kontynuacji przyjmuje już odebrany baseline niezmienionych odczytów. Czas/RSS są lokalne, bez CPU billing lub whole-project/native cold forecast.",
       "flow": "Konto, Gość i synchronizacja",
       "reviewedHash": "695f2a0bf0ef6bcf650935ed142857fffaf84a99a4f3d93f859472d8f77a122b"
+    },
+    "patternly-web/.github/workflows/verify.yml": {
+      "description": "Weryfikuje WEB z przypiętymi zgodnymi wejściami APP/CONTENT w katalogach sąsiednich. Raportuje rzeczywiste HEAD/status trzech repo; przed buildem uruchamia canonical check i regresje current-source. Dalsze kroki sprawdzają lokalny build, testowy legal, panel oraz demo; testowy legal nie daje zgody na publikację.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "5f08efa147f36bb93cf868a72072c0690930f4bdd086fbf4931324d616d2b6ac"
+    },
+    "patternly-web/scripts/record-local-acceptance.mjs": {
+      "description": "Zapisuje prywatny lokalny receipt dopiero po PASS rzeczywistego receiptu przeglądarki z mode=local-test, testOnly=true, deployable=false i zgodnym manifestem dist. Weryfikuje katalog przez wspólny kontrakt current-source oraz historyczne pytanie capture. Rejestruje rzeczywiste HEAD/status/hashe wejść APP, WEB i CONTENT, pochodną tożsamość i ograniczenia testowego legal; nie odczytuje current-admission ani nie nadaje release approval.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "ac17bd9e168344f3cdf719ac2e230e69a135dc226fc6d6d68d9d00c600c7bea2"
+    },
+    "patternly-web/scripts/verify-demo-bundle.mjs": {
+      "description": "Sprawdza katalog rzeczywistym producentem current-source i zgodność historycznego pytania capture przez wspólny kontrakt. Weryfikuje metadane trzech próbek, hashe oraz dokładny spis obrazów dist. Kontroluje wystąpienia autorskiego tekstu dwóch interaktywnych pytań i projekcji Details, brak interaktywnego payloadu próbki obrazowej, starego SQL demo i wskazanych sygnatur pełnych banków.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "a11722443ac2aa69d7c957c6ae06ae3cd6ef52cfb78d8d424d7949c580a89586"
+    },
+    "patternly-web/scripts/current-demo-contract.mjs": {
+      "description": "Wspólny kontrakt verifiera i recordera: uruchamia rzeczywisty createPublicDemoCatalog producenta APP i porównuje pełny katalog z projekcją zwalidowanych bieżących źródeł, locków i puli Free. Dla obrazu odczytuje bank z historycznej rewizji APP wskazanej w manifeście, sprawdza jego SHA256 i pełną zgodność wybranego pytania z aktualnym źródłem CONTENT. Nie wymaga równości historycznego i bieżącego hasha całego banku.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "9d0751afce1d4aec553d9d28c9d3c8322b44ecb3b5fdef382918f2466f546470"
+    },
+    "patternly-web/scripts/current-demo-contract.test.mjs": {
+      "description": "Sprawdza rzeczywistą projekcję current-source i historyczne pytanie obrazowe; odrzuca zmienione identity, lock, ścieżkę źródła, payload i tryby Free oraz dodatkowy bank lub trzeci interaktywny payload. Osobno sprawdza niezależność bieżącego hasha banku od capture i odmowę zmienionego lub brakującego pytania oraz uszkodzonych historycznych bajtów. Opis deklarowanych regresji, nie samodzielny dowód ich wykonania.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "7ce4619bf9cc4b1b448e5fdee3f52468f9b0d8d1e26a0a44dd4456b0a33684af"
+    },
+    "patternly-web/src/generated/demoQuestions.json": {
+      "description": "Wygenerowana przez APP projekcja current-source: dwa pytania interaktywne z autorskimi Details oraz publicSamples z ich metadanymi i trzecią próbką obrazową bez payloadu pytania. Provenance wskazuje bieżący sourceInputFingerprint, releaseId, hashe artefaktów i locków, źródło oraz tryby Free; obraz ma ścieżkę i SHA256. Nie zawiera pełnego banku ani ręcznego admission.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "6a23cf1a7bf622ea283c665f239d36f43c8ae49beb2dda65da22ed2bf26b65f9"
     }
   },
   "flows": [
@@ -1786,7 +1816,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "9c44aa157ecd092eb9d270962eca98220740ca3c03e51b0a015954d7be3f0249"
+      "reviewedDigest": "44beb01ffade5f9ed540e61b266062c4a6269b70203e77375a6944ec6a544fb1"
     }
   ]
 }
