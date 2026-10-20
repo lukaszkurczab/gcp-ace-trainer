@@ -29,7 +29,7 @@ import {
   type CertificationPracticeProjection,
 } from "../../application/certification";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { AppShellHeader, Button, EmptyState, Screen } from "../../components";
+import { Button, EmptyState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { isCertificationPracticeModeId } from "../../tracks/certification";
@@ -143,7 +143,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     });
   }, [projection?.session.id]);
 
-  if (!mode) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t("This practice mode is unavailable.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  if (!mode) return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Certification Practice unavailable")} description={t("This practice mode is unavailable.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (conflict) {
     const ordinaryCertification = getTrackRegistration(conflict.trackId).familyId === "certification" && isCertificationPracticeModeId(conflict.modeId);
     const certificationExam = getTrackRegistration(conflict.trackId).familyId === "certification" && conflict.modeId === "certification-exam-simulation";
@@ -152,10 +152,10 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
       else if (certificationExam) navigation.replace(ROUTES.EXAM, { trackId: conflict.trackId, expectedSessionId: conflict.id });
       else navigation.navigate(ROUTES.HOME);
     };
-    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Another session is active")} description={t("Resume your active session, or return to Practice.")} actionLabel={t(ordinaryCertification ? "Continue active practice" : certificationExam ? "Continue active exam" : "Go home")} onActionPress={continueActive} /><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">{t("Back to practice")}</Button></Screen>;
+    return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Another session is active")} description={t("Resume your active session, or return to Practice.")} actionLabel={t(ordinaryCertification ? "Continue active practice" : certificationExam ? "Continue active exam" : "Go home")} onActionPress={continueActive} /><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">{t("Back to practice")}</Button></Screen>;
   }
-  if (error) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Cloud Practice unavailable")} description={t(error)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
-  if (!projection) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><PracticeSessionLoadingSkeleton /></Screen>;
+  if (error) return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Cloud Practice unavailable")} description={t(error)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  if (!projection) return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><PracticeSessionLoadingSkeleton /></Screen>;
   const questionView = toCanonicalQuestionViewModel(projection.question);
   const feedbackTiming = projection.session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "atSessionEnd" : "afterEachAnswer";
   const multiple = projection.question.interaction.type === "choice_multiple";

@@ -142,8 +142,9 @@ export function DesignInterviewSimulationScreen({ navigation, route }: RunnerPro
     projection.operation.error.operation === "simulation_finalization" &&
     ["recover", "reconcile", "retry_same_command"].includes(projection.operation.error.allowedAction));
   const editingLocked = uncertainSave || staleConflict || drain.isBlocked() || acceptedFinalization;
-  return <Screen scroll edges={["top", "bottom"]}>
+  return <Screen scroll edges={["top", "bottom"]} header={
     <View style={styles.header}><Button disabled={acceptedFinalization} onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { trackId: route.params.trackId })} variant="ghost">{t("Leave")}</Button><Text style={styles.timer}>{formatRemaining(projection.remainingMs)}</Text></View>
+  }>
     <Text style={styles.title} testID={runtimeSelectors.designSimulation.root(projection.session.id)}>{projection.profile.familyConfig.title}</Text>
     <Text style={styles.brief}>{projection.profile.familyConfig.brief}</Text>
     {acceptedFinalization ? <View accessibilityRole="alert" style={styles.stage}>
@@ -200,8 +201,8 @@ export function DesignInterviewSimulationReviewScreen({ navigation, route }: Rev
   useEffect(() => { void load(); }, [load]);
   if (error) return <Screen edges={["top", "bottom"]}><EmptyState title={t("Simulation review unavailable")} description={error} actionLabel={t("Back to results")} onActionPress={() => navigation.navigate(ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT, { sessionId: route.params.sessionId })} /></Screen>;
   if (!result) return <Screen edges={["top", "bottom"]}><Text>{t("Loading review…")}</Text></Screen>;
-  return <Screen scroll edges={["top", "bottom"]}>
-    <View style={styles.header}><Button onPress={() => navigation.navigate(ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT, { sessionId: result.sessionId })} variant="ghost">{t("Back to result")}</Button></View>
+  return <Screen backAction={{ destinationLabel: t("Simulation result"), onPress: () => navigation.navigate(ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT, { sessionId: result.sessionId }) }} scroll edges={["top", "bottom"]}>
+
     <Text style={styles.title} testID={runtimeSelectors.designSimulation.review(result.sessionId)}>{t("Response review")}</Text>
     {result.profile.familyConfig.stages.map((stage) => {
       const criterion = result.profile.familyConfig.reviewCriteria.find((candidate) => candidate.stageId === stage.stageId);
@@ -225,7 +226,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   brief: { ...typography.body, color: palette.textSecondary, marginBottom: spacing.lg },
   completeness: { ...typography.caption, color: palette.textSecondary, marginTop: spacing.xs },
   error: { ...typography.body, color: palette.danger, marginVertical: spacing.md },
-  header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", marginBottom: spacing.md },
+  header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingHorizontal: spacing.xl, paddingTop: spacing.md },
   input: { ...typography.body, backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: 6, borderWidth: 1, color: palette.textPrimary, minHeight: 144, padding: spacing.md },
   level: { ...typography.bodyStrong, color: palette.textPrimary },
   reference: { ...typography.body, color: palette.textSecondary, marginTop: spacing.xs },

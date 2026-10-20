@@ -311,9 +311,9 @@ test("account recovery back action follows live navigator history", () => {
   assert.match(screen, /usePreventRemove\(mode === "register", \(\) => \{[\s\S]*?setMode\("signIn"\)/u);
   assert.doesNotMatch(screen, /navigation\.addListener\("beforeRemove"/u);
   assert.match(screen, /initialMode === "entry"[\s\S]*?initialMode === "register"[\s\S]*?: "entry"/u);
-  assert.match(screen, /footer=\{mode === "register" \? undefined/u);
-  assert.match(screen, /testID="account-register-back-to-sign-in"/u);
-  assert.match(screen, /mode === "register" \? \([\s\S]*?<CredentialsForm[\s\S]*?account-register-submit[\s\S]*?account-register-back-to-sign-in/u);
+  assert.match(screen, /backAction=\{\{\s*destinationLabel: text\.signIn,\s*onPress: \(\) => \{ setFeedback\(null\); setMode\("signIn"\); \},\s*testID: mode === "register" \? "account-register-back-to-sign-in" : "account-back-to-sign-in"/u);
+  assert.match(screen, /mode === "register" \? \([\s\S]*?<CredentialsForm[\s\S]*?account-register-submit/u);
+  assert.doesNotMatch(screen, /testID="account-register-back-to-sign-in"|testID="account-back-to-sign-in"/u);
   assert.doesNotMatch(screen, /const backAction = navigation\.canGoBack\(\)/u);
 });
 
@@ -601,7 +601,7 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /testID="account-sign-in-guest"/);
   assert.match(screen, /onPress=\{continueWithoutAccount\}/);
   assert.match(screen, /footerVariant="sticky"/);
-  assert.match(screen, /testID="account-back-to-sign-in"/);
+  assert.match(screen, /"account-back-to-sign-in"/);
   assert.match(screen, /setMode\("signIn"\)/);
   assert.match(screen, /testID="account-register-terms-checkbox"/);
   assert.match(screen, /accessibilityRole="checkbox"/);

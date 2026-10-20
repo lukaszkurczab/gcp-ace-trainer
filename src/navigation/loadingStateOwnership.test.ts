@@ -99,10 +99,10 @@ test("generic pending and profile-transition surfaces use their owned LoadingSta
 
 test("C1 screens own local review and exam loading geometry", () => { assert.match(source("src/features/exam/ExamReviewScreen.tsx"), /unavailable/i); return;
   const goal = source("src/features/home/GoalCadenceScreen.tsx");
-  assert.match(goal, /export function GoalLoadingSkeleton\(\{ context, onBack \}/);
-  assert.match(goal, /if \(loading\) return <GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
+  assert.match(goal, /export function GoalLoadingSkeleton\(\{ destinationLabel, onBack \}/);
+  assert.match(goal, /if \(loading\) return <GoalLoadingSkeleton destinationLabel=\{backDestinationLabel\} onBack=\{handleBack\} \/>/);
   assert.match(goal, /accessibilityLabel=\{t\("Loading goal"\)\}/);
-  assert.match(goal, /header=\{\([\s\S]*?<IconButton accessibilityLabel=\{t\("Go back"\)/);
+  assert.match(goal, /header=\{<View[^>]*><BackLink destinationLabel=\{(?:destinationLabel|backDestinationLabel)\}/);
   assert.match(goal, /useEffect\(\(\) => \{[\s\S]*?\}, \[route\.params\?\.trackId\]\);/);
   assert.doesNotMatch(goal, /useFocusEffect/);
   assert.match(goal, /loadingPanel/);
@@ -154,8 +154,9 @@ test("bootstrap, roadmap, and setup own their phase or screen loading geometry",
 
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
   assertLocalSkeletonDefinition("src/features/practice/PracticeSetupScreen.tsx", "PracticeSetupLoadingSkeleton", /accessibilityLabel=\{t\("Loading practice setup"\)\}/, ["practiceSetupLoadingLengthGrid", "practiceSetupLoadingPanel", "practiceSetupLoadingAction"]);
-  assert.match(setup, /function resolvePracticeSetupLoadingVariant[\s\S]*?certification-diagnostic-baseline.*?return "diagnostic"[\s\S]*?certification-focus-practice.*?return "selector"[\s\S]*?ALGORITHM_MODE_IDS\.customPractice.*?return "customCoding"/);
-  assert.match(setup, /const showIntro = variant !== "customCoding" && variant !== "unknown"/);
+  assert.match(setup, /function resolvePracticeSetupLoadingVariant[\s\S]*?certification-diagnostic-baseline.*?return "diagnostic"[\s\S]*?certification-focus-practice.*?return "focus"[\s\S]*?certification-scenario-practice.*?return "selector"[\s\S]*?ALGORITHM_MODE_IDS\.customPractice.*?return "customCoding"/);
+  assert.match(setup, /variant === "focus" \? <View style=\{styles\.focusSection\}>[\s\S]*?styles\.selectedTopic[\s\S]*?practiceSetupLoadingChevron/);
+  assert.match(setup, /const showIntro = variant !== "customCoding" && variant !== "focus" && variant !== "unknown"/);
   assert.match(setup, /const showLength = variant !== "diagnostic" && variant !== "quickReview" && variant !== "unknown"/);
   assert.match(setup, /variant === "design" \? <SkeletonShape[\s\S]*?practiceSetupLoadingFeedbackStrip/);
   assert.match(setup, /variant === "unknown" \? <View style=\{styles\.practiceSetupLoadingUnknown\}/);
@@ -235,7 +236,7 @@ test("Home shell owns tab-specific glass loading geometry and keeps navigation u
 test("Practice Hub keeps its local pending geometry while the scoped read model owns state", () => {
   const practiceHub = source("src/features/practice/PracticeHubScreen.tsx");
 
-  assert.match(practiceHub, /if \(readState\.requestKey !== requestKey \|\| readState\.kind === "pending"\) return \([\s\S]*?<AppShellHeader[\s\S]*?<PracticeHubLoadingSkeleton \/>[\s\S]*?<AppBottomNavigation activeId="practice"/);
+  assert.match(practiceHub, /if \(readState\.requestKey !== requestKey \|\| readState\.kind === "pending"\) return \([\s\S]*?<Screen backAction=[\s\S]*?<PracticeHubLoadingSkeleton \/>[\s\S]*?<AppBottomNavigation activeId="practice"/);
   assert.doesNotMatch(practiceHub, /if \(readState\.requestKey !== requestKey \|\| readState\.kind === "pending"\) return \([\s\S]*?<LoadingState/);
   assertLocalSkeletonDefinition("src/features/practice/PracticeHubScreen.tsx", "PracticeHubLoadingSkeleton", /accessibilityLabel=\{t\("Preparing practice"\)\}/, ["practiceHubLoadingIntro", "practiceHubLoadingHeroCard", "practiceHubLoadingModeRow"]);
 });

@@ -11,7 +11,7 @@ import { setQuestionNeedsReview } from "../../application/certification";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { loadReviewQueueItems } from "../../application/learningReadModels";
 import { captureProfileReadFence } from "../../application/profileReadFence";
-import { Button, EmptyState, ReviewLoadingSkeleton, Screen } from "../../components";
+import { BackLink, Button, EmptyState, ReviewLoadingSkeleton, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import { isActiveReviewQueueEntry, resolvedContentRefsEqual, type ReviewQueueEntry } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
@@ -37,7 +37,8 @@ type ReviewMarkReadState =
   | Readonly<{ kind: "unavailable"; requestKey: string }>;
 
 export function ExamReviewLoadingSkeleton({ onBack = noop }: Readonly<{ onBack?: () => void }> = {}) {
-  return <ReviewLoadingSkeleton onBack={onBack} />;
+  const { t } = useTranslation("common");
+  return <ReviewLoadingSkeleton destinationLabel={t("Result")} onBack={onBack} />;
 }
 
 export function ExamReviewScreen({ navigation, route, readReview, openSource, fixtureNotice }: Props & Readonly<{ readReview?: ReviewReader; openSource?: (url: string) => Promise<unknown>; fixtureNotice?: ReactNode }>) {
@@ -129,7 +130,7 @@ export function ExamReviewScreen({ navigation, route, readReview, openSource, fi
     isActiveReviewQueueEntry(entry) && entry.reasons.includes("manual_mark") && resolvedContentRefsEqual(entry.sourceItem, item.item));
   const isMarkPending = pendingMarkOccurrenceId === item.occurrenceId;
   const markUnavailable = !canMarkForReview;
-  const headerAction = <Button onPress={backToResult} testID={runtimeSelectors.practiceReview.result()} variant="ghost">{t("Back to results")}</Button>;
+  const headerAction = <BackLink destinationLabel={t("Result")} onPress={backToResult} testID={runtimeSelectors.practiceReview.result()} />;
   const sourceOpener = openSource;
 
   const toggleManualReview = async () => {

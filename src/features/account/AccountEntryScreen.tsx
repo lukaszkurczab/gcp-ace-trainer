@@ -294,7 +294,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   useEffect(() => { setVerificationResentFor(null); }, [verificationUid]);
   const [recoveryAccountTransitionRequired, setRecoveryAccountTransitionRequired] = useState(false);
   const backAction = mode === "register"
-    ? { onPress: () => { setFeedback(null); setMode("signIn"); } }
+    ? { destinationLabel: text.signIn, onPress: () => { setFeedback(null); setMode("signIn"); } }
     : navigationIndex > 0
     ? {
         onPress: () => {
@@ -468,8 +468,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     return <DeletionContinuationScreen account={account} backAction={backAction} text={text} retryLabel={tSettings("retryDeletion")} />;
   if (account.state.kind === "authenticated")
     return isHealthyAccountData(account.state.accountData) ? (
-      <Screen edges={screenEdges}>
-        <ScreenHeader backAction={backAction} title={text.accountReadyTitle} />
+      <Screen backAction={backAction} edges={screenEdges}>
+        <ScreenHeader title={text.accountReadyTitle} />
         <Button onPress={() => navigation.navigate(ROUTES.HOME, { initialTab: "settings" })} testID="account-open-settings">{tSettings("appSettings")}</Button>
       </Screen>
     ) : account.state.accountData.status === "previewReady" ? (
@@ -491,8 +491,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     );
   if (account.state.kind === "signingOut")
     return (
-      <Screen edges={screenEdges}>
-        <ScreenHeader backAction={backAction} title={text.signOut} />
+      <Screen backAction={backAction} edges={screenEdges}>
+        <ScreenHeader title={text.signOut} />
         <InfoBlock
           body={text.signOutPendingDescription}
           title={text.signOutPending}
@@ -515,8 +515,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     );
   if (account.state.kind === "deleting")
     return (
-      <Screen edges={screenEdges}>
-        <ScreenHeader backAction={backAction} title={text.deleteAccount} />
+      <Screen backAction={backAction} edges={screenEdges}>
+        <ScreenHeader title={text.deleteAccount} />
         <InfoBlock
           body={text.deletionPendingDescription}
           title={text.deleting}
@@ -603,7 +603,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       </AuthText>
     ) : null;
     return (
-      <Screen
+      <Screen backAction={backAction}
         ambient
         ambientVariant="auth"
         edges={screenEdges}
@@ -754,23 +754,14 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
 
   return (
     <Screen
+      backAction={{
+        destinationLabel: text.signIn,
+        onPress: () => { setFeedback(null); setMode("signIn"); },
+        testID: mode === "register" ? "account-register-back-to-sign-in" : "account-back-to-sign-in",
+      }}
       ambient
       ambientVariant="auth"
       edges={screenEdges}
-      footer={mode === "register" ? undefined : (
-        <Button
-          labelStyle={styles.textActionLabel}
-          onPress={() => {
-            setFeedback(null);
-            setMode("signIn");
-          }}
-          testID="account-back-to-sign-in"
-          variant="ghost"
-        >
-          {text.backToSignIn}
-        </Button>
-      )}
-      footerVariant="sticky"
       style={[styles.authScreen, largeText ? styles.authScreenLargeText : null]}
     >
       <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null]}>
@@ -798,8 +789,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           feedback={feedback}
           inputStyle={styles.authInput}
           onAcceptedTermsChange={handleTermsChange}
-          onOpenPrivacy={() => navigation.navigate(ROUTES.PRIVACY_POLICY)}
-          onOpenTerms={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE)}
+          onOpenPrivacy={() => navigation.navigate(ROUTES.PRIVACY_POLICY, { returnDestinationLabel: modeTitle })}
+          onOpenTerms={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE, { returnDestinationLabel: modeTitle })}
           onConfirmationChange={(value) => { setFeedback(null); setConfirmation(value); }}
           onEmailChange={(value) => { setFeedback(null); setEmail(value); }}
           onPasswordChange={(value) => { setFeedback(null); setPassword(value); }}
@@ -816,17 +807,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           text={text}
           testID="account-register-submit"
         />
-        <Button
-          labelStyle={styles.textActionLabel}
-          onPress={() => {
-            setFeedback(null);
-            setMode("signIn");
-          }}
-          testID="account-register-back-to-sign-in"
-          variant="ghost"
-        >
-          {text.alreadyHaveAccount}
-        </Button>
         </>
       ) : null}
       {mode === "recovery" ? (
@@ -880,12 +860,12 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   );
 }
 
-type BackAction = Readonly<{ onPress: () => void }> | undefined;
+type BackAction = Readonly<{ destinationLabel?: string; onPress: () => void }> | undefined;
 function DeletionContinuationScreen({ account, backAction, text, retryLabel }: Readonly<{ account: AccountContext; backAction: BackAction; text: AccountCopy; retryLabel: string }>) {
   const { busyAction, runCommand } = useAccountCommand();
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  return <Screen edges={["top", "bottom"]}>
-    <ScreenHeader backAction={backAction} title={text.deleting} />
+  return <Screen backAction={backAction} edges={["top", "bottom"]}>
+    <ScreenHeader title={text.deleting} />
     <InfoBlock body={text.deletionPendingDescription} title={text.deleteAccount} testID="account-deletion-recovery" tone="warning" />
     {feedback?.kind === "failure" ? renderFeedback(feedback, text, text.deleteAccount) : null}
     <Button disabled={busyAction !== null} loading={busyAction === "retry"} onPress={() => runCommand("retry", () => account.retryPendingDeletion(), setFeedback)} testID="account-deletion-retry">{retryLabel}</Button>
@@ -992,7 +972,7 @@ function AccountAdoptionScreen({
     !recoveryOperation.blocksProfilePreparation;
 
   return (
-    <Screen
+    <Screen backAction={backAction}
       edges={["top", "bottom"]}
       footer={
         <Button
@@ -1007,7 +987,7 @@ function AccountAdoptionScreen({
       }
       footerVariant="sticky"
     >
-      <ScreenHeader backAction={backAction} title={hasGuestData ? text.accountEntryTitle : text.accountReadyTitle} />
+      <ScreenHeader title={hasGuestData ? text.accountEntryTitle : text.accountReadyTitle} />
       <View style={styles.accountIntro}>
         <AuthText style={styles.accountBody}>{hasGuestData ? text.accountEntryDescription : text.accountReadyDescription}</AuthText>
       </View>
@@ -1149,8 +1129,8 @@ function RecoveryPendingScreen({ account, backAction, onTransitionStarted, text 
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const showFailure = (result: Feedback) => setFeedback(result.kind === "failure" ? result : null);
   return (
-    <Screen edges={["top", "bottom"]}>
-      <ScreenHeader backAction={backAction} title={t("recoveryOperationTitle")} />
+    <Screen backAction={backAction} edges={["top", "bottom"]}>
+      <ScreenHeader title={t("recoveryOperationTitle")} />
       <View style={{ gap: spacing.md }} testID="account-recovery-pending">
         <RecoveryOperationPanel
           busy={busyAction !== null}
@@ -1241,7 +1221,7 @@ function AccountRecoveryScreen({
   const presentation = actionFailure ?? status;
   const showCloudRecovery = status.cloudRecovery && feedbackAction !== "signOut";
   return (
-    <Screen
+    <Screen backAction={backAction}
       edges={["top", "bottom"]}
       footer={
         <Button
@@ -1256,7 +1236,7 @@ function AccountRecoveryScreen({
       }
       footerVariant="sticky"
     >
-      <ScreenHeader backAction={backAction} title={text.account} />
+      <ScreenHeader title={text.account} />
       <View style={[styles.accountRecoveryContainer, showCloudRecovery && !largeText ? styles.accountRecoveryCentered : null]} testID={status.testID}>
         <View style={[styles.accountRecoveryStatus, showCloudRecovery && !largeText ? styles.accountRecoveryCenteredContent : null]} testID={actionFailure?.testID}>
           {showCloudRecovery ? <IconTile name="cloud" tone="primary" /> : null}
@@ -1461,7 +1441,7 @@ function AuthStatusScreen({
   title,
 }: Readonly<{
   action?: Readonly<{ label: string; onPress: () => void; testID: string }>;
-  backAction?: Readonly<{ onPress: () => void }>;
+  backAction?: BackAction;
   body: string;
   children?: ReactNode;
   contentPlacement?: "center" | "top";
@@ -1476,7 +1456,7 @@ function AuthStatusScreen({
   const largeText = fontScale >= 1.3;
   const failureTestID = testID === "account-backend-unavailable" || testID === "account-sign-out-pending" ? readAccountStartupFailureTestID() : undefined;
   return (
-    <Screen
+    <Screen backAction={backAction}
       ambient
       ambientVariant="auth"
       edges={["top", "bottom"]}
@@ -1484,7 +1464,7 @@ function AuthStatusScreen({
       footerVariant={footerAction ? "sticky" : undefined}
       style={[styles.authScreen, largeText ? styles.authScreenLargeText : null, contentPlacement === "top" ? styles.statusScreenTop : null]}
     >
-      {backAction ? <ScreenHeader backAction={backAction} title="" /> : null}
+
       <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null, contentPlacement === "top" ? styles.statusPanelTop : null]} testID={testID}>
         <View style={styles.statusCopy} testID={failureTestID}>
           <AuthText style={[styles.authTitle, textAlignment === "center" ? styles.centeredStatusText : null]}>{title}</AuthText>
@@ -1699,6 +1679,7 @@ function ProviderRegistrationScreen({
   text: AccountCopy;
 }>) {
   const styles = useThemedStyles(createStyles);
+  const { t: tCommon } = useTranslation("common");
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -1735,13 +1716,13 @@ function ProviderRegistrationScreen({
   };
 
   return (
-    <Screen edges={["top", "bottom"]} footer={(
+    <Screen backAction={{ destinationLabel: tCommon("Account"), onPress: cancel }} edges={["top", "bottom"]} footer={(
       <View style={styles.providerRegistrationActions}>
         {documentsReady ? <Button disabled={pending || !termsViewed || !privacyViewed || !termsAccepted || !privacyAcknowledged} loading={pending} onPress={submit} testID="provider-registration-create" variant="primary">{text.providerCreateAccount}</Button> : null}
         <Button disabled={pending} onPress={cancel} testID="provider-registration-cancel" variant="ghost">{text.providerCancel}</Button>
       </View>
     )} footerVariant="sticky">
-      <ScreenHeader backAction={{ onPress: cancel }} title={text.providerRegistrationTitle} />
+      <ScreenHeader title={text.providerRegistrationTitle} />
       <View style={styles.authPanel} testID="provider-registration-review">
         <AuthText style={styles.authDescription}>{text.providerRegistrationDescription}</AuthText>
         {documentsReady ? (
@@ -1755,7 +1736,7 @@ function ProviderRegistrationScreen({
               onChange={setTermsAccepted}
               onOpen={() => {
                 setTermsViewed(true);
-                navigation.navigate(ROUTES.TERMS_OF_SERVICE);
+                navigation.navigate(ROUTES.TERMS_OF_SERVICE, { returnDestinationLabel: text.providerRegistrationTitle });
               }}
               testID="provider-registration-terms"
             />
@@ -1768,7 +1749,7 @@ function ProviderRegistrationScreen({
               onChange={setPrivacyAcknowledged}
               onOpen={() => {
                 setPrivacyViewed(true);
-                navigation.navigate(ROUTES.PRIVACY_POLICY);
+                navigation.navigate(ROUTES.PRIVACY_POLICY, { returnDestinationLabel: text.providerRegistrationTitle });
               }}
               testID="provider-registration-privacy"
             />

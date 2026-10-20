@@ -214,16 +214,22 @@ export function buildPracticeSessionConfig(
   throw new Error(`Certification mode ${mode} has no canonical setup configuration.`);
 }
 
-export function buildPremiumNodePracticeSessionConfig(offer: PremiumNodeOffer): PracticeSessionRouteParams {
+export function buildPremiumNodePracticeSessionConfig(
+  offer: PremiumNodeOffer,
+  input: Readonly<{ feedbackMode?: PracticeFeedbackMode; sessionLength?: PracticeSessionLength }> = {},
+): PracticeSessionRouteParams {
   if (offer.familyId !== "certification" || offer.mode.modeId !== "certification-focus-practice" || offer.mode.selection.kind !== "node" || offer.mode.selection.nodeId !== offer.nodeId || !offer.mode.requestedLengths.includes(offer.mode.defaultRequestedLength)) {
     throw new Error("Premium node offer does not own a supported app-defined practice mode.");
   }
+  const sessionLength = input.sessionLength ?? offer.mode.defaultRequestedLength as PracticeSessionLength;
+  if (!offer.mode.requestedLengths.includes(sessionLength)) throw new Error("Premium node offer does not support the selected session length.");
+  const feedbackMode = resolveCertificationFeedbackMode(offer.mode, input.feedbackMode);
   return Object.freeze({
-    feedbackMode: "afterEachAnswer",
+    feedbackMode,
     mode: "certification-focus-practice",
     nodeId: offer.nodeId,
     reviewBehaviorEnabled: false,
-    sessionLength: offer.mode.defaultRequestedLength,
+    sessionLength,
     source: "practiceSetup",
     topicId: offer.nodeId,
     trackId: offer.trackId,

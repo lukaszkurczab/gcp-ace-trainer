@@ -8,7 +8,6 @@ import {
   ChoiceRow,
   EmptyState,
   Icon,
-  IconButton,
   Screen,
   SkeletonShape,
   SettingsBottomSheet,
@@ -69,7 +68,7 @@ const DAY_SHORT_LABELS: Readonly<Record<GoalDay, string>> = {
   sun: "Sun",
 };
 
-export function GoalLoadingSkeleton({ context, onBack }: Readonly<{ context: string; onBack: () => void }>) {
+export function GoalLoadingSkeleton({ destinationLabel, onBack }: Readonly<{ destinationLabel?: string; onBack: () => void }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
@@ -82,12 +81,7 @@ export function GoalLoadingSkeleton({ context, onBack }: Readonly<{ context: str
       ambient
       ambientVariant="goal"
       edges={["top", "bottom"]}
-      header={(
-        <View style={styles.loadingHeader}>
-          <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={onBack} />
-          <Text accessibilityLabel={context} ellipsizeMode="clip" maxFontSizeMultiplier={2} numberOfLines={2} style={styles.loadingContext}>{context}</Text>
-        </View>
-      )}
+      backAction={{ destinationLabel, onPress: onBack }}
       style={styles.loadingScreen}
     >
       <View
@@ -323,17 +317,13 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     }
   }
 
-  if (loading) return <GoalLoadingSkeleton context={context} onBack={handleBack} />;
+  const backDestinationLabel = navigation.canGoBack() ? undefined : context;
+  if (loading) return <GoalLoadingSkeleton destinationLabel={backDestinationLabel} onBack={handleBack} />;
   if (loadError || !track || !current) {
     return (
       <Screen
         edges={["top", "bottom"]}
-        header={(
-          <View style={styles.loadingHeader}>
-            <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={handleBack} />
-            <Text accessibilityLabel={context} ellipsizeMode="clip" maxFontSizeMultiplier={2} numberOfLines={2} style={styles.loadingContext}>{context}</Text>
-          </View>
-        )}
+        backAction={{ destinationLabel: backDestinationLabel, onPress: handleBack }}
         scroll={false}
       >
         <EmptyState
@@ -351,6 +341,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       <Screen
         ambient
         ambientVariant="goal"
+        backAction={{ destinationLabel: backDestinationLabel, onPress: handleBack }}
         edges={["top", "bottom"]}
         footer={editing ? (
           <Button
@@ -367,10 +358,6 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
         style={styles.screenContent}
       >
         <View style={styles.header}>
-          <View style={styles.headerContext}>
-            <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={handleBack} />
-            <Text accessibilityLabel={context} ellipsizeMode="clip" maxFontSizeMultiplier={2} numberOfLines={2} style={styles.context}>{context}</Text>
-          </View>
           <View style={styles.titleBlock}>
             <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Set learning rhythm for this track")}</Text>
             <View style={styles.trackContext}>
@@ -701,9 +688,7 @@ function formatGoalDate(value: string, locale: AppLocale): string {
 const createStyles = (palette: AppColors) => StyleSheet.create({
   keyboardAvoiding: { flex: 1 },
   loadingAction: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, width: "100%" },
-  loadingContext: { ...typography.navigationContext, color: palette.textPrimary, flexShrink: 1, minWidth: 0 },
   loadingField: { backgroundColor: palette.surfaceInput, borderRadius: radius.lg, width: "100%" },
-  loadingHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minHeight: 44, minWidth: 0, paddingHorizontal: spacing.xl },
   loadingLine: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1 },
   loadingPanel: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, padding: spacing.lg },
   loadingPanelLarge: { gap: spacing.lg },
@@ -722,8 +707,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   loadingTrackContext: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
   screenContent: { gap: spacing.xxl, paddingBottom: spacing.xxl, paddingTop: 28 },
   header: { gap: spacing.sm },
-  headerContext: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minHeight: 44, minWidth: 0 },
-  context: { ...typography.navigationContext, color: palette.textPrimary, flexShrink: 1, minWidth: 0 },
   titleBlock: { gap: spacing.md },
   title: { color: palette.textPrimary, fontSize: 28, fontWeight: "600", lineHeight: 34 },
   trackAccent: { alignSelf: "stretch", backgroundColor: palette.primary, borderRadius: radius.pill, width: 3 },

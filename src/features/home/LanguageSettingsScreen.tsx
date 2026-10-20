@@ -46,11 +46,8 @@ export function LanguageSettingsScreen({ navigation }: LanguageSettingsScreenPro
   }
 
   return (
-    <Screen edges={["top", "bottom"]}>
+    <Screen backAction={{ onPress: () => navigation.goBack() }} edges={["top", "bottom"]}>
       <ScreenHeader
-        backAction={{ onPress: () => navigation.goBack() }}
-        context={t("appSettings")}
-        contextTone="primary"
         description={t("languageIntro")}
         title={t("language")}
       />

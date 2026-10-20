@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Button, EmptyState, Screen, SessionResultOverview } from "../../components";
+import { BackLink, Button, EmptyState, Screen, SessionResultOverview } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
@@ -76,7 +76,7 @@ export function AlgorithmsInterviewSimulationReviewScreen({ navigation, route }:
   if (!item) return <Screen><EmptyState title={t("Session result unavailable")} description={t("We couldn’t load the session result.")} actionLabel={t("Back to results")} onActionPress={backToResult} /></Screen>;
   const previous = result.feedbackItems[index - 1];
   const next = result.feedbackItems[index + 1];
-  const headerAction = <Button onPress={backToResult} testID={runtimeSelectors.practiceReview.result()} variant="ghost">{t("Back to results")}</Button>;
+  const headerAction = <BackLink destinationLabel={t("Simulation result")} onPress={backToResult} testID={runtimeSelectors.practiceReview.result()} />;
   const outcome = item.correctness;
 
   return (

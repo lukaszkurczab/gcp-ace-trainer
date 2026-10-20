@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 
-import { AppShellHeader, EmptyState, Icon, IconTile, ListRow, Screen, SectionHeader, SkeletonShape, useSkeletonGlassMotion } from "../../components";
+import { EmptyState, Icon, IconTile, ListRow, Screen, SectionHeader, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { loadAlgorithmsDeclaredScopeOptions } from "../../application/learningReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { ROUTES } from "../../constants/routes";
@@ -40,14 +40,14 @@ export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
   }, [route.params.modeId, route.params.targetMentalUnitId, t]);
 
   if (state.kind === "unavailable") {
-    return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} /><EmptyState title={t("Practice scope unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => goBackOrHome(navigation)} /></Screen>;
+    return <Screen backAction={{ destinationLabel: navigation.canGoBack() ? undefined : t("Today"), onPress: () => goBackOrHome(navigation) }} edges={["top"]}><EmptyState title={t("Practice scope unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => goBackOrHome(navigation)} /></Screen>;
   }
-  if (state.kind === "loading") return <Screen edges={["top"]} style={{ gap: spacing.lg }}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} /><ScopeLoadingSkeleton /></Screen>;
+  if (state.kind === "loading") return <Screen backAction={{ destinationLabel: navigation.canGoBack() ? undefined : t("Today"), onPress: () => goBackOrHome(navigation) }} edges={["top"]} style={{ gap: spacing.lg }}><ScopeLoadingSkeleton /></Screen>;
   const codingInterviewTrackId = CODING_INTERVIEW_TRACK_ID;
 
   return (
-    <Screen scroll edges={["top"]} style={{ gap: spacing.lg }}>
-      <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} />
+    <Screen backAction={{ destinationLabel: navigation.canGoBack() ? undefined : t("Today"), onPress: () => goBackOrHome(navigation) }} scroll edges={["top"]} style={{ gap: spacing.lg }}>
+
       <SectionHeader title={t("Choose a topic for {{mode}}", { mode: t(modeTitle) })} subtitle={t("Choose a topic. Questions mix the skills in that topic without hints.")} />
       <View style={{ gap: spacing.sm }}>
         {state.options.map((option) => (

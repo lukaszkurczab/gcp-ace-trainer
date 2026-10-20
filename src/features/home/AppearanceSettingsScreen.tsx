@@ -50,11 +50,8 @@ export function AppearanceSettingsScreen({ navigation }: AppearanceSettingsScree
   }
 
   return (
-    <Screen edges={["top", "bottom"]}>
+    <Screen backAction={{ onPress: () => navigation.goBack() }} edges={["top", "bottom"]}>
       <ScreenHeader
-        backAction={{ onPress: () => navigation.goBack() }}
-        context={t("settings")}
-        contextTone="primary"
         description={t("intro")}
         title={t("appearance")}
       />

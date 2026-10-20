@@ -39,26 +39,23 @@ export function ActivityView({ state, filter, filterVisible, selectedUnavailable
   const { t } = useTranslation("common");
   const header = (
     <ScreenHeader
-      backAction={{ onPress: () => onBack() }}
-      context={t("Progress")}
-      contextTone="primary"
       title={t("Activity")}
       variant="activity"
     />
   );
 
   if (state.kind === "loading") {
-    return <Screen ambientVariant="activity" edges={["top", "bottom"]} style={styles.screen}>{header}<ActivityLoadingSkeleton /></Screen>;
+    return <Screen backAction={{ onPress: () => onBack() }} ambientVariant="activity" edges={["top", "bottom"]} style={styles.screen}>{header}<ActivityLoadingSkeleton /></Screen>;
   }
   if (state.kind === "unavailable") {
-    return <Screen ambientVariant="activity" edges={["top", "bottom"]}>{header}<EmptyState actionLabel={t("Try again")} description={`${t("Activity data could not be loaded locally.")} [${state.diagnosticCode}]`} onActionPress={onRetry} title={t("Activity unavailable")} /></Screen>;
+    return <Screen backAction={{ onPress: () => onBack() }} ambientVariant="activity" edges={["top", "bottom"]}>{header}<EmptyState actionLabel={t("Try again")} description={`${t("Activity data could not be loaded locally.")} [${state.diagnosticCode}]`} onActionPress={onRetry} title={t("Activity unavailable")} /></Screen>;
   }
 
   const model = state.model;
   const selectedUnavailableItem = model.items.find((item) => item.kind === "unavailable" && item.sessionId === selectedUnavailableSessionId) ?? null;
   const selectedSessionDetailsItem = model.items.find((item) => item.interaction.kind === "toggle_session_details" && item.sessionId === selectedSessionDetailsId) ?? null;
   return (
-    <Screen ambientVariant="activity" edges={["top", "bottom"]} scroll={false} style={styles.virtualScreen}>
+    <Screen backAction={{ onPress: () => onBack() }} ambientVariant="activity" edges={["top", "bottom"]} scroll={false} style={styles.virtualScreen}>
       <SectionList
         contentContainerStyle={styles.virtualContent}
         extraData={{ selectedUnavailableSessionId, selectedSessionDetailsId }}

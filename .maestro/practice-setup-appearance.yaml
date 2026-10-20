@@ -1,0 +1,83 @@
+appId: com.lkurczab.patternly
+name: Practice setup remains usable in both themes
+# Prerequisite: English focus setup (or its Appearance screen), iOS in dark mode.
+# RESTORE_APPEARANCE must match the selected preference before starting.
+# Restores that preference and returns to setup; no session or account changes.
+env:
+  RESTORE_APPEARANCE: system
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-home"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+          retryTapIfNoChange: true
+      - scrollUntilVisible:
+          element:
+            id: "settings-appearance"
+          direction: DOWN
+      - tapOn:
+          id: "settings-appearance"
+          retryTapIfNoChange: true
+- runFlow:
+    when:
+      visible:
+        id: "patternly:practice:setup:root"
+    commands:
+      - takeScreenshot: practice-setup-dark
+      - tapOn:
+          id: "patternly:navigation:back"
+      - tapOn:
+          id: "main-tab-bar-settings"
+      - scrollUntilVisible:
+          element:
+            id: "settings-appearance"
+          direction: DOWN
+      - tapOn:
+          id: "settings-appearance"
+- assertVisible:
+    id: "preference-option-${RESTORE_APPEARANCE}"
+    selected: true
+- tapOn:
+    id: "preference-option-light"
+    retryTapIfNoChange: true
+- assertVisible:
+    id: "preference-option-light"
+    selected: true
+- tapOn:
+    id: "patternly:navigation:back"
+- tapOn:
+    id: "main-tab-bar-practice"
+- tapOn:
+    id: "patternly:practice:open-setup"
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- assertVisible: "Change topic"
+- assertVisible: "Number of questions"
+- assertVisible:
+    id: "patternly:practice:start-session"
+- takeScreenshot: practice-setup-light
+- tapOn:
+    id: "patternly:navigation:back"
+- tapOn:
+    id: "main-tab-bar-settings"
+- tapOn:
+    id: "settings-appearance"
+- tapOn:
+    id: "preference-option-${RESTORE_APPEARANCE}"
+- assertVisible:
+    id: "preference-option-${RESTORE_APPEARANCE}"
+    selected: true
+- tapOn:
+    id: "patternly:navigation:back"
+- tapOn:
+    id: "main-tab-bar-practice"
+- tapOn:
+    id: "patternly:practice:open-setup"
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- takeScreenshot: practice-setup-dark-restored

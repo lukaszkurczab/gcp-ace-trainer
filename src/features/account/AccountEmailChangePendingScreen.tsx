@@ -33,8 +33,8 @@ export function AccountEmailChangePendingScreen({ navigation, route }: Props) {
         : <InfoBlock accessibilityAlert body={t("emailChangePendingUnavailable")} title={t("emailChangePendingUnavailableTitle")} testID="email-change-unavailable" tone="warning" />;
 
   return (
-    <Screen edges={["top", "bottom"]} style={styles.screen}>
-      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("appSettings")} contextTone="primary" title={t(status === "waiting" ? "emailChangePendingTitle" : "changeEmail")} />
+    <Screen backAction={{ onPress: () => navigation.goBack() }} edges={["top", "bottom"]} style={styles.screen}>
+      <ScreenHeader title={t(status === "waiting" ? "emailChangePendingTitle" : "changeEmail")} />
       {status !== "unavailable" ? <Text selectable maxFontSizeMultiplier={2} style={styles.target} testID="email-change-target">{t("emailChangePendingTarget", { email: targetEmail })}</Text> : null}
       {statusBlock}
       <Button onPress={() => navigation.goBack()} testID="email-change-return" variant="secondary">{t("emailChangeReturn")}</Button>

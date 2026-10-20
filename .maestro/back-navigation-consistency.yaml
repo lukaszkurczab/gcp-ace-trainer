@@ -1,0 +1,113 @@
+appId: com.lkurczab.patternly
+name: Shared back navigation names its actual destination
+# Prerequisite: English UI, AWS selected; Today, Practice setup, or a Settings child visible.
+# No session start, purchase, download, data reset, or preference change.
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- runFlow:
+    when:
+      visible: "< Settings"
+    commands:
+      - tapOn:
+          id: "patternly:navigation:back"
+          retryTapIfNoChange: true
+      - tapOn:
+          id: "main-tab-bar-home"
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-home"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-practice"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:practice:hub:root"
+          timeout: 30000
+      - tapOn:
+          id: "patternly:practice:open-setup"
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- assertVisible: "< Practice"
+- takeScreenshot: back-navigation-practice-setup
+- tapOn:
+    id: "patternly:navigation:back"
+    retryTapIfNoChange: true
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: "main-tab-bar-home"
+- assertVisible:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-appearance"
+    direction: DOWN
+- tapOn:
+    id: "settings-appearance"
+- assertVisible: "< Settings"
+- takeScreenshot: back-navigation-appearance
+- tapOn:
+    id: "patternly:navigation:back"
+    retryTapIfNoChange: true
+- assertVisible:
+    id: "settings-language"
+- tapOn:
+    id: "settings-language"
+- assertVisible: "< Settings"
+- takeScreenshot: back-navigation-language
+- tapOn:
+    id: "patternly:navigation:back"
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: "settings-legal-information"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-legal-information"
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertVisible: "< Settings"
+- scrollUntilVisible:
+    element:
+      id: "legal-link-terms"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "legal-link-terms"
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertVisible: "< Legal information"
+- takeScreenshot: back-navigation-terms
+- swipe:
+    direction: UP
+- swipe:
+    direction: UP
+- assertVisible: "< Legal information"
+- takeScreenshot: back-navigation-terms-scrolled
+- tapOn:
+    id: "patternly:navigation:back"
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: "patternly:navigation:back"
+    direction: UP
+    timeout: 30000
+- assertVisible: "< Settings"

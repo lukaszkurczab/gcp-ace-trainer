@@ -28,7 +28,7 @@ type SettingsInformationScreenProps = Readonly<{
   infoBody: string;
   infoTitle: string;
   supplementalContent?: ReactNode;
-  screenHeader?: Readonly<{ context: string; onBack: () => void; title: string }>;
+  screenHeader?: Readonly<{ onBack: () => void; title: string }>;
   sections: readonly InformationSection[];
 }>;
 
@@ -41,12 +41,9 @@ export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, scr
     : sections[activeTopicSelection.sectionIndex]?.topics[activeTopicSelection.topicIndex] ?? null;
 
   return (
-    <Screen edges={screenHeader ? ["top", "bottom"] : undefined}>
+    <Screen backAction={screenHeader ? { onPress: screenHeader.onBack } : undefined} edges={screenHeader ? ["top", "bottom"] : undefined}>
       {screenHeader ? (
         <ScreenHeader
-          backAction={{ onPress: screenHeader.onBack }}
-          context={screenHeader.context}
-          contextTone="primary"
           title={screenHeader.title}
         />
       ) : null}

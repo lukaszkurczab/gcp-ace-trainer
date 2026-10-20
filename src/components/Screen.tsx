@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useRef, type ReactNode, type RefObject } from "react";
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle, useWindowDimensions } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 
 import { spacing } from "../theme";
 import { useThemedStyles } from "../preferences/appPreferencesContext";
 import type { AppColors } from "../theme";
 import { AmbientBackdrop } from "./AmbientBackdrop";
+import { BackLink, type BackLinkProps } from "./BackLink";
 
 
 type ScreenProps = {
   backgroundColor?: string;
+  backAction?: BackLinkProps;
   children: ReactNode;
   compact?: boolean;
   ambient?: boolean;
@@ -23,8 +25,9 @@ type ScreenProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Screen({ ambient = true, ambientVariant = "default", backgroundColor, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, scrollFocus, style }: ScreenProps) {
+export function Screen({ ambient = true, ambientVariant = "default", backgroundColor, backAction, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, scrollFocus, style }: ScreenProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
   const contentRef = useRef<View>(null);
   const focusedKey = useRef<string | null>(null);
@@ -48,6 +51,7 @@ export function Screen({ ambient = true, ambientVariant = "default", backgroundC
   return (
     <SafeAreaView edges={edges} style={[styles.safeArea, backgroundColor ? { backgroundColor } : null, ambient ? styles.ambientSafeArea : null]}>
       {ambient ? <AmbientBackdrop variant={ambientVariant} /> : null}
+      {backAction ? <View key={`navigation:${fontScale}`} style={styles.navigation}><BackLink {...backAction} /></View> : null}
       {header}
       {scroll ? (
         <ScrollView
@@ -75,6 +79,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   ambientSafeArea: {
     backgroundColor: "transparent",
+  },
+  navigation: {
+    backgroundColor: palette.background,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   scrollContent: {
     flexGrow: 1,

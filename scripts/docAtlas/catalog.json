@@ -687,8 +687,8 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/navigation/RootNavigator.tsx": {
-      "description": "Rejestruje stos ekranów i warunki wejścia konta. Zawiera również wejścia fixture/audytu ograniczone warunkami DEV i smoke.",
-      "reviewedHash": "69856aeb5eaea50dabe08ea0be77b3c4d5db454365e85c1d3168294a13efb811",
+      "description": "Rejestruje stos ekranów i warunki wejścia konta. Zawiera również wejścia fixture/audytu ograniczone warunkami DEV i smoke. Nagłówek powrotu korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny. TopicRoadmap nazywa faktyczny ekran Choose topic.",
+      "reviewedHash": "61516b2198240b900ffad285b0248a8b504fcc1d1004422133c14a58b0919989",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/constants/routes.ts": {
@@ -1126,37 +1126,37 @@
     },
     "patternly/src/features/home/LanguageSettingsScreen.tsx": {
       "description": "Wybór języka interfejsu.",
-      "reviewedHash": "9490225ac8d8a26adc932195a036b1e9d8e6b6e7b7ce475221d9af07f33ab9a3",
+      "reviewedHash": "2987a4d64d9ed3893b87b4f57c15f810779ab41e1b57e0ed772dfe5650567dfb",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/features/home/AppearanceSettingsScreen.tsx": {
       "description": "Wybór wyglądu aplikacji.",
-      "reviewedHash": "7614ec48e16007dd1ed886cf9380a55f8dccaf8a9dd3c52ee448423fc3d79ca3",
+      "reviewedHash": "36b93273afb3457abee781b9a754abffe09e9c801cd55c0b2a5e029b023070ec",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/features/home/LegalRequestsScreen.tsx": {
       "description": "Złożenie i przegląd spraw prawnych użytkownika.",
-      "reviewedHash": "25b26ef61ff3f56ddd7a0381ec7902c7b3ace60c8406451e1824905e5af2b49c",
+      "reviewedHash": "0d66ba9125da6ed171d8dfe518e0e9bea2037fcca03f3b66706f892d382bda30",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/features/home/NotificationSettingsScreen.tsx": {
-      "description": "Konfiguracja lokalnych przypomnień i ich dni/godzin.",
-      "reviewedHash": "6007d51e229d567d2c8ea8aeb48dfd0fe48e56283d737b534d0fe0d9e4598c58",
+      "description": "Konfiguracja lokalnych przypomnień i ich dni/godzin. Stały slot Screen.backAction korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny.",
+      "reviewedHash": "5750df8180c57625235725fe656d2111e04220208f86a01815cc4bdd8ba42334",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/PrivacyRequestsScreen.tsx": {
       "description": "Złożenie i przegląd wniosków dotyczących danych.",
-      "reviewedHash": "db2182b004731892d5c1243c0a4473efde32f4957fcbca77ac5612b8973e1979",
+      "reviewedHash": "d43dd529b9818880fd79add5b38b9eff637fb4b3f041dc269a68a4d541dcd22e",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/features/home/LearningPlanEditorScreen.tsx": {
-      "description": "Edycja zaakceptowanego planu nauki.",
-      "reviewedHash": "d893d3a23952047b252da44775588c11d86e3bb10bf95e00e5190d6989eb81ac",
+      "description": "Edycja zaakceptowanego planu nauki. Nagłówek powrotu korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny.",
+      "reviewedHash": "5f569baeb534c2c54a61aa23453f4f3e61ff7f652a12e7dac87ce907bc9e3417",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/SelectTrackScreen.tsx": {
-      "description": "Pozwala wybrać aktywną ścieżkę.",
-      "reviewedHash": "f5ca8c6f05f9d6c8684176864f2e08d2ccca9ec03f12a9934da41fd90e4ee1f6",
+      "description": "Pozwala wybrać aktywną ścieżkę. Stały slot Screen.backAction korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny.",
+      "reviewedHash": "cda6b2e00ef5adf8b370cd977c69acd3a36565eedca5f11478d7592f1df75109",
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/features/home/ActivityScreen.tsx": {
@@ -1165,18 +1165,18 @@
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/LearningPlanProposalScreen.tsx": {
-      "description": "Przedstawia propozycję planu i jej akceptację.",
-      "reviewedHash": "fd8362c6987843dabb616031ef648de22db69c24aee2794197d210d5b34fea69",
+      "description": "Przedstawia propozycję planu i jej akceptację. Nagłówek powrotu korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny.",
+      "reviewedHash": "66c424c23502d984ab42daf275e3ce71f8da7c393a432f32c0370f865e5fd08c",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/GoalCadenceScreen.tsx": {
-      "description": "Zbiera cel i rytm nauki dla planu.",
-      "reviewedHash": "a76454e9346236c7ba052cab5e3934155c4602de801475f66a8b7753b1acc309",
+      "description": "Zbiera cel i rytm nauki dla planu. Stały slot Screen.backAction korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny.",
+      "reviewedHash": "a0fafbf63ec27dff721ddb821f854d722d6f9745129721850c4a661d0a304338",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/YourDataScreen.tsx": {
       "description": "Dane użytkownika, eksport i dostęp do operacji resetu/usunięcia.",
-      "reviewedHash": "b26a232d3622daf0d3c56f67b1c0922cd06356fd577d2277bd27899c80e92fc3",
+      "reviewedHash": "bdedff243eb0a7f1356f56206e2a707844509026b2a5f95f560c6b2b7b591fdb",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/features/home/HomeScreen.tsx": {
@@ -1195,8 +1195,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/exam/ExamReviewScreen.tsx": {
-      "description": "Przegląd odpowiedzi po egzaminie.",
-      "reviewedHash": "98b2d92c7059209685b0e940d41a51906e0d32ce349e9b1b8160415e0f1513a8",
+      "description": "Przegląd odpowiedzi po egzaminie. Wspólny BackLink prowadzi do Result przez dotychczasowy popTo; stan ładowania wskazuje ten sam cel.",
+      "reviewedHash": "61bd296bb173ae8152b0693f4bfbb1d1f40f697a7b05c824557b5096dc336593",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/exam/ResultScreen.tsx": {
@@ -1205,33 +1205,33 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/account/AccountEntryScreen.tsx": {
-      "description": "Wejście do konta i alternatywa sesji Gościa; konkretny błąd odzyskiwania dziennika jest pokazany przed ogólną blokadą adopcji aktywnej sesji.",
-      "reviewedHash": "3a47bbf108a0ace6ad0cf0eff6e7caa5a8305b2e4bf0455673010e97c6e0c4df",
+      "description": "Wejście do konta i alternatywa sesji Gościa; konkretny błąd odzyskiwania dziennika jest pokazany przed ogólną blokadą adopcji aktywnej sesji. Stały slot Screen.backAction korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny.",
+      "reviewedHash": "a5e1a29cc8c4151e925cf7427dc08b2201eda813a67451bdfb71b4bf74d12132",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/features/account/AccountSecurityScreen.tsx": {
-      "description": "Zarządzanie bezpieczeństwem konta i recovery.",
-      "reviewedHash": "171376f3eb9c3064014c3135ae002314a1fa810427d63e4c98b2761e1188b233",
+      "description": "Zarządzanie bezpieczeństwem konta i recovery. Screen.backAction utrzymuje powrót poza formularzem i klawiaturą; zachowany callback dismiss/revoke/goBack. Własne przewijanie formularza i wszystkie operacje danych pozostają w dotychczasowym kontrakcie.",
+      "reviewedHash": "4c19a45c0f22203bd45f94c85381778cb6a27ac2b35331fe107a3421dc247e71",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/features/practice/PracticeSetupScreen.tsx": {
-      "description": "Ustawienie zakresu i parametrów sesji praktyki.",
-      "reviewedHash": "fad8a9b5e0730028b305b085f0d98bc235b38f15a683ef14db2707accc648ffd",
+      "description": "Krótki formularz focus practice: Selected topic nad pełnoszerokim polem tematu ze strzałką, liczba pytań, deklarowany wybór momentu feedbacku i przyklejony Start session z busy/error. Nazwa tematu i wartości liczbowe mają zwykłą grubość, etykiety pozostają pogrubione; tło geometryczne zachowane. Wspólny Screen.backAction utrzymuje powrót poza scroll. Wybór i przygotowanie Premium należą do TopicRoadmap; Start ponownie sprawdza dokładny pakiet. Zachowane zakresy jednostek, błędy, pozostałe kontrakty trybów i draft tej samej tożsamości formularza. Zmiana skali tekstu odtwarza wyłącznie widok, a stan formularza pozostaje w rodzicu. Dalsza korekta typografii: wartości16pt/regular, etykiety16pt/semibold, większy rytm grup32pt i wewnętrzny16pt. Krótki opis pod tytułem wyjaśnia wybór tematu i liczby pytań; loading odtwarza ten układ.",
+      "reviewedHash": "e9024a0ec13c46cc973e36a2e358ae4632126cdeaf8efc22cc42a0e4dbd85f21",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/practice/PracticeHubScreen.tsx": {
-      "description": "Wybór dostępnej praktyki i trybów aktywnej ścieżki.",
-      "reviewedHash": "d3a1e93449ce93c00ce38d3f902852e1b1ca71656bcc32dc21ac6efa0a75d728",
+      "description": "Wybór praktyki i trybów aktywnej ścieżki. Główny Start session przechodzi bezpośrednio do sesji bieżącego trybu z kanonicznymi ustawieniami pakietu; Manage settings otwiera setup, a Coding zachowuje Custom Practice. Premium admission Design i retry zachowują dokładny mode/source/target; sekundarne skróty i symulacje zachowują odrębne gałęzie. Screen.backAction utrzymuje powrót poza scroll bez zmiany callbacku i celu.",
+      "reviewedHash": "fc54e325b90fb7cb6629da9d0ee04ad569193066628f32a0258b363f2e80ea8b",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/practice/PracticeSessionScreen.tsx": {
-      "description": "Ekran sesji praktyki łączący runtime i interakcję odpowiedzi.",
-      "reviewedHash": "53846a67c7c7794101fe7c31ad1bd77073a63db15953c59d0b92df1908f4f312",
+      "description": "Ekran sesji praktyki łączący runtime i interakcję odpowiedzi. Stały slot Screen.backAction korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny.",
+      "reviewedHash": "9d871a348ed4e14093d0c565bf419dfc2a1e575fcfb37850e6c5973ac144c220",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/premium/PremiumPurchaseScreen.tsx": {
       "description": "Zakup i restore Premium oraz jawna dostępność sklepu.",
-      "reviewedHash": "d0d60d2903722b0996d4a1ccce45cdbe3e6531efd1c8e376b9a333212f6cabbf",
+      "reviewedHash": "eab5ab592c8df15b4f17a2c2445f87bcba304115a6c75548b4d3d3783b1b9088",
       "flow": "Premium i zakup"
     },
     "patternly/src/application/learningMutations/identity.ts": {
@@ -1405,9 +1405,9 @@
       "reviewedHash": "081f4b27242f2ac8e6873286509d48eb4ef1ac791ad374a1ec130eacce47028b"
     },
     "patternly-backend/scripts/isolated-emulator-test-runner.mjs": {
-      "description": "Uruchamia izolowane suites wyłącznie dla projektu demo i loopback. Jeden resolver zachowuje Auth19119/Firestore18119 bez bazy; jawna baza wyznacza auth=base, firestore=base+1, hub=base+2 i logging=base+3. Wspólny guard runtime wymaga zgodnego projektu i dokładnych endpointów przed inicjalizacją SDK parenta/workera B4; zajęte porty zatrzymują runner przed startem emulatorów.",
+      "description": "Uruchamia izolowane suites wyłącznie dla demo i dokładnych adresów loopback; zajęte porty blokują start. Opcjonalny timeoutMs (POSIX, maksymalnie600s) obejmuje CLI i emulatory we własnej grupie procesów: SIGTERM, po5s SIGKILL i wynik124; konfiguracja tymczasowa jest sprzątana. Brak timeoutMs zachowuje istniejący sposób uruchamiania.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "7b50a1fb457855ee85b2cdf644499d369f46fb38341daa34c6dab9beb0bfffe5"
+      "reviewedHash": "1e4300af95433721d8af61ee91fb869ad259d977065d9a274fd39b59ba9c22e9"
     },
     "patternly-web/scripts/publicLegalTestArtifact.mjs": {
       "description": "Buduje wyłącznie synthetic legal fixture testOnly z danymi testowymi; nie tworzy zatwierdzonego eksportu produkcyjnego.",
@@ -1545,9 +1545,9 @@
       "reviewedHash": "48d291a35d32ea94912295eeb7c5f417f283a0f612aca531a624432aec1ee9f3"
     },
     "patternly/integration/contracts/content-release/release.lock.json": {
-      "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów, lineage producenta oraz wykonane kategorie kontroli. Partia FESD N09 aktualizuje artefakt Frontend, lock i ledger oraz provenance do commitu CONTENT; pozostałe osiem payloadów jest niezmienione. Schema v4 nie nadaje semantic approval ani zgody na publikację.",
+      "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów, lineage producenta oraz wykonane kategorie kontroli. Lokalny start synchronizuje provenance do aktualnego commitu CONTENT; sama zmiana commitu bez zmiany wejść nie zmienia fingerprintu ani payloadów. Schema v4 nie nadaje semantic approval ani zgody na publikację.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "b3415d4a4254050f7846b9dc7885a4611a1e4b1006c47c1046e346290bc96378"
+      "reviewedHash": "7fb70e291bab69e3da81544e45f4bef8d063606505173d481d8c71f337a95fc2"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -1595,9 +1595,9 @@
       "reviewedHash": "fd2748a71139c97b285e3cf515dc3c7d6d9734f0326c0efb8224e6799fe484ab"
     },
     "patternly-backend/scripts/isolated-emulator-test-runner.d.mts": {
-      "description": "Deklaruje kontrakt wspólnego resolvera portów, walidacji konfiguracji emulatorów i środowiska runtime oraz runnera izolowanych testów. Parent i worker B4 importują ten sam kontrakt zamiast utrzymywać osobne domyślne wyliczenia.",
+      "description": "Deklaracje wspólnego resolvera portów, guardów demo/loopback i runnera; opcjonalny timeoutMs jest granicą całej izolowanej grupy POSIX.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "8e09f476178cdd3e795eb4f548d810d512592772b69df70da6b0eede51487b77"
+      "reviewedHash": "0624d4e162a3f7b39bc36644d7d1d95cdb7404d4a3e1f2eabfbd8721cf57d949"
     },
     "patternly-backend/tests/isolatedEmulatorRunner.test.ts": {
       "description": "Sprawdza wspólną konfigurację runnera i guardów B4: domyślne19119/18119, override przez PATTERNLY_ISOLATED_TEST_PORT_BASE, granice bazy i odmowę błędnych baz/portów, obcego lub niezgodnego projektu, hosta spoza loopback i driftu konfiguracji emulatorów.",
@@ -1694,20 +1694,55 @@
       "flow": "Konto, Gość i synchronizacja",
       "reviewedHash": "695f2a0bf0ef6bcf650935ed142857fffaf84a99a4f3d93f859472d8f77a122b"
     },
+    "patternly-backend/scripts/run-cost04-tests.mjs": {
+      "description": "Ograniczona seria COST-04: sprawdza jawny HEAD aplikacji przed startem, używa jednej instancji emulatorów demo/loopback i limitu180s+5s sprzątania. Bez deployu i ruchu chmurowego.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "459c9bc1652115d5dd77e806f577fb3a5b92d1c9cae334f0590e72be277f3656"
+    },
+    "patternly-backend/tests/cost04Local.emulator.test.mjs": {
+      "description": "Prawdziwy klient APP przez loopback HTTP otrzymuje12kontrolowanych429 (GET/POST, JSON/plain/empty/stalled, Retry-After), bez automatycznych retry; jeden jawny GET retry po1s. Dwa procesy testują produkcyjny transakcyjny limit Firestore:4próby/2allowed/2limited/count2. Nie mierzy autoskalowania, globalnego throttlingu ani pojemności Cloud Run.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "b213f976b7c9d09008034484e2d1409ee95144a88ee93387421b97d6a733bc3c"
+    },
+    "patternly-backend/tests/cost04Deadline.test.mjs": {
+      "description": "Rzeczywisty lokalny probe procesu CLI i upartego potomka: termin3s, grupowy TERM/KILL, kod124, brak żywego potomka i usunięta konfiguracja. Fixture procesu nie jest testem awarii Java providera.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "6c80a8b13c85a6143520536824bfd7ed161de33eda089c4af2157673fb8f19b3"
+    },
+    "patternly-backend/scripts/qa/cost04/model.mjs": {
+      "description": "Rozszerza przyjęty kalkulator COST-02 bez zmiany produktu.48wariantów sześciu profili: tylko completion reuse0/0,5/1, pełne initial sweeps, źródła COST-03, CPU/RAM/boost/concurrency, min0/min1 i jawny scenariusz całego lifetime instance billing. Osobno marginalny koszt, gotowość i niezweryfikowana arytmetyka slotów; czasy50/500/1000ms i szerokość okna są wrażliwością założeń.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "259fbbb13a61c66da1e035b0f7d41025ddc2c155b8ea4167d536f28b9ff68ac9"
+    },
+    "patternly-backend/scripts/qa/cost04/model.test.mjs": {
+      "description": "Chroni zachowanie pierwszych pełnych sweepów i zapisów, granicę rewalidacji8reads/1HTTP, sześć profili, liczby i niezależny rachunek instance billing z minimum60s; syntetyczne testy modelu nie dowodzą cen rachunku ani pojemności.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "0555c6cc1230f3a83dfb49e69289e995e031065460b6f83d9f994a8f26bb4b23"
+    },
+    "patternly-backend/scripts/qa/cost04/cost03-observations.json": {
+      "description": "Sanitowane liczniki czterech przyjętych scenariuszy COST-03, SHA dokładnej macierzy i jawna granica jednostek emulatora. Nie zawiera danych kont ani czasu/billingu Cloud Run.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "9b9ecb8891c0967dfefa457476d39618c6dd231ca33df5bf37e1d50a84ad2998"
+    },
+    "patternly-backend/scripts/qa/cost04/candidate.json": {
+      "description": "Pasywna propozycja przyszłego probe: automatic min0/max2, request billing, CPU1/512Mi/concurrency8/boost; bieżący wymagany stan manual0/no tags. authorized=false i puste decyzje właściciela o celu, koszcie/SLO/odbiorcy blokują usługowy etap. Plik nie jest wykonywalnym deployem. Max2 jest wyłącznie granicą probe; model10000DAUpeak przekracza16slotów i przewiduje overload, wymaga wyboru niższego workloadu albo osobnej decyzji capacity.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "4a80437737bfe4aaab797b1e2fafc937714c88581175e6b7dd40c49a3e5dccf3"
+    },
+    "patternly-backend/scripts/qa/cost04/results.json": {
+      "description": "Deterministyczny wynik model.mjs z SHA wejść;48jawnych scenariuszy po COST-03, gotowość/minimum, marginalne koszty i wrażliwość. Model kosztowy bez zmierzonej pojemności/SLO/autoskalowania i bez zgody na chmurę.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "6abb026e22a799c46eb2216410ffdfea22759de3f19b9accaf7f1421ebc3589c"
+    },
+    "patternly-backend/scripts/qa/cost04/instance-prices.json": {
+      "description": "Wyodrębniony z osadzonego JSON AF_initDataCallback regionalny rekord Warsaw/defaultUSD dla instance billing, SHA pełnego publicznego snapshotu i metoda ekstrakcji.0,0000216CPU/0,0000024RAM; statyczny widok początkowy zawiera inne stawkiIowa. Dane cenowe nie są faktycznym rachunkiem.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "28f04c989cd50457fdc27502b8d24efd923d82f06d716f2321a3ecb7e05ee249"
+    },
     "patternly-web/.github/workflows/verify.yml": {
       "description": "Weryfikuje WEB z przypiętymi zgodnymi wejściami APP/CONTENT w katalogach sąsiednich. Raportuje rzeczywiste HEAD/status trzech repo; przed buildem uruchamia canonical check i regresje current-source. Dalsze kroki sprawdzają lokalny build, testowy legal, panel oraz demo; testowy legal nie daje zgody na publikację.",
       "flow": "Witryna, demo i panel",
       "reviewedHash": "5f08efa147f36bb93cf868a72072c0690930f4bdd086fbf4931324d616d2b6ac"
-    },
-    "patternly-web/scripts/record-local-acceptance.mjs": {
-      "description": "Zapisuje prywatny lokalny receipt dopiero po PASS rzeczywistego receiptu przeglądarki z mode=local-test, testOnly=true, deployable=false i zgodnym manifestem dist. Weryfikuje katalog przez wspólny kontrakt current-source oraz historyczne pytanie capture. Rejestruje rzeczywiste HEAD/status/hashe wejść APP, WEB i CONTENT, pochodną tożsamość i ograniczenia testowego legal; nie odczytuje current-admission ani nie nadaje release approval.",
-      "flow": "Witryna, demo i panel",
-      "reviewedHash": "ac17bd9e168344f3cdf719ac2e230e69a135dc226fc6d6d68d9d00c600c7bea2"
-    },
-    "patternly-web/scripts/verify-demo-bundle.mjs": {
-      "description": "Sprawdza katalog rzeczywistym producentem current-source i zgodność historycznego pytania capture przez wspólny kontrakt. Weryfikuje metadane trzech próbek, hashe oraz dokładny spis obrazów dist. Kontroluje wystąpienia autorskiego tekstu dwóch interaktywnych pytań i projekcji Details, brak interaktywnego payloadu próbki obrazowej, starego SQL demo i wskazanych sygnatur pełnych banków.",
-      "flow": "Witryna, demo i panel",
-      "reviewedHash": "a11722443ac2aa69d7c957c6ae06ae3cd6ef52cfb78d8d424d7949c580a89586"
     },
     "patternly-web/scripts/current-demo-contract.mjs": {
       "description": "Wspólny kontrakt verifiera i recordera: uruchamia rzeczywisty createPublicDemoCatalog producenta APP i porównuje pełny katalog z projekcją zwalidowanych bieżących źródeł, locków i puli Free. Dla obrazu odczytuje bank z historycznej rewizji APP wskazanej w manifeście, sprawdza jego SHA256 i pełną zgodność wybranego pytania z aktualnym źródłem CONTENT. Nie wymaga równości historycznego i bieżącego hasha całego banku.",
@@ -1719,10 +1754,28 @@
       "flow": "Witryna, demo i panel",
       "reviewedHash": "7ce4619bf9cc4b1b448e5fdee3f52468f9b0d8d1e26a0a44dd4456b0a33684af"
     },
+    "patternly-web/scripts/record-local-acceptance.mjs": {
+      "description": "Zapisuje prywatny lokalny receipt dopiero po PASS rzeczywistego receiptu przeglądarki z mode=local-test, testOnly=true, deployable=false i zgodnym manifestem dist. Weryfikuje katalog przez wspólny kontrakt current-source oraz historyczne pytanie capture. Rejestruje rzeczywiste HEAD/status/hashe wejść APP, WEB i CONTENT, pochodną tożsamość i ograniczenia testowego legal; nie odczytuje current-admission ani nie nadaje release approval.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "ac17bd9e168344f3cdf719ac2e230e69a135dc226fc6d6d68d9d00c600c7bea2"
+    },
+    "patternly-web/scripts/verify-demo-bundle.mjs": {
+      "description": "Sprawdza katalog rzeczywistym producentem current-source i zgodność historycznego pytania capture przez wspólny kontrakt. Weryfikuje metadane trzech próbek, hashe oraz dokładny spis obrazów dist. Kontroluje wystąpienia autorskiego tekstu dwóch interaktywnych pytań i projekcji Details, brak interaktywnego payloadu próbki obrazowej, starego SQL demo i wskazanych sygnatur pełnych banków.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "a11722443ac2aa69d7c957c6ae06ae3cd6ef52cfb78d8d424d7949c580a89586"
+    },
     "patternly-web/src/generated/demoQuestions.json": {
       "description": "Wygenerowana przez APP projekcja current-source: dwa pytania interaktywne z autorskimi Details oraz publicSamples z ich metadanymi i trzecią próbką obrazową bez payloadu pytania. Provenance wskazuje bieżący sourceInputFingerprint, releaseId, hashe artefaktów i locków, źródło oraz tryby Free; obraz ma ścieżkę i SHA256. Nie zawiera pełnego banku ani ręcznego admission.",
       "flow": "Witryna, demo i panel",
       "reviewedHash": "6a23cf1a7bf622ea283c665f239d36f43c8ae49beb2dda65da22ed2bf26b65f9"
+    },
+    "patternly/scripts/runLocalProfile.mjs": {
+      "description": "Uruchamia jawny lokalny profil, synchronizuje bieżące treści przed Expo i sprawdza emulator Auth. Smoke wymaga gotowej bazy, uwierzytelniania i czytnika uprawnień; dopuszcza wyłącznie jawne HTTP503/not_ready z contentPackages=false, informując o użyciu treści wbudowanych. Pełne HTTP200/ready wymaga wszystkich czterech kontroli; produkcyjny /ready bez zmian.",
+      "reviewedHash": "c33658b5501a78bfbeb338df490b77a583d3f73f71c07e5942454d229cb69a72"
+    },
+    "patternly/scripts/runLocalProfile.test.mjs": {
+      "description": "Regresje profili i startu Expo: synchronizacja przed uruchomieniem, wymagane lokalne endpointy, pełna gotowość oraz ściśle ograniczony brak pakietów online w smoke. Odrzuca niedostępne podstawowe zależności, niepełne i sprzeczne odpowiedzi gotowości.",
+      "reviewedHash": "6d750828b87d7c9396dae29bdf8bae198c57583d62278e958c6e158041f7c79e"
     },
     "patternly/src/infrastructure/purchases/index.ts": {
       "description": "Jedna kolejka wywołań SDK dla adapterów obu sklepów. Blokada kasowanego AppUserID odmawia configure/login/action; bariera opróżnia kolejkę, leniwie odczytuje natywną konfigurację i wykonuje logOut wyłącznie przy zgodnym ID. Błąd blokuje backendowe usunięcie; inny aktualny klient pozostaje bez zmian.",
@@ -1743,6 +1796,61 @@
       "description": "Izolowane fixture demo odbierają dokładny backendowy AppUserID, przypięty projekt, brak klucza, błąd przed/po modelowanym skutku, błędny sekret i obce konto. SIGKILL workera przed checkpointem oraz lease/retry weryfikują trwałość i minimalny terminalny receipt. Bez rzeczywistego providera.",
       "reviewedHash": "b9f0a1c857f2498d88991b53b82f4c87596eeffbefeb57808abda3532776c44a",
       "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly/src/components/BackLink.tsx": {
+      "description": "Jeden przycisk powrotu: chevron i zlokalizowana nazwa celu w całym klikalnym wierszu min44pt. Bez logo/opisu. Odczytuje poprzednią trasę i bieżącą zakładkę Home; jawna destinationLabel obsługuje akcje niebędące popem. Nierozpoznany/brakujący cel nie tworzy fikcyjnej akcji. Obsługuje wzrost tekstu i semantykę dostępności. Bez tła i zaokrąglonej powierzchni, także podczas naciskania; feedback przez opacity, obszar dotyku zachowany.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "bed45e937a930a053fe6b3ceae1abd04e68f47603261eb6c546c1016649b97aa"
+    },
+    "patternly/src/navigation/backDestination.ts": {
+      "description": "Czyste mapowanie istniejących tras i parametrów na klucze faktycznych zlokalizowanych nazw ekranów. Uwzględnia aktywną zakładkę Home, stan wejścia konta, pod-ekran bezpieczeństwa i rodzaj żądania prawnego; nie nawiguje i nie zmienia historii. TopicRoadmap nazywa faktyczny ekran Choose topic.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "0f300efed5d9f16b8e2a985da7fdc186471532ff1ccfb78d64d980214249e80b"
+    },
+    "patternly/src/components/AppShellHeader.tsx": {
+      "description": "Dla istniejącej akcji powrotu renderuje wyłącznie wspólny BackLink; bez znaku Patternly i kontekstu ścieżki. Stack zachowuje safe area. Nagłówek bez akcji powrotu może zachować markę; nie tworzy fikcyjnego celu.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "c9efbd7a8c1af113def2e297d4991b0f35b7e20af2901e9640857d809d7c97d9"
+    },
+    "patternly/src/components/ScreenHeader.tsx": {
+      "description": "Przewijany tytuł bieżącego ekranu z potrzebnym opisem i opcjonalnym kontekstem. Nawigację powrotną przejął jawny stały slot Screen.backAction; ScreenHeader nie tworzy drugiego BackLink. Warianty korzystają z istniejących tokenów typografii.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "d457ee5664674cdbeba33ffae71f56d18eb76db6010018c5a374f6537ef1e94a"
+    },
+    "patternly/src/components/ReviewLoadingSkeleton.tsx": {
+      "description": "Neutralna geometria ładowania review z tym samym BackLink co ekran docelowy; bieżący tytuł review pozostaje poniżej powrotu. Opcjonalna destinationLabel obsługuje jawny cel akcji.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "66bd6cd1a4cce0acdfd51a83a5acfebf98d8e00c3aef5facb54058ab615b43e1"
+    },
+    "patternly/src/features/practice/AlgorithmsPracticeReviewScreen.tsx": {
+      "description": "Przegląd odpowiedzi praktyki algorytmów. BackLink nazywa Session result i zachowuje popTo podsumowania; loading/error mają ten sam powrót.",
+      "reviewedHash": "efc934bbe61ab2374a73bbbdd411b33f28bef471830a9164f0f97f95ffa38f51",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx": {
+      "description": "Wynik i przegląd symulacji algorytmów. Nagłówek przeglądu używa BackLink do Simulation result z zachowanym popTo.",
+      "reviewedHash": "14678e5222c0200ea9ec919f1500715a34e84ea876539a58a17df1d87f05139f",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/simulation/DesignInterviewSimulationScreens.tsx": {
+      "description": "Ekrany symulacji Design Interview. Przegląd ma stały powrót przez Screen.backAction do Simulation result z zachowaną akcją navigate. Leave i timer aktywnej sesji są w stałym Screen.header, z zachowanym disabled podczas zaakceptowanej finalizacji i tą samą akcją wyjścia.",
+      "reviewedHash": "7466f6027c88dcd4f4a290616ffda5fa450600e849b88e85793807bbf1e2e8da",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/practice/TopicRoadmapScreen.tsx": {
+      "description": "Wspólny Choose topic. Wejście z setupu zachowuje draft; anulowanie wraca bez zmiany, Continue przekazuje wybór bez startu. Osobno przygotowuje i weryfikuje Premium, zachowując błędy i alternatywę Free; bieżąca dokładna oferta może wrócić bez ponownego pobierania. Dotychczasowe wejście z Practice nadal zatwierdza do hubu.",
+      "reviewedHash": "db35db26294335fd4ee72b00eb5a0f1dd6462b7835f7ab9c5adf2f0aa2370657",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/practice/practiceNavigation.ts": {
+      "description": "Reset wyjścia z sesji oraz czyste przejścia wyboru tematu setupu. Ten sam temat zachowuje draft i piny; inny zwykły temat usuwa tylko jednostkę, a jawny wybór Free po Premium usuwa poprzednią tożsamość oferty. Dopasowanie Premium wymaga dokładnego track/node/mode/version/hash.",
+      "reviewedHash": "c89c9e56bb6bc65d0f2ca80bbb447e831b2b1f6a14f6ad4e1d931b7464724683",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/practice/sessionConfig.ts": {
+      "description": "Kanoniczne parametry tras i konfiguracja sesji praktyki. Builder Premium przyjmuje wyłącznie zadeklarowaną długość i obsługiwany moment feedbacku; nadal przekazuje nodeId przez istniejące admission, bez nowego kontraktu pinów zwykłej sesji.",
+      "reviewedHash": "96f9ba8ff0b8e6c94b836422ccab5ddf21ca7022ee86367510e9d86dee87b910",
+      "flow": "Sesja, odpowiedź i trwały wynik"
     }
   },
   "flows": [
@@ -1755,7 +1863,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "5d06c47f1537a322a45377a704e8e54c0a8e17f2d05337b762591adeb65f7c45"
+      "reviewedDigest": "f0a6a1081628ed74cfaa5361928353b283f43b6347726c0d0ef247f610cbd894"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -1767,7 +1875,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "2033f6189070c9cd9233cb29c0f04f6381d5b5bce30b19e5b000ff1383dd1fe1"
+      "reviewedDigest": "9d17b8c25f763b03c152e3e6a991ed4370602d13693ad307b59175feffb1063f"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -1777,7 +1885,7 @@
         "patternly-content",
         "patternly-backend/src/modules/content"
       ],
-      "reviewedDigest": "bb8fe640e9567b435f17a21b7f25c14cdd834b3355a0179464591ed2a8bea08b"
+      "reviewedDigest": "c2f9efd5f6bfdafead2eb5d6405796eb1de629f4e5ceebb577d1899a6d6611ad"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -1792,7 +1900,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "b9a70da463cc6455e8fd7992598c8694951276a888f9a5f4df4023a0f090ac8f"
+      "reviewedDigest": "50ba63ef918a1a13f6bc3b6bdf424baf3b1451edfcbf3b14ceabb795a1f1f6da"
     },
     {
       "name": "Cel, plan i postęp",
@@ -1803,7 +1911,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "ed6f4290a65b787178eb7f84a895c38dd51c96e861ee7cd846055b2aeb0a864e"
+      "reviewedDigest": "27540ee7f845eff27b27100d8d52239e17bd726fdccfe4c15229b2800646927f"
     },
     {
       "name": "Premium i zakup",
@@ -1814,7 +1922,7 @@
         "patternly-backend/src/modules/billing",
         "patternly-backend/src/modules/entitlements"
       ],
-      "reviewedDigest": "5d49f1ab8b79bbe6b2f9249e43ec541462e6f0a6632522b2576b4ea1620144a8"
+      "reviewedDigest": "5a9a63a7df7d1e42defdb2073e6b386daacd487672b72b49a5446fbdd8782b5a"
     },
     {
       "name": "Dane, prywatność i zgłoszenia",
@@ -1827,7 +1935,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "baacc186a64d7084eb051ed9db1262db976f59f98126d9fefa7e06a11dd73fb5"
+      "reviewedDigest": "7bbe2bc7ba01b8d84c3cf29d6676d176a9d741400c32b8b9ffd42a0e7665a64c"
     },
     {
       "name": "Witryna, demo i panel",

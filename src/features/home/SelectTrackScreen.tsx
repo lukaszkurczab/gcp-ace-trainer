@@ -5,7 +5,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
-import { AppShellHeader, Button, Icon, Screen } from "../../components";
+import { Button, Icon, Screen } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
   CODING_INTERVIEW_TRACK_ID,
@@ -113,7 +113,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
 
   return (
     <View style={styles.shell} testID="patternly:home:select-track:root">
-      <Screen
+      <Screen backAction={!onboarding ? { destinationLabel: navigation.canGoBack() ? undefined : t("Today"), onPress: () => goBackOrHome(navigation) } : undefined}
         edges={["top", "bottom"]}
         footer={showFooter ? (
           <View style={[styles.footerContent, largeText ? styles.actionsLargeText : null]}>
@@ -132,7 +132,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
         footerVariant="sticky"
         style={[styles.screenContent, !onboarding ? styles.returningScreenContent : null]}
       >
-        {!onboarding ? <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} placement="back" /> : null}
+
         {loadError ? (
           <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.unavailableState} testID="patternly:home:select-track:unavailable">
             <Text maxFontSizeMultiplier={2} style={styles.unavailableTitle}>{t("Track selection unavailable")}</Text>

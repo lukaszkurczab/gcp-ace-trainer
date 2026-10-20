@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import test, { before } from "node:test";
 
 import { getTrackDisplay, getTrackRegistration, type TrackId, type TrainingSession } from "../../domain";
-import { buildCertificationPracticeResumeRoute, buildCodingInterviewSimulationResumeRoute, buildDesignInterviewPracticeResumeRoute, buildPracticeSessionConfig, resolvePracticeSessionLength } from "./sessionConfig";
+import { buildCertificationPracticeResumeRoute, buildCodingInterviewSimulationResumeRoute, buildDesignInterviewPracticeResumeRoute, buildPracticeSessionConfig, buildPremiumNodePracticeSessionConfig, resolvePracticeSessionLength, type PracticeSessionLength } from "./sessionConfig";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { createCanonicalTrainingFamilyRuntime } from "../../application/canonicalTrainingFamilyComposition";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { buildHomeTabModel } from "../home/tabs/homeTabModel";
+import { PREMIUM_NODE_OFFERS } from "../../content/application/premiumNodeOffers";
 
 before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); });
 
@@ -18,6 +19,17 @@ const ordinaryConfiguration = {
   submission: "perItem",
   timer: "elapsedForeground",
 } as const;
+
+test("Premium focus config preserves a supported chosen length and rejects unsupported lengths", () => {
+  const offer = PREMIUM_NODE_OFFERS[0]!;
+  const requestedLength = offer.mode.requestedLengths.find((length) => length !== offer.mode.defaultRequestedLength) ?? offer.mode.defaultRequestedLength;
+  const config = buildPremiumNodePracticeSessionConfig(offer, { sessionLength: requestedLength });
+
+  assert.equal(config.sessionLength, requestedLength);
+  assert.equal(config.trackId, offer.trackId);
+  assert.equal(config.topicId, offer.nodeId);
+  assert.throws(() => buildPremiumNodePracticeSessionConfig(offer, { sessionLength: 999 as PracticeSessionLength }), /does not support the selected session length/u);
+});
 
 test("actual canonical practice producer resumes through routes and Home without legacy navigation", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();

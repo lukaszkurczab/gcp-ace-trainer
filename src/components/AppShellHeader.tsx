@@ -1,17 +1,16 @@
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { colorWithOpacity, spacing, typography } from "../theme";
-import { Icon } from "./Icon";
-import { IconButton } from "./IconButton";
+import { spacing, typography } from "../theme";
 import { PatternlyMark } from "./PatternlyMark";
+import { BackLink } from "./BackLink";
 import { useAppPreferences, useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
 type AppShellHeaderProps = {
   backAction?: Readonly<{
     accessibilityLabel?: string;
+    destinationLabel?: string;
     onPress: () => void;
   }>;
   context?: string;
@@ -20,52 +19,26 @@ type AppShellHeaderProps = {
 
 export function AppShellHeader({ backAction, context, placement = "inline" }: AppShellHeaderProps) {
   const styles = useThemedStyles(createStyles);
-  const { fontScale } = useWindowDimensions();
-  const { colorMode, colors: palette } = useAppPreferences();
-  const { t } = useTranslation("common");
+  const { colorMode } = useAppPreferences();
+  if (backAction) {
+    const link = <BackLink {...backAction} />;
+    if (placement === "stack") return <SafeAreaView edges={["top"]} style={styles.stackSafeArea}><View style={styles.stackHeader}>{link}</View></SafeAreaView>;
+    return <View>{link}</View>;
+  }
+
   const header = (
     <View style={[styles.header, placement === "stack" ? styles.stackHeader : null]}>
       <View style={styles.brandRow}>
-        {backAction ? (
-          <IconButton
-            accessibilityLabel={backAction.accessibilityLabel ?? t("Go back")}
-            icon="chevron-left"
-            onPress={backAction.onPress}
-          />
-        ) : null}
-        <View style={styles.brandMark}>
-          <PatternlyMark decorative size={30} treatment={colorMode === "dark" ? "mint" : "navy"} />
-        </View>
+        <PatternlyMark decorative size={30} treatment={colorMode === "dark" ? "mint" : "navy"} />
         <View style={styles.headerCopy}>
-          <Text key={`app-shell-brand-${fontScale}`} maxFontSizeMultiplier={2} style={styles.brandTitle}>Patternly</Text>
-          {context ? <Text accessibilityLabel={context} ellipsizeMode="clip" key={`app-shell-context-${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={2} style={styles.headerMeta}>{context}</Text> : null}
+          <Text maxFontSizeMultiplier={2} style={styles.brandTitle}>Patternly</Text>
+          {context ? <Text accessibilityLabel={context} maxFontSizeMultiplier={2} style={styles.headerMeta}>{context}</Text> : null}
         </View>
       </View>
     </View>
   );
 
-  if (placement === "back") {
-    return (
-      <View style={styles.backNavigation}>
-        <Pressable
-          accessibilityLabel={backAction?.accessibilityLabel ?? t("Go back")}
-          accessibilityRole="button"
-          disabled={!backAction}
-          hitSlop={4}
-          onPress={backAction?.onPress}
-          style={({ pressed }) => [styles.backChevron, pressed ? styles.backPressed : null]}
-        >
-          <Icon color={palette.textSecondary} name="chevron-left" size={16} />
-        </Pressable>
-        <Text accessibilityLabel="Patternly" ellipsizeMode="clip" key={`app-shell-back-${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={2} style={styles.backLabel}>Patternly</Text>
-      </View>
-    );
-  }
-
-  if (placement === "stack") {
-    return <SafeAreaView edges={["top"]} style={styles.stackSafeArea}>{header}</SafeAreaView>;
-  }
-
+  if (placement === "stack") return <SafeAreaView edges={["top"]} style={styles.stackSafeArea}>{header}</SafeAreaView>;
   return header;
 }
 
@@ -81,13 +54,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
     minWidth: 0,
-  },
-  brandMark: {
-    alignItems: "center",
-    flexShrink: 0,
-    height: 32,
-    justifyContent: "center",
-    width: 32,
   },
   headerCopy: {
     flex: 1,
@@ -106,34 +72,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   stackHeader: {
     paddingBottom: spacing.md,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.xl,
     paddingTop: spacing.sm,
   },
   stackSafeArea: {
     backgroundColor: palette.surface,
-  },
-  backNavigation: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.sm,
-    minHeight: 44,
-    minWidth: 0,
-  },
-  backChevron: {
-    alignItems: "center",
-    backgroundColor: colorWithOpacity(palette.textPrimary, 0.06),
-    borderRadius: spacing.md,
-    height: 44,
-    justifyContent: "center",
-    width: 44,
-  },
-  backPressed: {
-    backgroundColor: colorWithOpacity(palette.textPrimary, 0.1),
-  },
-  backLabel: {
-    ...typography.navigationContext,
-    color: palette.textPrimary,
-    flexShrink: 1,
-    minWidth: 0,
   },
 });

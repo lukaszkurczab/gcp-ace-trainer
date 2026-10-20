@@ -109,18 +109,27 @@ export async function probeSmokeApiReady(origin, fetchImplementation = fetch, op
   const timeoutMs = options.timeoutMs ?? 5_000;
   const delayMs = options.delayMs ?? 200;
   const deadline = Date.now() + timeoutMs;
+  let failedChecks = [];
   do {
     try {
       const response = await fetchImplementation(new URL("/ready", origin), {
         method: "GET", signal: AbortSignal.timeout(Math.max(1, Math.min(1_000, deadline - Date.now()))),
       });
       const body = await response.json();
-      if (response.ok && body?.status === "ready" && ["database", "authentication", "providerReader"].every((key) => body.checks?.[key] === true)) return;
+      const coreChecks = ["database", "authentication", "providerReader"];
+      failedChecks = [...coreChecks, "contentPackages"].filter((key) => body?.checks?.[key] !== true);
+      const coreReady = coreChecks.every((key) => body?.checks?.[key] === true);
+      if (response.status === 200 && body?.status === "ready" && coreReady && body.checks.contentPackages === true) return;
+      // Smoke uses current bundled content; the production readiness gate stays strict.
+      if (response.status === 503 && body?.status === "not_ready" && coreReady && body.checks.contentPackages === false) {
+        console.info("Local smoke: core API ready; online content packages unavailable. Using current bundled app content.");
+        return;
+      }
     } catch { /* A dependency may still be starting; retry until the deadline. */ }
     if (Date.now() >= deadline) break;
     await new Promise((resolveDelay) => setTimeout(resolveDelay, Math.min(delayMs, deadline - Date.now())));
   } while (Date.now() < deadline);
-  throw new Error(`smoke API is not ready (profile=smoke origin=${origin} action=start local backend and emulators, then rerun npm run start:smoke).`);
+  throw new Error(`smoke API is not ready (profile=smoke origin=${origin} checks=${failedChecks.join(",") || "invalid_response_or_unreachable"} action=start local backend and emulators, then rerun npm run start:smoke).`);
 }
 
 export async function runLocalProfile(argv = process.argv.slice(2), options = {}) {

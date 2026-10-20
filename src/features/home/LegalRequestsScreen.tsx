@@ -109,8 +109,8 @@ export function LegalRequestsScreen({ navigation, route }: Props) {
   const narrativeErrorMessage = narrativeError ? t(`legalRequests.${narrativeError}`) : undefined;
 
   return (
-    <Screen edges={["top", "bottom"]}>
-      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("settings")} contextTone="primary" title={title} />
+    <Screen backAction={{ onPress: () => navigation.goBack() }} edges={["top", "bottom"]}>
+      <ScreenHeader title={title} />
       <InfoBlock body={`${t(`legalRequests.kinds.${kind}.intro`)}${isAuthenticated ? "" : ` ${t("legalRequests.guestIntro")}`}`} icon={<Icon name="shield-check" size={18} />} title={title} />
       <Button onPress={openForm} testID={`legal-request-create-${kind}`}>{t("legalRequests.create")}</Button>
       {isAuthenticated ? <SettingsGroup title={t("legalRequests.yourRequests")}>

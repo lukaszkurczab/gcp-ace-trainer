@@ -35,7 +35,6 @@ export function NotificationSettingsScreen({ navigation }: Props) {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("notifications");
   const context = t("settings");
-  const backLabel = t("backToSettings");
   const copy = useMemo(() => ({ body: t("notificationBody"), title: t("notificationTitle") }), [t]);
   const notifications = useNotificationSettings(copy);
   const [openSettingsError, setOpenSettingsError] = useState(false);
@@ -62,8 +61,8 @@ export function NotificationSettingsScreen({ navigation }: Props) {
   const presentation = getNotificationSettingsPresentation(notifications);
 
   return (
-    <Screen edges={["top", "bottom"]}>
-      <ScreenHeader backAction={{ accessibilityLabel: backLabel, onPress: handleBack }} context={context} contextTone="primary" title={t("reminders")} />
+    <Screen backAction={{ destinationLabel: navigation.canGoBack() ? undefined : context, onPress: handleBack }} edges={["top", "bottom"]}>
+      <ScreenHeader title={t("reminders")} />
       <View style={styles.content} testID={runtimeSelectors.notifications.root()}>
         {notifications.loading ? <InfoBlock body={t("loadingDetail")} title={t("loading")} testID={runtimeSelectors.notifications.state("loading")} /> : null}
         {errorCopy && notifications.error ? (

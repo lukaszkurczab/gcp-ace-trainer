@@ -162,8 +162,8 @@ function SecurityForm({ route, navigation }: Props) {
   );
 
   return (
-    <Screen edges={["top", "bottom"]} scroll={false} style={styles.screen}>
-      <View style={styles.header}><ScreenHeader backAction={{ onPress: () => { Keyboard.dismiss(); revoke(); navigation.goBack(); } }} context={t("appSettings")} title={title} /></View>
+    <Screen backAction={{ onPress: () => { Keyboard.dismiss(); revoke(); navigation.goBack(); } }} edges={["top", "bottom"]} scroll={false} style={styles.screen}>
+      <View style={styles.header}><ScreenHeader title={title} /></View>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.flex}>
         <ScrollView automaticallyAdjustKeyboardInsets keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           {failure && errorField === null && mode !== "delete" ? <InfoBlock accessibilityAlert body={mode === "export" || mode === "privacy" ? t("exportAuthenticationFailed") : ta(failure === "invalidEmail" ? "emailFormatError" : failure)} title={title} tone="warning" testID={`security-error-${failure}`} /> : null}

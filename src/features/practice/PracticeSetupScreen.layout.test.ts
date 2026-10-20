@@ -4,17 +4,22 @@ import test from "node:test";
 
 const source = readFileSync(new URL("./PracticeSetupScreen.tsx", import.meta.url), "utf8");
 
-test("Premium offer stacks copy and actions instead of squeezing copy beside the action", () => {
-  assert.match(source, /style=\{\[styles\.reviewCard, styles\.premiumOfferCard\]\}/u);
-  assert.match(source, /premiumOfferCard:\s*\{[\s\S]*?alignItems: "stretch",[\s\S]*?flexDirection: "column",[\s\S]*?gap: spacing\.md,/u);
+test("Practice setup shows one selected topic and leaves topic preparation to Choose topic", () => {
+  assert.match(source, /testID=\{runtimeSelectors\.practice\.selectedTopic\(\)\}/u);
+  assert.match(source, /testID=\{runtimeSelectors\.practice\.changeTopic\(\)\}/u);
+  assert.doesNotMatch(source, /focusTopics\.map\(/u);
+  assert.doesNotMatch(source, /premiumOfferCard/u);
+  const chooser = readFileSync(new URL("./TopicRoadmapScreen.tsx", import.meta.url), "utf8");
+  assert.match(chooser, /listAvailablePremiumNodeOffers\(activeTrack\.id\)/u);
+  assert.match(chooser, /installPremiumNodePackage\(offer\.offerId/u);
 });
 
-test("recommended learning-unit scope appears below setup context and before the topic list", () => {
-  const intro = source.indexOf('{!compactCodingPractice ? <View style={styles.intro}>');
+test("recommended learning-unit scope appears before the selected-topic row", () => {
+  const intro = source.indexOf('{focusPractice ? <ScreenHeader');
   const recommendation = source.indexOf('<Text key={`practice-setup-focused-unit-title-');
-  const topicList = source.indexOf('focusTopics.map((focusTopic) =>');
+  const selectedTopic = source.indexOf('testID={runtimeSelectors.practice.selectedTopic()}');
 
   assert.ok(intro >= 0);
   assert.ok(recommendation > intro, "the recommendation follows the setup header and subtitle");
-  assert.ok(topicList > recommendation, "the recommendation remains above the long topic list");
+  assert.ok(selectedTopic > recommendation, "the recommendation remains above the selected topic");
 });

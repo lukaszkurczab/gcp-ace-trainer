@@ -146,8 +146,8 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
   }, [busy, status]);
 
   return (
-    <Screen edges={["top", "bottom"]}>
-      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("settings")} contextTone="primary" title={t("yourData")} />
+    <Screen backAction={{ onPress: () => navigation.goBack() }} edges={["top", "bottom"]}>
+      <ScreenHeader title={t("yourData")} />
       <InfoBlock body={t(`state.${presentation.stateCopy}.body`)} icon={<Icon name="shield-check" size={18} />} title={t(`state.${presentation.stateCopy}.title`)} />
       <SettingsGroup title={t("rights.title")}>
         {presentation.action.kind === "none" ? <ListRow

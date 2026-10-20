@@ -6,7 +6,6 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, Vi
 
 import {
   Badge,
-  AppShellHeader,
   Button,
   Card,
   EmptyState,
@@ -142,7 +141,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const designAdmissionPendingRef = useRef(false);
   const [designAdmissionPending, setDesignAdmissionPending] = useState(false);
   const [designAccessUnavailable, setDesignAccessUnavailable] = useState(false);
-  const [designAdmissionMode, setDesignAdmissionMode] = useState<CanonicalPracticeModeId | null>(null);
+  const [designAdmissionRequest, setDesignAdmissionRequest] = useState<Readonly<{ mode: CanonicalPracticeModeId; source: "practiceHub" | "modeShortcut"; target: "session" | "setup" }> | null>(null);
   const { readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load your practice options."),
     includeReviews: true,
@@ -157,8 +156,8 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   ) {
     return (
       <View style={styles.shell}>
-        <Screen edges={["top"]} style={styles.screenContent}>
-          <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} />
+        <Screen backAction={{ destinationLabel: navigation.canGoBack() ? undefined : t("Today"), onPress: () => goBackOrHome(navigation) }} edges={["top"]} style={styles.screenContent}>
+
           <EmptyState actionLabel={actionLabel} onActionPress={onActionPress} title={title} description={description} />
         </Screen>
         <AppBottomNavigation activeId="practice" navigation={navigation} />
@@ -168,8 +167,8 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
 
   if (readState.requestKey !== requestKey || readState.kind === "pending") return (
     <View style={styles.shell}>
-      <Screen edges={["top"]} style={styles.screenContent}>
-        <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} />
+      <Screen backAction={{ destinationLabel: navigation.canGoBack() ? undefined : t("Today"), onPress: () => goBackOrHome(navigation) }} edges={["top"]} style={styles.screenContent}>
+
         <PracticeHubLoadingSkeleton />
       </Screen>
       <AppBottomNavigation activeId="practice" navigation={navigation} />
@@ -213,7 +212,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const primaryMode = modes[0]!;
   const secondaryModes = modes.filter((mode) => mode.mode !== primaryMode.mode && mode.mode !== ALGORITHM_MODE_IDS.customPractice);
   const topicDetail = formatPracticeTopicDetail(topic.detail, t);
-  function startSession(mode?: CanonicalPracticeModeId | CertificationModeId, source: "practiceHub" | "modeShortcut" = mode === undefined ? "practiceHub" : "modeShortcut") {
+  function startSession(mode?: CanonicalPracticeModeId | CertificationModeId, source: "practiceHub" | "modeShortcut" = mode === undefined ? "practiceHub" : "modeShortcut", target: "session" | "setup" = mode === undefined ? "session" : "setup") {
     const resolvedMode = mode ?? primaryMode.mode;
     if (isCodingInterviewTrack && resolvedMode === ALGORITHM_MODE_IDS.customPractice) {
       navigation.navigate(ROUTES.PRACTICE_SETUP, {
@@ -230,13 +229,17 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         designAdmissionPendingRef.current = true;
         setDesignAdmissionPending(true);
         setDesignAccessUnavailable(false);
-        setDesignAdmissionMode(resolvedMode);
+        setDesignAdmissionRequest({ mode: resolvedMode, source, target });
         void account.authorizePremiumSessionStart()
           .then((admission) => {
             switch (resolveCertificationExamAccess(admission)) {
               case "startExam": {
                 if (resolvedMode !== "design-interview-simulation") {
-                  navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source, topicId: topic.id, trackId: activeTrack.id });
+                  if (target === "setup") {
+                    navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source, topicId: topic.id, trackId: activeTrack.id });
+                  } else {
+                    navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode, source, topicId: topic.id, trackId: activeTrack.id }));
+                  }
                   return;
                 }
                 const track = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
@@ -257,6 +260,10 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         return;
       }
       navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode as CanonicalPracticeModeId, source, topicId: topic.id, trackId: activeTrack.id });
+      return;
+    }
+    if (target === "session" && resolvedMode === primaryMode.mode) {
+      navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode as CanonicalPracticeModeId, source, topicId: topic.id, trackId: activeTrack.id }));
       return;
     }
     if (activeTrack.familyId === "certification" && resolvedMode === "certification-diagnostic-baseline") {
@@ -382,6 +389,8 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           </View>
           <View style={styles.heroActions}>
             <Button
+              disabled={designAdmissionPending}
+              loading={designAdmissionPending}
               onPress={() => startSession()}
               testID={runtimeSelectors.practice.startSession()}
             >
@@ -389,6 +398,8 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             </Button>
             <Pressable
               accessibilityRole="button"
+              accessibilityState={{ busy: designAdmissionPending, disabled: designAdmissionPending }}
+              disabled={designAdmissionPending}
               onPress={() => {
                 if (isCodingInterviewTrack) {
                   startSession(ALGORITHM_MODE_IDS.customPractice, "practiceHub");
@@ -401,7 +412,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    mode: isDesignInterviewTrack ? (modes[0]?.mode as CanonicalPracticeModeId) : "certification-focus-practice",
+                    mode: primaryMode.mode as CanonicalPracticeModeId,
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,
@@ -492,7 +503,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           {designAccessUnavailable ? (
             <View style={styles.examAccessError}>
               <InfoBlock accessibilityAlert body={t("We couldn't verify Premium access. Check your connection and try again.")} testID="practice-design-simulation-access-error" title={t("Premium access unavailable")} tone="warning" />
-              <Button onPress={() => designAdmissionMode && startSession(designAdmissionMode)} variant="ghost">{t("Try again")}</Button>
+              <Button onPress={() => designAdmissionRequest && startSession(designAdmissionRequest.mode, designAdmissionRequest.source, designAdmissionRequest.target)} variant="ghost">{t("Try again")}</Button>
             </View>
           ) : null}
         </View>
@@ -780,9 +791,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   settingsActionText: {
     color: palette.primary,
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: "500",
-    lineHeight: 16,
+    lineHeight: 20,
   },
   section: {
     gap: spacing.md,

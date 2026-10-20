@@ -51,6 +51,7 @@ import { DesignInterviewSimulationReviewScreen, DesignInterviewSimulationResultS
 import { TopicRoadmapScreen } from "../features/practice/TopicRoadmapScreen";
 import { useAppPreferences } from "../preferences";
 import type { RootStackParamList } from "./types";
+import { getBackDestinationTranslation, getPreviousRoute } from "./backDestination";
 import { isPatternlySmokeRuntime } from "../infrastructure/runtime/runtimeMode";
 import { isLanguageSettingsAuditCommand } from "./languageSettingsAuditCommand";
 import { handleCodingMockCountdownAuditUrl, isCodingMockCountdownAuditCommand } from "../application/runtimeAuditability/codingMockCountdownCommand";
@@ -197,13 +198,19 @@ export function RootNavigator() {
       key={applicationSessionReady ? "application" : "account"}
       screenOptions={{
         contentStyle: { backgroundColor: colors.background },
-        header: ({ back, navigation, options }) => (
-          <AppShellHeader
-            backAction={back ? { onPress: () => navigation.goBack() } : undefined}
-            context={options.title}
-            placement="stack"
-          />
-        ),
+        header: ({ back, navigation, options }) => {
+          const state = navigation.getState();
+          const previousRoute = getPreviousRoute(state.routes, state.index);
+          const translatedDestination = getBackDestinationTranslation(previousRoute);
+          const destinationLabel = translatedDestination ? t(translatedDestination.key, { ns: translatedDestination.namespace }) : undefined;
+          return (
+            <AppShellHeader
+              backAction={back ? { destinationLabel, onPress: () => navigation.goBack() } : undefined}
+              context={options.title}
+              placement="stack"
+            />
+          );
+        },
       }}
     >
       {applicationSessionReady ? (
@@ -286,7 +293,7 @@ export function RootNavigator() {
           <Stack.Screen
             name={ROUTES.TOPIC_ROADMAP}
             component={TopicRoadmapScreen}
-            options={{ headerShown: false, title: t("Topic Roadmap") }}
+            options={{ headerShown: false, title: t("Choose topic") }}
           />
           <Stack.Screen
             name={ROUTES.EXAM}

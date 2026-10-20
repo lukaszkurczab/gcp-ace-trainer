@@ -8,14 +8,22 @@ export type GoalCadenceReturnTo = "home" | "progress" | "settings";
 
 export type NotificationSettingsRouteParams = { source: "settings" };
 
+export type PracticeSetupRouteDraft = Partial<Pick<PracticeSessionRouteParams,
+  "feedbackMode" | "mentalUnitId" | "mode" | "reviewBehaviorEnabled" | "reviewItemRefs" | "reviewSource" | "sessionLength" | "source" | "trackId" | "topicId"
+>> & Readonly<{
+  expectedArtifactSha256?: string;
+  expectedContentVersion?: string;
+  premiumOfferId?: string;
+}>;
+
 export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;
   [ROUTES.ACTIVITY]: undefined;
   [ROUTES.APPEARANCE_SETTINGS]: undefined;
   [ROUTES.LANGUAGE_SETTINGS]: undefined;
   [ROUTES.LEGAL_INFORMATION]: undefined;
-  [ROUTES.TERMS_OF_SERVICE]: undefined;
-  [ROUTES.PRIVACY_POLICY]: undefined;
+  [ROUTES.TERMS_OF_SERVICE]: { returnDestinationLabel?: string } | undefined;
+  [ROUTES.PRIVACY_POLICY]: { returnDestinationLabel?: string } | undefined;
   [ROUTES.PREMIUM_PURCHASE]: undefined;
   [ROUTES.NOTIFICATION_SETTINGS]: NotificationSettingsRouteParams | undefined;
   [ROUTES.YOUR_DATA]: undefined;
@@ -31,14 +39,11 @@ export type RootStackParamList = {
   [ROUTES.LEARNING_PLAN_EDITOR]: { editorId: string; trackId: TrackId };
   [ROUTES.PRACTICE_HUB]: { topicId?: string; trackId?: TrackId } | undefined;
   [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home"; targetMentalUnitId?: string };
-  [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;
+  [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId; returnToSetup?: boolean; setupDraft?: PracticeSetupRouteDraft } | undefined;
   [ROUTES.EXAM]: { trackId: TrackId; expectedSessionId?: string };
   [ROUTES.EXAM_REVIEW]: { sessionId: string };
   [ROUTES.RESULT]: { sessionId: string };
-  [ROUTES.PRACTICE_SETUP]: (Partial<PracticeSessionRouteParams> & Readonly<{
-    expectedArtifactSha256?: string;
-    expectedContentVersion?: string;
-  }>) | undefined;
+  [ROUTES.PRACTICE_SETUP]: PracticeSetupRouteDraft | undefined;
   [ROUTES.PRACTICE_SESSION]: PracticeSessionRouteParams;
   [ROUTES.ALGORITHMS_PRACTICE_REVIEW]: { sessionId: string; occurrenceId: string };
   [ROUTES.ALGORITHMS_PRACTICE_SUMMARY]: { sessionId: string };

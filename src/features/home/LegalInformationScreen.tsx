@@ -91,5 +91,5 @@ export function LegalInformationScreen({ navigation }: LegalInformationScreenPro
     </SettingsGroup>
   );
 
-  return <SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} screenHeader={{ context: text.settings, onBack: () => navigation.goBack(), title: text.legal }} sections={text.sections} supplementalContent={<>{legalRequestContent}{supplementalContent}</>} />;
+  return <SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} screenHeader={{ onBack: () => navigation.goBack(), title: text.legal }} sections={text.sections} supplementalContent={<>{legalRequestContent}{supplementalContent}</>} />;
 }

@@ -133,10 +133,11 @@ export function LearningPlanProposalScreen({ navigation, route, runtime = produc
     }
   }
 
-  const header = <AppShellHeader backAction={{ onPress: goBack }} context={t("Learning plan")} placement="stack" />;
+  const backDestinationLabel = navigation.canGoBack() || runtime.exitFixture ? undefined : tCommon("Today");
+  const header = <AppShellHeader backAction={{ destinationLabel: backDestinationLabel, onPress: goBack }} context={t("Learning plan")} placement="stack" />;
 
   if (acceptedPlan) {
-    return <PersistedPlanView plan={acceptedPlan.plan} track={tCommon(track.shortTitle)} t={t} updating={updating} actionError={actionError} onEdit={() => { void editAcceptedPlan(); }} onRetryReminders={() => { void retryReminders(); }} onBack={goBack} />;
+    return <PersistedPlanView plan={acceptedPlan.plan} track={tCommon(track.shortTitle)} t={t} updating={updating} actionError={actionError} onEdit={() => { void editAcceptedPlan(); }} onRetryReminders={() => { void retryReminders(); }} onBack={goBack} backDestinationLabel={backDestinationLabel} />;
   }
 
   if (state.kind === "loading") {
@@ -424,7 +425,7 @@ function FactCard({ label, value }: Readonly<{ label: string; value: string }>) 
   return <Card><Text maxFontSizeMultiplier={2} style={styles.factLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{value}</Text></Card>;
 }
 
-function PersistedPlanView({ plan, track, t, updating, actionError, onEdit, onRetryReminders, onBack }: Readonly<{
+function PersistedPlanView({ plan, track, t, updating, actionError, onEdit, onRetryReminders, onBack, backDestinationLabel }: Readonly<{
   plan: LearningPlan;
   track: string;
   t: Translate;
@@ -433,10 +434,11 @@ function PersistedPlanView({ plan, track, t, updating, actionError, onEdit, onRe
   onEdit(): void;
   onRetryReminders(): void;
   onBack(): void;
+  backDestinationLabel?: string;
 }>) {
   const styles = useThemedStyles(createStyles);
   return (
-    <Screen edges={["bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={onEdit} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button>{actionError === "accept-reminders-pending" ? <Button loading={updating} onPress={onRetryReminders} testID={runtimeSelectors.learningPlan.retryReminders()} variant="secondary">{t("Retry reminders")}</Button> : null}<Button onPress={onBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={<AppShellHeader backAction={{ onPress: onBack }} context={t("Learning plan")} placement="stack" />}>
+    <Screen edges={["bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={onEdit} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button>{actionError === "accept-reminders-pending" ? <Button loading={updating} onPress={onRetryReminders} testID={runtimeSelectors.learningPlan.retryReminders()} variant="secondary">{t("Retry reminders")}</Button> : null}<Button onPress={onBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={<AppShellHeader backAction={{ destinationLabel: backDestinationLabel, onPress: onBack }} context={t("Learning plan")} placement="stack" />}>
       <View style={styles.root} testID={runtimeSelectors.learningPlan.persisted()}>
         <PlanHeader subtitle={t("Saved learning plan")} title={t("Your learning rhythm")} track={track} />
         <Card testID={runtimeSelectors.learningPlan.state("accepted") }>

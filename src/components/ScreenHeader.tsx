@@ -1,16 +1,10 @@
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import { useTranslation } from "react-i18next";
 
 import { spacing, typography } from "../theme";
 import { useThemedStyles } from "../preferences/appPreferencesContext";
 import type { AppColors } from "../theme";
-import { IconButton } from "./IconButton";
 
 type ScreenHeaderProps = Readonly<{
-  backAction?: Readonly<{
-    accessibilityLabel?: string;
-    onPress: () => void;
-  }>;
   context?: string;
   contextTone?: "muted" | "primary";
   description?: string;
@@ -19,26 +13,14 @@ type ScreenHeaderProps = Readonly<{
   title: string;
 }>;
 
-/** Figma Patternly Library Screen Header: local context, title, and optional description. */
-export function ScreenHeader({ backAction, context, contextTone = "muted", description, title, titleTestID, variant = "default" }: ScreenHeaderProps) {
+/** Scrollable screen title and optional context or description. */
+export function ScreenHeader({ context, contextTone = "muted", description, title, titleTestID, variant = "default" }: ScreenHeaderProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
-  const { t } = useTranslation("common");
 
   return (
     <View style={[styles.container, variant === "activity" ? styles.activityContainer : null, variant === "practiceSetup" ? styles.practiceSetupContainer : null]}>
-      {backAction || context ? (
-        <View style={[styles.contextRow, variant === "activity" ? styles.activityContextRow : null, variant === "practiceSetup" ? styles.practiceSetupContextRow : null]}>
-          {backAction ? (
-            <IconButton
-              accessibilityLabel={backAction.accessibilityLabel ?? t("Go back")}
-              icon="chevron-left"
-              onPress={backAction.onPress}
-            />
-          ) : null}
-          {context ? <Text accessibilityLabel={context} ellipsizeMode="clip" key={`context:${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null, variant === "practiceSetup" ? styles.practiceSetupContext : null]}>{context}</Text> : null}
-        </View>
-      ) : null}
+      {context ? <Text accessibilityLabel={context} ellipsizeMode="clip" key={`context:${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null]}>{context}</Text> : null}
       <View style={[styles.copy, variant === "practiceSetup" ? styles.practiceSetupCopy : null]}>
         <Text key={`title:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.title, variant === "activity" ? styles.activityTitle : null]} testID={titleTestID}>{title}</Text>
         {description ? <Text key={`description:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.description, variant === "practiceSetup" ? styles.practiceSetupDescription : null]}>{description}</Text> : null}
@@ -54,36 +36,20 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   activityContainer: {
     gap: spacing.sm,
   },
-  contextRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.sm,
-    minHeight: 44,
-    minWidth: 0,
-  },
-  activityContextRow: {
-    gap: spacing.sm,
-  },
-  practiceSetupContainer: {
-    gap: spacing.lg,
-  },
-  practiceSetupContextRow: {
-    gap: spacing.sm,
-  },
   context: {
     ...typography.navigationContext,
     color: palette.textPrimary,
     flexShrink: 1,
     minWidth: 0,
   },
-  practiceSetupContext: {
-    ...typography.navigationContext,
-  },
   contextPrimary: {
     color: palette.textPrimary,
   },
   copy: {
     gap: spacing.xs,
+  },
+  practiceSetupContainer: {
+    gap: spacing.lg,
   },
   practiceSetupCopy: {
     gap: 6,

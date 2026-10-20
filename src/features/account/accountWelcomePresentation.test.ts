@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const screen = readFileSync(new URL("./AccountEntryScreen.tsx", import.meta.url), "utf8");
+const privacyPolicy = readFileSync(new URL("../home/PrivacyPolicyScreen.tsx", import.meta.url), "utf8");
+const termsOfService = readFileSync(new URL("../home/TermsOfServiceScreen.tsx", import.meta.url), "utf8");
 const locales = ["en", "pl", "de", "fr", "es", "it", "et"] as const;
 const copy = Object.fromEntries(
   locales.map((locale) => [
@@ -43,4 +45,14 @@ test("welcome screen keeps its mark, localized copy, and entry actions", () => {
   assert.match(screen, /onContinueAsGuest=\{continueWithoutAccount\}/);
   assert.match(screen, /onRegister=\{beginRegistration\}/);
   assert.match(screen, /onSignIn=\{\(\) => \{[\s\S]*?setMode\("signIn"\);/);
+});
+
+test("local account registration and legal-document return actions name their actual destination", () => {
+  assert.match(screen, /mode === "register"\s*\? \{ destinationLabel: text\.signIn, onPress: \(\) => \{ setFeedback\(null\); setMode\("signIn"\); \} \}/);
+  assert.match(screen, /onOpenPrivacy=\{\(\) => navigation\.navigate\(ROUTES\.PRIVACY_POLICY, \{ returnDestinationLabel: modeTitle \}\)\}/);
+  assert.match(screen, /onOpenTerms=\{\(\) => navigation\.navigate\(ROUTES\.TERMS_OF_SERVICE, \{ returnDestinationLabel: modeTitle \}\)\}/);
+  assert.match(screen, /destinationLabel: tCommon\("Account"\), onPress: cancel/);
+  assert.match(screen, /returnDestinationLabel: text\.providerRegistrationTitle/);
+  assert.match(privacyPolicy, /destinationLabel: route\.params\?\.returnDestinationLabel, onPress: \(\) => navigation\.goBack\(\)/);
+  assert.match(termsOfService, /destinationLabel: route\.params\?\.returnDestinationLabel, onPress: \(\) => navigation\.goBack\(\)/);
 });

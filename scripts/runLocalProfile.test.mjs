@@ -83,9 +83,9 @@ test("API readiness waits for dependencies and rejects false checks", async () =
   await probeSmokeApiReady("http://127.0.0.1:8080", async (url) => {
     assert.equal(url.pathname, "/ready");
     calls += 1;
-    return { ok: true, json: async () => calls === 1
+    return { status: 200, json: async () => calls === 1
       ? { status: "ready", checks: { database: false, authentication: true, providerReader: true } }
-      : { status: "ready", checks: { database: true, authentication: true, providerReader: true } } };
+      : { status: "ready", checks: { database: true, authentication: true, providerReader: true, contentPackages: true } } };
   }, { timeoutMs: 100, delayMs: 0 });
   assert.equal(calls, 2);
   await assert.rejects(() => probeSmokeApiReady("http://127.0.0.1:8080", async () => ({ ok: true, json: async () => ({ status: "ready", checks: { database: false, authentication: true, providerReader: true } }) }), { timeoutMs: 5, delayMs: 0 }), /not ready/);
@@ -128,4 +128,33 @@ test("local Expo launches synchronize current content before starting the packag
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+const readyChecks = { database: true, authentication: true, providerReader: true, contentPackages: true };
+const readinessResponse = (status, body) => ({ status, json: async () => body });
+
+test("smoke accepts only the explicit content-only readiness gap and reports it", async (t) => {
+  const messages = [];
+  t.mock.method(console, "info", (message) => messages.push(message));
+  await probeSmokeApiReady("http://127.0.0.1:8080", async () => readinessResponse(503, {
+    status: "not_ready", checks: { ...readyChecks, contentPackages: false },
+  }));
+  assert.match(messages.join("\n"), /online content packages unavailable.*bundled app content/);
+});
+
+test("smoke rejects unavailable core services and malformed or inconsistent readiness", async () => {
+  const invalid = [
+    ...["database", "authentication", "providerReader"].map((key) => readinessResponse(503, {
+      status: "not_ready", checks: { ...readyChecks, contentPackages: false, [key]: false },
+    })),
+    readinessResponse(503, { status: "not_ready", checks: readyChecks }),
+    readinessResponse(503, { status: "ready", checks: { ...readyChecks, contentPackages: false } }),
+    readinessResponse(503, { status: "not_ready", checks: { database: true, authentication: true, providerReader: true } }),
+    readinessResponse(200, { status: "ready", checks: { ...readyChecks, contentPackages: false } }),
+    readinessResponse(500, { status: "not_ready", checks: { ...readyChecks, contentPackages: false } }),
+    readinessResponse(503, null),
+  ];
+  for (const response of invalid) await assert.rejects(() => probeSmokeApiReady(
+    "http://127.0.0.1:8080", async () => response, { timeoutMs: 5, delayMs: 0 },
+  ), /not ready/);
 });

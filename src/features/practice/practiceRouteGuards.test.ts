@@ -12,7 +12,9 @@ test("practice screens turn unsupported package, topic, and mode reads into exit
   assert.match(hub, /try \{[\s\S]*?getTrackDisplay\(activeTrackId\)[\s\S]*?getCanonicalFreePracticeNodeId\(activeTrack\.id\)[\s\S]*?\} catch \(error\) \{[\s\S]*?renderUnavailable\(/);
   assert.match(roadmap, /try \{[\s\S]*?getTrackDisplay\(activeTrackId\)[\s\S]*?buildTopicRoadmapNodes\([\s\S]*?\} catch \(error\) \{[\s\S]*?renderUnavailable\(/);
   assert.match(roadmap, /if \(route\.params\?\.topicId !== undefined && !topics\.some\(\(topic\) => topic\.id === route\.params\?\.topicId && topic\.status !== "locked"\)\) \{[\s\S]*?return renderUnavailable\(t\("This topic is not included in your free content\."\)\)/);
-  assert.match(setup, /if \(route\.params\?\.topicId !== undefined && route\.params\.topicId !== canonicalNodeId && !v3UnitRoute\) \{[\s\S]*?return renderUnavailable\(t\("This topic is not included in your free content\."\)/);
+  assert.match(setup, /if \(route\.params\?\.topicId !== undefined && route\.params\.topicId !== canonicalNodeId && !v3UnitRoute && !selectedPremiumOffer\) \{[\s\S]*?return renderUnavailable\(t\("This topic is not included in your free content\."\)/);
+  assert.match(setup, /if \(route\.params\?\.premiumOfferId !== undefined && !selectedPremiumOffer\) \{[\s\S]*?return renderUnavailable/);
+  assert.match(setup, /if \(selectedPremiumOffer && !selectedPremiumOfferIdentityMatches\) \{[\s\S]*?return renderUnavailable/);
   assert.match(setup, /if \(activeTrack\.familyId === "coding_interview" && !isAlgorithmModeId\(requestedMode\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
   assert.match(setup, /if \(activeTrack\.familyId === "certification" && !isCertificationPracticeModeId\(requestedMode\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
   assert.match(setup, /if \(activeTrack\.familyId === "design_interview" && \(!isDesignInterviewModeId\(requestedMode\) \|\| requestedMode === "design-interview-simulation"\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
@@ -39,7 +41,7 @@ test("all selected Design modes require Premium admission before their canonical
   ]) assert.match(modes, new RegExp(mode));
   assert.match(hub, /if \(isDesignInterviewModeId\(resolvedMode\)\)[\s\S]*?authorizePremiumSessionStart\(\)[\s\S]*?case "purchasePremium":[\s\S]*?ROUTES\.PREMIUM_PURCHASE/);
   assert.match(hub, /if \(resolvedMode !== "design-interview-simulation"\)[\s\S]*?ROUTES\.PRACTICE_SETUP[\s\S]*?ROUTES\.DESIGN_INTERVIEW_SIMULATION/);
-  assert.match(hub, /setDesignAdmissionMode\(resolvedMode\)[\s\S]*?startSession\(designAdmissionMode\)/);
+  assert.match(hub, /setDesignAdmissionRequest\(\{ mode: resolvedMode, source, target \}\)[\s\S]*?startSession\(designAdmissionRequest\.mode, designAdmissionRequest\.source, designAdmissionRequest\.target\)/);
   assert.match(hub, /startSession\(primaryMode\.mode as CanonicalPracticeModeId, "practiceHub"\)/);
 });
 
@@ -59,7 +61,8 @@ test("practice route changes cannot submit stale setup controls and preserve tra
   assert.match(setup, /setFocusTopicId\(route\.params\?\.topicId \?\? null\)/);
   assert.match(hub, /navigation\.navigate\(ROUTES\.TOPIC_ROADMAP, \{ topicId: topic\.id, trackId: activeTrack\.id \}\)/);
   assert.match(roadmap, /navigation\.navigate\(ROUTES\.PRACTICE_HUB, \{ topicId: resolvedSelectedTopicId \?\? undefined, trackId: activeTrack\.id \}\)/);
-  assert.match(roadmap, /<Button onPress=\{returnToPracticeHub\} variant="primary">\{t\("Continue"\)\}<\/Button>/);
+  assert.match(roadmap, /<Button disabled=\{premiumOfferBusyId !== null \|\| \(route\.params\?\.returnToSetup === true && !setupReturnParams\)\} onPress=\{continueSelection\} testID=\{runtimeSelectors\.practice\.topicChooserContinue\(\)\} variant="primary">\{t\("Continue"\)\}<\/Button>/);
+  assert.match(roadmap, /function continueSelection\(\)[\s\S]*?if \(route\.params\?\.returnToSetup && route\.params\.setupDraft\)[\s\S]*?if \(!setupReturnParams\) return;[\s\S]*?navigation\.popTo\(ROUTES\.PRACTICE_SETUP/);
   assert.match(roadmap, /footerVariant="sticky"/);
   assert.match(hub, /const secondaryModes = modes\.filter\(\(mode\) => mode\.mode !== primaryMode\.mode && mode\.mode !== ALGORITHM_MODE_IDS\.customPractice\)/);
 });

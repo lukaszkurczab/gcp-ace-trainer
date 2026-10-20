@@ -121,8 +121,8 @@ export function GuestPrivacyRequestsScreen({ onBack }: Readonly<{ onBack: () => 
     await run(async () => readVerified(session.requestId, session.token));
   }
 
-  return <Screen edges={["top", "bottom"]}>
-    <ScreenHeader backAction={{ onPress: onBack }} context={t("data")} contextTone="primary" title={t("privacyRequests.title")} />
+  return <Screen backAction={{ onPress: onBack }} edges={["top", "bottom"]}>
+    <ScreenHeader title={t("privacyRequests.title")} />
     <InfoBlock body={t("guestPrivacy.intro")} title={t("guestPrivacy.title")} />
     <SettingsGroup title={t("guestPrivacy.newRequest")}>
       <Text style={styles.label}>{t("guestPrivacy.email")}</Text>

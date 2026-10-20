@@ -30,7 +30,7 @@ import {
 } from "../../application/design-interview";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
-import { AppShellHeader, Button, EmptyState, Screen } from "../../components";
+import { Button, EmptyState, Screen } from "../../components";
 import type { TrainingSession } from "../../domain";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
@@ -166,8 +166,8 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
   if (!mode) return <Unavailable navigation={navigation} title="Design Interview practice unavailable" description="This route is not available for Design Interview practice." />;
   if (conflict) {
     const conflictIsDesign = getDesignMode(conflict.modeId) !== null;
-    return <Screen edges={["top", "bottom"]}>
-      <AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} />
+    return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}>
+
       <EmptyState
         title={t("Another session is active")}
         description={t("Resume your active session, or return to Practice.")}
@@ -178,7 +178,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     </Screen>;
   }
   if (error) return <Unavailable navigation={navigation} title="Design Interview practice unavailable" description={error} />;
-  if (!projection) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><PracticeSessionLoadingSkeleton /></Screen>;
+  if (!projection) return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><PracticeSessionLoadingSkeleton /></Screen>;
 
   const renderer = designRenderer(projection);
   const responseForProjection = localResponse?.sessionId === projection.session.id && localResponse.occurrenceId === projection.occurrenceId
@@ -432,7 +432,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
 
 function Unavailable({ navigation, title, description }: Readonly<{ navigation: Props["navigation"]; title: string; description: string }>) {
   const { t } = useTranslation("common");
-  return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t(title)} description={t(description)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t(title)} description={t(description)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
 }
 
 function designRenderer(projection: DesignInterviewPracticeProjection): PracticeInteractionRenderer {

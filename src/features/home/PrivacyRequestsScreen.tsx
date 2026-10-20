@@ -81,12 +81,12 @@ export function PrivacyRequestsScreen({ navigation }: Props) {
   if (account.state.kind === "guest") return <GuestPrivacyRequestsScreen onBack={() => navigation.goBack()} />;
 
   if (account.state.kind !== "authenticated") {
-    return <Screen edges={["top", "bottom"]}><ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("data")} contextTone="primary" title={t("privacyRequests.title")} /><InfoBlock body={t("privacyRequests.accountRequired")} icon={<Icon name="shield-check" size={18} />} title={t("privacyRequests.title")} /></Screen>;
+    return <Screen backAction={{ onPress: () => navigation.goBack() }} edges={["top", "bottom"]}><ScreenHeader title={t("privacyRequests.title")} /><InfoBlock body={t("privacyRequests.accountRequired")} icon={<Icon name="shield-check" size={18} />} title={t("privacyRequests.title")} /></Screen>;
   }
 
   return (
-    <Screen edges={["top", "bottom"]}>
-      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("data")} contextTone="primary" title={t("privacyRequests.title")} />
+    <Screen backAction={{ onPress: () => navigation.goBack() }} edges={["top", "bottom"]}>
+      <ScreenHeader title={t("privacyRequests.title")} />
       <InfoBlock body={t("privacyRequests.summary")} icon={<Icon name="shield-check" size={18} />} title={t("privacyRequests.infoTitle")} />
       <Button onPress={() => setFormVisible(true)} testID="privacy-request-create">{t("privacyRequests.create")}</Button>
       <SettingsGroup title={t("privacyRequests.yourRequests")}>

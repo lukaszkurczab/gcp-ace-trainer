@@ -130,7 +130,7 @@ test("shortfall and saved-plan actions retain their existing semantics", () => {
   assert.match(screen, /loading=\{updating\} onPress=\{\(\) => \{ void acceptProposal\(\); \}\}/);
   assert.match(screen, /runtime\.create\(trackId\)/);
   assert.match(screen, /setUpdating\(true\);[\s\S]*?runtime\.accept\(proposalId, trackId, notification\)/);
-  assert.match(screen, /backAction=\{\{ onPress: goBack \}\}/);
+  assert.match(screen, /backAction=\{\{ destinationLabel: backDestinationLabel, onPress: goBack \}\}/);
 });
 
 test("persisted rhythm does not present the saved initial-diagnosis policy as the upcoming session", () => {

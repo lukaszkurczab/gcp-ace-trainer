@@ -22,7 +22,7 @@ test("fixture readers are optional screen seams and production readers remain th
   assert.match(reviewScreenSource, /getCertificationExamReviewProjection\(capturedRequestKey\)/);
   assert.match(reviewScreenSource, /openSource=\{sourceOpener\}/);
   assert.match(reviewScreenSource, /<SessionShell[\s\S]*?headerAction=\{headerAction\}[\s\S]*?>\s*\{fixtureNotice\}\s*<PracticeQuestionCard/);
-  assert.match(reviewScreenSource, /const headerAction = <Button[\s\S]*?t\("Back to results"\)/);
+  assert.match(reviewScreenSource, /const headerAction = <BackLink destinationLabel=\{t\("Result"\)\} onPress=\{backToResult\} testID=\{runtimeSelectors\.practiceReview\.result\(\)\} \/>/);
   assert.match(navigatorSource, /const openSource = useCallback\(async \(url: string\) => \{[\s\S]*?runtime\.openSource\(url\)[\s\S]*?finally \{ setSourceTrace\(runtime\.getSourceTrace\(\)\); \}/);
   assert.match(navigatorSource, /patternly:ui12:source-count:/);
   assert.match(navigatorSource, /patternly:ui12:source-url/);

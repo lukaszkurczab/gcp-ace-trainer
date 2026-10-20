@@ -29,6 +29,7 @@ const DAY_KEYS: Readonly<Record<GoalDay, string>> = { mon: "Monday", tue: "Tuesd
 export function LearningPlanEditorScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("learningPlan");
+  const { t: tCommon } = useTranslation("common");
   const { editorId, trackId } = route.params;
   const [state, setState] = useState<EditorState>({ kind: "loading" });
   const [savedPlan, setSavedPlan] = useState<LearningPlan | null>(null);
@@ -119,7 +120,7 @@ export function LearningPlanEditorScreen({ navigation, route }: Props) {
     }
   }
 
-  const header = <AppShellHeader backAction={{ onPress: goBack }} context={t("Learning plan")} placement="stack" />;
+  const header = <AppShellHeader backAction={{ destinationLabel: navigation.canGoBack() ? undefined : tCommon("Today"), onPress: goBack }} context={t("Learning plan")} placement="stack" />;
   if (state.kind === "loading") return <Screen edges={["top", "bottom"]} header={header}><Text style={styles.body}>{t("Preparing your plan")}</Text></Screen>;
   if (savedPlan) return <SavedPlanView plan={savedPlan} t={t} busy={busy} remindersPending={savedReminderPending} onEdit={() => { void editSavedPlan(); }} onRetryReminders={() => { void retryReminders(); }} onBack={goBack} header={header} />;
   if (state.kind === "stale") return <Screen edges={["top", "bottom"]} footer={<Button onPress={goBack} variant="secondary">{t("Go back")}</Button>} footerVariant="sticky" header={header}><View style={styles.root} testID={runtimeSelectors.learningPlan.editorStale()}><EmptyState description={t("This plan is out of date. Review it again.")} title={t("This plan is out of date")} /></View></Screen>;

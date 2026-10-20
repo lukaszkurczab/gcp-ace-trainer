@@ -1,11 +1,13 @@
 import { useTranslation } from "react-i18next";
+import Constants from "expo-constants";
+import { useIsFocused } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import {
-  AppShellHeader,
   Button,
+  Card,
   EmptyState,
   Icon,
   Screen,
@@ -19,18 +21,27 @@ import {
   getTrackDisplay,
   type TrackId,
 } from "../../domain";
-import type { RootStackParamList } from "../../navigation";
+import type { PracticeSetupRouteDraft, RootStackParamList } from "../../navigation";
 import { colorWithOpacity, radius, spacing, typography } from "../../theme";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import { listAvailablePremiumNodeOffers } from "../../content/application/premiumNodeOfferAccess";
+import { describePremiumNodeOfferFailure } from "../../content/application/premiumNodeOfferPresentation";
+import type { PremiumNodeOffer } from "../../content/application/premiumNodeOffers";
+import type { PracticeSessionLength } from "./sessionConfig";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 import {
   buildTopicRoadmapNodes,
   type TopicRoadmapNodeModel,
 } from "./practiceFlowModel";
+import { findMatchingPremiumSetupOffer, resolvePracticeSetupTopicChoice } from "./practiceNavigation";
+import { titleForNode } from "./trackRoadmapCatalog";
 import { usePracticeReadModel } from "./usePracticeReadModel";
 
 type TopicRoadmapScreenProps = NativeStackScreenProps<
@@ -97,11 +108,22 @@ export function TopicRoadmapLoadingSkeleton() {
 export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const isFocused = useIsFocused();
+  const focusEpochRef = useRef(0);
+  useEffect(() => {
+    focusEpochRef.current += 1;
+    if (!isFocused) setPremiumOfferBusyId(null);
+    return () => { focusEpochRef.current += 1; };
+  }, [isFocused]);
+  const account = usePatternlyAccount();
   const { readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load the topic list."),
     requestedTrackId: route.params?.trackId,
   });
   const [selectedTopicId, setSelectedTopicId] = useState(route.params?.topicId);
+  const [premiumOfferError, setPremiumOfferError] = useState<string | null>(null);
+  const [premiumOfferErrorHasFreeAlternative, setPremiumOfferErrorHasFreeAlternative] = useState(false);
+  const [premiumOfferBusyId, setPremiumOfferBusyId] = useState<string | null>(null);
   const readTrackId = readState.kind === "ready" ? readState.activeTrackId : null;
 
   useEffect(() => {
@@ -109,6 +131,10 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
   }, [readTrackId, requestKey, route.params?.topicId]);
 
   function navigateBackToPractice() {
+    if (route.params?.returnToSetup && navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
     navigation.navigate(
       ROUTES.PRACTICE_HUB,
       route.params?.trackId ? { trackId: route.params.trackId } : undefined,
@@ -118,8 +144,8 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
   function renderUnavailable(description: string, actionLabel = t("Back to practice"), onActionPress = navigateBackToPractice) {
     return (
       <View style={styles.shell}>
-        <Screen edges={["top", "bottom"]}>
-          <AppShellHeader backAction={{ onPress: navigateBackToPractice }} context={t("Topic Roadmap")} />
+        <Screen backAction={{ destinationLabel: route.params?.returnToSetup ? t("Practice setup") : t("Practice"), onPress: navigateBackToPractice }} edges={["top", "bottom"]}>
+
           <EmptyState actionLabel={actionLabel} onActionPress={onActionPress} title={t("Topic roadmap is unavailable")} description={description} />
         </Screen>
         <AppBottomNavigation activeId="practice" navigation={navigation} />
@@ -129,8 +155,8 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
 
   if (readState.requestKey !== requestKey || readState.kind === "pending") return (
     <View style={styles.shell}>
-      <Screen edges={["top"]}>
-        <AppShellHeader backAction={{ onPress: navigateBackToPractice }} context={t("Topic Roadmap")} />
+      <Screen backAction={{ destinationLabel: route.params?.returnToSetup ? t("Practice setup") : t("Practice"), onPress: navigateBackToPractice }} edges={["top"]}>
+
         <TopicRoadmapLoadingSkeleton />
       </Screen>
       <AppBottomNavigation activeId="practice" navigation={navigation} />
@@ -151,34 +177,141 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
     return renderUnavailable(t("This topic is not included in your free content."));
   }
   const rows = buildRoadmapRows(topics);
-  const resolvedSelectedTopicId = getSelectableTopicId(topics, selectedTopicId);
+  const returningPremiumSelection = route.params?.returnToSetup === true && route.params.setupDraft?.premiumOfferId !== undefined;
+  const currentPremiumOffer = returningPremiumSelection && route.params?.setupDraft
+    ? findMatchingPremiumSetupOffer(route.params.setupDraft, listAvailablePremiumNodeOffers(activeTrack.id))
+    : undefined;
+  if (returningPremiumSelection && !currentPremiumOffer) return renderUnavailable(t("This learning plan uses a different content package. Review the plan before starting."));
+  const resolvedSelectedTopicId = returningPremiumSelection
+    ? topics.some((topic) => topic.id === selectedTopicId && topic.status !== "locked") ? selectedTopicId : undefined
+    : getSelectableTopicId(topics, selectedTopicId);
+  const setupReturnParams = route.params?.returnToSetup && route.params.setupDraft
+    ? returningPremiumSelection && resolvedSelectedTopicId === undefined
+      ? route.params.setupDraft
+      : resolvedSelectedTopicId
+        ? resolvePracticeSetupTopicChoice(route.params.setupDraft, resolvedSelectedTopicId, activeTrack.id)
+        : null
+    : null;
 
   function selectTopic(topic: TopicRoadmapNodeModel) {
     if (topic.status === "locked") return;
     setSelectedTopicId(topic.id);
   }
 
-  function returnToPracticeHub() {
+  function continueSelection() {
+    if (route.params?.returnToSetup && route.params.setupDraft) {
+      const draft = route.params.setupDraft;
+      if (!setupReturnParams) return;
+      navigation.popTo(ROUTES.PRACTICE_SETUP, {
+        ...setupReturnParams,
+      });
+      return;
+    }
     navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: resolvedSelectedTopicId ?? undefined, trackId: activeTrack.id });
   }
 
+  function continueWithFreeTopic() {
+    const freeTopicId = getDefaultSelectedTopicId(topics);
+    if (!freeTopicId) return;
+    if (route.params?.returnToSetup && route.params.setupDraft) {
+      const params = resolvePracticeSetupTopicChoice(route.params.setupDraft, freeTopicId, activeTrack.id);
+      if (params) navigation.popTo(ROUTES.PRACTICE_SETUP, params);
+      return;
+    }
+    navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: freeTopicId, trackId: activeTrack.id });
+  }
+
+  async function preparePremiumOffer(offer: PremiumNodeOffer) {
+    const prepareFocusEpoch = focusEpochRef.current;
+    setPremiumOfferBusyId(offer.offerId);
+    setPremiumOfferError(null);
+    setPremiumOfferErrorHasFreeAlternative(false);
+    try {
+      await account.installPremiumNodePackage(offer.offerId, Constants.expoConfig?.version ?? "0.0.0");
+      if (prepareFocusEpoch !== focusEpochRef.current) return;
+      const prepared = await contentPackageRuntimeOwner.resolveForPreparation({ trackId: offer.trackId, familyId: offer.familyId, modeId: offer.mode.modeId, nodeId: offer.nodeId });
+      if (prepareFocusEpoch !== focusEpochRef.current) return;
+      if (prepared.track.contentVersion !== offer.contentVersion || prepared.track.artifactSha256 !== offer.artifactSha256 ||
+        prepared.track.getMode(offer.mode.modeId).modeId !== offer.mode.modeId || !prepared.track.questions.some((question) => question.nodeId === offer.nodeId)) {
+        throw new Error("premium_node_preparation_identity_mismatch");
+      }
+      if (route.params?.returnToSetup && route.params.setupDraft) {
+        const requestedFeedbackMode = route.params.setupDraft.feedbackMode;
+        const feedbackMode = offer.mode.feedbackTiming.kind === "learner_selectable" &&
+          ((requestedFeedbackMode === "afterEachAnswer" && offer.mode.feedbackTiming.options.includes("after_each_durable_submit")) ||
+            (requestedFeedbackMode === "atSessionEnd" && offer.mode.feedbackTiming.options.includes("after_session_completion")))
+          ? requestedFeedbackMode
+          : undefined;
+        navigation.popTo(ROUTES.PRACTICE_SETUP, {
+          ...route.params.setupDraft,
+          mode: offer.mode.modeId as PracticeSetupRouteDraft["mode"],
+          topicId: offer.nodeId,
+          trackId: offer.trackId,
+          premiumOfferId: offer.offerId,
+          expectedContentVersion: offer.contentVersion,
+          expectedArtifactSha256: offer.artifactSha256,
+          mentalUnitId: undefined,
+          sessionLength: route.params.setupDraft.sessionLength && offer.mode.requestedLengths.includes(route.params.setupDraft.sessionLength)
+            ? route.params.setupDraft.sessionLength
+            : offer.mode.defaultRequestedLength as PracticeSessionLength,
+          feedbackMode,
+          reviewBehaviorEnabled: false,
+          source: "practiceSetup",
+        });
+        return;
+      }
+      setSelectedTopicId(offer.nodeId);
+    } catch (error) {
+      if (prepareFocusEpoch !== focusEpochRef.current) return;
+      const presentation = describePremiumNodeOfferFailure(error);
+      setPremiumOfferError(presentation.message);
+      setPremiumOfferErrorHasFreeAlternative(presentation.freeAlternative);
+    } finally {
+      if (prepareFocusEpoch === focusEpochRef.current) setPremiumOfferBusyId(null);
+    }
+  }
+
   return (
-    <View style={styles.shell}>
-      <Screen
+    <View style={styles.shell} testID={route.params?.returnToSetup ? runtimeSelectors.practice.topicChooserRoot() : undefined}>
+      <Screen backAction={{ destinationLabel: route.params?.returnToSetup ? t("Practice setup") : t("Practice"), onPress: route.params?.returnToSetup ? navigateBackToPractice : continueSelection }}
         edges={["top"]}
         footer={(
-          <Button onPress={returnToPracticeHub} variant="primary">{t("Continue")}</Button>
+          <Button disabled={premiumOfferBusyId !== null || (route.params?.returnToSetup === true && !setupReturnParams)} onPress={continueSelection} testID={runtimeSelectors.practice.topicChooserContinue()} variant="primary">{t("Continue")}</Button>
         )}
         footerVariant="sticky"
       >
-        <AppShellHeader backAction={{ onPress: returnToPracticeHub }} />
+
 
         <View style={styles.intro}>
           <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Choose topic")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.subtitle}>
+          {!route.params?.returnToSetup ? <Text maxFontSizeMultiplier={2} style={styles.subtitle}>
             {t("Select a topic to practice in")} {t(activeTrack.title)}. {t("Your answers help us suggest what to practice next.")}
-          </Text>
+          </Text> : null}
         </View>
+
+        {route.params?.returnToSetup ? listAvailablePremiumNodeOffers(activeTrack.id).map((offer) => {
+          const isCurrentPremiumOffer = currentPremiumOffer?.offerId === offer.offerId && resolvedSelectedTopicId === undefined;
+          const offerTitle = topics.find((topic) => topic.id === offer.nodeId)?.title ?? titleForNode(offer.nodeId);
+          return <View key={offer.offerId}>
+            <Card>
+              <View accessible={isCurrentPremiumOffer}
+                accessibilityLabel={isCurrentPremiumOffer ? `${offerTitle}, ${t("Selected")}` : undefined}
+                accessibilityState={isCurrentPremiumOffer ? { selected: true } : undefined}
+                style={{ gap: spacing.sm }}>
+                <View style={styles.premiumOfferTitleRow}>
+                  <Text maxFontSizeMultiplier={2} style={styles.nodeTitle}>{t("Premium")}</Text>
+                  {isCurrentPremiumOffer ? <Text maxFontSizeMultiplier={2} style={styles.nodeLabel}>{t("Selected")}</Text> : null}
+                </View>
+                <Text maxFontSizeMultiplier={2} style={styles.nodeLabel}>{offerTitle}</Text>
+              </View>
+              {premiumOfferError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.nodeLabel} testID={runtimeSelectors.practice.premiumOfferError()}>{t(premiumOfferError)}</Text> : null}
+              <Button disabled={premiumOfferBusyId !== null} loading={premiumOfferBusyId === offer.offerId} onPress={() => { void preparePremiumOffer(offer); }} testID={runtimeSelectors.practice.premiumOfferStart()}>
+                {t(premiumOfferBusyId === offer.offerId ? "Preparing Premium topic…" : "Prepare local Premium topic")}
+              </Button>
+              {premiumOfferErrorHasFreeAlternative ? <Button onPress={continueWithFreeTopic} variant="secondary">{t("Continue with a free topic")}</Button> : null}
+            </Card>
+          </View>;
+        }) : null}
 
         <View style={styles.canvas}>
           <DotGrid />
@@ -665,6 +798,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.36,
     shadowRadius: 20,
+  },
+  premiumOfferTitleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   nodeTitle: {
     ...typography.bodyStrong,

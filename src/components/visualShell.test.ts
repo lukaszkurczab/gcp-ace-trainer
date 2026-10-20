@@ -48,8 +48,8 @@ test("all branded navigation headers use the one AppShellHeader path", () => {
 
   assert.equal(existsSync("src/features/navigation/AppStackHeader.tsx"), false);
   assert.doesNotMatch(combined, /AppStackHeader/);
-  assert.match(rootNavigator, /header:\s*\(\{ back, navigation, options \}\) => \([\s\S]*?<AppShellHeader/);
-  assert.match(rootNavigator, /backAction=\{back \? \{ onPress: \(\) => navigation\.goBack\(\) \} : undefined\}/);
+  assert.match(rootNavigator, /header:\s*\(\{ back, navigation, options \}\) => \{[\s\S]*?return \([\s\S]*?<AppShellHeader/);
+  assert.match(rootNavigator, /backAction=\{back \? \{ destinationLabel, onPress: \(\) => navigation\.goBack\(\) \} : undefined\}/);
   assert.match(rootNavigator, /context=\{options\.title\}/);
   assert.match(rootNavigator, /placement="stack"/);
   assert.doesNotMatch(rootNavigator, /headerTitleStyle|headerTintColor|headerStyle/);
@@ -122,20 +122,19 @@ test("route coverage has one native or inline shell owner and preserves active-s
   assert.equal(headerlessRouteIds.filter((routeId) => routeId === "LANGUAGE_SETTINGS").length, 2);
 
   for (const path of [
-    "src/features/home/HomeScreen.tsx",
     "src/features/home/SelectTrackScreen.tsx",
     "src/features/practice/PracticeHubScreen.tsx",
     "src/features/practice/AlgorithmsScopeSelectionScreen.tsx",
     "src/features/practice/TopicRoadmapScreen.tsx",
     "src/features/practice/PracticeSetupScreen.tsx",
   ]) {
-    assert.match(source(path), /<AppShellHeader\b/);
+    assert.match(source(path), /<Screen\b[\s\S]*?backAction=/);
   }
   assert.match(source("src/features/home/NotificationSettingsScreen.tsx"), /<ScreenHeader\b/);
   const emailChangePending = source("src/features/account/AccountEmailChangePendingScreen.tsx");
   assert.match(emailChangePending, /<ScreenHeader\b/);
-  assert.match(emailChangePending, /<Screen\s+edges=\{\["top", "bottom"\]\}/);
-  assert.match(source("src/features/home/LegalInformationScreen.tsx"), /screenHeader=\{\{ context: text\.settings/);
+  assert.match(emailChangePending, /<Screen\s+backAction=\{\{ onPress: \(\) => navigation\.goBack\(\) \}\} edges=\{\["top", "bottom"\]\}/);
+  assert.match(source("src/features/home/LegalInformationScreen.tsx"), /screenHeader=\{\{ onBack: \(\) => navigation\.goBack\(\)/);
 
   assert.match(source("src/features/coding-interview/session/SessionShell.tsx"), /<Screen[\s\S]*edges=\{\["top", "bottom"\]\}/);
   assert.match(source("src/features/practice/PracticeSessionSurface.tsx"), /<SessionShell\b/);
@@ -146,7 +145,7 @@ test("the headerless practice route owns every Algorithms and Certification rend
   const algorithms = source("src/features/practice/PracticeSessionScreen.tsx");
   const certification = source("src/features/practice/CertificationPracticeSessionScreen.tsx");
   const practiceSurface = source("src/features/practice/PracticeSessionSurface.tsx");
-  const sharedBackHeader = /<AppShellHeader backAction=\{\{ onPress: \(\) => navigation\.navigate\(ROUTES\.PRACTICE_HUB\) \}\} context=\{t\("Practice Session"\)\} \/>/;
+  const sharedBackHeader = /<Screen backAction=\{\{ destinationLabel: t\("Practice"\), onPress: \(\) => navigation\.navigate\(ROUTES\.PRACTICE_HUB\) \}\}/;
   const branch = (file: string, start: string, end: string) => {
     const startIndex = file.indexOf(start);
     assert.ok(startIndex >= 0);
@@ -155,7 +154,7 @@ test("the headerless practice route owns every Algorithms and Certification rend
     return file.slice(startIndex, endIndex);
   };
 
-  assert.equal(algorithms.match(/<AppShellHeader\b/g)?.length, 5);
+  assert.equal(algorithms.match(/<Screen backAction=/g)?.length, 5);
   assert.match(branch(algorithms, "if (!algorithmsMode)", "if (algorithmsMode ==="), sharedBackHeader, "Algorithms unsupported/misroute");
   assert.match(branch(algorithms, "if (algorithmsMode ===", "if (!state)"), sharedBackHeader, "Interview Simulation misroute");
   assert.match(branch(algorithms, 'if (state.kind === "active_session_conflict")', 'if (state.kind === "unavailable")'), sharedBackHeader, "active-session conflict");
@@ -165,7 +164,7 @@ test("the headerless practice route owns every Algorithms and Certification rend
   assert.match(algorithms, /return \(\s*<PracticeSessionSurface[\s\S]*?phase=\{phase\}/);
   assert.match(practiceSurface, /return \(\s*<SessionShell/);
 
-  assert.equal(certification.match(/<AppShellHeader\b/g)?.length, 4);
+  assert.equal(certification.match(/<Screen backAction=/g)?.length, 4);
   assert.match(branch(certification, "if (!mode)", "if (conflict)"), sharedBackHeader, "Certification invalid mode");
   assert.match(branch(certification, "if (conflict)", "if (error)"), sharedBackHeader, "Certification active-session conflict");
   assert.match(branch(certification, "if (error)", "if (!projection)"), sharedBackHeader, "Certification error");
@@ -177,11 +176,16 @@ test("the headerless practice route owns every Algorithms and Certification rend
 
 test("the shared header owns accessible back geometry and long-copy reflow without navigation fallback", () => {
   const header = source("src/components/AppShellHeader.tsx");
+  const backLink = source("src/components/BackLink.tsx");
   const backFallback = source("src/navigation/goBackOrHome.ts");
 
   assert.match(header, /backAction\?: Readonly<\{/);
-  assert.match(header, /accessibilityLabel=\{backAction\.accessibilityLabel \?\? t\("Go back"\)\}/);
-  assert.match(header, /<IconButton[\s\S]*icon="chevron-left"/);
+  assert.match(header, /destinationLabel\?: string/);
+  assert.match(header, /<BackLink \{\.\.\.backAction\}/);
+  assert.match(backLink, /accessibilityLabel=\{accessibilityLabel \?\? label\}/);
+  assert.match(backLink, /<Icon color=\{styles\.arrow\.color\} name="chevron-left"/);
+  assert.match(backLink, /minHeight:\s*44/);
+  assert.match(backLink, /testID = "patternly:navigation:back"/);
   const iconButton = source("src/components/IconButton.tsx");
   assert.match(iconButton, /accessibilityRole="button"/);
   assert.match(iconButton, /height:\s*44,[\s\S]*?width:\s*44,/);
@@ -190,23 +194,23 @@ test("the shared header owns accessible back geometry and long-copy reflow witho
   assert.match(header, /headerCopy:\s*\{[\s\S]*?flex:\s*1,[\s\S]*?minWidth:\s*0,/);
   assert.match(header, /brandTitle:\s*\{[\s\S]*?flexShrink:\s*1,/);
   assert.match(header, /headerMeta:\s*\{[\s\S]*?flexShrink:\s*1,/);
-  assert.match(header, /placement === "back"[\s\S]*?backNavigation:/);
-  assert.match(header, /backChevron:\s*\{[\s\S]*?height: 44,[\s\S]*?width: 44,/);
-  assert.match(header, /maxFontSizeMultiplier=\{2\}/);
-  assert.match(header, /numberOfLines=\{2\}/);
+  assert.match(backLink, /flexShrink:\s*1/);
+  assert.match(backLink, /maxFontSizeMultiplier=\{2\}/);
   assert.doesNotMatch(header, /ROUTES|canGoBack|navigate\(/);
   assert.match(backFallback, /if \(navigation\.canGoBack\(\)\)[\s\S]*navigation\.goBack\(\)[\s\S]*navigation\.navigate\(ROUTES\.HOME, \{ initialTab: "home" \}\)/);
 
   const screenHeader = source("src/components/ScreenHeader.tsx");
-  assert.match(screenHeader, /<IconButton[\s\S]*icon="chevron-left"/);
+  assert.doesNotMatch(screenHeader, /BackLink|backAction/);
+  const screen = source("src/components/Screen.tsx");
+  assert.match(screen, /backAction\?: BackLinkProps/);
+  assert.match(screen, /<BackLink \{\.\.\.backAction\} \/>/);
   assert.match(screenHeader, /title: string/);
   assert.match(screenHeader, /description\?: string/);
   assert.match(screenHeader, /container:\s*\{\s*gap:\s*spacing\.lg/);
-  assert.match(screenHeader, /contextRow:\s*\{[\s\S]*?gap:\s*spacing\.sm/);
+  assert.ok(screen.indexOf("<BackLink") < screen.indexOf("<ScrollView\n"));
   assert.match(screenHeader, /description:\s*\{[\s\S]*?color:\s*palette\.textMuted/);
   assert.match(screenHeader, /context:\s*\{[\s\S]*\.\.\.typography\.navigationContext[\s\S]*?color:\s*palette\.textPrimary/);
   assert.match(screenHeader, /practiceSetupDescription:\s*\{[\s\S]*?color:\s*palette\.textSecondary/);
-  assert.match(screenHeader, /contextRow:[\s\S]*minHeight:\s*44/);
   assert.match(screenHeader, /title:\s*\{[\s\S]*\.\.\.typography\.title/);
   assert.match(screenHeader, /maxFontSizeMultiplier=\{2\}/);
   assert.match(screenHeader, /activityContainer:[\s\S]*gap:\s*spacing\.sm/);
@@ -306,8 +310,8 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(settings, /<Screen\b/);
   assert.match(settings, /<ChoiceRow[\s\S]*accessibilityRole="radiogroup"|accessibilityRole="radiogroup"[\s\S]*<ChoiceRow/);
   assert.match(rootNavigator, /name=\{ROUTES\.APPEARANCE_SETTINGS\}[\s\S]*?options=\{\{ headerShown: false, title: t\("Appearance"\) \}\}/);
-  assert.match(setup, /<Screen edges=\{\["top", "bottom"\]\}>[\s\S]*<AppShellHeader/);
-  assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "unavailable"[\s\S]*?<Screen edges=\{\["top"\]\}><AppShellHeader[\s\S]*?onActionPress=\{\(\) => goBackOrHome\(navigation\)\}/);
+  assert.match(setup, /<Screen backAction=\{\{ destinationLabel: navigation\.canGoBack\(\) \? undefined : t\("Today"\), onPress: \(\) => goBackOrHome\(navigation\) \}\} edges=\{\["top", "bottom"\]\}/);
+  assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "unavailable"[\s\S]*?<Screen backAction=\{\{ destinationLabel: navigation\.canGoBack\(\) \? undefined : t\("Today"\), onPress: \(\) => goBackOrHome\(navigation\) \}\} edges=\{\["top"\]\}>[\s\S]*?onActionPress=\{\(\) => goBackOrHome\(navigation\)\}/);
   assert.match(session, /return \([\s\S]*<Screen[\s\S]*footer=/);
   assert.match(result, /<Screen/);
   assert.match(result, /<Screen edges=\{\["top", "bottom"\]\}>/);
@@ -391,7 +395,7 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   const screenHeader = source("src/components/ScreenHeader.tsx");
 
   assert.equal((setup.match(/\{t\("Back"\)\}/g) ?? []).length, 0);
-  assert.match(setup, /<AppShellHeader[\s\S]*backAction=\{\{ onPress: \(\) => goBackOrHome\(navigation\) \}\}/);
+  assert.match(setup, /<Screen[\s\S]*backAction=\{\{ destinationLabel: navigation\.canGoBack\(\) \? undefined : t\("Today"\), onPress: \(\) => goBackOrHome\(navigation\) \}\}/);
   assert.match(setup, /compactCodingPractice = algorithmMode\?\.id === ALGORITHM_MODE_IDS\.customPractice/);
   assert.match(setup, /footerVariant=\{compactCodingPractice \|\| focusPractice \? "sticky" : "default"\}/);
   assert.match(setup, /<ScreenHeader[\s\S]*variant="practiceSetup"/);

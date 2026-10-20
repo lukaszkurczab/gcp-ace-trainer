@@ -11,7 +11,7 @@ import { typography, type AppColors } from "../../theme";
 
 type PrivacyPolicyScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRIVACY_POLICY>;
 
-export function PrivacyPolicyScreen({ navigation }: PrivacyPolicyScreenProps) {
+export function PrivacyPolicyScreen({ navigation, route }: PrivacyPolicyScreenProps) {
   const { locale } = useAppPreferences();
   const document = getLegalDocument(locale, "privacyPolicy");
   const { t } = useTranslation("common");
@@ -19,8 +19,8 @@ export function PrivacyPolicyScreen({ navigation }: PrivacyPolicyScreenProps) {
   const styles = useThemedStyles(createStyles);
 
   return (
-    <Screen ambient={false} edges={["top", "bottom"]}>
-      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context="Patternly" title={t("Privacy Policy")} />
+    <Screen backAction={{ destinationLabel: route.params?.returnDestinationLabel, onPress: () => navigation.goBack() }} ambient={false} edges={["top", "bottom"]}>
+      <ScreenHeader title={t("Privacy Policy")} />
       <Text maxFontSizeMultiplier={2} selectable style={styles.document} testID="privacy-policy-document">
         {document.content ?? tLegal("documentUnavailable")}
       </Text>

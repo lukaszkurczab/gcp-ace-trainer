@@ -5,7 +5,7 @@ import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { getAlgorithmsPracticeReviewProjection, type AlgorithmsSessionResultProjection } from "../../application/coding-interview";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { Button, EmptyState, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
+import { BackLink, Button, EmptyState, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useThemedStyles } from "../../preferences";
@@ -83,19 +83,19 @@ export function AlgorithmsPracticeReviewScreen({ navigation, route }: Props) {
   }, [sessionId, occurrenceId, requestKey, t]);
 
   const backToResult = () => navigation.popTo(ROUTES.ALGORITHMS_PRACTICE_SUMMARY, { sessionId });
-  const headerAction = <Button onPress={backToResult} testID={runtimeSelectors.practiceReview.result()} variant="ghost">{t("Back to results")}</Button>;
+  const headerAction = <BackLink destinationLabel={t("Session result")} onPress={backToResult} testID={runtimeSelectors.practiceReview.result()} />;
   if (readState.requestKey !== requestKey || readState.kind === "pending") {
     return <SessionShell headerAction={headerAction} modeLabel={t("Answer review")}><AlgorithmsPracticeReviewLoadingSkeleton /></SessionShell>;
   }
   if (readState.kind === "unavailable") {
-    return <Screen edges={["top", "bottom"]} header={headerAction}><EmptyState title={t("Session result unavailable")} description={readState.reason} actionLabel={t("Back to results")} onActionPress={backToResult} /></Screen>;
+    return <Screen edges={["top", "bottom"]} header={<View style={styles.reviewHeader}>{headerAction}</View>}><EmptyState title={t("Session result unavailable")} description={readState.reason} actionLabel={t("Back to results")} onActionPress={backToResult} /></Screen>;
   }
 
   const { result } = readState;
   const index = result.feedbackItems.findIndex((item) => item.occurrenceId === currentOccurrenceId);
   const item = result.feedbackItems[index];
   if (!item) {
-    return <Screen edges={["top", "bottom"]} header={headerAction}><EmptyState title={t("Session result unavailable")} description={t("We couldn’t load the session result.")} actionLabel={t("Back to results")} onActionPress={backToResult} /></Screen>;
+    return <Screen edges={["top", "bottom"]} header={<View style={styles.reviewHeader}>{headerAction}</View>}><EmptyState title={t("Session result unavailable")} description={t("We couldn’t load the session result.")} actionLabel={t("Back to results")} onActionPress={backToResult} /></Screen>;
   }
   const previous = result.feedbackItems[index - 1];
   const next = result.feedbackItems[index + 1];
@@ -140,6 +140,7 @@ export function AlgorithmsPracticeReviewScreen({ navigation, route }: Props) {
 function noop() {}
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  reviewHeader: { alignItems: "flex-start", paddingHorizontal: spacing.xl, paddingBottom: spacing.sm },
   actions: { flexDirection: "row", gap: spacing.md },
   action: { flex: 1 },
   loadingFeedback: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 18, gap: spacing.sm, padding: spacing.lg },

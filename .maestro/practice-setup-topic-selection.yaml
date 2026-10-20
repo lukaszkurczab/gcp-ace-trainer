@@ -1,0 +1,98 @@
+appId: com.lkurczab.patternly
+name: Practice setup preserves options through topic selection
+# Prerequisite: English AWS Practice hub or focus setup on the existing device.
+# Does not start a session, prepare/download Premium, change account, or reset data.
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home|patternly:practice:setup:root|patternly:practice:hub:root"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-home"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-practice"
+          retryTapIfNoChange: true
+- runFlow:
+    when:
+      visible:
+        id: "patternly:practice:hub:root"
+    commands:
+      - tapOn:
+          id: "patternly:practice:open-setup"
+          retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:setup:root"
+    timeout: 30000
+- assertVisible: "Practice setup"
+- assertVisible: "Choose a topic and the number of questions for your session."
+- assertVisible: "Selected topic"
+- assertVisible: "Change topic"
+- assertVisible: "Number of questions"
+- assertNotVisible: "Practice questions from one topic."
+- assertNotVisible: "Choose a topic for this session."
+- takeScreenshot: practice-setup-simplified
+- tapOn:
+    id: "patternly:practice:session-length:20"
+    retryTapIfNoChange: true
+- assertVisible:
+    id: "patternly:practice:session-length:20"
+    selected: true
+- tapOn:
+    id: "patternly:practice:change-topic"
+- assertVisible: "Choose topic"
+- assertVisible: "< Practice setup"
+- takeScreenshot: practice-choose-topic
+- tapOn:
+    id: "patternly:navigation:back"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:setup:root"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:practice:session-length:20"
+    selected: true
+- tapOn:
+    id: "patternly:practice:change-topic"
+- assertVisible: "Choose topic"
+- tapOn: "Continue"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:setup:root"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:practice:session-length:20"
+    selected: true
+- assertVisible:
+    id: "patternly:practice:start-session"
+- takeScreenshot: practice-setup-returned
+# Existing Practice entry must keep its own Continue behavior.
+- tapOn:
+    id: "patternly:navigation:back"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- tapOn: ".*Change topic"
+- assertVisible: "Choose topic"
+- tapOn: "Continue"
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: "patternly:practice:open-setup"
+    retryTapIfNoChange: true
+- assertVisible:
+    id: "patternly:practice:setup:root"

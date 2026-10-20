@@ -1,0 +1,63 @@
+appId: com.lkurczab.patternly
+name: Practice primary action starts directly while settings opens setup
+# Prerequisite: English AWS guest fixture with no active session, existing device.
+# Creates and ends only its own unanswered session. No answers/account changes.
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible:
+        id: "patternly:navigation:back"
+    commands:
+      - tapOn:
+          id: "patternly:navigation:back"
+          retryTapIfNoChange: true
+- tapOn:
+    id: "main-tab-bar-practice"
+    retryTapIfNoChange: true
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- assertNotVisible:
+    id: "patternly:resume:card:.*"
+- tapOn:
+    id: "patternly:practice:open-setup"
+    retryTapIfNoChange: true
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- assertVisible: "Selected topic"
+- tapOn:
+    id: "patternly:navigation:back"
+    retryTapIfNoChange: true
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- takeScreenshot: practice-hub-actions
+- tapOn:
+    id: "patternly:practice:start-session"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:mode:certification-focus-practice"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:practice:setup:root"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:1:length:10"
+- takeScreenshot: practice-hub-started-directly
+- tapOn:
+    id: "patternly:session:leave:.*"
+    retryTapIfNoChange: true
+- assertVisible: "End session"
+- tapOn:
+    id: "patternly:session:abandon:.*"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:practice:open-setup"
+    retryTapIfNoChange: true
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- takeScreenshot: practice-setup-final

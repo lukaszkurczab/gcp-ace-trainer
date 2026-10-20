@@ -79,8 +79,8 @@ test("Settings opens the shared goal screen with its return context", () => {
   assert.match(screen, /returnTo === "home" \? "Today" : "Progress"/);
   assert.match(screen, /navigation\.canGoBack\(\)/);
   assert.match(screen, /navigation\.navigate\(ROUTES\.HOME, \{ initialTab: returnTo \}\)/);
-  assert.match(screen, /<GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
-  assert.match(screen, /style=\{styles\.context\}\>\{context\}</);
+  assert.match(screen, /<GoalLoadingSkeleton destinationLabel=\{backDestinationLabel\} onBack=\{handleBack\} \/>/);
+  assert.match(screen, /backAction=\{\{ destinationLabel: backDestinationLabel, onPress: handleBack \}\}/);
   assert.match(screen, /await createAndOpenPlan\(track\.id, nextGoal, minutesPerStudyDay\)/);
   assert.match(screen, /navigation\.navigate\(ROUTES\.LEARNING_PLAN_PROPOSAL, \{ proposalId: result\.proposal\.proposalId, trackId: selectedTrackId \}\)/);
 });
@@ -257,15 +257,15 @@ test("goal editing uses local keyboard avoidance while preserving the shared sti
   assert.match(screen, /keyboardAvoiding: \{ flex: 1 \}/);
 });
 
-test("goal loading keeps its back action separate from the busy content announcement", () => {
-  assert.match(screen, /export function GoalLoadingSkeleton\(\{ context, onBack \}/);
-  assert.match(screen, /header=\{\(/);
-  assert.match(screen, /<IconButton/);
-  assert.match(screen, /onPress=\{onBack\}/);
+test("goal loading uses the shared named return action outside the busy content announcement", () => {
+  assert.match(screen, /export function GoalLoadingSkeleton\(\{ destinationLabel, onBack \}/);
+  assert.match(screen, /backAction=\{\{ destinationLabel, onPress: onBack \}\}/);
+  assert.doesNotMatch(screen, /IconButton|loadingContext|headerContext/);
+  assert.match(screen, /onPress: onBack/);
   assert.match(screen, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
   assert.match(screen, /<View accessible=\{false\} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style=\{styles\.loadingShapes\}>/);
   assert.match(screen, /loadingTrackContext[\s\S]*?loadingTrackAccent[\s\S]*?loadingTrack/);
-  assert.match(screen, /if \(loading\) return <GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
+  assert.match(screen, /if \(loading\) return <GoalLoadingSkeleton destinationLabel=\{backDestinationLabel\} onBack=\{handleBack\} \/>/);
   assert.match(screen, /useEffect\(\(\) => \{[\s\S]*?\}, \[route\.params\?\.trackId, readRevision\]\);/);
   assert.doesNotMatch(screen, /useFocusEffect/);
   const pendingBranch = screen.slice(screen.indexOf("if (loading)"), screen.indexOf("if (loadError"));

@@ -11,7 +11,7 @@ import { typography, type AppColors } from "../../theme";
 
 type TermsOfServiceScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.TERMS_OF_SERVICE>;
 
-export function TermsOfServiceScreen({ navigation }: TermsOfServiceScreenProps) {
+export function TermsOfServiceScreen({ navigation, route }: TermsOfServiceScreenProps) {
   const { locale } = useAppPreferences();
   const document = getLegalDocument(locale, "termsOfService");
   const { t } = useTranslation("account");
@@ -19,8 +19,8 @@ export function TermsOfServiceScreen({ navigation }: TermsOfServiceScreenProps) 
   const styles = useThemedStyles(createStyles);
 
   return (
-    <Screen ambient={false} edges={["top", "bottom"]}>
-      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context="Patternly" title={t("termsOfService")} />
+    <Screen backAction={{ destinationLabel: route.params?.returnDestinationLabel, onPress: () => navigation.goBack() }} ambient={false} edges={["top", "bottom"]}>
+      <ScreenHeader title={t("termsOfService")} />
       <Text maxFontSizeMultiplier={2} selectable style={styles.document} testID="terms-of-service-document">
         {document.content ?? tLegal("documentUnavailable")}
       </Text>

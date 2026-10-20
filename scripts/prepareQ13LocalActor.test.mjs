@@ -41,7 +41,7 @@ function createFetch({ uid, registration = "success", statusResolution = "unregi
     const url = new URL(input);
     counters.calls = (counters.calls ?? 0) + 1;
     if (url.pathname.endsWith("/emulator/v1/projects/patternly-app-sandbox/config")) return response(200, { signIn: { allowDuplicateEmails: false } });
-    if (url.pathname === "/ready") return response(200, { status: "ready", checks: { database: true, authentication: true, providerReader: true } });
+    if (url.pathname === "/ready") return response(200, { status: "ready", checks: { database: true, authentication: true, providerReader: true, contentPackages: true } });
     if (url.pathname === "/v1/account/session/exchange" && !init.headers?.authorization) {
       assert.equal(init.method, "POST");
       assert.equal(init.headers["x-firebase-appcheck"], APP_CHECK);

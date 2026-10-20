@@ -28,7 +28,7 @@ import {
 import { TrainingApplicationFailure, type PracticeDurableOperationState } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { loadActiveTrainingSession } from "../../application/learningReadModels";
-import { AppShellHeader, Button, EmptyState, Screen } from "../../components";
+import { Button, EmptyState, Screen } from "../../components";
 import { getTrackRegistration } from "../../domain";
 import { ROUTES } from "../../constants";
 import { CODING_INTERVIEW_TRACK_ID, type TrainingSession } from "../../domain";
@@ -181,17 +181,17 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   }, [state, pendingPhase, completionFailure, submissionError]);
 
   if (!algorithmsMode) {
-    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t(certificationUnavailableDescription)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+    return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Certification Practice unavailable")} description={t(certificationUnavailableDescription)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (algorithmsMode === ALGORITHM_MODE_IDS.interviewSimulation) {
-    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Interview Simulation unavailable")} description={t("This session cannot be opened as Interview Simulation.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+    return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Interview Simulation unavailable")} description={t("This session cannot be opened as Interview Simulation.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (!state) return <PracticeSessionSurface exit={{ kind: "none" }} isFinalPosition={false} onAbandon={noop} onChoicePress={noop} onComplexityValuePress={noop} onConfirmLeave={noop} onDismissExit={noop} onOrderingMove={noop} onRequestLeave={noop} phase="preparing" />;
   if (state.kind === "active_session_conflict") {
     const activeModeLabel = isAlgorithmModeId(state.session.modeId) ? getAlgorithmMode(state.session.modeId).title : "another learning session";
     return (
-      <Screen edges={["top", "bottom"]} style={styles.conflictScreen}>
-        <AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} />
+      <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]} style={styles.conflictScreen}>
+
         <EmptyState
           title={t("Finish or leave the active session first")}
           description={t("{{activeMode}} is active. Resume it or end it before starting {{requestedMode}}.", { activeMode: t(activeModeLabel), requestedMode: t(getAlgorithmMode(algorithmsMode).title) })}
@@ -203,7 +203,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
       </Screen>
     );
   }
-  if (state.kind === "unavailable") return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Practice session unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  if (state.kind === "unavailable") return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Practice session unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   const sessionState = state;
   const projection = sessionState.projection;
   const currentResponseOwner = practiceResponseEventOwner(projection);
@@ -230,7 +230,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
       renderer: projection.interaction,
     }) : projection.interaction;
   if (!activeRendererBindings.has(responseControl.interactionType)) {
-    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Practice interaction unavailable")} description={t("This practice interaction is not available in this version.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+    return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Practice interaction unavailable")} description={t("This practice interaction is not available in this version.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   const effectiveLocalResponse = resolvePracticeLocalResponse(localResponse, responseControl);
   const primaryAction = completionFailure ? null : getPracticePrimaryAction({ feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode), hasLocalResponse: (builtinControl ? effectiveLocalResponse !== null : interactionResponseComplete) && (!frozenPracticeResponse || retryFrozenResponse), isFinalPosition: projection.position.current === projection.position.total, phase });
