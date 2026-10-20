@@ -2785,7 +2785,7 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "77b26f7283868fb3ee2e6b341578831ada68e9a54bf5efb44125a2b88c57485a",
+          "sha256": "9c2c6f87dda69196317674b9253c6b319bbac66118478f4df1978b801186b4f7",
           "bytes": 115828,
           "symbols": [],
           "imports": [],
@@ -93370,8 +93370,8 @@
         },
         {
           "path": "scripts/content-audit/reconcile.mjs",
-          "sha256": "1eea366515fcec4c18f11725b65fcfa8888e458b2cc3796faf190e1185caa84e",
-          "bytes": 12586,
+          "sha256": "596320a29b6149ee18989738f47186ba503438ba42b5bf2a1e309311b7557736",
+          "bytes": 13935,
           "symbols": [
             "reconcileCurrentAudit",
             "buildCurrentAuditState"
@@ -93428,7 +93428,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 221
+          "lines": 243
         },
         {
           "path": "scripts/content-audit/verify-claude-course-map.mjs",
@@ -95085,8 +95085,8 @@
         },
         {
           "path": "tests/currentContentAudit.test.mjs",
-          "sha256": "514b50f960eba01016fa92204001c751c4b9ee1dc7204d425a58cb766d26065f",
-          "bytes": 4777,
+          "sha256": "efcbf8e8d7648ca2a4a571ac59f88dbbfdff6a1eb0231b52ff0ae193088fe33d",
+          "bytes": 11014,
           "symbols": [],
           "imports": [
             {
@@ -95119,9 +95119,12 @@
             "reconciles exact current review and queues only unreviewed current IDs",
             "stale exact-source identity is discarded and returned to pending",
             "rejects duplicate current audit identities and incomplete 13-dimension evidence",
-            "intensive batches cap a large current unit at twelve items"
+            "intensive batches cap a large current unit at twelve items",
+            "accepts complete metadata without inventing values and completes the synthetic inventory",
+            "rejects the original combined empty-metadata counterexample",
+            "preserves distractor, fact-check, dimension and batch guards"
           ],
-          "lines": 86
+          "lines": 180
         },
         {
           "path": "tests/currentCourseMap.test.mjs",
@@ -99267,7 +99270,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "77b26f7283868fb3ee2e6b341578831ada68e9a54bf5efb44125a2b88c57485a",
+  "catalogHash": "9c2c6f87dda69196317674b9253c6b319bbac66118478f4df1978b801186b4f7",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "5070379c21f97176fdeb82052a6bf8da2745d45ba12b051c70e81529bde83286",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -101124,14 +101127,14 @@
     "Atlas/Struktura/patternly-content/supplements/supplements — folder treści.md": "eff9ffa59c5cb9e42bde2bc7a73e7f70d17189d12f8b78149423ec7824661740",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/claude-certified-architect-professional-certification — folder treści · supplements.md": "8f6783f5bee7eb32ecaa8ec2d2d90167c3206f8d8ee9b4d98f29acb28f3a4fb8",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/cc02-course-supplement-v1/cc02-course-supplement-v1 — folder treści · supplements › claude-certified-architect-professional-certification.md": "665cd4eb08807f25b2e169d3e1ed2f41dd50e7581e3d5df42dd515785fcc9218",
-    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "1c156380d317c8e7922f540247aad8cab11e206444b25deb308951232461b266",
+    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "ff61057b950541658b9157603fd764266803f3899d36b5a2622a1457993d3e67",
     "Atlas/Struktura/patternly-content/tests/fixtures/fixtures — folder treści · tests.md": "f9f078841ff9d1e7d638b87a8ab120dad5c61725bc51243f3c5f4701628cb77e",
     "Atlas/Struktura/patternly-content/tests/helpers/helpers — folder treści · tests.md": "50b33bea342c721f251a707c9f72f41524d9c0a71cec4b2e94f33b38d7a02eb7",
     "Atlas/Struktura/patternly-content/config/_Pliki/bundled-free-node-packages.json — treści · config.md": "9c6c56df49bbedcd2ba36d972e6929cd11eb199ac8f0b037a245b68cc52449ec",
     "Atlas/Struktura/patternly-content/config/_Pliki/track-runtime-bindings.json — treści · config.md": "f6fdc171c3f11d92b0d84e084edb72a67c071f8e62405bb0ff51448b77058c25",
     "Atlas/Struktura/patternly-content/schemas/content/_Pliki/question.schema.json — treści · schemas › content.md": "151250d7c2ef5053996eb327ad67119576cc55990f7ca54acfed8ef30bd3c440",
     "Atlas/Struktura/patternly-content/scripts/_Pliki/build.mjs — treści · scripts.md": "fe64c1e9ce66dc46f21d7f132688b211b2a8bf8d7e275ce27838d2b5a708c362",
-    "Atlas/Struktura/patternly-content/scripts/content-audit/_Pliki/reconcile.mjs — treści · scripts › content-audit.md": "8f81d87bcc3bcd1bed5add1b2083c6d96f683afc6a46f19bd42d1f44e2f0da60",
+    "Atlas/Struktura/patternly-content/scripts/content-audit/_Pliki/reconcile.mjs — treści · scripts › content-audit.md": "f2c7e1de1c00fb952203485ae2368341489a8307f3fa8fcef5c026ab1fbc5215",
     "Atlas/Struktura/patternly-content/scripts/content-audit/_Pliki/verify-claude-course-map.mjs — treści · scripts › content-audit.md": "fde57f80a3505d391e4933c8c6a9b8ef08b6371aa98835d0a683157499e0affb",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/build-current-release.mjs — treści · scripts › content.md": "f7ad4eb9f865680e6b3ae2ae1163c12ae89857c7ad7808d75e54865d07540626",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/case-recipe.mjs — treści · scripts › content.md": "0b67a431b909d44c17dc07f78ac936ba3c15841da68a7f65e5b111e1657d0c10",
@@ -101166,7 +101169,7 @@
     "Atlas/Struktura/patternly-content/tests/_Pliki/content-boundary.test.mjs — treści · tests.md": "ecf6b8d0b23a2c609ac71150e0876d377c892e61ce271a51c77fd123ecdce674",
     "Atlas/Struktura/patternly-content/tests/_Pliki/content-builder.test.mjs — treści · tests.md": "37b118e84de325cd448c1c217fc1454af870e9472786ec0a5a1c1d24a6d752c6",
     "Atlas/Struktura/patternly-content/tests/_Pliki/contentReviewConsole.test.mjs — treści · tests.md": "0c13c5daede995335f9547aef2e3d41c98401b1e44a8da7ef085d52e70e355c0",
-    "Atlas/Struktura/patternly-content/tests/_Pliki/currentContentAudit.test.mjs — treści · tests.md": "24f7fa1c5064545a1898b59f53bd4463bacae003740752897d758024f8ef327b",
+    "Atlas/Struktura/patternly-content/tests/_Pliki/currentContentAudit.test.mjs — treści · tests.md": "bbd3af5bb2edf7197b18366688987d27c0d1ae0dde80803e521b7ca24b47c195",
     "Atlas/Struktura/patternly-content/tests/_Pliki/currentCourseMap.test.mjs — treści · tests.md": "521ffbbe19f35edeab73ef09d4b9c39d23322e31c63e6e1eb5aec6502f0bb068",
     "Atlas/Struktura/patternly-content/tests/_Pliki/currentRelease.test.mjs — treści · tests.md": "7323a1cb511f50d366766f2d03b50af4989caec9a0f154100bbdc34be70a41ba",
     "Atlas/Struktura/patternly-content/tests/_Pliki/currentSourceQuality.test.mjs — treści · tests.md": "b96e89c24169f6559d144453476d151c733648e4d15ea7f7f3a2f6d17556c4ce",
