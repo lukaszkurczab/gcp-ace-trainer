@@ -1778,8 +1778,8 @@
       "flow": "Premium i zakup"
     },
     "patternly-backend/src/infrastructure/revenuecat/customerDeletion.ts": {
-      "description": "Adapter Customer DELETE v2: niewytwarzające wyszukiwanie dokładnego AppUserID, kontrola projektu i wszystkich stron aliasów, odmowa obcego zidentyfikowanego ID oraz live fence przed jednym DELETE. Rozdziela accepted/absent od błędów i purge kopii; zakres całego projektu, bez filtra sandbox. Nie używa GET-or-Create ani anulowania subskrypcji.",
-      "reviewedHash": "beda617477a3ed5ebc08c4663114bb0007bff63c499a616e756507c1900abebb",
+      "description": "Adapter Customer DELETE v2: niewytwarzające wyszukiwanie dokładnego AppUserID, kontrola projektu i wszystkich stron aliasów, odmowa obcego zidentyfikowanego ID oraz live fence przed jednym DELETE. Brak next_page lub null kończy listę; obecne błędne wartości są odrzucane, a string aliasów przechodzi kontrolę URL i pełną paginację. Rozdziela accepted/absent od błędów i purge kopii; zakres całego projektu, bez filtra sandbox. Nie używa GET-or-Create ani anulowania subskrypcji.",
+      "reviewedHash": "09d7c6bf46c86e9e4f06a34f583b0aa1b9ab31e36acfc29eb6f279e77fd8e30b",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-backend/tests/revenueCatDeletionFixture.ts": {
@@ -1788,8 +1788,8 @@
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-backend/tests/rcCustomerDeletion.emulator.ts": {
-      "description": "Izolowane fixture demo odbierają dokładny backendowy AppUserID, przypięty projekt, brak klucza, błąd przed/po modelowanym skutku, błędny sekret i obce konto. SIGKILL workera przed checkpointem oraz lease/retry weryfikują trwałość i minimalny terminalny receipt. Bez rzeczywistego providera. Konstruktor fixture dostosowano do usunięcia ciphera kodów; kontrakt kasowania klienta RC zachowano.",
-      "reviewedHash": "b3693064c4e12fb34c9c5ca332ed3ae1a44fa0c7a9c92dddc0913d59f0b90018",
+      "description": "Izolowane fixture demo odbierają dokładny backendowy AppUserID, przypięty projekt, brak klucza, błąd przed/po modelowanym skutku, błędny sekret i obce konto. Produkcyjny adapter z wstrzykniętym fetch i JSON Response sprawdza terminalne listy bez next_page, accepted checkpoint i erasure oraz malformed→pending→wznowienie tej samej operacji→absent. SIGKILL workera przed checkpointem oraz lease/retry weryfikują trwałość i minimalny terminalny receipt. Bez rzeczywistego providera.",
+      "reviewedHash": "4b79fdf792f0948f081a0a7b584bbe145b3be1c8fb1c8f6e4f09c6a3cf0067d9",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/components/BackLink.tsx": {
@@ -1985,7 +1985,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "b4305e169cdf1d22d54e4265fd28a48b019e178b44e7bf28f028ee11f39bbeac"
+      "reviewedDigest": "3f29d519ef8e41ed9c3979569e4e7faf424d94de9ff7c630e79f358362694f92"
     },
     {
       "name": "Witryna, demo i panel",
