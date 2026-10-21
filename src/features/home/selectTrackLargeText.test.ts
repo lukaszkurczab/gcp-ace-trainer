@@ -50,7 +50,10 @@ test("track selection mirrors the Figma returning and switching footer states", 
   assert.match(source, /getTrackDisplays\(\)\.find\(\(candidate\) => candidate\.id === selectedTrackId\)/);
   assert.match(source, /await saveActiveTrackId\(track\.id\)/);
   assert.match(source, /if \(onTrackSelected\) onTrackSelected\(track\.id\);\s*else navigation\.navigate\(ROUTES\.HOME, \{ initialTab: "home" \}\);/);
-  assert.match(source, /placement="back"/);
+  assert.match(source, /<Screen\s+backAction=\{!onboarding \? \{ destinationLabel: navigation\.canGoBack\(\) \? undefined : t\("Today"\), onPress: \(\) => goBackOrHome\(navigation\) \} : undefined\}/);
+  const backFallback = readFileSync("src/navigation/goBackOrHome.ts", "utf8");
+  assert.match(backFallback, /if \(navigation\.canGoBack\(\)\) \{\s*navigation\.goBack\(\);\s*return;/);
+  assert.match(backFallback, /navigation\.navigate\(ROUTES\.HOME, \{ initialTab: "home" \}\)/);
   assert.match(source, /footerVariant="sticky"/);
   assert.match(source, /footerContent:\s*\{\s*gap: 14[\s\S]*?paddingBottom: spacing\.xs/);
   assert.match(source, /trackList:\s*\{\s*gap: spacing\.sm\s*\}/);

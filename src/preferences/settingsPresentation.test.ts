@@ -200,8 +200,10 @@ test("Settings heading has no redundant description and locale keeps goal copy",
   assert.match(settingsPl, /"goalDetail": "Ustaw cel nauki i dni ćwiczeń\."/);
 });
 
-test("Premium keeps a localized Settings context while retaining the back action", () => {
-  assert.match(premiumScreen, /<ScreenHeader backAction=\{\{ onPress: \(\) => navigation\.goBack\(\) \}\} context=\{t\("appSettings"\)\} title=\{t\("premiumTitle"\)\} \/>/);
+test("Premium keeps sticky Screen-owned back navigation and a title-only header", () => {
+  assert.match(premiumScreen, /<Screen backAction=\{\{ onPress: \(\) => navigation\.goBack\(\) \}\} edges=\{\["top", "bottom"\]\}/);
+  assert.match(premiumScreen, /<ScreenHeader title=\{t\("premiumTitle"\)\} \/>/);
+  assert.doesNotMatch(premiumScreen, /<ScreenHeader[^>]*(?:backAction|context)=/);
   assert.doesNotMatch(premiumScreen, /context=\{t\("settings"\)\}/);
   const settingsEn = JSON.parse(readFileSync("src/locales/en/settings.json", "utf8")) as Record<string, unknown>;
   const settingsPl = JSON.parse(readFileSync("src/locales/pl/settings.json", "utf8")) as Record<string, unknown>;
@@ -213,7 +215,9 @@ test("Premium keeps a localized Settings context while retaining the back action
 
 test("Your data keeps the Settings entry label and names its local header consistently", () => {
   assert.match(settingsTab, /testID="settings-your-data" title=\{text\.data\}/);
-  assert.match(yourDataScreen, /<ScreenHeader backAction=\{\{ onPress: \(\) => navigation\.goBack\(\) \}\} context=\{t\("settings"\)\} contextTone="primary" title=\{t\("yourData"\)\} \/>/);
+  assert.match(yourDataScreen, /<Screen backAction=\{\{ onPress: \(\) => navigation\.goBack\(\) \}\} edges=\{\["top", "bottom"\]\}/);
+  assert.match(yourDataScreen, /<ScreenHeader title=\{t\("yourData"\)\} \/>/);
+  assert.doesNotMatch(yourDataScreen, /<ScreenHeader[^>]*(?:backAction|context)=/);
   const dataEn = JSON.parse(readFileSync("src/locales/en/data.json", "utf8")) as Record<string, unknown>;
   const dataPl = JSON.parse(readFileSync("src/locales/pl/data.json", "utf8")) as Record<string, unknown>;
   assert.equal(dataEn.settings, "Settings");

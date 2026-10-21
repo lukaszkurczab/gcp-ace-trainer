@@ -1,8 +1,22 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import ts from "typescript";
 
 const source = (path: string) => readFileSync(path, "utf8");
+
+const jsxOpenings = (text: string, tagName: string): readonly string[] => {
+  const file = ts.createSourceFile("screen.tsx", text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const openings: string[] = [];
+  const visit = (node: ts.Node): void => {
+    if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && node.tagName.getText(file) === tagName) {
+      openings.push(node.getText(file));
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  return openings;
+};
 
 test("route ambient layer is the default shared background for every Screen", () => {
   const screen = source("src/components/Screen.tsx");
@@ -20,7 +34,12 @@ test("route ambient layer is the default shared background for every Screen", ()
   assert.doesNotMatch(backdrop, /RadialGradient|<Rect|Topography|glowOpacity/);
   assert.doesNotMatch(selectTrack, /ambient=\{colorMode === "dark"\}/);
   assert.doesNotMatch(practice, /ambient=\{colorMode === "dark"\}/);
-  assert.match(activity, /<Screen ambientVariant="activity"/);
+  const activityScreens = jsxOpenings(activity, "Screen");
+  assert.equal(activityScreens.length, 3, "loading, error and populated Activity keep the shared backdrop");
+  for (const opening of activityScreens) {
+    assert.match(opening, /\bambientVariant="activity"/);
+    assert.ok(!/\sambient=/.test(opening) || /\sambient=\{true\}/.test(opening), "ambient is explicitly true or uses the shared true default");
+  }
   assert.match(source("src/features/home/GoalCadenceScreen.tsx"), /ambientVariant="goal"/);
   assert.match(backdrop, /transparent=\{variant !== "auth"\}/);
 });
@@ -29,7 +48,11 @@ test("ambient keeps randomized routes and signals without rectangular glow layer
   const backdrop = source("src/components/AmbientBackdrop.tsx");
   const account = source("src/features/account/AccountEntryScreen.tsx");
 
-  assert.match(account, /<Screen\s+ambient\s+ambientVariant="auth"/);
+  const authScreens = jsxOpenings(account, "Screen").filter((opening) => /\bambientVariant="auth"/.test(opening));
+  assert.equal(authScreens.length, 3, "auth form, registration and status keep the auth backdrop");
+  for (const opening of authScreens) {
+    assert.ok(!/\sambient=/.test(opening) || /\sambient=\{true\}/.test(opening), "ambient is explicitly true or uses the shared true default");
+  }
   assert.match(backdrop, /type AmbientRoute/);
   assert.match(backdrop, /const AUTH_ROUTES: readonly AmbientRoute\[\]/);
   assert.ok((backdrop.match(/id: "[^"]+", points:/g) ?? []).length >= 10);

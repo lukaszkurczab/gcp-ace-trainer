@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import ts from "typescript";
 import i18n from "../../i18n";
 
 import {
@@ -11,6 +12,19 @@ import {
 const translate = (key: string, values?: Record<string, string | number>) => i18n.t(key, { ...values, lng: "en" });
 
 const source = (path: string) => readFileSync(path, "utf8");
+
+const jsxOpenings = (text: string, tagName: string): readonly string[] => {
+  const file = ts.createSourceFile("screen.tsx", text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const openings: string[] = [];
+  const visit = (node: ts.Node): void => {
+    if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && node.tagName.getText(file) === tagName) {
+      openings.push(node.getText(file));
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  return openings;
+};
 
 test("session control labels identify the dimension, ordering position, and command", () => {
   assert.equal(orderingMoveAccessibilityLabel("Partition around the pivot", 2, 5, "up", translate), "Move Partition around the pivot, position 3 of 5, up");
@@ -70,7 +84,7 @@ test("simulation accessibility respects motion, focus, and touch-target constrai
   assert.match(navigator, /AccessibilityInfo\.isReduceMotionEnabled\(\)/);
   assert.match(navigator, /AccessibilityInfo\.addEventListener\("reduceMotionChanged", setReduceMotion\)/);
   assert.match(navigator, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
-  assert.match(navigator, /<View accessibilityViewIsModal style=\{styles\.sheet\}>/);
+  assert.match(navigator, /<View accessibilityViewIsModal style=\{\[styles\.sheet, \{ paddingBottom: Math\.max\(spacing\.md, insets\.bottom\) \}\]\}>/);
   assert.match(navigator, /<View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style=\{styles\.feedbackMessage\}>/);
   assert.doesNotMatch(navigator, /<View accessibilityLiveRegion="polite" accessibilityRole="alert" style=\{\[styles\.feedback[\s\S]*?<Button/);
 });
@@ -134,7 +148,7 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
 
 test("standalone practice conflict and unavailable states respect both safe-area edges", () => {
   const screen = source("src/features/practice/PracticeSessionScreen.tsx");
-  const standaloneScreens = [...screen.matchAll(/<Screen\b([^>]*)>/g)].map((match) => match[1] ?? "");
+  const standaloneScreens = jsxOpenings(screen, "Screen");
 
   assert.equal(standaloneScreens.length, 5);
   for (const attributes of standaloneScreens) {
@@ -207,7 +221,21 @@ test("Practice Hub retains its mode layout and canonical ownership", () => {
   assert.match(practiceHub, /<ListRow[\s\S]*?variant="grouped"/);
   assert.match(listRow, /groupedCopy:\s*\{[\s\S]*?gap:\s*spacing\.xxs/);
   assert.match(listRow, /groupedDetail:\s*\{[\s\S]*?typography\.listRowDetail/);
-  assert.match(practiceHub, /settingsActionText:\s*\{[\s\S]*?color:\s*palette\.primary[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"500"[\s\S]*?lineHeight:\s*16/);
+  const actionStyle = practiceHub.match(/settingsActionText:\s*\{([^}]+)\}/)?.[1];
+  assert.ok(actionStyle, "settings action retains its named text role");
+  assert.match(actionStyle, /color:\s*palette\.primary/);
+  assert.match(actionStyle, /fontWeight:\s*"500"/);
+  const fontSize = Number(actionStyle.match(/fontSize:\s*(\d+(?:\.\d+)?)/)?.[1]);
+  const lineHeight = Number(actionStyle.match(/lineHeight:\s*(\d+(?:\.\d+)?)/)?.[1]);
+  assert.ok(fontSize > 0 && lineHeight >= fontSize, "the action text has a positive size and room for its line");
+  assert.doesNotMatch(actionStyle, /\bheight:/);
+  const actionText = jsxOpenings(practiceHub, "Text").find((opening) => /style=\{styles\.settingsActionText\}/.test(opening));
+  assert.ok(actionText);
+  assert.match(actionText, /maxFontSizeMultiplier=\{2\}/);
+  assert.doesNotMatch(actionText, /numberOfLines|adjustsFontSizeToFit/);
+  const settingsAction = jsxOpenings(practiceHub, "Pressable").find((opening) => /styles\.settingsAction,/.test(opening));
+  assert.ok(settingsAction);
+  assert.match(settingsAction, /accessibilityRole="button"/);
   assert.match(practiceHub, /buildPracticeModes\(activeTrack, hasReviewEvidence\)/);
 });
 
@@ -218,12 +246,29 @@ test("Practice Question Shell keeps the Figma prompt-to-answer rhythm", () => {
   assert.match(surface, /questionAndResponse:\s*\{\s*gap:\s*spacing\.md\s*\}/);
 });
 
-test("certification exam stacks descriptive actions so large text cannot clip flagging or navigation", () => {
+test("compact certification exam keeps flag, navigator and guarded footer actions accessible", () => {
   const exam = source("src/features/exam/ExamScreen.tsx");
-
-  assert.match(exam, /<View style=\{styles\.examActions\}>[\s\S]*Question navigator[\s\S]*Flag question/);
-  assert.match(exam, /examActions:\s*\{\s*gap:\s*spacing\.sm\s*\}/);
+  const headerStart = exam.indexOf("headerRight: headerProjection");
+  const header = exam.slice(headerStart, exam.indexOf("if (readState.requestKey !== requestKey", headerStart));
+  assert.match(header, /accessibilityLabel=\{t\(headerFlagged \? "Remove flag" : "Flag question"\)\}/);
+  assert.match(header, /accessibilityRole="button"/);
+  assert.match(header, /accessibilityState=\{\{ selected: headerFlagged, disabled: headerFlagDisabled \}\}/);
+  assert.match(header, /disabled=\{headerFlagDisabled\}/);
+  assert.match(header, /onPress=\{\(\) => void toggleFlag\(\)\}/);
+  assert.match(exam, /const headerFlagDisabled = actionPending \|\| !headerProjection \|\| isExamResolutionRequired\(headerProjection\)/);
+  assert.match(exam, /flagAction:\s*\{[^}]*minHeight:\s*44[^}]*minWidth:\s*44/);
+  const shell = jsxOpenings(exam, "SessionShell").find((opening) => /layout="exam"/.test(opening));
+  assert.ok(shell);
+  assert.match(shell, /onPositionPress=\{\(\) => setNavigatorVisible\(true\)\}/);
+  assert.match(shell, /positionDisabled=\{actionPending \|\| resolutionRequired\}/);
+  assert.match(shell, /positionAccessibilityLabel=\{`\$\{t\("Question navigator"\)\}/);
+  const footer = shell.slice(shell.indexOf("actionBar="), shell.indexOf('layout="exam"'));
+  assert.match(footer, /disabled=\{actionPending \|\| resolutionRequired \|\| projection\.ordinal === 1\}[\s\S]*?goToIndex\(projection\.ordinal - 2\)[\s\S]*?t\("Previous"\)/);
+  assert.match(footer, /projection\.ordinal === projection\.total \? \([\s\S]*?disabled=\{actionPending \|\| resolutionRequired\}[\s\S]*?setFinishVisible\(true\)[\s\S]*?t\("Finish exam"\)[\s\S]*?\) : \([\s\S]*?disabled=\{actionPending \|\| resolutionRequired\}[\s\S]*?goToIndex\(projection\.ordinal\)[\s\S]*?t\("Next"\)/);
   assert.match(exam, /navigationActions:\s*\{\s*flexDirection:\s*"row"/);
+  assert.match(exam, /visible=\{navigatorVisible && !resolutionRequired\}/);
+  assert.match(exam, /visible=\{finishVisible && !resolutionRequired\}/);
+  assert.doesNotMatch(exam, /examActions/);
 });
 
 test("practice runtime selectors are derived from the canonical session projection without entering speech labels", () => {

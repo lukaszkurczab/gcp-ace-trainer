@@ -21,7 +21,11 @@ test("notification settings renders only the accepted plan slots and follows the
   assert.match(screen, /notifications\.planSlots\.map/);
   assert.match(screen, /runtimeSelectors\.notifications\.slot\(slot\.slotId\)/);
   assert.match(screen, /planSchedule/);
-  assert.match(screen, /backToSettings/);
+  assert.match(screen, /<Screen\s+backAction=\{\{ destinationLabel: navigation\.canGoBack\(\) \? undefined : context, onPress: handleBack \}\}/);
+  assert.match(screen, /const context = t\("settings"\)/);
+  assert.match(screen, /const handleBack = useCallback\(\(\) => \{\s*if \(navigation\.canGoBack\(\)\) \{\s*navigation\.goBack\(\);\s*\} else \{\s*navigation\.replace\(ROUTES\.HOME, \{ initialTab: "settings" \}\);/);
+  assert.match(screen, /<ScreenHeader title=\{t\("reminders"\)\} \/>/);
+  assert.doesNotMatch(screen, /<ScreenHeader[^>]*context=/);
   assert.doesNotMatch(screen, /source === "goal"|returnToGoal|ROUTES\.GOAL_CADENCE|TextInput|SettingsBottomSheet|separateTimes|commonTime|dayTimes|saveReminder/);
   assert.match(navigation, /NotificationSettingsRouteParams = \{ source: "settings" \}/);
   assert.doesNotMatch(navigation, /returnToGoal|source: "goal"/);

@@ -121,12 +121,23 @@ test("the canonical Custom Practice settings entry opens setup without a duplica
   assert.match(setup, /buildPracticeSessionConfig\(\{[\s\S]*?feedbackMode,/);
 });
 
-test("Design settings and secondary modes retain admitted setup alongside the direct primary start", () => {
+test("ordinary Free Design routes before Premium admission while simulation retains admission", () => {
   const hub = readFileSync("src/features/practice/PracticeHubScreen.tsx", "utf8");
   const designStart = hub.slice(hub.indexOf("if (isDesignInterviewTrack)"), hub.indexOf("if (activeTrack.familyId === \"certification\""));
   assert.match(designStart, /navigation\.navigate\(ROUTES\.PRACTICE_SETUP/);
   assert.match(designStart, /mode: resolvedMode/);
   assert.match(designStart, /topicId: topic\.id/);
   assert.match(designStart, /if \(target === "setup"\) \{[\s\S]*?ROUTES\.PRACTICE_SETUP[\s\S]*?\} else \{[\s\S]*?ROUTES\.PRACTICE_SESSION/);
-  assert.ok(designStart.indexOf("authorizePremiumSessionStart") < designStart.indexOf("ROUTES.PRACTICE_SESSION"));
+  const freeStart = designStart.slice(designStart.indexOf("if (!requiresPremiumProductMode(resolvedMode))"), designStart.indexOf("if (designAdmissionPendingRef.current)"));
+  assert.match(freeStart, /if \(target === "setup"\)[\s\S]*?ROUTES\.PRACTICE_SETUP[\s\S]*?else[\s\S]*?ROUTES\.PRACTICE_SESSION/);
+  for (const field of ["mode: resolvedMode", "source", "topicId: topic.id", "trackId: activeTrack.id"]) assert.ok(freeStart.includes(field), field);
+  assert.match(freeStart, /return;\s*\}/);
+  assert.doesNotMatch(freeStart, /authorizePremiumSessionStart/);
+  const simulation = designStart.slice(designStart.indexOf("if (designAdmissionPendingRef.current)"));
+  assert.match(simulation, /account\.authorizePremiumSessionStart\(\)/);
+  assert.ok(simulation.indexOf("authorizePremiumSessionStart") < simulation.indexOf("ROUTES.DESIGN_INTERVIEW_SIMULATION"));
+  assert.match(simulation, /case "purchasePremium":[\s\S]*?ROUTES\.PREMIUM_PURCHASE/);
+  assert.match(simulation, /case "retryAdmission":[\s\S]*?setDesignAccessUnavailable\(true\)/);
+  assert.match(simulation, /if \(designAdmissionPendingRef\.current\) return/);
+  assert.match(simulation, /\.catch\(\(\) => setDesignAccessUnavailable\(true\)\)/);
 });

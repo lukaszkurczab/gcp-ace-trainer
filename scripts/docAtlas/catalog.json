@@ -1792,9 +1792,9 @@
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/components/BackLink.tsx": {
-      "description": "Jeden przycisk powrotu: chevron i zlokalizowana nazwa celu w całym klikalnym wierszu min44pt. Bez logo/opisu. Odczytuje poprzednią trasę i bieżącą zakładkę Home; jawna destinationLabel obsługuje akcje niebędące popem. Nierozpoznany/brakujący cel nie tworzy fikcyjnej akcji. Obsługuje wzrost tekstu i semantykę dostępności. Bez tła i zaokrąglonej powierzchni, także podczas naciskania; feedback przez opacity, obszar dotyku zachowany.",
+      "description": "Jeden przycisk powrotu: chevron i zlokalizowana nazwa celu w całym klikalnym wierszu min44pt. Bez logo/opisu. Odczytuje poprzednią trasę i bieżącą zakładkę Home; jawna destinationLabel obsługuje akcje niebędące popem. Nierozpoznany/brakujący cel nie tworzy fikcyjnej akcji. Obsługuje wzrost tekstu i semantykę dostępności. Bez tła i zaokrąglonej powierzchni, także podczas naciskania; feedback przez opacity, obszar dotyku zachowany. Style pobiera wprost ze współdzielonego kontekstu prezentacji; granicę zależności chroni PERF-06.",
       "flow": "Start aplikacji i nawigacja",
-      "reviewedHash": "bed45e937a930a053fe6b3ceae1abd04e68f47603261eb6c546c1016649b97aa"
+      "reviewedHash": "36d25699c89c741f190b53cc953a648e0bdd6dbff92c46392cd5f10456d6afa8"
     },
     "patternly/src/navigation/backDestination.ts": {
       "description": "Czyste mapowanie istniejących tras i parametrów na klucze faktycznych zlokalizowanych nazw ekranów. Uwzględnia aktywną zakładkę Home, stan wejścia konta, pod-ekran bezpieczeństwa i rodzaj żądania prawnego; nie nawiguje i nie zmienia historii. TopicRoadmap nazywa faktyczny ekran Choose topic. Mapowanie nie zawiera wycofanego ekranu kodów; recovery w wejściu konta oznacza reset e-mail.",
@@ -1927,7 +1927,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "b70eac2dc094ffc860f2f82e72666c068af80fbd3ca7184a1ad4ff5ee3e118eb"
+      "reviewedDigest": "931e2b3794c221d1a5f41c6a647509aff069c16425564f756ed7a0f5de614d93"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -1965,7 +1965,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "237364ee35fe8e79f09d5cc9bc66002367744aff8fbb4b984a013a1e9c50f536"
+      "reviewedDigest": "1ed200a598daf00f8a445a0837b7765730699f3ea321b64d89004c79a002e983"
     },
     {
       "name": "Cel, plan i postęp",
@@ -1976,7 +1976,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "ea315bcaf0bb08f9152c7e916baf9684ce2615652bbea2387887fdf8da16edfd"
+      "reviewedDigest": "720c44362e91f3212cca0abdbc125581ade978aa252336b4748c512e565b3296"
     },
     {
       "name": "Premium i zakup",

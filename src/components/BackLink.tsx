@@ -3,7 +3,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { useThemedStyles } from "../preferences";
+import { useThemedStyles } from "../preferences/appPreferencesContext";
 import { spacing, typography, type AppColors } from "../theme";
 import { getBackDestinationTranslation, getPreviousRoute } from "../navigation/backDestination";
 import { Icon } from "./Icon";

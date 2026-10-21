@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "709b9d53c949fbe91b0d0fef93daa79d935ff766",
+      "head": "867516baab7eed44bf75cde0c61d4619eb35c0d7",
       "files": [
         {
           "path": ".easignore",
@@ -2825,8 +2825,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "74d8e2bd48b3e00319506f005b2991f28b66d911f227faa31cda3a34f0a1fbdd",
-          "bytes": 143731,
+          "sha256": "386606acf4834725966cd86e78d4ac8b19d30a60c3bc2e08ba1da5a848bbddb8",
+          "bytes": 143834,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -32328,8 +32328,8 @@
         },
         {
           "path": "src/components/ambientBackdrop.test.ts",
-          "sha256": "dc11f11b013ef9303578bba35d4551663a0d8ff59e3a7e7339b9e06cd56c5dfe",
-          "bytes": 2554,
+          "sha256": "c9cdfc58cc8db4961c586b48804e3593793484a9720990148b1e294e9df3ba54",
+          "bytes": 3770,
           "symbols": [],
           "imports": [
             {
@@ -32349,6 +32349,12 @@
               "kind": "static",
               "resolution": "external",
               "line": 3
+            },
+            {
+              "specifier": "typescript",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
             }
           ],
           "jsonKeys": [],
@@ -32356,7 +32362,7 @@
             "route ambient layer is the default shared background for every Screen",
             "ambient keeps randomized routes and signals without rectangular glow layers"
           ],
-          "lines": 46
+          "lines": 69
         },
         {
           "path": "src/components/AmbientBackdrop.tsx",
@@ -32558,8 +32564,8 @@
         },
         {
           "path": "src/components/BackLink.tsx",
-          "sha256": "bed45e937a930a053fe6b3ceae1abd04e68f47603261eb6c546c1016649b97aa",
-          "bytes": 2790,
+          "sha256": "36d25699c89c741f190b53cc953a648e0bdd6dbff92c46392cd5f10456d6afa8",
+          "bytes": 2812,
           "symbols": [
             "BackLinkProps",
             "BackLink"
@@ -32590,9 +32596,9 @@
               "line": 4
             },
             {
-              "specifier": "../preferences",
+              "specifier": "../preferences/appPreferencesContext",
               "kind": "static",
-              "target": "src/preferences/index.ts",
+              "target": "src/preferences/appPreferencesContext.tsx",
               "line": 6
             },
             {
@@ -47373,8 +47379,8 @@
         },
         {
           "path": "src/features/home/selectTrackLargeText.test.ts",
-          "sha256": "9408b4991c7b005b64b4f3d37256e17fc682c69f2e999c5f69283d642f9a6230",
-          "bytes": 4139,
+          "sha256": "8e9f2b0ea1024f48a18ccac11a6d8f1b355d84bb7add97f534e9e3046849b303",
+          "bytes": 4577,
           "symbols": [],
           "imports": [
             {
@@ -47403,7 +47409,7 @@
             "track cards use the canonical Figma icon mapping for every active track",
             "track selection mirrors the Figma returning and switching footer states"
           ],
-          "lines": 61
+          "lines": 64
         },
         {
           "path": "src/features/home/SelectTrackScreen.tsx",
@@ -51060,8 +51066,8 @@
         },
         {
           "path": "src/features/practice/practiceNavigation.test.ts",
-          "sha256": "54c738f7ba10d2293018ab327e12162905eb9fb62fdfc18e57fac42061b5f9a3",
-          "bytes": 6744,
+          "sha256": "7671bbc2702f40482309c61e8b7628038dc437a4c5a57768c6055877034210ec",
+          "bytes": 7833,
           "symbols": [],
           "imports": [
             {
@@ -51129,9 +51135,9 @@
             "an explicit free-topic choice can clear only the previous premium-offer identity",
             "a current Premium setup draft round-trips unchanged only with its exact offer identity",
             "the canonical Custom Practice settings entry opens setup without a duplicate mode row",
-            "Design settings and secondary modes retain admitted setup alongside the direct primary start"
+            "ordinary Free Design routes before Premium admission while simulation retains admission"
           ],
-          "lines": 133
+          "lines": 144
         },
         {
           "path": "src/features/practice/practiceNavigation.ts",
@@ -61593,8 +61599,8 @@
         },
         {
           "path": "src/preferences/notificationPresentation.test.ts",
-          "sha256": "f22f84e3421d0fc95797d1c8028e84c44321bde1d8faf2a173e16354c846042e",
-          "bytes": 7679,
+          "sha256": "d4f3d59aee690c6e5e8432c5b145b1c20d9b4ece462e991c24f8cd6d7a347271",
+          "bytes": 8191,
           "symbols": [],
           "imports": [
             {
@@ -61635,7 +61641,7 @@
             "goal summary reports canonical reminder state and proposal errors announce accessibly",
             "notification settings keeps lifecycle-safe request coordination"
           ],
-          "lines": 135
+          "lines": 139
         },
         {
           "path": "src/preferences/notificationSettingsPresentation.ts",
@@ -61739,8 +61745,8 @@
         },
         {
           "path": "src/preferences/settingsPresentation.test.ts",
-          "sha256": "054b9ae642e46d4ca9b3bf6803d702accb595037508725e594b48a7ba3eba495",
-          "bytes": 30760,
+          "sha256": "0be9d29ed2aa5b93ea66e88de1be79218ed4139bae1123e97871d847db54ea96",
+          "bytes": 30990,
           "symbols": [],
           "imports": [
             {
@@ -61773,7 +61779,7 @@
             "grouped settings rows follow the Figma 200% text geometry",
             "InfoBlock and ListRow remount native text when live Dynamic Type scale changes",
             "Settings heading has no redundant description and locale keeps goal copy",
-            "Premium keeps a localized Settings context while retaining the back action",
+            "Premium keeps sticky Screen-owned back navigation and a title-only header",
             "Your data keeps the Settings entry label and names its local header consistently",
             "Your data owns an exhaustive account-state action matrix and wires the mapped controls",
             "Your data export copy matches the complete JSON scope and the system share or save action",
@@ -61788,7 +61794,7 @@
             "settings bottom sheets use the Figma elevated shell and modal accessibility boundary",
             "information topics keep a stable locale-independent selection and explicit next-page affordance"
           ],
-          "lines": 419
+          "lines": 423
         },
         {
           "path": "src/preferences/useNotificationSettings.ts",
@@ -68041,8 +68047,8 @@
         },
         {
           "path": "src/tracks/coding-interview/algorithmsSessionAccessibility.test.ts",
-          "sha256": "64218200c327be83eae4d345101176f35119862632be703141ce6fd8ea6b7c81",
-          "bytes": 20697,
+          "sha256": "27a51a1f289b8e5442496b7e1c9a4a4de3faaf456b90f1bec4a901c05b2aea46",
+          "bytes": 23952,
           "symbols": [],
           "imports": [
             {
@@ -68064,16 +68070,22 @@
               "line": 3
             },
             {
+              "specifier": "typescript",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
               "specifier": "../../i18n",
               "kind": "static",
               "target": "src/i18n.ts",
-              "line": 4
+              "line": 5
             },
             {
               "specifier": "../../features/coding-interview/session/sessionAccessibility",
               "kind": "static",
               "target": "src/features/coding-interview/session/sessionAccessibility.ts",
-              "line": 6
+              "line": 7
             }
           ],
           "jsonKeys": [],
@@ -68091,10 +68103,10 @@
             "Practice Hub keeps the quiet-layered recommendation readable at large text and removes the competing stats card",
             "Practice Hub retains its mode layout and canonical ownership",
             "Practice Question Shell keeps the Figma prompt-to-answer rhythm",
-            "certification exam stacks descriptive actions so large text cannot clip flagging or navigation",
+            "compact certification exam keeps flag, navigator and guarded footer actions accessible",
             "practice runtime selectors are derived from the canonical session projection without entering speech labels"
           ],
-          "lines": 258
+          "lines": 303
         },
         {
           "path": "src/tracks/coding-interview/algorithmsSessionDryRunRegressionMaestro.test.ts",
@@ -69034,7 +69046,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "65455c9a7304d16091df7ebdb34aab4e39400225",
+      "head": "eb50d03b927feb5c116703cee2d223e693c01ef4",
       "files": [
         {
           "path": ".dockerignore",
@@ -99747,7 +99759,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "74d8e2bd48b3e00319506f005b2991f28b66d911f227faa31cda3a34f0a1fbdd",
+  "catalogHash": "386606acf4834725966cd86e78d4ac8b19d30a60c3bc2e08ba1da5a848bbddb8",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "a6f3005ba6de89e0c57e870d1bddeee966c723549609690b9287bf501689377f",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -99815,7 +99827,7 @@
     "Atlas/Struktura/patternly/src/assets/brand/app-icon/app-icon — folder aplikacja · src › assets › brand.md": "a46ded6057b58e642eb24d7c755c283ecc2b54267d085b238fc8cab4590d136e",
     "Atlas/Struktura/patternly/src/assets/brand/mark/mark — folder aplikacja · src › assets › brand.md": "217d23e86912284431870109456e360cacfe7a39ecf6297fa3ca251f45d0bf4b",
     "Atlas/Struktura/patternly/src/assets/icons/icons — folder aplikacja · src › assets.md": "f7e136728ee82ab375388ec6dbed21e33efc8e6bfea1cd1fb1ae14ec71d76a1d",
-    "Atlas/Struktura/patternly/src/components/components — folder aplikacja · src.md": "5540993d448821f65420e4d98beaa7d8dbdc9392f57745f370ae989116a40bee",
+    "Atlas/Struktura/patternly/src/components/components — folder aplikacja · src.md": "17a0a63dbdf677fee99cfe6c48050fc30b6e1da221d44ebdecbb45782d211a72",
     "Atlas/Struktura/patternly/src/constants/constants — folder aplikacja · src.md": "bba3f0639727d05d072c1cb36d3b5cbd205743e3c9bf4a640b028c876dcfdd3b",
     "Atlas/Struktura/patternly/src/content/content — folder aplikacja · src.md": "54e2007a0f5d296d7cfafac0cb4e1a089abf263eb12d00ae812219c6a600d69f",
     "Atlas/Struktura/patternly/src/content/__fixtures__/__fixtures__ — folder aplikacja · src › content.md": "306a1069e3b701025010388952165fabed264877d491a778562b685f0874b2e4",
@@ -99849,10 +99861,10 @@
     "Atlas/Struktura/patternly/src/features/coding-interview/coding-interview — folder aplikacja · src › features.md": "668d23c649e12f17d1d738e9985b82a4c34386e2e313fb15817d8a94b0c3299f",
     "Atlas/Struktura/patternly/src/features/coding-interview/session/session — folder aplikacja · src › features › coding-interview.md": "75175bb02b0b6b888e525840a604cda634bac82ffffbb747938998515f604a44",
     "Atlas/Struktura/patternly/src/features/exam/exam — folder aplikacja · src › features.md": "b7b947a8908ad73263c2505aea363d0d26824a22751034d4e623b25b514de55e",
-    "Atlas/Struktura/patternly/src/features/home/home — folder aplikacja · src › features.md": "206b53438c402167aa53ff3e6a3ad974cc8ba1ee4f579b1971e76ac80813ec03",
+    "Atlas/Struktura/patternly/src/features/home/home — folder aplikacja · src › features.md": "e905c1887ccd43a63f0dbfe24e42bce42e662e25fe8f62a084d07d6b0d73ea0a",
     "Atlas/Struktura/patternly/src/features/home/tabs/tabs — folder aplikacja · src › features › home.md": "7a5d103f58379a758f0f4fd63107d7aa82aee25ec261b24384c4abd7caac3dba",
     "Atlas/Struktura/patternly/src/features/navigation/navigation — folder aplikacja · src › features.md": "6f7407633332be642e1e2354e3ac9e34b5090986e876e94c8483b9375c175b70",
-    "Atlas/Struktura/patternly/src/features/practice/practice — folder aplikacja · src › features.md": "25b875747c3a9dd3e39d5ab44f7b6d2c7c9a4da977607afb47ba14477d835d58",
+    "Atlas/Struktura/patternly/src/features/practice/practice — folder aplikacja · src › features.md": "8aa570674dcf43cb8f8127783d0b9e4c93df45d6ce0c3405aa4b2e5d1d68dc25",
     "Atlas/Struktura/patternly/src/features/premium/premium — folder aplikacja · src › features.md": "932e22d707c9190654e6acc95d5f9c7cc048ff8e29e6b4ed29be4c05b305bfaf",
     "Atlas/Struktura/patternly/src/features/reports/reports — folder aplikacja · src › features.md": "e488a75196e74ea1bf16e3c225173ce1f3ed6e5beb3bf883faa3c958ea82e90c",
     "Atlas/Struktura/patternly/src/features/review/review — folder aplikacja · src › features.md": "fadd14da1e907a79eb4404e3fd7e6f3acd52926fe3d76d3be3f7356350c22666",
@@ -99881,7 +99893,7 @@
     "Atlas/Struktura/patternly/src/locales/it/it — folder aplikacja · src › locales.md": "148c02b8180f567ee08faf228fb4b86c2c349b52fa130fe3fb1056dbaf0e01e6",
     "Atlas/Struktura/patternly/src/locales/pl/pl — folder aplikacja · src › locales.md": "fc9691987750b325c68e18f2c461a8855aa0c5fca838fb36b3263d2f74d290f2",
     "Atlas/Struktura/patternly/src/navigation/navigation — folder aplikacja · src.md": "a7c2ba0f2224827d57ea5f654da5764ff169e95739fce126ea8052447e38895a",
-    "Atlas/Struktura/patternly/src/preferences/preferences — folder aplikacja · src.md": "629dfc570025b2c42b79b06b805ab3540b228c204ab6e9a2168b5502664ecbe5",
+    "Atlas/Struktura/patternly/src/preferences/preferences — folder aplikacja · src.md": "6b4f739f50320a421fb89c4e751b713f5ba646f8fad59253f78bb3796d1b5b86",
     "Atlas/Struktura/patternly/src/storage/storage — folder aplikacja · src.md": "05a0e71b2769ed89a96bc9e2e4bb89d0d7096b5f39846c89d09d04e860d25936",
     "Atlas/Struktura/patternly/src/storage/contracts/contracts — folder aplikacja · src › storage.md": "ff3a2cbdc1940b17b19ef7aa6733375ed0ac8b32c45ae2af5d17757cfcd41a92",
     "Atlas/Struktura/patternly/src/storage/repositories/repositories — folder aplikacja · src › storage.md": "06f57cbca40bb70e2b9472cb5eb2a5ce5cf246d960af3a0b7b8110c7b4c241dc",
@@ -99890,7 +99902,7 @@
     "Atlas/Struktura/patternly/src/tracks/tracks — folder aplikacja · src.md": "a5b427bba3350757962eee711f8553bfcfe89bbdc0976b3decd24365ee05e6d5",
     "Atlas/Struktura/patternly/src/tracks/certification/certification — folder aplikacja · src › tracks.md": "de9c3849c639ae30973d23f990838e9e72c0972be1df644aeeb825a1c5463e31",
     "Atlas/Struktura/patternly/src/tracks/certification/domain/domain — folder aplikacja · src › tracks › certification.md": "a154744e2a2755816c1032e03d0c3a28be5ed5545db7580e4dd886d4a0d3b2e5",
-    "Atlas/Struktura/patternly/src/tracks/coding-interview/coding-interview — folder aplikacja · src › tracks.md": "42f4ae7784b9f8dc79a80f607def22f46bff81f90ab2ddad327d197aba7e2bc6",
+    "Atlas/Struktura/patternly/src/tracks/coding-interview/coding-interview — folder aplikacja · src › tracks.md": "b2ca377b0cf380ff8b48cda447266999309ee2da307042eff1b16bff3f76e3b1",
     "Atlas/Struktura/patternly/src/tracks/coding-interview/domain/domain — folder aplikacja · src › tracks › coding-interview.md": "b16f2c80502f2ff52261281acf84a82c15b1fe18e3daf7b14097989a105d3efd",
     "Atlas/Struktura/patternly/src/tracks/coding-interview/generated/generated — folder aplikacja · src › tracks › coding-interview.md": "64e36577090657189edc8ba7918b5ed7e457baaae9b039cc63f72a5bc2108aef",
     "Atlas/Struktura/patternly/src/tracks/design-interview/design-interview — folder aplikacja · src › tracks.md": "0aad6ff1b6d92d5e7c443d8b3cb28887125386fa29b674fe9111e1ed27426d13",
@@ -100448,12 +100460,12 @@
     "Atlas/Struktura/patternly/src/assets/icons/_Pliki/user.svg — aplikacja · src › assets › icons.md": "da63403a6fe2e1cc2f3a8560b730b4d3f632742b88e37395cf714268728ddd28",
     "Atlas/Struktura/patternly/src/assets/icons/_Pliki/warning.svg — aplikacja · src › assets › icons.md": "3dc2fdc2b88eb88f48d29663c16093143c14be276958bc23892d576bcbb7cd65",
     "Atlas/Struktura/patternly/src/assets/icons/_Pliki/zap.svg — aplikacja · src › assets › icons.md": "e5c32a27ace983107a5723532f9f346e2e87a409f0b7258184e061738d7e613d",
-    "Atlas/Struktura/patternly/src/components/_Pliki/ambientBackdrop.test.ts — aplikacja · src › components.md": "9401bbe7a6fbdab20a97e5109d2d669c7e1f295072834b92d30e69c31df7849f",
+    "Atlas/Struktura/patternly/src/components/_Pliki/ambientBackdrop.test.ts — aplikacja · src › components.md": "dc9604509598b1edceb796ff05e290cf5efdc8e63114b3a1ba091c9db9799b6b",
     "Atlas/Struktura/patternly/src/components/_Pliki/AmbientBackdrop.tsx — aplikacja · src › components.md": "ca3ba3c03adcb456309810acc9c50d8d940119b8fa3d3472e042773cd22f8344",
     "Atlas/Struktura/patternly/src/components/_Pliki/AnswerOption.tsx — aplikacja · src › components.md": "b38be22a12db76fdde5e08152cc39185eb5ef683b758c9786c7aa26b3a4c42e0",
     "Atlas/Struktura/patternly/src/components/_Pliki/answerOptionTextHeight.test.ts — aplikacja · src › components.md": "84c411fa637c8f7aa9d7efd239c48d5c5d9b46fb1c700d50a7e85de94225dc75",
     "Atlas/Struktura/patternly/src/components/_Pliki/AppShellHeader.tsx — aplikacja · src › components.md": "5bb18c6ecff2134b179ec1af513cda2d31a75d8e4e540401dc018e43c162b638",
-    "Atlas/Struktura/patternly/src/components/_Pliki/BackLink.tsx — aplikacja · src › components.md": "da95b16af6b49608942272db20083debaf2a495be5d4a789b6e43a205b69a9be",
+    "Atlas/Struktura/patternly/src/components/_Pliki/BackLink.tsx — aplikacja · src › components.md": "553a00e63c7401cf61b42fc315610498ae216c4515cf33b8fb5e2356e54f281c",
     "Atlas/Struktura/patternly/src/components/_Pliki/Badge.tsx — aplikacja · src › components.md": "4635291d57bfe5476b056a1c2062c6238307bd7e3a55aeb0913fbf24f749a762",
     "Atlas/Struktura/patternly/src/components/_Pliki/BottomTabBar.tsx — aplikacja · src › components.md": "81a47ed1a2aa63cf3c7719f9651501569adf50eb23b777ea3ec33aea426ccb23",
     "Atlas/Struktura/patternly/src/components/_Pliki/Button.tsx — aplikacja · src › components.md": "4be8b0172ac9df93903b5fa045467009479c8dcfc8e596a04c72496278bbce42",
@@ -100749,7 +100761,7 @@
     "Atlas/Struktura/patternly/src/features/home/_Pliki/progressPlanPresentationModel.ts — aplikacja · src › features › home.md": "98f39f4a55e4d7ac1c85f74b7e64c1ac26ee4b46ad0c1322679b3bde63f888e2",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/resumeFeedbackTiming.ts — aplikacja · src › features › home.md": "6083fd7580df43046f026f0dec053e9c4899b61dfb7ea057f5bd68f8a8a36619",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/selectTrackFailureHandling.test.ts — aplikacja · src › features › home.md": "931e2e28dee3647b8610a2ef55b056f0c35e88eaeb3f5201b9e787dc39313a6b",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/selectTrackLargeText.test.ts — aplikacja · src › features › home.md": "469069a0cb674d41eff0c17247296434ca17a1786a8ee986784502dceee98848",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/selectTrackLargeText.test.ts — aplikacja · src › features › home.md": "816450d0f61d421037e42c33ee29d95d377d73edb078f2e2452c343d2a74201e",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/SelectTrackScreen.tsx — aplikacja · src › features › home.md": "34444abe74b3d62dab4a34eb9ff3fd7634237e51bb165e43d6f084c178080800",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/SettingsInformationScreen.tsx — aplikacja · src › features › home.md": "ff572bc8819cf35a9be46ea4aba3705a745f2f18f1cc6a93aa4822ead42c1735",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/shellModel.ts — aplikacja · src › features › home.md": "6dea919096653e94557a4aeef3036817e904a2707fdc32a8b7b5fe5061d5479a",
@@ -100805,7 +100817,7 @@
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceFlowPresentation.ts — aplikacja · src › features › practice.md": "aa47a5bd0034ba547d3c09141572291cabb3c9d3248260184090b371abe5baf0",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceHubNavigation.test.ts — aplikacja · src › features › practice.md": "23f010fae2c48721973c557eeb04c9af4c9b587e73e60e2d7ca57301c4701a37",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/PracticeHubScreen.tsx — aplikacja · src › features › practice.md": "6d3cac10b2f972dd833821b8f7ccae16453ced1298701956145c067ddbbb29d9",
-    "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceNavigation.test.ts — aplikacja · src › features › practice.md": "0a6e40bb1cf555b9139062b78930311267d060f6ebb2408bb31a491577c70645",
+    "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceNavigation.test.ts — aplikacja · src › features › practice.md": "2f153adc42bea88c5b8507f852f3fba550956840fe61b9c3dd70503e62082674",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceNavigation.ts — aplikacja · src › features › practice.md": "5dba15b55f40ffb16de781e829448c198247adf416acefae3599a91122828771",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/PracticeQuestionCard.tsx — aplikacja · src › features › practice.md": "b84ca046b300ecf335271a94432e8ceb9568fb3de3a4f06cf8bc7a06688eac33",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceQuestionPresentation.test.ts — aplikacja · src › features › practice.md": "784d8233a31b23473b3b6a6f3415833af23fd0e18f0ce274a6287e766d0e71e9",
@@ -101037,17 +101049,17 @@
     "Atlas/Struktura/patternly/src/navigation/_Pliki/types.ts — aplikacja · src › navigation.md": "c475a2fff54da84010900fd6fb8304c8293ac4afc672f9087d6121f4abde67c6",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/appPreferences.test.ts — aplikacja · src › preferences.md": "7b18420e3667dfa3dcfc932e1ae4ca9b29b41985c98e1718b0ea012ac7d98c99",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/appPreferencesContext.test.ts — aplikacja · src › preferences.md": "2a4536c3de460e1e3e4bc3215b98f5734a65c87522f307dae8d182132f61bd85",
-    "Atlas/Struktura/patternly/src/preferences/_Pliki/appPreferencesContext.tsx — aplikacja · src › preferences.md": "4007224c34e3b74e5410cc184ddf321eb0b7e678c4e198bf2de35ceaa39e6773",
+    "Atlas/Struktura/patternly/src/preferences/_Pliki/appPreferencesContext.tsx — aplikacja · src › preferences.md": "0f1adfdd6a23c5c4196b62d40daa1bfa9f67eeea48fdf7dca493a68164af4ad0",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/AppPreferencesProvider.tsx — aplikacja · src › preferences.md": "1273daea00a9afefd0e8380a5569ebd6bb3662eded8ef8ac36506993849f2625",
-    "Atlas/Struktura/patternly/src/preferences/_Pliki/index.ts — aplikacja · src › preferences.md": "683d0eb65f77dc2846fc72dacc6f28df77493ff0634e14eb2d676f8862b5a97c",
+    "Atlas/Struktura/patternly/src/preferences/_Pliki/index.ts — aplikacja · src › preferences.md": "2a66fde64c76198d02ea9df77c679a059310992e9ae035b77451569ef6bd1cf4",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/localeResolver.test.ts — aplikacja · src › preferences.md": "30f4fdec675acf464d0d7424e769157d2fbe87c2c50a44e7c678e0c6b485cfba",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/localeResolver.ts — aplikacja · src › preferences.md": "9c172633a364a1864c240771db7e4e92fa28956a765e55482926f3e8a4ecbcd0",
-    "Atlas/Struktura/patternly/src/preferences/_Pliki/notificationPresentation.test.ts — aplikacja · src › preferences.md": "93194980aaf444b920927d391674960a7164b760e7091adb721059ea068b19bd",
+    "Atlas/Struktura/patternly/src/preferences/_Pliki/notificationPresentation.test.ts — aplikacja · src › preferences.md": "5dddb788f415f8c5e5f1016743664bda98b9e91a2e823a9c7e080656236845ca",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/notificationSettingsPresentation.ts — aplikacja · src › preferences.md": "e6c224d12d6c09e15a93610c88af01716a1fc09b864c124ed1458bc46a6a16c3",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/notificationSettingsState.test.ts — aplikacja · src › preferences.md": "1685ac78f47751665480876a645cb7243b9139bc3821b0b5c44709776223fca6",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/notificationSettingsState.ts — aplikacja · src › preferences.md": "114cac5101fc40c89c00eae10ae3c27bb5fcbe30b3f59ab53dfaced44bd843ae",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/reconcileDeviceReminder.ts — aplikacja · src › preferences.md": "9dc36a4905cddbf1608271252f61513b413b57aa423def65580bd736416dc52e",
-    "Atlas/Struktura/patternly/src/preferences/_Pliki/settingsPresentation.test.ts — aplikacja · src › preferences.md": "fe39c7a07de5eae1a72bf69357346d4dddbc32befbedafd9c35a89398fca2180",
+    "Atlas/Struktura/patternly/src/preferences/_Pliki/settingsPresentation.test.ts — aplikacja · src › preferences.md": "4bac39c4af139cdd0f2dcb1b6b28975c9f3ef394985e5fac3383a10abe717fc4",
     "Atlas/Struktura/patternly/src/preferences/_Pliki/useNotificationSettings.ts — aplikacja · src › preferences.md": "7edf663836297b0342f8e508e5ef498629093a6222067d790acf1a8331352df6",
     "Atlas/Struktura/patternly/src/_Pliki/RegularApplicationRoot.tsx — aplikacja · src.md": "12f21f405a3b4a3f0463d054f65948243b959f2270f791a0edaac6a7d6442fcf",
     "Atlas/Struktura/patternly/src/storage/contracts/_Pliki/legacyTerminalProgressRead.test.ts — aplikacja · src › storage › contracts.md": "f26185a8287168c383e4ecfc87df1fced3d362880155f434fc558db43eadfa92",
@@ -101158,7 +101170,7 @@
     "Atlas/Struktura/patternly/src/tracks/coding-interview/_Pliki/algorithmsBlueprints.ts — aplikacja · src › tracks › coding-interview.md": "c1311fd84e61d7aa4acab11d51a62b61c9dcb115411fb5aad89e089926bb0ba7",
     "Atlas/Struktura/patternly/src/tracks/coding-interview/_Pliki/algorithmsDeclaredScopeOptions.test.ts — aplikacja · src › tracks › coding-interview.md": "719c5d0d14b856940c42571938679806edba6abc752c3792bb1d905c4c782341",
     "Atlas/Struktura/patternly/src/tracks/coding-interview/_Pliki/algorithmsPracticeSummaryNavigation.test.ts — aplikacja · src › tracks › coding-interview.md": "18fc8212993ffee1d275793e323ff43dc8a9db1d258e1cd01d629f31985133d2",
-    "Atlas/Struktura/patternly/src/tracks/coding-interview/_Pliki/algorithmsSessionAccessibility.test.ts — aplikacja · src › tracks › coding-interview.md": "4b1c63851c1546ec259920993eabf95d7eafb479de29cb256313d22f613e5491",
+    "Atlas/Struktura/patternly/src/tracks/coding-interview/_Pliki/algorithmsSessionAccessibility.test.ts — aplikacja · src › tracks › coding-interview.md": "f18761841a1b4fe1053cd32833c0a9d6c9a7b51cfa9d5b4caac1242f78ec134b",
     "Atlas/Struktura/patternly/src/tracks/coding-interview/_Pliki/algorithmsSessionDryRunRegressionMaestro.test.ts — aplikacja · src › tracks › coding-interview.md": "5d7dab55da6bc1d6b145ad7f8cd6b5876a01c688a4a7065297ab248e09bd8a88",
     "Atlas/Struktura/patternly/src/tracks/coding-interview/_Pliki/algorithmsTaxonomySynchronization.test.ts — aplikacja · src › tracks › coding-interview.md": "d91089a646fc54e19b4937c3457c1dff714ab33a5df000fae5709963f25fdd25",
     "Atlas/Struktura/patternly/src/tracks/coding-interview/_Pliki/algorithmTaxonomy.ts — aplikacja · src › tracks › coding-interview.md": "57201af55135d992960ad2315eb33e9ebcf73ab6806edb8655263c9eec13944a",
