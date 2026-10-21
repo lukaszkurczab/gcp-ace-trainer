@@ -312,12 +312,9 @@ test("all three Design simulations require Premium before create and resume, the
   }
 });
 
-test("every Design mode denies before package resolution, preparation, and session mutation", async () => {
+test("Design simulation denies before package resolution, preparation, and session mutation", async () => {
   const trackId = "object-oriented-design-interview" as TrackId;
   for (const modeId of [
-    "design-interview-learn-framework",
-    "design-interview-tradeoff-practice",
-    "design-interview-weak-area-review",
     "design-interview-simulation",
   ]) {
     const setup = await fixture("denied", trackId);

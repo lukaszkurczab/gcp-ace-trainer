@@ -1220,8 +1220,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/practice/PracticeHubScreen.tsx": {
-      "description": "Wybór praktyki i trybów aktywnej ścieżki. Główny Start session przechodzi bezpośrednio do sesji bieżącego trybu z kanonicznymi ustawieniami pakietu; Manage settings otwiera setup, a Coding zachowuje Custom Practice. Premium admission Design i retry zachowują dokładny mode/source/target; sekundarne skróty i symulacje zachowują odrębne gałęzie. Screen.backAction utrzymuje powrót poza scroll bez zmiany callbacku i celu.",
-      "reviewedHash": "fc54e325b90fb7cb6629da9d0ee04ad569193066628f32a0258b363f2e80ea8b",
+      "description": "Wybór praktyki i trybów aktywnej ścieżki. Główny Start przechodzi do sesji z kanonicznymi ustawieniami; Manage settings otwiera setup, Coding zachowuje Custom Practice. Trzy praktyki Design nie wywołują Premium admission i korzystają z istniejącej kontroli każdego przygotowanego elementu względem Free node’a w lifecycle. Wspólna polityka requiresPremiumProductMode steruje bramką i oznaczeniami trzech symulacji; Design Simulation zachowuje retry i ochronę podwójnego naciśnięcia. Screen.backAction utrzymuje powrót poza scroll bez zmiany callbacku i celu.",
+      "reviewedHash": "51e4b06e399fb551de654c2ac7e1ae8276c44237d61c1a5f94500278ca7d7d73",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/practice/PracticeSessionScreen.tsx": {
@@ -1950,7 +1950,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "759a8af860ccb0337462cab432722bc352131b128eaa2e1a0b7810514ed821c9"
+      "reviewedDigest": "5f7992b5c9756d6d80e583bcdc7bb0d514d6bbae787aaa314d0194cfe8a6924f"
     },
     {
       "name": "Cel, plan i postęp",

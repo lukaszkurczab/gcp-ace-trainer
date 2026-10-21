@@ -30,7 +30,7 @@ test("Design simulation uses its dedicated result and cannot enter objective set
   assert.match(result, /session\.modeId === "design-interview-simulation"\)[\s\S]*?navigation\.replace\(ROUTES\.DESIGN_INTERVIEW_SIMULATION_RESULT/);
 });
 
-test("all selected Design modes require Premium admission before their canonical route", () => {
+test("Design practice routes use node admission and only simulation uses the Premium product gate", () => {
   const hub = source("src/features/practice/PracticeHubScreen.tsx");
   const modes = source("src/tracks/design-interview/designModes.ts");
   for (const mode of [
@@ -39,8 +39,8 @@ test("all selected Design modes require Premium admission before their canonical
     "design-interview-weak-area-review",
     "design-interview-simulation",
   ]) assert.match(modes, new RegExp(mode));
-  assert.match(hub, /if \(isDesignInterviewModeId\(resolvedMode\)\)[\s\S]*?authorizePremiumSessionStart\(\)[\s\S]*?case "purchasePremium":[\s\S]*?ROUTES\.PREMIUM_PURCHASE/);
-  assert.match(hub, /if \(resolvedMode !== "design-interview-simulation"\)[\s\S]*?ROUTES\.PRACTICE_SETUP[\s\S]*?ROUTES\.DESIGN_INTERVIEW_SIMULATION/);
+  assert.match(hub, /if \(isDesignInterviewModeId\(resolvedMode\)\)[\s\S]*?if \(!requiresPremiumProductMode\(resolvedMode\)\)[\s\S]*?ROUTES\.PRACTICE_SETUP[\s\S]*?return;[\s\S]*?authorizePremiumSessionStart\(\)[\s\S]*?case "purchasePremium":[\s\S]*?ROUTES\.PREMIUM_PURCHASE/);
+  assert.match(hub, /requiresPremiumProductMode\(mode\.mode\) \? \([\s\S]*?<Badge label=\{t\("Premium"\)\}/);
   assert.match(hub, /setDesignAdmissionRequest\(\{ mode: resolvedMode, source, target \}\)[\s\S]*?startSession\(designAdmissionRequest\.mode, designAdmissionRequest\.source, designAdmissionRequest\.target\)/);
   assert.match(hub, /startSession\(primaryMode\.mode as CanonicalPracticeModeId, "practiceHub"\)/);
 });

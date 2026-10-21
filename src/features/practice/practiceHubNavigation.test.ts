@@ -12,6 +12,7 @@ import { getProductSimulationModeConfig } from "../../content/canonical/productM
 import { getTrackDisplay, getTracks, type TrackId } from "../../domain";
 import { CODING_INTERVIEW_TRACK_ID, AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID, BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID } from "../../domain/tracks/trackRegistry";
 import { ALGORITHM_MODE_IDS } from "../../tracks/coding-interview";
+import { requiresPremiumProductMode } from "../../application/trainingLifecycle/premiumProductModePolicy";
 import { isDesignInterviewModeId } from "../../tracks/design-interview";
 import { resolveCertificationExamAccess, type PremiumSessionAdmission } from "./certificationExamAccess";
 import { buildPracticeModes, getCanonicalFreePracticeNodeId } from "./practiceFlowModel";
@@ -67,7 +68,7 @@ function harness(trackId: TrackId, admit: () => Promise<PremiumSessionAdmission>
     setExamAdmissionPending: () => {}, setExamAccessUnavailable: () => {},
     setCodingAdmissionPending: () => {}, setCodingAccessUnavailable: () => {},
     ROUTES, ALGORITHM_MODE_IDS, buildPracticeSessionConfig, getGeneralPracticeReviewSource,
-    isDesignInterviewModeId, resolveCertificationExamAccess, contentPackageRuntimeOwner,
+    isDesignInterviewModeId, requiresPremiumProductMode, resolveCertificationExamAccess, contentPackageRuntimeOwner,
     getProductSimulationModeConfig, getAlgorithmsInterviewSimulationEntry,
   };
   const runtime = vm.createContext(context);
@@ -113,40 +114,53 @@ test("Certification secondary Focus shortcut still opens setup and Quick Review 
   assert.equal(subject.routes[1]!.params!.topicId, "");
 });
 
-test("Design primary waits for admission and duplicate presses cannot repeat the pending operation", async () => {
+test("all Design Free practice entries route without Premium admission, including deny or failure callbacks", async () => {
+  for (const track of getTracks().filter((candidate) => candidate.familyId === "design_interview")) {
+    for (const outcome of ["denied", "reject"] as const) {
+      let requests = 0;
+      const admit = async () => { requests++; if (outcome === "reject") throw Error("must not request Premium for Free practice"); return "denied" as const; };
+      const subject = harness(track.id, admit);
+      subject.start(); subject.settings();
+      for (const mode of ["design-interview-learn-framework", "design-interview-tradeoff-practice", "design-interview-weak-area-review"]) subject.shortcut(mode);
+      await settle();
+      assert.equal(requests, 0, `${track.id}:${outcome}`);
+      assert.equal(subject.routes[0]!.route, ROUTES.PRACTICE_SESSION);
+      assert.equal(subject.routes[1]!.route, ROUTES.PRACTICE_SETUP);
+      assert.equal(subject.routes.length, 5);
+      assert.ok(subject.routes.every(({ params }) => params?.trackId === track.id && params.topicId === subject.topic.id));
+      assert.deepEqual(subject.busy, []);
+      assert.equal(subject.unavailable(), false);
+    }
+  }
+});
+
+test("Design simulation waits for admission and duplicate presses cannot repeat the pending operation", async () => {
   let resolve!: (value: PremiumSessionAdmission) => void;
   let requests = 0;
   const subject = harness(BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID, () => { requests += 1; return new Promise((ready) => { resolve = ready; }); });
-  subject.start(); subject.start();
+  subject.shortcut("design-interview-simulation"); subject.shortcut("design-interview-simulation");
   assert.equal(requests, 1);
   assert.equal(subject.routes.length, 0);
   assert.deepEqual(subject.busy, [true]);
   resolve("allowed"); await settle();
-  assert.equal(subject.routes[0]!.route, ROUTES.PRACTICE_SESSION);
+  assert.equal(subject.routes[0]!.route, ROUTES.DESIGN_INTERVIEW_SIMULATION);
   assert.deepEqual(subject.busy, [true, false]);
 });
 
-test("Design admission denial routes to Premium, and unavailable/rejected admission cannot start a session", async () => {
-  for (const action of ["start", "settings"] as const) for (const admission of ["denied", "unavailable", "reject"] as const) {
+test("Design simulation denial, failure, and retry preserve the Premium boundary", async () => {
+  for (const result of ["denied", "unavailable", "reject"] as const) {
+    let admission: PremiumSessionAdmission | "reject" = result;
     const subject = harness(BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID, async () => { if (admission === "reject") throw Error("fixture"); return admission; });
-    subject[action](); await settle();
-    assert.deepEqual(subject.routes, admission === "denied" ? [{ route: ROUTES.PREMIUM_PURCHASE, params: undefined }] : []);
-    assert.equal(subject.unavailable(), admission !== "denied");
+    subject.shortcut("design-interview-simulation"); await settle();
+    assert.deepEqual(subject.routes, result === "denied" ? [{ route: ROUTES.PREMIUM_PURCHASE, params: undefined }] : []);
+    assert.equal(subject.unavailable(), result !== "denied");
     assert.deepEqual(subject.busy, [true, false]);
-  }
-});
-
-test("Design admission retry preserves whether Start or Manage settings was requested", async () => {
-  for (const action of ["start", "settings"] as const) {
-    let admission: PremiumSessionAdmission = "unavailable";
-    const subject = harness(BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID, async () => admission);
-    subject[action](); await settle();
-    assert.equal(subject.routes.length, 0);
-    admission = "allowed";
-    subject.retry(); await settle();
-    assert.equal(subject.routes[0]!.route, action === "start" ? ROUTES.PRACTICE_SESSION : ROUTES.PRACTICE_SETUP);
-    assert.equal(subject.routes[0]!.params!.source, "practiceHub");
-    assert.equal(subject.routes[0]!.params!.mode, subject.primaryMode.mode);
+    if (result !== "denied") {
+      admission = "allowed";
+      subject.retry(); await settle();
+      assert.equal(subject.routes[0]!.route, ROUTES.DESIGN_INTERVIEW_SIMULATION);
+      assert.equal((subject.routes as RouteCall[])[0]!.params!.trackId, BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID);
+    }
   }
 });
 

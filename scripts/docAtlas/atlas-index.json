@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "a3116f6388fc6552aa4a12ed4474611739ac7bb1",
+      "head": "b142f7f09823881c38bc538faa3018c75f0f7d79",
       "files": [
         {
           "path": ".easignore",
@@ -2825,8 +2825,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "8264d6764d7a6038b02547a6a9fce1c2224d1baf3957f2963b16b05416c74ec0",
-          "bytes": 141964,
+          "sha256": "35f9810b72dd9fa9c52c1941e8afc4383a41104b878cb7a6ef04ced1cd76c187",
+          "bytes": 142106,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -30979,8 +30979,8 @@
         },
         {
           "path": "src/application/trainingLifecycle/premiumProductModeLifecycle.test.ts",
-          "sha256": "af5a75dbd8a57cbb83a1cf39c5725c98277543cb6cbd8c81b837a7034e3df956",
-          "bytes": 22799,
+          "sha256": "4204f599571031c42f23a4bf2235422c9e8a9d51f829f3495a2d98841a4f1ebb",
+          "bytes": 22676,
           "symbols": [],
           "imports": [
             {
@@ -31138,14 +31138,14 @@
             "expired Coding Mock draft-save boundary aborts before package resolution or draft persistence",
             "active Coding Mock reauthorizes before exact resolution and resume validation",
             "all three Design simulations require Premium before create and resume, then prepare exact profile identity",
-            "every Design mode denies before package resolution, preparation, and session mutation"
+            "Design simulation denies before package resolution, preparation, and session mutation"
           ],
-          "lines": 331
+          "lines": 328
         },
         {
           "path": "src/application/trainingLifecycle/premiumProductModePolicy.test.ts",
-          "sha256": "73e00bad7674285a18721fd072b7db364f72058a12e8367634ab73a49a51ce6a",
-          "bytes": 913,
+          "sha256": "d90ef8a43e42414c28651612f08f6d6c019aaaea9eab8aee332d26c0e2282263",
+          "bytes": 916,
           "symbols": [],
           "imports": [
             {
@@ -31175,27 +31175,20 @@
         },
         {
           "path": "src/application/trainingLifecycle/premiumProductModePolicy.ts",
-          "sha256": "03835160163c0a208c417d66749e667d02b2d50c283b2b5ec834a53fdf336ff3",
-          "bytes": 368,
+          "sha256": "5ca5f949710ca6df9f140a354d8816f80004065062195d0498d0b511d1ea611c",
+          "bytes": 303,
           "symbols": [
             "requiresPremiumProductMode"
           ],
-          "imports": [
-            {
-              "specifier": "../../tracks/design-interview",
-              "kind": "static",
-              "target": "src/tracks/design-interview/index.ts",
-              "line": 1
-            }
-          ],
+          "imports": [],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 7
+          "lines": 5
         },
         {
           "path": "src/application/trainingLifecycle/premiumSessionAdmission.test.ts",
-          "sha256": "6902a6c3f0b466a35dd899b08499dc4433851d6334c0b07cceca09afb84f617e",
-          "bytes": 7741,
+          "sha256": "ff9506df80061c9a94357d2869967b62dcf7c6703871d683a2b640e76745bdec",
+          "bytes": 13836,
           "symbols": [],
           "imports": [
             {
@@ -31265,16 +31258,28 @@
               "line": 11
             },
             {
-              "specifier": "../tracks/trackAdmissionContext",
+              "specifier": "../../infrastructure/storage/mmkvClient",
               "kind": "static",
-              "target": "src/application/tracks/trackAdmissionContext.ts",
+              "target": "src/infrastructure/storage/mmkvClient.ts",
               "line": 12
+            },
+            {
+              "specifier": "../../storage/repositories",
+              "kind": "static",
+              "target": "src/storage/repositories/index.ts",
+              "line": 13
             },
             {
               "specifier": "../tracks/trackAdmissionContext",
               "kind": "static",
               "target": "src/application/tracks/trackAdmissionContext.ts",
-              "line": 13
+              "line": 14
+            },
+            {
+              "specifier": "../tracks/trackAdmissionContext",
+              "kind": "static",
+              "target": "src/application/tracks/trackAdmissionContext.ts",
+              "line": 15
             }
           ],
           "jsonKeys": [],
@@ -31282,9 +31287,11 @@
             "Free node starts without consulting Premium admission",
             "Premium plans require admission before durable session start",
             "a Free-first mixed plan checks every item before durable start",
-            "P20: actual offline Premium policy denial leaves session, attempts, and journal untouched"
+            "P20: actual offline Premium policy denial leaves session, attempts, and journal untouched",
+            "all Design practice modes admit only entirely Free prepared plans; paid and mixed plans stay gated",
+            "production Design Free practice survives answer, completion, and storage rebind without Premium refresh"
           ],
-          "lines": 144
+          "lines": 230
         },
         {
           "path": "src/application/trainingLifecycle/trainingLifecycleUseCases.test.ts",
@@ -50641,8 +50648,8 @@
         },
         {
           "path": "src/features/practice/practiceHubNavigation.test.ts",
-          "sha256": "455aeae243c992b61777c7d8a318170522dc3b0cd5cd6df4d59d4d4218fea061",
-          "bytes": 10545,
+          "sha256": "abae78fc50607d563bf56a89880f7961dbda65df6024c0699ccc6531b7d24f17",
+          "bytes": 11558,
           "symbols": [],
           "imports": [
             {
@@ -50724,28 +50731,34 @@
               "line": 14
             },
             {
+              "specifier": "../../application/trainingLifecycle/premiumProductModePolicy",
+              "kind": "static",
+              "target": "src/application/trainingLifecycle/premiumProductModePolicy.ts",
+              "line": 15
+            },
+            {
               "specifier": "../../tracks/design-interview",
               "kind": "static",
               "target": "src/tracks/design-interview/index.ts",
-              "line": 15
+              "line": 16
             },
             {
               "specifier": "./certificationExamAccess",
               "kind": "static",
               "target": "src/features/practice/certificationExamAccess.ts",
-              "line": 16
+              "line": 17
             },
             {
               "specifier": "./practiceFlowModel",
               "kind": "static",
               "target": "src/features/practice/practiceFlowModel.ts",
-              "line": 17
+              "line": 18
             },
             {
               "specifier": "./sessionConfig",
               "kind": "static",
               "target": "src/features/practice/sessionConfig.ts",
-              "line": 18
+              "line": 19
             }
           ],
           "jsonKeys": [],
@@ -50753,17 +50766,17 @@
             "every primary Start action routes directly with that canonical mode's defaults and exact topic",
             "Manage settings opens the matching primary setup, while Coding uses Custom Practice",
             "Certification secondary Focus shortcut still opens setup and Quick Review starts its review source",
-            "Design primary waits for admission and duplicate presses cannot repeat the pending operation",
-            "Design admission denial routes to Premium, and unavailable/rejected admission cannot start a session",
-            "Design admission retry preserves whether Start or Manage settings was requested",
+            "all Design Free practice entries route without Premium admission, including deny or failure callbacks",
+            "Design simulation waits for admission and duplicate presses cannot repeat the pending operation",
+            "Design simulation denial, failure, and retry preserve the Premium boundary",
             "existing admitted simulation shortcuts retain their dedicated destinations"
           ],
-          "lines": 165
+          "lines": 179
         },
         {
           "path": "src/features/practice/PracticeHubScreen.tsx",
-          "sha256": "fc54e325b90fb7cb6629da9d0ee04ad569193066628f32a0258b363f2e80ea8b",
-          "bytes": 33235,
+          "sha256": "51e4b06e399fb551de654c2ac7e1ae8276c44237d61c1a5f94500278ca7d7d73",
+          "bytes": 33212,
           "symbols": [
             "PracticeHubLoadingSkeleton",
             "PracticeHubScreen"
@@ -50920,45 +50933,51 @@
               "line": 40
             },
             {
+              "specifier": "../../application/trainingLifecycle/premiumProductModePolicy",
+              "kind": "static",
+              "target": "src/application/trainingLifecycle/premiumProductModePolicy.ts",
+              "line": 41
+            },
+            {
               "specifier": "../../tracks/design-interview",
               "kind": "static",
               "target": "src/tracks/design-interview/index.ts",
-              "line": 41
+              "line": 42
             },
             {
               "specifier": "./practiceFlowModel",
               "kind": "static",
               "target": "src/features/practice/practiceFlowModel.ts",
-              "line": 43
+              "line": 44
             },
             {
               "specifier": "./usePracticeReadModel",
               "kind": "static",
               "target": "src/features/practice/usePracticeReadModel.ts",
-              "line": 48
+              "line": 49
             },
             {
               "specifier": "./practiceFlowPresentation",
               "kind": "static",
               "target": "src/features/practice/practiceFlowPresentation.ts",
-              "line": 49
+              "line": 50
             },
             {
               "specifier": "./sessionConfig",
               "kind": "static",
               "target": "src/features/practice/sessionConfig.ts",
-              "line": 53
+              "line": 54
             },
             {
               "specifier": "../../application/practice/practiceModeContract",
               "kind": "type",
               "target": "src/application/practice/practiceModeContract.ts",
-              "line": 57
+              "line": 58
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 840
+          "lines": 841
         },
         {
           "path": "src/features/practice/practiceNavigation.test.ts",
@@ -51327,8 +51346,8 @@
         },
         {
           "path": "src/features/practice/practiceRouteGuards.test.ts",
-          "sha256": "8d0a6ae2128ce136d422b3eeba1d9de0ce76fad561619c2ac2a53ea539250dde",
-          "bytes": 12004,
+          "sha256": "da23a79acd010461fa2ad6fb75804848e0d572a67d4ee25d48221861d3b80593",
+          "bytes": 12077,
           "symbols": [],
           "imports": [
             {
@@ -51354,7 +51373,7 @@
           "testNames": [
             "practice screens turn unsupported package, topic, and mode reads into exits",
             "Design simulation uses its dedicated result and cannot enter objective setup",
-            "all selected Design modes require Premium admission before their canonical route",
+            "Design practice routes use node admission and only simulation uses the Premium product gate",
             "practice route changes cannot submit stale setup controls and preserve track identity",
             "changing track returns through the Home root and drops practice route overrides",
             "Hub uses its displayed primary mode and package length defaults",
@@ -68922,7 +68941,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "4d13e2bef56c834bab0afde61765e8ae99090a93",
+      "head": "65455c9a7304d16091df7ebdb34aab4e39400225",
       "files": [
         {
           "path": ".dockerignore",
@@ -99635,7 +99654,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "8264d6764d7a6038b02547a6a9fce1c2224d1baf3957f2963b16b05416c74ec0",
+  "catalogHash": "35f9810b72dd9fa9c52c1941e8afc4383a41104b878cb7a6ef04ced1cd76c187",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "a6f3005ba6de89e0c57e870d1bddeee966c723549609690b9287bf501689377f",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -99694,7 +99713,7 @@
     "Atlas/Struktura/patternly/src/application/runtime/runtime — folder aplikacja · src › application.md": "ff4eb4664d4cb961bfc9b01c8a1d24b576c3eb0ea771ecd1cb3480b7f3d895b4",
     "Atlas/Struktura/patternly/src/application/runtimeAuditability/runtimeAuditability — folder aplikacja · src › application.md": "6555721e9d78bf61a882d699744dda0ab717926a89e68a07ee9f2aeba54b92d9",
     "Atlas/Struktura/patternly/src/application/tracks/tracks — folder aplikacja · src › application.md": "a74ae2a0154f49883f3cf5e69ceaa50e812ca20c57765efeb3c35ec7a7bb499b",
-    "Atlas/Struktura/patternly/src/application/trainingLifecycle/trainingLifecycle — folder aplikacja · src › application.md": "847e4e33426255a58a38ce995b2d410ac4d6aff863c36ed19f15de886896055e",
+    "Atlas/Struktura/patternly/src/application/trainingLifecycle/trainingLifecycle — folder aplikacja · src › application.md": "b680df0e32e3d2dc70363b1507521f83e82f381dc88b5a32cd6227d5df53194d",
     "Atlas/Struktura/patternly/src/application/trainingSessions/trainingSessions — folder aplikacja · src › application.md": "6be9e8653ce8f38a4554afcdf87cdc50d2185606dc2c120e70d1d12ecc5ebfb7",
     "Atlas/Struktura/patternly/src/assets/assets — folder aplikacja · src.md": "d417ce4d8560f93b50a4e7f10c716e03fa81eb2d04c6c103f7b16ed9a68a7170",
     "Atlas/Struktura/patternly/src/assets/ambient/ambient — folder aplikacja · src › assets.md": "a7347397e8693d139c59dca4fa5828e59a2cd60d97734e649dbaaa9498b73109",
@@ -99739,7 +99758,7 @@
     "Atlas/Struktura/patternly/src/features/home/home — folder aplikacja · src › features.md": "206b53438c402167aa53ff3e6a3ad974cc8ba1ee4f579b1971e76ac80813ec03",
     "Atlas/Struktura/patternly/src/features/home/tabs/tabs — folder aplikacja · src › features › home.md": "7a5d103f58379a758f0f4fd63107d7aa82aee25ec261b24384c4abd7caac3dba",
     "Atlas/Struktura/patternly/src/features/navigation/navigation — folder aplikacja · src › features.md": "6f7407633332be642e1e2354e3ac9e34b5090986e876e94c8483b9375c175b70",
-    "Atlas/Struktura/patternly/src/features/practice/practice — folder aplikacja · src › features.md": "d80197d660dd02f4959b954489b89347ffd39e4c6ab0576b9f5b2a5f994f2c6f",
+    "Atlas/Struktura/patternly/src/features/practice/practice — folder aplikacja · src › features.md": "25b875747c3a9dd3e39d5ab44f7b6d2c7c9a4da977607afb47ba14477d835d58",
     "Atlas/Struktura/patternly/src/features/premium/premium — folder aplikacja · src › features.md": "932e22d707c9190654e6acc95d5f9c7cc048ff8e29e6b4ed29be4c05b305bfaf",
     "Atlas/Struktura/patternly/src/features/reports/reports — folder aplikacja · src › features.md": "e488a75196e74ea1bf16e3c225173ce1f3ed6e5beb3bf883faa3c958ea82e90c",
     "Atlas/Struktura/patternly/src/features/review/review — folder aplikacja · src › features.md": "fadd14da1e907a79eb4404e3fd7e6f3acd52926fe3d76d3be3f7356350c22666",
@@ -100276,10 +100295,10 @@
     "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/index.ts — aplikacja · src › application › trainingLifecycle.md": "38574baeb4e2b8a9a945cb7063b12e93def09585d71d78ae6d82d1a72a32d40e",
     "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/operationProjectionStore.ts — aplikacja · src › application › trainingLifecycle.md": "3944e58c17a47d5bca248bd464490d70d86b0362b882594959665f618ac74afd",
     "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/premiumEntryPointsContract.test.ts — aplikacja · src › application › trainingLifecycle.md": "796e365baa7afba67c032ed2021f5b35cbea1257830ea40410ada32e1f7a7473",
-    "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/premiumProductModeLifecycle.test.ts — aplikacja · src › application › trainingLifecycle.md": "d95bb876b2670eb5af2ac15b233c463867efc651c7b4017a2419fd10f0fba4a0",
-    "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/premiumProductModePolicy.test.ts — aplikacja · src › application › trainingLifecycle.md": "5f68328c2491f24dc1c93ca5b1c91b43515f689cbac91981496a7e868156a5c0",
-    "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/premiumProductModePolicy.ts — aplikacja · src › application › trainingLifecycle.md": "52c0e658b260030d3cb69d747684ac15a0cd9ebf726de63d2607d8647305ad9a",
-    "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/premiumSessionAdmission.test.ts — aplikacja · src › application › trainingLifecycle.md": "84927bc719b6462f2db78b5ea9a9be50945bc6e5167b4d58fb3defc9dbc29f00",
+    "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/premiumProductModeLifecycle.test.ts — aplikacja · src › application › trainingLifecycle.md": "1672ff8373acb5dcd1e93631052b85d6957609ceebf131b8f373af5f54eab4d2",
+    "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/premiumProductModePolicy.test.ts — aplikacja · src › application › trainingLifecycle.md": "2f5ec59530676cd062e5c4baec378642274d6a2a1e83a86549142bafac9d5ad6",
+    "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/premiumProductModePolicy.ts — aplikacja · src › application › trainingLifecycle.md": "3094e0beaa9ad322082f5b6791270d4d38c1afaa051017c74e2cb71ce2bef26a",
+    "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/premiumSessionAdmission.test.ts — aplikacja · src › application › trainingLifecycle.md": "df9ed0518d6d0fb745085039ebb82f025cc34239bfc1a00e2dec36fa39338d6c",
     "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/trainingLifecycleUseCases.test.ts — aplikacja · src › application › trainingLifecycle.md": "995a4fae91e9cd4140114a25270bdd27debfe40194dd9aab0a9a013eaf01e86b",
     "Atlas/Struktura/patternly/src/application/trainingLifecycle/_Pliki/TrainingLifecycleUseCases.ts — aplikacja · src › application › trainingLifecycle.md": "9ff743ff64a857a6b9c6152d7faf3a457c024dc26c09c7844962dc9ac29da74a",
     "Atlas/Struktura/patternly/src/application/trainingSessions/_Pliki/index.ts — aplikacja · src › application › trainingSessions.md": "f1487f7769510465698910cfa569eb9c20b6ee623efa089cadc664113a043e58",
@@ -100690,8 +100709,8 @@
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceFlowModel.test.ts — aplikacja · src › features › practice.md": "6db89347344c7061a475205b24fb020f7bfc03aa5eea312c5805f574d7612136",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceFlowModel.ts — aplikacja · src › features › practice.md": "3b7374ef8bb59147e8ce206700a70193314b084f2bef6b996c206866e9b6bc0c",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceFlowPresentation.ts — aplikacja · src › features › practice.md": "aa47a5bd0034ba547d3c09141572291cabb3c9d3248260184090b371abe5baf0",
-    "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceHubNavigation.test.ts — aplikacja · src › features › practice.md": "99a9dfa8daa9f134adbd5774aeb2ced88b4546d75c158a3e262726117892a0e1",
-    "Atlas/Struktura/patternly/src/features/practice/_Pliki/PracticeHubScreen.tsx — aplikacja · src › features › practice.md": "f645eca85de456b1af1047d78322bf7fc296741f78d1e811c898445a6a5fcc3a",
+    "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceHubNavigation.test.ts — aplikacja · src › features › practice.md": "23f010fae2c48721973c557eeb04c9af4c9b587e73e60e2d7ca57301c4701a37",
+    "Atlas/Struktura/patternly/src/features/practice/_Pliki/PracticeHubScreen.tsx — aplikacja · src › features › practice.md": "6d3cac10b2f972dd833821b8f7ccae16453ced1298701956145c067ddbbb29d9",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceNavigation.test.ts — aplikacja · src › features › practice.md": "0a6e40bb1cf555b9139062b78930311267d060f6ebb2408bb31a491577c70645",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceNavigation.ts — aplikacja · src › features › practice.md": "5dba15b55f40ffb16de781e829448c198247adf416acefae3599a91122828771",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/PracticeQuestionCard.tsx — aplikacja · src › features › practice.md": "b84ca046b300ecf335271a94432e8ceb9568fb3de3a4f06cf8bc7a06688eac33",
@@ -100699,7 +100718,7 @@
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/PracticeResponseControls.tsx — aplikacja · src › features › practice.md": "626037fafb941c286ffb350619e0282c47121cbed46bc248c2a36df8890817f2",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceResponseRendererRegistry.test.ts — aplikacja · src › features › practice.md": "9d9df81a993afff5fc2d86f93df527d7390c5c95b6be86ebcb616444e7121e65",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceResponseRendererRegistry.ts — aplikacja · src › features › practice.md": "6576b6655671074571ed49efe7110b27f2768672213fa0e5376fdd348af2f3eb",
-    "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceRouteGuards.test.ts — aplikacja · src › features › practice.md": "2d1c29c485c4aeac95ddbb04691f0b6952430f5645f67e6097097876842279fa",
+    "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceRouteGuards.test.ts — aplikacja · src › features › practice.md": "d3feda9809be738b954323535eb9ad2b036002c8e1dd4507b8cace6a9fb188dc",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceSessionConfig.test.ts — aplikacja · src › features › practice.md": "532ad2878e0d9890d530590151f4d4e92e436099fa2326bef4caa3e4e0e01f1b",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceSessionExitCopy.test.ts — aplikacja · src › features › practice.md": "c51e83b400e32ac2f52a138d106b25936bbd493a53b4bf8f756016641fcc98ac",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/practiceSessionExitCopy.ts — aplikacja · src › features › practice.md": "9f9273357789a71de0f9dca74a8be8fd3f72c35a018385af9ef54c0fad810490",
@@ -100836,7 +100855,7 @@
     "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/localLogoutControl.test.ts — aplikacja · src › infrastructure › storage.md": "9a72b5a1f2b126d90aa6b5b6c27c4596134d1e9b4218378d8fe773f4224247a1",
     "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/localLogoutControl.ts — aplikacja · src › infrastructure › storage.md": "ee9448fc3b9d77eb01ca9879134c2023184264370f7d79be15473e3d900f3387",
     "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/mmkvClient.test.ts — aplikacja · src › infrastructure › storage.md": "3285b21726c03c65b615135a52e9963b0cba09a1f5976b0cf5101a3b169b82e7",
-    "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/mmkvClient.ts — aplikacja · src › infrastructure › storage.md": "e4b1dd2df4a37d76dc06e0219be3329adaece329b0bb53d375d51f8e4974fb91",
+    "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/mmkvClient.ts — aplikacja · src › infrastructure › storage.md": "6c368a9401f1459911ac29c2d0857e731d1a406d527303411e82da465835c3fe",
     "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/profileStorageRouter.test.ts — aplikacja · src › infrastructure › storage.md": "122faa9fb101fe739deae217bb4f41c2b22a82116444a247a70687ae9f43a228",
     "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/profileStorageRouter.ts — aplikacja · src › infrastructure › storage.md": "fe76546648e4e28c178e0eafeaaf0a993b8a714baa847ba29e0f139179a28ec6",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalDocumentMap.test.ts — aplikacja · src › legal.md": "f41d96f3b741ab69f451cf90a376713fdf37e4b3a04c7521282509995720137d",
@@ -101064,7 +101083,7 @@
     "Atlas/Struktura/patternly/src/tracks/design-interview/_Pliki/designModes.test.ts — aplikacja · src › tracks › design-interview.md": "2d5fe6d42a90d2e84d880c0f2b709a6a8b599e422368de9ed19909d534dcb4e5",
     "Atlas/Struktura/patternly/src/tracks/design-interview/_Pliki/designModes.ts — aplikacja · src › tracks › design-interview.md": "7270ee3947262d88a1c9d9c0c9c8c17f231b07013de1975d1d7a5c383acd7675",
     "Atlas/Struktura/patternly/src/tracks/design-interview/_Pliki/designTypes.ts — aplikacja · src › tracks › design-interview.md": "387d7acd1181ffa8013b8b682ff1736d156c6ca7e98b4301a3984c80584165b6",
-    "Atlas/Struktura/patternly/src/tracks/design-interview/_Pliki/index.ts — aplikacja · src › tracks › design-interview.md": "b751c139836949b74812e9435c12f61d520bf3167416e72b0c551f7c6f80cd6a",
+    "Atlas/Struktura/patternly/src/tracks/design-interview/_Pliki/index.ts — aplikacja · src › tracks › design-interview.md": "76e1c571b515ec94cc500de87cf5eb55160abe8055e2b20b069184c3063c9f2a",
     "Atlas/Struktura/patternly/src/tracks/_Pliki/index.ts — aplikacja · src › tracks.md": "b5160effe652e3eb814ab3c6e45c0e1bddf03b0829d33c86dbb684c365ad5fa3",
     "Atlas/Struktura/patternly/src/types/_Pliki/pngjs.d.ts — aplikacja · src › types.md": "156387ec4873bbcaed1dd93fbeadd83a219049e6771d7e644ae3503df5268a13",
     "Atlas/Struktura/patternly/src/types/_Pliki/svg.d.ts — aplikacja · src › types.md": "df7c8a20c0b9d54272687a5b98d0d658313e6458fd11b06ac1006aad72b39f21",

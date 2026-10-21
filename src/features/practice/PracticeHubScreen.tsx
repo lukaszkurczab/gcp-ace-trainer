@@ -38,6 +38,7 @@ import { usePatternlyAccount } from "../../application/account/AccountSessionPro
 import { resolveCertificationExamAccess } from "./certificationExamAccess";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { getProductSimulationModeConfig } from "../../content/canonical/productModeConfig";
+import { requiresPremiumProductMode } from "../../application/trainingLifecycle/premiumProductModePolicy";
 import { isDesignInterviewModeId } from "../../tracks/design-interview";
 
 import {
@@ -225,6 +226,14 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     }
     if (isDesignInterviewTrack) {
       if (isDesignInterviewModeId(resolvedMode)) {
+        if (!requiresPremiumProductMode(resolvedMode)) {
+          if (target === "setup") {
+            navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source, topicId: topic.id, trackId: activeTrack.id });
+          } else {
+            navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode, source, topicId: topic.id, trackId: activeTrack.id }));
+          }
+          return;
+        }
         if (designAdmissionPendingRef.current) return;
         designAdmissionPendingRef.current = true;
         setDesignAdmissionPending(true);
@@ -234,14 +243,6 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           .then((admission) => {
             switch (resolveCertificationExamAccess(admission)) {
               case "startExam": {
-                if (resolvedMode !== "design-interview-simulation") {
-                  if (target === "setup") {
-                    navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source, topicId: topic.id, trackId: activeTrack.id });
-                  } else {
-                    navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode, source, topicId: topic.id, trackId: activeTrack.id }));
-                  }
-                  return;
-                }
                 const track = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
                 const { profile } = getProductSimulationModeConfig(activeTrack.id, track.simulationProfiles);
                 navigation.navigate(ROUTES.DESIGN_INTERVIEW_SIMULATION, { trackId: activeTrack.id, profileId: profile.profileId });
@@ -444,13 +445,13 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 key={mode.mode}
                 leading={<IconTile iconSize={24} name={mode.icon} size={32} tone={mode.enabled ? (isCodingInterviewTrack ? "settings" : mode.tone) : "muted"} />}
                 onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
-                disabled={(mode.mode === "certification-exam-simulation" && examAdmissionPending) || (mode.mode === ALGORITHM_MODE_IDS.interviewSimulation && codingAdmissionPending) || (isDesignInterviewModeId(mode.mode) && designAdmissionPending)}
+                disabled={(mode.mode === "certification-exam-simulation" && examAdmissionPending) || (mode.mode === ALGORITHM_MODE_IDS.interviewSimulation && codingAdmissionPending) || (isDesignInterviewModeId(mode.mode) && requiresPremiumProductMode(mode.mode) && designAdmissionPending)}
                 style={[styles.modeRow, index === secondaryModes.length - 1 ? styles.modeRowLast : null, mode.enabled ? null : styles.disabledRow]}
                 testID={runtimeSelectors.practice.modeCard(mode.mode)}
                 title={t(mode.title)}
                 titleNumberOfLines={0}
                 trailing={
-                  mode.mode === "certification-exam-simulation" || mode.mode === ALGORITHM_MODE_IDS.interviewSimulation || isDesignInterviewModeId(mode.mode) ? (
+                  requiresPremiumProductMode(mode.mode) ? (
                     <View style={styles.examModeTrailing}>
                       <Badge label={t("Premium")} tone="info" />
                       {(mode.mode === "certification-exam-simulation" ? examAdmissionPending : mode.mode === ALGORITHM_MODE_IDS.interviewSimulation ? codingAdmissionPending : designAdmissionPending) ? (
