@@ -17,10 +17,36 @@ function calendar(targetDate: string): ReturnType<typeof buildPlanningCalendar> 
     todayActiveTime: { kind: "known", minutes: 0 }, sessionLocalTime: "18:00", currentLocalTime: "12:00", legalSessions, requiredSessionCount: 1 });
 }
 
-test("a known 480-minute lower bound exceeds a 240-minute target-window capacity", () => {
-  const capacity = assessFullGoalTimeCapacity({ workload: workload(480, 600, 720), calendar: calendar("2026-10-09") });
+function dailyTwentyMinuteCalendar(targetDate: string, dueObligations: Parameters<typeof buildPlanningCalendar>[0]["dueObligations"] = []) {
+  return buildPlanningCalendar({ localToday: "2026-10-22", timezone: "Europe/Warsaw", preferredDays: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"], weeklySessionTarget: 7,
+    dueObligations, targetDate, targetMeaning: "deadline", availableMinutesPerStudyDay: 20,
+    todayActiveTime: { kind: "known", minutes: 0 }, sessionLocalTime: "18:00", currentLocalTime: "12:00",
+    legalSessions: [{ sessionLength: 10, minMinutes: 20, typicalMinutes: 20, maxMinutes: 20 }], requiredSessionCount: 1 });
+}
+
+test("480 minutes of required work exceed twelve 20-minute dates by 240 minutes", () => {
+  // Independent required-work oracle: 360 new + 90 real due review + 30 checks.
+  const requiredMinimum = 360 + 90 + 30;
+  const capacity = assessFullGoalTimeCapacity({ workload: workload(requiredMinimum, 600, 720), calendar: dailyTwentyMinuteCalendar("2026-11-02") });
   assert.equal(capacity.availableMinutes, 240);
+  assert.deepEqual([capacity.workMinMinutes, capacity.workTypicalMinutes, capacity.workMaxMinutes], [480, 600, 720]);
+  assert.equal(capacity.workMinMinutes! - capacity.availableMinutes!, 240);
   assert.equal(capacity.kind, "minimum_exceeds_available_time");
+});
+
+test("twenty-four 20-minute dates provide nominal 480-minute capacity without overriding a later due review", () => {
+  const required = workload(480, 480, 480);
+  const capacity = assessFullGoalTimeCapacity({ workload: required, calendar: dailyTwentyMinuteCalendar("2026-11-14") });
+  assert.equal(capacity.availableMinutes, 480);
+  assert.deepEqual([capacity.workMinMinutes, capacity.workTypicalMinutes, capacity.workMaxMinutes], [480, 480, 480]);
+  assert.equal(capacity.kind, "range_within_available_time", "a time-range comparison is not a completion or legal-session guarantee");
+  const lateReview = { id: "due-after-target", dueAt: "2026-11-15T08:00:00.000Z", minMinutes: 10, typicalMinutes: 10, maxMinutes: 10 };
+  const before = JSON.stringify(lateReview);
+  const withFutureDue = assessFullGoalTimeCapacity({ workload: required, calendar: dailyTwentyMinuteCalendar("2026-11-14", [lateReview]) });
+  assert.equal(withFutureDue.availableMinutes, 480);
+  assert.equal(withFutureDue.kind, "unscheduled_due_reviews");
+  assert.deepEqual(withFutureDue.unscheduledReviewObligationIds, [lateReview.id]);
+  assert.equal(JSON.stringify(lateReview), before);
 });
 
 test("the same workload sees more civil-day capacity with a longer target horizon", () => {

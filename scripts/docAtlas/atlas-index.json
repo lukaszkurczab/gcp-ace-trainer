@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "4a2a1b57f7519cfa80ad38a80dde477177bb12ee",
+      "head": "959ca334c803499d793ce2dc55b9712188767049",
       "files": [
         {
           "path": ".easignore",
@@ -2825,8 +2825,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "72203a657893a378f7ca7632c12dec1ee710f3b90d75d546bb3b1bba3343c5e8",
-          "bytes": 144127,
+          "sha256": "d3b79d968ad7cd391e336725993ed0b7bad8c453fc11dca5cac48f9479e7e681",
+          "bytes": 144690,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2837,7 +2837,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 2016
+          "lines": 2021
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -24800,8 +24800,8 @@
         },
         {
           "path": "src/application/learningPlan/fullGoalTimeCapacity.test.ts",
-          "sha256": "80d6e5c558917aae748a1e6d1698dd0105a69381567239a35076a0cbe028e4b3",
-          "bytes": 4376,
+          "sha256": "6efb474a17e8b97541d1e0a756e3cc97b1ac71a9e709beae4e97386c8966bc13",
+          "bytes": 6526,
           "symbols": [],
           "imports": [
             {
@@ -24837,13 +24837,14 @@
           ],
           "jsonKeys": [],
           "testNames": [
-            "a known 480-minute lower bound exceeds a 240-minute target-window capacity",
+            "480 minutes of required work exceed twelve 20-minute dates by 240 minutes",
+            "twenty-four 20-minute dates provide nominal 480-minute capacity without overriding a later due review",
             "the same workload sees more civil-day capacity with a longer target horizon",
             "unknown chapter cost or quality upper bound never becomes a full-fit claim",
             "unknown today capacity cannot turn a partial known budget into a confirmed shortfall",
             "an actual due response after the deadline is surfaced as an unscheduled obligation"
           ],
-          "lines": 59
+          "lines": 85
         },
         {
           "path": "src/application/learningPlan/fullGoalTimeCapacity.ts",
@@ -41182,8 +41183,8 @@
         },
         {
           "path": "src/domain/learning/planningCalendar.test.ts",
-          "sha256": "a141dd102a8ed6e9ae54d874badf1c65e145236ba27a86d0186d3c7e2bdebb83",
-          "bytes": 17710,
+          "sha256": "4ec53ffc3f005728bd28f517bc8a7e9f09aeba864f53ee775aa76ca5901b0720",
+          "bytes": 21810,
           "symbols": [],
           "imports": [
             {
@@ -41225,14 +41226,15 @@
             "carries due-first obligations into later legal windows when one day cannot hold them",
             "schedules typed diagnosis then legal practice work after due reviews without inventing session lengths",
             "continues one real elapsed-foreground session across daily budgets without inventing response blocks",
-            "does not split a non-resumable fixed-duration work item into daily fragments"
+            "does not split a non-resumable fixed-duration work item into daily fragments",
+            "finite horizon correction preserves strict events, past targets and own-pace previews"
           ],
-          "lines": 249
+          "lines": 314
         },
         {
           "path": "src/domain/learning/planningCalendar.ts",
-          "sha256": "1fbc3c41a51c01be97cd7df3a76a83d9035b0373878c0ed70f3cd822a2ea72f7",
-          "bytes": 22499,
+          "sha256": "3deb773aa17a4211657a6c4f618e7d4db822d4cfd72960dc2fa489d132351195",
+          "bytes": 22455,
           "symbols": [
             "LegalSessionOption",
             "PlanningDueObligation",
@@ -69076,7 +69078,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "eb50d03b927feb5c116703cee2d223e693c01ef4",
+      "head": "752b89af97a57a737e6609d87c0a7300b727c913",
       "files": [
         {
           "path": ".dockerignore",
@@ -99806,7 +99808,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "72203a657893a378f7ca7632c12dec1ee710f3b90d75d546bb3b1bba3343c5e8",
+  "catalogHash": "d3b79d968ad7cd391e336725993ed0b7bad8c453fc11dca5cac48f9479e7e681",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "a6f3005ba6de89e0c57e870d1bddeee966c723549609690b9287bf501689377f",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -99861,7 +99863,7 @@
     "Atlas/Struktura/patternly/src/application/guest/guest — folder aplikacja · src › application.md": "242edf6d7f3d01fd47d960dd51424349c688c396399394e0a5309c298dd2bace",
     "Atlas/Struktura/patternly/src/application/identity/identity — folder aplikacja · src › application.md": "1e036107b15dd8f80b613c06d6e1c9d2cf2fba5b9b8fbd1840b24146d3e9508a",
     "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "6d8840ee535ef19c661625e79d326fba08faa1b87184b0d071ca64998676f09e",
-    "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "c2321667bf98fdd743cd0f771cd2c3d83fb23b4217674e2d8b52074d698f0f3b",
+    "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "b16a81c0e1749556755f5fe52b07e4388274dc4037853e0feb80c96f5aeb4129",
     "Atlas/Struktura/patternly/src/application/practice/practice — folder aplikacja · src › application.md": "3414acea97e54eb9431ca345be144de3c536fb6d5ce6cb0f3cfece9b06a2a903",
     "Atlas/Struktura/patternly/src/application/runtime/runtime — folder aplikacja · src › application.md": "ff4eb4664d4cb961bfc9b01c8a1d24b576c3eb0ea771ecd1cb3480b7f3d895b4",
     "Atlas/Struktura/patternly/src/application/runtimeAuditability/runtimeAuditability — folder aplikacja · src › application.md": "6555721e9d78bf61a882d699744dda0ab717926a89e68a07ee9f2aeba54b92d9",
@@ -99901,7 +99903,7 @@
     "Atlas/Struktura/patternly/src/domain/entitlements/entitlements — folder aplikacja · src › domain.md": "77a810c27f51a9d24d5d405c958171ce7d07cbef2496c61aff129b402435691e",
     "Atlas/Struktura/patternly/src/domain/goals/goals — folder aplikacja · src › domain.md": "6e607aac773dad20a52838c5ab0b6e2209e5c29b85ca35bdebf2e2bd3c7c3acf",
     "Atlas/Struktura/patternly/src/domain/identity/identity — folder aplikacja · src › domain.md": "94b12a76ced9357e84905628f1b7c107b5913a3e453b70610b456100e3c1610a",
-    "Atlas/Struktura/patternly/src/domain/learning/learning — folder aplikacja · src › domain.md": "94c7bdc0afd11355f840798e025868973ee701c06460a34e098dbfd7e7d09264",
+    "Atlas/Struktura/patternly/src/domain/learning/learning — folder aplikacja · src › domain.md": "617818fa397a9b878e4c856bc1b275b89c24dad6e26cc7381928568fc79ffbc6",
     "Atlas/Struktura/patternly/src/domain/tracks/tracks — folder aplikacja · src › domain.md": "cbf37e54b4c87bb641913104d949751dbce38a088311316e32611ec30e99d331",
     "Atlas/Struktura/patternly/src/features/features — folder aplikacja · src.md": "ae097f8dfd6c8b90a4de60b29ce3e75682b3a161a3dec937dc8b5c768ad5e667",
     "Atlas/Struktura/patternly/src/features/account/account — folder aplikacja · src › features.md": "7b9e18108ef4b3a1729f4023ba26a1a2b66719d89a38f018cdb15cd236d3f245",
@@ -100355,7 +100357,7 @@
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/applicationClockIntegration.test.ts — aplikacja · src › application › learningPlan.md": "5eb4b0c2fba4e3dd2bd47fc685c1f60465cd3011d84676af65b0b0017bdb7737",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/caseWorkEstimate.test.ts — aplikacja · src › application › learningPlan.md": "78a55a162a5fe1eb02d1e609126ba5ab125c00090cd6f704a3559d73e697bc83",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/caseWorkEstimate.ts — aplikacja · src › application › learningPlan.md": "3872008328d69e7757164be853603b7f25fb49478700b3d25964d95ca9ded4e8",
-    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalTimeCapacity.test.ts — aplikacja · src › application › learningPlan.md": "b332c02652ae71cf7b9c379502030c2b049c9b1ef5e63526931521519156839d",
+    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalTimeCapacity.test.ts — aplikacja · src › application › learningPlan.md": "c42797e2b049edba03a9f9a903ec656cd57074545e9779c5f7fd55718a9e8b3d",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalTimeCapacity.ts — aplikacja · src › application › learningPlan.md": "8f84172ff9dc9870e7b62b4c89f2d164ff2fb9785bd2d233c3279cd8982331de",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalWorkloadProjection.test.ts — aplikacja · src › application › learningPlan.md": "fddcf96864a5c05f6d05231a950e0da6ea201371150eaff0061e2777216f5bd4",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalWorkloadProjection.ts — aplikacja · src › application › learningPlan.md": "71083ad549a6f221929276c48faa14dd7570dd0f9bb9ba14fe469ba09e315839",
@@ -100687,8 +100689,8 @@
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/paceForecast.ts — aplikacja · src › domain › learning.md": "c3853a1a6a51a97edbf265d4c76d1346f7719a0aaea4f344316303250c6bf25c",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/packageCompletionRule.test.ts — aplikacja · src › domain › learning.md": "32e9a8168e049849804f90af800599f8ac057df3954d43a6d1a46315bc49ea4c",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/packageCompletionRule.ts — aplikacja · src › domain › learning.md": "8a360b98fb88ab3a6091f16b6fa8324d0f09b4e817f37e6987a660b341ecdfd6",
-    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/planningCalendar.test.ts — aplikacja · src › domain › learning.md": "b34213ebe9d4f3943bfccd9b01c51d7370ccf76578acba9d4449443b4c6005cc",
-    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/planningCalendar.ts — aplikacja · src › domain › learning.md": "3aff5721c2f680ff100db537a90bfd5272c4a7641bc51ac7f5ffc907d06ff424",
+    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/planningCalendar.test.ts — aplikacja · src › domain › learning.md": "07167f651a4fb04dbe1c2fbe8ec042355b5c6e7ca63df15c115a483a5215cad0",
+    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/planningCalendar.ts — aplikacja · src › domain › learning.md": "e52fb699df5218ecb1a72ae53e86fa5f75b0af8ea8bf08dd968288150b2cda7c",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/planningTimeCalibration.test.ts — aplikacja · src › domain › learning.md": "d3e4f77ca5610bfc0b2f10b35fe11c14684ff659dd0d8e219125b36016c5360e",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/planningTimeCalibration.ts — aplikacja · src › domain › learning.md": "85311f037beb3938d28f606cd5b75755f60cbebef59700d2d1fd0953968e2660",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/planningWorkEstimate.test.ts — aplikacja · src › domain › learning.md": "efae5d21b068585daa6c257738a67a50f8115c667cd39e439dad2b245b784f1a",

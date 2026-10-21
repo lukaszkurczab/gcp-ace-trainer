@@ -830,6 +830,11 @@
       "reviewedHash": "be80cab819d1e24b9fde1d3bef33157b1acb848250e06729aea7376c98d6a0b2",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
+    "patternly/src/domain/learning/planningCalendar.ts": {
+      "description": "Buduje kalendarz dat cywilnych i dostępnej pojemności dla planera. Deadline i checkpoint obejmują dzień target, lecz nigdy następny; event dopuszcza sesje wyłącznie przed target. Own pace ma osobne okno podglądu. Zachowuje lokalne terminy due, zużyty czas, legalne długości i kontynuacje; nie zapisuje historii ani kredytu ukończenia.",
+      "reviewedHash": "3deb773aa17a4211657a6c4f618e7d4db822d4cfd72960dc2fa489d132351195",
+      "flow": "Cel, plan i postęp"
+    },
     "patternly/src/domain/learning/packageCompletionRule.ts": {
       "description": "Kwalifikuje niezależne trwałe próby według zapisanej jednostki między bankami. Zachowuje minimum, jakość, cztery różne latest-correct ID na jednostkę i pierwszy moment ukończenia; opcjonalne dostępne stare reguły chronią wcześniejsze ukończenie. Brak wiarygodnego przypisania daje unknown.",
       "reviewedHash": "1269902380d6dd83cad1d85bf92b910c46be5ce1c781d8a2aa4600ee59c51f90",
@@ -1976,7 +1981,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "720c44362e91f3212cca0abdbc125581ade978aa252336b4748c512e565b3296"
+      "reviewedDigest": "2c2300f8d9036e5c0dc50b2f26ec8b43be78b396cf1e584928c1a063bd6280fd"
     },
     {
       "name": "Premium i zakup",

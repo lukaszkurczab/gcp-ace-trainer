@@ -67,7 +67,7 @@ export function buildPlanningCalendar(input: Readonly<{
   validateInput(input);
   const previewDays = input.targetDate === null || input.targetMeaning === "none"
     ? Math.max(0, (input.openEndedPreviewDays ?? 28) - 1)
-    : Math.max(0, daysBetween(input.localToday, input.targetDate) + (input.targetMeaning === "event" ? 0 : 1));
+    : Math.max(0, daysBetween(input.localToday, input.targetDate));
   const pastTarget = input.targetDate !== null && (input.targetDate < input.localToday || (input.targetMeaning === "event" && input.targetDate === input.localToday));
   const previewThrough = addCivilDays(input.localToday, previewDays);
   const result: PlanningCalendarDay[] = [];

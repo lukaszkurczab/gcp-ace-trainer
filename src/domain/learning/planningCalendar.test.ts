@@ -246,3 +246,68 @@ test("does not split a non-resumable fixed-duration work item into daily fragmen
   assert.deepEqual(result.unscheduledWorkDemandIds, ["fixed-duration"]);
   assert.equal(result.totalTypicalPlannedMinutes, 0);
 });
+
+const everyStudyDay = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+const twentyMinuteCalendar = {
+  localToday: "2026-10-22", timezone: "Europe/Warsaw", preferredDays: everyStudyDay, weeklySessionTarget: 7,
+  dueObligations: [], availableMinutesPerStudyDay: 20, todayActiveTime: { kind: "known", minutes: 0 },
+  sessionLocalTime: "18:00", currentLocalTime: "12:00", requiredSessionCount: 1,
+  legalSessions: [{ sessionLength: 10, minMinutes: 20, typicalMinutes: 20, maxMinutes: 20 }],
+} as const;
+
+for (const targetMeaning of ["deadline", "checkpoint"] as const) {
+  test(`${targetMeaning} includes exactly the target civil date and never a later date`, () => {
+    const cases = [
+      { targetDate: "2026-10-22", dates: ["2026-10-22"], minutes: 20 },
+      { targetDate: "2026-10-23", dates: ["2026-10-22", "2026-10-23"], minutes: 40 },
+      { targetDate: "2026-11-02", dates: ["2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01", "2026-11-02"], minutes: 240 },
+    ];
+    for (const { targetDate, dates, minutes } of cases) {
+      const input = { ...twentyMinuteCalendar, targetMeaning, targetDate };
+      const before = JSON.stringify(input);
+      const result = buildPlanningCalendar(input);
+      assert.deepEqual(result.availableDays.map((day) => day.localDate), dates);
+      assert.equal(result.previewThrough, targetDate);
+      assert.equal(result.totalAvailableMinutes, minutes);
+      assert.ok(result.availableDays.every((day) => day.localDate <= targetDate));
+      assert.equal(JSON.stringify(input), before);
+    }
+  });
+
+  test(`${targetMeaning} keeps next-day and next-week due reviews outside the target window`, () => {
+    for (const dueAt of ["2026-10-24T08:00:00.000Z", "2026-10-29T08:00:00.000Z"]) {
+      const input = { ...twentyMinuteCalendar, targetMeaning, targetDate: "2026-10-23",
+        dueObligations: [{ id: "future-review", dueAt, minMinutes: 10, typicalMinutes: 10, maxMinutes: 10 }] };
+      const before = JSON.stringify(input);
+      const result = buildPlanningCalendar(input);
+      assert.deepEqual(result.availableDays.map((day) => day.localDate), ["2026-10-22", "2026-10-23"]);
+      assert.deepEqual(result.availableDays.flatMap((day) => day.reviewObligationIds), []);
+      assert.deepEqual(result.unscheduledReviewObligationIds, ["future-review"]);
+      assert.equal(result.kind, "shortfall");
+      assert.equal(JSON.stringify(input), before, "planning cannot change the real due instant or other inputs");
+    }
+  });
+}
+
+test("finite horizon correction preserves strict events, past targets and own-pace previews", () => {
+  const eventToday = buildPlanningCalendar({ ...twentyMinuteCalendar, targetMeaning: "event", targetDate: "2026-10-22" });
+  assert.equal(eventToday.kind, "past_target");
+  assert.deepEqual(eventToday.availableDays, []);
+  const eventTomorrow = buildPlanningCalendar({ ...twentyMinuteCalendar, targetMeaning: "event", targetDate: "2026-10-23" });
+  assert.deepEqual(eventTomorrow.availableDays.map((day) => day.localDate), ["2026-10-22"]);
+  for (const targetMeaning of ["deadline", "checkpoint", "event"] as const) {
+    const past = buildPlanningCalendar({ ...twentyMinuteCalendar, targetMeaning, targetDate: "2026-10-21" });
+    assert.equal(past.kind, "past_target");
+    assert.deepEqual(past.availableDays, []);
+    assert.equal(past.totalAvailableMinutes, 0);
+  }
+  const ownPace = buildPlanningCalendar({ ...twentyMinuteCalendar, targetMeaning: "none", targetDate: null });
+  assert.equal(ownPace.kind, "open_ended");
+  assert.equal(ownPace.availableDays.length, 28);
+  assert.equal(ownPace.previewThrough, "2026-11-18");
+  assert.equal(ownPace.totalAvailableMinutes, 560);
+  const oneDay = buildPlanningCalendar({ ...twentyMinuteCalendar, targetMeaning: "none", targetDate: null, openEndedPreviewDays: 1 });
+  assert.equal(oneDay.kind, "open_ended");
+  assert.deepEqual(oneDay.availableDays.map((day) => day.localDate), ["2026-10-22"]);
+  assert.equal(oneDay.previewThrough, "2026-10-22");
+});
