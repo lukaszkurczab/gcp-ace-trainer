@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "7f2d65d4d82a69ba34d809bf6e180f0104aba2b8",
+      "head": "4a2a1b57f7519cfa80ad38a80dde477177bb12ee",
       "files": [
         {
           "path": ".easignore",
@@ -2825,8 +2825,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "1a6c8ac4f1867aaf201403dc54cb185b9fac8a0212bfe770d958f0df533c2e50",
-          "bytes": 143834,
+          "sha256": "72203a657893a378f7ca7632c12dec1ee710f3b90d75d546bb3b1bba3343c5e8",
+          "bytes": 144127,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -74663,8 +74663,8 @@
         },
         {
           "path": "src/modules/progress/store.ts",
-          "sha256": "f83c191df953e1c9a9a720c930552f91820c043f0082850986b4baffef681ac7",
-          "bytes": 102145,
+          "sha256": "5315aad9ebe9ef5d1c6e99a2b98e927e270058acc05dbf8f17db0b9192ce0706",
+          "bytes": 103398,
           "symbols": [
             "createAdoptionDecisionFingerprint",
             "FirestoreProgressStore"
@@ -74745,7 +74745,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 1108
+          "lines": 1130
         },
         {
           "path": "src/modules/retention-purge/service.ts",
@@ -75541,8 +75541,8 @@
         },
         {
           "path": "tests/adoptionTransfer.emulator.test.ts",
-          "sha256": "5b70da49a285beed79809d9b0a7c226f651542071ac30f172c361644430a63f2",
-          "bytes": 75154,
+          "sha256": "663b5c6a9ca671144ab5839a468c1f65e9af619f0529eed9d4916ea76fd25311",
+          "bytes": 102013,
           "symbols": [],
           "imports": [
             {
@@ -75558,64 +75558,76 @@
               "line": 2
             },
             {
-              "specifier": "node:test",
+              "specifier": "node:crypto",
               "kind": "static",
               "resolution": "external",
               "line": 3
             },
             {
-              "specifier": "firebase-admin/firestore",
+              "specifier": "node:fs",
               "kind": "static",
               "resolution": "external",
               "line": 4
             },
             {
+              "specifier": "node:test",
+              "kind": "static",
+              "resolution": "external",
+              "line": 5
+            },
+            {
+              "specifier": "firebase-admin/firestore",
+              "kind": "static",
+              "resolution": "external",
+              "line": 6
+            },
+            {
               "specifier": "../src/api/app.js",
               "kind": "static",
               "target": "src/api/app.ts",
-              "line": 6
+              "line": 8
             },
             {
               "specifier": "../src/modules/progress/store.js",
               "kind": "static",
               "target": "src/modules/progress/store.ts",
-              "line": 7
+              "line": 9
             },
             {
               "specifier": "../src/modules/users/adoptionTransfer.js",
               "kind": "static",
               "target": "src/modules/users/adoptionTransfer.ts",
-              "line": 8
+              "line": 10
             },
             {
               "specifier": "../src/modules/users/merge.js",
               "kind": "static",
               "target": "src/modules/users/merge.ts",
-              "line": 9
+              "line": 11
             },
             {
               "specifier": "../src/infrastructure/firebase/verifier.js",
               "kind": "static",
               "target": "src/infrastructure/firebase/verifier.ts",
-              "line": 10
+              "line": 12
             },
             {
               "specifier": "../src/infrastructure/firestore/paths.js",
               "kind": "static",
               "target": "src/infrastructure/firestore/paths.ts",
-              "line": 11
-            },
-            {
-              "specifier": "./support.js",
-              "kind": "static",
-              "target": "tests/support.ts",
-              "line": 12
-            },
-            {
-              "specifier": "./support.js",
-              "kind": "static",
-              "target": "tests/support.ts",
               "line": 13
+            },
+            {
+              "specifier": "./support.js",
+              "kind": "static",
+              "target": "tests/support.ts",
+              "line": 14
+            },
+            {
+              "specifier": "./support.js",
+              "kind": "static",
+              "target": "tests/support.ts",
+              "line": 15
             }
           ],
           "jsonKeys": [],
@@ -75639,9 +75651,14 @@
             "transfer start, upload, and seal fence account rotation after request authentication",
             "transfer seal rechecks authorization generation in its final transaction",
             "transfer preview fences reservation, finalization, and ready replay",
-            "empty transfer preview fences finalization and replays without result chunks"
+            "empty transfer preview fences finalization and replays without result chunks",
+            "legacy adoption fixture retains the exact pinned historical producer",
+            "applying checkpoints reject malformed and inconsistent counters without writes",
+            "new adoption rejects source revision addition overflow before reservation",
+            "empty new adoption completes once and replays exact stored bytes",
+            "completed historical adoption replays committed history without reinterpretation"
           ],
-          "lines": 985
+          "lines": 1336
         },
         {
           "path": "tests/adoptionTransfer.test.ts",
@@ -99789,7 +99806,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "1a6c8ac4f1867aaf201403dc54cb185b9fac8a0212bfe770d958f0df533c2e50",
+  "catalogHash": "72203a657893a378f7ca7632c12dec1ee710f3b90d75d546bb3b1bba3343c5e8",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "a6f3005ba6de89e0c57e870d1bddeee966c723549609690b9287bf501689377f",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -101267,13 +101284,13 @@
     "Atlas/Struktura/patternly-backend/src/modules/legal-requests/legal-requests — folder backend · src › modules.md": "d9c79942739596300928eed3525d89fb245c08af246ea002d71a24d1333f971a",
     "Atlas/Struktura/patternly-backend/src/modules/operator-access/operator-access — folder backend · src › modules.md": "ca28458e4628d025f08072869cadbb79dd52cfc0bfb928bda691797b8d4e3568",
     "Atlas/Struktura/patternly-backend/src/modules/privacy-requests/privacy-requests — folder backend · src › modules.md": "94447a76c3b30ba13de582dd1de459f934ee96e9ed90d059ebe007d4e5e468a8",
-    "Atlas/Struktura/patternly-backend/src/modules/progress/progress — folder backend · src › modules.md": "848aeeaa51499453b90a21201ee7a8acd7cf070ef6d97d8a9e1fccb5c3286abd",
+    "Atlas/Struktura/patternly-backend/src/modules/progress/progress — folder backend · src › modules.md": "32dbb80a9d201c4cc2f3413878176b8c59b6e67e6a547975b764be2e9cace20b",
     "Atlas/Struktura/patternly-backend/src/modules/retention/retention — folder backend · src › modules.md": "262085af20b534ed0c905d3fdbd36fd4016f3d4fce868fa48d8a093bd911750b",
     "Atlas/Struktura/patternly-backend/src/modules/retention-purge/retention-purge — folder backend · src › modules.md": "b5785a501714dbbf87cf8299b1b6edcaa061ca374d715661ec73dfc260905129",
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "d93d346546da561396b63d20eb55db1698203b892511367bacc006b23eecd3ba",
     "Atlas/Struktura/patternly-backend/src/modules/tracks/tracks — folder backend · src › modules.md": "e0639e0e8c0e7a47a19dd51429b730714072ed540ba4e541f2ad8b314812b90c",
     "Atlas/Struktura/patternly-backend/src/modules/users/users — folder backend · src › modules.md": "952a38f7f4c04b0e6e555650a390398fb16d50355b5459205f83e05f0f7856c3",
-    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "a12a024aa68907ab5c7ad989fe02909f162c10918adb15801eca5344eddec7f7",
+    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "cc568a41493eefdf54f5e0bc68146d2e318abd323bd57370e9433df7cd8dad11",
     "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "607881277c1a4d77bf46ae9fd8e39b4d6ef28a17d540b9952487d666d887da6d",
     "Atlas/Struktura/patternly-backend/tests/fixtures/cost02-package/cost02-package — folder backend · tests › fixtures.md": "b77eadc82eddc23841df6ffeb9e4c0ec9682c3ba45c096f58d51bbc636a1b25c",
     "Atlas/Struktura/patternly-backend/_Pliki/package.json — backend.md": "f3dda341fc1ebf761b3eba673839553ac65f604a5f0b46e1ed8926f7d9abb014",
@@ -101400,7 +101417,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/accountWireState.ts — backend · src › modules › progress.md": "0620a750426fb651f959c616347dbe9f1da10430944251516b90bd56652b2fc0",
     "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/contracts.ts — backend · src › modules › progress.md": "a6d586513342bdb67ab40ed70c34e326719d30732bd5b64cf0d489cd11c4ccc4",
     "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/serializedJsonLimits.ts — backend · src › modules › progress.md": "05d575436d3bb73cae51660bb47091b4681ec8617bd8e958ca47e9d9ea256c03",
-    "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/store.ts — backend · src › modules › progress.md": "10f2b1782db5019c76b7a31dbb478b6d7f625e3fbac3e5f195c2a2048c03259a",
+    "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/store.ts — backend · src › modules › progress.md": "cbb7fd5ddd222b7106f55daa66f9817769a84ee83bd0bc6e7b9aeddca11b33ba",
     "Atlas/Struktura/patternly-backend/src/modules/retention-purge/_Pliki/service.ts — backend · src › modules › retention-purge.md": "b09b9a8452858f7c9a3704ba30365e5467ce5774ed03a3420d4e36efe5e802da",
     "Atlas/Struktura/patternly-backend/src/modules/retention/_Pliki/operatorPage.ts — backend · src › modules › retention.md": "d9acd9cf204fcd292493a46c172535d55bc7a8830b15b1b5c566bd84c3b3f71c",
     "Atlas/Struktura/patternly-backend/src/modules/retention/_Pliki/policy.ts — backend · src › modules › retention.md": "9201c9297f96119d5b31c4319771e7d134b2ed04dd566b0ec35b083363bedc05",
@@ -101415,7 +101432,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/accountLifecycleCrash.emulator.test.ts — backend · tests.md": "d932094e9527f2596944091345abb8b3435a39f9d2c1e50b4a3151a0e235e937",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/accountWireContract.test.ts — backend · tests.md": "61c10fd1e90b9fbfa34eeb25c91adccd3c26e79095ec928e5822a9111365c285",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/adminStore.test.ts — backend · tests.md": "d4e520c0ddd8c19221c7de5dfa290f46e5966ee8eff58424f7d94c15cd0b796f",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/adoptionTransfer.emulator.test.ts — backend · tests.md": "3484a63ebb866801c91bdf24b04af7bf69da25c7fdb15e212a1563eef1d87736",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/adoptionTransfer.emulator.test.ts — backend · tests.md": "92032c06226b7b5fd37ce1296470b45f252d3213c698f1c213a902cb4125e999",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/adoptionTransfer.test.ts — backend · tests.md": "9dd1c178b9127177d23aabb3a64c99af21546fd09e2072dcdeee0ae4b569756b",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/appObservability.test.ts — backend · tests.md": "e3634e26a7493c0f5e8522b4a8123e57b7d59215ef0e30bfd9bdb6603c19fa05",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/ch03Acceptance.emulator.test.mjs — backend · tests.md": "88e5817e45ba4b23da35de07b8f888368a3c4eb8dab7c70c16eb0174b5e7c711",

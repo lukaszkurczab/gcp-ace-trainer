@@ -939,8 +939,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/progress/store.ts": {
-      "description": "Trwała synchronizacja rekordów i rewizji w Firestore. Mieszany replay waliduje parę cel–plan z nowych zapisów i aktualnego counterpartu; pełne historyczne receipts i replay całego batcha zachowują wcześniejszy wynik. Staged adoption rozstrzyga klucze pary cel–plan wyłącznie w pętli grup: keep_account zachowuje konto, a keep_guest kolejkuje każdą rzeczywistą zmianę raz; niegrupowane rekordy przechodzą osobno. readPage pomija query tylko po zgodności dokładnego snapshotToken lub scope+rewizji, zachowując oba pre/post getAll i odmowy. applyBatch wylicza opt-in proof tylko w udanej świeżej próbie transakcji z jej konta/auth/aktywnej generacji; zapisany result receipt i replay pozostają bez proof.",
-      "reviewedHash": "f83c191df953e1c9a9a720c930552f91820c043f0082850986b4baffef681ac7",
+      "description": "Trwała synchronizacja rekordów i rewizji w Firestore. Mieszany replay waliduje parę cel–plan z nowych zapisów i aktualnego counterpartu; pełne historyczne receipts i replay całego batcha zachowują wcześniejszy wynik. Staged adoption rozstrzyga klucze pary cel–plan wyłącznie w pętli grup: keep_account zachowuje konto, a keep_guest kolejkuje każdą rzeczywistą zmianę raz; niegrupowane rekordy przechodzą osobno. readPage pomija query tylko po zgodności dokładnego snapshotToken lub scope+rewizji, zachowując oba pre/post getAll i odmowy. applyBatch wylicza opt-in proof tylko w udanej świeżej próbie transakcji z jej konta/auth/aktywnej generacji; zapisany result receipt i replay pozostają bez proof. Wznowienie staged adoption wymaga ścisłych liczników zgodnych z obecną materializacją i uchwyconym źródłem; kontrola poprzedza zapisy i wraca przy odczytach transakcyjnych. Niezgodny stary checkpoint otrzymuje istniejący409 bez odnowienia lease; completed replay pozostaje historią.",
+      "reviewedHash": "5315aad9ebe9ef5d1c6e99a2b98e927e270058acc05dbf8f17db0b9192ce0706",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/users/merge.ts": {
@@ -1939,7 +1939,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "75b78e4cc8c68c6cc9b119a5668edd85e4d2660733768612384b4bbf36d1148c"
+      "reviewedDigest": "ddb3941ed528dfa1ddeaaf0776771c7899751f3a18c64a0390c697bfc7ca4e3b"
     },
     {
       "name": "Treść od producenta do sesji",
