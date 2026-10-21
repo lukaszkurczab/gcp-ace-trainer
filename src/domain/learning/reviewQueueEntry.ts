@@ -1,4 +1,5 @@
 import type { ReviewEvidence } from "./reviewEvidence";
+import type { LegacyReviewUnitProof } from "./mentalUnitEvidence";
 import type { TrackId } from "./trackIdentity";
 import { resolvedContentRefsEqual } from "./resolvedContentRef";
 
@@ -19,6 +20,7 @@ export type ReviewSourceSnapshot = Readonly<{
   sourceAttemptId: string;
   /** Present on automatic snapshots to bind either the exact overlay or its absence. */
   manualRequestId?: string;
+  legacyUnitProof?: LegacyReviewUnitProof;
   dueAt: string;
   policyVersion: string;
   stage: ReviewCycleStage | "legacy_active_unqualified";

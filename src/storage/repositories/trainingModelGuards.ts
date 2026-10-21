@@ -1,3 +1,4 @@
+import { isLegacyReviewUnitProof } from "../../domain/learning/mentalUnitEvidence";
 import { isCaseAttemptEvidence, CASE_TRACK_ID } from "../../domain/learning/caseEvidence";
 import { REVIEW_REASONS, REVIEW_CYCLE_STAGES, isManualRequestId, type ReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
 import { createAttemptResult, type AttemptResultComponent } from "../../domain/learning/attemptResult";
@@ -257,10 +258,11 @@ function isSessionItemOccurrence(value: unknown): value is { occurrenceId: strin
 }
 
 function isReviewSourceSnapshot(value: unknown): boolean {
-  if (!isRecord(value) || !hasOnlyKeys(value, ["source", "reviewEntryId", "sourceAttemptId", "manualRequestId", "dueAt", "policyVersion", "stage"])) return false;
-  const exactKeys = ["source", "reviewEntryId", "sourceAttemptId", "dueAt", "policyVersion", "stage", ...(Object.hasOwn(value, "manualRequestId") ? ["manualRequestId"] : [])].sort();
+  if (!isRecord(value) || !hasOnlyKeys(value, ["source", "reviewEntryId", "sourceAttemptId", "manualRequestId", "legacyUnitProof", "dueAt", "policyVersion", "stage"])) return false;
+  const exactKeys = ["source", "reviewEntryId", "sourceAttemptId", "dueAt", "policyVersion", "stage", ...(Object.hasOwn(value, "manualRequestId") ? ["manualRequestId"] : []), ...(Object.hasOwn(value, "legacyUnitProof") ? ["legacyUnitProof"] : [])].sort();
   if (Object.keys(value).sort().join("\0") !== exactKeys.join("\0")) return false;
-  return (value.source === "due_queue" || value.source === "manual_request") &&
+  return (!Object.hasOwn(value, "legacyUnitProof") || isLegacyReviewUnitProof(value.legacyUnitProof)) &&
+    (value.source === "due_queue" || value.source === "manual_request") &&
     (value.source !== "manual_request" || isManualRequestId(value.manualRequestId)) &&
     (value.manualRequestId === undefined || isManualRequestId(value.manualRequestId)) && isNonEmptyString(value.reviewEntryId) && isNonEmptyString(value.sourceAttemptId) &&
     isTimestamp(value.dueAt) && isNonEmptyString(value.policyVersion) &&

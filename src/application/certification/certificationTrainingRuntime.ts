@@ -1,16 +1,16 @@
 import { selectCaseBlocks } from "./caseBlockSelector";
 import { indexCaseRecipes, CASE_EVIDENCE_POLICY, type CaseRecipe } from "../../content/canonical/caseRecipe";
 import { CASE_BLOCK_POLICY, CASE_REVIEW_POLICY, sessionCaseStates, CASE_TRACK_ID, isIndependentCaseAttempt, type CaseLearningState } from "../../domain/learning/caseEvidence";
-import { createTrainingSession, createTrainingAttempt, createTrainingSessionDraft, createTrainingSessionResult, completeTrainingSession, createFamilyEnvelope, isActiveReviewQueueEntry, createReviewSourceSnapshot, matchesReviewSourceSnapshot, manualRequestIdForEntry, type ReviewMutationCommand, type ReviewQueueEntry, type ReviewSourceSnapshot, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
+import { createTrainingSession, createTrainingAttempt, createTrainingSessionDraft, createTrainingSessionResult, completeTrainingSession, createFamilyEnvelope, isActiveReviewQueueEntry, matchesReviewSourceSnapshot, manualRequestIdForEntry, type ReviewMutationCommand, type ReviewQueueEntry, type ReviewSourceSnapshot, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime, FamilyPlanningModeBinding, TrainingCatalog, TrainingInteractionPort, TrainingQuestionSummary } from "../trainingLifecycle";
 import { getProductSimulationModeConfig, ProductModeUnavailableError, resolveRequiredUnitFocusMode, type ProductModeConfig } from "../../content/canonical/productModeConfig";
 import { consumeManualRequest, createMaintenanceCycle, createOrUpdateErrorCycle, transitionQualifiedSuccess } from "../../domain/learning/reviewCycleTransition";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
-import { sameLearningUnit } from "../../domain/learning/mentalUnitEvidence";
+import { reviewEvidenceMatchesAttempt } from "../../domain/learning/mentalUnitEvidence";
 import { isCanonicalOptionOrder, prepareCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
 import { prepareCanonicalPlanOccurrences, buildCanonicalSessionPlan, validateCanonicalSessionPlan, applyCanonicalPlanReplacements, CANONICAL_TRAINING_RELEASE } from "../canonical/canonicalSessionPlanMechanics";
-import { canonicalQuestionReviewEvidence, createCanonicalAttempt, limitQuestionsToReviewNeeds, reviewNeedForQuestion, sameCurrentReviewUnit, scopeAttemptsToLearningTrack, scopeReviewsToLearningTrack } from "../canonical/canonicalFamilyMechanics";
+import { assertCanonicalReviewSourceProofs, createCanonicalReviewSourceSnapshot, canonicalQuestionReviewEvidence, createCanonicalAttempt, limitQuestionsToReviewNeeds, reviewNeedForQuestion, sameCurrentReviewUnit, scopeAttemptsToLearningTrack, scopeReviewsToLearningTrack } from "../canonical/canonicalFamilyMechanics";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
 import { qualifyPackageAttempts } from "../../domain/learning/packageCompletionRule";
 import { allocateWeightedBlueprintQuotas } from "../../content/canonical/weightedBlueprintAllocation";
@@ -86,7 +86,7 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
       const isSelectedReviewCandidate = reviewCandidateIds.has(question.questionId);
       const sourceReview = usesReviewQueue && isSelectedReviewCandidate ? this.reviewForQuestion(question, source, item, input.reviews, reviewSource!, input.now) : undefined;
       if (usesReviewQueue && isSelectedReviewCandidate && !sourceReview) throw new Error("Certification review selection lost its source unit before the plan snapshot.");
-      return { item, ...(sourceReview ? { reviewSourceSnapshot: createReviewSourceSnapshot(sourceReview, reviewSource!, input.now) } : {}) };
+      return { item, ...(sourceReview ? { reviewSourceSnapshot: createCanonicalReviewSourceSnapshot(sourceReview, this.catalog, reviewSource!, input.now) } : {}) };
     });
     const sessionId = requireSessionId(input.request);
     const prepared = prepareCanonicalPlanOccurrences(this.catalog, this.interactions, sessionId, orderedItems);
@@ -124,6 +124,7 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     if (mode.selection.kind === "exact_ordered_questions" && JSON.stringify(session.itemOrder.map((entry) => entry.item.questionId)) !== JSON.stringify(mode.selection.questionIds.slice(0, session.actualLength))) throw new Error("Certification exact-order session is invalid.");
     this.validateCaseBlocks(session, selectedNodeId);
     await validateCanonicalSessionPlan(this.catalog, this.interactions, session);
+    assertCanonicalReviewSourceProofs(session, this.catalog);
   }
 
   async submitPractice(input: Parameters<TrainingFamilyRuntime["submitPractice"]>[0]): Promise<PracticeSubmission> {
@@ -137,7 +138,7 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
       reviewEvidence: this.caseEvidence(input.session, question, occurrence.item, input.attempts), answeredAt: input.now, committedAt: input.now });
     if (!isIndependentCaseAttempt(attempt) && result.kind === "correct") return Object.freeze({ attempt, session: await this.resolveReinsertions(input.session, [...input.attempts, attempt]), reviewMutations: [], reviewBaseline: input.reviews });
     const matching = occurrence.reviewSourceSnapshot
-      ? input.reviews.filter((entry) => entry.id === occurrence.reviewSourceSnapshot!.reviewEntryId && (sameLearningUnit(entry, attempt.reviewEvidence) || resolvedContentRefsEqual(entry.sourceItem, attempt.reviewEvidence.sourceItem)))
+      ? input.reviews.filter((entry) => entry.id === occurrence.reviewSourceSnapshot!.reviewEntryId && reviewEvidenceMatchesAttempt(entry, attempt.reviewEvidence, occurrence.reviewSourceSnapshot!.legacyUnitProof, this.catalog))
       : input.reviews.filter((entry) => entry.trackId === input.session.trackId && resolvedContentRefsEqual(entry.sourceItem, occurrence.item));
     const prior = matching.find(isActiveReviewQueueEntry);
     const completed = matching.some((entry) => entry.status === "completed");
@@ -245,7 +246,7 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     const preparedOccurrences = prepareCanonicalPlanOccurrences(this.catalog, this.interactions, sessionId, questions.map(q => {
       const item = ref(this.catalog, q);
       const due = input.reviews.find(entry => resolvedContentRefsEqual(entry.sourceItem, item) && this.isSelectedReviewEntry(entry, "due_queue", input.now));
-      return { item, ...(due ? { reviewSourceSnapshot: createReviewSourceSnapshot(due, "due_queue", input.now) } : {}) };
+      return { item, ...(due ? { reviewSourceSnapshot: createCanonicalReviewSourceSnapshot(due, this.catalog, "due_queue", input.now) } : {}) };
     }));
     const session = await buildCanonicalSessionPlan(this.catalog, { sessionId, modeId: input.modeId, requestedLength: questions.length, preparedOccurrences, conditionalReinsertSlots: [], startedAt: input.now, configurationSnapshot: caseSnapshot(recipe), caseState: this.newCaseState(recipe, input) });
     return Object.freeze({ session, firstOccurrence: session.itemOrder[0]!.item, draft: null });
@@ -256,6 +257,7 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     const nodeId = this.catalog.getQuestion(recipe.steps[0]!.questionId)!.nodeId;
     if (session.modeId !== "certification-focus-practice" || JSON.stringify(session.configurationSnapshot) !== JSON.stringify(caseSnapshot(recipe)) || session.requestedLength !== recipe.steps.length || session.actualLength !== recipe.steps.length || !session.caseState || session.caseState.caseId !== recipe.caseId || session.caseState.caseVersion !== recipe.version || mode.selection.kind !== "node" || session.itemOrder.some((o,i) => o.item.questionId !== recipe.steps[i]?.questionId || this.catalog.getQuestion(o.item.questionId)?.nodeId !== nodeId) || (session.conditionalReinsertSlots?.length ?? 0) !== 0 || [...session.caseState.priorExposedStepIds, ...session.caseState.hintShownStepIds, ...session.caseState.solutionExposedStepIds].some(id => !recipe.steps.some(step => step.stepId === id))) throw new Error("Single-case snapshot, state or order is invalid.");
     await validateCanonicalSessionPlan(this.catalog, this.interactions, session);
+    assertCanonicalReviewSourceProofs(session, this.catalog);
   }
   private newCaseState(recipe: CaseRecipe, input: Parameters<TrainingFamilyRuntime["prepare"]>[0]): CaseLearningState {
     const priorExposedStepIds = [...new Set((input.sessions ?? []).filter(session => session.trackId === this.catalog.trackId && session.contentVersion === this.catalog.contentVersion && session.artifactSha256 === this.catalog.artifactSha256).flatMap(session => sessionCaseStates(session).filter(state => state.caseId === recipe.caseId && state.caseVersion === recipe.version).flatMap(state => [...state.priorExposedStepIds, ...state.hintShownStepIds, ...state.solutionExposedStepIds])))];
@@ -387,6 +389,7 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     if (!Number.isFinite(Date.parse(session.startedAt)) || JSON.stringify(session.configurationSnapshot) !== JSON.stringify(certificationSimulationSnapshot(profile, deadline))) throw new Error("Certification simulation snapshot or deadline is invalid.");
     const expected = selectCertificationSimulationQuestions(this.catalog, profile);
     await validateCanonicalSessionPlan(this.catalog, this.interactions, session);
+    assertCanonicalReviewSourceProofs(session, this.catalog);
     if (session.actualLength !== expected.length || session.requestedLength !== expected.length || session.itemOrder.length !== expected.length || new Set(session.itemOrder.map((entry) => entry.item.questionId)).size !== expected.length || session.itemOrder.some((entry, index) => entry.item.questionId !== expected[index]?.questionId) || (session.conditionalReinsertSlots?.length ?? 0) !== 0) throw new Error("Certification simulation plan differs from its weighted profile.");
     const draft = input.draft;
     if (!draft || draft.schemaVersion !== 1 || draft.draftVersion !== 1 || draft.sessionId !== session.id || draft.trackId !== session.trackId || draft.familyId !== FAMILY || !Number.isSafeInteger(draft.revision) || draft.revision < 1 || Date.parse(draft.updatedAt) < Date.parse(session.startedAt) || (session.configurationSnapshot.timer === "absoluteDeadline" && Date.parse(draft.updatedAt) > Date.parse(deadline)) || Number.isNaN(Date.parse(draft.updatedAt))) throw new Error("Certification simulation draft identity, revision, or deadline is unavailable.");

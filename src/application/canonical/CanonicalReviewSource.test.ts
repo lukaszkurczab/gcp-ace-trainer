@@ -188,6 +188,7 @@ test("actual lifecycle prepares and consumes one future manual request without c
     dueAt: original.dueAt,
     policyVersion: original.policyVersion,
     stage: original.stage,
+    legacyUnitProof: { sourceItem: original.sourceItem, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId },
   });
 
   await lifecycle.submitPracticeResponse(correctResponse(question));

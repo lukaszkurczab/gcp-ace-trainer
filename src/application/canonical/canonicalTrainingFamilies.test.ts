@@ -12,13 +12,14 @@ import { createTrainingFamilyRuntimeResolver } from "../trainingFamilyRuntimeRes
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
-import { getActiveMutationJournal, getActiveTrainingSession, getReviewQueueItems, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions } from "../../storage/repositories";
+import { addReviewQueueItems, getActiveMutationJournal, getActiveTrainingSession, getReviewQueueItems, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions } from "../../storage/repositories";
 import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { commitTrainingOutcome } from "../learningMutations/commitTrainingOutcome";
 import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
 import { recoverPendingMutation } from "../learningMutations/recoverPendingMutation";
 import { createAttemptId } from "../identity/trainingIdentity";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
+import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import { createCanonicalAttempt, exactCanonicalQuestionRef } from "./canonicalFamilyMechanics";
 import { buildCanonicalSessionPlan, prepareCanonicalPlanOccurrences, validateCanonicalSessionPlan } from "./canonicalSessionPlanMechanics";
 import { prepareCanonicalOptionOrder } from "./canonicalOptionOrder";
@@ -483,6 +484,7 @@ test("due-queue snapshots bind the identity of a manual request overlay", async 
     dueAt: manual.dueAt,
     policyVersion: "bizq04-v1",
     stage: "manual_requested",
+    legacyUnitProof: { sourceItem: manual.sourceItem, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId },
   });
   await createCanonicalTrainingFamilyRuntime(track).validateResume({ session: prepared.session, draft: null });
 });
@@ -617,6 +619,7 @@ test("future manual request is selectable now and a correct answer consumes only
   assert.deepEqual(snapshot, {
     source: "manual_request", reviewEntryId: original.id, sourceAttemptId: original.sourceAttemptId,
     manualRequestId: original.manualRequestId, dueAt: original.dueAt, policyVersion: original.policyVersion, stage: original.stage,
+    legacyUnitProof: { sourceItem: original.sourceItem, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId },
   });
   const result = await runtime.submitPractice({ session: prepared.session, response: responseFor(question), attempts: [], reviews: [original], now: "2026-01-01T01:00:00.000Z" });
   const mutation = result.reviewMutations[0];
@@ -1069,4 +1072,171 @@ test("Design Interview Simulation timeout can finalize a partial draft without a
   assert.equal(finalized.result.answeredOccurrenceIds.length, 0);
   assert.equal(finalized.result.unansweredOccurrenceIds.length, 1);
   assert.equal(finalized.attempts?.length, 0);
+});
+
+test("all canonical families journal a legacy A need through B in the same unit, including interrupted recovery", async () => {
+  const catalog = await catalogPromise;
+  for (const trackId of ["claude-certified-architect-professional-certification", "coding-interview-dsa-problem-solving", "frontend-system-design-interview"]) {
+    const track = catalog.getTrack(trackId);
+    const mode = track.modes.find(mode => mode.modeId.endsWith("weak-area-review"))!;
+    const b = track.getPool(mode.modeId).find(q => ((q.answer.type === "choice_multiple" && q.answer.optionIds.length > 1) || (q.answer.type === "ordering" && q.answer.orderedElementIds.length >= 4)) && track.questions.some(a => a.questionId !== q.questionId && a.nodeId === q.nodeId && a.mentalUnitId === q.mentalUnitId));
+    assert.ok(b, `${trackId}: partial-capable B and distinct A must exist`);
+    const a = track.questions.find(q => q.questionId !== b.questionId && q.nodeId === b.nodeId && q.mentalUnitId === b.mentalUnitId)!;
+    for (const kind of ["incorrect", "partial", "correct"] as const) {
+      const storage = installMemoryStorage();
+      let lookupAllowed = true;
+      const pinnedTrack = { ...track, questions: [b, ...track.questions.filter(q => q.questionId !== b.questionId)], getPool: (modeId: string) => modeId === mode.modeId ? [b] : track.getPool(modeId), getQuestion: (id: string) => { assert.ok(lookupAllowed, "recovery must not look up or select content"); return track.getQuestion(id); } };
+      const preparedCatalog = createTrainingCatalog(pinnedTrack);
+      const runtime = canonicalTrainingFamilyResolver.resolve({ ...preparedCatalog, getQuestion: id => { assert.ok(lookupAllowed, "recovery must not resolve catalog content"); return preparedCatalog.getQuestion(id); } }, getTrackRegistration(trackId).familyId, createTrainingInteractionPort(pinnedTrack));
+      const original: ReviewQueueEntry = { ...reviewFor(itemRef(track, a.questionId), NOW), id: `legacy:${trackId}:${kind}`, policyVersion: "bizq04-v1", stage: "retention7", status: "active" };
+      await addReviewQueueItems([original], productionTrackAdmissionContext);
+      const prepared = await runtime.prepare({ trackId, modeId: mode.modeId, request: { sessionId: `legacy-session:${trackId}:${kind}`, requestedLength: mode.requestedLengths[0]!, reviewSource: "due_queue" }, attempts: [], reviews: [original], now: NOW });
+      const occurrence = prepared.session.itemOrder[0]!;
+      assert.equal(occurrence.item.questionId, b.questionId);
+      assert.notEqual(occurrence.item.questionId, original.sourceItem.questionId);
+      assert.deepEqual(occurrence.reviewSourceSnapshot?.legacyUnitProof, { sourceItem: original.sourceItem, nodeId: a.nodeId, mentalUnitId: a.mentalUnitId });
+      await commitTrainingSessionStart({ session: prepared.session, draft: null, createdAt: NOW });
+      const partial = b.answer.type === "choice_multiple" ? { type: "choice_multiple", optionIds: b.answer.optionIds.slice(0, -1) } : b.answer.type === "ordering" ? { type: "ordering", orderedElementIds: [b.answer.orderedElementIds[1]!, b.answer.orderedElementIds[0]!, ...b.answer.orderedElementIds.slice(2)] } : null;
+      const outcome = await runtime.submitPractice({ session: prepared.session, response: kind === "correct" ? b.answer : kind === "partial" ? partial : wrongResponse(b), attempts: [], reviews: [original], now: NOW });
+      assert.equal(outcome.attempt.result.kind, kind);
+      const writes = outcome.reviewMutations.filter(m => m.kind === "upsert").map(m => m.entry);
+      assert.equal(writes.length, 1);
+      storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.reviewEntry(original.id) });
+      await assert.rejects(commitTrainingOutcome({ attempt: outcome.attempt, session: outcome.session, reviews: writes, reviewBaseline: outcome.reviewBaseline, createdAt: NOW }), error => error instanceof Error && /canonical/i.test(error.message));
+      assert.ok(await getActiveMutationJournal(productionLearningDataAdmissionContext));
+      storage.setFailurePlan(null);
+      lookupAllowed = false;
+      await recoverPendingMutation();
+      await recoverPendingMutation();
+      const saved = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
+      assert.equal(saved.length, 1);
+      assert.deepEqual({ ...saved[0], dueAt: original.dueAt, stage: original.stage, policyVersion: original.policyVersion, reasons: original.reasons, persistent: original.persistent, lastReviewedAt: undefined }, { ...original, lastReviewedAt: undefined });
+      assert.equal(saved[0]!.id, original.id);
+      assert.equal(saved[0]!.stage, kind === "correct" ? "retention14" : "repair24");
+      assert.equal(saved[0]!.dueAt, kind === "correct" ? "2026-01-15T00:00:00.000Z" : "2026-01-02T00:00:00.000Z");
+      assert.deepEqual(saved[0]!.sourceItem, original.sourceItem);
+      assert.deepEqual(saved[0]!.taxonomyOrSkillRefs, []);
+      assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
+      assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.length, 1);
+      assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+    }
+  }
+});
+
+test("legacy due proof refuses tampering, missing proof and stale snapshots; a whole-track baseline preserves the graded attempt", async () => {
+  const track = (await catalogPromise).getTrack("coding-interview-dsa-problem-solving");
+  const mode = track.getMode("coding-interview-weak-area-review");
+  const b = track.getPool(mode.modeId)[0]!;
+  const a = track.questions.find(q => q.questionId !== b.questionId && q.nodeId === b.nodeId && q.mentalUnitId === b.mentalUnitId)!;
+  assert.ok(a);
+  const runtime = createCanonicalTrainingFamilyRuntime({ ...track, getPool: modeId => modeId === mode.modeId ? [b] : track.getPool(modeId) });
+  const original = reviewFor(itemRef(track, a.questionId), NOW);
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "legacy-negative", requestedLength: mode.requestedLengths[0]!, reviewSource: "due_queue" }, attempts: [], reviews: [original], now: NOW });
+  const occurrence = prepared.session.itemOrder[0]!;
+  const snapshot = occurrence.reviewSourceSnapshot!;
+  assert.ok(snapshot.legacyUnitProof);
+  const tampered = { ...prepared.session, itemOrder: [{ ...occurrence, reviewSourceSnapshot: { ...snapshot, legacyUnitProof: { ...snapshot.legacyUnitProof, mentalUnitId: "foreign" } } }] };
+  await assert.rejects(runtime.submitPractice({ session: tampered, response: b.answer, attempts: [], reviews: [original], now: NOW }), /fingerprint/);
+  for (const invalid of [{ ...snapshot.legacyUnitProof, mentalUnitId: "foreign" }, { ...snapshot.legacyUnitProof, nodeId: "foreign" }, { ...snapshot.legacyUnitProof, sourceItem: { ...snapshot.legacyUnitProof.sourceItem, questionId: "missing-a" } }]) {
+    const changed = { ...prepared.session, itemOrder: [{ ...occurrence, reviewSourceSnapshot: { ...snapshot, legacyUnitProof: invalid } }] };
+    const forgedPlan = createTrainingSession({ ...changed, planFingerprint: await createContentSessionPlanFingerprint(changed as typeof changed & { taxonomyVersion: string }) });
+    await assert.rejects(runtime.validateResume({ session: forgedPlan, draft: null }), /review source proof/);
+  }
+  const { legacyUnitProof: _proof, ...oldSnapshot } = snapshot;
+  const oldBase = { ...prepared.session, itemOrder: [{ ...occurrence, reviewSourceSnapshot: oldSnapshot }] };
+  const oldSession = createTrainingSession({ ...oldBase, planFingerprint: await createContentSessionPlanFingerprint(oldBase as typeof oldBase & { taxonomyVersion: string }) });
+  const missing = await runtime.submitPractice({ session: oldSession, response: b.answer, attempts: [], reviews: [original], now: NOW });
+  assert.equal(missing.reviewSnapshotConflict, true);
+  assert.deepEqual(missing.reviewMutations, []);
+  const stale = await runtime.submitPractice({ session: prepared.session, response: b.answer, attempts: [], reviews: [{ ...original, dueAt: "2025-12-31T00:00:00.000Z" }], now: NOW });
+  assert.equal(stale.reviewSnapshotConflict, true);
+  assert.deepEqual(stale.reviewMutations, []);
+  installMemoryStorage();
+  await addReviewQueueItems([original], productionTrackAdmissionContext);
+  await commitTrainingSessionStart({ session: prepared.session, draft: null, createdAt: NOW });
+  const outcome = await runtime.submitPractice({ session: prepared.session, response: wrongResponse(b), attempts: [], reviews: [original], now: NOW });
+  const sibling = { ...original, id: "legacy-sibling", sourceAttemptId: "sibling-source", sourceItem: itemRef(track, track.questions.find(q => q.nodeId !== b.nodeId)!.questionId) };
+  await addReviewQueueItems([sibling], productionTrackAdmissionContext);
+  assert.equal(await commitTrainingOutcome({ attempt: outcome.attempt, session: outcome.session, reviews: outcome.reviewMutations.filter(m => m.kind === "upsert").map(m => m.entry), reviewBaseline: outcome.reviewBaseline, createdAt: NOW }), true);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [original, sibling]);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
+  assert.equal((await getTrainingSessions(productionTrackAdmissionContext)).value.length, 1);
+});
+
+
+test("legacy due lifecycle submits its pinned A/B proof after discovery rebind and recovers twice without reselection", async () => {
+  const storage = installMemoryStorage();
+  const track = (await catalogPromise).getTrack("coding-interview-dsa-problem-solving");
+  const mode = track.getMode("coding-interview-weak-area-review");
+  const b = track.getPool(mode.modeId)[0]!;
+  const a = track.questions.find(q => q.questionId !== b.questionId && q.nodeId === b.nodeId && q.mentalUnitId === b.mentalUnitId)!;
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
+  const pinned = { track: createTrainingCatalog(track), runtime };
+  const original = reviewFor(itemRef(track, a.questionId), NOW);
+  await addReviewQueueItems([original], productionTrackAdmissionContext);
+  let rebound = false;
+  let discoveries = 0;
+  let preparations = 0;
+  let exactResolutions = 0;
+  const lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW }, sessionIds: { create: async () => "legacy-rebind-session" }, premiumSessionAdmission: { authorize: async () => "allowed" }, packages: {
+    async resolveForDiscovery() { discoveries++; assert.equal(rebound, false, "submission and recovery must not select the rebound catalog"); return pinned; },
+    async resolveForPreparation() { preparations++; throw new Error("Due admission must use discovery once."); },
+    async resolveExactArtifact(identity) { exactResolutions++; assert.deepEqual(identity, { trackId: track.trackId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 }); return pinned; },
+  } });
+  const prepared = await lifecycle.startSession({ trackId: track.trackId, modeId: mode.modeId, request: { requestedLength: mode.requestedLengths[0]!, reviewSource: "due_queue" } });
+  assert.notEqual(prepared.session.itemOrder[0]!.item.questionId, original.sourceItem.questionId);
+  const before = prepared.session.itemOrder[0]!.reviewSourceSnapshot;
+  rebound = true;
+  storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.reviewEntry(original.id) });
+  await assert.rejects(lifecycle.submitPracticeResponse(wrongResponse(b)), /verified canonical outcome/);
+  assert.ok(await getActiveMutationJournal(productionLearningDataAdmissionContext));
+  storage.setFailurePlan(null);
+  const freshLifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW }, premiumSessionAdmission: { authorize: async () => "allowed" }, packages: {
+    async resolveForDiscovery() { throw new Error("Recovery cannot select current discovery."); },
+    async resolveForPreparation() { throw new Error("Recovery cannot prepare another plan."); },
+    async resolveExactArtifact() { return pinned; },
+  } });
+  await freshLifecycle.recoverActiveTrainingOperation();
+  await freshLifecycle.recoverActiveTrainingOperation();
+  assert.equal(discoveries, 1);
+  assert.equal(preparations, 0);
+  assert.ok(exactResolutions >= 1);
+  const [saved] = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
+  assert.equal(saved!.id, original.id);
+  assert.equal(saved!.stage, "repair24");
+  assert.deepEqual(saved!.sourceItem, original.sourceItem);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value[0]!.itemOrder[0]!.reviewSourceSnapshot, before);
+  assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 1);
+  assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+});
+
+test("legacy A/B journal refuses a changed review revision or profile lease before persistence", async () => {
+  const { buildMutationJournal } = await import("../learningMutations/mutationJournalBuilder");
+  const { persistMutationJournal, captureMutationJournalLease } = await import("../../storage/repositories/mutationJournalRepository");
+  const { writeCanonicalJson } = await import("../../storage/repositories/canonicalRecordCodec");
+  const { setActiveProfileLeaseForTests } = await import("../../infrastructure/storage/mmkvClient");
+  const track = (await catalogPromise).getTrack("coding-interview-dsa-problem-solving");
+  const mode = track.getMode("coding-interview-weak-area-review");
+  const b = track.getPool(mode.modeId)[0]!;
+  const a = track.questions.find(q => q.questionId !== b.questionId && q.nodeId === b.nodeId && q.mentalUnitId === b.mentalUnitId)!;
+  for (const fault of ["revision", "lease"] as const) {
+    const storage = installMemoryStorage();
+    const runtime = createCanonicalTrainingFamilyRuntime(track);
+    const original = reviewFor(itemRef(track, a.questionId), NOW);
+    await addReviewQueueItems([original], productionTrackAdmissionContext);
+    const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: `legacy-guard-${fault}`, requestedLength: mode.requestedLengths[0]!, reviewSource: "due_queue" }, attempts: [], reviews: [original], now: NOW });
+    await commitTrainingSessionStart({ session: prepared.session, draft: null, createdAt: NOW });
+    const outcome = await runtime.submitPractice({ session: prepared.session, response: b.answer, attempts: [], reviews: [original], now: NOW });
+    const updated = outcome.reviewMutations.find(m => m.kind === "upsert");
+    assert.ok(updated && updated.kind === "upsert");
+    const journal = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: prepared.session.id, trackId: track.trackId, identity: [outcome.attempt.id], createdAt: NOW, writes: [{ kind: "put_attempt", record: outcome.attempt }, { kind: "update_review_entry", record: updated.entry, transitionId: outcome.attempt.id }, { kind: "put_session", record: outcome.session }] });
+    const lease = captureMutationJournalLease();
+    if (fault === "revision") writeCanonicalJson(STORAGE_KEYS.reviewEntry(original.id), original);
+    else setActiveProfileLeaseForTests({ id: "another-profile", kind: "guest", accountId: null });
+    const before = storage.snapshot();
+    await assert.rejects(persistMutationJournal(journal, productionLearningDataAdmissionContext, lease), error => error instanceof Error && error.cause instanceof Error && (fault === "revision" ? error.cause.name === "StaleMutationRevisionError" : /Canonical write/u.test(error.cause.message)));
+    assert.deepEqual(storage.snapshot(), before);
+    assert.equal((await getTrainingAttempts(productionTrackAdmissionContext)).value.length, 0);
+    assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [original]);
+  }
 });

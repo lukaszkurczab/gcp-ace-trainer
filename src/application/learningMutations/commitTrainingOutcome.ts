@@ -1,4 +1,5 @@
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../../domain";
+import { learningUnitIdentity } from "../../domain/learning/mentalUnitEvidence";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { JournalWriteError } from "../../storage/errors";
 import { getReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
@@ -71,7 +72,15 @@ export async function commitTrainingOutcome(input: {
 }
 
 function baselineMatchesTouchedRefs(baseline: readonly ReviewQueueEntry[], current: readonly ReviewQueueEntry[], touched: readonly ReviewQueueEntry[]): boolean {
-  const keys = new Set(touched.map(reviewConcurrencyKey));
+  // A legacy row has no durable unit attribution. Comparing its whole track
+  // conservatively covers siblings without catalog lookups during commit/recovery.
+  const legacyTracks = new Set(touched.filter(entry => !learningUnitIdentity(entry)).map(entry => entry.trackId));
+  for (const trackId of legacyTracks) {
+    const prior = baseline.filter(entry => entry.trackId === trackId).sort((a, b) => a.id.localeCompare(b.id));
+    const now = current.filter(entry => entry.trackId === trackId).sort((a, b) => a.id.localeCompare(b.id));
+    if (canonicalSerialize(prior) !== canonicalSerialize(now)) return false;
+  }
+  const keys = new Set(touched.filter(entry => !legacyTracks.has(entry.trackId)).map(reviewConcurrencyKey));
   for (const key of keys) {
     const prior = baseline.filter((entry) => reviewConcurrencyKey(entry) === key).sort((a, b) => a.id.localeCompare(b.id));
     const now = current.filter((entry) => reviewConcurrencyKey(entry) === key).sort((a, b) => a.id.localeCompare(b.id));

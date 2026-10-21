@@ -31,3 +31,18 @@ test("session fingerprint uses canonical artifact and occurrence identity", asyn
   assert.notEqual(original, changedArtifact);
   assert.notEqual(original, changedQuestion);
 });
+
+test("legacy unit proof is bound by the existing plan fingerprint and omission retains the old preimage", async () => {
+  const snapshot = { source: "due_queue" as const, reviewEntryId: "review-a", sourceAttemptId: "attempt-a", dueAt: "2026-01-01T00:00:00.000Z", policyVersion: "legacy-unqualified", stage: "legacy_active_unqualified" as const };
+  const old = { ...base, itemOrder: [{ ...base.itemOrder[0]!, reviewSourceSnapshot: snapshot }] };
+  const proof = { sourceItem: { ...base.itemOrder[0]!.item, questionId: "source-a" }, nodeId: "node-u", mentalUnitId: "unit-u" };
+  const session = { ...base, itemOrder: [{ ...base.itemOrder[0]!, reviewSourceSnapshot: { ...snapshot, legacyUnitProof: proof } }] };
+  const original = await createContentSessionPlanFingerprint(session);
+  assert.notEqual(original, await createContentSessionPlanFingerprint(old));
+  for (const legacyUnitProof of [{ ...proof, nodeId: "other" }, { ...proof, mentalUnitId: "other" }, { ...proof, sourceItem: { ...proof.sourceItem, questionId: "other" } }]) {
+    assert.notEqual(original, await createContentSessionPlanFingerprint({ ...session, itemOrder: [{ ...session.itemOrder[0]!, reviewSourceSnapshot: { ...snapshot, legacyUnitProof } }] }));
+  }
+  const { legacyUnitProof: _proof, ...omitted } = session.itemOrder[0]!.reviewSourceSnapshot;
+  assert.equal(JSON.stringify(omitted), JSON.stringify(snapshot));
+  assert.equal(await createContentSessionPlanFingerprint({ ...old, itemOrder: [{ ...old.itemOrder[0]!, reviewSourceSnapshot: omitted }] }), await createContentSessionPlanFingerprint(old));
+});

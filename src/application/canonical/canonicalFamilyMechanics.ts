@@ -2,10 +2,11 @@ import type { ReviewEvidence, ReviewQueueEntry, TrainingAttempt } from "../../do
 import type { TrainingCatalog, TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 import { createResolvedContentRef, resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
 import type { ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
-import type { TrainingSession } from "../../domain";
+import type { TrainingSession, ReviewSourceSnapshot } from "../../domain";
+import { createReviewSourceSnapshot } from "../../domain/learning/reviewQueueEntry";
 import { createAttemptId } from "../identity/trainingIdentity";
 import { createTrainingAttempt } from "../../domain/learning/trainingAttempt";
-import { learningUnitIdentity, learningUnitInCurrentCatalog } from "../../domain/learning/mentalUnitEvidence";
+import { createLegacyReviewUnitProof, reviewEvidenceMatchesAttempt, learningUnitIdentity, learningUnitInCurrentCatalog } from "../../domain/learning/mentalUnitEvidence";
 
 export async function createCanonicalAttempt(input: Readonly<{
   session: TrainingSession;
@@ -103,4 +104,22 @@ export function canonicalQuestionReviewEvidence(catalog: TrainingCatalog, questi
       { axisId: "mental_unit", nodeId: question.mentalUnitId, role: "primary" },
     ],
   };
+}
+
+/** Capture exact legacy attribution once, before session fingerprinting; resume never infers it. */
+export function createCanonicalReviewSourceSnapshot(entry: ReviewQueueEntry, catalog: TrainingCatalog, source: ReviewSourceSnapshot["source"], now: string): ReviewSourceSnapshot {
+  const snapshot = createReviewSourceSnapshot(entry, source, now);
+  const legacyUnitProof = createLegacyReviewUnitProof(entry, catalog);
+  return legacyUnitProof ? Object.freeze({ ...snapshot, legacyUnitProof }) : snapshot;
+}
+
+/** Validate only captured attribution against this session's exact artifact; never infer absent proof on resume. */
+export function assertCanonicalReviewSourceProofs(session: TrainingSession, catalog: TrainingCatalog): void {
+  const branches = (session.conditionalReinsertSlots ?? []).flatMap(slot => [slot.ordinaryBranch, slot.reviewedVariantBranch, slot.exactSourceBranch].filter(branch => branch !== undefined).map(branch => branch.occurrence));
+  for (const occurrence of [...session.itemOrder, ...branches]) {
+    const proof = occurrence.reviewSourceSnapshot?.legacyUnitProof;
+    if (proof === undefined) continue;
+    const question = catalog.getQuestion(occurrence.item.questionId);
+    if (!question || !reviewEvidenceMatchesAttempt({ sourceItem: proof.sourceItem, taxonomyOrSkillRefs: [] }, canonicalQuestionReviewEvidence(catalog, question), proof, catalog)) throw new Error("Canonical review source proof is unavailable in the exact session catalog.");
+  }
 }

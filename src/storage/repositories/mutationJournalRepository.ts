@@ -4,7 +4,7 @@ import { isGoalRecordForPolicy, isGoalRecordShape, normalizeGoalRecord } from ".
 import { isTrackAdmitted, type LearningDataAdmissionContext, type TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
 import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
-import { sameLearningUnit } from "../../domain/learning/mentalUnitEvidence";
+import { reviewEvidenceMatchesAttempt } from "../../domain/learning/mentalUnitEvidence";
 import { matchesReviewSourceSnapshot } from "../../domain/learning/reviewQueueEntry";
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
@@ -651,11 +651,11 @@ function hasValidOperationPlan(record: MutationJournalPlan, context: LearningDat
 /** A queue update may follow a replacement question only through its captured due entry and durable unit attribution. */
 export function reviewTransitionMatchesAttempt(session: TrainingSession | undefined, attempt: TrainingAttempt<unknown>, review: ReviewQueueEntry): boolean {
   if (review.trackId !== attempt.trackId) return false;
-  if (equalItemRef(review.sourceItem, attempt.reviewEvidence.sourceItem)) return true;
   const occurrence = session?.itemOrder.find((candidate) => candidate.occurrenceId === attempt.occurrenceId);
   const snapshot = occurrence?.reviewSourceSnapshot;
+  if (!snapshot?.legacyUnitProof && equalItemRef(review.sourceItem, attempt.reviewEvidence.sourceItem)) return true;
   return (snapshot?.source === "due_queue" || snapshot?.source === "manual_request") && snapshot.reviewEntryId === review.id &&
-    snapshot.sourceAttemptId === review.sourceAttemptId && sameLearningUnit(review, attempt.reviewEvidence);
+    snapshot.sourceAttemptId === review.sourceAttemptId && reviewEvidenceMatchesAttempt(review, attempt.reviewEvidence, snapshot.legacyUnitProof);
 }
 
 function equalItemRef(left: TrainingAttempt["item"], right: TrainingAttempt["item"]): boolean {
@@ -818,7 +818,7 @@ export async function persistMutationJournal(record: MutationJournalRecord, cont
         const attempt = attempts.find((candidate) => candidate.id === write.transitionId);
         if (attempt && !resolvedContentRefsEqual(existing.sourceItem, attempt.reviewEvidence.sourceItem)) {
           const occurrence = session?.itemOrder.find((candidate) => candidate.occurrenceId === attempt.occurrenceId);
-          if (!occurrence?.reviewSourceSnapshot || !matchesReviewSourceSnapshot(occurrence.reviewSourceSnapshot, existing)) {
+          if (!occurrence?.reviewSourceSnapshot || !matchesReviewSourceSnapshot(occurrence.reviewSourceSnapshot, existing) || !reviewTransitionMatchesAttempt(session, attempt, existing)) {
             throw new Error("A cross-question review update must match its captured durable due source.");
           }
         }

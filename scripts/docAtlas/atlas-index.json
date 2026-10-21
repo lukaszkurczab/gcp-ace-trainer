@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "72877745252d9cf5ec11ed7afb6890f3bc95f2b8",
+      "head": "709b9d53c949fbe91b0d0fef93daa79d935ff766",
       "files": [
         {
           "path": ".easignore",
@@ -2429,8 +2429,8 @@
         },
         {
           "path": "scripts/checkReviewSyncBackendCompatibility.mjs",
-          "sha256": "b835b152ed404817174cfb1f83bbf52167580a5120e89fa52deea2dfbfdd5155",
-          "bytes": 6724,
+          "sha256": "f6b6a723f212a139c946ff7b20cdc5d212d8bb89572b3f49f83c12286deedcff",
+          "bytes": 17561,
           "symbols": [],
           "imports": [
             {
@@ -2460,8 +2460,8 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 145,
-          "dynamicLoads": 8
+          "lines": 246,
+          "dynamicLoads": 16
         },
         {
           "path": "scripts/checkWorkspaceDocs.mjs",
@@ -2825,8 +2825,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "2b94cea08b09e067ac75824ca97f5eb4b95cadd5c9cc3b70f530ab0e2da428dd",
-          "bytes": 142442,
+          "sha256": "74d8e2bd48b3e00319506f005b2991f28b66d911f227faa31cda3a34f0a1fbdd",
+          "bytes": 143731,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2837,7 +2837,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 2006
+          "lines": 2016
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -16260,8 +16260,8 @@
         },
         {
           "path": "src/application/canonical/canonicalFamilyMechanics.ts",
-          "sha256": "b3bd9ffa037521c3270bec01eb391293f2fcf9e68b3df052f6fbb44edf0249ce",
-          "bytes": 6344,
+          "sha256": "26009b6df78a33e13b3db33e152cc0a3c264536d1e03d4004b4000bdd1822edf",
+          "bytes": 7994,
           "symbols": [
             "createCanonicalAttempt",
             "scopeAttemptsToLearningTrack",
@@ -16271,7 +16271,9 @@
             "reviewNeedForQuestion",
             "sameCurrentReviewUnit",
             "exactCanonicalQuestionRef",
-            "canonicalQuestionReviewEvidence"
+            "canonicalQuestionReviewEvidence",
+            "createCanonicalReviewSourceSnapshot",
+            "assertCanonicalReviewSourceProofs"
           ],
           "imports": [
             {
@@ -16305,33 +16307,39 @@
               "line": 5
             },
             {
+              "specifier": "../../domain/learning/reviewQueueEntry",
+              "kind": "static",
+              "target": "src/domain/learning/reviewQueueEntry.ts",
+              "line": 6
+            },
+            {
               "specifier": "../identity/trainingIdentity",
               "kind": "static",
               "target": "src/application/identity/trainingIdentity.ts",
-              "line": 6
+              "line": 7
             },
             {
               "specifier": "../../domain/learning/trainingAttempt",
               "kind": "static",
               "target": "src/domain/learning/trainingAttempt.ts",
-              "line": 7
+              "line": 8
             },
             {
               "specifier": "../../domain/learning/mentalUnitEvidence",
               "kind": "static",
               "target": "src/domain/learning/mentalUnitEvidence.ts",
-              "line": 8
+              "line": 9
             },
             {
               "specifier": "../../domain",
               "kind": "type",
               "target": "src/domain/index.ts",
-              "line": 98
+              "line": 99
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 107
+          "lines": 126
         },
         {
           "path": "src/application/canonical/canonicalInteractionPresentation.ts",
@@ -16682,8 +16690,8 @@
         },
         {
           "path": "src/application/canonical/CanonicalReviewAnswerTime.test.ts",
-          "sha256": "6e64d079e0b139e2a11a23ac63aa3d4c7834eb8d5e6866de21e32f8d30c546a9",
-          "bytes": 29203,
+          "sha256": "0fd961d2203bfeb1bc5e2d568ebe2978bc971a517e0895e7aa7986670f6bc85a",
+          "bytes": 29768,
           "symbols": [],
           "imports": [
             {
@@ -16817,12 +16825,12 @@
             "a persisted legacy due session keeps its pre-snapshot fingerprint but cannot earn due credit",
             "a completed retention28 transition consumes its manual overlay through the real journal and repository"
           ],
-          "lines": 406
+          "lines": 409
         },
         {
           "path": "src/application/canonical/CanonicalReviewSource.test.ts",
-          "sha256": "4c1e1c537dcf7b63ebeb978bb20e905775a03d21050f1dc8ecd8efe47d1f079a",
-          "bytes": 21016,
+          "sha256": "293eaade9337848f207f7e42ad733d06a8eb010c6238b39ce8581f31488c48eb",
+          "bytes": 21136,
           "symbols": [],
           "imports": [
             {
@@ -16929,7 +16937,7 @@
             "invalid review sources and refs are rejected on practice and simulation before selection",
             "actual lifecycle rejects review source on a simulation before any durable session write"
           ],
-          "lines": 325
+          "lines": 326
         },
         {
           "path": "src/application/canonical/canonicalSessionPlanMechanics.ts",
@@ -17068,8 +17076,8 @@
         },
         {
           "path": "src/application/canonical/canonicalTrainingFamilies.test.ts",
-          "sha256": "d96be0d469cf484b1274751ee98d5116b722e210a1bd7c5c4cc71b8afe85fb4b",
-          "bytes": 84844,
+          "sha256": "c887bc18d9dd65477998dbc7036ec9ac9a88154f54d809a26b2964e4b2d6218b",
+          "bytes": 101102,
           "symbols": [],
           "imports": [
             {
@@ -17199,28 +17207,58 @@
               "line": 21
             },
             {
+              "specifier": "../bootstrap/trainingLifecycleComposition",
+              "kind": "static",
+              "target": "src/application/bootstrap/trainingLifecycleComposition.ts",
+              "line": 22
+            },
+            {
               "specifier": "./canonicalFamilyMechanics",
               "kind": "static",
               "target": "src/application/canonical/canonicalFamilyMechanics.ts",
-              "line": 22
+              "line": 23
             },
             {
               "specifier": "./canonicalSessionPlanMechanics",
               "kind": "static",
               "target": "src/application/canonical/canonicalSessionPlanMechanics.ts",
-              "line": 23
+              "line": 24
             },
             {
               "specifier": "./canonicalOptionOrder",
               "kind": "static",
               "target": "src/application/canonical/canonicalOptionOrder.ts",
-              "line": 24
+              "line": 25
             },
             {
               "specifier": "../../domain/learning/packageCompletionRule",
               "kind": "static",
               "target": "src/domain/learning/packageCompletionRule.ts",
-              "line": 25
+              "line": 26
+            },
+            {
+              "specifier": "../learningMutations/mutationJournalBuilder",
+              "kind": "dynamic",
+              "target": "src/application/learningMutations/mutationJournalBuilder.ts",
+              "line": 1214
+            },
+            {
+              "specifier": "../../storage/repositories/mutationJournalRepository",
+              "kind": "dynamic",
+              "target": "src/storage/repositories/mutationJournalRepository.ts",
+              "line": 1215
+            },
+            {
+              "specifier": "../../storage/repositories/canonicalRecordCodec",
+              "kind": "dynamic",
+              "target": "src/storage/repositories/canonicalRecordCodec.ts",
+              "line": 1216
+            },
+            {
+              "specifier": "../../infrastructure/storage/mmkvClient",
+              "kind": "dynamic",
+              "target": "src/infrastructure/storage/mmkvClient.ts",
+              "line": 1217
             }
           ],
           "jsonKeys": [],
@@ -17253,9 +17291,13 @@
             "GCP simulation finalization scores only complete responses and partitions all 50 occurrences",
             "Coding Mock consumes its exact ordered 40-question profile with foreground timer and shared draft runtime",
             "Design Interview Simulation uses each exact track profile, resumes durable stage text, and finalizes completeness only",
-            "Design Interview Simulation timeout can finalize a partial draft without assigning semantic correctness"
+            "Design Interview Simulation timeout can finalize a partial draft without assigning semantic correctness",
+            "all canonical families journal a legacy A need through B in the same unit, including interrupted recovery",
+            "legacy due proof refuses tampering, missing proof and stale snapshots; a whole-track baseline preserves the graded attempt",
+            "legacy due lifecycle submits its pinned A/B proof after discovery rebind and recovers twice without reselection",
+            "legacy A/B journal refuses a changed review revision or profile lease before persistence"
           ],
-          "lines": 1073
+          "lines": 1243
         },
         {
           "path": "src/application/canonical/CanonicalTrainingSelection.test.ts",
@@ -19098,8 +19140,8 @@
         },
         {
           "path": "src/application/certification/certificationTrainingRuntime.ts",
-          "sha256": "681b7aa594a5b9be1f72de4d9060e23f503a7a6489cd2469728debbd9425bba9",
-          "bytes": 56939,
+          "sha256": "3ba0875e3dcd8fb9ad45bd5313b9b8e4cd5f0c795f9c7b0648903c6caeeb47bd",
+          "bytes": 57220,
           "symbols": [
             "CertificationTrainingRuntime"
           ],
@@ -19209,7 +19251,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 434
+          "lines": 437
         },
         {
           "path": "src/application/certification/index.ts",
@@ -20102,8 +20144,8 @@
         },
         {
           "path": "src/application/coding-interview/codingInterviewTrainingRuntime.ts",
-          "sha256": "9570b8291d3e0a190d63f52ce43fbaf8aa3f10273c0d05be0715c405c6eef0c3",
-          "bytes": 33560,
+          "sha256": "b2f48e62fd5f5ecd85b10a15e17dd24418330e7eedd29cba279fff345222a0f5",
+          "bytes": 33777,
           "symbols": [
             "CodingInterviewTrainingRuntime"
           ],
@@ -20171,7 +20213,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 246
+          "lines": 248
         },
         {
           "path": "src/application/coding-interview/codingProgressProjection.ts",
@@ -20830,8 +20872,8 @@
         },
         {
           "path": "src/application/design-interview/designInterviewTrainingRuntime.ts",
-          "sha256": "de9e0699c8abf2fc8ecb7a79a3dba4734ceeb495600d9f9a1e69a5e526ceab5c",
-          "bytes": 32001,
+          "sha256": "890f941a62fbd3a49f53d0026e16b245ec3e4069aad27fd486837c8631dde1b2",
+          "bytes": 32218,
           "symbols": [
             "DesignInterviewTrainingRuntime"
           ],
@@ -20899,7 +20941,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 226
+          "lines": 228
         },
         {
           "path": "src/application/design-interview/index.ts",
@@ -22442,8 +22484,8 @@
         },
         {
           "path": "src/application/learningMutations/commitTrainingOutcome.ts",
-          "sha256": "cd0e65e00f70bc04a68275b6481d617b58390746275b4eaa470c170c936cc91f",
-          "bytes": 4808,
+          "sha256": "d8de97ac0178c1c1f1a576c92c79e772c417f6995d7de4051ed2919fcaa138ff",
+          "bytes": 5557,
           "symbols": [
             "commitTrainingOutcome"
           ],
@@ -22455,63 +22497,69 @@
               "line": 1
             },
             {
+              "specifier": "../../domain/learning/mentalUnitEvidence",
+              "kind": "static",
+              "target": "src/domain/learning/mentalUnitEvidence.ts",
+              "line": 2
+            },
+            {
               "specifier": "../../domain/identity/canonicalSerialization",
               "kind": "static",
               "target": "src/domain/identity/canonicalSerialization.ts",
-              "line": 2
+              "line": 3
             },
             {
               "specifier": "../../storage/errors",
               "kind": "static",
               "target": "src/storage/errors.ts",
-              "line": 3
+              "line": 4
             },
             {
               "specifier": "../../storage/repositories/reviewQueueRepository",
               "kind": "static",
               "target": "src/storage/repositories/reviewQueueRepository.ts",
-              "line": 4
+              "line": 5
             },
             {
               "specifier": "../../storage/repositories/mutationJournalRepository",
               "kind": "static",
               "target": "src/storage/repositories/mutationJournalRepository.ts",
-              "line": 5
+              "line": 6
             },
             {
               "specifier": "../mutationBoundary",
               "kind": "static",
               "target": "src/application/mutationBoundary.ts",
-              "line": 6
+              "line": 7
             },
             {
               "specifier": "./mutationJournalBuilder",
               "kind": "static",
               "target": "src/application/learningMutations/mutationJournalBuilder.ts",
-              "line": 7
+              "line": 8
             },
             {
               "specifier": "./commitMutation",
               "kind": "static",
               "target": "src/application/learningMutations/commitMutation.ts",
-              "line": 8
+              "line": 9
             },
             {
               "specifier": "../tracks/trackAdmissionContext",
               "kind": "static",
               "target": "src/application/tracks/trackAdmissionContext.ts",
-              "line": 9
+              "line": 10
             },
             {
               "specifier": "../canonical/canonicalFamilyMechanics",
               "kind": "static",
               "target": "src/application/canonical/canonicalFamilyMechanics.ts",
-              "line": 10
+              "line": 11
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 90
+          "lines": 99
         },
         {
           "path": "src/application/learningMutations/commitTrainingSessionAdvance.ts",
@@ -35226,8 +35274,8 @@
         },
         {
           "path": "src/content/application/contentSessionIdentity.test.ts",
-          "sha256": "1f25aa12a3b16a384974fa366f1d0bf485b150bbd2d1a11a1271c32aefe002ff",
-          "bytes": 1337,
+          "sha256": "1d8ff66b61ade52324ca733aa435d80893151ce79ca247fb67fcfd74318fe024",
+          "bytes": 2919,
           "symbols": [],
           "imports": [
             {
@@ -35251,9 +35299,10 @@
           ],
           "jsonKeys": [],
           "testNames": [
-            "session fingerprint uses canonical artifact and occurrence identity"
+            "session fingerprint uses canonical artifact and occurrence identity",
+            "legacy unit proof is bound by the existing plan fingerprint and omission retains the old preimage"
           ],
-          "lines": 34
+          "lines": 49
         },
         {
           "path": "src/content/application/contentSessionIdentity.ts",
@@ -39554,15 +39603,15 @@
         },
         {
           "path": "src/domain/account/accountWireState.ts",
-          "sha256": "85e12261a31c59ca373ebbc949a49e84458f3c839a5db0621cb2f4da6c319acf",
-          "bytes": 11711,
+          "sha256": "0c5d4dc99f8673ae2e642408fabaeaaf87a52bc9eaa44d3e9d7c4fc00aba8346",
+          "bytes": 12754,
           "symbols": [
             "isAccountWireState"
           ],
           "imports": [],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 119
+          "lines": 135
         },
         {
           "path": "src/domain/account/terminalSessionWire.ts",
@@ -40801,8 +40850,8 @@
         },
         {
           "path": "src/domain/learning/mentalUnitEvidence.test.ts",
-          "sha256": "86125f05ba749516e2ad69f6b1d5673b7349d33543c48b344918145f0208377a",
-          "bytes": 1453,
+          "sha256": "929cb4081ba39f16a3499829ca9bc21dd6fade6cb8dca875b05c162ece2558d2",
+          "bytes": 4209,
           "symbols": [],
           "imports": [
             {
@@ -40828,20 +40877,31 @@
               "kind": "type",
               "target": "src/domain/learning/reviewEvidence.ts",
               "line": 4
+            },
+            {
+              "specifier": "./mentalUnitEvidence",
+              "kind": "dynamic",
+              "target": "src/domain/learning/mentalUnitEvidence.ts",
+              "line": 19
             }
           ],
           "jsonKeys": [],
           "testNames": [
-            "unit identity comes only from unambiguous saved attribution and includes track and node"
+            "unit identity comes only from unambiguous saved attribution and includes track and node",
+            "legacy attribution requires the exact source, absent unit refs and agreement of every node ref"
           ],
-          "lines": 17
+          "lines": 47
         },
         {
           "path": "src/domain/learning/mentalUnitEvidence.ts",
-          "sha256": "7744d4700105a1a749ce8a6e755a8248ec8fd0a4c42e3574e3c3a6540fe333cb",
-          "bytes": 2033,
+          "sha256": "e16460cde1ac25deca5d89780365e54bf7c6cf388677cab78045eba75c4a47ab",
+          "bytes": 5355,
           "symbols": [
             "LearningUnitIdentity",
+            "LegacyReviewUnitProof",
+            "isLegacyReviewUnitProof",
+            "createLegacyReviewUnitProof",
+            "reviewEvidenceMatchesAttempt",
             "learningUnitIdentity",
             "sameLearningUnit",
             "learningUnitInCurrentCatalog"
@@ -40852,11 +40912,17 @@
               "kind": "type",
               "target": "src/domain/learning/reviewEvidence.ts",
               "line": 1
+            },
+            {
+              "specifier": "./resolvedContentRef",
+              "kind": "static",
+              "target": "src/domain/learning/resolvedContentRef.ts",
+              "line": 2
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 35
+          "lines": 74
         },
         {
           "path": "src/domain/learning/paceForecast.test.ts",
@@ -41512,8 +41578,8 @@
         },
         {
           "path": "src/domain/learning/reviewQueueEntry.ts",
-          "sha256": "a0ac0bd0320d20ecfed3389eef7dcdbc5aefbe7cb5610c066a9d9d56d74225f0",
-          "bytes": 6400,
+          "sha256": "2b49ce75e3de52a7440ae1a7ceee7eb697b8f8a297bc5d2f5985ba8fe7d3d54b",
+          "bytes": 6510,
           "symbols": [
             "REVIEW_REASONS",
             "ReviewReason",
@@ -41538,21 +41604,27 @@
               "line": 1
             },
             {
+              "specifier": "./mentalUnitEvidence",
+              "kind": "type",
+              "target": "src/domain/learning/mentalUnitEvidence.ts",
+              "line": 2
+            },
+            {
               "specifier": "./trackIdentity",
               "kind": "type",
               "target": "src/domain/learning/trackIdentity.ts",
-              "line": 2
+              "line": 3
             },
             {
               "specifier": "./resolvedContentRef",
               "kind": "static",
               "target": "src/domain/learning/resolvedContentRef.ts",
-              "line": 3
+              "line": 4
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 116
+          "lines": 118
         },
         {
           "path": "src/domain/learning/sessionResult.ts",
@@ -41654,8 +41726,8 @@
         },
         {
           "path": "src/domain/learning/trainingSession.ts",
-          "sha256": "ad365f1e009ff4de96d18a7483c876e0e47e543ecd717740b4becafcd43c72b7",
-          "bytes": 20787,
+          "sha256": "47010fc2a163d202008a9b49fcd9e2462743cd0742bc9d2d6dff229c495d75fb",
+          "bytes": 22105,
           "symbols": [
             "TrainingSessionStatus",
             "TrainingSessionConfigurationValue",
@@ -41709,15 +41781,21 @@
               "line": 5
             },
             {
+              "specifier": "./mentalUnitEvidence",
+              "kind": "static",
+              "target": "src/domain/learning/mentalUnitEvidence.ts",
+              "line": 6
+            },
+            {
               "specifier": "./reviewQueueEntry",
               "kind": "static",
               "target": "src/domain/learning/reviewQueueEntry.ts",
-              "line": 6
+              "line": 7
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 317
+          "lines": 330
         },
         {
           "path": "src/domain/learning/trainingSessionDraft.ts",
@@ -62859,8 +62937,8 @@
         },
         {
           "path": "src/storage/repositories/canonicalRepositories.test.ts",
-          "sha256": "7aa3b3d9d7458516e1069f69c330564fd102b30136771c64ad32f9164820454e",
-          "bytes": 16655,
+          "sha256": "7068408850f4227eb5490b8ceaa41e64a103b8fb07244461909263e149ac1aa0",
+          "bytes": 19261,
           "symbols": [],
           "imports": [
             {
@@ -62948,9 +63026,10 @@
             "strict session reads reject a legacy-shaped stored record without inference",
             "canonical repository bootstrap reports the exact six steps in order",
             "canonical repository bootstrap isolates a throwing step observer without wrapping failures",
-            "session revoke sign-out repository creates v7 and reads legacy v4 while deletion remains v4"
+            "session revoke sign-out repository creates v7 and reads legacy v4 while deletion remains v4",
+            "legacy unit proof is strict, pinned and deeply frozen in ordinary and conditional occurrences"
           ],
-          "lines": 350
+          "lines": 374
         },
         {
           "path": "src/storage/repositories/canonicalRepositories.ts",
@@ -64676,8 +64755,8 @@
         },
         {
           "path": "src/storage/repositories/mutationJournalRepository.ts",
-          "sha256": "01cad6d03f751f3fb2d5c9249b47a7628592e5dddf742151aced06bafcbdefdc",
-          "bytes": 78321,
+          "sha256": "a9dec46aa599aa159d325cdc31b59b49839ef5338164071dfd86908b44262fe8",
+          "bytes": 78464,
           "symbols": [
             "ActiveProfileStorageLease",
             "JournalWrite",
@@ -66014,8 +66093,8 @@
         },
         {
           "path": "src/storage/repositories/trainingModelGuards.ts",
-          "sha256": "a77bc3157860c6030fa7e0610d52153404465c9da3636349beac06aa0f2378ba",
-          "bytes": 23820,
+          "sha256": "2857c7a40352d9c6e73b811029dc0bd118feff670f7ecd7e8758c48e5d9cd0bd",
+          "bytes": 24096,
           "symbols": [
             "isTrainingSessionArray",
             "isTrainingSessionResult",
@@ -66031,87 +66110,93 @@
           ],
           "imports": [
             {
+              "specifier": "../../domain/learning/mentalUnitEvidence",
+              "kind": "static",
+              "target": "src/domain/learning/mentalUnitEvidence.ts",
+              "line": 1
+            },
+            {
               "specifier": "../../domain/learning/caseEvidence",
               "kind": "static",
               "target": "src/domain/learning/caseEvidence.ts",
-              "line": 1
+              "line": 2
             },
             {
               "specifier": "../../domain/learning/reviewQueueEntry",
               "kind": "static",
               "target": "src/domain/learning/reviewQueueEntry.ts",
-              "line": 2
+              "line": 3
             },
             {
               "specifier": "../../domain/learning/attemptResult",
               "kind": "static",
               "target": "src/domain/learning/attemptResult.ts",
-              "line": 3
+              "line": 4
             },
             {
               "specifier": "../../domain/learning/trainingSession",
               "kind": "static",
               "target": "src/domain/learning/trainingSession.ts",
-              "line": 4
+              "line": 5
             },
             {
               "specifier": "../../domain/learning/trainingSessionDraft",
               "kind": "static",
               "target": "src/domain/learning/trainingSessionDraft.ts",
-              "line": 5
+              "line": 6
             },
             {
               "specifier": "../../domain/learning/sessionResult",
               "kind": "static",
               "target": "src/domain/learning/sessionResult.ts",
-              "line": 6
+              "line": 7
             },
             {
               "specifier": "../../domain/learning/foregroundTimerState",
               "kind": "static",
               "target": "src/domain/learning/foregroundTimerState.ts",
-              "line": 7
+              "line": 8
             },
             {
               "specifier": "../../domain/learning/contentItemRef",
               "kind": "static",
               "target": "src/domain/learning/contentItemRef.ts",
-              "line": 8
+              "line": 9
             },
             {
               "specifier": "../../domain/learning/resolvedContentRef",
               "kind": "static",
               "target": "src/domain/learning/resolvedContentRef.ts",
-              "line": 9
+              "line": 10
             },
             {
               "specifier": "../../domain/learning/reviewEvidence",
               "kind": "type",
               "target": "src/domain/learning/reviewEvidence.ts",
-              "line": 10
+              "line": 11
             },
             {
               "specifier": "../../domain/learning/trainingAttempt",
               "kind": "type",
               "target": "src/domain/learning/trainingAttempt.ts",
-              "line": 11
+              "line": 12
             },
             {
               "specifier": "../../domain/tracks/trackAdmissionContext",
               "kind": "static",
               "target": "src/domain/tracks/trackAdmissionContext.ts",
-              "line": 12
+              "line": 13
             },
             {
               "specifier": "../../domain/learning/resolvedContentRef",
               "kind": "static",
               "target": "src/domain/learning/resolvedContentRef.ts",
-              "line": 13
+              "line": 14
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 322
+          "lines": 324
         },
         {
           "path": "src/storage/repositories/trainingSessionDraftRepository.ts",
@@ -74432,15 +74517,15 @@
         },
         {
           "path": "src/modules/progress/accountWireState.ts",
-          "sha256": "85e12261a31c59ca373ebbc949a49e84458f3c839a5db0621cb2f4da6c319acf",
-          "bytes": 11711,
+          "sha256": "0c5d4dc99f8673ae2e642408fabaeaaf87a52bc9eaa44d3e9d7c4fc00aba8346",
+          "bytes": 12754,
           "symbols": [
             "isAccountWireState"
           ],
           "imports": [],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 119
+          "lines": 135
         },
         {
           "path": "src/modules/progress/contracts.ts",
@@ -99662,7 +99747,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "2b94cea08b09e067ac75824ca97f5eb4b95cadd5c9cc3b70f530ab0e2da428dd",
+  "catalogHash": "74d8e2bd48b3e00319506f005b2991f28b66d911f227faa31cda3a34f0a1fbdd",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "a6f3005ba6de89e0c57e870d1bddeee966c723549609690b9287bf501689377f",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -99695,7 +99780,7 @@
     "Atlas/Struktura/patternly/plugins/plugins — folder aplikacja.md": "bf874d79fb8c2d747616c98d7548ebf39c137155128fc19a73cbdcdd681d48f9",
     "Atlas/Struktura/patternly/schemas/schemas — folder aplikacja.md": "1bbd280ec5e1dc302bcb726ea877c7fd94e906f58bc8f2ff54e737a04d174bbb",
     "Atlas/Struktura/patternly/schemas/release/release — folder aplikacja · schemas.md": "cd5b0616f2c48f274a72e43693df393626876590d9a333ee4bcbb3e63fb930c6",
-    "Atlas/Struktura/patternly/scripts/scripts — folder aplikacja.md": "e6eefc1d3f8d2225f85127f820a4a0320c10b6c35ce099ff7485ffd620dbf2a7",
+    "Atlas/Struktura/patternly/scripts/scripts — folder aplikacja.md": "dc04ffc565a7b7267197b272ddeb13b36eacbf35abb4b80b20d252610acc31a0",
     "Atlas/Struktura/patternly/scripts/architecture/architecture — folder aplikacja · scripts.md": "1ae6ece83f8abe7c1abb5996cf37cf6cf20081c79db549478227c091423c1f02",
     "Atlas/Struktura/patternly/scripts/docAtlas/docAtlas — folder aplikacja · scripts.md": "3624d341451e4ce3ca58cce5e011039bd726e09bd43806ba4b9f22a21f719452",
     "Atlas/Struktura/patternly/scripts/fixtures/fixtures — folder aplikacja · scripts.md": "1134fbd8512af188081474a324584c1eb8dbbd0931f5fa52175c4b94f1617ca2",
@@ -99709,14 +99794,14 @@
     "Atlas/Struktura/patternly/src/application/application — folder aplikacja · src.md": "7ec04c17e2db0783b09ec8090311f8b5cdffaf0e6b90481d1954783a8ffc1659",
     "Atlas/Struktura/patternly/src/application/account/account — folder aplikacja · src › application.md": "a19ad6d119d8d9f8e3e0a00fd791c7f02db07dead0b214960edb653572e44263",
     "Atlas/Struktura/patternly/src/application/bootstrap/bootstrap — folder aplikacja · src › application.md": "4c03a4ccdfff75460c3e28d015827e007d9629098655590638306dccd9c6b440",
-    "Atlas/Struktura/patternly/src/application/canonical/canonical — folder aplikacja · src › application.md": "623b6339af5f18d843705a2cee53a1ff61b081af825684f3e0a9ddbc551eed48",
+    "Atlas/Struktura/patternly/src/application/canonical/canonical — folder aplikacja · src › application.md": "d86f422786e71bf56bcb4fb4abf0cda7e64592158fe4742c1ac5b384641df7de",
     "Atlas/Struktura/patternly/src/application/certification/certification — folder aplikacja · src › application.md": "b55e9d820afdaedbe315ac6f937784c00588bcd5edbc5918b7d9a0eba893a7c7",
     "Atlas/Struktura/patternly/src/application/coding-interview/coding-interview — folder aplikacja · src › application.md": "4bc749507583e13526653821075889bec521f5bef3b4ffa660a34bb039147588",
     "Atlas/Struktura/patternly/src/application/contentReports/contentReports — folder aplikacja · src › application.md": "f65f2d2f6919325dd1bd69852e5c40551c00cf6871b2a644161b5af8f37fcf4f",
     "Atlas/Struktura/patternly/src/application/design-interview/design-interview — folder aplikacja · src › application.md": "3445311e97a52a9f2aeb671fed78c0d76256726a8625e72cdc4e8f8718ecce63",
     "Atlas/Struktura/patternly/src/application/guest/guest — folder aplikacja · src › application.md": "242edf6d7f3d01fd47d960dd51424349c688c396399394e0a5309c298dd2bace",
     "Atlas/Struktura/patternly/src/application/identity/identity — folder aplikacja · src › application.md": "1e036107b15dd8f80b613c06d6e1c9d2cf2fba5b9b8fbd1840b24146d3e9508a",
-    "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "bcfd3397cab8ef356be373cbd5959021bc49038ddd4572bb8e1d2e2148574d1d",
+    "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "6d8840ee535ef19c661625e79d326fba08faa1b87184b0d071ca64998676f09e",
     "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "c2321667bf98fdd743cd0f771cd2c3d83fb23b4217674e2d8b52074d698f0f3b",
     "Atlas/Struktura/patternly/src/application/practice/practice — folder aplikacja · src › application.md": "3414acea97e54eb9431ca345be144de3c536fb6d5ce6cb0f3cfece9b06a2a903",
     "Atlas/Struktura/patternly/src/application/runtime/runtime — folder aplikacja · src › application.md": "ff4eb4664d4cb961bfc9b01c8a1d24b576c3eb0ea771ecd1cb3480b7f3d895b4",
@@ -99742,7 +99827,7 @@
     "Atlas/Struktura/patternly/src/content/__fixtures__/release-acceptance/ood-node-closure-19/reason-amendment-19a/reason-amendment-19a — folder aplikacja · src › content › __fixtures__ › release-acceptance › ood-node-closure-19.md": "62fa5f176c67a7e1182b1956f7a9384da5d77da78ce2d86650889787d7a9c0f4",
     "Atlas/Struktura/patternly/src/content/__fixtures__/release-acceptance/ood-node-closure-20/ood-node-closure-20 — folder aplikacja · src › content › __fixtures__ › release-acceptance.md": "d8db2a32b6d13215d6c69b13095a600332d18318d0ee53e81d9a6909432eba6e",
     "Atlas/Struktura/patternly/src/content/__fixtures__/release-acceptance/ood-node-closure-20/proposals/proposals — folder aplikacja · src › content › __fixtures__ › release-acceptance › ood-node-closure-20.md": "d11de3530bf001d7f5ac9f59380154c80b33ae683f79f405879c1f49b5002315",
-    "Atlas/Struktura/patternly/src/content/application/application — folder aplikacja · src › content.md": "4bae79d2b984d647c4ede2974ec9bff662275412046ace4eb948b7919a678622",
+    "Atlas/Struktura/patternly/src/content/application/application — folder aplikacja · src › content.md": "e655a05bad11db4762ec60aac208383036a82d3bb47d451a1b3212aae644ef8a",
     "Atlas/Struktura/patternly/src/content/bundled/bundled — folder aplikacja · src › content.md": "48adf57ca20edb4ae33c30577a94010a45c7badcf8147d2bd18a7216ab46685f",
     "Atlas/Struktura/patternly/src/content/canonical/canonical — folder aplikacja · src › content.md": "2852e1232a4fd6c684a9e3ffbd297cd12859d5af6b00c8df5ec663b7ddf363b9",
     "Atlas/Struktura/patternly/src/content/canonical/interactions/interactions — folder aplikacja · src › content › canonical.md": "3b0bd0711b6479e1662d5ab7de963f2b79bc306642126e23a8dc654cf3d72b41",
@@ -99753,11 +99838,11 @@
     "Atlas/Struktura/patternly/src/content/generated/retained-content/retained-content — folder aplikacja · src › content › generated.md": "2c38568e7c9f66c5dbefc5e96ff26bf5772dd193140bae06ffa8c74a6bf03642",
     "Atlas/Struktura/patternly/src/content/runtime/runtime — folder aplikacja · src › content.md": "5328e82bcaa13b7e2413fc63946fc90f21058f2fc234d08b944a3ec11f0a6288",
     "Atlas/Struktura/patternly/src/domain/domain — folder aplikacja · src.md": "2e2d5cd0923880a5ff010977e45ad06d9912633c6be3adaf4565a8c47934fc1f",
-    "Atlas/Struktura/patternly/src/domain/account/account — folder aplikacja · src › domain.md": "4c0a92e3dbaa9e04f1dec5b4fbe23f558743a606e2e19b67ba2943b54296d8c1",
+    "Atlas/Struktura/patternly/src/domain/account/account — folder aplikacja · src › domain.md": "f635ba78460fb8d8561adfd988a8a59bfbdd8f05e56d32160f006d39314ee061",
     "Atlas/Struktura/patternly/src/domain/entitlements/entitlements — folder aplikacja · src › domain.md": "77a810c27f51a9d24d5d405c958171ce7d07cbef2496c61aff129b402435691e",
     "Atlas/Struktura/patternly/src/domain/goals/goals — folder aplikacja · src › domain.md": "6e607aac773dad20a52838c5ab0b6e2209e5c29b85ca35bdebf2e2bd3c7c3acf",
     "Atlas/Struktura/patternly/src/domain/identity/identity — folder aplikacja · src › domain.md": "94b12a76ced9357e84905628f1b7c107b5913a3e453b70610b456100e3c1610a",
-    "Atlas/Struktura/patternly/src/domain/learning/learning — folder aplikacja · src › domain.md": "6f26736105432930cf345b4417274c86dc979539bd1c12761fd74d857403d038",
+    "Atlas/Struktura/patternly/src/domain/learning/learning — folder aplikacja · src › domain.md": "94c7bdc0afd11355f840798e025868973ee701c06460a34e098dbfd7e7d09264",
     "Atlas/Struktura/patternly/src/domain/tracks/tracks — folder aplikacja · src › domain.md": "cbf37e54b4c87bb641913104d949751dbce38a088311316e32611ec30e99d331",
     "Atlas/Struktura/patternly/src/features/features — folder aplikacja · src.md": "ae097f8dfd6c8b90a4de60b29ce3e75682b3a161a3dec937dc8b5c768ad5e667",
     "Atlas/Struktura/patternly/src/features/account/account — folder aplikacja · src › features.md": "7b9e18108ef4b3a1729f4023ba26a1a2b66719d89a38f018cdb15cd236d3f245",
@@ -99799,7 +99884,7 @@
     "Atlas/Struktura/patternly/src/preferences/preferences — folder aplikacja · src.md": "629dfc570025b2c42b79b06b805ab3540b228c204ab6e9a2168b5502664ecbe5",
     "Atlas/Struktura/patternly/src/storage/storage — folder aplikacja · src.md": "05a0e71b2769ed89a96bc9e2e4bb89d0d7096b5f39846c89d09d04e860d25936",
     "Atlas/Struktura/patternly/src/storage/contracts/contracts — folder aplikacja · src › storage.md": "ff3a2cbdc1940b17b19ef7aa6733375ed0ac8b32c45ae2af5d17757cfcd41a92",
-    "Atlas/Struktura/patternly/src/storage/repositories/repositories — folder aplikacja · src › storage.md": "1d7709920d69403cead6605e33e3dff5314d9e58c5bd2304be6ecf5b29e75d0e",
+    "Atlas/Struktura/patternly/src/storage/repositories/repositories — folder aplikacja · src › storage.md": "06f57cbca40bb70e2b9472cb5eb2a5ce5cf246d960af3a0b7b8110c7b4c241dc",
     "Atlas/Struktura/patternly/src/testing/testing — folder aplikacja · src.md": "da5c0aca00d5008cb13fc70454149a45ad13977c12513b468a042118cd3a5e3e",
     "Atlas/Struktura/patternly/src/theme/theme — folder aplikacja · src.md": "4a5c6994fb8ce32266d626483f972a2ff69cf7f085d3c65cc6997c1e128177a6",
     "Atlas/Struktura/patternly/src/tracks/tracks — folder aplikacja · src.md": "a5b427bba3350757962eee711f8553bfcfe89bbdc0976b3decd24365ee05e6d5",
@@ -99851,7 +99936,7 @@
     "Atlas/Struktura/patternly/scripts/_Pliki/checkLegalVariables.mjs — aplikacja · scripts.md": "afa389c90962fff8170b7d8ddea72f54e7afff0f2c552a5f20bb18862877da93",
     "Atlas/Struktura/patternly/scripts/_Pliki/checkRecoveryBaseline.mjs — aplikacja · scripts.md": "5130216ec945d10cae54232273e7097d86a515db6fbd1046923a15a265d7cf49",
     "Atlas/Struktura/patternly/scripts/_Pliki/checkRetentionContract.mjs — aplikacja · scripts.md": "1c4d608ab04bbb9b64384632f722dc54fa9606917e7ca42e2d9d486f9f7f7d47",
-    "Atlas/Struktura/patternly/scripts/_Pliki/checkReviewSyncBackendCompatibility.mjs — aplikacja · scripts.md": "76a2c9ae1d761241c141df1a2f0f91cc3bbc35856d94f34d4365dc1a37b106b6",
+    "Atlas/Struktura/patternly/scripts/_Pliki/checkReviewSyncBackendCompatibility.mjs — aplikacja · scripts.md": "20f69e4a0890b023531d7ac05c00cc708498ce226a3c3a6f7c4d1c4b5333a06c",
     "Atlas/Struktura/patternly/scripts/_Pliki/checkWorkspaceDocs.mjs — aplikacja · scripts.md": "9cf3d1ee6e9c726efaedf5209430c5d831ed25c2213fb026c9d669d3c78af738",
     "Atlas/Struktura/patternly/scripts/_Pliki/cleanCheckoutCiContract.test.mjs — aplikacja · scripts.md": "3b119e1f6672ae3279f2ca6b1fdeb8c92833ffdcd485d18c035f705a63d926e8",
     "Atlas/Struktura/patternly/scripts/_Pliki/currentContentWorktree.mjs — aplikacja · scripts.md": "250bda8924141fa9b70e1884151b37e123dd2f04bf00e478e511cfc5a038559d",
@@ -100090,26 +100175,26 @@
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/deadlineClockDiscontinuity.test.ts — aplikacja · src › application › bootstrap.md": "b03468353ff46a8fd664203ef6173cba62c43083cf858d6a89d0e909a939af11",
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/index.ts — aplikacja · src › application › bootstrap.md": "2f5dab105c4adb8d92c2e273ad33e28473f3c97e3c737d6ceeae8f14e83c28de",
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/trainingLifecycleComposition.test.ts — aplikacja · src › application › bootstrap.md": "0f19c71b29df7a8e6fdcb026191de7ce338c91429864abb0e617a88b5f4be96b",
-    "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/trainingLifecycleComposition.ts — aplikacja · src › application › bootstrap.md": "331c378db56c7892dd33acd8f78d9937a949e6a9461d7bfc9732a2b39a68cf36",
+    "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/trainingLifecycleComposition.ts — aplikacja · src › application › bootstrap.md": "da5d4bccb066e51d3bedbd464a214d57f907fea2340a5ef06ef0b2fba8031749",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/ai90120261018Repairs.test.ts — aplikacja · src › application › canonical.md": "a6b418d4c95e18f9c6663b1ff0a8aba545bd6cbfd976d9fa85915f0843724bbe",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/AUD02DCandidateFeedbackFlow.test.ts — aplikacja · src › application › canonical.md": "503094a6565c249c94a667abb31d0303645ef1b898033c89b3c5bdd04a10c537",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/besdN03Repairs20261018.test.mjs — aplikacja · src › application › canonical.md": "80f61845d767298d0739238e4cd0dbcb625d21f880c7e2c96ae48913a80ff5f3",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/bizq05RelatedPractice.integration.test.ts — aplikacja · src › application › canonical.md": "5e64fce98ebaefd00b6f736240e65e765a5aca9084b7fd9aaddcacc81ca796a0",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalChoiceFeedbackPresentation.test.ts — aplikacja · src › application › canonical.md": "95e4399ffff7bd32a4a2ecc4e9d7538f9a2e696ce6c395e5ef01777e1a0e8b64",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalChoiceOrderIntegration.test.ts — aplikacja · src › application › canonical.md": "7463d9bfab792eddf0a0e89d6aa53bd01a348ee284687ab6b1f79bf5505ae23d",
-    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalFamilyMechanics.ts — aplikacja · src › application › canonical.md": "4789a27047c176ffb212e159e191ece4f94a702873d275092a7257a1bc74e2de",
+    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalFamilyMechanics.ts — aplikacja · src › application › canonical.md": "a71da64c7a8c20704435ae6bedfdd58362338304b3e8e980f13cbfd6bba3c416",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalInteractionPresentation.ts — aplikacja · src › application › canonical.md": "2c0331c7e58a82f21411b52720725682086452fb9bf48d2ff07f66778b745a5f",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalOptionOrder.ts — aplikacja · src › application › canonical.md": "d0b5b7bc5abfdc0178096a6f493a876166f7a64ba66ab8add0692866160e16ea",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalOrderingFeedbackPresentation.test.ts — aplikacja · src › application › canonical.md": "ac22e1267e7b7e32ba97990319e79bdab97f34cded0b28e3a77ecfa661dfee55",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalOrderingPracticeResume.test.ts — aplikacja · src › application › canonical.md": "822ccd3452cfa0dbe5c1b9fa602475b51b6895267f724c43f4cc9716311406ba",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalPracticeChoiceOrderProjection.test.ts — aplikacja · src › application › canonical.md": "ea33de1bd4d1d64f73892aa494d42884093e3617f0d8aa5faf09f58a7cdf6018",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalProgressEvidence.ts — aplikacja · src › application › canonical.md": "ed38cb6a01fcfb3711a7cafd76e7d0b6cd0b0104a102738f92db3c58cc87a058",
-    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/CanonicalReviewAnswerTime.test.ts — aplikacja · src › application › canonical.md": "d1017e88c4d1c5ddadf048ca48d8b94b564f674f504252e1c31d85d901261fa7",
-    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/CanonicalReviewSource.test.ts — aplikacja · src › application › canonical.md": "4812f31f8078e7c212d36d1d39f57d13bf2705260d4a86063264064e5228cea4",
+    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/CanonicalReviewAnswerTime.test.ts — aplikacja · src › application › canonical.md": "7da8e5482ba4916deae81b21c3fa04aa49a0acb4256d19cfcac72296471df85a",
+    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/CanonicalReviewSource.test.ts — aplikacja · src › application › canonical.md": "f465eaead327cd8eeeb71fdb3965386e5f433ce1db5f7d06e1d682e0fcf6093a",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalSessionPlanMechanics.ts — aplikacja · src › application › canonical.md": "bfe9de128d347fbdab31d7c7b8917dc7d76560ba130a1d77b24eafd20976c6b6",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalSourceLinks.test.ts — aplikacja · src › application › canonical.md": "f0875599cb0825e7c27c1e151aa032957c647b44fa42dd3b754fb5c1c5c4e262",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalSourceLinks.ts — aplikacja · src › application › canonical.md": "360bbb91b8e463bbe1b424ece77a4773d8e24060d1f6cc34b7bc230da44d59d4",
-    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalTrainingFamilies.test.ts — aplikacja · src › application › canonical.md": "a4691246cea6c2a5653bedb3ad857375be47c0c9ed8a48e3da7f012604c70058",
+    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalTrainingFamilies.test.ts — aplikacja · src › application › canonical.md": "6b101cb378589be42eceee2fde0fbcf05616a730084c8399467dd16772c79f6d",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/CanonicalTrainingSelection.test.ts — aplikacja · src › application › canonical.md": "094e66083330ee59da00206a79edcebf4aba937e9d15f6db3f5638a4ab000e8f",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/claudeCoverageReachability.test.ts — aplikacja · src › application › canonical.md": "f705ceb207ad123d15b10e80d7b9a37322fc6b884f097e9114effb65de6592a6",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/gcpAce20261016ChoiceEvidence.test.ts — aplikacja · src › application › canonical.md": "c55e57e20eeb589905552b089bd062fee6bfb17a381f74c97d5eedbd00eae4a7",
@@ -100137,7 +100222,7 @@
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationReviewCommands.test.ts — aplikacja · src › application › certification.md": "cad35be4988ca59ca3a4c7d31566d52fe589baee497ff7b662db21d844cf6891",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationReviewCommands.ts — aplikacja · src › application › certification.md": "a17ed677d8be9c30dc2eeafa1fd092b4c32a6bd4ea2a2b46d541e8a755fd0527",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationSessionFacade.ts — aplikacja · src › application › certification.md": "8c586519e50f9bf4b09d0399db060b6bff0735ad38a15ddc59c7642173414a1d",
-    "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationTrainingRuntime.ts — aplikacja · src › application › certification.md": "d1aee3997000f92fc23db27f69d9042b887a6033cf5a1b98618a312a19dc9119",
+    "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationTrainingRuntime.ts — aplikacja · src › application › certification.md": "993d6ed073283da0a5c798d59f613bdc20c26cc9665ca275bc647b13fa334705",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/index.ts — aplikacja · src › application › certification.md": "b41e13ddd80c444634a9c12cb10dde730f44b76a8d98e6e80c0a53c528c346b9",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/singleCase.integration.test.ts — aplikacja · src › application › certification.md": "b4a82882b756f13dd039ec2e5ac3be9a11e2b2981be856a6f214e20e1a5d2a71",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/singleCaseRecommendation.ts — aplikacja · src › application › certification.md": "7ce516d996ff1c5ca68f28ce02b0734144939d4a05077ca91f643a613c45000f",
@@ -100151,7 +100236,7 @@
     "Atlas/Struktura/patternly/src/application/coding-interview/_Pliki/codingInterviewSessionFacade.test.ts — aplikacja · src › application › coding-interview.md": "b9b801f77cf2de226e5726a6cdc740dbef6d36d47db919dbb2c67dd869f9bb5a",
     "Atlas/Struktura/patternly/src/application/coding-interview/_Pliki/codingInterviewSessionFacade.ts — aplikacja · src › application › coding-interview.md": "f968638e4ee5b27b809372d7e17650eae1b7345a307f02a137c37140b17eb422",
     "Atlas/Struktura/patternly/src/application/coding-interview/_Pliki/codingInterviewSimulationResult.integration.test.ts — aplikacja · src › application › coding-interview.md": "6e28c9dabc8d44905246fa57bfeef5e760f9756545bf7560a13f0b0f14f937a1",
-    "Atlas/Struktura/patternly/src/application/coding-interview/_Pliki/codingInterviewTrainingRuntime.ts — aplikacja · src › application › coding-interview.md": "5254b3bdd1cb86196c4efedb9ad25ef55209a164a834f3903735e0deb788940f",
+    "Atlas/Struktura/patternly/src/application/coding-interview/_Pliki/codingInterviewTrainingRuntime.ts — aplikacja · src › application › coding-interview.md": "80deeae2ab35a1a0da198817556b52f9cd7331cc910f894f2d144ade63a2ca43",
     "Atlas/Struktura/patternly/src/application/coding-interview/_Pliki/codingProgressProjection.ts — aplikacja · src › application › coding-interview.md": "a99672223167a93c0a769f482f9162ffe7a212b31df3f2f9db2cb72f23e06764",
     "Atlas/Struktura/patternly/src/application/coding-interview/_Pliki/index.ts — aplikacja · src › application › coding-interview.md": "138ea00d86d11fd658b6ff21442d99fe520b8583c1469cb7dbe562474a2cd39a",
     "Atlas/Struktura/patternly/src/application/_Pliki/contentPackageRuntimeOwner.test.ts — aplikacja · src › application.md": "b84663953837275af73f0248d5f9bc1a0142f25214fec65504d5a6555005cd7c",
@@ -100162,7 +100247,7 @@
     "Atlas/Struktura/patternly/src/application/design-interview/_Pliki/designInterviewSessionFacade.ts — aplikacja · src › application › design-interview.md": "b3a3a5970c6d8342296a345ac83a01864d9ce00ed9290b30df2ee7d1b8b1a4b4",
     "Atlas/Struktura/patternly/src/application/design-interview/_Pliki/designInterviewSimulationFacade.ts — aplikacja · src › application › design-interview.md": "cc7e0ba6e2027653a1830cf5eee291923abfac18c5b4ce9428dc65006fddec63",
     "Atlas/Struktura/patternly/src/application/design-interview/_Pliki/designInterviewSimulationPolicy.test.ts — aplikacja · src › application › design-interview.md": "9dc77e6ffe6d33286c0098b6c8bb8db8f1e3dbaa31dd24ad2ea2d880733c9077",
-    "Atlas/Struktura/patternly/src/application/design-interview/_Pliki/designInterviewTrainingRuntime.ts — aplikacja · src › application › design-interview.md": "b1841231c0344a65d42d34037e84917144b0e75bc2eae386f3f004fb4fb3c862",
+    "Atlas/Struktura/patternly/src/application/design-interview/_Pliki/designInterviewTrainingRuntime.ts — aplikacja · src › application › design-interview.md": "4894e38000ce32e3a790f8f14b761874bfbab149d4a3a549f1e3d3d5ce87d4e4",
     "Atlas/Struktura/patternly/src/application/design-interview/_Pliki/index.ts — aplikacja · src › application › design-interview.md": "3d6fd105a411bc5af0b22c6cb98bc33502f9a6a82d027628f61926aae13b5e6e",
     "Atlas/Struktura/patternly/src/application/_Pliki/exactMissingActorFence.test.ts — aplikacja · src › application.md": "62617477995d777c1d13b74a1a913859ccf6f032edc94953b157e44f5b1c5f86",
     "Atlas/Struktura/patternly/src/application/_Pliki/exactMissingActorFence.ts — aplikacja · src › application.md": "323758d64e343302d39e4eb91cbb2efcea4309560a00d84c98304900729ed8fe",
@@ -100184,7 +100269,7 @@
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitMutation.ts — aplikacja · src › application › learningMutations.md": "740f16678fe4bb523c0c837cdbac597eb3d3afc085c7efe58a9e38ff25105eec",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitReviewEntryChange.ts — aplikacja · src › application › learningMutations.md": "9dfd57a5344eafa80c07aa3645de6e9e6a52f8be3103496f29153ad28c158f59",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitSessionLifecycle.ts — aplikacja · src › application › learningMutations.md": "86ef596fbde7aa6eebcd315720cf0499064cc4a6b9fdef8baeb175a880518635",
-    "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitTrainingOutcome.ts — aplikacja · src › application › learningMutations.md": "0fc71b294e2ef340ebd9802c7a9b203442351198042347f790c634af8c4e906b",
+    "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitTrainingOutcome.ts — aplikacja · src › application › learningMutations.md": "42d721393611c874c70c0929c37094024a37e3164de3c0efe8e7299a23096145",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitTrainingSessionAdvance.ts — aplikacja · src › application › learningMutations.md": "29bd6ed8e7cf681daa2885533f714811aef154f437c2ae8cddf8cc23a1f79124",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitTrainingSessionFinalization.ts — aplikacja · src › application › learningMutations.md": "a15ee1988740e002e29387de748d75403d92277e981415eb715052fb869c9f01",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitTrainingSessionStart.ts — aplikacja · src › application › learningMutations.md": "126245c97b689a0c13461125402a0860672f9953cdca06e56efa6f4d37d4659b",
@@ -100199,7 +100284,7 @@
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/localLearningWriteOperation.ts — aplikacja · src › application › learningMutations.md": "92a6d7a157f6382a4a48b49dfe93e00ed457eb6305ec1e0ed40eecddf0435e65",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/localReset.test.ts — aplikacja · src › application › learningMutations.md": "d983e3eca01431aa52b739c4f584b50b0874d646aa7773561e8b5f675d2b0358",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationJournal.test.ts — aplikacja · src › application › learningMutations.md": "de1b3929fac5556109e9fc8838cf4322d0dc42a2457a78725c0ee92bb0252fd7",
-    "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationJournalBuilder.ts — aplikacja · src › application › learningMutations.md": "e8c09bad2f0f8845d4dc130fd3f31c9e2e8d8b3634e97b9cd321f04db355ca6e",
+    "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationJournalBuilder.ts — aplikacja · src › application › learningMutations.md": "f8dd033ced7339ac824da23e4eacc0426752fe4c1254b7c3f2bc3c86dc9f86db",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationMaterializer.test.ts — aplikacja · src › application › learningMutations.md": "c0d94f6e5ec983b50576b567825aff8cbe7fe0a6b622673a680e56ee7e372675",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationMaterializer.ts — aplikacja · src › application › learningMutations.md": "7028f20e867d81feb16f7e226c371a8e9f5c16a76ca84c0b49b4d1e324744bf4",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationRecovery.test.ts — aplikacja · src › application › learningMutations.md": "425aaf388a23d37b2b26b99fc0ebe491432be04a39acb20dda8ed27f4abba5aa",
@@ -100411,7 +100496,7 @@
     "Atlas/Struktura/patternly/src/content/application/_Pliki/contentPreparationAttempt.ts — aplikacja · src › content › application.md": "e5ca57a6f91400737e6f33cdccee3ce500c0dddd5e96520f39b236933faa196f",
     "Atlas/Struktura/patternly/src/content/application/_Pliki/ContentPreparationGate.tsx — aplikacja · src › content › application.md": "65fe59273647974f5b84feac78310e30636c9c402e428cdb0859e3595663e259",
     "Atlas/Struktura/patternly/src/content/application/_Pliki/contentPreparationRecovery.test.ts — aplikacja · src › content › application.md": "a20bbaf1c2f8fa935ebb60b66aca053d61635a64a364118df562e62b19d399f5",
-    "Atlas/Struktura/patternly/src/content/application/_Pliki/contentSessionIdentity.test.ts — aplikacja · src › content › application.md": "2c11578218e01379fbc4123df6b201c3de28aec459dfe4af125b7419d943e911",
+    "Atlas/Struktura/patternly/src/content/application/_Pliki/contentSessionIdentity.test.ts — aplikacja · src › content › application.md": "f33cf04e8305e0367302f6af041819ee15329983090fe0b887981bab5b197354",
     "Atlas/Struktura/patternly/src/content/application/_Pliki/contentSessionIdentity.ts — aplikacja · src › content › application.md": "8b887930cf21793e04c99cdffc08d8e54b525e89f12a4d682586aefe2032b288",
     "Atlas/Struktura/patternly/src/content/application/_Pliki/EncryptedStorageRecoverySurface.tsx — aplikacja · src › content › application.md": "b7e00b2b18f357e2859185f65fdc521b4f4c15bc1b3bead623d04687aad9efa5",
     "Atlas/Struktura/patternly/src/content/application/_Pliki/index.ts — aplikacja · src › content › application.md": "fd29c43b791a86b85cc930d9936eb1f326f76307fd78982e1758c3e07e6f68c9",
@@ -100504,7 +100589,7 @@
     "Atlas/Struktura/patternly/src/content/runtime/_Pliki/nodePackageStorage.ts — aplikacja · src › content › runtime.md": "7a4d03ba165f8c2873d471887edd0b8688568c3e628167a8b2685071603eef40",
     "Atlas/Struktura/patternly/src/content/_Pliki/trackAdmission.test.ts — aplikacja · src › content.md": "dd761494cf06e3ad0d4485aafd998434c79b342f783cbb6350e4c4554a1e7293",
     "Atlas/Struktura/patternly/src/domain/account/_Pliki/accountDataRecordIdentity.ts — aplikacja · src › domain › account.md": "91f8673a28b1d78233bfef76671ed05a02accf136060e620f56c45cd4b693498",
-    "Atlas/Struktura/patternly/src/domain/account/_Pliki/accountWireState.ts — aplikacja · src › domain › account.md": "25ccd2d11ccb6615716957987b235e9a77a5225a2b49b1cb31be05811465a112",
+    "Atlas/Struktura/patternly/src/domain/account/_Pliki/accountWireState.ts — aplikacja · src › domain › account.md": "6e899c4db988d43eada5aa3af9c99ecfea0e6b6c4064ca158c4ba77105a1f53c",
     "Atlas/Struktura/patternly/src/domain/account/_Pliki/terminalSessionWire.ts — aplikacja · src › domain › account.md": "edf56db83c8aa441692fea657e3c9a3c098b0ca60fad58f328440e1bffb9e44e",
     "Atlas/Struktura/patternly/src/domain/_Pliki/contentReportDescription.test.ts — aplikacja · src › domain.md": "ab4b3638997d06de61a7291413c3dc2687ef42718332b7e30e6937f022c20ff1",
     "Atlas/Struktura/patternly/src/domain/_Pliki/contentReportDescription.ts — aplikacja · src › domain.md": "073aa0be1972a3f7845647f1d72484dd6ec4a946803db2509a2fd9e3fb3f70a9",
@@ -100537,8 +100622,8 @@
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/learningPlan.ts — aplikacja · src › domain › learning.md": "c2dd71acc5515b664cdf6376a66ddb216bfa53c256b862aaded1b3635ea8ae7b",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/learningPlanProposalGenerator.test.ts — aplikacja · src › domain › learning.md": "fbc3e5434a8711d0ca51470d58fc386c0d29e91f5f9cb0b455a3dd05e8a39ef3",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/learningPlanProposalGenerator.ts — aplikacja · src › domain › learning.md": "0cd17753a00323b63c9d76437b242b0354ea6c7ea10e7bdde0572330d2213aa9",
-    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/mentalUnitEvidence.test.ts — aplikacja · src › domain › learning.md": "bea712cc37f9bce747e136b1ab6aa39e45b54f85f9903241216ab18c6f85bd5a",
-    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/mentalUnitEvidence.ts — aplikacja · src › domain › learning.md": "1be4666d299061296f20c8500eade76858ba15ae4ac2797b83725feddb149878",
+    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/mentalUnitEvidence.test.ts — aplikacja · src › domain › learning.md": "b8487da97816237c75cc4c8c2a7376cc5d38d909c8af58a5451b6ad62e4048a5",
+    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/mentalUnitEvidence.ts — aplikacja · src › domain › learning.md": "9e1f0c564b4d2e28f609875ec04cb1a4acc33b2d00fd470daea09a317f0fa13e",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/paceForecast.test.ts — aplikacja · src › domain › learning.md": "1e8923a8c39858c412c50e37c11497347f4a7be9120b0f89d82cc77476eaaef8",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/paceForecast.ts — aplikacja · src › domain › learning.md": "c3853a1a6a51a97edbf265d4c76d1346f7719a0aaea4f344316303250c6bf25c",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/packageCompletionRule.test.ts — aplikacja · src › domain › learning.md": "32e9a8168e049849804f90af800599f8ac057df3954d43a6d1a46315bc49ea4c",
@@ -100551,16 +100636,16 @@
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/planningWorkEstimate.ts — aplikacja · src › domain › learning.md": "9e771db76e49751d3f73ff23fea2ca5e5a60270b9eafa72099f199bd18a4727c",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/repositoryContracts.ts — aplikacja · src › domain › learning.md": "f9cb55aca9d02b3c13b865d6842aeea092a42c1456278f5008b0b97ca30130ea",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/resolvedContentRef.test.ts — aplikacja · src › domain › learning.md": "942ec38cd4b2a030c649449def1764482ec1c51f71cd2b6f6e9479d8fbe7567d",
-    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/resolvedContentRef.ts — aplikacja · src › domain › learning.md": "b794a16d8cd51b1886bf7a2fe81df9ffba49ac2b85faca2226e0a1dd171592bd",
+    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/resolvedContentRef.ts — aplikacja · src › domain › learning.md": "c9e9d33d0956e59ba527bd2c62c53c0344b5b172f17a8fafb6d08cf840fb476e",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/reviewCycleTransition.ts — aplikacja · src › domain › learning.md": "bfb5feebbcc263707d9a919ca6e5b680f3ec00d4c423b53e6b5691c7ec16ef9c",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/reviewEvidence.ts — aplikacja · src › domain › learning.md": "1ac14bcb1f6bc2089719252068e4c5b57c7e687ae7a3a81c6420af84eaa7b226",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/reviewMutation.ts — aplikacja · src › domain › learning.md": "9490e443467804f3871abc5bc21d89b6591560214f0d81d917a8a460b240b42d",
-    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/reviewQueueEntry.ts — aplikacja · src › domain › learning.md": "f0b1780d0d93591df8be0bc841e77edab13e1fbe3c13c158f08f9661b2e6d19a",
+    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/reviewQueueEntry.ts — aplikacja · src › domain › learning.md": "601b9bf5ff5e31b5e3685298db009c8e5013f4cf94e9f042e845469c79aaa19c",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/sessionResult.ts — aplikacja · src › domain › learning.md": "e7badce47f4f0e22081e5262a7168e7d2800d8344e41c9cc3841028954a97262",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/slotIdentity.ts — aplikacja · src › domain › learning.md": "96f224bdcaed527dfe5361bc54246e0e932d6227e170f73e1fbeefbf3941e492",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/trackIdentity.ts — aplikacja · src › domain › learning.md": "f900737e3851d515b335e6554c69abf08829b16f79a77fce33fb0ffdb7837aa6",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/trainingAttempt.ts — aplikacja · src › domain › learning.md": "c398151323952a3eb7e883756c793d6fb524959d115684c8fbabf5f198d0e446",
-    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/trainingSession.ts — aplikacja · src › domain › learning.md": "c4d4e44f5f05af7bddcf89b73ed176bb717adb1c7f6e2223c197698fabbafc02",
+    "Atlas/Struktura/patternly/src/domain/learning/_Pliki/trainingSession.ts — aplikacja · src › domain › learning.md": "7e51e30038d79de0aa0a055e029af273e24ca93a91243c7680b5ead909dd3b13",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/trainingSessionDraft.ts — aplikacja · src › domain › learning.md": "6463ff4a787ec8d414a6f8dacc1dcd0338b9274c186d6d5e918a9b02e190ec09",
     "Atlas/Struktura/patternly/src/domain/tracks/_Pliki/canonicalRegistry.test.ts — aplikacja · src › domain › tracks.md": "56b80e4c5ecda2e3f94b0e78f70c60bd1cf4b3522fef39f8023ce39d80a058a1",
     "Atlas/Struktura/patternly/src/domain/tracks/_Pliki/canonicalSessionLifecycle.test.ts — aplikacja · src › domain › tracks.md": "fbcdedaebcfb87a610fe829334e30b6e181cbbb3f474eb8be9927657b0400538",
@@ -100977,8 +101062,8 @@
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/accountLifecycleRepository.ts — aplikacja · src › storage › repositories.md": "2c4f938b5cb73afe99921fa4df8fffcf7d2eb8de8eec04fb856f57ee3aaca0ab",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/accountSyncConflictResolutionRepository.ts — aplikacja · src › storage › repositories.md": "fa3c336183132f8dbda89b6522c79f6e7f534aa798facabedaf867720cca8ed1",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/activeTrackRepository.ts — aplikacja · src › storage › repositories.md": "5cc221566a26491b65c9c9ac605aa3b3cccb2c75e7c200773b2fe8f3f75e9ba8",
-    "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/canonicalRecordCodec.ts — aplikacja · src › storage › repositories.md": "eeda684d913a9292d529f3fbfbb1c73555b1035df0cd6824084a2ec29051e135",
-    "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/canonicalRepositories.test.ts — aplikacja · src › storage › repositories.md": "0454d2d7ab8b3d7927cff5814f024ddb626614318f632bbb0abc22257368c8ba",
+    "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/canonicalRecordCodec.ts — aplikacja · src › storage › repositories.md": "35e128fba14aa72e7850fae9fa64aa7e744c67df8352ea2532b4810b12a3df72",
+    "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/canonicalRepositories.test.ts — aplikacja · src › storage › repositories.md": "551ca2c035f5d3373878fbf31cfaef5db3c46bbe88b33c83f186de3b8e86ddbc",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/canonicalRepositories.ts — aplikacja · src › storage › repositories.md": "14eccd9493a6cc63a233600de0d19c6716d365c38e101cc8f8b268229ebcb16b",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/contentIdentityUnavailableRepository.test.ts — aplikacja · src › storage › repositories.md": "717121670e26463075b1749b830db2344524e2ba94252a95a4550689c4542803",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/contentIdentityUnavailableRepository.ts — aplikacja · src › storage › repositories.md": "e9c318544031d5ff71094846e6fe6f3f3822b7350e8d11b9ad4fc5df6f9b62df",
@@ -101004,7 +101089,7 @@
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/learningStateResetRepository.test.ts — aplikacja · src › storage › repositories.md": "61c63e4887a8e0767b8f247bae9d524de75fd20338ea567fbc9710eebc385fac",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/learningStateResetRepository.ts — aplikacja · src › storage › repositories.md": "288948505b5912e463741e91ce0d8b2eaf2b989124e6f2a3539015426fe6b212",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/mutationJournalRepository.test.ts — aplikacja · src › storage › repositories.md": "f6ec839f864f75204e998c91bfe106fd62cfd4b37012704e5284e5d9da2555c6",
-    "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/mutationJournalRepository.ts — aplikacja · src › storage › repositories.md": "6e5d67fc45259c4fd50a59fb83e549d75a91e89031d17d8b000e1a3474749929",
+    "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/mutationJournalRepository.ts — aplikacja · src › storage › repositories.md": "aecab596fe3948e2f823784b67a81a1dfda47109d89b5e0b071b4838d79aa16c",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/mutationPhysicalWriteRepository.ts — aplikacja · src › storage › repositories.md": "429433991c7e164678aca4be0d3e481c8037d5357b20d346b791e378c951d329",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/notificationSettingsRepository.test.ts — aplikacja · src › storage › repositories.md": "b1ce27ed632ba509ecc347a67e516b5c17424737c68b44a6851d3787064f6198",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/notificationSettingsRepository.ts — aplikacja · src › storage › repositories.md": "4689b0a08455cd5c316318bcdb0cf359fae41602d0dbe17f2f93152169396eca",
@@ -101027,7 +101112,7 @@
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/trainingEvidenceIntegrityRepository.test.ts — aplikacja · src › storage › repositories.md": "e29804536fb0912e00ded0dbf809882bdb65051fd8aab42702edff53befeca30",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/trainingEvidenceIntegrityRepository.ts — aplikacja · src › storage › repositories.md": "17ba6a6db08b77a0037a9107b4077a5cb57d739941d2e25e97d655eeefca7aa6",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/trainingJournalBatch.test.ts — aplikacja · src › storage › repositories.md": "dfe5b6837dc368dd088127100d1504addd0968147acdf0a89884550641cbc830",
-    "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/trainingModelGuards.ts — aplikacja · src › storage › repositories.md": "0238ae70d3ce8a075c8a5a5fee7ba5a1e4595345488e2a5af4f627788e12bfbc",
+    "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/trainingModelGuards.ts — aplikacja · src › storage › repositories.md": "759773a60849ae83e0f01e67a22df492fe7f80cfb95b1bddd8627e74bf451d8b",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/trainingSessionDraftRepository.ts — aplikacja · src › storage › repositories.md": "d34829b64c2b84b4b2ee66525ebde34c01ef725143e7bb2ebf3babdea60a857d",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/trainingSessionRepository.ts — aplikacja · src › storage › repositories.md": "88df3153182fda8a9b3e4f5219a6483d0f34f1d6fef08c8b3279c0a73bcbca4b",
     "Atlas/Struktura/patternly/src/storage/repositories/_Pliki/trainingSessionResultRepository.ts — aplikacja · src › storage › repositories.md": "f1cb81c6ea6e8c8707b8bb7a3289da028ab5cdee36ddc909fe3c7f086a54d885",
@@ -101140,7 +101225,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/legal-requests/legal-requests — folder backend · src › modules.md": "d9c79942739596300928eed3525d89fb245c08af246ea002d71a24d1333f971a",
     "Atlas/Struktura/patternly-backend/src/modules/operator-access/operator-access — folder backend · src › modules.md": "ca28458e4628d025f08072869cadbb79dd52cfc0bfb928bda691797b8d4e3568",
     "Atlas/Struktura/patternly-backend/src/modules/privacy-requests/privacy-requests — folder backend · src › modules.md": "94447a76c3b30ba13de582dd1de459f934ee96e9ed90d059ebe007d4e5e468a8",
-    "Atlas/Struktura/patternly-backend/src/modules/progress/progress — folder backend · src › modules.md": "778ffaab8419c5b95503cc7ec12768d2fc4a87f49bd6272f318d500134094753",
+    "Atlas/Struktura/patternly-backend/src/modules/progress/progress — folder backend · src › modules.md": "848aeeaa51499453b90a21201ee7a8acd7cf070ef6d97d8a9e1fccb5c3286abd",
     "Atlas/Struktura/patternly-backend/src/modules/retention/retention — folder backend · src › modules.md": "262085af20b534ed0c905d3fdbd36fd4016f3d4fce868fa48d8a093bd911750b",
     "Atlas/Struktura/patternly-backend/src/modules/retention-purge/retention-purge — folder backend · src › modules.md": "b5785a501714dbbf87cf8299b1b6edcaa061ca374d715661ec73dfc260905129",
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "d93d346546da561396b63d20eb55db1698203b892511367bacc006b23eecd3ba",
@@ -101270,7 +101355,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/operator-access/_Pliki/contracts.ts — backend · src › modules › operator-access.md": "985f98805b9e072b9695dfecf42d1e5854e31d013833437c687c1757d986a015",
     "Atlas/Struktura/patternly-backend/src/modules/privacy-requests/_Pliki/contracts.ts — backend · src › modules › privacy-requests.md": "0066603e784886568d2d69a5951a48bb6b31561e91e4eeed951bd1bff9dddeb5",
     "Atlas/Struktura/patternly-backend/src/modules/privacy-requests/_Pliki/store.ts — backend · src › modules › privacy-requests.md": "dcd84524439fd2229e6696f545fa111e32f4b893f5c3c0e784e41c00e9740a9e",
-    "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/accountWireState.ts — backend · src › modules › progress.md": "722fd893908a6d57cd040f893af843863c4d169cdfc775175875b6459224fbb5",
+    "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/accountWireState.ts — backend · src › modules › progress.md": "0620a750426fb651f959c616347dbe9f1da10430944251516b90bd56652b2fc0",
     "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/contracts.ts — backend · src › modules › progress.md": "a6d586513342bdb67ab40ed70c34e326719d30732bd5b64cf0d489cd11c4ccc4",
     "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/serializedJsonLimits.ts — backend · src › modules › progress.md": "05d575436d3bb73cae51660bb47091b4681ec8617bd8e958ca47e9d9ea256c03",
     "Atlas/Struktura/patternly-backend/src/modules/progress/_Pliki/store.ts — backend · src › modules › progress.md": "10f2b1782db5019c76b7a31dbb478b6d7f625e3fbac3e5f195c2a2048c03259a",

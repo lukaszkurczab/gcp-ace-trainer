@@ -218,13 +218,15 @@ test("incorrect or partial due answers at every retention stage restart the same
   const partialQuestion = track.getPool(mode.modeId).find((question) => question.interaction.type === "choice_multiple" && question.answer.type === "choice_multiple" && question.answer.optionIds.length > 1);
   assert.ok(partialQuestion);
   if (partialQuestion.interaction.type !== "choice_multiple" || partialQuestion.answer.type !== "choice_multiple") throw new Error("Expected a multi-select question for partial-score coverage.");
+  const sourceQuestion = track.questions.find(question => question.questionId !== partialQuestion.questionId && question.nodeId === partialQuestion.nodeId && question.mentalUnitId === partialQuestion.mentalUnitId);
+  assert.ok(sourceQuestion, "the regression needs a distinct source A in the partial question B's unit");
   const partial = { type: "choice_multiple", optionIds: partialQuestion.answer.optionIds.slice(0, -1) };
 
   for (const stage of ["retention7", "retention14", "retention28"] as const) {
     for (const outcomeKind of ["incorrect", "partial"] as const) {
       installMemoryStorage();
-      const runtime = createCanonicalTrainingFamilyRuntime(track);
-      const sourceItem = createResolvedContentRef({ trackId: track.trackId, questionId: partialQuestion.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 });
+      const runtime = createCanonicalTrainingFamilyRuntime({ ...track, getPool: modeId => modeId === mode.modeId ? [partialQuestion] : track.getPool(modeId) });
+      const sourceItem = createResolvedContentRef({ trackId: track.trackId, questionId: sourceQuestion.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 });
       const prior: ReviewQueueEntry = {
         id: `cycle:${stage}:${outcomeKind}`, trackId: track.trackId, sourceAttemptId: `source:${stage}:${outcomeKind}`, sourceSessionId: "source-session",
         sourceItem, taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], dueAt: STARTED_AT, createdAt: STARTED_AT,
@@ -235,6 +237,7 @@ test("incorrect or partial due answers at every retention stage restart the same
         sessionId: `stage-reset:${stage}:${outcomeKind}`, at: STARTED_AT, review: prior,
         ...(outcomeKind === "incorrect" ? { incorrect: true } : { response: partial }),
       });
+      assert.notEqual(result.outcome.attempt.item.questionId, prior.sourceItem.questionId, "the due answer B must differ from the retained source A");
       assert.equal(result.outcome.attempt.result.kind, outcomeKind, `${stage}/${outcomeKind} fixture must produce the named graded result`);
       const [updated] = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
       assert.ok(updated);

@@ -1,11 +1,11 @@
-import { completeTrainingSession, createFamilyEnvelope, createTrainingSessionDraft, createTrainingSessionResult, isActiveReviewQueueEntry, createReviewSourceSnapshot, matchesReviewSourceSnapshot, manualRequestIdForEntry, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
+import { completeTrainingSession, createFamilyEnvelope, createTrainingSessionDraft, createTrainingSessionResult, isActiveReviewQueueEntry, matchesReviewSourceSnapshot, manualRequestIdForEntry, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime, FamilyPlanningModeBinding, TrainingCatalog, TrainingInteractionPort, TrainingQuestionSummary } from "../trainingLifecycle";
 import { getProductSimulationModeConfig, ProductModeUnavailableError, type ProductModeConfig } from "../../content/canonical/productModeConfig";
 import type { CanonicalProductSimulationProfile } from "../../content/canonical/questionTypes";
 import { createMaintenanceCycle, createOrUpdateErrorCycle, transitionQualifiedSuccess, consumeManualRequest } from "../../domain/learning/reviewCycleTransition";
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
-import { sameLearningUnit } from "../../domain/learning/mentalUnitEvidence";
-import { canonicalQuestionReviewEvidence, createCanonicalAttempt, limitQuestionsToReviewNeeds, reviewNeedForQuestion, sameCurrentReviewUnit, scopeAttemptsToLearningTrack, scopeReviewsToLearningTrack } from "../canonical/canonicalFamilyMechanics";
+import { reviewEvidenceMatchesAttempt } from "../../domain/learning/mentalUnitEvidence";
+import { assertCanonicalReviewSourceProofs, createCanonicalReviewSourceSnapshot, canonicalQuestionReviewEvidence, createCanonicalAttempt, limitQuestionsToReviewNeeds, reviewNeedForQuestion, sameCurrentReviewUnit, scopeAttemptsToLearningTrack, scopeReviewsToLearningTrack } from "../canonical/canonicalFamilyMechanics";
 import { applyCanonicalPlanReplacements, buildCanonicalSessionPlan, prepareCanonicalPlanOccurrences, validateCanonicalSessionPlan } from "../canonical/canonicalSessionPlanMechanics";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
 
@@ -53,7 +53,7 @@ export class DesignInterviewTrainingRuntime implements TrainingFamilyRuntime {
         ? this.reviewForQuestion(this.catalog.getQuestion(question.questionId)!, source, input.reviews, reviewSource, input.now)
         : undefined;
       if (reviewSource && mode.selection.kind === "evidence_conditioned" && !review) throw new Error("Design Interview review selection lost its source unit before plan capture.");
-      return { item, ...(review ? { reviewSourceSnapshot: createReviewSourceSnapshot(review, reviewSource, input.now) } : {}) };
+      return { item, ...(review ? { reviewSourceSnapshot: createCanonicalReviewSourceSnapshot(review, this.catalog, reviewSource ?? "due_queue", input.now) } : {}) };
     });
     const sessionId = requireSessionId(input.request);
     const prepared = prepareCanonicalPlanOccurrences(this.catalog, this.interactions, sessionId, items);
@@ -76,6 +76,7 @@ export class DesignInterviewTrainingRuntime implements TrainingFamilyRuntime {
     if (input.session.actualLength < (mode.selection.kind === "evidence_conditioned" ? 1 : mode.minimumActualLength)) throw new Error("Design Interview session is below the accepted minimum length.");
     if (mode.selection.kind === "exact_ordered_questions" && JSON.stringify(input.session.itemOrder.map((entry) => entry.item.questionId)) !== JSON.stringify(mode.selection.questionIds.slice(0, input.session.actualLength))) throw new Error("Design Interview exact-order plan is invalid.");
     await validateCanonicalSessionPlan(this.catalog, this.interactions, input.session);
+    assertCanonicalReviewSourceProofs(input.session, this.catalog);
   }
 
   async submitPractice(input: Parameters<TrainingFamilyRuntime["submitPractice"]>[0]): Promise<PracticeSubmission> {
@@ -88,7 +89,7 @@ export class DesignInterviewTrainingRuntime implements TrainingFamilyRuntime {
     const attempt = await createCanonicalAttempt({ session: input.session, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response: input.response, result,
       reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [{ axisId: "node", nodeId: question.nodeId, role: "primary" }, { axisId: "mental_unit", nodeId: question.mentalUnitId, role: "primary" }] }, answeredAt: input.now, committedAt: input.now });
     const matching = occurrence.reviewSourceSnapshot
-      ? input.reviews.filter((entry) => entry.id === occurrence.reviewSourceSnapshot!.reviewEntryId && (sameLearningUnit(entry, attempt.reviewEvidence) || resolvedContentRefsEqual(entry.sourceItem, attempt.reviewEvidence.sourceItem)))
+      ? input.reviews.filter((entry) => entry.id === occurrence.reviewSourceSnapshot!.reviewEntryId && reviewEvidenceMatchesAttempt(entry, attempt.reviewEvidence, occurrence.reviewSourceSnapshot!.legacyUnitProof, this.catalog))
       : input.reviews.filter((entry) => entry.trackId === input.session.trackId && resolvedContentRefsEqual(entry.sourceItem, occurrence.item));
     const prior = matching.find(isActiveReviewQueueEntry);
     const completed = matching.some((entry) => entry.status === "completed");
@@ -202,6 +203,7 @@ export class DesignInterviewTrainingRuntime implements TrainingFamilyRuntime {
     if (config.kind !== "design_interview_simulation" || profile.familyId !== FAMILY || session.trackId !== config.trackId || session.modeId !== config.modeId || profile.familyConfig.schemaVersion !== "patternly-design-interview-simulation-config-v1") throw new ProductModeUnavailableError("Design Interview simulation profile or mode is unavailable.");
     const deadline = new Date(Date.parse(session.startedAt) + profile.familyConfig.timer.durationSeconds * 1000).toISOString();
     await validateCanonicalSessionPlan(this.catalog, this.interactions, session);
+    assertCanonicalReviewSourceProofs(session, this.catalog);
     if (session.actualLength !== 1 || session.requestedLength !== 1 || session.itemOrder.length !== 1 || session.itemOrder[0]?.item.questionId !== this.catalog.questions[0]?.questionId || (session.conditionalReinsertSlots?.length ?? 0) !== 0 || JSON.stringify(session.configurationSnapshot) !== JSON.stringify(designSimulationSnapshot(profile, deadline))) throw new Error("Design Interview simulation snapshot or pinned plan is invalid.");
     const draft = input.draft;
     if (!draft || draft.schemaVersion !== 1 || draft.draftVersion !== 1 || draft.sessionId !== session.id || draft.trackId !== session.trackId || draft.familyId !== FAMILY || !Number.isSafeInteger(draft.revision) || draft.revision < 1 || Date.parse(draft.updatedAt) < Date.parse(session.startedAt) || Date.parse(draft.updatedAt) > Date.parse(deadline) || Number.isNaN(Date.parse(draft.updatedAt))) throw new Error("Design Interview simulation draft identity, revision, or deadline is invalid.");

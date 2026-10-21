@@ -347,3 +347,27 @@ test("session revoke sign-out repository creates v7 and reads legacy v4 while de
   assert.match(deletion.operationId, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u);
   assert.deepEqual(getAccountDeletionState(), deletion);
 });
+
+test("legacy unit proof is strict, pinned and deeply frozen in ordinary and conditional occurrences", async () => {
+  const proof = { sourceItem: ref("source-a"), nodeId: "node", mentalUnitId: "unit" };
+  const snapshot = { source: "due_queue" as const, reviewEntryId: "legacy-review", sourceAttemptId: "legacy-attempt", dueAt: STARTED_AT, policyVersion: "legacy-unqualified", stage: "legacy_active_unqualified" as const, legacyUnitProof: proof };
+  const occurrences = Array.from({ length: 5 }, (_, index) => ({ occurrenceId: `occurrence-${index}`, item: ref(`b-${index}`), reviewSourceSnapshot: snapshot }));
+  const canonical = session({ itemOrder: occurrences, conditionalReinsertSlots: [{ slotId: "slot", sourceOccurrenceId: occurrences[0]!.occurrenceId,
+    ordinaryBranch: { occurrence: occurrences[4]!, optionOrder: [] }, reviewedVariantBranch: { occurrence: { occurrenceId: "variant", item: ref("variant"), reviewSourceSnapshot: snapshot }, optionOrder: [] },
+    resolutionRule: "incorrect_or_partial_after_three_materialized_submissions" }] });
+  await saveTrainingSession(canonical, productionTrackAdmissionContext);
+  assert.deepEqual((await getTrainingSessions(productionTrackAdmissionContext)).value[0]!.itemOrder, canonical.itemOrder);
+  for (const occurrence of [...canonical.itemOrder, canonical.conditionalReinsertSlots![0]!.ordinaryBranch.occurrence, canonical.conditionalReinsertSlots![0]!.reviewedVariantBranch!.occurrence]) {
+    assert.ok(Object.isFrozen(occurrence.reviewSourceSnapshot));
+    assert.ok(Object.isFrozen(occurrence.reviewSourceSnapshot!.legacyUnitProof));
+    assert.ok(Object.isFrozen(occurrence.reviewSourceSnapshot!.legacyUnitProof!.sourceItem));
+  }
+  proof.nodeId = "changed-outside";
+  assert.equal(canonical.itemOrder[0]!.reviewSourceSnapshot!.legacyUnitProof!.nodeId, "node");
+  const validProof = canonical.itemOrder[0]!.reviewSourceSnapshot!.legacyUnitProof!;
+  for (const invalid of [undefined, null, { ...validProof, extra: true }, { ...validProof, mentalUnitId: "" }, { nodeId: "node", mentalUnitId: "unit" }, ...["trackId", "contentVersion", "artifactSha256"].map(key => ({ ...validProof, sourceItem: { ...validProof.sourceItem, [key]: key === "artifactSha256" ? "f".repeat(64) : "foreign" } }))]) {
+    const changed = { ...canonical, itemOrder: [{ ...canonical.itemOrder[0]!, reviewSourceSnapshot: { ...snapshot, legacyUnitProof: invalid } }, ...canonical.itemOrder.slice(1)] };
+    assert.equal(isTrainingSession(changed, productionTrackAdmissionContext), false);
+    assert.throws(() => createTrainingSession(changed as TrainingSession));
+  }
+});

@@ -3,6 +3,7 @@ import { createArtifactSha256 } from "./contentItemRef";
 import { InvalidTrainingSessionError } from "./errors";
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "./resolvedContentRef";
 import type { TrackId } from "./trackIdentity";
+import { isLegacyReviewUnitProof } from "./mentalUnitEvidence";
 import { isManualRequestId, type ReviewSourceSnapshot } from "./reviewQueueEntry";
 
 export type TrainingSessionStatus = "active" | "completed" | "abandoned";
@@ -121,8 +122,8 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
       if (item.trackId !== session.trackId || item.contentVersion !== session.contentVersion || item.artifactSha256 !== artifactSha256) {
         throw new Error("mismatched identity");
       }
-      if (occurrence.reviewSourceSnapshot !== undefined && !isReviewSourceSnapshot(occurrence.reviewSourceSnapshot)) throw new Error("invalid review source snapshot");
-      return Object.freeze({ occurrenceId: occurrence.occurrenceId, item, ...(occurrence.reviewSourceSnapshot ? { reviewSourceSnapshot: Object.freeze({ ...occurrence.reviewSourceSnapshot }) } : {}) });
+      if (occurrence.reviewSourceSnapshot !== undefined && !snapshotMatchesItemPin(occurrence.reviewSourceSnapshot, item)) throw new Error("invalid review source snapshot");
+      return Object.freeze({ occurrenceId: occurrence.occurrenceId, item, ...(occurrence.reviewSourceSnapshot ? { reviewSourceSnapshot: freezeReviewSourceSnapshot(occurrence.reviewSourceSnapshot) } : {}) });
     });
   } catch {
     throw new InvalidTrainingSessionError("Every item reference must match the session track, content version, and artifact.");
@@ -195,8 +196,9 @@ function isReviewSourceSnapshot(value: unknown): value is ReviewSourceSnapshot {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const snapshot = value as Record<string, unknown>;
   const keys = Object.keys(snapshot).sort();
-  const expected = ["dueAt", "policyVersion", "reviewEntryId", "source", "sourceAttemptId", "stage", ...(Object.hasOwn(snapshot, "manualRequestId") ? ["manualRequestId"] : [])].sort();
+  const expected = ["dueAt", "policyVersion", "reviewEntryId", "source", "sourceAttemptId", "stage", ...(Object.hasOwn(snapshot, "manualRequestId") ? ["manualRequestId"] : []), ...(Object.hasOwn(snapshot, "legacyUnitProof") ? ["legacyUnitProof"] : [])].sort();
   return keys.length === expected.length && keys.every((key, index) => key === expected[index]) &&
+    (!Object.hasOwn(snapshot, "legacyUnitProof") || isLegacyReviewUnitProof(snapshot.legacyUnitProof)) &&
     (snapshot.source === "due_queue" || snapshot.source === "manual_request") &&
     (snapshot.source !== "manual_request" || isManualRequestId(snapshot.manualRequestId)) &&
     (snapshot.manualRequestId === undefined || isManualRequestId(snapshot.manualRequestId)) &&
@@ -277,6 +279,7 @@ function assertBranchMatchesSession(
     new Set(branch.optionOrder).size !== branch.optionOrder.length || branch.optionOrder.some((id) => !id.trim())) {
     throw new InvalidTrainingSessionError("A conditional reinsert branch must contain a valid session-versioned occurrence and unique option order.");
   }
+  if (branch.occurrence.reviewSourceSnapshot !== undefined && !snapshotMatchesItemPin(branch.occurrence.reviewSourceSnapshot, item)) throw new InvalidTrainingSessionError("A conditional review source must match its session pin.");
   if (alternate) {
     const planOccurrenceIds = new Set(session.itemOrder.map((occurrence) => occurrence.occurrenceId));
     if (planOccurrenceIds.has(branch.occurrence.occurrenceId) || alternateOccurrenceIds.has(branch.occurrence.occurrenceId)) {
@@ -310,7 +313,17 @@ function freezeConditionalReinsertSlot(slot: TrainingSessionConditionalReinsertS
 
 function freezeConditionalReinsertBranch(branch: TrainingSessionConditionalReinsertBranch): TrainingSessionConditionalReinsertBranch {
   return Object.freeze({
-    occurrence: Object.freeze({ ...branch.occurrence, item: createResolvedContentRef(branch.occurrence.item) }),
+    occurrence: Object.freeze({ ...branch.occurrence, item: createResolvedContentRef(branch.occurrence.item), ...(branch.occurrence.reviewSourceSnapshot ? { reviewSourceSnapshot: freezeReviewSourceSnapshot(branch.occurrence.reviewSourceSnapshot) } : {}) }),
     optionOrder: Object.freeze([...branch.optionOrder]),
   });
+}
+
+function snapshotMatchesItemPin(snapshot: ReviewSourceSnapshot, item: ResolvedContentRef): boolean {
+  if (!isReviewSourceSnapshot(snapshot)) return false;
+  const source = snapshot.legacyUnitProof?.sourceItem;
+  return !source || (source.trackId === item.trackId && source.contentVersion === item.contentVersion && source.artifactSha256 === item.artifactSha256);
+}
+
+function freezeReviewSourceSnapshot(snapshot: ReviewSourceSnapshot): ReviewSourceSnapshot {
+  return Object.freeze({ ...snapshot, ...(snapshot.legacyUnitProof ? { legacyUnitProof: Object.freeze({ ...snapshot.legacyUnitProof, sourceItem: createResolvedContentRef(snapshot.legacyUnitProof.sourceItem) }) } : {}) });
 }
