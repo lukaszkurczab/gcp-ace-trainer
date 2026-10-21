@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "4c08ea69a807cf93af9b3e7e65d2528fe5091419",
+      "head": "298d6ffe762c87995da178d4afa5eac718f3fa90",
       "files": [
         {
           "path": ".easignore",
@@ -80805,6 +80805,10 @@
           "reason": "symlink-not-followed"
         },
         {
+          "path": "firebase-debug.log",
+          "reason": "ignored-or-outside-git-inventory"
+        },
+        {
           "path": "firestore-debug.log",
           "reason": "ignored-or-outside-git-inventory"
         },
@@ -101763,7 +101767,7 @@
     "Atlas/Struktura/patternly/src/utils/_Pliki/domain.ts — aplikacja · src › utils.md": "ec87e0c85df66b825d57ca2851e1782e9d8b51da8a575c41ed728aa8e75438a5",
     "Atlas/Struktura/patternly/src/utils/_Pliki/index.ts — aplikacja · src › utils.md": "7e8d703414bf1e2404bf8f881d60ef8932575e7c3e212f996f42fc3ccbb6b488",
     "Atlas/Struktura/patternly/src/utils/_Pliki/scoring.ts — aplikacja · src › utils.md": "85ca9b59fa23e95125b02a8dfea32d53fef82a8c26a05028a05063040874aa1f",
-    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "541e3c5f1432cb436184a90ba3b4d4f73f1e610fccd7c0455a9f667637ca045c",
+    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "29571000267cc6214c0aaa090b32dd924c37b9f913f47334a015cd9f9e6c7664",
     "Atlas/Struktura/patternly-backend/~2E~github/~2E~github — folder backend.md": "e64f622f16d18f655302cdf67100031ffa4d2c7a7be085e71fe99c00eb518ceb",
     "Atlas/Struktura/patternly-backend/~2E~github/workflows/workflows — folder backend · ~2E~github.md": "47fe4c54f08c2690cec420e363589b7db0e11900fcaca733bcc731e719b78e7d",
     "Atlas/Struktura/patternly-backend/config/config — folder backend.md": "538edba0cdb492902ca647e275eb82f8fca925c7fb4720ac12d6b2afec3ea52d",
