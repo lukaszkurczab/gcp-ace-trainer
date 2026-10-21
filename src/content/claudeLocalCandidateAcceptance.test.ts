@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { projectCanonicalSourceLinks } from "../application/canonical/canonicalSourceLinks";
 import { createCanonicalTrainingFamilyRuntime } from "../application/canonicalTrainingFamilyComposition";
-import { evaluatePackageCompletion } from "../domain/learning/packageCompletionRule";
+import { completionAttemptIdentity, evaluatePackageCompletion } from "../domain/learning/packageCompletionRule";
 import { createTrainingAttempt } from "../domain/learning/trainingAttempt";
 import type { TrackId } from "../domain/learning/trackIdentity";
 import retainedClaude from "./generated/retained-content/claude-pre-qle-v2.json";
@@ -70,14 +70,16 @@ test("current Claude preserves CC05 resources and all required completion units"
   }
 });
 
-test("CC05 keeps historical answer identity intact and grants no current coverage or resume alias", async () => {
+test("CC05 credits the reliably known retained unit while preserving exact history and denying a resume alias", async () => {
   const owner = new ContentPackageRuntimeOwner(() => null, async () => []);
   const { track, runtime } = await owner.resolveForPreparation({ trackId: TRACK, familyId: "certification", modeId: "certification-focus-practice" });
   const retainedIdentity = { trackId: TRACK, contentVersion: retainedClaude.lock.contentVersion, artifactSha256: retainedClaude.lock.sha256 };
   const retained = await owner.resolveExactArtifact(retainedIdentity);
   assert.equal(retained.track.contentVersion, retainedIdentity.contentVersion);
   assert.equal(retained.track.artifactSha256, retainedIdentity.artifactSha256);
-  const question = retained.track.questions[0]!;
+  const question = retained.track.getQuestion("CCARP-D01-O01-boundary");
+  assert.ok(question, "the fixture must use the known retained exact source");
+  assert.equal(question.mentalUnitId, "CCARP-D01-O01");
   const oldItem = { trackId: TRACK as TrackId, questionId: question.questionId, contentVersion: retainedIdentity.contentVersion, artifactSha256: retainedIdentity.artifactSha256 };
   const history = [createTrainingAttempt({ id: "cc05-history", sessionId: "old-session", occurrenceId: "old-occurrence", trackId: TRACK, modeId: "certification-focus-practice", item: oldItem, response: {}, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: oldItem, taxonomyOrSkillRefs: [] }, answeredAt: NOW, committedAt: NOW })];
   const before = JSON.stringify(history);
@@ -86,8 +88,24 @@ test("CC05 keeps historical answer identity intact and grants no current coverag
   await addTrainingAttempt(history[0]!, productionTrackAdmissionContext);
   const completion = evaluatePackageCompletion(track, history, (questionId) => track.getQuestion(questionId));
   assert.equal(completion.kind, "in_progress");
-  assert.equal(completion.qualifyingAttemptCount, 0);
-  assert.equal(completion.coverageDeficit, 212);
+  if (completion.kind !== "in_progress") throw new Error("One historical answer cannot complete the current package.");
+  assert.equal(completion.qualifyingAttemptCount, 1);
+  assert.equal(completion.coverageDeficit, 211);
+  assert.equal(completion.completedChapterCount, 0);
+  const chapter = completion.chapters.find((entry) => entry.nodeId === question.nodeId);
+  assert.ok(chapter);
+  const creditedUnit = chapter.coverage.find((unit) => unit.mentalUnitId === "CCARP-D01-O01");
+  assert.deepEqual(creditedUnit, { mentalUnitId: "CCARP-D01-O01", requiredCorrectQuestionCount: 4, latestCorrectQuestionCount: 1, deficit: 3 });
+  assert.deepEqual(completion.chapters.flatMap((entry) => entry.coverage).filter((unit) => unit.latestCorrectQuestionCount > 0).map((unit) => unit.mentalUnitId), ["CCARP-D01-O01"], "credit belongs only to the retained source's known unit, never another current unit");
+  const noExactSource = evaluatePackageCompletion({ ...track, completionSources: [] }, history, (questionId) => track.getQuestion(questionId));
+  assert.deepEqual(noExactSource, { kind: "unknown" }, "missing exact historical attribution cannot manufacture current coverage statistics");
+  assert.equal(completionAttemptIdentity({ ...track, completionSources: [] }, history[0]!, (questionId) => track.getQuestion(questionId)), undefined);
+  const conflicting = createTrainingAttempt({ ...history[0]!, id: "cc05-conflicting-attribution", reviewEvidence: { sourceItem: oldItem, taxonomyOrSkillRefs: [{ axisId: "node", nodeId: question.nodeId, role: "primary" }, { axisId: "mental_unit", nodeId: question.mentalUnitId, role: "primary" }, { axisId: "mental_unit", nodeId: "CCARP-D01-O02", role: "primary" }] } });
+  const conflictBefore = JSON.stringify(conflicting);
+  const conflictCompletion = evaluatePackageCompletion(track, [conflicting], (questionId) => track.getQuestion(questionId));
+  assert.deepEqual(conflictCompletion, { kind: "unknown" }, "conflicting attribution must remain unavailable instead of inheriting credit from a lookup");
+  assert.equal(completionAttemptIdentity(track, conflicting, (questionId) => track.getQuestion(questionId)), undefined);
+  assert.equal(JSON.stringify(conflicting), conflictBefore, "evaluation cannot repair conflicting saved attribution by rewriting it");
   assert.equal(JSON.stringify(history), before);
   assert.notDeepEqual(track.trainingIdentity, { contentVersion: retainedIdentity.contentVersion, artifactSha256: retainedIdentity.artifactSha256 });
   assert.notEqual(track.artifactSha256, retainedIdentity.artifactSha256);

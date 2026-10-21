@@ -14,6 +14,10 @@ import { detailLines } from "../features/practice/feedbackDetails";
 import { createCanonicalTrainingFamilyRuntime } from "../application/canonicalTrainingFamilyComposition";
 import { composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages } from "../application/canonical/canonicalInteractionPresentation";
 import type { ReviewQueueEntry } from "../domain";
+import { buildTrackReviewQueueViewModel } from "../application/reviewQueueQueries";
+import { installMemoryStorage } from "../testing/journalTestSupport";
+import { addReviewQueueItems, getReviewQueueItems } from "../storage/repositories";
+import { productionTrackAdmissionContext } from "../application/tracks/trackAdmissionContext";
 
 const trackId = "backend-system-design-interview";
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -141,7 +145,7 @@ test("current BESD B02-B09 questions score and present feedback by stable option
   assert.ok(total > 0, "current questions across B02-B09 are exercised without freezing the bank's total size");
 });
 
-test("BIZQ-01 current review retrieval keeps current items and excludes stale-package references", async () => {
+test("BIZQ-01 review reads preserve needs while unavailable legacy attribution cannot prepare current material", async () => {
   const { ContentPackageRuntimeOwner } = await import("../application/contentPackageRuntimeOwner");
   const owner = new ContentPackageRuntimeOwner(() => null, async () => []);
   const current = await owner.resolveForDiscovery(trackId, "design_interview");
@@ -157,8 +161,19 @@ test("BIZQ-01 current review retrieval keeps current items and excludes stale-pa
     sourceItem: { trackId, questionId: item.replacedId, contentVersion: "backend-system-design-interview-candidate-v2026.08.15", artifactSha256: "0".repeat(64) },
     taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval"], dueAt: now, createdAt: now, consecutiveAfterDueSuccesses: 0, persistent: false,
   }));
-  const projection = await current.runtime.queryReview({ trackId, reviews: [currentReview, ...staleReviews], now });
+  const storage = installMemoryStorage();
+  const reviews = [currentReview, ...staleReviews];
+  await addReviewQueueItems(reviews, productionTrackAdmissionContext);
+  const before = storage.snapshot();
+  const projection = await current.runtime.queryReview({ trackId, reviews, now });
   const due = (projection as { due: readonly ReviewQueueEntry[] }).due;
-  assert.deepEqual(due.map((entry) => entry.sourceItem.questionId), [changed[0]!.questionId],
-    "current exact-package retrieval retains the valid item and excludes stale package references; stale identity is not historical-availability proof");
+  assert.deepEqual(due, reviews, "reading persisted same-track needs cannot remove a stale source or its due obligation");
+  const view = await buildTrackReviewQueueViewModel({ trackId, now, reviewQueueItems: reviews });
+  assert.equal(view.totalItems, reviews.length);
+  assert.deepEqual(view.dueItems.map((entry) => entry.id), [currentReview.id]);
+  assert.deepEqual(view.unavailableItems.map((entry) => entry.id).sort(), staleReviews.map((entry) => entry.id).sort());
+  for (const unavailable of view.unavailableItems) assert.equal(unavailable.unavailableReason, "unit_material_unavailable");
+  await assert.rejects(current.runtime.prepare({ trackId, modeId: "design-interview-weak-area-review", request: { sessionId: "bizq-unavailable-legacy-needs", requestedLength: 10, reviewSource: "due_queue" }, attempts: [], reviews: staleReviews, now }), /insufficient eligible content/u);
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, reviews, "unavailable preparation preserves source, due date and all durable needs");
+  assert.deepEqual(storage.snapshot(), before, "query and failed admission perform no canonical writes");
 });

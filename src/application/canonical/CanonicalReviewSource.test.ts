@@ -13,6 +13,7 @@ import { addReviewQueueItems, addTrainingAttempt, getActiveTrainingSession, getR
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
+import { readReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 
@@ -266,7 +267,7 @@ test("single-source Certification weak-area review also keeps its due-only defau
   assert.deepEqual(prepared.session.itemOrder.map((entry) => entry.item.questionId), [question.questionId]);
 });
 
-test("due review selection rejects future and stale artifact/version/track references without fallback", async () => {
+test("due review selection rejects unqualified sources and preserves distinct persisted needs within one unit", async () => {
   const track = await trackPromise;
   const mode = track.getMode("coding-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
@@ -284,11 +285,35 @@ test("due review selection rejects future and stale artifact/version/track refer
       attempts: [miss], reviews: [evidence], now: NOW,
     }), /insufficient eligible content/u, `${evidence.id} must not authorize content`);
   }
+  const storage = installMemoryStorage();
+  const beforeDuplicate = storage.snapshot();
+  await assert.rejects(addReviewQueueItems([current, { ...current, id: "review:duplicate", sourceAttemptId: "attempt:duplicate" }], productionTrackAdmissionContext), /second active cycle for its exact content reference/u);
+  assert.deepEqual(storage.snapshot(), beforeDuplicate, "a rejected duplicate batch cannot persist review records or an index");
+
+  const otherSource = track.getPool(mode.modeId).find((candidate) => candidate.questionId !== question.questionId && candidate.nodeId === question.nodeId && candidate.mentalUnitId === question.mentalUnitId);
+  assert.ok(otherSource, "the legal case requires two distinct historical sources in the same unit");
+  const needs = [current, dueReview(track, otherSource, "matrix-other-source")];
+  assert.notEqual(needs[0]!.sourceItem.questionId, needs[1]!.sourceItem.questionId);
+  await addReviewQueueItems(needs, productionTrackAdmissionContext);
+  const admitted = readReviewQueueSnapshot(productionTrackAdmissionContext).value.entries;
+  assert.deepEqual(admitted, needs);
   const prepared = await createCanonicalTrainingFamilyRuntime(track).prepare({
-    trackId: TRACK_ID, modeId: mode.modeId, request: { sessionId: "dedupe-current", requestedLength: 10, reviewSource: "due_queue" },
-    attempts: [], reviews: [current, { ...current, id: "review:duplicate", sourceAttemptId: "attempt:duplicate" }], now: NOW,
+    trackId: TRACK_ID, modeId: mode.modeId, request: { sessionId: "distinct-unit-needs", requestedLength: 10, reviewSource: "due_queue" },
+    attempts: [], reviews: admitted, now: NOW,
   });
-  assert.deepEqual(prepared.session.itemOrder.map((entry) => entry.item.questionId), [question.questionId], "duplicate review identity does not duplicate the question");
+  assert.equal(prepared.session.actualLength, 2, "two durable needs remain two planned occurrences even within one unit");
+  assert.equal(new Set(prepared.session.itemOrder.map((entry) => entry.occurrenceId)).size, 2);
+  assert.deepEqual(prepared.session.itemOrder.map((entry) => entry.reviewSourceSnapshot?.reviewEntryId).sort(), needs.map((entry) => entry.id).sort());
+  for (const occurrence of prepared.session.itemOrder) {
+    const source = needs.find((entry) => entry.id === occurrence.reviewSourceSnapshot?.reviewEntryId)!;
+    assert.ok(source);
+    assert.equal(occurrence.reviewSourceSnapshot?.sourceAttemptId, source.sourceAttemptId);
+    assert.equal(occurrence.reviewSourceSnapshot?.dueAt, source.dueAt);
+    assert.deepEqual(occurrence.reviewSourceSnapshot?.legacyUnitProof, { sourceItem: source.sourceItem, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId });
+    const selected = track.getQuestion(occurrence.item.questionId)!;
+    assert.deepEqual([selected.nodeId, selected.mentalUnitId], [question.nodeId, question.mentalUnitId]);
+  }
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, needs, "selection preserves both original review sources and their cycle metadata");
 });
 
 test("invalid review sources and refs are rejected on practice and simulation before selection", async () => {

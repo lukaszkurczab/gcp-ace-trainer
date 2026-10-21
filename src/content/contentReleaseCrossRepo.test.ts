@@ -93,7 +93,7 @@ test("current producer builds independently and matches every installed APP arti
   }
 });
 
-test("current canonical builder adds the planning policy while preserving the exact v1 training predecessor", async () => {
+test("current canonical producer and installed APP preserve exact training projection and policy identity", async () => {
   const appRoot = process.cwd();
   const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
   const outputRoot = await mkdtemp(join(tmpdir(), "patternly-odk096-current-builder-"));
@@ -119,11 +119,23 @@ test("current canonical builder adds the planning policy while preserving the ex
     const awsSuccessor = successorLedger.tracks.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate")!;
     const awsQuestions = [...aws.questions].sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0);
     const awsNodeQuestions = awsQuestions.filter((question) => question.nodeId === "aws_secure_architecture_foundations");
-    assert.equal(aws.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.10.11-saa-fixes-v1-bizq03-planning-v2");
-    assert.equal(aws.planningPolicy?.policyVersion, awsSuccessor.planningPolicy.policyVersion);
-    assert.equal(awsSuccessor.training.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.10.11-saa-fixes-v1-bizq03-planning-v2-training");
+    const sourceCatalog = JSON.parse(readFileSync(join(currentContentRoot, "content/catalog.json"), "utf8")) as { tracks: readonly { trackId: string; contentVersion: string }[] };
+    const authoredAws = sourceCatalog.tracks.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate");
+    assert.ok(authoredAws, "AWS content identity is declared by the current authoring catalog");
+    assert.equal(aws.contentVersion, authoredAws.contentVersion);
+    const installedAwsBytes = readFileSync(join(appRoot, "src/content/generated/canonical-content/aws-certified-solutions-architect-associate.json"));
+    const installedAws = JSON.parse(installedAwsBytes.toString("utf8")) as typeof aws & { schemaVersion: string };
+    const installedLock = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-lock.json"), "utf8")) as { tracks: readonly { trackId: string; contentVersion: string; sha256: string; questionCount: number }[] };
+    const awsLock = installedLock.tracks.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate");
+    assert.ok(awsLock);
+    assert.equal(installedAws.schemaVersion, "patternly-content-artifact-v2");
+    assert.equal(awsLock.contentVersion, authoredAws.contentVersion);
+    assert.equal(awsLock.questionCount, awsQuestions.length);
+    assert.equal(awsLock.sha256, sha256Raw(installedAwsBytes));
+    assert.deepEqual(awsSuccessor.planningPolicy, { contentVersion: authoredAws.contentVersion, artifactSha256: awsLock.sha256, policyVersion: aws.planningPolicy?.policyVersion });
     assert.equal(awsSuccessor.training.questionCount, awsQuestions.length);
     const emittedAws = JSON.parse(readFileSync(join(outputRoot, "aws-certified-solutions-architect-associate.json"), "utf8")) as { schemaVersion: string; contentVersion: string; planningPolicy?: unknown } & Record<string, unknown>;
+    assert.deepEqual(readFileSync(join(outputRoot, "aws-certified-solutions-architect-associate.json")), installedAwsBytes, "the real producer's exact current AWS bytes are installed in APP");
     const trainingProjection = structuredClone(emittedAws);
     delete trainingProjection.planningPolicy;
     trainingProjection.schemaVersion = "patternly-content-artifact-v1";
@@ -132,7 +144,8 @@ test("current canonical builder adds the planning policy while preserving the ex
     assert.equal((aws as unknown as { completionRule: { ruleVersion: number; chapters: readonly unknown[] } }).completionRule.ruleVersion, 2);
     assert.equal(awsNodeQuestions.length, 40);
     assert.equal(builder.sha256(builder.canonicalJson(awsNodeQuestions)), "8dd16df1d7c6741b373026547c35255aea97869542bbb8897a4f36c73730bc33");
-    assert.equal(builder.sha256(builder.canonicalJson(awsQuestions)), "f745d5ea27b753a3fae1143c079086fb2bab99dacfbb89a08744925030eeed42");
+    const installedAwsQuestions = [...installedAws.questions].sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0);
+    assert.equal(builder.sha256(builder.canonicalJson(awsQuestions)), sha256Raw(builder.canonicalJson(installedAwsQuestions)), "the complete current question inventory matches installed APP content without freezing a superseded whole-bank hash");
   } finally {
     await rm(outputRoot, { recursive: true, force: true });
   }
