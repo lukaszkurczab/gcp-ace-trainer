@@ -1547,7 +1547,7 @@
     "patternly/integration/contracts/content-release/release.lock.json": {
       "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów, lineage producenta oraz wykonane kategorie kontroli. Lokalny start synchronizuje provenance do aktualnego commitu CONTENT; sama zmiana commitu bez zmiany wejść nie zmienia fingerprintu ani payloadów. Schema v4 nie nadaje semantic approval ani zgody na publikację.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "7fb70e291bab69e3da81544e45f4bef8d063606505173d481d8c71f337a95fc2"
+      "reviewedHash": "c6411275a3618bb30b7c939f668d2d3704e2338d5dbe60159ada911f4d0d306f"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -1885,7 +1885,7 @@
         "patternly-content",
         "patternly-backend/src/modules/content"
       ],
-      "reviewedDigest": "c2f9efd5f6bfdafead2eb5d6405796eb1de629f4e5ceebb577d1899a6d6611ad"
+      "reviewedDigest": "4daa4d715d4e9a242e7c6e67c16cafa9dfdbd1035f428309d206e6dd5a809559"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",

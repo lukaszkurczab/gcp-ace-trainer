@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "298d6ffe762c87995da178d4afa5eac718f3fa90",
+      "head": "0c680b9fee697fe6f5c616824d5d13ab63ae4cf1",
       "files": [
         {
           "path": ".easignore",
@@ -1033,7 +1033,7 @@
         },
         {
           "path": "integration/contracts/content-release/release.lock.json",
-          "sha256": "7fb70e291bab69e3da81544e45f4bef8d063606505173d481d8c71f337a95fc2",
+          "sha256": "c6411275a3618bb30b7c939f668d2d3704e2338d5dbe60159ada911f4d0d306f",
           "bytes": 8592,
           "symbols": [],
           "imports": [],
@@ -2825,7 +2825,7 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "de90e1fbdb33cb65108a3bfb131a51227907319b6f2ead8a8ca3c953e4021a53",
+          "sha256": "0b809e0288e02b06530bc41a00adb14c8d05b02406ea96c73ef6e5f1826e695c",
           "bytes": 134475,
           "symbols": [],
           "imports": [],
@@ -39285,7 +39285,7 @@
         },
         {
           "path": "src/content/generated/canonical-content/content-lock.json",
-          "sha256": "9c04db91e882678c979b47d5021932dd776f019ca5f4bef3c7c203ecdd18f37d",
+          "sha256": "1df965ce384052bd16e65218ea5109ffdf12a5befb33a5504cac557035a8a0e3",
           "bytes": 2406,
           "symbols": [],
           "imports": [],
@@ -39298,7 +39298,7 @@
         },
         {
           "path": "src/content/generated/canonical-content/content-successor-ledger.json",
-          "sha256": "6c4837476af38bdc824ca4c2f31b644d07136385e9a9f76071a3cc2b893822d3",
+          "sha256": "3472d2c1ff5fbf1c385f817f87c05b842507daccfb185e7192d9cd9736269500",
           "bytes": 4974,
           "symbols": [],
           "imports": [],
@@ -39331,8 +39331,8 @@
         },
         {
           "path": "src/content/generated/canonical-content/microsoft-azure-administrator-associate-az-104.json",
-          "sha256": "1d693be43b795f42125bc4ddde140a5a9c5b7bda59537dd6a06b225f89bcbbbf",
-          "bytes": 3258175,
+          "sha256": "9a9c26955e7290ce8a0eeaff9c09b6e8719fdb09a0d81ca3eb7196f7cebf66c4",
+          "bytes": 3259130,
           "symbols": [],
           "imports": [],
           "jsonKeys": [],
@@ -91177,8 +91177,8 @@
         },
         {
           "path": "content/microsoft-azure-administrator-associate-az-104/azure_resource_governance_rbac_policy_and_cost_control/AZ104-N02-B03.json",
-          "sha256": "cfa02401d131fa6d9ea1355d2453bfc145a3877b47708c44d54ee32edfeb8ec0",
-          "bytes": 42735,
+          "sha256": "98b86bc5cd3fd68b92ed812e5bc05cff3aef186ae2b804744e1794b8b9efe40e",
+          "bytes": 43121,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -91201,8 +91201,8 @@
         },
         {
           "path": "content/microsoft-azure-administrator-associate-az-104/azure_resource_governance_rbac_policy_and_cost_control/AZ104-N02-B05.json",
-          "sha256": "991cf29cb9753749927afad2aa74000bb4886bb599fa233e1558191c3eda6bad",
-          "bytes": 45428,
+          "sha256": "59cda7cec25c0cd8f181935c5b1513d9a8e6f6624058f744cf899f6d31a1d084",
+          "bytes": 45521,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -91237,8 +91237,8 @@
         },
         {
           "path": "content/microsoft-azure-administrator-associate-az-104/azure_resource_governance_rbac_policy_and_cost_control/AZ104-N02-B08.json",
-          "sha256": "ffec9e47b4030d1f0c6c6a81b17ea5b617cc98c087457e616d845c2a15926f06",
-          "bytes": 40863,
+          "sha256": "e611b102a5c61ca08c844faf924c2452d6004c003d987bcbc1cdcc3042db8934",
+          "bytes": 41339,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -95157,8 +95157,8 @@
         },
         {
           "path": "tests/az104-repairs-20261018.test.mjs",
-          "sha256": "7b2e22724a36b67454f7bb8d3cc013aaccae6d2e82989535239c5a7ae1838e3c",
-          "bytes": 18408,
+          "sha256": "54308c7908344a46ae1d3f46c1a9bba088046a3147beb4e94443ea54f53d2715",
+          "bytes": 26187,
           "symbols": [],
           "imports": [
             {
@@ -95206,9 +95206,12 @@
             "the three reviewed option sets avoid answer-length cues and remain one-decision alternatives",
             "N01 distractor cleanups and the shared-group-inbox distinction retain post-submit explanations",
             "all 102 N02-B01/B02 distractors are proposals, not pre-submit explanations",
-            "the actual Certification consumer preserves all 44 source questions through shuffled persisted responses"
+            "the actual Certification consumer preserves all 44 source questions through shuffled persisted responses",
+            "October 21 closest counterexamples: data access, export-only delivery, nonexistent CLI",
+            "October 21 nine distractors preserve false mechanisms without pre-submit self-disproof",
+            "October 21 actual APP: persisted permutations, accessibility, feedback boundary, retired IDs"
           ],
-          "lines": 295
+          "lines": 407
         },
         {
           "path": "tests/besd-n02-repairs-20261011.test.mjs",
@@ -100319,7 +100322,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "de90e1fbdb33cb65108a3bfb131a51227907319b6f2ead8a8ca3c953e4021a53",
+  "catalogHash": "0b809e0288e02b06530bc41a00adb14c8d05b02406ea96c73ef6e5f1826e695c",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "2a2d0e6a5c7467bcf5e109ea5cf3d67b310e9cac8f7f97d3ce2f773fdd5525dc",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -100405,7 +100408,7 @@
     "Atlas/Struktura/patternly/src/content/contracts/contracts — folder aplikacja · src › content.md": "ab6da6a93cbcc02ba81cbef716c72904b16365bd7e65342851022303e0840f10",
     "Atlas/Struktura/patternly/src/content/errors/errors — folder aplikacja · src › content.md": "f2fd554411c70c935d6ac5c7c01ea060ee71b5d7aae0052fc659faab8731388d",
     "Atlas/Struktura/patternly/src/content/generated/generated — folder aplikacja · src › content.md": "3372eb5d27a0c717a84ec7b0b3439642ddf29f499478b202b622f7aa77c60903",
-    "Atlas/Struktura/patternly/src/content/generated/canonical-content/canonical-content — folder aplikacja · src › content › generated.md": "6d08a65bd80959a1b7fd74cc8a1fd4ded7d005d17a764bafbf82d933180b9f97",
+    "Atlas/Struktura/patternly/src/content/generated/canonical-content/canonical-content — folder aplikacja · src › content › generated.md": "cd0f69d1adcdb8f0f3549c2f154d947f6ca66efa0d78236558f235cc24686eb6",
     "Atlas/Struktura/patternly/src/content/generated/retained-content/retained-content — folder aplikacja · src › content › generated.md": "2c38568e7c9f66c5dbefc5e96ff26bf5772dd193140bae06ffa8c74a6bf03642",
     "Atlas/Struktura/patternly/src/content/runtime/runtime — folder aplikacja · src › content.md": "5328e82bcaa13b7e2413fc63946fc90f21058f2fc234d08b944a3ec11f0a6288",
     "Atlas/Struktura/patternly/src/domain/domain — folder aplikacja · src.md": "274b55f722193df39197f459b9880ce1f818c0d67370582f820f97e2807715d1",
@@ -100470,7 +100473,7 @@
     "Atlas/Struktura/patternly/_Pliki/app.config.js — aplikacja.md": "79c63934acf2fcc17b985d094c27b3f97e440ec99a150aa88806dd78f8529cd0",
     "Atlas/Struktura/patternly/_Pliki/App.tsx — aplikacja.md": "a0ba7b75861d651862ef9a8f612e9eab8d5341b7ad7cb9f3c2b592a595bfb2ec",
     "Atlas/Struktura/patternly/config/_Pliki/public-legal.release.json — aplikacja · config.md": "4e7f4ee670cdc8532cd2f49b233c7e66f1a6029be175d4016c217638f818bbbf",
-    "Atlas/Struktura/patternly/integration/contracts/content-release/_Pliki/release.lock.json — aplikacja · integration › contracts › content-release.md": "ea855df5c08b3d35e75fe081da7bb722802e379a81289214701522082ee3d635",
+    "Atlas/Struktura/patternly/integration/contracts/content-release/_Pliki/release.lock.json — aplikacja · integration › contracts › content-release.md": "a5c43fef68d37e70f5d4ccab9013f89a965e075fd81a88d84cd1970b34bf1b6d",
     "Atlas/Struktura/patternly/_Pliki/metro.config.js — aplikacja.md": "64742c893abdea69f9504b3605fe2bded9fea7304957ef4b8bd4fb0cb94b0ff4",
     "Atlas/Struktura/patternly/native/foreground-clock/android/_Pliki/build.gradle — aplikacja · native › foreground-clock › android.md": "464f0dd21ef8b8ab06a6936335e9a82e7c574b40120352de6339db3601e0f073",
     "Atlas/Struktura/patternly/native/foreground-clock/android/_Pliki/CMakeLists.txt — aplikacja · native › foreground-clock › android.md": "b86295bdb1ebb9bebca827829457153fb766bc019ffb38ca0ce95b5c92aaa98d",
@@ -101149,11 +101152,11 @@
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/backend-system-design-interview.json — aplikacja · src › content › generated › canonical-content.md": "9172d074faecda7681dfd65d80496f561e6b854b662b8b88e76948848ab2969e",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/claude-certified-architect-professional-certification.json — aplikacja · src › content › generated › canonical-content.md": "e56d2b32df9afec8a1241262b3f91a14ed53a33a4b23a17ddb5025e89157fc9c",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/coding-interview-dsa-problem-solving.json — aplikacja · src › content › generated › canonical-content.md": "648d8d06966ef14d821ad4d0563edd63fd8968b0549fc4875baebe9df4cb5a11",
-    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/content-lock.json — aplikacja · src › content › generated › canonical-content.md": "8a09f06588d04c8cb2582356f7f7919744404b8a00355c212536e53cb7e9e6ad",
-    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/content-successor-ledger.json — aplikacja · src › content › generated › canonical-content.md": "c6b2591b4f046878529f2a2152aa11a419bd948b5874b40dfa78fa0269057657",
+    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/content-lock.json — aplikacja · src › content › generated › canonical-content.md": "706af1d9f294d5ab9ec8e424883547c01f6f62b391694775362519f29f6cf2f4",
+    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/content-successor-ledger.json — aplikacja · src › content › generated › canonical-content.md": "97a92efd909758dd45b63b338d9ed68d65838bd49fa8688cb93b318c360a1404",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/frontend-system-design-interview.json — aplikacja · src › content › generated › canonical-content.md": "88fe912551aaeb6eb9982d015ad942c5413755305382a95aab5a935bb97a6116",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/google-cloud-associate-cloud-engineer.json — aplikacja · src › content › generated › canonical-content.md": "2fb3917e75826ac34096b501902c4bdefb974e433a4bf2b5f0919cc2ca6ad2b4",
-    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/microsoft-azure-administrator-associate-az-104.json — aplikacja · src › content › generated › canonical-content.md": "1fb521cafa7853c73ac2a7a2655514b70e575bdc9d1c785e3d31e412d12dd5bc",
+    "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/microsoft-azure-administrator-associate-az-104.json — aplikacja · src › content › generated › canonical-content.md": "a27fb5d68b172577d65985b97a1c7431dc4548e67614e08299f271aba725478e",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/microsoft-azure-ai-fundamentals-ai-901.json — aplikacja · src › content › generated › canonical-content.md": "b277d9c3fa90259487ed6514283ac6167fd1bfda2222153a3ecb7f1aa7d3bb0d",
     "Atlas/Struktura/patternly/src/content/generated/canonical-content/_Pliki/object-oriented-design-interview.json — aplikacja · src › content › generated › canonical-content.md": "a04f1727beada9416fe020ea5653e280a578633f0f1607ee048c5c472ff63e66",
     "Atlas/Struktura/patternly/src/content/generated/_Pliki/premium-node-offer.json — aplikacja · src › content › generated.md": "9a67295601afdfc4b97ca0aaf083a06c9c46ff34d7a7670d58e075c41f073241",
@@ -102196,7 +102199,7 @@
     "Atlas/Struktura/patternly-content/supplements/supplements — folder treści.md": "eff9ffa59c5cb9e42bde2bc7a73e7f70d17189d12f8b78149423ec7824661740",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/claude-certified-architect-professional-certification — folder treści · supplements.md": "8f6783f5bee7eb32ecaa8ec2d2d90167c3206f8d8ee9b4d98f29acb28f3a4fb8",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/cc02-course-supplement-v1/cc02-course-supplement-v1 — folder treści · supplements › claude-certified-architect-professional-certification.md": "665cd4eb08807f25b2e169d3e1ed2f41dd50e7581e3d5df42dd515785fcc9218",
-    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "ff61057b950541658b9157603fd764266803f3899d36b5a2622a1457993d3e67",
+    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "068ae5085cef2e7056a8ea5c89294431d070a9207a63b54ead228609385a06a7",
     "Atlas/Struktura/patternly-content/tests/fixtures/fixtures — folder treści · tests.md": "f9f078841ff9d1e7d638b87a8ab120dad5c61725bc51243f3c5f4701628cb77e",
     "Atlas/Struktura/patternly-content/tests/helpers/helpers — folder treści · tests.md": "50b33bea342c721f251a707c9f72f41524d9c0a71cec4b2e94f33b38d7a02eb7",
     "Atlas/Struktura/patternly-content/config/_Pliki/bundled-free-node-packages.json — treści · config.md": "9c6c56df49bbedcd2ba36d972e6929cd11eb199ac8f0b037a245b68cc52449ec",
@@ -102220,7 +102223,7 @@
     "Atlas/Struktura/patternly-content/scripts/review/_Pliki/content-review-console.mjs — treści · scripts › review.md": "74f95cb823009c8732e38e3955095d2841779ca18be50edb7cbf50d93d9166b7",
     "Atlas/Struktura/patternly-content/scripts/review/_Pliki/schema-validation.mjs — treści · scripts › review.md": "9322e13e2455ef6f3d434be759ac1cba50976ef395f9292934bd1e47e76a0778",
     "Atlas/Struktura/patternly-content/tests/_Pliki/ai901-20261018-repairs.test.mjs — treści · tests.md": "fa1e7981e0c740d628f1fecf750a78170a9117a0b982778524bfd38f7094fb02",
-    "Atlas/Struktura/patternly-content/tests/_Pliki/az104-repairs-20261018.test.mjs — treści · tests.md": "1058b6f5f32b5affa376903c3d7201b98e47d4942a0d9ee56d72680be51a26af",
+    "Atlas/Struktura/patternly-content/tests/_Pliki/az104-repairs-20261018.test.mjs — treści · tests.md": "528968779e1df4fd3a5c593ecd3841357591560b59f261ff7e79bcde39fd1eb9",
     "Atlas/Struktura/patternly-content/tests/_Pliki/besd-n02-repairs-20261011.test.mjs — treści · tests.md": "690b3aa317171c17db31ba369af374be0cdf5f960a12ef80af48978a2e9e16ca",
     "Atlas/Struktura/patternly-content/tests/_Pliki/besd-n03-repairs-20261018.test.mjs — treści · tests.md": "802d78d2a743519ea86a7b9a7eccd3cb1b677d7c3ef49a8158366ff6b67df8b4",
     "Atlas/Struktura/patternly-content/tests/_Pliki/bizq01-ood-node-closure-16.test.mjs — treści · tests.md": "3e9264d36cc8d7652ce2c420e0865a47b9765a6a68ab3ca10dfd5e982f0c5daa",
