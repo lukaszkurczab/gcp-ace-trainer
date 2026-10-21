@@ -285,7 +285,7 @@ export function projectFullGoalWorkload(input: Readonly<{
       else {
         minMinutes += activePracticeCost.min;
         typicalMinutes += activePracticeCost.typical;
-        maxMinutes = activePracticeCost.max;
+        maxMinutes = maxMinutes === null ? null : maxMinutes + activePracticeCost.max;
         for (const source of activePracticeCost.sources) { chapterSources.set(source.estimateId, source); usedSources.set(source.estimateId, source); }
       }
     }
@@ -298,7 +298,7 @@ export function projectFullGoalWorkload(input: Readonly<{
       else {
         minMinutes += diagnosticCost.min;
         typicalMinutes += diagnosticCost.typical;
-        maxMinutes = diagnosticCost.max;
+        maxMinutes = maxMinutes === null ? null : maxMinutes + diagnosticCost.max;
         for (const source of diagnosticCost.sources) { chapterSources.set(source.estimateId, source); usedSources.set(source.estimateId, source); }
       }
     }

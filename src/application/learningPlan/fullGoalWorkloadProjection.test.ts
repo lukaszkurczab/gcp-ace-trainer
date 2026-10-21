@@ -8,6 +8,10 @@ import type { PackageCompletionState } from "../../domain/learning/packageComple
 import { createPackageCompletionRuleV3, evaluatePackageCompletion } from "../../domain/learning/packageCompletionRule";
 import { buildPlanningCalendar } from "../../domain/learning/planningCalendar";
 import { projectFullGoalWorkload } from "./fullGoalWorkloadProjection";
+import { assessFullGoalTimeCapacity } from "./fullGoalTimeCapacity";
+import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
+import { createCanonicalTrainingFamilyRuntime } from "../canonicalTrainingFamilyComposition";
+import { recommendLearningPlanMode } from "./learningPlanModeRecommendation";
 
 const TRACK = "track-a";
 const SHA = "a".repeat(64);
@@ -290,8 +294,8 @@ test("unrelated due and active work cannot reduce V3 coverage lower bound", () =
     minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
   const unitIds = ["unit-1", "unit-2", "unit-3", "unit-4", "unit-5", "unit-6", "unit-7"];
   const allQuestions = unitIds.flatMap((unitId, unitIndex) => Array.from({ length: 4 }, (_, index) => question(`q${unitIndex + 1}-${index + 1}`, "chapter-a", unitId)));
-  const completionRule = { ruleVersion: 3 as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 5, minimumAttemptCount: 100,
-    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, units: unitIds.map((mentalUnitId) => ({ mentalUnitId, requiredCorrectQuestionCount: 4 as const })) }] };
+  const completionRule = createPackageCompletionRuleV3({ ruleVersion: 3, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 7, minimumAttemptCount: 40,
+    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, units: unitIds.map((mentalUnitId) => ({ mentalUnitId, requiredCorrectQuestionCount: 4 })) }] });
   const v3Track = { ...track, completionRule, questions: allQuestions, modes: [focus, review],
     getPool: (modeId: string) => modeId === focus.modeId || modeId === review.modeId ? allQuestions : [],
     getQuestion: (id: string) => allQuestions.find((entry) => entry.questionId === id),
@@ -301,18 +305,18 @@ test("unrelated due and active work cannot reduce V3 coverage lower bound", () =
     estimate(`review-${unitId}`, review.modeId, "chapter-a", unitId, 2, 4, 7, 0, 0, 0),
   ]);
   const focusPolicy = { ...policy, workEstimates: [...policy.workEstimates, ...estimates] };
-  const coverage = unitIds.map((mentalUnitId, index) => ({ mentalUnitId, requiredCorrectQuestionCount: 4,
-    latestCorrectQuestionCount: index < 2 ? 4 : 0, deficit: index < 2 ? 0 : 4 }));
-  const completionState = { kind: "in_progress" as const, chapters: [{ nodeId: "chapter-a", mentalUnitCount: 7, qualifyingAttemptCount: 120,
-    requiredAttemptCount: 140, remainingAttemptCount: 20, coverageDeficit: 20, minimumAdditionalAttemptCount: 20, coverage,
-    rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: 1, qualityRequirementUnmet: false, status: "in_progress" as const, reason: "minimum_attempts_unmet" as const }],
-    completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount: 120, requiredAttemptCount: 140, coverageDeficit: 20,
-    minimumAdditionalAttemptCount: 20, remainingAttemptCount: 20 } as PackageCompletionState;
   const attempts = [
     ...unitIds.slice(0, 2).flatMap((unitId, unitIndex) => Array.from({ length: 4 }, (_, index) =>
       qualifiedAttempt(`covered-${unitIndex}-${index}`, `q${unitIndex + 1}-${index + 1}`, unitId, index))),
-    ...Array.from({ length: 112 }, (_, index) => qualifiedAttempt(`repeat-${index}`, "q1-1", "unit-1", index + 8)),
+    ...Array.from({ length: 12 }, (_, index) => qualifiedAttempt(`repeat-${index}`, "q1-1", "unit-1", index + 8)),
   ];
+  const completionState = evaluatePackageCompletion(v3Track, attempts, v3Track.getQuestion);
+  assert.equal(completionState.kind, "in_progress");
+  if (completionState.kind !== "in_progress") throw new Error("Expected the canonical V3 deficit.");
+  assert.equal(completionState.requiredAttemptCount, 40);
+  assert.equal(completionState.qualifyingAttemptCount, 20);
+  assert.equal(completionState.coverageDeficit, 20);
+  assert.equal(completionState.minimumAdditionalAttemptCount, 20);
   const activeSession = createTrainingSession({ id: "session:covered-unit", trackId: TRACK, modeId: focus.modeId,
     configurationSnapshot: { kind: "practice" }, requestedLength: 10, actualLength: 4, currentItemIndex: 0,
     itemOrder: allQuestions.slice(0, 4).map((item, index) => ({ occurrenceId: `occurrence:${index}`, item: createResolvedContentRef({ trackId: TRACK, questionId: item.questionId, contentVersion: "v2", artifactSha256: SHA }) })),
@@ -329,6 +333,20 @@ test("unrelated due and active work cannot reduce V3 coverage lower bound", () =
     ["coverage:chapter-a:unit-6", 4], ["coverage:chapter-a:unit-7", 4],
   ]);
   assert.equal(result.sessionDemands.some((entry) => entry.id === "practice:chapter-a"), false, "scoped coverage sessions already satisfy the V lower bound without assuming correctness");
+  // Five coverage blocks:40/60/100; active four:8/12/20; five due:10/20/35.
+  const row = result.chapters[0]!;
+  assert.deepEqual([row.minMinutes, row.typicalMinutes, row.maxMinutes], [48, 72, 120]);
+  assert.deepEqual([result.knownMinMinutes, result.knownTypicalMinutes, result.knownMaxMinutes], [58, 92, 155]);
+  assert.ok(row.minMinutes! <= row.typicalMinutes! && row.typicalMinutes! <= row.maxMinutes!);
+  assert.ok(result.knownMinMinutes <= result.knownTypicalMinutes && result.knownTypicalMinutes <= result.knownMaxMinutes!);
+  const calendar = buildPlanningCalendar({ localToday: "2026-10-08", timezone: "Europe/Warsaw", preferredDays: ["thu"], weeklySessionTarget: 1,
+    dueObligations: result.dueReviews.map(review => ({ id: review.id, dueAt: review.dueAt, minMinutes: review.minMinutes!, typicalMinutes: review.typicalMinutes!, maxMinutes: review.maxMinutes! })),
+    targetDate: "2026-10-08", targetMeaning: "deadline", availableMinutesPerStudyDay: 100,
+    todayActiveTime: { kind: "known", minutes: 0 }, sessionLocalTime: "18:00", currentLocalTime: "12:00", legalSessions: [{ sessionLength: 4, minMinutes: 8, typicalMinutes: 12, maxMinutes: 20 }], requiredSessionCount: 0 });
+  const capacity = assessFullGoalTimeCapacity({ workload: result, calendar });
+  assert.equal(capacity.availableMinutes, 100);
+  assert.equal(capacity.kind, "range_crosses_available_time", "the full range cannot fit using an overwritten55-minute maximum");
+
 });
 
 function question(questionId: string, nodeId: string, mentalUnitId: string) { return { questionId, nodeId, mentalUnitId, trackId: TRACK, contentVersion: "v2", artifactSha256: SHA } as const; }
@@ -366,3 +384,54 @@ function reviewEntry(id: string, questionId: string): ReviewQueueEntry {
   const sourceItem = createResolvedContentRef({ trackId: TRACK, questionId, contentVersion: "v2", artifactSha256: SHA });
   return { id, trackId: TRACK as never, sourceAttemptId: `attempt-${id}`, sourceSessionId: `session-${id}`, sourceItem, taxonomyOrSkillRefs: [], reasons: ["incorrect"], createdAt: "2026-10-01T00:00:00.000Z", dueAt: "2026-10-05T00:00:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: true, status: "active", policyVersion: "bizq04-v1", stage: "retention7" };
 }
+
+
+test("actual GCP active practice and scheduled diagnosis both retain their maximum costs", async () => {
+  const track = (await loadCanonicalRuntimeCatalog()).getTrack("google-cloud-associate-cloud-engineer");
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
+  const practice = track.getMode("certification-focus-practice");
+  const diagnostic = track.getMode("certification-diagnostic-baseline");
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: practice.modeId,
+    request: { sessionId: "gcp-active-before-diagnosis", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-10-08T10:00:00.000Z" });
+  const activeSession = prepared.session;
+  const before = JSON.stringify(activeSession);
+  const recommendation = recommendLearningPlanMode({ binding: runtime.getPlanningModeBinding(), trackId: track.trackId,
+    modes: track.modes, sessions: [activeSession], activeSession, dueReviewCount: 0 });
+  assert.equal(recommendation.mode.modeId, practice.modeId);
+  assert.equal(recommendation.diagnosis, "scheduled", "an active Focus session is reachable before the one-off diagnostic history exists");
+  assert.equal(track.completionRule?.ruleVersion, 2);
+  assert.equal(activeSession.actualLength, 10);
+  const policy = track.planningPolicy!;
+  const policyIdentity = track.planningPolicyIdentity!;
+  assert.equal(diagnostic.selection.kind, "exact_ordered_questions");
+  if (diagnostic.selection.kind !== "exact_ordered_questions") throw new Error("Expected the authored diagnostic order.");
+  const diagnosticIds = diagnostic.selection.questionIds.slice(0, diagnostic.defaultRequestedLength);
+  assert.equal(diagnosticIds.length, 40);
+  const nodeId = practice.selection.kind === "node" ? practice.selection.nodeId : "";
+  const selectedScopes = [
+    { modeId: practice.modeId, questions: activeSession.itemOrder.map(occurrence => track.getQuestion(occurrence.item.questionId)!) },
+    { modeId: diagnostic.modeId, questions: diagnosticIds.map(id => track.getQuestion(id)!) },
+  ];
+  for (const { modeId, questions } of selectedScopes) {
+    assert.ok(questions.every(question => question && question.nodeId === nodeId));
+    for (const question of questions) {
+      const estimate = policy.workEstimates.find(entry => entry.modeId === modeId && entry.scopeRefs.some(scope =>
+        scope.nodeId === question.nodeId && scope.mentalUnitId === question.mentalUnitId))!;
+      assert.deepEqual([estimate.minMinutesPerResponse, estimate.typicalMinutesPerResponse, estimate.maxMinutesPerResponse], [1, 2, 4]);
+      assert.equal(estimate.reviewReserve.kind, "authored_estimate");
+      if (estimate.reviewReserve.kind !== "authored_estimate") throw new Error("Expected the authored reserve.");
+      assert.deepEqual([estimate.reviewReserve.minAdditionalResponsesPerNewResponse, estimate.reviewReserve.typicalAdditionalResponsesPerNewResponse, estimate.reviewReserve.maxAdditionalResponsesPerNewResponse], [0, 1, 3]);
+    }
+  }
+  const completion = evaluatePackageCompletion(track, [], track.getQuestion);
+  const result = projectFullGoalWorkload({ track, policy, planningPolicyIdentity: policyIdentity, completion, sessions: [activeSession], activeSession,
+    attempts: [], reviews: [], practiceMode: practice, diagnosisMode: diagnostic, diagnosisStatus: recommendation.diagnosis });
+  const row = result.chapters.find(chapter => chapter.nodeId === nodeId)!;
+  // Both full-goal blocks include the authored reserve: (active10 + diagnostic40)×[1,2,4]×(1+[0,1,3]) = [50,200,800].
+  assert.deepEqual([row.minMinutes, row.typicalMinutes, row.maxMinutes], [50, 200, 800]);
+  assert.deepEqual([result.knownMinMinutes, result.knownTypicalMinutes, result.knownMaxMinutes], [50, 200, 800]);
+  assert.ok(row.minMinutes! <= row.typicalMinutes! && row.typicalMinutes! <= row.maxMinutes!);
+  assert.equal(result.sessionDemands.find(demand => demand.kind === "continue_existing")?.responseCount, 10);
+  assert.equal(result.sessionDemands.find(demand => demand.phase === "diagnosis")?.responseCount, 40);
+  assert.equal(JSON.stringify(activeSession), before, "cost aggregation cannot rewrite the exact active plan");
+});

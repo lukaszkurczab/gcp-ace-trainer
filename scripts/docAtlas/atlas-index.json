@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "959ca334c803499d793ce2dc55b9712188767049",
+      "head": "a5b4a95117bcda279e66ad4bfd41b535096ad835",
       "files": [
         {
           "path": ".easignore",
@@ -2825,8 +2825,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "d3b79d968ad7cd391e336725993ed0b7bad8c453fc11dca5cac48f9479e7e681",
-          "bytes": 144690,
+          "sha256": "e0ba693c23afd4aba82dd05cbcb1e6df5bdffa2fc4a82a2cbc530e704f9c71e3",
+          "bytes": 145281,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2837,7 +2837,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 2021
+          "lines": 2026
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -24874,8 +24874,8 @@
         },
         {
           "path": "src/application/learningPlan/fullGoalWorkloadProjection.test.ts",
-          "sha256": "b080b97a5e5d4b1a52413bbdf1210ae3a88e7dde0845969b9ff3b782fa7f5534",
-          "bytes": 36273,
+          "sha256": "9934e7b7867f191e8f6e8737c99fe32028cf6793ecba46bc4d7d6d0d649990f8",
+          "bytes": 41831,
           "symbols": [],
           "imports": [
             {
@@ -24937,6 +24937,30 @@
               "kind": "static",
               "target": "src/application/learningPlan/fullGoalWorkloadProjection.ts",
               "line": 10
+            },
+            {
+              "specifier": "./fullGoalTimeCapacity",
+              "kind": "static",
+              "target": "src/application/learningPlan/fullGoalTimeCapacity.ts",
+              "line": 11
+            },
+            {
+              "specifier": "../../content/canonical/runtimeCatalog",
+              "kind": "static",
+              "target": "src/content/canonical/runtimeCatalog.ts",
+              "line": 12
+            },
+            {
+              "specifier": "../canonicalTrainingFamilyComposition",
+              "kind": "static",
+              "target": "src/application/canonicalTrainingFamilyComposition.ts",
+              "line": 13
+            },
+            {
+              "specifier": "./learningPlanModeRecommendation",
+              "kind": "static",
+              "target": "src/application/learningPlan/learningPlanModeRecommendation.ts",
+              "line": 14
             }
           ],
           "jsonKeys": [],
@@ -24953,14 +24977,15 @@
             "V3 coverage in two units creates two separately scoped legal sessions",
             "active Premium V3 unit continuation is validated and costed in its exact source scope",
             "a committed wrong answer is not treated as an active coverage target or completion credit",
-            "unrelated due and active work cannot reduce V3 coverage lower bound"
+            "unrelated due and active work cannot reduce V3 coverage lower bound",
+            "actual GCP active practice and scheduled diagnosis both retain their maximum costs"
           ],
-          "lines": 369
+          "lines": 438
         },
         {
           "path": "src/application/learningPlan/fullGoalWorkloadProjection.ts",
-          "sha256": "17008310b263d3320f45b5b561de5a4ec2bb6e37514d6e9a443451179f3a8790",
-          "bytes": 55947,
+          "sha256": "a6ea95dab109332faf0260c790504dc92084f120d8323525ef16c4856c9d3966",
+          "bytes": 56031,
           "symbols": [
             "ChapterWorkloadProjection",
             "DueReviewWorkload",
@@ -99808,7 +99833,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "d3b79d968ad7cd391e336725993ed0b7bad8c453fc11dca5cac48f9479e7e681",
+  "catalogHash": "e0ba693c23afd4aba82dd05cbcb1e6df5bdffa2fc4a82a2cbc530e704f9c71e3",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "a6f3005ba6de89e0c57e870d1bddeee966c723549609690b9287bf501689377f",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
@@ -99863,7 +99888,7 @@
     "Atlas/Struktura/patternly/src/application/guest/guest — folder aplikacja · src › application.md": "242edf6d7f3d01fd47d960dd51424349c688c396399394e0a5309c298dd2bace",
     "Atlas/Struktura/patternly/src/application/identity/identity — folder aplikacja · src › application.md": "1e036107b15dd8f80b613c06d6e1c9d2cf2fba5b9b8fbd1840b24146d3e9508a",
     "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "6d8840ee535ef19c661625e79d326fba08faa1b87184b0d071ca64998676f09e",
-    "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "b16a81c0e1749556755f5fe52b07e4388274dc4037853e0feb80c96f5aeb4129",
+    "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "65f25fbd76524e38f9b2213b645f2fad9ffb0a1131d133bfcc88e05f68240742",
     "Atlas/Struktura/patternly/src/application/practice/practice — folder aplikacja · src › application.md": "3414acea97e54eb9431ca345be144de3c536fb6d5ce6cb0f3cfece9b06a2a903",
     "Atlas/Struktura/patternly/src/application/runtime/runtime — folder aplikacja · src › application.md": "ff4eb4664d4cb961bfc9b01c8a1d24b576c3eb0ea771ecd1cb3480b7f3d895b4",
     "Atlas/Struktura/patternly/src/application/runtimeAuditability/runtimeAuditability — folder aplikacja · src › application.md": "6555721e9d78bf61a882d699744dda0ab717926a89e68a07ee9f2aeba54b92d9",
@@ -100267,7 +100292,7 @@
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/overallScoreCredit.ts — aplikacja · src › application › canonical.md": "f123c1bf3d4605f9b502fb7262b16fb26209748d92e490c8f7e25495773ce73a",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/overallScoreCreditConsumers.test.ts — aplikacja · src › application › canonical.md": "27d75d9cfa32383f8d37990d63cd498abfeb21a4abdb51106cd238d982548992",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/practiceQuestionSelector.ts — aplikacja · src › application › canonical.md": "590ebb747ce72133340ecc1e9307e121aac57a627046d446ab17ff9ba58d7047",
-    "Atlas/Struktura/patternly/src/application/_Pliki/canonicalTrainingFamilyComposition.ts — aplikacja · src › application.md": "006a11c589a75327df117e2935a22a53c40d03d552acd53552af1f683f0acfc3",
+    "Atlas/Struktura/patternly/src/application/_Pliki/canonicalTrainingFamilyComposition.ts — aplikacja · src › application.md": "2f68060d124a8ffd4ffb83aa00d6fc47d77255724d6f1f330f50759510673442",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/caseBlockSelector.test.ts — aplikacja · src › application › certification.md": "24f204ba14cb0cdbed7a2921a21b4d9c126f3e086a148991375a0e73c91f6528",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/caseBlockSelector.ts — aplikacja · src › application › certification.md": "1aee5ba68ea61067044bdd5053c00b46b99473ad0b640a5b9a702c9cee132dd1",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationDiagnosticLifecycle.integration.test.ts — aplikacja · src › application › certification.md": "71c25086a86ffbb13840af70040344ff75172cbbee5718c0003b9c487ac743bc",
@@ -100358,9 +100383,9 @@
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/caseWorkEstimate.test.ts — aplikacja · src › application › learningPlan.md": "78a55a162a5fe1eb02d1e609126ba5ab125c00090cd6f704a3559d73e697bc83",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/caseWorkEstimate.ts — aplikacja · src › application › learningPlan.md": "3872008328d69e7757164be853603b7f25fb49478700b3d25964d95ca9ded4e8",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalTimeCapacity.test.ts — aplikacja · src › application › learningPlan.md": "c42797e2b049edba03a9f9a903ec656cd57074545e9779c5f7fd55718a9e8b3d",
-    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalTimeCapacity.ts — aplikacja · src › application › learningPlan.md": "8f84172ff9dc9870e7b62b4c89f2d164ff2fb9785bd2d233c3279cd8982331de",
-    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalWorkloadProjection.test.ts — aplikacja · src › application › learningPlan.md": "fddcf96864a5c05f6d05231a950e0da6ea201371150eaff0061e2777216f5bd4",
-    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalWorkloadProjection.ts — aplikacja · src › application › learningPlan.md": "71083ad549a6f221929276c48faa14dd7570dd0f9bb9ba14fe469ba09e315839",
+    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalTimeCapacity.ts — aplikacja · src › application › learningPlan.md": "a69ce13d1ce0b598cf0045df8067bb360ab48f8128be7068b182a0243e07655d",
+    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalWorkloadProjection.test.ts — aplikacja · src › application › learningPlan.md": "5962e5d836dbe09d683f71e9730aa9eea3c81b10db99ad5f0e79ab0c2b1d2c8f",
+    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalWorkloadProjection.ts — aplikacja · src › application › learningPlan.md": "26b38ac93692e597548a315045d2f0a94b3dfa8271ae5d0b1a2eb1c79a145193",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/goalPlanLifecycle.ts — aplikacja · src › application › learningPlan.md": "805da347038ab6220b8f57b744708e030507ee57431102fbe0d39aa4e77c6955",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/index.ts — aplikacja · src › application › learningPlan.md": "017a7fed5fbeb73202126431da4ea871f05fa5c8ec82cdd092c3f94cd2b1b836",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningCreditTransfer.integration.test.ts — aplikacja · src › application › learningPlan.md": "597e1ce72f187ae1c69ce829c5dceb28ba588d77f2a2ad946d34b1ebaa0bf9b7",
@@ -100369,7 +100394,7 @@
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/LearningPlanEditorCoordinator.test.ts — aplikacja · src › application › learningPlan.md": "42670afa61619429b12434ef8086a9e1f039f3d94023fd7c5551b57c2c49c27f",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/LearningPlanEditorCoordinator.ts — aplikacja · src › application › learningPlan.md": "8be0ad9af535e99dc6d11596b7ac079606b07fbc7be2e8a33689e0ded361ab7d",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanModeRecommendation.test.ts — aplikacja · src › application › learningPlan.md": "aab4c06aa54c3a229624d1f981ee5df842ac88be5e174053d8ffde59d44f7589",
-    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanModeRecommendation.ts — aplikacja · src › application › learningPlan.md": "bb5f67018be26a93407d1d1d4d65e5152154cc64b7ed91f670c9701c5c13c84e",
+    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanModeRecommendation.ts — aplikacja · src › application › learningPlan.md": "9fae58efa03fadb2a95fc46a735ec3d50a9e3d86b74805aab8961688be95e630",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanMutationRuntime.test.ts — aplikacja · src › application › learningPlan.md": "a3dc535bb8d0b889e60f4446c49504f5036a4b8db1af909161db8629d1424f5c",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanMutationRuntime.ts — aplikacja · src › application › learningPlan.md": "fd3104cd205afed27dbb7668f86a95fbf654701fd01e7301e12bd805b89643e7",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanMutationRuntimeCore.ts — aplikacja · src › application › learningPlan.md": "701bb27437af12bdbde8ff0d50d9cf318a85ec3d1539d0d20d884133d747f141",
