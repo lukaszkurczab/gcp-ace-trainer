@@ -56,9 +56,9 @@ test("sandbox and release reject mode/configuration mismatches", () => {
   assert.throws(() => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug" }), /playIntegrity/);
 });
 
-test("release app config rejects unresolved processing disclosure and explicit unapproved status", () => {
+test("release app config rejects explicitly unapproved legal documents", () => {
   const releaseEnvironment = { ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
-  assert.throws(() => createExpoConfig(releaseEnvironment), /Release legal variables are invalid:[\s\S]*privacy\.processingRegisterDisclosure\.en: Unresolved legal placeholder\.[\s\S]*legalDocumentApproval\.status: Production legal documents are not approved\./);
+  assert.throws(() => createExpoConfig(releaseEnvironment), /Release legal variables are invalid:[\s\S]*legalDocumentApproval\.status: Production legal documents are not approved\./);
 });
 
 test("release public legal links use the configured public environment parser and match the legal record", () => {

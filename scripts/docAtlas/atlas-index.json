@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "a12a31a70052c80977075ec5f3d4adbfb32c108d",
+      "head": "72877745252d9cf5ec11ed7afb6890f3bc95f2b8",
       "files": [
         {
           "path": ".easignore",
@@ -1958,8 +1958,8 @@
         },
         {
           "path": "scripts/buildRuntimeConfiguration.test.ts",
-          "sha256": "cc7248bdcfe7d09f6436755db9558064a2c36dc935040e224c304480b4eb9673",
-          "bytes": 17766,
+          "sha256": "6a2004773008033f496ac2fa7f3d3a59a105c2fea7fd8b05b05faea874072cad",
+          "bytes": 17660,
           "symbols": [],
           "imports": [
             {
@@ -1998,7 +1998,7 @@
             "sandbox builds validate the same closed public environment schema as the installed app",
             "runtime mode is explicit and persists in public Expo config",
             "sandbox and release reject mode/configuration mismatches",
-            "release app config rejects unresolved processing disclosure and explicit unapproved status",
+            "release app config rejects explicitly unapproved legal documents",
             "release public legal links use the configured public environment parser and match the legal record",
             "smoke is explicit, locally bound, and permits debug App Check",
             "remote artifacts require their public Firebase configuration before prebuild",
@@ -2825,7 +2825,7 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "11af3de3c4e63f96fd5376c08b226aec5e22a8eafab525dc5c695d7a55c63cd7",
+          "sha256": "2b94cea08b09e067ac75824ca97f5eb4b95cadd5c9cc3b70f530ab0e2da428dd",
           "bytes": 142442,
           "symbols": [],
           "imports": [],
@@ -9952,8 +9952,8 @@
         },
         {
           "path": "scripts/releaseManifest.test.mjs",
-          "sha256": "efe770cfc0c83d36ae222524e31e7f6536e7ddde0dc411f0ad4cb2c405866c03",
-          "bytes": 28307,
+          "sha256": "cc7d78269d790caa3a0934391f642b0601a20247f3d03464b7111e232f5bede7",
+          "bytes": 28556,
           "symbols": [],
           "imports": [
             {
@@ -10047,7 +10047,7 @@
             "rejects absolute, traversal and symlink references",
             "rejects dirty repositories and output paths inside or through symlinked parents"
           ],
-          "lines": 549,
+          "lines": 553,
           "dynamicLoads": 1
         },
         {
@@ -55893,8 +55893,8 @@
         },
         {
           "path": "src/infrastructure/firebase/firebaseHostingPreMarketPolicy.test.ts",
-          "sha256": "7499eac356672e08501f0c8361975719c85b6f9597d56f6ec422b2a3ba409ae8",
-          "bytes": 16170,
+          "sha256": "2f49b96fe88355e20f602b226f592d006f3d58236cf2aeb3a4e4fee201644d93",
+          "bytes": 24316,
           "symbols": [],
           "imports": [
             {
@@ -55920,13 +55920,19 @@
               "kind": "static",
               "resolution": "external",
               "line": 4
+            },
+            {
+              "specifier": "typescript",
+              "kind": "static",
+              "resolution": "external",
+              "line": 5
             }
           ],
           "jsonKeys": [],
           "testNames": [
             "keeps pre-market Firebase Hosting unpublished and loopback-only"
           ],
-          "lines": 357
+          "lines": 512
         },
         {
           "path": "src/infrastructure/firebase/providerAuthFixtureCommand.test.ts",
@@ -68881,10 +68887,6 @@
         {
           "path": "[lokalne pliki środowiska lub kluczy — nazwy ukryte]",
           "reason": "private-or-dependency-output"
-        },
-        {
-          "path": "src/application/learningMutations/identity.ts",
-          "reason": "deleted-in-worktree"
         }
       ],
       "boundaries": [
@@ -99660,9 +99662,9 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "11af3de3c4e63f96fd5376c08b226aec5e22a8eafab525dc5c695d7a55c63cd7",
+  "catalogHash": "2b94cea08b09e067ac75824ca97f5eb4b95cadd5c9cc3b70f530ab0e2da428dd",
   "notes": {
-    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "c094a541a7714a010921ba19a1ea85789849a5a15e116a4651d8d52df103d1db",
+    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "a6f3005ba6de89e0c57e870d1bddeee966c723549609690b9287bf501689377f",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
     "Atlas/Struktura/patternly/~2E~github/workflows/workflows — folder aplikacja · ~2E~github.md": "d0f73127c8309fdd5b856c65fe4ff099ec76d693453b247fc1f5d6907c770ecb",
     "Atlas/Struktura/patternly/~2E~maestro/~2E~maestro — folder aplikacja.md": "3b237cc084bf9d635e103ec140eb8447f4c01b52ec1d1065a38c356de54f4def",
@@ -99693,7 +99695,7 @@
     "Atlas/Struktura/patternly/plugins/plugins — folder aplikacja.md": "bf874d79fb8c2d747616c98d7548ebf39c137155128fc19a73cbdcdd681d48f9",
     "Atlas/Struktura/patternly/schemas/schemas — folder aplikacja.md": "1bbd280ec5e1dc302bcb726ea877c7fd94e906f58bc8f2ff54e737a04d174bbb",
     "Atlas/Struktura/patternly/schemas/release/release — folder aplikacja · schemas.md": "cd5b0616f2c48f274a72e43693df393626876590d9a333ee4bcbb3e63fb930c6",
-    "Atlas/Struktura/patternly/scripts/scripts — folder aplikacja.md": "08317db8b7ecbc7bf6f9232325ee5de0552d5728a42b91790b2cf4fca7eb0ff6",
+    "Atlas/Struktura/patternly/scripts/scripts — folder aplikacja.md": "e6eefc1d3f8d2225f85127f820a4a0320c10b6c35ce099ff7485ffd620dbf2a7",
     "Atlas/Struktura/patternly/scripts/architecture/architecture — folder aplikacja · scripts.md": "1ae6ece83f8abe7c1abb5996cf37cf6cf20081c79db549478227c091423c1f02",
     "Atlas/Struktura/patternly/scripts/docAtlas/docAtlas — folder aplikacja · scripts.md": "3624d341451e4ce3ca58cce5e011039bd726e09bd43806ba4b9f22a21f719452",
     "Atlas/Struktura/patternly/scripts/fixtures/fixtures — folder aplikacja · scripts.md": "1134fbd8512af188081474a324584c1eb8dbbd0931f5fa52175c4b94f1617ca2",
@@ -99777,7 +99779,7 @@
     "Atlas/Struktura/patternly/src/infrastructure/clients/clients — folder aplikacja · src › infrastructure.md": "ce47d846535c38f2d0d8b520ccd11527ad8ead0efa2c3f19b3d1d6c0e70e27b3",
     "Atlas/Struktura/patternly/src/infrastructure/content/content — folder aplikacja · src › infrastructure.md": "77734e2dae99b157220767e6d225458388b40f6b7d60ff42ac334677a3cf8cbe",
     "Atlas/Struktura/patternly/src/infrastructure/diagnostics/diagnostics — folder aplikacja · src › infrastructure.md": "222d1431db0dd92456f773233ccf211b2365e789b704356ac3195e819bb8c867",
-    "Atlas/Struktura/patternly/src/infrastructure/firebase/firebase — folder aplikacja · src › infrastructure.md": "b93c9a75b5d703544d5f7bb2dca7fcae4e4c5a2533a3876e7b08a01a30d3f035",
+    "Atlas/Struktura/patternly/src/infrastructure/firebase/firebase — folder aplikacja · src › infrastructure.md": "4c87b28077d19c0e82bc8ff278f2de38b49c36b770d97a6e3e903c6d5dda0184",
     "Atlas/Struktura/patternly/src/infrastructure/identity/identity — folder aplikacja · src › infrastructure.md": "af3a4e2261bd204b21ca2eeabfd28fe647c507c0608448d015286ec90ac2f0a4",
     "Atlas/Struktura/patternly/src/infrastructure/notifications/notifications — folder aplikacja · src › infrastructure.md": "af88947489cb956bf8cdf3c36eb43a95068a2c51ff8406d73616480ff9b66fde",
     "Atlas/Struktura/patternly/src/infrastructure/purchases/purchases — folder aplikacja · src › infrastructure.md": "edb697df8ed2a4226c7944aa2d97a60a12fa29a73bbc4d507e8147f0674787e1",
@@ -99838,7 +99840,7 @@
     "Atlas/Struktura/patternly/scripts/_Pliki/aud02dMatrix.mjs — aplikacja · scripts.md": "d405da8223797a157c5ed0b3e85b9b8284e602c1e56f1981ff4111082846ad2f",
     "Atlas/Struktura/patternly/scripts/_Pliki/aud02dMatrix.test.mjs — aplikacja · scripts.md": "9887e4e044c0b5a6f6ff96f2ede493cfb9074dfc0200cbc6452385acbd4b1936",
     "Atlas/Struktura/patternly/scripts/_Pliki/buildIdentity.test.ts — aplikacja · scripts.md": "fda1ad39134d5442b34c6e22f745d66ea18798100c689b966359f45554a2a1d4",
-    "Atlas/Struktura/patternly/scripts/_Pliki/buildRuntimeConfiguration.test.ts — aplikacja · scripts.md": "03d6f5ecdda14890d54c0bf3c3b01569a62eb60c3fe54989d2d816d09f19b90d",
+    "Atlas/Struktura/patternly/scripts/_Pliki/buildRuntimeConfiguration.test.ts — aplikacja · scripts.md": "227364b49555c3a3fe886803c32861f09f9a24cabe285c85e74582b4af092cbc",
     "Atlas/Struktura/patternly/scripts/_Pliki/candidateContentReleaseLock.mjs — aplikacja · scripts.md": "fb444a340a601eb803c4a4d359259f376948c09632da3f73a4afbc5fd7e9df60",
     "Atlas/Struktura/patternly/scripts/_Pliki/candidateContentReleaseLock.test.mjs — aplikacja · scripts.md": "5fe2b342ab92b8a542abfa2b2a700f64f18751151fa0ac4d32cf0ff0217a0b32",
     "Atlas/Struktura/patternly/scripts/_Pliki/captureQ13ReadOnlyReceipt.mjs — aplikacja · scripts.md": "83ca2dea23fb16165f40c35ecb050ba2cd9f404daff40b97d5387b580ebc8e11",
@@ -99991,7 +99993,7 @@
     "Atlas/Struktura/patternly/scripts/_Pliki/releaseGate.mjs — aplikacja · scripts.md": "f6030f86b5a82c9033ed16f905ecd08bc8ceee844caecfb89d48a8a92ba755db",
     "Atlas/Struktura/patternly/scripts/_Pliki/releaseGate.test.mjs — aplikacja · scripts.md": "83641510ff48c6c3b4831e6aaccfd9bcab3a961ea3cb238d917ee3395d9914df",
     "Atlas/Struktura/patternly/scripts/_Pliki/releaseManifest.mjs — aplikacja · scripts.md": "10daf696b8d3a789d6916b54b1c1b8f7648200e465afb39e937e754e006b0f82",
-    "Atlas/Struktura/patternly/scripts/_Pliki/releaseManifest.test.mjs — aplikacja · scripts.md": "c8c20dea18ecf26da087b13be92bf87e4839f10656b9e1f44feebd5d8dbe819d",
+    "Atlas/Struktura/patternly/scripts/_Pliki/releaseManifest.test.mjs — aplikacja · scripts.md": "2808ba33fef47c52acfe204c1a50da905921349dde2a8d53c8bcf91823380e29",
     "Atlas/Struktura/patternly/scripts/_Pliki/reportCanonicalPoolReadiness.mjs — aplikacja · scripts.md": "7d2928c843c4a85793cb4ccbc32b7c3599449112b9833e8868f16659d3d40bad",
     "Atlas/Struktura/patternly/scripts/_Pliki/reportCanonicalPoolReadiness.test.mjs — aplikacja · scripts.md": "4085c7308ebd6194c1a53b846f630ff608ad48839e17dd7a1562e66df6b0a478",
     "Atlas/Struktura/patternly/scripts/_Pliki/runAud02dIos.mjs — aplikacja · scripts.md": "af9740219759175d1da893a48cd5f8213f69304ab3300546747d24262e60b319",
@@ -100805,7 +100807,7 @@
     "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/firebaseAuthClient.test.ts — aplikacja · src › infrastructure › firebase.md": "0e47743c6aab42c4a497c72104f782353403e530e742914d2c39e69cdd6b7b56",
     "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/firebaseAuthClient.ts — aplikacja · src › infrastructure › firebase.md": "114e083e5e3017d200170006c04ea995880cf52e482171d656cdb25fbcaf6bde",
     "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/firebaseFirestoreConfiguration.test.ts — aplikacja · src › infrastructure › firebase.md": "495b03666c7dc8fd0f4b75328b20991a8c19e7dc3efa848ecd2c6d54a1e88a0b",
-    "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/firebaseHostingPreMarketPolicy.test.ts — aplikacja · src › infrastructure › firebase.md": "c407598880c86bd2b27c21629b6d6900330260362ed74cab6cfdf78aea440f09",
+    "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/firebaseHostingPreMarketPolicy.test.ts — aplikacja · src › infrastructure › firebase.md": "7bd313cbce13ec79642541b567c64ee5d63b2cc9aded21c2e3e6b99972160fe3",
     "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/providerAuthFixtureCommand.test.ts — aplikacja · src › infrastructure › firebase.md": "442944425017311ad77f8f70e0a4c93ec5a7ad672b95a756abf855b80025fff0",
     "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/providerAuthFixtureCommand.ts — aplikacja · src › infrastructure › firebase.md": "ae0ea651346888f3dcdb4819d80c6ef3b3be31bce3e710f6b45dfca871009bd8",
     "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/providerAuthFixtureRuntime.disabled.ts — aplikacja · src › infrastructure › firebase.md": "4305f1b898ecd7a14f41144822ce84be6c64076d07c6fbbf4ad9d34e0e237dea",

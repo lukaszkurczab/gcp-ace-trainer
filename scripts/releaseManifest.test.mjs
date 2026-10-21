@@ -179,14 +179,18 @@ before(async () => {
   mkdirSync(resolve(identityTarget, ".."), { recursive: true });
   copyFileSync(join(contentRoot, identityModulePath), identityTarget);
   execFileSync("git", ["add", "-A"], { cwd: contentFixtureRoot });
-  execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "-qm", "current source identity fixture"], { cwd: contentFixtureRoot });
+  if (execFileSync("git", ["diff", "--cached", "--name-only"], { cwd: contentFixtureRoot, encoding: "utf8" }).trim()) {
+    execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "-qm", "current source identity fixture"], { cwd: contentFixtureRoot });
+  }
   applicationRoot = makeWorkingTreeFixture("application", root);
   const appVerifierSource = join(root, "scripts/verifyBundledCurrentContent.mjs");
   const appVerifierTarget = join(applicationRoot, "scripts/verifyBundledCurrentContent.mjs");
   mkdirSync(resolve(appVerifierTarget, ".."), { recursive: true });
   copyFileSync(appVerifierSource, appVerifierTarget);
   execFileSync("git", ["add", "-A"], { cwd: applicationRoot });
-  execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "-qm", "current bundle verifier fixture"], { cwd: applicationRoot });
+  if (execFileSync("git", ["diff", "--cached", "--name-only"], { cwd: applicationRoot, encoding: "utf8" }).trim()) {
+    execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "-qm", "current bundle verifier fixture"], { cwd: applicationRoot });
+  }
   evidenceRoot = join(fixtureRoot, "release-evidence");
   mkdirSync(evidenceRoot);
   const applicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: applicationRoot, encoding: "utf8" }).trim();

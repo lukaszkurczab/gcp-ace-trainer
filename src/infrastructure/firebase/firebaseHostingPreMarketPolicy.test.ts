@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { isAbsolute, join, relative } from "node:path";
 import test from "node:test";
+import ts from "typescript";
 
 type JsonObject = Readonly<Record<string, unknown>>;
 
@@ -43,21 +44,111 @@ const hasForbiddenFirebaseHostingPath = (source: string): boolean => {
   });
 };
 
-const hasForbiddenPublicWebExposurePath = (source: string): boolean => {
+const hasForbiddenPublicWebExposurePath = (source: string, allowHtmlEntities: boolean): boolean => {
+  const sourceFile = allowHtmlEntities ? ts.createSourceFile("policy-source.ts", source, ts.ScriptTarget.Latest, true) : undefined;
+  if (sourceFile && hasForbiddenShellExecution(sourceFile)) return true;
+  const scannedSource = sourceFile ? maskHtmlLiterals(sourceFile) : source;
   if (/\buses\s*:\s*[^\s#]*(?:netlify|vercel|apphosting|localtunnel)[^\s#]*@/iu.test(source)) return true;
   if (/\buses\s*:\s*cloudflare\/(?:pages-action|wrangler-action)@/iu.test(source)) return true;
   if (/\buses\s*:\s*ngrok\/[^\s#]*@/iu.test(source)) return true;
 
-  return source.split(/\r?\n/u).some((line) => {
+  return scannedSource.split(/\r?\n/u).some((line) => {
     if (/\bfirebase(?:\.cmd)?\b[^\r\n]*\bapphosting:/u.test(line)) return true;
     if (/(?:^\s*|\brun:\s*|[;&|]\s*|\b(?:npx|pnpm\s+dlx|yarn\s+dlx)\s+|\bnpm\s+exec\s+)(?:netlify|netlify-cli)(?:\.cmd)?\b[^\r\n]*\bdeploy\b/u.test(line)) return true;
     if (/(?:^\s*|\brun:\s*|[;&|]\s*|\b(?:npx|pnpm\s+dlx|yarn\s+dlx)\s+|\bnpm\s+exec\s+)vercel(?:\.cmd)?\b/u.test(line)) return true;
     if (/(?:^\s*|\brun:\s*|[;&|]\s*|\b(?:npx|pnpm\s+dlx|yarn\s+dlx)\s+|\bnpm\s+exec\s+)wrangler(?:\.cmd)?\s+pages\s+deploy\b/u.test(line)) return true;
     if (/(?:^\s*|\brun:\s*|[;&|]\s*|\b(?:npx|pnpm\s+dlx|yarn\s+dlx)\s+|\bnpm\s+exec\s+)cloudflared(?:\.exe)?\s+tunnel\b/u.test(line)) return true;
     if (/(?:^\s*|\brun:\s*|[;&|]\s*|\b(?:npx|pnpm\s+dlx|yarn\s+dlx)\s+|\bnpm\s+exec\s+)ngrok(?:\.exe)?\s+(?:http|tcp|tls|start)\b/u.test(line)) return true;
-    if (/(?:^\s*|\brun:\s*|[;&|]\s*|\b(?:npx|pnpm\s+dlx|yarn\s+dlx)\s+|\bnpm\s+exec\s+)(?:localtunnel|lt)(?:\.cmd)?\b/u.test(line)) return true;
+    if (/(?:^\s*|\brun:\s*|[;&|]\s*|\b(?:npx|pnpm\s+dlx|yarn\s+dlx)\s+|\bnpm\s+exec\s+)(?:localtunnel|lt)(?:\.cmd)?(?=[\s;&|]|$)/u.test(line)) return true;
     return /(?:^\s*|\brun:\s*|[;&|]\s*|\b(?:npx|pnpm\s+dlx|yarn\s+dlx)\s+|\bnpm\s+exec\s+)eas(?:\.cmd)?\s+deploy\b/u.test(line);
   });
+};
+
+// Mask only complete HTML/entity literals, preserving shell-like text elsewhere in the source.
+const maskHtmlLiterals = (file: ts.SourceFile): string => {
+  const ranges: { start: number; end: number }[] = [];
+  const visit = (node: ts.Node): void => {
+    const text = ts.isStringLiteralLike(node) ? node.text
+      : ts.isRegularExpressionLiteral(node) ? node.text.replace(/^\/|\/[a-z]*$/gu, "") : undefined;
+    if (text !== undefined && /^(?:&lt;|&lt;\/?[A-Za-z][A-Za-z0-9:-]*\s*\/?&gt;)$/u.test(text)) {
+      ranges.push({ start: node.getStart(file), end: node.end });
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  let source = file.text;
+  for (const { start, end } of ranges.reverse()) {
+    source = source.slice(0, start) + source.slice(start, end).replace(/&lt;/gu, "    ") + source.slice(end);
+  }
+  return source;
+};
+
+// This static guard recognizes explicit child_process calls and literal commands, not dynamic dataflow.
+const hasForbiddenShellExecution = (file: ts.SourceFile): boolean => {
+  const apiNames = ["exec", "execSync", "spawn", "spawnSync", "execFile", "execFileSync"];
+  const functions = new Map(apiNames.map((name) => [name, name]));
+  const namespaces = new Set(["child_process"]);
+  const isChildProcess = (node: ts.Node | undefined): boolean =>
+    !!node && ts.isStringLiteralLike(node) && /^(?:node:)?child_process$/u.test(node.text);
+  const registerBindings = (node: ts.Node): void => {
+    if (ts.isImportDeclaration(node) && isChildProcess(node.moduleSpecifier)) {
+      const clause = node.importClause;
+      if (clause?.name) namespaces.add(clause.name.text);
+      const bindings = clause?.namedBindings;
+      if (bindings && ts.isNamespaceImport(bindings)) namespaces.add(bindings.name.text);
+      if (bindings && ts.isNamedImports(bindings)) {
+        for (const binding of bindings.elements) {
+          const api = (binding.propertyName ?? binding.name).text;
+          if (apiNames.includes(api)) functions.set(binding.name.text, api);
+        }
+      }
+    }
+    if (ts.isVariableDeclaration(node) && node.initializer && ts.isCallExpression(node.initializer)
+      && ts.isIdentifier(node.initializer.expression) && node.initializer.expression.text === "require"
+      && isChildProcess(node.initializer.arguments[0])) {
+      if (ts.isIdentifier(node.name)) namespaces.add(node.name.text);
+      if (ts.isObjectBindingPattern(node.name)) {
+        for (const binding of node.name.elements) {
+          const api = (binding.propertyName ?? binding.name).getText(file);
+          if (ts.isIdentifier(binding.name) && apiNames.includes(api)) functions.set(binding.name.text, api);
+        }
+      }
+    }
+    ts.forEachChild(node, registerBindings);
+  };
+  registerBindings(file);
+
+  let forbidden = false;
+  const inspect = (node: ts.Node): void => {
+    if (ts.isCallExpression(node)) {
+      const callee = node.expression;
+      const api = ts.isIdentifier(callee) ? functions.get(callee.text)
+        : ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression)
+          && namespaces.has(callee.expression.text) ? callee.name.text : undefined;
+      if (api && apiNames.includes(api)) {
+        const command = node.arguments[0];
+        const argv = node.arguments[1];
+        const shellOption = node.arguments.some((argument) => ts.isObjectLiteralExpression(argument)
+          && argument.properties.some((property) => ts.isPropertyAssignment(property)
+            && (ts.isIdentifier(property.name) || ts.isStringLiteralLike(property.name))
+            && property.name.text === "shell"
+            && (property.initializer.kind === ts.SyntaxKind.TrueKeyword || ts.isStringLiteralLike(property.initializer))));
+        const shellExecutable = command && ts.isStringLiteralLike(command)
+          && /(?:^|\/)(?:sh|bash|zsh)$/u.test(command.text)
+          && argv && ts.isArrayLiteralExpression(argv)
+          && argv.elements.some((argument) => ts.isStringLiteralLike(argument) && argument.text === "-c");
+        if (api === "exec" || api === "execSync" || shellOption || shellExecutable) {
+          const literalArguments = node.arguments.flatMap((argument) => ts.isStringLiteralLike(argument)
+            ? [argument.text] : ts.isArrayLiteralExpression(argument)
+              ? argument.elements.filter(ts.isStringLiteralLike).map((element) => element.text) : []);
+          forbidden ||= literalArguments.some((argument) => hasForbiddenPublicWebExposurePath(argument, false));
+        }
+      }
+    }
+    ts.forEachChild(node, inspect);
+  };
+  inspect(file);
+  return forbidden;
 };
 
 const evaluatePreMarketHostingPolicy = ({
@@ -110,14 +201,18 @@ const evaluatePreMarketHostingPolicy = ({
     errors.push("Local-profile launcher must bind both start and web Expo actions to --localhost.");
   }
 
-  for (const [name, source] of Object.entries({ ...packageScripts, ...repositoryScriptSources })) {
+  const policySources = [
+    ...Object.entries(packageScripts).map(([name, source]) => [name, source, false] as const),
+    ...Object.entries(repositoryScriptSources).map(([name, source]) => [name, source, !name.startsWith(".github/workflows/") && /\.[cm]?[jt]sx?$/u.test(name)] as const),
+  ];
+  for (const [name, source, allowHtmlEntities] of policySources) {
     if (hasUnsafeExpoStart(source)) {
       errors.push(`Pre-market executable must bind every Expo start command only with --localhost: ${name}.`);
     }
     if (hasForbiddenFirebaseHostingPath(source)) {
       errors.push(`Pre-market repository must not expose a Firebase Hosting deploy, preview, clone, legacy serve, config/host override or deploy action: ${name}.`);
     }
-    if (hasForbiddenPublicWebExposurePath(source)) {
+    if (hasForbiddenPublicWebExposurePath(source, allowHtmlEntities)) {
       errors.push(`Pre-market repository must not expose an alternative public web host or tunnel: ${name}.`);
     }
   }
@@ -232,6 +327,15 @@ test("keeps pre-market Firebase Hosting unpublished and loopback-only", () => {
     ["ngrok-start", "ngrok start --all"],
     ["localtunnel", "localtunnel --port 5000"],
     ["localtunnel-short", "lt --port 5000"],
+    ["localtunnel-npx", "npx localtunnel --port 5000"],
+    ["localtunnel-npm-exec", "npm exec lt --port 5000"],
+    ["localtunnel-pnpm", "pnpm dlx localtunnel --port 5000"],
+    ["localtunnel-yarn", "yarn dlx lt --port 5000"],
+    ["localtunnel-bare", "lt"],
+    ["localtunnel-separator", "lt; echo done"],
+    ["localtunnel-background", "echo ready &lt --port 5000"],
+    ["localtunnel-background-bare", "echo ready &lt; echo done"],
+    ["localtunnel-windows", "lt.cmd --port 5000"],
     ["eas-hosting", "eas deploy"],
   ] as const) {
     assert.deepEqual(evaluatePreMarketHostingPolicy({
@@ -239,6 +343,57 @@ test("keeps pre-market Firebase Hosting unpublished and loopback-only", () => {
       packageScripts: { ...localArtifact.packageScripts, [name]: command },
     }), [
       `Pre-market repository must not expose an alternative public web host or tunnel: ${name}.`,
+    ]);
+  }
+
+  for (const source of [
+    'const escaped = "&lt;script&gt;";',
+    'assert.match(html, /&lt;script&gt;/u);',
+  ]) {
+    assert.deepEqual(evaluatePreMarketHostingPolicy({
+      ...localArtifact,
+      repositoryScriptSources: { ...localArtifact.repositoryScriptSources, "scripts/legal-review.mjs": source },
+    }), []);
+  }
+
+  assert.deepEqual(evaluatePreMarketHostingPolicy({
+    ...localArtifact,
+    repositoryScriptSources: {
+      ...localArtifact.repositoryScriptSources,
+      ".github/workflows/localtunnel-command.yml": "steps:\n  - run: npx localtunnel --port 5000",
+    },
+  }), [
+    "Pre-market repository must not expose an alternative public web host or tunnel: .github/workflows/localtunnel-command.yml.",
+  ]);
+
+  assert.deepEqual(evaluatePreMarketHostingPolicy({
+    ...localArtifact,
+    repositoryScriptSources: {
+      ...localArtifact.repositoryScriptSources,
+      ".github/workflows/localtunnel-background.yml": "steps:\n  - run: echo ready &lt; echo done",
+    },
+  }), [
+    "Pre-market repository must not expose an alternative public web host or tunnel: .github/workflows/localtunnel-background.yml.",
+  ]);
+
+  for (const source of [
+    "execSync('echo ready &lt; echo done');",
+    "const command = 'echo ready &lt; echo done'; execSync(command);",
+    "import { execSync } from 'node:child_process'; execSync('&lt;');",
+    "import { exec } from 'node:child_process'; exec('echo ready &lt; echo done');",
+    "import { execSync as run } from 'child_process'; run('echo ready &lt; echo done');",
+    "import * as cp from 'node:child_process'; cp.execSync('echo ready &lt; echo done');",
+    "const { exec: run } = require('node:child_process'); run('echo ready &lt; echo done');",
+    "const cp = require('child_process'); cp.exec('echo ready &lt; echo done');",
+    "import { spawn } from 'node:child_process'; spawn('echo ready &lt; echo done', { shell: true });",
+    "import { spawnSync as run } from 'node:child_process'; run('sh', ['-c', 'echo ready &lt; echo done']);",
+    "import * as cp from 'child_process'; cp.spawn('/bin/sh', ['-c', 'echo ready &lt; echo done']);",
+  ]) {
+    assert.deepEqual(evaluatePreMarketHostingPolicy({
+      ...localArtifact,
+      repositoryScriptSources: { ...localArtifact.repositoryScriptSources, "scripts/probe.mjs": source },
+    }), [
+      "Pre-market repository must not expose an alternative public web host or tunnel: scripts/probe.mjs.",
     ]);
   }
 
