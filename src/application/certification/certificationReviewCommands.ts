@@ -9,7 +9,7 @@ import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { getReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
 import { captureProfileReadFence } from "../profileReadFence";
 import { commitReviewEntryChange } from "../learningMutations";
-import { createIdentityFingerprint } from "../learningMutations/identity";
+import { createIdentityFingerprint } from "../identity/trainingIdentity";
 import { createIdentityNonce } from "../../infrastructure/identity/identityNonce";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 

@@ -567,7 +567,7 @@ test("case submit and solution reveal failures before ACK recover once without l
   const prepared = await lifecycle.startSession(command(recipe, h.track.questions));
   const first = recipe.steps[0]!;
   const response = h.track.getQuestion(first.questionId)!.answer;
-  const { createAttemptId } = await import("../learningMutations/identity");
+  const { createAttemptId } = await import("../identity/trainingIdentity");
   const attemptId = await createAttemptId(prepared.session.id, prepared.session.itemOrder[0]!.occurrenceId, response);
   h.storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.trainingAttempt(attemptId) });
   await assert.rejects(lifecycle.submitPracticeResponse(response));

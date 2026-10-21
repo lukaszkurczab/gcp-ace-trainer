@@ -9,7 +9,7 @@ import {
   type MutationExpectedRevision,
   type TrainingMutationOperation,
 } from "../../storage/repositories/mutationJournalRepository";
-import { createIdentityFingerprint } from "./identity";
+import { createIdentityFingerprint } from "../identity/trainingIdentity";
 import { isArtifactSha256 } from "../../domain";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 

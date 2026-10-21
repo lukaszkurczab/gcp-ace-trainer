@@ -3,7 +3,7 @@ import type { TrainingCatalog, TrainingQuestionSummary } from "../trainingLifecy
 import { createResolvedContentRef, resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
 import type { ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
 import type { TrainingSession } from "../../domain";
-import { createAttemptId } from "../learningMutations/identity";
+import { createAttemptId } from "../identity/trainingIdentity";
 import { createTrainingAttempt } from "../../domain/learning/trainingAttempt";
 import { learningUnitIdentity, learningUnitInCurrentCatalog } from "../../domain/learning/mentalUnitEvidence";
 

@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "b142f7f09823881c38bc538faa3018c75f0f7d79",
+      "head": "a12a31a70052c80977075ec5f3d4adbfb32c108d",
       "files": [
         {
           "path": ".easignore",
@@ -2825,8 +2825,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "35f9810b72dd9fa9c52c1941e8afc4383a41104b878cb7a6ef04ced1cd76c187",
-          "bytes": 142106,
+          "sha256": "11af3de3c4e63f96fd5376c08b226aec5e22a8eafab525dc5c695d7a55c63cd7",
+          "bytes": 142442,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -2837,7 +2837,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 2001
+          "lines": 2006
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -16260,8 +16260,8 @@
         },
         {
           "path": "src/application/canonical/canonicalFamilyMechanics.ts",
-          "sha256": "ee73a50870bd557cdb85be2e4480be9f706f392e0f1234d01ffa14ef402bf88c",
-          "bytes": 6345,
+          "sha256": "b3bd9ffa037521c3270bec01eb391293f2fcf9e68b3df052f6fbb44edf0249ce",
+          "bytes": 6344,
           "symbols": [
             "createCanonicalAttempt",
             "scopeAttemptsToLearningTrack",
@@ -16305,9 +16305,9 @@
               "line": 5
             },
             {
-              "specifier": "../learningMutations/identity",
+              "specifier": "../identity/trainingIdentity",
               "kind": "static",
-              "target": "src/application/learningMutations/identity.ts",
+              "target": "src/application/identity/trainingIdentity.ts",
               "line": 6
             },
             {
@@ -17068,8 +17068,8 @@
         },
         {
           "path": "src/application/canonical/canonicalTrainingFamilies.test.ts",
-          "sha256": "2e7bb35b6bc6b5c06ea4894a8c1f1f6c61c38b668e7504b79d5307cf0f1c4452",
-          "bytes": 84845,
+          "sha256": "d96be0d469cf484b1274751ee98d5116b722e210a1bd7c5c4cc71b8afe85fb4b",
+          "bytes": 84844,
           "symbols": [],
           "imports": [
             {
@@ -17187,9 +17187,9 @@
               "line": 19
             },
             {
-              "specifier": "../learningMutations/identity",
+              "specifier": "../identity/trainingIdentity",
               "kind": "static",
-              "target": "src/application/learningMutations/identity.ts",
+              "target": "src/application/identity/trainingIdentity.ts",
               "line": 20
             },
             {
@@ -18851,8 +18851,8 @@
         },
         {
           "path": "src/application/certification/certificationReviewCommands.ts",
-          "sha256": "47c8d5520ebacf5d5994fec451e8662eb31ca653a55ac0b72d8d059af726d321",
-          "bytes": 5701,
+          "sha256": "d025bb5187b1828e801978e9d4594f224fb4280c5474df1d0f3769b12ec8b09e",
+          "bytes": 5700,
           "symbols": [
             "setQuestionNeedsReview"
           ],
@@ -18888,9 +18888,9 @@
               "line": 11
             },
             {
-              "specifier": "../learningMutations/identity",
+              "specifier": "../identity/trainingIdentity",
               "kind": "static",
-              "target": "src/application/learningMutations/identity.ts",
+              "target": "src/application/identity/trainingIdentity.ts",
               "line": 12
             },
             {
@@ -19236,8 +19236,8 @@
         },
         {
           "path": "src/application/certification/singleCase.integration.test.ts",
-          "sha256": "829ce9d2248da94d2c94904bbd90ba2c101c8334918d483a5557b3f64f40ff8e",
-          "bytes": 54461,
+          "sha256": "2747de804537fbfcdd67a211c18acb8fd3c6ca0d5323c4c2453fb598bebb2dfa",
+          "bytes": 54460,
           "symbols": [],
           "imports": [
             {
@@ -19415,9 +19415,9 @@
               "line": 477
             },
             {
-              "specifier": "../learningMutations/identity",
+              "specifier": "../identity/trainingIdentity",
               "kind": "dynamic",
-              "target": "src/application/learningMutations/identity.ts",
+              "target": "src/application/identity/trainingIdentity.ts",
               "line": 570
             },
             {
@@ -22104,6 +22104,32 @@
           "lines": 205
         },
         {
+          "path": "src/application/identity/trainingIdentity.ts",
+          "sha256": "be716be7352c0d218a1cd20830ddefe2f8fee647311e5962ab4a011abd33d7ab",
+          "bytes": 530,
+          "symbols": [
+            "createIdentityFingerprint",
+            "createAttemptId"
+          ],
+          "imports": [
+            {
+              "specifier": "../../domain/identity/canonicalSerialization",
+              "kind": "static",
+              "target": "src/domain/identity/canonicalSerialization.ts",
+              "line": 1
+            },
+            {
+              "specifier": "../../infrastructure/identity/contentHasher",
+              "kind": "static",
+              "target": "src/infrastructure/identity/contentHasher.ts",
+              "line": 2
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [],
+          "lines": 5
+        },
+        {
           "path": "src/application/learningMutations/commitGoalPlanAcceptance.ts",
           "sha256": "4b1f0391ab1185d8e8c7f1e830be55cf8842b35a2274ceab063b189dacebdbba",
           "bytes": 4345,
@@ -23153,32 +23179,6 @@
           "lines": 260
         },
         {
-          "path": "src/application/learningMutations/identity.ts",
-          "sha256": "be716be7352c0d218a1cd20830ddefe2f8fee647311e5962ab4a011abd33d7ab",
-          "bytes": 530,
-          "symbols": [
-            "createIdentityFingerprint",
-            "createAttemptId"
-          ],
-          "imports": [
-            {
-              "specifier": "../../domain/identity/canonicalSerialization",
-              "kind": "static",
-              "target": "src/domain/identity/canonicalSerialization.ts",
-              "line": 1
-            },
-            {
-              "specifier": "../../infrastructure/identity/contentHasher",
-              "kind": "static",
-              "target": "src/infrastructure/identity/contentHasher.ts",
-              "line": 2
-            }
-          ],
-          "jsonKeys": [],
-          "testNames": [],
-          "lines": 5
-        },
-        {
           "path": "src/application/learningMutations/index.ts",
           "sha256": "5d02e2a89cdbf9f4455e297d156488a44cba5927cd836069c5391d2e4a96a38c",
           "bytes": 445,
@@ -23664,8 +23664,8 @@
         },
         {
           "path": "src/application/learningMutations/mutationJournalBuilder.ts",
-          "sha256": "9eb36ed607f8bc2597c1846095d497ba8aa85d367dca8c4f0487de822d578ae3",
-          "bytes": 6446,
+          "sha256": "d078431cbfa0962ddd91a7a140c7c6e22ba7f7f60a6b88adf959e1c4f5afc48b",
+          "bytes": 6464,
           "symbols": [
             "MutationOperation",
             "buildMutationJournal"
@@ -23678,9 +23678,9 @@
               "line": 1
             },
             {
-              "specifier": "./identity",
+              "specifier": "../identity/trainingIdentity",
               "kind": "static",
-              "target": "src/application/learningMutations/identity.ts",
+              "target": "src/application/identity/trainingIdentity.ts",
               "line": 12
             },
             {
@@ -39845,8 +39845,8 @@
         },
         {
           "path": "src/domain/identity/canonicalSerialization.test.ts",
-          "sha256": "f1f363abe8d7d68949305813eade25ecbb1480984b0a8f3e0b4fb3bf007f9647",
-          "bytes": 2038,
+          "sha256": "a0985618d486eb63254faa818ab02777f6714058fed4c1efbe58e8337932f968",
+          "bytes": 2660,
           "symbols": [],
           "imports": [
             {
@@ -39868,9 +39868,9 @@
               "line": 3
             },
             {
-              "specifier": "../../application/learningMutations/identity",
+              "specifier": "../../application/identity/trainingIdentity",
               "kind": "static",
-              "target": "src/application/learningMutations/identity.ts",
+              "target": "src/application/identity/trainingIdentity.ts",
               "line": 4
             }
           ],
@@ -39879,9 +39879,10 @@
             "canonical serialization sorts object keys without changing array order",
             "fingerprint payload carries the canonical serializer version",
             "canonical-json-v1 is NFC-normalized, rejects duplicate keys, and counts UTF-8 bytes",
-            "SHA-256 identities are stable, opaque, and response-sensitive"
+            "SHA-256 identities are stable, opaque, and response-sensitive",
+            "training identities preserve the existing canonical preimage and literal digest"
           ],
-          "lines": 9
+          "lines": 17
         },
         {
           "path": "src/domain/identity/canonicalSerialization.ts",
@@ -68775,6 +68776,7 @@
         "src/application/contentReports",
         "src/application/design-interview",
         "src/application/guest",
+        "src/application/identity",
         "src/application/learningMutations",
         "src/application/learningPlan",
         "src/application/practice",
@@ -68879,6 +68881,10 @@
         {
           "path": "[lokalne pliki środowiska lub kluczy — nazwy ukryte]",
           "reason": "private-or-dependency-output"
+        },
+        {
+          "path": "src/application/learningMutations/identity.ts",
+          "reason": "deleted-in-worktree"
         }
       ],
       "boundaries": [
@@ -99654,9 +99660,9 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "35f9810b72dd9fa9c52c1941e8afc4383a41104b878cb7a6ef04ced1cd76c187",
+  "catalogHash": "11af3de3c4e63f96fd5376c08b226aec5e22a8eafab525dc5c695d7a55c63cd7",
   "notes": {
-    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "a6f3005ba6de89e0c57e870d1bddeee966c723549609690b9287bf501689377f",
+    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "c094a541a7714a010921ba19a1ea85789849a5a15e116a4651d8d52df103d1db",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "5c8705b332f6e3d39ba101111111c4e384771298644f52e7939218e97fd4096d",
     "Atlas/Struktura/patternly/~2E~github/workflows/workflows — folder aplikacja · ~2E~github.md": "d0f73127c8309fdd5b856c65fe4ff099ec76d693453b247fc1f5d6907c770ecb",
     "Atlas/Struktura/patternly/~2E~maestro/~2E~maestro — folder aplikacja.md": "3b237cc084bf9d635e103ec140eb8447f4c01b52ec1d1065a38c356de54f4def",
@@ -99698,7 +99704,7 @@
     "Atlas/Struktura/patternly/scripts/qa/soloHome23/soloHome23 — folder aplikacja · scripts › qa.md": "4a487b302e124f50d416ddb17d74487958a19380e75bbd09c31f39e386b779d5",
     "Atlas/Struktura/patternly/scripts/qa/soloUi22/soloUi22 — folder aplikacja · scripts › qa.md": "65cd2ad0358010e396e4f2baf6c4fa4bbe4363186ed23d8ca8ef55b7c5766076",
     "Atlas/Struktura/patternly/src/src — folder aplikacja.md": "1a4d30dc3ca7b3a377eae57cee84c4b0697a1be506382e294b645c83e50a07d7",
-    "Atlas/Struktura/patternly/src/application/application — folder aplikacja · src.md": "4b4b0119b0ea76cf0c1072c6401d9145c5b26a3eeae83a87ea740efabf628f56",
+    "Atlas/Struktura/patternly/src/application/application — folder aplikacja · src.md": "7ec04c17e2db0783b09ec8090311f8b5cdffaf0e6b90481d1954783a8ffc1659",
     "Atlas/Struktura/patternly/src/application/account/account — folder aplikacja · src › application.md": "a19ad6d119d8d9f8e3e0a00fd791c7f02db07dead0b214960edb653572e44263",
     "Atlas/Struktura/patternly/src/application/bootstrap/bootstrap — folder aplikacja · src › application.md": "4c03a4ccdfff75460c3e28d015827e007d9629098655590638306dccd9c6b440",
     "Atlas/Struktura/patternly/src/application/canonical/canonical — folder aplikacja · src › application.md": "623b6339af5f18d843705a2cee53a1ff61b081af825684f3e0a9ddbc551eed48",
@@ -99707,7 +99713,8 @@
     "Atlas/Struktura/patternly/src/application/contentReports/contentReports — folder aplikacja · src › application.md": "f65f2d2f6919325dd1bd69852e5c40551c00cf6871b2a644161b5af8f37fcf4f",
     "Atlas/Struktura/patternly/src/application/design-interview/design-interview — folder aplikacja · src › application.md": "3445311e97a52a9f2aeb671fed78c0d76256726a8625e72cdc4e8f8718ecce63",
     "Atlas/Struktura/patternly/src/application/guest/guest — folder aplikacja · src › application.md": "242edf6d7f3d01fd47d960dd51424349c688c396399394e0a5309c298dd2bace",
-    "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "42fa7573c259bd98ea314683881daeb112162f6a7f3062c184c805862d0cd135",
+    "Atlas/Struktura/patternly/src/application/identity/identity — folder aplikacja · src › application.md": "1e036107b15dd8f80b613c06d6e1c9d2cf2fba5b9b8fbd1840b24146d3e9508a",
+    "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "bcfd3397cab8ef356be373cbd5959021bc49038ddd4572bb8e1d2e2148574d1d",
     "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "c2321667bf98fdd743cd0f771cd2c3d83fb23b4217674e2d8b52074d698f0f3b",
     "Atlas/Struktura/patternly/src/application/practice/practice — folder aplikacja · src › application.md": "3414acea97e54eb9431ca345be144de3c536fb6d5ce6cb0f3cfece9b06a2a903",
     "Atlas/Struktura/patternly/src/application/runtime/runtime — folder aplikacja · src › application.md": "ff4eb4664d4cb961bfc9b01c8a1d24b576c3eb0ea771ecd1cb3480b7f3d895b4",
@@ -99747,7 +99754,7 @@
     "Atlas/Struktura/patternly/src/domain/account/account — folder aplikacja · src › domain.md": "4c0a92e3dbaa9e04f1dec5b4fbe23f558743a606e2e19b67ba2943b54296d8c1",
     "Atlas/Struktura/patternly/src/domain/entitlements/entitlements — folder aplikacja · src › domain.md": "77a810c27f51a9d24d5d405c958171ce7d07cbef2496c61aff129b402435691e",
     "Atlas/Struktura/patternly/src/domain/goals/goals — folder aplikacja · src › domain.md": "6e607aac773dad20a52838c5ab0b6e2209e5c29b85ca35bdebf2e2bd3c7c3acf",
-    "Atlas/Struktura/patternly/src/domain/identity/identity — folder aplikacja · src › domain.md": "c36a0da5f1221f655101da95361b9b075038546308b06f35abe91e2b646cfd71",
+    "Atlas/Struktura/patternly/src/domain/identity/identity — folder aplikacja · src › domain.md": "94b12a76ced9357e84905628f1b7c107b5913a3e453b70610b456100e3c1610a",
     "Atlas/Struktura/patternly/src/domain/learning/learning — folder aplikacja · src › domain.md": "6f26736105432930cf345b4417274c86dc979539bd1c12761fd74d857403d038",
     "Atlas/Struktura/patternly/src/domain/tracks/tracks — folder aplikacja · src › domain.md": "cbf37e54b4c87bb641913104d949751dbce38a088311316e32611ec30e99d331",
     "Atlas/Struktura/patternly/src/features/features — folder aplikacja · src.md": "ae097f8dfd6c8b90a4de60b29ce3e75682b3a161a3dec937dc8b5c768ad5e667",
@@ -100088,7 +100095,7 @@
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/bizq05RelatedPractice.integration.test.ts — aplikacja · src › application › canonical.md": "5e64fce98ebaefd00b6f736240e65e765a5aca9084b7fd9aaddcacc81ca796a0",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalChoiceFeedbackPresentation.test.ts — aplikacja · src › application › canonical.md": "95e4399ffff7bd32a4a2ecc4e9d7538f9a2e696ce6c395e5ef01777e1a0e8b64",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalChoiceOrderIntegration.test.ts — aplikacja · src › application › canonical.md": "7463d9bfab792eddf0a0e89d6aa53bd01a348ee284687ab6b1f79bf5505ae23d",
-    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalFamilyMechanics.ts — aplikacja · src › application › canonical.md": "aeb600234b5d9ef87a657dfa9c57acdc4d8291f3d15bbb7629f59376b346fa38",
+    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalFamilyMechanics.ts — aplikacja · src › application › canonical.md": "4789a27047c176ffb212e159e191ece4f94a702873d275092a7257a1bc74e2de",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalInteractionPresentation.ts — aplikacja · src › application › canonical.md": "2c0331c7e58a82f21411b52720725682086452fb9bf48d2ff07f66778b745a5f",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalOptionOrder.ts — aplikacja · src › application › canonical.md": "d0b5b7bc5abfdc0178096a6f493a876166f7a64ba66ab8add0692866160e16ea",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalOrderingFeedbackPresentation.test.ts — aplikacja · src › application › canonical.md": "ac22e1267e7b7e32ba97990319e79bdab97f34cded0b28e3a77ecfa661dfee55",
@@ -100100,7 +100107,7 @@
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalSessionPlanMechanics.ts — aplikacja · src › application › canonical.md": "bfe9de128d347fbdab31d7c7b8917dc7d76560ba130a1d77b24eafd20976c6b6",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalSourceLinks.test.ts — aplikacja · src › application › canonical.md": "f0875599cb0825e7c27c1e151aa032957c647b44fa42dd3b754fb5c1c5c4e262",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalSourceLinks.ts — aplikacja · src › application › canonical.md": "360bbb91b8e463bbe1b424ece77a4773d8e24060d1f6cc34b7bc230da44d59d4",
-    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalTrainingFamilies.test.ts — aplikacja · src › application › canonical.md": "8d460906c11a62b256582bd38a3bb0dda3104a223825824d0baf6f905764a69c",
+    "Atlas/Struktura/patternly/src/application/canonical/_Pliki/canonicalTrainingFamilies.test.ts — aplikacja · src › application › canonical.md": "a4691246cea6c2a5653bedb3ad857375be47c0c9ed8a48e3da7f012604c70058",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/CanonicalTrainingSelection.test.ts — aplikacja · src › application › canonical.md": "094e66083330ee59da00206a79edcebf4aba937e9d15f6db3f5638a4ab000e8f",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/claudeCoverageReachability.test.ts — aplikacja · src › application › canonical.md": "f705ceb207ad123d15b10e80d7b9a37322fc6b884f097e9114effb65de6592a6",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/gcpAce20261016ChoiceEvidence.test.ts — aplikacja · src › application › canonical.md": "c55e57e20eeb589905552b089bd062fee6bfb17a381f74c97d5eedbd00eae4a7",
@@ -100126,11 +100133,11 @@
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationProfileContract.test.ts — aplikacja · src › application › certification.md": "be6c7aa8999237a6d77191ec398c07e233e0a87719b58522c542275187829aa0",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationQuestionPresentation.ts — aplikacja · src › application › certification.md": "9d454d0b0282961ef3211b12c2e19de921053e0192bf002e1f6495b6d5bbbfa1",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationReviewCommands.test.ts — aplikacja · src › application › certification.md": "cad35be4988ca59ca3a4c7d31566d52fe589baee497ff7b662db21d844cf6891",
-    "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationReviewCommands.ts — aplikacja · src › application › certification.md": "62a2b18432b260c9be36700e43ca2bb97eb67d68127eba1f49e82c7a1f9d4e88",
+    "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationReviewCommands.ts — aplikacja · src › application › certification.md": "a17ed677d8be9c30dc2eeafa1fd092b4c32a6bd4ea2a2b46d541e8a755fd0527",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationSessionFacade.ts — aplikacja · src › application › certification.md": "8c586519e50f9bf4b09d0399db060b6bff0735ad38a15ddc59c7642173414a1d",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/certificationTrainingRuntime.ts — aplikacja · src › application › certification.md": "d1aee3997000f92fc23db27f69d9042b887a6033cf5a1b98618a312a19dc9119",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/index.ts — aplikacja · src › application › certification.md": "b41e13ddd80c444634a9c12cb10dde730f44b76a8d98e6e80c0a53c528c346b9",
-    "Atlas/Struktura/patternly/src/application/certification/_Pliki/singleCase.integration.test.ts — aplikacja · src › application › certification.md": "0544ac5e40b97dc7bb593ccd94a68e4e5ac0f7983ab82ba9e0ef0f4f7cb2f168",
+    "Atlas/Struktura/patternly/src/application/certification/_Pliki/singleCase.integration.test.ts — aplikacja · src › application › certification.md": "b4a82882b756f13dd039ec2e5ac3be9a11e2b2981be856a6f214e20e1a5d2a71",
     "Atlas/Struktura/patternly/src/application/certification/_Pliki/singleCaseRecommendation.ts — aplikacja · src › application › certification.md": "7ce516d996ff1c5ca68f28ce02b0734144939d4a05077ca91f643a613c45000f",
     "Atlas/Struktura/patternly/src/application/coding-interview/_Pliki/codingHomeRecommendation.ts — aplikacja · src › application › coding-interview.md": "0c07a6e822658e41eeced1850042eac6dca74a38877f272f9f181dd61dd8a2b5",
     "Atlas/Struktura/patternly/src/application/coding-interview/_Pliki/codingInterviewCanonicalResponse.test.ts — aplikacja · src › application › coding-interview.md": "c0f8e7f815a22c1281747513dc2139e75de95832d1ba8d9a4570cb5c7b973ef7",
@@ -100169,6 +100176,7 @@
     "Atlas/Struktura/patternly/src/application/_Pliki/homeShellReadFence.test.ts — aplikacja · src › application.md": "adaf1c227538027f7287f73d6e15a0db7214d27f2e503e292f666deda37261da",
     "Atlas/Struktura/patternly/src/application/_Pliki/homeShellReadFence.ts — aplikacja · src › application.md": "bd6a3b3a2074353649330cc231b1fb6322db782e2cbee808f8e4b438e8ab4219",
     "Atlas/Struktura/patternly/src/application/_Pliki/homeWeeklyAnswersIntegration.test.ts — aplikacja · src › application.md": "bb1827ec452a7a2b294df41995370539734b3cf9d58316ed88f6ab67fd633e16",
+    "Atlas/Struktura/patternly/src/application/identity/_Pliki/trainingIdentity.ts — aplikacja · src › application › identity.md": "ec68bdd023ba204e482a259b8d1ebb160ccd49f1b4459151c16c8fea29cd6396",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitGoalPlanAcceptance.ts — aplikacja · src › application › learningMutations.md": "cc5bb405028dfbf70d12232a3b0459f98c66fee55fed9be42f107fd32b7908d2",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitLearningStateReset.ts — aplikacja · src › application › learningMutations.md": "fd4c76d604581c0c9675f44610045bc8f280ad588d84b2633ab25e8328b633d8",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/commitMutation.ts — aplikacja · src › application › learningMutations.md": "740f16678fe4bb523c0c837cdbac597eb3d3afc085c7efe58a9e38ff25105eec",
@@ -100183,14 +100191,13 @@
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/goalPlanAcceptancePrecondition.test.ts — aplikacja · src › application › learningMutations.md": "ebb4eadd0f0bab4e2f4b3db70cf043b9001b8ec7452e8ad61e53054288d5bb76",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/goalPlanAcceptanceProfileRouter.test.ts — aplikacja · src › application › learningMutations.md": "d821ee7e754181edb1a2c178c8106f77ba9fa3b386138ae5c386ab64caff59f2",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/goalPlanAcceptanceRecovery.test.ts — aplikacja · src › application › learningMutations.md": "bff321e1588a80d1dbd533768b092d600ae0e8fb5c80ccb8cd74da93937cf2f2",
-    "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/identity.ts — aplikacja · src › application › learningMutations.md": "d98972de331f8cccdbb412c4a83db691c4994234142d0476f57da4fe8881e61a",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/index.ts — aplikacja · src › application › learningMutations.md": "204b6df099e5569db8128e9b7d9594776ee7e3597f8e34344318e750c8ada469",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/journaledSessionLifecycle.test.ts — aplikacja · src › application › learningMutations.md": "5b05acb6ce7907dcd2e9c1c52fb8e30c0dcb7a3d7747d6acd18766de84fad0c8",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/localCommitAccountSync.test.ts — aplikacja · src › application › learningMutations.md": "949764f3dbf4384cd0658aea462359a4956561197c4c2d6596fbd10eaba060b0",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/localLearningWriteOperation.ts — aplikacja · src › application › learningMutations.md": "92a6d7a157f6382a4a48b49dfe93e00ed457eb6305ec1e0ed40eecddf0435e65",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/localReset.test.ts — aplikacja · src › application › learningMutations.md": "d983e3eca01431aa52b739c4f584b50b0874d646aa7773561e8b5f675d2b0358",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationJournal.test.ts — aplikacja · src › application › learningMutations.md": "de1b3929fac5556109e9fc8838cf4322d0dc42a2457a78725c0ee92bb0252fd7",
-    "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationJournalBuilder.ts — aplikacja · src › application › learningMutations.md": "2af1bb0e8bf835602070a2cff4b7d784036aaabe917a9c173d11482c3075761e",
+    "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationJournalBuilder.ts — aplikacja · src › application › learningMutations.md": "e8c09bad2f0f8845d4dc130fd3f31c9e2e8d8b3634e97b9cd321f04db355ca6e",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationMaterializer.test.ts — aplikacja · src › application › learningMutations.md": "c0d94f6e5ec983b50576b567825aff8cbe7fe0a6b622673a680e56ee7e372675",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationMaterializer.ts — aplikacja · src › application › learningMutations.md": "7028f20e867d81feb16f7e226c371a8e9f5c16a76ca84c0b49b4d1e324744bf4",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationRecovery.test.ts — aplikacja · src › application › learningMutations.md": "425aaf388a23d37b2b26b99fc0ebe491432be04a39acb20dda8ed27f4abba5aa",
@@ -100506,8 +100513,8 @@
     "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalPolicy.ts — aplikacja · src › domain › goals.md": "32ca800d16154db50d12a1d5ed1b009bd9d92b9c80a2e6c7a9c5204a22da317e",
     "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalTargetDateSemantics.ts — aplikacja · src › domain › goals.md": "5c61a82e38951bb084749bf34a17bbb9d2e34ee334e2666ec1b31c207f1d3856",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalIdentity.ts — aplikacja · src › domain › identity.md": "3b660a7e7b9934ec1d3fc86154ad19c8e258cf51365ac25dff8154db856a3d3a",
-    "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalSerialization.test.ts — aplikacja · src › domain › identity.md": "21b84370b04547a5a429855f65e1378dd77ea7b4814bea2d41185d307e4b5323",
-    "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalSerialization.ts — aplikacja · src › domain › identity.md": "b65b42e4274cf71328d51e1d58257cbc56054487ed262b20171df2486fbb40ca",
+    "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalSerialization.test.ts — aplikacja · src › domain › identity.md": "a0a53a80d62c12de416409d210e47f86429d4884fbbe035e6f95bca1eaa63add",
+    "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalSerialization.ts — aplikacja · src › domain › identity.md": "c32db93ef00bb293134407708a61d15ffc8146d2bd59cb4967bd4f7c16f8b857",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/recordFingerprint.test.ts — aplikacja · src › domain › identity.md": "70252271443866ec4862d5deae3ab31338f45471ea10d147846fbc2eeac38fcc",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/recordFingerprint.ts — aplikacja · src › domain › identity.md": "922ca38697b1cdb64effa35d5c6c9dbc52e44ed8547780ad32b9ac4dad9381de",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/sha256.test.ts — aplikacja · src › domain › identity.md": "e026ad3fca0b248436a61fe64ceedd8072aa4cba668276baa2304d42068a9889",
@@ -100811,7 +100818,7 @@
     "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/secureAuthPersistence.ts — aplikacja · src › infrastructure › firebase.md": "2f36b60c5f77c048136b396fde8fc670f7cf233a713fc0f6d8d1bdafc8c6b8b5",
     "Atlas/Struktura/patternly/src/infrastructure/firebase/_Pliki/secureAuthPersistenceSdk.test.ts — aplikacja · src › infrastructure › firebase.md": "f9261ede6616873dc0f8b5bcb99f74d298a5aa18bf7be7d5ece317ba3833b4dd",
     "Atlas/Struktura/patternly/src/infrastructure/identity/_Pliki/contentHasher.native.ts — aplikacja · src › infrastructure › identity.md": "5ed60dcf10a6dafa482e288a79186593f140e87912f15c93bc783f27f46a3daf",
-    "Atlas/Struktura/patternly/src/infrastructure/identity/_Pliki/contentHasher.ts — aplikacja · src › infrastructure › identity.md": "06a50f3426459c7590dc106b41d86740b5c7550734c27c0afa1dc6b4584972a1",
+    "Atlas/Struktura/patternly/src/infrastructure/identity/_Pliki/contentHasher.ts — aplikacja · src › infrastructure › identity.md": "2a140f1addce67a528233eb15c8d2b8fbb9f9c83bebcf9eb989535c5d7b14a28",
     "Atlas/Struktura/patternly/src/infrastructure/identity/_Pliki/contentHasherNativeContract.test.ts — aplikacja · src › infrastructure › identity.md": "affdfd9447d845e8321e2e1c3d4e7527a949483e6044c189a2c0127f2818f231",
     "Atlas/Struktura/patternly/src/infrastructure/identity/_Pliki/contentReportSubmissionIdentity.native.ts — aplikacja · src › infrastructure › identity.md": "40993912d77446d40ac8168ca9ce4618b3ddce4c16fafcbf38efd524aabec54b",
     "Atlas/Struktura/patternly/src/infrastructure/identity/_Pliki/contentReportSubmissionIdentity.ts — aplikacja · src › infrastructure › identity.md": "b22fd7c9b65b3165f76957b4b3f4fee6e5516a780dd70b1fb3a10daaa5009bf2",

@@ -17,7 +17,7 @@ import { productionLearningDataAdmissionContext, productionTrackAdmissionContext
 import { commitTrainingOutcome } from "../learningMutations/commitTrainingOutcome";
 import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
 import { recoverPendingMutation } from "../learningMutations/recoverPendingMutation";
-import { createAttemptId } from "../learningMutations/identity";
+import { createAttemptId } from "../identity/trainingIdentity";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createCanonicalAttempt, exactCanonicalQuestionRef } from "./canonicalFamilyMechanics";
 import { buildCanonicalSessionPlan, prepareCanonicalPlanOccurrences, validateCanonicalSessionPlan } from "./canonicalSessionPlanMechanics";

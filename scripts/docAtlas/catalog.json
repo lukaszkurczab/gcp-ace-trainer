@@ -47,6 +47,10 @@
       "description": "Operacje dostępne lokalnemu Gościowi, w tym eksport danych bez logowania."
     },
     {
+      "prefix": "patternly/src/application/identity",
+      "description": "Czyste współdzielone fingerprinty i identyfikatory treningu; bez operacji repozytorium lub journalu."
+    },
+    {
       "prefix": "patternly/src/application/learningMutations",
       "description": "Kanoniczny zapis zmian nauki: plan journalu, materializacja, weryfikacja i recovery. Utrzymuje wspólną kolejkę zapisów."
     },
@@ -1234,11 +1238,6 @@
       "reviewedHash": "eab5ab592c8df15b4f17a2c2445f87bcba304115a6c75548b4d3d3783b1b9088",
       "flow": "Premium i zakup"
     },
-    "patternly/src/application/learningMutations/identity.ts": {
-      "description": "Tworzy fingerprint tożsamości i identyfikator próby z kanonicznej serializacji. Nie wykonuje journalu ani materializacji zapisu.",
-      "flow": "Sesja, odpowiedź i trwały wynik",
-      "reviewedHash": "be716be7352c0d218a1cd20830ddefe2f8fee647311e5962ab4a011abd33d7ab"
-    },
     "patternly/src/infrastructure/runtime/EnvironmentGate.tsx": {
       "description": "Przed otwarciem providerów i danych porównuje fingerprint konfiguracji z tożsamością środowiska, a następnie z trwałym markerem instalacji. Niezgodność, błąd i brak przypisania mają jawne powierzchnie.",
       "flow": "Start aplikacji i nawigacja",
@@ -1890,7 +1889,7 @@
     "patternly/src/application/canonical/canonicalFamilyMechanics.ts": {
       "description": "Wspólne dowody pytań, track-scoped odczyt nauki oraz deterministyczny dobór jednego bieżącego pytania do jednego źródła powtórki. Dokładne odnośniki prób pozostają bez zmian.",
       "flow": "Sesja, odpowiedź i trwały wynik",
-      "reviewedHash": "ee73a50870bd557cdb85be2e4480be9f706f392e0f1234d01ffa14ef402bf88c"
+      "reviewedHash": "b3bd9ffa037521c3270bec01eb391293f2fcf9e68b3df052f6fbb44edf0249ce"
     },
     "patternly/src/application/reviewQueueQueries.ts": {
       "description": "Wyświetla bieżący materiał dla zapisanej jednostki; brak materiału lub przypisania daje unavailable konkretnego wiersza zamiast przerwania odczytu całej kolejki. Historia i termin pozostają w źródłowym rekordzie.",
@@ -1901,6 +1900,11 @@
       "description": "Projektuje praktykę i skuteczność według zapisanych jednostek i node; dodanie/zastąpienie pytania w tej samej jednostce nie zeruje jej pokrycia. Nie przyznaje nowej jednostce postępu poprzedniej.",
       "flow": "Cel, plan i postęp",
       "reviewedHash": "d784c1a19a3ffcdd7dccff68a502d63b69327296a9a8594e36be804aa1c98d24"
+    },
+    "patternly/src/application/identity/trainingIdentity.ts": {
+      "description": "Wspólna czysta tożsamość treningu: fingerprint i identyfikator próby z kanonicznej serializacji oraz platformowego SHA-256. Nie wykonuje journalu, materializacji ani zapisu; lifecycle i mutacje współdzielą ten sam format.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "be716be7352c0d218a1cd20830ddefe2f8fee647311e5962ab4a011abd33d7ab"
     }
   },
   "flows": [
@@ -1941,6 +1945,7 @@
       "name": "Sesja, odpowiedź i trwały wynik",
       "prefixes": [
         "patternly/src/application/trainingLifecycle",
+        "patternly/src/application/identity",
         "patternly/src/application/learningMutations",
         "patternly/src/application/runtime",
         "patternly/src/features/practice",
@@ -1950,7 +1955,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "5f7992b5c9756d6d80e583bcdc7bb0d514d6bbae787aaa314d0194cfe8a6924f"
+      "reviewedDigest": "0e5e5aebaaf5a5b352663107a89f1f121abad16dcec63a32686d5a70f12a7cc8"
     },
     {
       "name": "Cel, plan i postęp",

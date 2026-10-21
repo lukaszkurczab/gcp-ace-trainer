@@ -1,8 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CANONICAL_JSON_VERSION, CANONICAL_SERIALIZER_VERSION, canonicalFingerprintPayload, canonicalJsonV1, canonicalJsonV1ByteLength, canonicalSerialize } from "./canonicalSerialization";
-import { createAttemptId, createIdentityFingerprint } from "../../application/learningMutations/identity";
+import { createAttemptId, createIdentityFingerprint } from "../../application/identity/trainingIdentity";
 test("canonical serialization sorts object keys without changing array order", () => { assert.equal(canonicalSerialize({ b: 1, a: ["x", "y"] }), canonicalSerialize({ a: ["x", "y"], b: 1 })); assert.notEqual(canonicalSerialize(["x", "y"]), canonicalSerialize(["y", "x"])); assert.throws(() => canonicalSerialize(undefined)); assert.throws(() => canonicalSerialize(Number.NaN)); });
 test("fingerprint payload carries the canonical serializer version", () => { assert.match(canonicalFingerprintPayload({ value: 1 }), new RegExp(`"serializerVersion":"${CANONICAL_SERIALIZER_VERSION}"`)); });
 test("canonical-json-v1 is NFC-normalized, rejects duplicate keys, and counts UTF-8 bytes", () => { assert.equal(canonicalJsonV1({ "e\u0301": "🙂" }), canonicalJsonV1({ "é": "🙂" })); assert.throws(() => canonicalJsonV1({ "e\u0301": 1, "é": 2 }), /canonical_json_duplicate_key/u); assert.equal(canonicalJsonV1({ value: -0 }), "{\"value\":0}"); assert.equal(CANONICAL_JSON_VERSION, "canonical-json-v1"); assert.ok(canonicalJsonV1ByteLength({ value: "🙂" }) > JSON.stringify({ value: "🙂" }).length); });
 test("SHA-256 identities are stable, opaque, and response-sensitive", async () => { const first = await createIdentityFingerprint({ selectedOptionIds: ["a", "b"] }); assert.equal(first, await createIdentityFingerprint({ selectedOptionIds: ["a", "b"] })); assert.notEqual(first, await createIdentityFingerprint({ selectedOptionIds: ["b", "a"] })); const attempt = await createAttemptId("s", "i", { selectedOptionIds: ["a"] }); assert.match(attempt, /^attempt:s:i:[0-9a-f]{64}$/); assert.equal(attempt, await createAttemptId("s", "i", { selectedOptionIds: ["a"] })); });
+
+
+test("training identities preserve the existing canonical preimage and literal digest", async () => {
+  const response = { selectedOptionIds: ["a", "b"] };
+  assert.equal(canonicalFingerprintPayload(response), "{\"serializerVersion\":\"canonical-json-utf8-v1\",\"value\":{\"selectedOptionIds\":[\"a\",\"b\"]}}");
+  assert.equal(await createIdentityFingerprint(response), "5f770cccaecbdad2334b4679e47a0051fbac9bc9f2ffea17f2c8bdfdc354956c");
+  assert.equal(await createAttemptId("session-1", "occurrence-2", response), "attempt:session-1:occurrence-2:5f770cccaecbdad2334b4679e47a0051fbac9bc9f2ffea17f2c8bdfdc354956c");
+});
