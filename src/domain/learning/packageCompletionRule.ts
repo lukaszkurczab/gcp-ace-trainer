@@ -1,3 +1,4 @@
+import { learningUnitIdentity } from "./mentalUnitEvidence";
 import { isIndependentCaseAttempt } from "./caseEvidence";
 import type { TrainingAttempt } from "./trainingAttempt";
 import { createTrainingAttempt } from "./trainingAttempt";
@@ -26,15 +27,12 @@ export type ChapterCompletionRequirement = ChapterCompletionRequirementV2 | Chap
 
 export type CompletionQuestionIdentity = Readonly<{ nodeId: string; mentalUnitId: string }>;
 export type CompletionQuestionInventoryIdentity = CompletionQuestionIdentity & Readonly<{ questionId: string }>;
-/** Bound by a verified content owner; never inferred from question ID alone. */
-export type CompletionCreditClassifier = (item: ResolvedContentRef) => "equivalent" | "different" | "unavailable";
 
 export type VerifiedPackageCompletionProfile = Readonly<{
   trackId: string;
   contentVersion: string;
   artifactSha256: string;
   completionRule?: PackageCompletionRule;
-  classifyCompletionItem?: CompletionCreditClassifier;
   completionSources?: readonly VerifiedCompletionSource[];
 }>;
 
@@ -235,7 +233,7 @@ export function evaluatePackageCompletion(
     if (source.trackId !== profile.trackId) throw new Error("Completion source belongs to another track.");
     if (!source.completionRule) continue;
     const exact = { trackId: source.trackId, contentVersion: source.contentVersion, artifactSha256: source.artifactSha256, completionRule: source.completionRule };
-    const projected = projectChapters(exact, qualifyPackageAttempts(exact, attempts), source.getQuestion, true);
+    const projected = projectChapters(exact, qualifyPackageAttempts(exact, attempts.filter(attempt => matchesPackage(exact, attempt.item))), source.getQuestion, true);
     for (const chapter of projected) if (chapter.completionSource) {
       const previous = milestones.get(chapter.nodeId);
       const left = chapter.completionSource;
@@ -245,8 +243,13 @@ export function evaluatePackageCompletion(
       if (order < 0) milestones.set(chapter.nodeId, chapter);
     }
   }
-  const current = projectChapters(profile, qualifyPackageAttempts(profile, attempts), resolveQuestion, false);
-  const chapters = current.map(chapter => milestones.get(chapter.nodeId) ?? chapter);
+  const current = projectChapters(profile, qualifyPackageAttempts(profile, attempts), resolveQuestion, true);
+  const chapters = current.map(chapter => {
+    const previous = milestones.get(chapter.nodeId);
+    if (!previous) return chapter;
+    const now = chapter.completionSource, old = previous.completionSource!;
+    return now && (now.completedAt.localeCompare(old.completedAt) || now.attemptId.localeCompare(old.attemptId)) < 0 ? chapter : previous;
+  });
   const completedChapterCount = chapters.filter((chapter) => chapter.status === "completed").length;
   const requiredChapterCount = chapters.length;
   const qualifyingAttemptCount = chapters.reduce((total, chapter) => total + chapter.qualifyingAttemptCount, 0);
@@ -255,12 +258,10 @@ export function evaluatePackageCompletion(
   const coverageDeficit = chapters.reduce((total, chapter) => total + chapter.coverageDeficit, 0);
   const minimumAdditionalAttemptCount = chapters.reduce((total, chapter) => total + chapter.minimumAdditionalAttemptCount, 0);
   const common = { chapters: Object.freeze(chapters), completedChapterCount, requiredChapterCount, qualifyingAttemptCount, requiredAttemptCount, coverageDeficit, minimumAdditionalAttemptCount };
-  // Verified evidence can establish completion on its own. Otherwise an old
-  // unverifiable item may change the deficit; do not present a fabricated zero.
-  const unavailableHistory = attempts.some(attempt => isIndependentCaseAttempt(attempt) && attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && !matchesPackage(profile, attempt.item) && (
-    profile.classifyCompletionItem?.(attempt.item) === "unavailable" ||
-    (profile.completionSources !== undefined && !profile.completionSources.some(source => source.trackId === profile.trackId && source.completionRule !== undefined && matchesPackage(source, attempt.item)))
-  ));
+  // A record without saved attribution can use its exact available source only.
+  // Missing historical evidence never resets known progress or invents a unit.
+  const unavailableHistory = attempts.some(attempt => isIndependentCaseAttempt(attempt) && attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId &&
+    !completionAttemptIdentity(profile, attempt, resolveQuestion));
   if (completedChapterCount !== requiredChapterCount && unavailableHistory) return Object.freeze({ kind: "unknown" });
   return completedChapterCount === requiredChapterCount
     ? Object.freeze({ kind: "completed", ...common, coverageDeficit: 0, minimumAdditionalAttemptCount: 0, remainingAttemptCount: 0 })
@@ -298,18 +299,19 @@ function projectChapters(
       status: reason === null ? "completed" : "in_progress", reason });
   }
   for (const attempt of attempts) {
-    const question = resolveQuestion(attempt.item.questionId);
-    if (!question) throw new Error("Qualified completion attempt is absent from its verified package.");
+    const question = completionAttemptIdentity(profile, attempt, resolveQuestion);
+    if (!question) continue;
     const bucket = buckets.get(question.nodeId);
-    if (!bucket) throw new Error("Qualified completion attempt resolves to a node outside the completion inventory.");
+    if (!bucket || ("units" in bucket.requirement && !bucket.requirement.units.some(unit => unit.mentalUnitId === question.mentalUnitId))) continue;
     if (retainFirst && bucket.milestone) continue;
     bucket.count++;
     const correct = attempt.result.kind === "correct";
     bucket.window.push(correct);
     if (bucket.window.length > CHAPTER_WINDOW) bucket.window.shift();
-    const previous = bucket.latest.get(attempt.item.questionId);
+    const questionKey = `${question.mentalUnitId}\0${attempt.item.questionId}`;
+    const previous = bucket.latest.get(questionKey);
     if (previous?.correct) bucket.correctByUnit.set(previous.unit, (bucket.correctByUnit.get(previous.unit) ?? 0) - 1);
-    bucket.latest.set(attempt.item.questionId, { unit: question.mentalUnitId, correct });
+    bucket.latest.set(questionKey, { unit: question.mentalUnitId, correct });
     if (correct) bucket.correctByUnit.set(question.mentalUnitId, (bucket.correctByUnit.get(question.mentalUnitId) ?? 0) + 1);
     if (retainFirst && bucket.count >= bucket.requirement.minimumAttemptCount) {
       const chapter = snapshot(bucket);
@@ -321,7 +323,7 @@ function projectChapters(
   return Object.freeze([...buckets.values()].map(bucket => bucket.milestone ?? snapshot(bucket)));
 }
 
-/** Exact or verified-identical content qualification. Original records remain immutable. */
+/** Durable unit evidence spans bank versions; original records remain immutable. */
 export function qualifyPackageAttempts(profile: VerifiedPackageCompletionProfile, attempts: readonly TrainingAttempt<unknown>[]): readonly TrainingAttempt<unknown>[] {
   if (typeof profile.trackId !== "string" || !profile.trackId.trim() || typeof profile.contentVersion !== "string" || !profile.contentVersion.trim()) {
     throw new Error("Package completion profile content identity is invalid.");
@@ -334,7 +336,18 @@ export function qualifyPackageAttempts(profile: VerifiedPackageCompletionProfile
     if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(attempt)) throw new Error(`Conflicting durable attempts share id ${attempt.id}.`);
     byId.set(attempt.id, attempt);
   }
-  return Object.freeze([...byId.values()].filter((attempt) => isIndependentCaseAttempt(attempt) && attempt.trackId === profile.trackId && isResolvedContentRef(attempt.item) && attempt.item.trackId === profile.trackId && (matchesPackage(profile, attempt.item) || profile.classifyCompletionItem?.(attempt.item) === "equivalent")).sort((left, right) => left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id)));
+  return Object.freeze([...byId.values()].filter((attempt) => isIndependentCaseAttempt(attempt) && attempt.trackId === profile.trackId && isResolvedContentRef(attempt.item) && attempt.item.trackId === profile.trackId && (matchesPackage(profile, attempt.item) || learningUnitIdentity(attempt.reviewEvidence) !== undefined || profile.completionSources?.some(source => source.trackId === profile.trackId && matchesPackage(source, attempt.item) && source.getQuestion(attempt.item.questionId) !== undefined))).sort((left, right) => left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id)));
+}
+
+/** Exact legacy lookup is allowed only against the record's own available package. */
+export function completionAttemptIdentity(profile: VerifiedPackageCompletionProfile, attempt: TrainingAttempt<unknown>, resolveQuestion: (questionId: string) => CompletionQuestionIdentity | undefined): CompletionQuestionIdentity | undefined {
+  const saved = learningUnitIdentity(attempt.reviewEvidence);
+  if (saved) return saved;
+  // Conflicting or incomplete saved attribution must not be replaced by a lookup.
+  if (attempt.reviewEvidence.taxonomyOrSkillRefs.some(ref => ref.axisId === "mental_unit")) return undefined;
+  if (matchesPackage(profile, attempt.item)) return resolveQuestion(attempt.item.questionId);
+  const source = profile.completionSources?.find(source => source.trackId === attempt.trackId && matchesPackage(source, attempt.item));
+  return source?.getQuestion(attempt.item.questionId);
 }
 
 function matchesPackage(profile: VerifiedPackageCompletionProfile, item: ResolvedContentRef): boolean {

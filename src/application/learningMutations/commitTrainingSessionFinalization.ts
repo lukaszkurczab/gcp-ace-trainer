@@ -1,15 +1,16 @@
-import type { AcceptedSimulationFinalization, ResolvedContentRef, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
+import type { AcceptedSimulationFinalization, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
 import { getTrainingSessionFinalizationCleanupKind } from "../../domain";
-import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
+import { resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { getActiveTrainingSessionDraft, readActiveTrainingSessionDraftStateProof } from "../../storage/repositories";
 import { getReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
-import { StaleMutationRevisionError, type ActiveProfileStorageLease } from "../../storage/repositories/mutationJournalRepository";
+import { reviewTransitionMatchesAttempt, StaleMutationRevisionError, type ActiveProfileStorageLease } from "../../storage/repositories/mutationJournalRepository";
 import { JournalWriteError } from "../../storage/errors";
 import { MutationCommitFailure } from "../mutationBoundary";
 import { buildMutationJournal } from "./mutationJournalBuilder";
 import { commitMutationAfterPreflight } from "./commitMutation";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { reviewConcurrencyKey } from "../canonical/canonicalFamilyMechanics";
 
 export type TrainingSessionFinalizationCleanup =
   Readonly<{ kind: "training_session_draft"; draft: TrainingSessionDraft; acceptedFinalization: AcceptedSimulationFinalization; submittedOccurrenceIds: readonly string[] }>;
@@ -51,29 +52,29 @@ export async function commitTrainingSessionFinalization(input: {
   }
   const attemptById = new Map(input.attempts.map((attempt) => [attempt.id, attempt]));
   const occurrenceIndex = new Map(input.session.itemOrder.map((occurrence, index) => [occurrence.occurrenceId, index]));
-  const reviewMutationByContent = new Map<string, TrainingSessionFinalizationReviewMutation>();
+  const reviewMutationById = new Map<string, TrainingSessionFinalizationReviewMutation>();
   for (const mutation of input.reviewMutations) {
     const attempt = attemptById.get(mutation.transitionAttemptId);
     if (!attempt) throw new Error(`Review transition attempt ${mutation.transitionAttemptId} is outside the finalization attempts.`);
-    if (!resolvedContentRefsEqual(attempt.item, mutation.record.sourceItem)) {
+    if (!resolvedContentRefsEqual(attempt.item, mutation.record.sourceItem) && !reviewTransitionMatchesAttempt(input.session, attempt, mutation.record)) {
       throw new Error(`Review transition attempt ${mutation.transitionAttemptId} does not match its review content.`);
     }
-    const key = contentKey(mutation.record.sourceItem);
-    const current = reviewMutationByContent.get(key);
+    const key = `${mutation.record.trackId}:${mutation.record.id}`;
+    const current = reviewMutationById.get(key);
     const currentAttempt = current ? attemptById.get(current.transitionAttemptId) : undefined;
     if (!currentAttempt || (occurrenceIndex.get(attempt.occurrenceId) ?? -1) > (occurrenceIndex.get(currentAttempt.occurrenceId) ?? -1)) {
-      reviewMutationByContent.set(key, mutation);
+      reviewMutationById.set(key, mutation);
     }
   }
   let reviewConflict = false;
   const execute = (includeReviewWrites: boolean) => commitMutationAfterPreflight(async () => {
     const snapshot = await getReviewQueueSnapshot(productionTrackAdmissionContext);
-    const mutations = includeReviewWrites ? [...reviewMutationByContent.values()] : [];
-    const touchedKeys = new Set(mutations.map(({ record }) => `${record.trackId}:${contentKey(record.sourceItem)}`));
+    const mutations = includeReviewWrites ? [...reviewMutationById.values()] : [];
+    const touchedKeys = new Set(mutations.map(({ record }) => reviewConcurrencyKey(record)));
     if (includeReviewWrites && input.reviewBaseline !== undefined) {
       for (const key of touchedKeys) {
-        const prior = input.reviewBaseline.filter((entry) => `${entry.trackId}:${contentKey(entry.sourceItem)}` === key).sort((a, b) => a.id.localeCompare(b.id));
-        const current = snapshot.value.entries.filter((entry) => `${entry.trackId}:${contentKey(entry.sourceItem)}` === key).sort((a, b) => a.id.localeCompare(b.id));
+        const prior = input.reviewBaseline.filter((entry) => reviewConcurrencyKey(entry) === key).sort((a, b) => a.id.localeCompare(b.id));
+        const current = snapshot.value.entries.filter((entry) => reviewConcurrencyKey(entry) === key).sort((a, b) => a.id.localeCompare(b.id));
         if (canonicalSerialize(prior) !== canonicalSerialize(current)) { reviewConflict = true; break; }
       }
     }
@@ -119,8 +120,4 @@ function isStaleReviewRevision(error: unknown): boolean {
   if (!(error.cause instanceof JournalWriteError) || !(error.cause.cause instanceof StaleMutationRevisionError)) return false;
   const target = error.cause.cause.target;
   return target === "review_index" || target.startsWith("review:");
-}
-
-function contentKey(item: ResolvedContentRef): string {
-  return resolvedContentRefKey(item);
 }

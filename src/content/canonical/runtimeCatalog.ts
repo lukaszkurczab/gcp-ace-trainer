@@ -1,6 +1,5 @@
 import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
-import type { PackageCompletionRule, CompletionCreditClassifier, VerifiedCompletionSource } from "../../domain/learning/packageCompletionRule";
-import { createCompletionCreditClassifier } from "./completionCredit";
+import type { PackageCompletionRule, VerifiedCompletionSource } from "../../domain/learning/packageCompletionRule";
 import aws from "../generated/canonical-content/aws-certified-solutions-architect-associate.json";
 import backend from "../generated/canonical-content/backend-system-design-interview.json";
 import claude from "../generated/canonical-content/claude-certified-architect-professional-certification.json";
@@ -31,7 +30,6 @@ export type CanonicalTrackRuntime = Readonly<{
   questions: readonly Question[];
   interactions: CanonicalInteractionRegistry;
   completionRule?: PackageCompletionRule;
-  classifyCompletionItem?: CompletionCreditClassifier;
   completionSources?: readonly VerifiedCompletionSource[];
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   planningPolicy?: LearningPlanningPolicy;
@@ -128,8 +126,8 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
     const modeConfigs = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, projections, (edge) => markStartup("mode_artifact_questions", edge));
     markStartup("catalog_projection", "end");
     markStartup("catalog_tracks", "begin");
-    // Prepare public retained proof before any synchronous read projection.
-    // A failed old artifact becomes unavailable credit, never a failed current catalog.
+    // Optional retained rules preserve already earned legacy completions.
+    // Attributed unit progress does not depend on these historical catalogs.
     const retainedProofs = dependencies.artifacts === undefined
       ? await verifyRetainedCompletionCatalogs(await loadRetainedClaudePackages().catch(() => []), interactionRegistry) : [];
     const byTrack = new Map(catalogs.map((catalog) => {
@@ -142,7 +140,6 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
       }));
       return [catalog.trackId, createTrackRuntime(catalog, modeConfigs,
         successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId), interactionRegistry,
-        dependencies.artifacts === undefined && catalog.trackId === "claude-certified-architect-professional-certification" ? createCompletionCreditClassifier(catalog, retainedProofs) : undefined,
         completionSources)] as const;
     }));
     markStartup("catalog_tracks", "end");
@@ -158,7 +155,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
   } finally { markStartup("catalog_build", "end"); }
 }
 
-function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry, classifyCompletionItem?: CompletionCreditClassifier, completionSources?: readonly VerifiedCompletionSource[]): CanonicalTrackRuntime {
+function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry, completionSources?: readonly VerifiedCompletionSource[]): CanonicalTrackRuntime {
   const modes = Object.freeze(configs.filter((config) => config.trackId === catalog.trackId));
   markStartup("planning_policy", "begin");
   let planningPolicy: LearningPlanningPolicy | undefined;
@@ -176,7 +173,6 @@ function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly
     questions: catalog.questions,
     interactions,
     ...(catalog.completionRule ? { completionRule: catalog.completionRule } : {}),
-    ...(classifyCompletionItem ? { classifyCompletionItem } : {}),
     ...(completionSources ? { completionSources: Object.freeze(completionSources) } : {}),
     ...(catalog.simulationProfiles ? { simulationProfiles: catalog.simulationProfiles } : {}),
     ...(planningPolicy ? { planningPolicy } : {}),

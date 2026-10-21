@@ -244,13 +244,12 @@ test("active Premium V3 unit continuation is validated and costed in its exact s
 
 test("a committed wrong answer is not treated as an active coverage target or completion credit", () => {
   for (const fromHistory of [false, true]) {
-  const classifyCompletionItem = (item: { contentVersion: string; artifactSha256: string }) => item.contentVersion === "retained" && item.artifactSha256 === "b".repeat(64) ? "equivalent" as const : "different" as const;
   const focus = { ...practice, modeId: "certification-focus-practice", requestedLengths: [10, 20, 40], defaultRequestedLength: 10,
     minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
   const targetQuestions = ["q1", "q2", "q3", "q4"].map((id) => question(id, "chapter-premium", "premium-unit"));
   const completionRule = createPackageCompletionRuleV3({ ruleVersion: 3, chapters: [{ nodeId: "chapter-premium", mentalUnitCount: 1, minimumAttemptCount: 20,
     rollingWindowSize: 20, qualityThreshold: 0.8, units: [{ mentalUnitId: "premium-unit", requiredCorrectQuestionCount: 4 }] }] });
-  const v3Track = { ...track, completionRule, classifyCompletionItem, questions: targetQuestions, modes: [focus, review],
+  const v3Track = { ...track, completionRule, questions: targetQuestions, modes: [focus, review],
     getPool: (modeId: string) => modeId === focus.modeId ? [] : [], getQuestion: (id: string) => targetQuestions.find((entry) => entry.questionId === id),
     getMode: (modeId: string) => modeId === focus.modeId ? focus : review } as unknown as CanonicalTrackRuntime;
   const focusPolicy = { ...policy, workEstimates: [...policy.workEstimates, estimate("focus-premium-unit", focus.modeId, "chapter-premium", "premium-unit", 2, 3, 5, 0, 0, 0)] };
@@ -271,7 +270,7 @@ test("a committed wrong answer is not treated as an active coverage target or co
     const item = { ...attempt.item, contentVersion: "retained", artifactSha256: "b".repeat(64) };
     return { ...attempt, item, reviewEvidence: { ...attempt.reviewEvidence, sourceItem: item } };
   });
-  const completion = evaluatePackageCompletion({ trackId: TRACK, contentVersion: "v2", artifactSha256: SHA, completionRule, classifyCompletionItem }, attempts,
+  const completion = evaluatePackageCompletion({ trackId: TRACK, contentVersion: "v2", artifactSha256: SHA, completionRule }, attempts,
     (questionId) => targetQuestions.find((item) => item.questionId === questionId));
   assert.equal(completion.kind, "in_progress");
   if (completion.kind !== "in_progress") return;
@@ -337,13 +336,13 @@ function qualifiedAttempt(id: string, questionId: string, mentalUnitId: string, 
   const item = createResolvedContentRef({ trackId: TRACK, questionId, contentVersion: "v2", artifactSha256: SHA });
   const answeredAt = new Date(Date.UTC(2026, 9, 1, 0, 0, index)).toISOString();
   return createTrainingAttempt({ id, sessionId: `session-${id}`, trackId: TRACK, modeId: "certification-focus-practice", occurrenceId: `occ-${id}`, item,
-    response: {}, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt });
+    response: {}, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [{axisId:"node",nodeId:mentalUnitId === "premium-unit" ? "chapter-premium" : "chapter-a"},{axisId:"mental_unit",nodeId:mentalUnitId}] }, answeredAt, committedAt: answeredAt });
 }
 function wrongQualifiedAttempt(id: string, questionId: string, mentalUnitId: string, index: number, sessionId: string, occurrenceId: string): TrainingAttempt<unknown> {
   const item = createResolvedContentRef({ trackId: TRACK, questionId, contentVersion: "v2", artifactSha256: SHA });
   const answeredAt = new Date(Date.UTC(2026, 9, 1, 0, 0, index)).toISOString();
   return createTrainingAttempt({ id, sessionId, trackId: TRACK, modeId: "certification-focus-practice", occurrenceId, item,
-    response: {}, result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt });
+    response: {}, result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [{axisId:"node",nodeId:mentalUnitId === "premium-unit" ? "chapter-premium" : "chapter-a"},{axisId:"mental_unit",nodeId:mentalUnitId}] }, answeredAt, committedAt: answeredAt });
 }
 function estimate(estimateId: string, modeId: string, nodeId: string, mentalUnitId: string, min: number, typical: number, max: number, reserveMin: number, reserveTypical: number, reserveMax: number): LearningPlanningPolicy["workEstimates"][number] {
   return { estimateId, modeId, scopeRefs: [{ nodeId, mentalUnitId }], minMinutesPerResponse: min, typicalMinutesPerResponse: typical, maxMinutesPerResponse: max, provenance: "authored", observationCount: 0,

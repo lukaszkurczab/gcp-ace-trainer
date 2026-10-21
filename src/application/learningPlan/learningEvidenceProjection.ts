@@ -3,7 +3,7 @@ import { isActiveReviewQueueEntry, type ReviewQueueEntry, type TrainingAttempt }
 import { createArtifactSha256 } from "../../domain/learning/contentItemRef";
 import {
   createPackageCompletionRule, evaluatePackageCompletion, qualifyPackageAttempts,
-  type VerifiedPackageCompletionProfile, type PackageCompletionState,
+  completionAttemptIdentity, type VerifiedPackageCompletionProfile, type PackageCompletionState,
 } from "../../domain/learning/packageCompletionRule";
 import type { ImmutableCompletedFacts } from "../../domain/learning/paceForecast";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
@@ -37,9 +37,9 @@ export function projectLearningEvidence(input: Readonly<{
   const qualifyingIds = new Set(qualifyPackageAttempts(profile, uniqueAttempts).map(attempt => attempt.id));
   // Preserve source evidence order for the existing proposal freshness contract;
   // the canonical evaluator owns deterministic rolling-window time/ID ordering.
-  const activityAttempts = Object.freeze(uniqueAttempts.filter(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && attempt.item.contentVersion === profile.contentVersion && attempt.item.artifactSha256 === profile.artifactSha256));
+  const activityAttempts = Object.freeze(uniqueAttempts.filter(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && completionAttemptIdentity(profile, attempt, profile.getQuestion) !== undefined));
   const attempts = Object.freeze(uniqueAttempts.filter(attempt => qualifyingIds.has(attempt.id)));
-  if (activityAttempts.some(attempt => !profile.getQuestion(attempt.item.questionId))) throw new Error("Learning evidence item is absent from its verified package.");
+  if (uniqueAttempts.some(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && attempt.item.contentVersion === profile.contentVersion && attempt.item.artifactSha256 === profile.artifactSha256 && !profile.getQuestion(attempt.item.questionId))) throw new Error("Learning evidence item is absent from its verified package.");
   const milestoneAttempts = uniqueAttempts.filter(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId &&
     profile.completionSources?.some(source => source.trackId === profile.trackId && source.contentVersion === attempt.item.contentVersion && source.artifactSha256 === attempt.item.artifactSha256));
   for (const attempt of new Set([...activityAttempts, ...attempts, ...milestoneAttempts])) {
@@ -48,8 +48,8 @@ export function projectLearningEvidence(input: Readonly<{
   }
   const recordedReviews = uniqueRecords(input.reviews);
   const reviews = Object.freeze(recordedReviews.filter(entry => entry.trackId === profile.trackId &&
-    entry.sourceItem.trackId === profile.trackId && entry.sourceItem.contentVersion === profile.contentVersion && entry.sourceItem.artifactSha256 === profile.artifactSha256));
-  if (reviews.some(entry => !profile.getQuestion(entry.sourceItem.questionId))) throw new Error("Learning review item is absent from its verified package.");
+    entry.sourceItem.trackId === profile.trackId));
+  if (reviews.some(entry => entry.sourceItem.contentVersion === profile.contentVersion && entry.sourceItem.artifactSha256 === profile.artifactSha256 && !profile.getQuestion(entry.sourceItem.questionId))) throw new Error("Learning review item is absent from its verified package.");
   const dueReviews = Object.freeze(reviews.filter(entry => {
     if (!isActiveReviewQueueEntry(entry) || entry.dueAt === undefined) return false;
     const dueMs = Date.parse(entry.dueAt);

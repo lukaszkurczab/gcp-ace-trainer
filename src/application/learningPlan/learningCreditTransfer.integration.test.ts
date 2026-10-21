@@ -1,9 +1,9 @@
+import { projectCodingProgress } from "../coding-interview/codingProgressProjection";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { ContentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { verifyRetainedCompletionCatalogs } from "../../content/canonical/runtimeCatalog";
-import { createCompletionCreditClassifier } from "../../content/canonical/completionCredit";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { createTrainingAttempt, type TrainingAttempt } from "../../domain";
 import type { Question } from "../../content/canonical/questionTypes";
@@ -50,7 +50,7 @@ test("production discovery transfers identical retained credit and unchanged cha
       const instant=new Date(Date.UTC(2026,9,1,0,0,serial)).toISOString();
       const evaluation=old.presentation.evaluate(question.questionId,question.answer);
       assert.ok(evaluation.result);
-      const attempt=createTrainingAttempt({id:`credit-${serial}`,sessionId:"retained-credit-fixture",trackId:TRACK,modeId:"certification-focus-practice",occurrenceId:`credit-occurrence-${serial++}`,item,response:question.answer,result:evaluation.result,reviewEvidence:{sourceItem:item,taxonomyOrSkillRefs:[]},answeredAt:instant,committedAt:instant});
+      const attempt=createTrainingAttempt({id:`credit-${serial}`,sessionId:"retained-credit-fixture",trackId:TRACK,modeId:"certification-focus-practice",occurrenceId:`credit-occurrence-${serial++}`,item,response:question.answer,result:evaluation.result,reviewEvidence:{sourceItem:item,taxonomyOrSkillRefs:[{axisId:"node",nodeId:question.nodeId,role:"primary"},{axisId:"mental_unit",nodeId:question.mentalUnitId,role:"primary"}]},answeredAt:instant,committedAt:instant});
       attempts.push(attempt);
       await addTrainingAttempt(attempt,admission);
     }
@@ -58,7 +58,7 @@ test("production discovery transfers identical retained credit and unchanged cha
   const before=storage.snapshot();
   const persisted=(await getTrainingAttempts(admission)).value;
   const evidence=projectLearningEvidence({profile:current.track,attempts:persisted,reviews:[],now:NOW});
-  assert.equal(evidence.activityAttempts.length,0,"current activity is not relabelled");
+  assert.equal(evidence.activityAttempts.length,attempts.length,"historical activity retains its original pin");
   assert.equal(evidence.attempts.length,attempts.length);
   assert.deepEqual(evidence.attempts,persisted,"credited records retain every historical field");
   assert.notEqual(evidence.completion.kind,"unknown");
@@ -81,23 +81,27 @@ test("production discovery transfers identical retained credit and unchanged cha
   assert.deepEqual(storage.snapshot(),before,"projection and a new owner write no learning or account data");
 });
 
-test("admission failures yield unavailable credit, while changed/removed IDs cannot qualify by ID alone", async () => {
+test("changed and removed questions retain unit progress without equivalence or old artifact availability", async () => {
   const instance=await owner();
   const current=(await instance.resolveForDiscovery(TRACK,"certification")).track;
-  const classifier=current.classifyCompletionItem!;
   const changed=retained.artifact.questions.find((q:Question)=>rawById.has(q.questionId) && canonicalSerialize(q)!==canonicalSerialize(rawById.get(q.questionId))) as Question;
-  const removed=retained.artifact.questions.find((q:Question)=>!rawById.has(q.questionId)) as Question;
+  const removed=retained.artifact.questions.find((q:Question)=>!rawById.has(q.questionId) && current.questions.some(now=>now.nodeId === q.nodeId && now.mentalUnitId === q.mentalUnitId)) as Question;
   assert.ok(changed);assert.ok(removed);
-  assert.equal(classifier({...pin,questionId:changed.questionId}),"different");
-  assert.equal(classifier({...pin,questionId:removed.questionId}),"different");
-  assert.equal(classifier({...pin,questionId:changed.questionId,artifactSha256:"f".repeat(64)}),"unavailable");
+  const attempts=[changed,removed].map((question,index)=> {
+    const item={...pin,questionId:question.questionId};
+    return createTrainingAttempt({id:`unit-${index}`,sessionId:"unit-history",trackId:TRACK,modeId:"certification-focus-practice",occurrenceId:`unit-occurrence-${index}`,item,response:{},result:{kind:"incorrect",earnedPoints:0,maxPoints:1},reviewEvidence:{sourceItem:item,taxonomyOrSkillRefs:[{axisId:"node",nodeId:question.nodeId},{axisId:"mental_unit",nodeId:question.mentalUnitId}]},answeredAt:"2026-10-01T00:00:00.000Z",committedAt:"2026-10-01T00:00:00.000Z"});
+  });
+  const before=structuredClone(attempts);
+  const projection=projectLearningEvidence({profile:{...current,completionSources:[]},attempts,reviews:[],now:NOW});
+  assert.deepEqual(projection.attempts,attempts);
+  assert.notEqual(projection.completion.kind,"unknown");
+  if (projection.completion.kind === "unknown") throw Error("saved unit attribution must be usable without old material");
+  assert.equal(projection.completion.qualifyingAttemptCount,2);
+  const missing=attempts.map(attempt=>({...attempt,reviewEvidence:{...attempt.reviewEvidence,taxonomyOrSkillRefs:[]}}));
+  assert.equal(projectLearningEvidence({profile:{...current,completionSources:[]},attempts:missing,reviews:[],now:NOW}).completion.kind,"unknown");
+  assert.deepEqual(attempts,before);
   const corrupt=structuredClone(retained);corrupt.artifact.questions[0].prompt += " corrupted";
-  const proofs=await verifyRetainedCompletionCatalogs([corrupt]);
-  assert.deepEqual(proofs,[],"the real artifact checksum guard refuses corrupted source");
-  const withoutProof=createCompletionCreditClassifier({...current,questions:rawCurrent.questions},proofs);
-  assert.equal(withoutProof({...pin,questionId:changed.questionId}),"unavailable");
-  const aws=(await instance.resolveForDiscovery("aws-certified-solutions-architect-associate","certification")).track;
-  assert.equal(aws.classifyCompletionItem,undefined,"other tracks keep strict exact qualification");
+  assert.deepEqual(await verifyRetainedCompletionCatalogs([corrupt]),[],"historical display admission remains exact");
   const translate=(key:string)=>key;
   assert.equal(completionCopy({completionState:{kind:"unknown"}},translate),"The package’s full completion contract is unavailable.");
   assert.equal(targetCopy({kind:"unknown_completion_rule"},translate),"The package’s full completion contract is unavailable.");
@@ -125,7 +129,7 @@ test("verified retained completion survives changed content, retry and owner rec
     const item={...pin,questionId:question.questionId};
     const instant=new Date(Date.UTC(2026,9,1,0,0,index)).toISOString();
     const result=old.presentation.evaluate(question.questionId,question.answer).result!;
-    await addTrainingAttempt(createTrainingAttempt({id:`sticky-${index}`,sessionId:"retained-completion-fixture",trackId:TRACK,modeId:"certification-focus-practice",occurrenceId:`sticky-occurrence-${index}`,item,response:question.answer,result,reviewEvidence:{sourceItem:item,taxonomyOrSkillRefs:[]},answeredAt:instant,committedAt:instant}),admission);
+    await addTrainingAttempt(createTrainingAttempt({id:`sticky-${index}`,sessionId:"retained-completion-fixture",trackId:TRACK,modeId:"certification-focus-practice",occurrenceId:`sticky-occurrence-${index}`,item,response:question.answer,result,reviewEvidence:{sourceItem:item,taxonomyOrSkillRefs:[{axisId:"node",nodeId:question.nodeId,role:"primary"},{axisId:"mental_unit",nodeId:question.mentalUnitId,role:"primary"}]},answeredAt:instant,committedAt:instant}),admission);
   }
   const persisted=(await getTrainingAttempts(admission)).value;
   const before=storage.snapshot();
@@ -138,9 +142,9 @@ test("verified retained completion survives changed content, retry and owner rec
   assert.equal(earned.completionSource?.contentVersion,pin.contentVersion);
   assert.equal(earned.completionSource?.artifactSha256,pin.artifactSha256);
   assert.equal(earned.qualifyingAttemptCount,chapter.minimumAttemptCount);
-  assert.ok(evidence.attempts.length < persisted.length,"changed content has no new question credit");
+  assert.equal(evidence.attempts.length,persisted.length,"unit attribution retains all durable attempts");
   const withoutSource=project({...current.track,completionSources:[]});
-  assert.equal(withoutSource.completion.kind,"unknown","missing old milestone proof is unavailable, even when changed IDs cannot transfer");
+  assert.notEqual(withoutSource.completion.kind,"unknown","attributed unit progress needs no historical artifact");
   const workload=projectFullGoalWorkload({track:current.track,policy:current.planningPolicy,planningPolicyIdentity:current.planningPolicyIdentity,completion:evidence.completion,sessions:[],attempts:evidence.attempts,reviews:[],practiceMode:current.track.getMode("certification-focus-practice")});
   assert.equal(workload.chapters.find(c=>c.nodeId === chapter.nodeId)!.requiredResponses,0);
   const restarted=await owner();
@@ -148,4 +152,23 @@ test("verified retained completion survives changed content, retry and owner rec
   assert.deepEqual(storage.snapshot(),before);
   const future=persisted.map(attempt=>({...attempt,answeredAt:"2026-10-22T00:00:00.000Z",committedAt:"2026-10-22T00:00:00.000Z"}));
   assert.throws(()=>project(current.track,future),/answer time/);
+});
+
+
+test("Coding Progress retains unit practice and performance after replacement and an added sibling question",async()=>{
+  const instance=await owner();
+  const {track}=await instance.resolveForDiscovery("coding-interview-dsa-problem-solving","coding_interview");
+  const question=track.questions[0]!;
+  const item={trackId:track.trackId,questionId:"removed-coding-A",contentVersion:"absent-old-bank",artifactSha256:"d".repeat(64)};
+  const attempts=[createTrainingAttempt({id:"coding-unit-attempt",sessionId:"coding-old",trackId:track.trackId,modeId:"algorithms-topic-practice",occurrenceId:"coding-old-occurrence",item,response:{},result:{kind:"correct",earnedPoints:1,maxPoints:1},reviewEvidence:{sourceItem:item,taxonomyOrSkillRefs:[{axisId:"node",nodeId:question.nodeId},{axisId:"mental_unit",nodeId:question.mentalUnitId}]},answeredAt:"2026-10-01T00:00:00.000Z",committedAt:"2026-10-01T00:00:00.000Z"})];
+  const profile={...track,completionSources:[]};
+  const evidence=projectLearningEvidence({profile,attempts,reviews:[],now:NOW});
+  const before=projectCodingProgress(profile,evidence,NOW);
+  assert.equal(before.hasData,true);
+  assert.equal(before.algorithmsProgress!.currentFocus.nodeId,question.nodeId);
+  assert.ok(before.algorithmsProgress!.currentFocus.progressPercent! > 0);
+  const extra={...question,questionId:"new-coding-B"};
+  const expanded={...profile,questions:[...profile.questions,extra],getQuestion:(id:string)=>id === extra.questionId ? extra : profile.getQuestion(id)};
+  const after=projectCodingProgress(expanded,projectLearningEvidence({profile:expanded,attempts,reviews:[],now:NOW}),NOW);
+  assert.deepEqual(after,before,"new questions in U do not reset or inflate U's practice coverage");
 });

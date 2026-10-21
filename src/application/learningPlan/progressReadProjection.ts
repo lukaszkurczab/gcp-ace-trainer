@@ -1,5 +1,5 @@
 import type { ActivitySessionRecord } from "../activityReadModels";
-import { CODING_INTERVIEW_TRACK_ID, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID, isActiveReviewQueueEntry, manualRequestIdForEntry, type TrackId, type TrainingAttempt, type ReviewQueueEntry } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, isActiveReviewQueueEntry, manualRequestIdForEntry, type TrackId, type TrainingAttempt, type ReviewQueueEntry } from "../../domain";
 import { findTrackDescriptor, resolveTrackDomainMetadata } from "../../domain/tracks/trackAdmission";
 import type { TrainingCatalog } from "../trainingLifecycle/contracts";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
@@ -48,9 +48,7 @@ function buildInstalledPackageProgressTabModel(
   now: string,
 ): Omit<ProgressEvidenceModel, "identity" | "capturedAt" | "hasRecordedActivity" | "emptyState"> {
   const currentAttempts = evidence.activityAttempts;
-  const claude = trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID;
-  // Claude's retained exact obligations remain actionable; current performance stays pinned.
-  const scopedReviews = claude ? evidence.recordedReviews.filter(entry => entry.trackId === trackId && entry.sourceItem.trackId === trackId) : evidence.reviews;
+  const scopedReviews = evidence.reviews;
   const isDue = (entry: ReviewQueueEntry) => entry.dueAt !== undefined && Date.parse(entry.dueAt) <= Date.parse(now);
   const isFuture = (entry: ReviewQueueEntry) => entry.dueAt !== undefined && Date.parse(entry.dueAt) > Date.parse(now);
   const dueReviewCount = scopedReviews.filter((entry) => isActiveReviewQueueEntry(entry) && isDue(entry)).length;

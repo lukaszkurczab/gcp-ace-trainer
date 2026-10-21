@@ -1,5 +1,4 @@
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../../domain";
-import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { JournalWriteError } from "../../storage/errors";
 import { getReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
@@ -8,6 +7,7 @@ import { MutationCommitFailure } from "../mutationBoundary";
 import { buildMutationJournal } from "./mutationJournalBuilder";
 import { commitMutationAfterPreflight } from "./commitMutation";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { reviewConcurrencyKey } from "../canonical/canonicalFamilyMechanics";
 
 export async function commitTrainingOutcome(input: {
   attempt: TrainingAttempt<unknown>;
@@ -71,10 +71,10 @@ export async function commitTrainingOutcome(input: {
 }
 
 function baselineMatchesTouchedRefs(baseline: readonly ReviewQueueEntry[], current: readonly ReviewQueueEntry[], touched: readonly ReviewQueueEntry[]): boolean {
-  const keys = new Set(touched.map((entry) => `${entry.trackId}:${resolvedContentRefKey(entry.sourceItem)}`));
+  const keys = new Set(touched.map(reviewConcurrencyKey));
   for (const key of keys) {
-    const prior = baseline.filter((entry) => `${entry.trackId}:${resolvedContentRefKey(entry.sourceItem)}` === key).sort((a, b) => a.id.localeCompare(b.id));
-    const now = current.filter((entry) => `${entry.trackId}:${resolvedContentRefKey(entry.sourceItem)}` === key).sort((a, b) => a.id.localeCompare(b.id));
+    const prior = baseline.filter((entry) => reviewConcurrencyKey(entry) === key).sort((a, b) => a.id.localeCompare(b.id));
+    const now = current.filter((entry) => reviewConcurrencyKey(entry) === key).sort((a, b) => a.id.localeCompare(b.id));
     if (canonicalSerialize(prior) !== canonicalSerialize(now)) return false;
   }
   return true;

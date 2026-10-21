@@ -4,6 +4,8 @@ import { isGoalRecordForPolicy, isGoalRecordShape, normalizeGoalRecord } from ".
 import { isTrackAdmitted, type LearningDataAdmissionContext, type TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
 import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
 import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
+import { sameLearningUnit } from "../../domain/learning/mentalUnitEvidence";
+import { matchesReviewSourceSnapshot } from "../../domain/learning/reviewQueueEntry";
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
@@ -568,7 +570,10 @@ function hasValidOperationPlan(record: MutationJournalPlan, context: LearningDat
   const reviewsMatchAttempts = record.writes.every((write) => {
     if (write.kind !== "put_review_entry" && write.kind !== "put_review_entry_for_attempt" && write.kind !== "update_review_entry") return true;
     const attempt = attemptWrites.find((candidate) => candidate.record.id === (write.kind === "put_review_entry" ? write.record.sourceAttemptId : write.transitionId))?.record;
-    if (!attempt || write.record.trackId !== attempt.trackId || !equalItemRef(write.record.sourceItem, attempt.reviewEvidence.sourceItem)) return false;
+    if (!attempt || write.record.trackId !== attempt.trackId) return false;
+    if (write.kind === "update_review_entry") {
+      if (!reviewTransitionMatchesAttempt(sessionWrite?.record, attempt, write.record)) return false;
+    } else if (!equalItemRef(write.record.sourceItem, attempt.reviewEvidence.sourceItem)) return false;
     if (write.kind === "put_review_entry_for_attempt") {
       const sourceAttempt = attemptWrites.find((candidate) => candidate.record.id === write.record.sourceAttemptId)?.record;
       return Boolean(sourceAttempt && write.record.sourceSessionId === sourceAttempt.sessionId && equalItemRef(write.record.sourceItem, sourceAttempt.item) && JSON.stringify(write.record.taxonomyOrSkillRefs) === JSON.stringify(sourceAttempt.reviewEvidence.taxonomyOrSkillRefs));
@@ -643,6 +648,16 @@ function hasValidOperationPlan(record: MutationJournalPlan, context: LearningDat
   }
 }
 
+/** A queue update may follow a replacement question only through its captured due entry and durable unit attribution. */
+export function reviewTransitionMatchesAttempt(session: TrainingSession | undefined, attempt: TrainingAttempt<unknown>, review: ReviewQueueEntry): boolean {
+  if (review.trackId !== attempt.trackId) return false;
+  if (equalItemRef(review.sourceItem, attempt.reviewEvidence.sourceItem)) return true;
+  const occurrence = session?.itemOrder.find((candidate) => candidate.occurrenceId === attempt.occurrenceId);
+  const snapshot = occurrence?.reviewSourceSnapshot;
+  return (snapshot?.source === "due_queue" || snapshot?.source === "manual_request") && snapshot.reviewEntryId === review.id &&
+    snapshot.sourceAttemptId === review.sourceAttemptId && sameLearningUnit(review, attempt.reviewEvidence);
+}
+
 function equalItemRef(left: TrainingAttempt["item"], right: TrainingAttempt["item"]): boolean {
   return resolvedContentRefsEqual(left, right);
 }
@@ -673,13 +688,21 @@ function hasConsistentScope(record: MutationJournalPlan, admission: TrackAdmissi
     }
   }
   const artifactSha256 = record.artifactSha256;
+  const sessionWrite = record.writes.find((write): write is Extract<JournalWrite, { kind: "put_session" }> => write.kind === "put_session");
+  const attemptWrites = record.writes.filter((write): write is Extract<JournalWrite, { kind: "put_attempt" }> => write.kind === "put_attempt");
   return record.writes.every((write) => {
     if (write.kind === "put_session") return write.record.id === record.sessionId && write.record.trackId === record.trackId && write.record.artifactSha256 === artifactSha256;
     if (write.kind === "put_active_foreground_timer") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "put_session_result") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "put_attempt") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId && write.record.item.artifactSha256 === artifactSha256;
     if (write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt") return write.record.sourceSessionId === record.sessionId && write.record.trackId === record.trackId && write.record.sourceItem.artifactSha256 === artifactSha256;
-    if (write.kind === "update_review_entry" || write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt") return write.record.trackId === record.trackId && write.record.sourceItem.artifactSha256 === artifactSha256;
+    if (write.kind === "update_review_entry") {
+      if (write.record.trackId !== record.trackId) return false;
+      if (write.record.sourceItem.artifactSha256 === artifactSha256) return true;
+      const attempt = attemptWrites.find((candidate) => candidate.record.id === write.transitionId)?.record;
+      return Boolean(attempt && reviewTransitionMatchesAttempt(sessionWrite?.record, attempt, write.record));
+    }
+    if (write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt") return write.record.trackId === record.trackId && write.record.sourceItem.artifactSha256 === artifactSha256;
     if (write.kind === "clear_active_session" || write.kind === "clear_active_session_draft") return write.sessionId === record.sessionId;
     if (write.kind === "put_active_session_draft") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "delete_active_session_draft") {
@@ -787,7 +810,19 @@ export async function persistMutationJournal(record: MutationJournalRecord, cont
     const reviewUpdates = record.writes.filter((write): write is Extract<JournalWrite, { kind: "update_review_entry" }> => write.kind === "update_review_entry");
     if (reviewUpdates.length > 0) {
       const existingReviews = (await getReviewQueueItems(context.trackAdmission)).value;
-      if (reviewUpdates.some((write) => { const existing = existingReviews.find((entry) => entry.id === write.record.id); return !existing || !hasSameReviewIdentity(existing, write.record); })) throw new Error("A journaled review update must preserve an existing durable review identity.");
+      const session = record.writes.find((write): write is Extract<JournalWrite, { kind: "put_session" }> => write.kind === "put_session")?.record;
+      const attempts = record.writes.filter((write): write is Extract<JournalWrite, { kind: "put_attempt" }> => write.kind === "put_attempt").map((write) => write.record);
+      for (const write of reviewUpdates) {
+        const existing = existingReviews.find((entry) => entry.id === write.record.id);
+        if (!existing || !hasSameReviewIdentity(existing, write.record)) throw new Error("A journaled review update must preserve an existing durable review identity.");
+        const attempt = attempts.find((candidate) => candidate.id === write.transitionId);
+        if (attempt && !resolvedContentRefsEqual(existing.sourceItem, attempt.reviewEvidence.sourceItem)) {
+          const occurrence = session?.itemOrder.find((candidate) => candidate.occurrenceId === attempt.occurrenceId);
+          if (!occurrence?.reviewSourceSnapshot || !matchesReviewSourceSnapshot(occurrence.reviewSourceSnapshot, existing)) {
+            throw new Error("A cross-question review update must match its captured durable due source.");
+          }
+        }
+      }
     }
     const current = getActiveMutationJournal(context);
     if (current && current.commandIdentity.fingerprint !== record.commandIdentity.fingerprint) throw new Error("A different mutation is already pending.");

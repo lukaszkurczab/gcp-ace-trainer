@@ -12,7 +12,7 @@ import type {
   TrainingSessionResult,
   JournalOperation,
 } from "../../domain";
-import type { PackageCompletionRule, CompletionCreditClassifier, VerifiedCompletionSource } from "../../domain/learning/packageCompletionRule";
+import type { PackageCompletionRule, VerifiedCompletionSource } from "../../domain/learning/packageCompletionRule";
 import type { CanonicalProductSimulationProfile } from "../../content/canonical/questionTypes";
 import type { ProductModeConfig } from "../../content/canonical/productModeConfig";
 import type { LearningPlanningPolicy } from "../../content/canonical/planningPolicy";
@@ -63,7 +63,6 @@ export interface TrainingCatalog {
   readonly contentReleaseId: string;
   readonly questions: readonly TrainingQuestionSummary[];
   readonly completionRule?: PackageCompletionRule;
-  readonly classifyCompletionItem?: CompletionCreditClassifier;
   readonly completionSources?: readonly VerifiedCompletionSource[];
   readonly simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   readonly planningPolicy?: LearningPlanningPolicy;

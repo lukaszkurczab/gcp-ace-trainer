@@ -63,6 +63,7 @@ test("manual request creates one due-now cycle and repeated marking is idempoten
   assert.equal(first[0]?.status, "active");
   assert.equal(first[0]?.dueAt, first[0]?.createdAt);
   assert.equal(first[0]?.persistent, true);
+  assert.ok(first[0]?.taxonomyOrSkillRefs.some((ref) => ref.axisId === "mental_unit" && ref.nodeId === question.mentalUnitId && (ref.role === undefined || ref.role === "primary")));
   assert.match(first[0]?.manualRequestId ?? "", /^manual:[a-f0-9]{64}$/u);
 
   await setQuestionNeedsReview(input, true);

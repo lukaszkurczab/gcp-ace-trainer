@@ -1,3 +1,5 @@
+import { getTrackRegistration } from "../domain/tracks/trackRegistry";
+import { learningUnitInCurrentCatalog } from "../domain/learning/mentalUnitEvidence";
 import {
   getTrackDisplay,
   type EvidenceRef,
@@ -34,7 +36,7 @@ export async function buildTrackReviewQueueViewModel(input: { issues?: readonly 
     .filter((record) => readString(record.review.trackId) === input.trackId)
     .map((record) => buildUnavailableReviewViewItem(record, now))
     .sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.id.localeCompare(right.id));
-  return { degraded: (input.issues ?? []).length > 0, dueItems: items.filter((item) => item.isDue || item.isManualRequest), issues: [...(input.issues ?? [])], ok: (input.issues ?? []).length === 0, overdueItems: items.filter((item) => item.isOverdue), totalItems: items.length + unavailableItems.length, trackTitle: getTrackDisplay(input.trackId).title, unavailableItems, upcomingItems: items.filter((item) => !item.isDue && !item.isManualRequest) };
+  return { degraded: (input.issues ?? []).length > 0, dueItems: items.filter((item) => item.kind === "available" && (item.isDue || item.isManualRequest)), issues: [...(input.issues ?? [])], ok: (input.issues ?? []).length === 0, overdueItems: items.filter((item) => item.kind === "available" && item.isOverdue), totalItems: items.length + unavailableItems.length, trackTitle: getTrackDisplay(input.trackId).title, unavailableItems: [...unavailableItems, ...items.filter(item => item.kind === "unavailable")], upcomingItems: items.filter((item) => item.kind === "available" && !item.isDue && !item.isManualRequest) };
 }
 
 async function buildReviewViewItem(entry: ReviewQueueEntry, now: string): Promise<ReviewQueueViewItem> {
@@ -42,11 +44,16 @@ async function buildReviewViewItem(entry: ReviewQueueEntry, now: string): Promis
   if (!dueAt) throw new Error("Active review entry is missing its due instant.");
   const isDue = dueAt <= now;
   const isManualRequest = !isDue && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined;
-  return { dueAt, id: entry.id, isDue, isManualRequest, isOverdue: dueAt < now, kind: "available", questionId: entry.sourceItem.questionId, mistakeTypeRefs: dedupeRefs(entry.taxonomyOrSkillRefs.filter((ref) => ref.axisId === "mistake_type")), prompt: await resolvePrompt(entry), reasons: [...entry.reasons], sourceAttemptId: entry.sourceAttemptId, taxonomyRefs: dedupeRefs(entry.taxonomyOrSkillRefs) };
+  const material = await resolveReviewMaterial(entry);
+  return { dueAt, id: entry.id, isDue, isManualRequest, isOverdue: dueAt < now, kind: material ? "available" : "unavailable", ...(material ? {} : {unavailableReason: "unit_material_unavailable"}), questionId: material?.questionId ?? entry.sourceItem.questionId, mistakeTypeRefs: dedupeRefs(entry.taxonomyOrSkillRefs.filter((ref) => ref.axisId === "mistake_type")), prompt: material?.prompt, reasons: [...entry.reasons], sourceAttemptId: entry.sourceAttemptId, taxonomyRefs: dedupeRefs(entry.taxonomyOrSkillRefs) };
 }
-async function resolvePrompt(entry: ReviewQueueEntry): Promise<string> {
-  const item = await contentPackageRuntimeOwner.resolveItem(entry.sourceItem);
-  return item.question.prompt;
+async function resolveReviewMaterial(entry: ReviewQueueEntry) {
+  try {
+    const { track } = await contentPackageRuntimeOwner.resolveForDiscovery(entry.trackId, getTrackRegistration(entry.trackId).familyId);
+    if (entry.trackId !== entry.sourceItem.trackId) return undefined;
+    const unit = learningUnitInCurrentCatalog(entry, track);
+    return unit && track.questions.find(question => question.nodeId === unit.nodeId && question.mentalUnitId === unit.mentalUnitId);
+  } catch { return undefined; }
 }
 function dedupeRefs(refs: readonly EvidenceRef[]): EvidenceRef[] { return [...new Map(refs.map((ref) => [`${ref.axisId}:${ref.nodeId}:${ref.role ?? ""}`, ref])).values()]; }
 

@@ -123,3 +123,22 @@ function unavailableReview(reviewId: string): ContentIdentityUnavailableReviewRe
     },
   };
 }
+
+
+test("unit review uses current B after A disappears and missing U remains visible without old content",async()=>{
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const {track}=await contentPackageRuntimeOwner.resolveForDiscovery(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,"certification");
+  const b=track.questions[0]!;
+  const entry:ReviewQueueEntry={id:"unit-review",trackId:track.trackId,sourceItem:{trackId:track.trackId,questionId:"removed-A",contentVersion:"unavailable-old",artifactSha256:"e".repeat(64)},sourceAttemptId:"old-attempt",sourceSessionId:"old-session",taxonomyOrSkillRefs:[{axisId:"node",nodeId:b.nodeId},{axisId:"mental_unit",nodeId:b.mentalUnitId}],reasons:["incorrect"],dueAt:"2026-10-01T00:00:00.000Z",createdAt:"2026-09-30T00:00:00.000Z",consecutiveAfterDueSuccesses:0,persistent:true,status:"active",policyVersion:"bizq04-v1",stage:"repair24"};
+  const noMaterial={...entry,id:"missing-unit",taxonomyOrSkillRefs:[{axisId:"node",nodeId:b.nodeId},{axisId:"mental_unit",nodeId:"missing-U"}]};
+  const noAttribution={...entry,id:"missing-attribution",taxonomyOrSkillRefs:[]};
+  const inputs=[entry,noMaterial,noAttribution];const before=structuredClone(inputs);
+  const view=await buildTrackReviewQueueViewModel({trackId:track.trackId,now:"2026-10-21T00:00:00.000Z",reviewQueueItems:inputs});
+  assert.equal(view.totalItems,3);
+  assert.equal(view.dueItems.length,1);
+  assert.equal(view.dueItems[0]!.questionId,b.questionId);
+  assert.equal(view.dueItems[0]!.prompt,b.prompt);
+  assert.equal(view.dueItems[0]!.dueAt,entry.dueAt);
+  assert.deepEqual(view.unavailableItems.map(row=>row.id).sort(),["missing-attribution","missing-unit"]);
+  assert.deepEqual(inputs,before);
+});

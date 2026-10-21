@@ -1,3 +1,5 @@
+import { completionAttemptIdentity } from "../../domain/learning/packageCompletionRule";
+import { learningUnitInCurrentCatalog, type LearningUnitIdentity } from "../../domain/learning/mentalUnitEvidence";
 import { CODING_INTERVIEW_TRACK_ID, isActiveReviewQueueEntry, manualRequestIdForEntry, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId } from "../../tracks/coding-interview";
 import type { TrainingCatalog, TrainingQuestionSummary } from "../trainingLifecycle/contracts";
@@ -12,18 +14,19 @@ export function projectCodingProgress(
   now: string,
 ): Omit<ProgressEvidenceModel, "identity" | "capturedAt" | "hasRecordedActivity" | "emptyState"> {
   const packageItems = track.questions;
-  const itemById = new Map(packageItems.map(question => [question.questionId, question]));
   const currentAttempts = evidence.attempts;
   const algorithmsReviewItems = evidence.reviews;
   const dueReviewItems = evidence.dueReviews;
   const dueReviewCount = dueReviewItems.length;
   const manualReviewCount = algorithmsReviewItems.filter(item => isActiveReviewQueueEntry(item) && item.dueAt !== undefined && Date.parse(item.dueAt) > Date.parse(now) && item.reasons.includes("manual_mark") && manualRequestIdForEntry(item) !== undefined).length;
-  const facts = buildCanonicalProgressFacts(packageItems, itemById, currentAttempts, dueReviewItems, now, track.contentVersion, track.artifactSha256);
+  const attemptUnit = (attempt: TrainingAttempt) => completionAttemptIdentity(track, attempt, track.getQuestion);
+  const reviewUnit = (entry: ReviewQueueEntry) => learningUnitInCurrentCatalog(entry, track);
+  const facts = buildCanonicalProgressFacts(packageItems, currentAttempts, dueReviewItems, now, track.contentVersion, attemptUnit, reviewUnit);
   const algorithmsProgress = buildAlgorithmsProgressScreenModel({
     dueReviewItems,
     facts,
-    itemById,
     trainingAttempts: currentAttempts,
+    attemptUnit,
   });
 
   return {
@@ -77,31 +80,32 @@ type CanonicalProgressFacts = {
 
 function buildCanonicalProgressFacts(
   questions: readonly TrainingQuestionSummary[],
-  itemById: ReadonlyMap<string, TrainingQuestionSummary>,
   attempts: readonly TrainingAttempt[],
   reviews: readonly ReviewQueueEntry[],
   now: string,
   contentVersion: string,
-  artifactSha256: string,
+  attemptUnit: (attempt: TrainingAttempt) => LearningUnitIdentity | undefined,
+  reviewUnit: (entry: ReviewQueueEntry) => LearningUnitIdentity | undefined,
 ): CanonicalProgressFacts {
   const current = attempts;
-  const practicedIds = new Set(current.map((attempt) => attempt.item.questionId));
+  const practicedIds = new Set(current.flatMap(attempt => { const unit = attemptUnit(attempt); return unit ? [`${unit.nodeId}\0${unit.mentalUnitId}`] : []; }));
   const dueByNode = new Map<string, number>();
   for (const review of reviews) {
-    if (!isActiveReviewQueueEntry(review) || review.dueAt === undefined || Date.parse(review.dueAt) > Date.parse(now) || review.sourceItem.artifactSha256 !== artifactSha256) continue;
-    const nodeId = itemById.get(review.sourceItem.questionId)?.nodeId;
+    if (!isActiveReviewQueueEntry(review) || review.dueAt === undefined || Date.parse(review.dueAt) > Date.parse(now)) continue;
+    const nodeId = reviewUnit(review)?.nodeId;
     if (nodeId !== undefined) dueByNode.set(nodeId, (dueByNode.get(nodeId) ?? 0) + 1);
   }
   const byNode = new Map<string, TrainingQuestionSummary[]>();
   for (const question of questions) (byNode.get(question.nodeId) ?? (byNode.set(question.nodeId, []), byNode.get(question.nodeId)!)).push(question);
   const nodeProgress = [...byNode].map(([nodeId, nodeQuestions]) => {
-    const practiced = nodeQuestions.filter((question) => practicedIds.has(question.questionId)).length;
-    const nodeReviews = reviews.filter(review => itemById.get(review.sourceItem.questionId)?.nodeId === nodeId);
+    const units = new Set(nodeQuestions.map(question => question.mentalUnitId));
+    const practiced = [...units].filter(unit => practicedIds.has(`${nodeId}\0${unit}`)).length;
+    const nodeReviews = reviews.filter(review => reviewUnit(review)?.nodeId === nodeId);
     const remediationDueCount = nodeReviews.filter(review => review.persistent).length;
     const criticalRemediationDueCount = nodeReviews.filter(review => review.persistent && review.reasons.includes("repeated_mistake")).length;
     const due = dueByNode.get(nodeId) ?? 0;
     const status: CanonicalNodeProgress["status"] = due > 0 ? "review_due" : practiced > 0 ? "practicing" : "not_started";
-    return { uniquePracticedItemCount: practiced, itemCount: nodeQuestions.length, label: nodeId, nodeId, status, itemCoveragePercent: nodeQuestions.length ? Math.round(practiced / nodeQuestions.length * 100) : 0, dueReviewCount: due, remediationDueCount, criticalRemediationDueCount };
+    return { uniquePracticedItemCount: practiced, itemCount: units.size, label: nodeId, nodeId, status, itemCoveragePercent: units.size ? Math.round(practiced / units.size * 100) : 0, dueReviewCount: due, remediationDueCount, criticalRemediationDueCount };
   });
   const active = nodeProgress.find((node) => node.uniquePracticedItemCount > 0) ?? nodeProgress[0] ?? { nodeId: "", label: "", itemCount: 0 };
   return { activeRoadmapNode: { id: active.nodeId, label: active.label }, contentVersion, correctCount: current.filter((a) => a.result.kind === "correct").length, incorrectCount: current.filter((a) => a.result.kind === "incorrect").length, partialCount: current.filter((a) => a.result.kind === "partial").length, itemsCompleted: practicedIds.size, roadmapNodesStarted: nodeProgress.filter((node) => node.uniquePracticedItemCount > 0).length, nodeProgress };
@@ -147,8 +151,8 @@ function getAlgorithmsRemediationState(input: {
 function buildAlgorithmsProgressScreenModel(input: {
   dueReviewItems: readonly ReviewQueueEntry[];
   facts: CanonicalProgressFacts;
-  itemById: ReadonlyMap<string, TrainingQuestionSummary>;
   trainingAttempts: readonly TrainingAttempt[];
+  attemptUnit: (attempt: TrainingAttempt) => LearningUnitIdentity | undefined;
 }): AlgorithmsProgressScreenModel {
   const activeIndex = input.facts.nodeProgress.findIndex(
     (node) => node.nodeId === input.facts.activeRoadmapNode.id,
@@ -201,8 +205,8 @@ function buildAlgorithmsProgressScreenModel(input: {
     ...buildAlgorithmEvidenceModel({
       facts: input.facts,
       focusNode,
-      itemById: input.itemById,
       trainingAttempts: input.trainingAttempts,
+      attemptUnit: input.attemptUnit,
     }),
     diagnostics: {
       collapsedByDefault: true,
@@ -233,13 +237,13 @@ const ALGORITHM_TREND_POINT_COUNT = 4;
 function buildAlgorithmEvidenceModel(input: {
   facts: CanonicalProgressFacts;
   focusNode: CanonicalProgressFacts["nodeProgress"][number];
-  itemById: ReadonlyMap<string, TrainingQuestionSummary>;
   trainingAttempts: readonly TrainingAttempt[];
+  attemptUnit: (attempt: TrainingAttempt) => LearningUnitIdentity | undefined;
 }): Pick<AlgorithmsProgressScreenModel, "effectivenessTrend" | "evidenceSummary" | "trackNodes"> {
   const scoredAttempts = sortAttemptsChronologically(input.trainingAttempts).filter((attempt) =>
-    attempt.result.maxPoints > 0 && Boolean(input.itemById.get(attempt.item.questionId)?.nodeId),
+    attempt.result.maxPoints > 0 && Boolean(input.attemptUnit(attempt)?.nodeId),
   );
-  const attemptsByNode = groupOrderedAlgorithmAttemptsByNode(scoredAttempts, input.itemById);
+  const attemptsByNode = groupOrderedAlgorithmAttemptsByNode(scoredAttempts, input.attemptUnit);
   const focusAttempts = attemptsByNode.get(input.focusNode.nodeId) ?? [];
   const focusWindow = focusAttempts.slice(-ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
   const focusState = getEvidenceState(focusAttempts.length, ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
@@ -297,12 +301,12 @@ function buildAlgorithmEvidenceModel(input: {
 
 function groupOrderedAlgorithmAttemptsByNode(
   attempts: readonly TrainingAttempt[],
-  itemById: ReadonlyMap<string, TrainingQuestionSummary>,
+  attemptUnit: (attempt: TrainingAttempt) => LearningUnitIdentity | undefined,
 ): Map<string, TrainingAttempt[]> {
   const attemptsByNode = new Map<string, TrainingAttempt[]>();
 
   for (const attempt of attempts) {
-    const nodeId = itemById.get(attempt.item.questionId)?.nodeId;
+    const nodeId = attemptUnit(attempt)?.nodeId;
     if (!nodeId) continue;
     const nodeAttempts = attemptsByNode.get(nodeId) ?? [];
     nodeAttempts.push(attempt);

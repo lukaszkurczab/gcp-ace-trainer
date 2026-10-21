@@ -1,3 +1,5 @@
+import { limitQuestionsToReviewNeeds } from "../canonical/canonicalFamilyMechanics";
+import { learningUnitInCurrentCatalog } from "../../domain/learning/mentalUnitEvidence";
 import { estimateCaseWork } from "./caseWorkEstimate";
 import { selectCaseBlocks } from "../certification/caseBlockSelector";
 import { CLAUDE_CASE_TRACK } from "../../content/canonical/caseRecipe";
@@ -80,7 +82,7 @@ export function estimateNextSessionTime(input: Readonly<{
       for (const occurrence of remainingOccurrences) {
         const source = occurrence.reviewSourceSnapshot && input.reviews.find((entry) => entry.id === occurrence.reviewSourceSnapshot!.reviewEntryId);
         if (!source || !matchesReviewSourceSnapshot(occurrence.reviewSourceSnapshot!, source) || source.trackId !== track.trackId ||
-          source.sourceItem.questionId !== occurrence.item.questionId || source.sourceItem.artifactSha256 !== track.artifactSha256) {
+          !reviewMatchesQuestion(source, occurrence.item.questionId, track)) {
           return unavailable("invalid_response_count", []);
         }
       }
@@ -105,12 +107,11 @@ export function estimateNextSessionTime(input: Readonly<{
     return unavailable("missing_scope_estimate", []);
   }
   const currentDue = input.reviews.filter((entry) => entry.trackId === track.trackId && entry.sourceItem.trackId === track.trackId
-    && entry.sourceItem.contentVersion === track.contentVersion && entry.sourceItem.artifactSha256 === track.artifactSha256
+
     && isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && Number.isFinite(Date.parse(entry.dueAt)) && Date.parse(entry.dueAt) <= nowMs);
   let selected = pool;
   if (mode.selection.kind === "evidence_conditioned") {
-    const dueIds = new Set(currentDue.map((entry) => entry.sourceItem.questionId));
-    selected = pool.filter((question) => dueIds.has(question.questionId));
+    selected = limitQuestionsToReviewNeeds(pool.filter((question) => currentDue.some(entry => reviewMatchesQuestion(entry, question.questionId, track))), currentDue, track);
   }
   if (!recommendation.mode.requestedLengths.includes(requestedLength)) return unavailable("invalid_response_count", []);
   const count = Math.min(requestedLength, selected.length);
@@ -210,4 +211,10 @@ function aggregateScopes(questions: readonly Readonly<{ nodeId: string; mentalUn
 
 function unavailable(reason: "empty_pool" | "invalid_response_count" | "missing_scope_estimate" | "review_reserve_unavailable", scopeRefs: readonly Readonly<{ nodeId: string; mentalUnitId: string }>[]): PlanningWorkEstimateResult {
   return Object.freeze({ kind: "unavailable", reason, scopeRefs: Object.freeze([...scopeRefs]) });
+}
+
+function reviewMatchesQuestion(entry: import("../../domain").ReviewQueueEntry, questionId: string, track: TrainingCatalog): boolean {
+  const question = track.getQuestion(questionId);
+  const unit = learningUnitInCurrentCatalog(entry, track);
+  return unit !== undefined && question !== undefined && question.nodeId === unit.nodeId && question.mentalUnitId === unit.mentalUnitId;
 }

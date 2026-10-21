@@ -1,3 +1,4 @@
+import { completionAttemptIdentity } from "../../domain/learning/packageCompletionRule";
 import type { TrainingAttempt } from "../../domain";
 import type { TrainingCatalog } from "../trainingLifecycle/contracts";
 import { overallScoreCredit } from "./overallScoreCredit";
@@ -6,7 +7,8 @@ import { overallScoreCredit } from "./overallScoreCredit";
 export function projectCanonicalNodePerformance(track: TrainingCatalog, attempts: readonly TrainingAttempt[]) {
   const scores = new Map<string, { correct: number; earned: number; max: number; total: number }>();
   for (const attempt of attempts) {
-    const nodeId = track.getQuestion(attempt.item.questionId)!.nodeId;
+    const nodeId = completionAttemptIdentity(track, attempt, track.getQuestion)?.nodeId;
+    if (!nodeId) continue;
     const score = scores.get(nodeId) ?? { correct: 0, earned: 0, max: 0, total: 0 };
     scores.set(nodeId, {
       correct: score.correct + (attempt.result.kind === "correct" ? 1 : 0),

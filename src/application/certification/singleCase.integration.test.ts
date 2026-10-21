@@ -249,7 +249,7 @@ test("a due contrast makes its whole case eligible, but assisted correct keeps t
   assert.equal(selectSingleCase(h.family.catalog, [], [outside, due], "2026-10-14T13:00:00.000Z"), null);
 });
 
-test("ordinary exact due Review can repair a contrast independently after assisted same-session work stays pending", async () => {
+test("unit due Review routes each historical case need to distinct current questions and preserves queue source identity", async () => {
   const h = await harness(); const recipe = indexCaseRecipes(h.track.questions).find(c => c.caseId.includes("policy"))!;
   let lifecycle = h.compose(); await lifecycle.startSession(command(recipe, h.track.questions));
   for (const [index, step] of recipe.steps.slice(0,2).entries()) {
@@ -260,38 +260,24 @@ test("ordinary exact due Review can repair a contrast independently after assist
   }
   await lifecycle.abandonActiveSession(); h.setNow("2026-10-14T13:00:00.000Z"); lifecycle = h.compose();
   const reviewCommand = {trackId:TRACK,modeId:"certification-weak-area-review",request:{requestedLength:10,reviewSource:"due_queue"}};
+  const before = (await getReviewQueueItems(admission)).value;
   const review = await lifecycle.startSession(reviewCommand); assert.equal(review.session.actualLength,2);
-  assert.equal(review.session.caseState,undefined);
+  const sourceIds = review.session.itemOrder.map(occurrence => occurrence.reviewSourceSnapshot?.reviewEntryId);
+  assert.equal(new Set(sourceIds).size,2);
+  assert.deepEqual(sourceIds.sort(),before.map(entry => entry.id).sort());
+  assert.ok(review.session.itemOrder.every(occurrence => !recipe.steps.some(step => step.questionId === occurrence.item.questionId)));
+  assert.deepEqual((await getReviewQueueItems(admission)).value,before,"preparing current unit questions preserves the original due times and refs");
   for (const [index, occurrence] of review.session.itemOrder.entries()) {
-    assert.ok(occurrence.reviewSourceSnapshot);
     const q = h.track.getQuestion(occurrence.item.questionId)!; await lifecycle.submitPracticeResponse(q.answer);
     const attempt = (await getTrainingAttempts(admission)).value.find(a => a.sessionId === review.session.id && a.occurrenceId === occurrence.occurrenceId)!;
-    const evidence = attempt.reviewEvidence.evidence?.details; assert.ok(isCaseAttemptEvidence(evidence));
-    assert.equal(evidence.assistanceBeforeSubmit,index > 0);
-    await lifecycle.recordCaseExposure("solution");
-    if (index === 0) await lifecycle.advancePracticeSession();
+    const source = before.find(entry => entry.id === occurrence.reviewSourceSnapshot!.reviewEntryId)!;
+    assert.deepEqual(attempt.reviewEvidence.taxonomyOrSkillRefs,source.taxonomyOrSkillRefs);
+    const saved = (await getReviewQueueItems(admission)).value.find(entry => entry.id === source.id)!;
+    assert.deepEqual(saved.sourceItem,source.sourceItem);
+    assert.deepEqual(saved.taxonomyOrSkillRefs,source.taxonomyOrSkillRefs);
+    if (index < review.session.itemOrder.length - 1) await lifecycle.advancePracticeSession();
   }
-  const contrast = (await getReviewQueueItems(admission)).value.find(r => r.sourceItem.questionId === recipe.steps[1]!.questionId)!;
-  assert.equal(contrast.stage,"repair24");
-  await lifecycle.abandonActiveSession(); lifecycle = h.compose();
-  const isolated = await lifecycle.startSession(reviewCommand); assert.equal(isolated.session.actualLength,1);
-  assert.equal(isolated.session.itemOrder[0]!.item.questionId,recipe.steps[1]!.questionId);
-  await lifecycle.submitPracticeResponse(h.track.getQuestion(recipe.steps[1]!.questionId)!.answer);
-  const attempt = (await getTrainingAttempts(admission)).value.find(a => a.sessionId === isolated.session.id)!;
-  const evidence = attempt.reviewEvidence.evidence?.details; assert.ok(isCaseAttemptEvidence(evidence));
-  assert.equal(evidence.role,"contrast"); assert.equal(evidence.assistanceBeforeSubmit,false); assert.equal(evidence.priorExposure,"known");
-  assert.equal((await getReviewQueueItems(admission)).value.find(r => r.id === contrast.id)!.stage,"repair7");
-  lifecycle = h.compose();
-  const resumed = await lifecycle.resumeActiveSession();
-  assert.ok(resumed.caseStates?.length);
-  assert.equal(resumed.caseStates[0]!.solutionExposedStepIds.length,0);
-  await assert.rejects(lifecycle.completeActivePracticeSession(isolated.session.id), error => { assert.match(String((error as Error).cause), /explanation/u); return true; });
-  await lifecycle.recordCaseExposure("solution");
-  const completed = await lifecycle.completeActivePracticeSession(isolated.session.id);
-  const result = await getTrainingSessionResult(isolated.session.id, admission); assert.ok(result);
-  assert.ok(isCompletedTrainingSession(completed.session));
-  const projection = await projectCertificationPracticeReview({session:completed.session,result,attempts:(await getTrainingAttempts(admission)).value,resolveQuestion:async item => ({question:h.family.catalog.getQuestion(item.questionId)!,interactions:h.family.presentation})});
-  assert.equal(projection.items.length,1); assert.equal(projection.caseSummaries,undefined); assert.equal(projection.caseSummary,undefined);
+  await lifecycle.abandonActiveSession();
 
 });
 
@@ -420,7 +406,7 @@ test("case block state cannot disappear in active or terminal imported sessions"
 });
 
 
-test("removed retained questions stay in completed history but cannot enter a new due Review", async () => {
+test("removed retained questions stay in history while due needs route to current same-unit content", async () => {
   const { ContentPackageRuntimeOwner } = await import("../contentPackageRuntimeOwner");
   const retained = JSON.parse(readFileSync("src/content/generated/retained-content/claude-pre-qle-v2.json", "utf8"));
   const removedId = "CCARP-D05-O02-expansion-17";
@@ -459,21 +445,25 @@ test("removed retained questions stay in completed history but cannot enter a ne
     const completed = await lifecycle.completeActivePracticeSession(opened.session.id);
     assert.ok(isCompletedTrainingSession(completed.session));
     seed = false; now = "2026-10-14T13:00:00.000Z";
-    const before = storage.snapshot();
     const reviews = (await getReviewQueueItems(admission)).value;
     assert.ok(reviews.some(entry=>entry.sourceItem.questionId === removedId));
     const attempts = (await getTrainingAttempts(admission)).value;
     const command = {trackId:TRACK,modeId:"certification-weak-area-review",request:{requestedLength:10,reviewSource:"due_queue"}};
-    if (withSurvivingDue) {
-      const next = await compose().startSession(command);
-      assert.equal(next.session.artifactSha256,pin.artifactSha256);
-      assert.deepEqual(next.session.itemOrder.map(item=>item.item.questionId),[survivor]);
-      assert.equal((await compose().resumeActiveSession()).artifactSha256,pin.artifactSha256);
-    } else {
-      await assert.rejects(compose().startSession(command),(error:unknown)=>error instanceof TrainingApplicationFailure && error.code === "unknown_mode" && error.cause instanceof Error && /eligible content/u.test(error.cause.message));
-      assert.deepEqual(storage.snapshot(),before,"empty eligible queue writes no data");
-      assert.equal(await getActiveTrainingSession(admission),null);
+    const next = await compose().startSession(command);
+    assert.equal(next.session.artifactSha256,current.track.artifactSha256);
+    const sourceEntries = new Map(reviews.map(entry => [entry.id,entry]));
+    assert.ok(next.session.itemOrder.every(item => current.track.getQuestion(item.item.questionId) !== undefined));
+    assert.ok(next.session.itemOrder.every(item => item.reviewSourceSnapshot && sourceEntries.has(item.reviewSourceSnapshot.reviewEntryId)));
+    for (const occurrence of next.session.itemOrder) {
+      const source = sourceEntries.get(occurrence.reviewSourceSnapshot!.reviewEntryId)!;
+      const question = current.track.getQuestion(occurrence.item.questionId)!;
+      const sourceUnit = source.taxonomyOrSkillRefs.find(ref => ref.axisId === "mental_unit" && (ref.role === undefined || ref.role === "primary"));
+      assert.ok(sourceUnit);
+      assert.equal(question.mentalUnitId,sourceUnit.nodeId);
     }
+    assert.equal((await compose().resumeActiveSession()).artifactSha256,current.track.artifactSha256);
+    assert.deepEqual((await getReviewQueueItems(admission)).value,reviews,"starting the current-content session preserves queue identity and dueAt");
+    await compose().abandonActiveSession();
     assert.deepEqual((await getReviewQueueItems(admission)).value,reviews);
     assert.deepEqual((await getTrainingAttempts(admission)).value,attempts);
     assert.deepEqual(await getTrainingSessionResult(opened.session.id,admission),completed.result);
@@ -483,7 +473,7 @@ test("removed retained questions stay in completed history but cannot enter a ne
   }
 });
 
-test("historical Claude due Review resolves actual retained pins and never substitutes current content", async () => {
+test("historical Claude due Review uses current discovery content and keeps the retained source snapshot", async () => {
   const { ContentPackageRuntimeOwner } = await import("../contentPackageRuntimeOwner");
   for (const file of ["claude-pre-qle-v2", "claude-qle-v2-first-cases"]) {
   const retained = JSON.parse(readFileSync(resolve(process.cwd(), `src/content/generated/retained-content/${file}.json`), "utf8"));
@@ -494,8 +484,8 @@ test("historical Claude due Review resolves actual retained pins and never subst
     let seed = true, unavailable = false, premium = true, now = NOW, serial = 0;
     const compose = () => composeTrainingLifecycleUseCases({wallClock:{now:() => now},sessionIds:{async create(){return `qle-historical-${++serial}`;}},premiumSessionAdmission:{async authorize(){return premium ? "allowed" : "denied";}},packages:{
       async resolveForPreparation(input){return seed ? old : owner.resolveForPreparation(input);},
-      async resolveExactArtifact(input){if (unavailable) throw new Error("Exact retained content unavailable"); return owner.resolveExactArtifact(input);},
-      async resolveForDiscovery(trackId,familyId){return owner.resolveForDiscovery(trackId,familyId);},
+      async resolveExactArtifact(input){return owner.resolveExactArtifact(input);},
+      async resolveForDiscovery(trackId,familyId){if (unavailable) throw new Error("Current discovery content unavailable"); return owner.resolveForDiscovery(trackId,familyId);},
     }});
     let lifecycle = compose();
     const seeded = await lifecycle.startSession({trackId:TRACK,modeId:"certification-focus-practice",request:{requestedLength:10,mentalUnitId:"CCARP-D05-O06"}});
@@ -516,30 +506,18 @@ test("historical Claude due Review resolves actual retained pins and never subst
     const oldDue = before.find(entry => entry.sourceItem.artifactSha256 === pin.artifactSha256)!; assert.ok(oldDue);
     const reviewCommand = {trackId:TRACK,modeId:"certification-weak-area-review",request:{requestedLength:10}};
     unavailable = true; lifecycle = compose();
-    await assert.rejects(lifecycle.startSession(reviewCommand));
+    await assert.rejects(lifecycle.startSession(reviewCommand),(error:unknown)=>error instanceof TrainingApplicationFailure && error.code === "missing_content");
     assert.equal(await getActiveTrainingSession(admission),null); assert.deepEqual((await getReviewQueueItems(admission)).value,before);
     unavailable = false; premium = false;
     await assert.rejects(lifecycle.startSession(reviewCommand),/Premium|premium/u);
     assert.equal(await getActiveTrainingSession(admission),null); assert.deepEqual((await getReviewQueueItems(admission)).value,before);
     premium = true; lifecycle = compose(); const started = await lifecycle.startSession(reviewCommand);
-    assert.equal(started.session.artifactSha256,pin.artifactSha256); assert.equal(started.session.actualLength,1);
-    assert.equal(started.session.itemOrder[0]!.item.questionId,source.questionId);
-    assert.equal(started.session.itemOrder[0]!.reviewSourceSnapshot?.reviewEntryId,oldDue.id);
+    const current = await owner.resolveForDiscovery(TRACK,"certification");
+    assert.equal(started.session.artifactSha256,current.track.artifactSha256);
+    assert.ok(started.session.itemOrder.some(occurrence => occurrence.reviewSourceSnapshot?.reviewEntryId === oldDue.id));
+    assert.ok(started.session.itemOrder.every(occurrence => current.track.getQuestion(occurrence.item.questionId) !== undefined));
     assert.deepEqual((await getReviewQueueItems(admission)).value,before);
-    premium = false; lifecycle = compose(); await lifecycle.resumeActiveSession(); await lifecycle.submitPracticeResponse(source.answer);
-    if (started.session.caseStates?.length) await lifecycle.recordCaseExposure("solution");
-    const completion = await lifecycle.completeActivePracticeSession(started.session.id).catch(error => {
-      const cause = error.cause;
-      throw new Error(`Historical completion failed for ${file}/${pin.contentVersion}: ${cause instanceof Error ? cause.message : error.message}`, { cause: error });
-    });
-    const attempts = (await getTrainingAttempts(admission)).value;
-    assert.ok(isCompletedTrainingSession(completion.session));
-    const result = await getTrainingSessionResult(started.session.id,admission); assert.ok(result);
-    const projection = await projectCertificationPracticeReview({session:completion.session,result,attempts,resolveQuestion:item => owner.resolveItem(item)});
-    assert.equal(projection.items.length,1);
-    assert.equal((await getReviewQueueItems(admission)).value.find(entry => entry.id === oldDue.id)!.stage,"repair7");
-    premium = true; const next = await compose().startSession({...reviewCommand,request:{requestedLength:10,reviewSource:"due_queue"}});
-    assert.equal(next.session.artifactSha256,currentSeed.session.artifactSha256); assert.equal(next.session.actualLength,1);
+    const resumed = await compose().resumeActiveSession(); assert.equal(resumed.artifactSha256,current.track.artifactSha256);
     await compose().abandonActiveSession();
     assert.notEqual((await owner.resolveForDiscovery(TRACK,"certification")).track.artifactSha256,pin.artifactSha256);
   }

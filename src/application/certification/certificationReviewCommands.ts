@@ -93,7 +93,10 @@ export async function setQuestionNeedsReview(
       persistent: true,
       manualRequestId,
       sourceItem,
-      taxonomyOrSkillRefs: [{ axisId: "node", nodeId: exactQuestion.question.nodeId, role: "primary" }],
+      taxonomyOrSkillRefs: [
+        { axisId: "node", nodeId: exactQuestion.question.nodeId, role: "primary" },
+        { axisId: "mental_unit", nodeId: exactQuestion.question.mentalUnitId, role: "primary" },
+      ],
       policyVersion: "bizq04-v1",
       stage: "manual_requested",
       status: "active",

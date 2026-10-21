@@ -1,3 +1,4 @@
+import { learningUnitInCurrentCatalog } from "../../domain/learning/mentalUnitEvidence";
 import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 import type { LearningPlanningPolicy } from "../../content/canonical/planningPolicy";
@@ -82,7 +83,6 @@ type PlanningTrackProjection = Readonly<{
   artifactSha256: string;
   questions: readonly Pick<TrainingQuestionSummary, "questionId" | "trackId" | "nodeId" | "mentalUnitId" | "questionRelation">[];
   completionRule?: PackageCompletionRule;
-  classifyCompletionItem?: import("../../domain/learning/packageCompletionRule").CompletionCreditClassifier;
   getPool(modeId: string): readonly Pick<TrainingQuestionSummary, "questionId" | "trackId" | "nodeId" | "mentalUnitId" | "questionRelation">[];
   getQuestion(questionId: string): Pick<TrainingQuestionSummary, "questionId" | "trackId" | "nodeId" | "mentalUnitId" | "questionRelation"> | undefined;
   getMode(modeId: string): ProductModeConfig;
@@ -122,7 +122,7 @@ export function projectFullGoalWorkload(input: Readonly<{
 
   const uniqueReviews = deduplicateReviews(input.reviews);
   const activeReviews = uniqueReviews.filter((entry) => entry.trackId === input.track.trackId && entry.sourceItem.trackId === input.track.trackId &&
-    entry.sourceItem.contentVersion === input.track.contentVersion && entry.sourceItem.artifactSha256 === input.track.artifactSha256 && isActiveReviewQueueEntry(entry)).sort((left, right) =>
+    isActiveReviewQueueEntry(entry)).sort((left, right) =>
     Date.parse(left.dueAt ?? "") - Date.parse(right.dueAt ?? "") || left.id.localeCompare(right.id));
   const dueReviewMode = input.reviewMode?.trackId === input.track.trackId && input.reviewMode.selection.kind === "evidence_conditioned" && input.reviewMode.selection.evidenceSources.includes("due_queue")
     ? input.reviewMode : undefined;
@@ -144,10 +144,9 @@ export function projectFullGoalWorkload(input: Readonly<{
       activePracticeQuestionsByChapter.set(question.nodeId, questions);
     }
   }
-  const reviewPoolIds = new Set(dueReviewMode ? input.track.getPool(dueReviewMode.modeId).map((question) => question.questionId) : []);
   const dueByChapter = new Map<string, Array<{ entry: ReviewQueueEntry; scope: PlanningScopeRef }>>();
   for (const entry of activeReviews) {
-    const question = input.track.getQuestion(entry.sourceItem.questionId);
+    const question = reviewUnit(entry, input.track);
     if (!question || !entry.dueAt || !Number.isFinite(Date.parse(entry.dueAt))) continue;
     const scope = Object.freeze({ nodeId: question.nodeId, mentalUnitId: question.mentalUnitId });
     const rows = dueByChapter.get(question.nodeId) ?? [];
@@ -176,7 +175,7 @@ export function projectFullGoalWorkload(input: Readonly<{
   const dueSourcesByChapter = new Map<string, PerResponseCost["sources"][number][]>();
   const chapters: ChapterWorkloadProjection[] = [];
   const unknownChapterIds: string[] = [];
-  const uncostedDueReviewIds: string[] = [];
+  const uncostedDueReviewIds: string[] = activeReviews.filter(entry => !reviewUnit(entry, input.track)).map(entry => entry.id);
   const qualityUncertainChapterIds: string[] = [];
   let knownMinMinutes = 0;
   let knownTypicalMinutes = 0;
@@ -214,7 +213,7 @@ export function projectFullGoalWorkload(input: Readonly<{
     const missingCostScopes = practiceScopes.filter((scope) => costByScope.get(scopeKey(scope)) === null);
     const reviewEntries = dueByChapter.get(chapter.nodeId) ?? [];
     const legalPoolDue = dueReviewMode?.selection.kind === "evidence_conditioned" && dueReviewMode.selection.nodeId === chapter.nodeId
-      ? reviewEntries.filter(({ entry }) => reviewPoolIds.has(entry.sourceItem.questionId)) : [];
+      ? reviewEntries.filter(({ scope }) => input.track.getPool(dueReviewMode.modeId).some(question => question.nodeId === scope.nodeId && question.mentalUnitId === scope.mentalUnitId)) : [];
     const dueCredit = Math.min(volumeMissing, legalPoolDue.length);
     const diagnosticResponses = Math.min(Math.max(0, volumeMissing - dueCredit), diagnosticCounts.get(chapter.nodeId) ?? 0);
     const activePracticeQuestions = activePracticeQuestionsByChapter.get(chapter.nodeId) ?? [];
@@ -602,7 +601,7 @@ function projectActiveContinuation(input: Parameters<typeof projectFullGoalWorkl
       const snapshot = occurrence.reviewSourceSnapshot;
       const entry = snapshot && input.reviews.find((candidate) => candidate.id === snapshot.reviewEntryId);
       if (!snapshot || !entry || !matchesReviewSourceSnapshot(snapshot, entry) || entry.trackId !== input.track.trackId ||
-        entry.sourceItem.questionId !== occurrence.item.questionId || entry.sourceItem.artifactSha256 !== input.track.artifactSha256 || !isActiveReviewQueueEntry(entry)) {
+        !reviewMatchesOccurrence(entry, occurrence.item.questionId, input.track) || !isActiveReviewQueueEntry(entry)) {
         return Object.freeze({ kind: "unavailable", reason: "invalid_session" });
       }
       if (!reviewEntryIds.includes(entry.id)) reviewEntryIds.push(entry.id);
@@ -694,7 +693,7 @@ function latestCorrectQuestionIdSet(input: Parameters<typeof projectFullGoalWork
   try {
     const latest = new Map<string, boolean>();
     for (const attempt of qualifyPackageAttempts({ trackId: input.track.trackId, contentVersion: input.track.contentVersion,
-      artifactSha256: input.track.artifactSha256, completionRule: rule, classifyCompletionItem: input.track.classifyCompletionItem }, input.attempts)) {
+      artifactSha256: input.track.artifactSha256, completionRule: rule }, input.attempts)) {
       if (!input.track.getQuestion(attempt.item.questionId)) continue;
       latest.set(attempt.item.questionId, attempt.result.kind === "correct");
     }
@@ -713,3 +712,11 @@ function provenance(sources: readonly Readonly<{ provenance: "authored" | "obser
   return "mixed";
 }
 function empty(kind: "completion_unknown"): FullGoalWorkloadProjection { return Object.freeze({ kind, chapters: Object.freeze([]), dueReviews: Object.freeze([]), sessionDemands: Object.freeze([]), activeContinuation: null, nextPractice: null, requiredResponses: null, dueReviewResponses: 0, newResponses: null, knownMinMinutes: 0, knownTypicalMinutes: 0, knownMaxMinutes: null, unknownChapterIds: Object.freeze([]), uncostedDueReviewIds: Object.freeze([]), qualityUncertainChapterIds: Object.freeze([]), distribution: "median_scope_typical_with_conservative_extremes", provenance: "unavailable", observationCount: 0 }); }
+
+function reviewUnit(entry: ReviewQueueEntry, track: PlanningTrackProjection) {
+  return learningUnitInCurrentCatalog(entry, track);
+}
+function reviewMatchesOccurrence(entry: ReviewQueueEntry, questionId: string, track: PlanningTrackProjection): boolean {
+  const unit = reviewUnit(entry, track), question = track.getQuestion(questionId);
+  return unit !== undefined && question !== undefined && unit.nodeId === question.nodeId && unit.mentalUnitId === question.mentalUnitId;
+}

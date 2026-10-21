@@ -767,8 +767,8 @@
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/application/trainingLifecycle/TrainingLifecycleUseCases.ts": {
-      "description": "Właściciel operacji treningu: uruchamia, aktualizuje i finalizuje sesję przez kanoniczne kontrakty i zapis. Nowe należne powtórki Claude sprawdzają obecność ID w bieżącym katalogu, a ocalałe pytania nadal rozwiązują dokładny dawny artefakt; filtr nie przepisuje trwałej kolejki. Statyczny opis równoległego wycinka CONTENT-HISTORY-01, bez odbioru całego P0.",
-      "reviewedHash": "f4fcf6e6cc3dfafe65b0ab69fb2d85a9f45d5443b89a1a6f14b8868c3021c12f",
+      "description": "Przygotowuje nowe powtórki z bieżącego katalogu według trwałej jednostki. Brak materiału/przypisania pozostawia zapisaną potrzebę jako unavailable. Rozpoczęta sesja zachowuje exact pin i snapshot źródła kolejki; lifecycle nie podmienia jej treści.",
+      "reviewedHash": "3ca30e1957ebf0c4a3167e2e565ffd22a382932f1a22680de028c46c5308f78b",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/trainingLifecycle/ForegroundSessionTimerFacade.ts": {
@@ -803,12 +803,12 @@
     },
     "patternly/src/application/learningMutations/commitTrainingOutcome.ts": {
       "description": "Buduje i zapisuje wynik pojedynczej odpowiedzi wraz z odpowiednimi rekordami nauki.",
-      "reviewedHash": "030ca1398ad6ba3e0dd9b2bbffa0c201cb51ba4d9d82cfa1c8788590a679d5e1",
+      "reviewedHash": "cd0e65e00f70bc04a68275b6481d617b58390746275b4eaa470c170c936cc91f",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/learningMutations/commitTrainingSessionFinalization.ts": {
-      "description": "Finalizuje sesję i jej wynik z regułami cleanup oraz tożsamością użytych treści.",
-      "reviewedHash": "ca6b18d76bdd518967dd8aa9e55785c2cd243e1d1510fc35c17743dffa3640e1",
+      "description": "Finalizuje dokładną sesję i wynik; przejście historycznej potrzeby po odpowiedzi na bieżące pytanie wiąże ze snapshotem kolejki i tą samą jednostką, zachowując oryginalny sourceItem.",
+      "reviewedHash": "eaf7b357f8298ae63ae728f7284c3da69a7a83e47555e6efe30123915733b9da",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/learningMutations/commitGoalPlanAcceptance.ts": {
@@ -817,8 +817,8 @@
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/storage/repositories/mutationJournalRepository.ts": {
-      "description": "Trwały zapis planu i faz journalu; zawiera kontrolę tożsamości polecenia, oczekiwanych rewizji i lease profilu.",
-      "reviewedHash": "841758a2dff4118fdb5eda58c68c560a5cc694335ed2abaabdf36d4505993b0b",
+      "description": "Weryfikuje trwały plan, fazy, rewizje i lease. Zmiana potrzeby między pytaniami wymaga źródłowego snapshotu oraz zgodnej jednostki; recovery odtwarza pierwotny plan bez przepinania źródła.",
+      "reviewedHash": "01cad6d03f751f3fb2d5c9249b47a7628592e5dddf742151aced06bafcbdefdc",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/storage/repositories/foregroundTimerRepository.ts": {
@@ -827,8 +827,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/domain/learning/packageCompletionRule.ts": {
-      "description": "Jednym przyrostowym reduktorem wylicza bieżący postęp i pierwszy exact moment spełnienia reguły; ukończone działy zachowują metryki źródła oraz proweniencję mimo rozbudowy i późniejszych błędów. Niepełny dowód daje unknown.",
-      "reviewedHash": "7e72cb3ee0c497f8cb9919b3a1e3b62f79fc3853a9382f6ccf501e6ffba76df9",
+      "description": "Kwalifikuje niezależne trwałe próby według zapisanej jednostki między bankami. Zachowuje minimum, jakość, cztery różne latest-correct ID na jednostkę i pierwszy moment ukończenia; opcjonalne dostępne stare reguły chronią wcześniejsze ukończenie. Brak wiarygodnego przypisania daje unknown.",
+      "reviewedHash": "1269902380d6dd83cad1d85bf92b910c46be5ce1c781d8a2aa4600ee59c51f90",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/domain/identity/recordFingerprint.ts": {
@@ -842,8 +842,8 @@
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/application/learningPlan/learningEvidenceProjection.ts": {
-      "description": "Oddziela aktywność i powtórki exact od kwalifikowanych prób oraz historycznych milestone; sprawdza czas również prób starego źródła. Odtwarza ukończenia bez zapisu, podmiany referencji lub przeliczania ocen.",
-      "reviewedHash": "4f5a3a77566925c7680552dde30af4dd351d8cf671b205c4b6efd9efb04ffdce",
+      "description": "Wspólna projekcja zachowuje oryginalne próby i potrzeby jednostek między bankami, weryfikuje czas i duplikaty oraz odróżnia brak danych od zera. Exact phantom ID nadal odrzuca; nie przelicza zapisanych wyników.",
+      "reviewedHash": "157b952250471bf634f0f0d0832dc1dc11dcc85bb497df56e72620968b01f96c",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/application/account/premiumStoreMap.ts": {
@@ -1542,7 +1542,7 @@
     "patternly/integration/contracts/content-release/release.lock.json": {
       "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów, lineage producenta oraz wykonane kategorie kontroli. Lokalny start synchronizuje provenance do aktualnego commitu CONTENT; sama zmiana commitu bez zmiany wejść nie zmienia fingerprintu ani payloadów. Schema v4 nie nadaje semantic approval ani zgody na publikację.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "c6411275a3618bb30b7c939f668d2d3704e2338d5dbe60159ada911f4d0d306f"
+      "reviewedHash": "7954574928f9b5027573be1d73caf6f8311fdc462354a339b5dcb4acef54f556"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -1877,15 +1877,30 @@
       "flow": "Konto, Gość i synchronizacja",
       "reviewedHash": "dc604e1f74ed2a8bcd2fc9cb296d397b7df42ae1b8fdc461b49e19d21ea23c79"
     },
-    "patternly/src/content/canonical/completionCredit.ts": {
-      "description": "Porównuje całe pytania ze zweryfikowanych exact pakietów; bound classifier rozdziela identyczny, zmieniony i niedostępny credit bez przepinania historii.",
-      "reviewedHash": "99f67165cbd2bd9f2740481c722e0823d7a1eb0be942945503ac5d94cee6fedd",
-      "flow": "Cel, plan i postęp"
-    },
     "patternly/src/content/canonical/runtimeCatalog.ts": {
-      "description": "Weryfikuje bieżące i istniejące retained pakiety; przed sync projekcją udostępnia classifier identycznych pytań oraz exact źródła reguł ukończenia z neutralnym node/unit resolverem. Historyczny odczyt treści pozostaje ścisły.",
-      "reviewedHash": "ac283935c9d75400db1723da2b4171814761b797a4aecc21583b32a5f2ff0e83",
+      "description": "Weryfikuje bieżący katalog; istniejące retained reguły są opcjonalnym źródłem wcześniejszych ukończeń, bez classifiera równoważności pytań. Dokładny odczyt historii i wznowienie nadal wymagają właściwego artefaktu.",
+      "reviewedHash": "6424cc3d6bb188d9809c0abbdb7426e6bade5f06cbf978c98bef44b2924ddc11",
       "flow": "Treść od producenta do sesji"
+    },
+    "patternly/src/domain/learning/mentalUnitEvidence.ts": {
+      "description": "Odczytuje jednoznaczny node i mental_unit z zapisanych dowodów; legacy lookup dopuszcza wyłącznie własny dokładny bieżący artefakt. Nie przepina historii i nie porównuje treści pytań.",
+      "flow": "Cel, plan i postęp",
+      "reviewedHash": "7744d4700105a1a749ce8a6e755a8248ec8fd0a4c42e3574e3c3a6540fe333cb"
+    },
+    "patternly/src/application/canonical/canonicalFamilyMechanics.ts": {
+      "description": "Wspólne dowody pytań, track-scoped odczyt nauki oraz deterministyczny dobór jednego bieżącego pytania do jednego źródła powtórki. Dokładne odnośniki prób pozostają bez zmian.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "ee73a50870bd557cdb85be2e4480be9f706f392e0f1234d01ffa14ef402bf88c"
+    },
+    "patternly/src/application/reviewQueueQueries.ts": {
+      "description": "Wyświetla bieżący materiał dla zapisanej jednostki; brak materiału lub przypisania daje unavailable konkretnego wiersza zamiast przerwania odczytu całej kolejki. Historia i termin pozostają w źródłowym rekordzie.",
+      "flow": "Cel, plan i postęp",
+      "reviewedHash": "5217aedd483ccd8a7eb2b8523a37997ee462030cd070603ad0a9a3dcd257112f"
+    },
+    "patternly/src/application/coding-interview/codingProgressProjection.ts": {
+      "description": "Projektuje praktykę i skuteczność według zapisanych jednostek i node; dodanie/zastąpienie pytania w tej samej jednostce nie zeruje jej pokrycia. Nie przyznaje nowej jednostce postępu poprzedniej.",
+      "flow": "Cel, plan i postęp",
+      "reviewedHash": "d784c1a19a3ffcdd7dccff68a502d63b69327296a9a8594e36be804aa1c98d24"
     }
   },
   "flows": [
@@ -1910,7 +1925,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "ac7d6f6a421c7aec299d88d48a5e482cbd4c63b273f84e93ecf4ad2a76f5eaea"
+      "reviewedDigest": "aefbcdf6f1beb0a484fc4636370149f0174112aa8e1db1f19f2ccbd57cfce461"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -1920,7 +1935,7 @@
         "patternly-content",
         "patternly-backend/src/modules/content"
       ],
-      "reviewedDigest": "d5d87ec427dcfafeec0596a5b6cbdbeffa692e5222868dbd13558f0744434e05"
+      "reviewedDigest": "2c1cc8d18569ca2254a6bb0161dfed34619a9f97a744582e683db162876ac32b"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -1935,7 +1950,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "cd9284c8fe0802fb659f8dc0812757016908b3a0f906269f742dd4b447d5839f"
+      "reviewedDigest": "759a8af860ccb0337462cab432722bc352131b128eaa2e1a0b7810514ed821c9"
     },
     {
       "name": "Cel, plan i postęp",
@@ -1946,7 +1961,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "d01b0a89b72a8ea49ac53441c1d10b88924d564e8593c2a3b05f73a836dbd23e"
+      "reviewedDigest": "b071d9127a00b06c4d24324384536f4e56d947ff2ad77908a1ae8b3000286c83"
     },
     {
       "name": "Premium i zakup",
@@ -1970,7 +1985,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "24bcb2c12b5480b2d3384bb370a7dd8cba097e2f4e92848474b79da65a24a757"
+      "reviewedDigest": "b4305e169cdf1d22d54e4265fd28a48b019e178b44e7bf28f028ee11f39bbeac"
     },
     {
       "name": "Witryna, demo i panel",

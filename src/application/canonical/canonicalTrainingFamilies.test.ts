@@ -731,11 +731,11 @@ test("only declared due-queue modes can advance a scheduled cycle across all fam
   }
 });
 
-test("resume and query boundaries reject tampering, foreign attempts and old pins", async () => {
+test("resume rejects tampering while review queries retain due rows with historical source pins", async () => {
   const catalog = await catalogPromise; const track = catalog.getTrack("google-cloud-associate-cloud-engineer"); const runtime = createCanonicalTrainingFamilyRuntime(track); const prepared = await runtime.prepare({ trackId: track.trackId, modeId: "certification-diagnostic-baseline", request: { sessionId: "guard", requestedLength: 40 }, attempts: [], reviews: [], now: NOW });
   const tampered = { ...prepared.session, configurationSnapshot: { ...prepared.session.configurationSnapshot, feedbackMode: "atSessionEnd" } }; await assert.rejects(runtime.validateResume({ session: tampered, draft: null }));
   await assert.rejects(runtime.finalizePractice({ session: prepared.session, attempts: [], now: NOW })); await assert.rejects(runtime.queryReview({ trackId: "foreign", reviews: [], now: NOW }));
-  const old = reviewFor(prepared.session.itemOrder[0]!.item, NOW); const view = await runtime.queryReview({ trackId: track.trackId, reviews: [old, { ...old, id: "old-artifact", sourceItem: { ...old.sourceItem, artifactSha256: "f".repeat(64) } }], now: NOW }); assert.equal((view as { due: readonly ReviewQueueEntry[] }).due.length, 1);
+  const old = reviewFor(prepared.session.itemOrder[0]!.item, NOW); const view = await runtime.queryReview({ trackId: track.trackId, reviews: [old, { ...old, id: "old-artifact", sourceItem: { ...old.sourceItem, artifactSha256: "f".repeat(64) } }], now: NOW }); assert.equal((view as { due: readonly ReviewQueueEntry[] }).due.length, 2);
 });
 
 test("Claude Focus persists selectable feedback, scores single and multi-select, and finalizes complete evidence", async () => {

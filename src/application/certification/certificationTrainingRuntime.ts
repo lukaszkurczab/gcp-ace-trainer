@@ -7,9 +7,10 @@ import { getProductSimulationModeConfig, ProductModeUnavailableError, resolveReq
 import { consumeManualRequest, createMaintenanceCycle, createOrUpdateErrorCycle, transitionQualifiedSuccess } from "../../domain/learning/reviewCycleTransition";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
+import { sameLearningUnit } from "../../domain/learning/mentalUnitEvidence";
 import { isCanonicalOptionOrder, prepareCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
 import { prepareCanonicalPlanOccurrences, buildCanonicalSessionPlan, validateCanonicalSessionPlan, applyCanonicalPlanReplacements, CANONICAL_TRAINING_RELEASE } from "../canonical/canonicalSessionPlanMechanics";
-import { createCanonicalAttempt, scopeAttemptsToExactCatalog, scopeReviewsToExactCatalog } from "../canonical/canonicalFamilyMechanics";
+import { canonicalQuestionReviewEvidence, createCanonicalAttempt, limitQuestionsToReviewNeeds, reviewNeedForQuestion, sameCurrentReviewUnit, scopeAttemptsToLearningTrack, scopeReviewsToLearningTrack } from "../canonical/canonicalFamilyMechanics";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
 import { qualifyPackageAttempts } from "../../domain/learning/packageCompletionRule";
 import { allocateWeightedBlueprintQuotas } from "../../content/canonical/weightedBlueprintAllocation";
@@ -79,10 +80,12 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     const casePolicy: Record<string, string> = blocks?.recipes.length ? { caseBlockPolicy: CASE_BLOCK_POLICY } : reviewRecipes.length ? { caseReviewPolicy: CASE_REVIEW_POLICY } : {};
     const feedbackMode = feedbackModeFor(mode, request.feedbackTiming);
     const usesReviewQueue = mode.selection.kind === "evidence_conditioned" && (reviewSource === "due_queue" || reviewSource === "manual_request");
+    const reviewCandidateIds = new Set(source.map((question) => question.questionId));
     const orderedItems = questions.map((question) => {
       const item = ref(this.catalog, question);
-      const sourceReview = usesReviewQueue ? input.reviews.find((entry) => this.isSelectedReviewEntry(entry, reviewSource!, input.now) && resolvedContentRefsEqual(entry.sourceItem, item)) : undefined;
-      if (usesReviewQueue && !sourceReview) throw new Error("Certification review selection lost its exact source before the plan snapshot.");
+      const isSelectedReviewCandidate = reviewCandidateIds.has(question.questionId);
+      const sourceReview = usesReviewQueue && isSelectedReviewCandidate ? this.reviewForQuestion(question, source, item, input.reviews, reviewSource!, input.now) : undefined;
+      if (usesReviewQueue && isSelectedReviewCandidate && !sourceReview) throw new Error("Certification review selection lost its source unit before the plan snapshot.");
       return { item, ...(sourceReview ? { reviewSourceSnapshot: createReviewSourceSnapshot(sourceReview, reviewSource!, input.now) } : {}) };
     });
     const sessionId = requireSessionId(input.request);
@@ -133,7 +136,9 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     const attempt = await createCanonicalAttempt({ session: input.session, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response: input.response, result,
       reviewEvidence: this.caseEvidence(input.session, question, occurrence.item, input.attempts), answeredAt: input.now, committedAt: input.now });
     if (!isIndependentCaseAttempt(attempt) && result.kind === "correct") return Object.freeze({ attempt, session: await this.resolveReinsertions(input.session, [...input.attempts, attempt]), reviewMutations: [], reviewBaseline: input.reviews });
-    const matching = input.reviews.filter((entry) => entry.trackId === input.session.trackId && resolvedContentRefsEqual(entry.sourceItem, occurrence.item));
+    const matching = occurrence.reviewSourceSnapshot
+      ? input.reviews.filter((entry) => entry.id === occurrence.reviewSourceSnapshot!.reviewEntryId && (sameLearningUnit(entry, attempt.reviewEvidence) || resolvedContentRefsEqual(entry.sourceItem, attempt.reviewEvidence.sourceItem)))
+      : input.reviews.filter((entry) => entry.trackId === input.session.trackId && resolvedContentRefsEqual(entry.sourceItem, occurrence.item));
     const prior = matching.find(isActiveReviewQueueEntry);
     const completed = matching.some((entry) => entry.status === "completed");
     const dueSnapshot = occurrence.reviewSourceSnapshot;
@@ -218,8 +223,8 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     if (input.session.configurationSnapshot.timer === "absoluteDeadline" && Date.parse(input.draft.updatedAt) >= Date.parse(String(input.session.configurationSnapshot.timerDeadlineAt))) throw new Error("Certification simulation draft is after its immutable deadline.");
   }
 
-  async queryDashboard(input: Parameters<TrainingFamilyRuntime["queryDashboard"]>[0]): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); const reviews = scopeReviewsToExactCatalog(input.reviews, this.catalog); const attempts = scopeAttemptsToExactCatalog(input.attempts, this.catalog); return Object.freeze({ trackId: input.trackId, activeSessionId: input.activeSession?.trackId === input.trackId && input.activeSession.artifactSha256 === this.catalog.artifactSha256 ? input.activeSession.id : undefined, attemptCount: attempts.length, dueReviewCount: reviews.filter((entry) => this.isSelectedReviewEntry(entry, "due_queue", input.now)).length, manualReviewCount: reviews.filter((entry) => this.isSelectedReviewEntry(entry, "manual_request", input.now)).length }); }
-  async queryReview(input: Parameters<TrainingFamilyRuntime["queryReview"]>[0]): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); return Object.freeze({ trackId: input.trackId, due: Object.freeze(scopeReviewsToExactCatalog(input.reviews, this.catalog).filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt <= input.now)) }); }
+  async queryDashboard(input: Parameters<TrainingFamilyRuntime["queryDashboard"]>[0]): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); const reviews = scopeReviewsToLearningTrack(input.reviews, this.catalog); const attempts = scopeAttemptsToLearningTrack(input.attempts, this.catalog); return Object.freeze({ trackId: input.trackId, activeSessionId: input.activeSession?.trackId === input.trackId && input.activeSession.artifactSha256 === this.catalog.artifactSha256 ? input.activeSession.id : undefined, attemptCount: attempts.length, dueReviewCount: reviews.filter((entry) => this.isSelectedReviewEntry(entry, "due_queue", input.now)).length, manualReviewCount: reviews.filter((entry) => this.isSelectedReviewEntry(entry, "manual_request", input.now)).length }); }
+  async queryReview(input: Parameters<TrainingFamilyRuntime["queryReview"]>[0]): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); return Object.freeze({ trackId: input.trackId, due: Object.freeze(scopeReviewsToLearningTrack(input.reviews, this.catalog).filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt <= input.now)) }); }
 
   private caseFor(sessionOrId: TrainingSession | string): CaseRecipe {
     if (this.catalog.trackId !== CASE_TRACK_ID) throw new Error("Single-case capability is unavailable.");
@@ -300,12 +305,21 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
   private mode(modeId: string): ProductModeConfig { try { return this.catalog.getMode(modeId); } catch { throw new ProductModeUnavailableError(`Certification mode ${this.catalog.trackId}/${modeId} is unavailable.`); } }
   private eligibleEvidence(mode: ProductModeConfig, reviews: readonly ReviewQueueEntry[], now: string, source: string | undefined): readonly TrainingQuestionSummary[] {
     if (mode.selection.kind !== "evidence_conditioned") return this.catalog.getPool(mode.modeId);
-    const ids = new Set(scopeReviewsToExactCatalog(reviews, this.catalog).filter((entry) => source === "due_queue" ? this.isSelectedReviewEntry(entry, source, now) : source === "manual_request" ? this.isSelectedReviewEntry(entry, source, now) : false).map((entry) => entry.sourceItem.questionId));
     const pool = this.catalog.getPool(mode.modeId);
-    if (this.catalog.trackId !== CASE_TRACK_ID || source !== "due_queue" || !this.usesDueQueueReview(mode.modeId)) return pool.filter(question => ids.has(question.questionId));
+    const selected = reviews.filter((entry) => source === "due_queue" ? this.isSelectedReviewEntry(entry, source, now) : source === "manual_request" ? this.isSelectedReviewEntry(entry, source, now) : false);
+    const matchesCurrentUnit = (question: TrainingQuestionSummary) => {
+      const evidence = canonicalQuestionReviewEvidence(this.catalog, question);
+      return selected.some((entry) => sameCurrentReviewUnit(entry, evidence, this.catalog));
+    };
+    if (this.catalog.trackId !== CASE_TRACK_ID || source !== "due_queue" || !this.usesDueQueueReview(mode.modeId)) return limitQuestionsToReviewNeeds(pool.filter(matchesCurrentUnit), selected, this.catalog);
     // Exact due pins may belong to any Claude node. Lifecycle checks actual-node
-    // entitlement before durable start; selection never substitutes current content.
-    return this.catalog.questions.filter(question => ids.has(question.questionId));
+    // entitlement before durable start; current content supplies the question.
+    return limitQuestionsToReviewNeeds(this.catalog.questions.filter(matchesCurrentUnit), selected, this.catalog);
+  }
+  private reviewForQuestion(question: TrainingQuestionSummary, candidates: readonly TrainingQuestionSummary[], item: ResolvedContentRef, reviews: readonly ReviewQueueEntry[], source: "due_queue" | "manual_request", now: string): ReviewQueueEntry | undefined {
+    const evidence = canonicalQuestionReviewEvidence(this.catalog, question);
+    const selected = reviews.filter((entry) => this.isSelectedReviewEntry(entry, source, now) && sameCurrentReviewUnit(entry, evidence, this.catalog));
+    return reviewNeedForQuestion(question, candidates, selected, this.catalog);
   }
   private latestUncovered(pool: readonly TrainingQuestionSummary[], attempts: readonly TrainingAttempt<unknown>[]): ReadonlySet<string> | undefined {
     if (this.catalog.completionRule?.ruleVersion !== 3) return undefined;

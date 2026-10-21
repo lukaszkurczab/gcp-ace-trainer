@@ -1,4 +1,6 @@
 import { isActiveReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
+import { learningUnitIdentity } from "../../domain/learning/mentalUnitEvidence";
+import { canonicalQuestionReviewEvidence, sameCurrentReviewUnit } from "../canonical/canonicalFamilyMechanics";
 import { CASE_TRACK_ID, sessionCaseStates } from "../../domain/learning/caseEvidence";
 import { indexCaseRecipes } from "../../content/canonical/caseRecipe";
 import {
@@ -287,21 +289,29 @@ export class TrainingLifecycleUseCases {
       : { sessionId };
     if ((request as Record<string, unknown>).caseId !== undefined && (request as Record<string, unknown>).preset !== "single_case") throw new TrainingApplicationFailure("invalid_response", "A case identity requires the single-case preset.");
     const [attempts, reviews, sessions] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews(), input.trackId === "claude-certified-architect-professional-certification" && ["certification-focus-practice", "certification-weak-area-review", "certification-quick-review"].includes(input.modeId) ? this.ports.repositories.getHistory() : Promise.resolve([])]);
-    const dueReview = input.trackId === "claude-certified-architect-professional-certification" && ["certification-weak-area-review", "certification-quick-review"].includes(input.modeId) && ((request as Record<string, unknown>).reviewSource === "due_queue" || (request as Record<string, unknown>).reviewSource === undefined);
-    // Current membership controls new review eligibility; surviving reviews still
-    // resolve their original exact artifact. Never rewrite the durable queue.
-    const current = dueReview ? await this.run("missing_content", () => this.ports.packages.resolveForDiscovery(input.trackId, this.trackRegistration(input.trackId).familyId)) : undefined;
+    const reviewSource = (request as Record<string, unknown>).reviewSource;
+    const dueReview = isCanonicalDueReviewMode(input.modeId) && (reviewSource === "due_queue" || reviewSource === undefined);
+    const reviewPreparation = isCanonicalDueReviewMode(input.modeId) && (dueReview || reviewSource === "manual_request");
+    // Due needs are attributed to durable learning units. Resolve new content from
+    // discovery, while retaining the selected queue entry as the source snapshot.
+    const current = reviewPreparation ? await this.run("missing_content", () => this.ports.packages.resolveForDiscovery(input.trackId, this.trackRegistration(input.trackId).familyId)) : undefined;
     if (current && (current.track.trackId !== input.trackId || current.runtime.familyId !== this.trackRegistration(input.trackId).familyId)) throw new TrainingApplicationFailure("unknown_family", "Current review content does not own the requested track family.");
-    const eligibleReviews = current ? reviews.filter(entry => entry.trackId === input.trackId && entry.sourceItem.trackId === input.trackId && current.track.getQuestion(entry.sourceItem.questionId) !== undefined) : reviews;
     const now = this.ports.clock.now();
-    const oldestDue = dueReview ? eligibleReviews.filter(entry => entry.trackId === input.trackId && entry.sourceItem.trackId === input.trackId && isActiveReviewQueueEntry(entry) && entry.dueAt && Date.parse(entry.dueAt) <= Date.parse(now)).sort((left, right) => Date.parse(left.dueAt!) - Date.parse(right.dueAt!) || (left.id < right.id ? -1 : left.id > right.id ? 1 : 0))[0] : undefined;
-    const resolution = oldestDue
-      ? await this.run("missing_content", () => this.ports.packages.resolveExactArtifact(oldestDue.sourceItem))
-      : await this.resolveRuntimeForPreparation(input.trackId, input.modeId, requestedNodeId(request), typeof (request as Record<string, unknown>).caseId === "string" ? (request as Record<string, unknown>).caseId as string : undefined);
+    const eligibleReviews = current ? reviews.filter(entry => entry.trackId === input.trackId && entry.sourceItem.trackId === input.trackId && isActiveReviewQueueEntry(entry) && current.track.questions.some(question => {
+      const evidence = canonicalQuestionReviewEvidence(current.track, question);
+      return sameCurrentReviewUnit(entry, evidence, current.track);
+    })) : reviews;
+    const oldestDue = dueReview ? reviews.filter(entry => entry.trackId === input.trackId && entry.sourceItem.trackId === input.trackId && isActiveReviewQueueEntry(entry) && entry.dueAt && Number.isFinite(Date.parse(entry.dueAt)) && Date.parse(entry.dueAt) <= Date.parse(now)).sort((left, right) => Date.parse(left.dueAt!) - Date.parse(right.dueAt!) || left.id.localeCompare(right.id))[0] : undefined;
+    if (current && oldestDue && !eligibleReviews.some(entry => entry.id === oldestDue.id)) {
+      const unavailable = learningUnitIdentity(oldestDue);
+      throw new TrainingApplicationFailure("missing_content", unavailable
+        ? "The oldest due learning unit has no current question. Its review remains saved and unavailable."
+        : "The oldest due review has no reliable learning-unit attribution. Its review remains saved and unavailable.");
+    }
+    const resolution = current ?? await this.resolveRuntimeForPreparation(input.trackId, input.modeId, requestedNodeId(request), typeof (request as Record<string, unknown>).caseId === "string" ? (request as Record<string, unknown>).caseId as string : undefined);
     if (resolution.track.trackId !== input.trackId || resolution.runtime.familyId !== this.trackRegistration(input.trackId).familyId) throw new TrainingApplicationFailure("unknown_family", "Resolved due content does not own the requested track family.");
-    if (oldestDue && (resolution.track.contentVersion !== oldestDue.sourceItem.contentVersion || resolution.track.artifactSha256 !== oldestDue.sourceItem.artifactSha256)) throw new TrainingApplicationFailure("version_mismatch", "Due Review requires its original exact content artifact.");
     const runtime = resolution.runtime;
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, sessions, attempts: this.forResolvedContent(attempts, resolution.track), reviews: this.forResolvedContent(eligibleReviews, resolution.track), now }));
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, sessions, attempts: this.forResolvedContent(attempts, resolution.track), reviews: current ? eligibleReviews : this.forResolvedContent(eligibleReviews, resolution.track), now }));
     if (prepared.session.id !== sessionId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime changed the lifecycle-owned session identity.");
     if (prepared.session.trackId !== input.trackId || prepared.firstOccurrence.trackId !== input.trackId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime prepared a session outside the requested track.");
     await this.assertSessionPackage(prepared.session, resolution.track);
@@ -342,7 +352,7 @@ export class TrainingLifecycleUseCases {
     let outcome;
     try {
       const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-      outcome = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts: this.forResolvedContent(attempts, session), reviews: this.forResolvedContent(reviews, session), now: this.ports.clock.now() }));
+      outcome = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts: this.forResolvedContent(attempts, session), reviews: this.reviewsForSession(reviews, session), now: this.ports.clock.now() }));
     } catch (error) {
       this.operationStates.set(session.id, error instanceof TrainingApplicationFailure && error.code === "invalid_response" ? practice("unanswered") : practiceRecovery("submit_journal_failed"));
       throw error;
@@ -1060,7 +1070,9 @@ export class TrainingLifecycleUseCases {
     const resolution = await this.run("missing_content", () => this.ports.packages.resolveForDiscovery(trackId, registration.familyId));
     const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const input = { trackId, attempts: this.forResolvedContent(attempts.filter((attempt) => attempt.trackId === trackId), resolution.track), reviews: this.forResolvedContent(reviews.filter((review) => review.trackId === trackId), resolution.track), now: this.ports.clock.now() };
+    // Dashboards and due queues describe durable track learning state. Exact
+    // source pins remain attached to each record for history and validation.
+    const input = { trackId, attempts: attempts.filter((attempt) => attempt.trackId === trackId), reviews: reviews.filter((review) => review.trackId === trackId), now: this.ports.clock.now() };
     if (method === "queryDashboard") {
       const activeSession = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
       return this.run("persistence_failure", () => runtime.queryDashboard({ ...input, activeSession: activeSession?.trackId === trackId && activeSession.status === "active" ? activeSession : null }));
@@ -1174,6 +1186,13 @@ export class TrainingLifecycleUseCases {
     });
   }
 
+  private reviewsForSession(records: readonly import("../../domain").ReviewQueueEntry[], session: TrainingSession): readonly import("../../domain").ReviewQueueEntry[] {
+    if (session.itemOrder.some((occurrence) => occurrence.reviewSourceSnapshot !== undefined)) {
+      return records.filter((entry) => entry.trackId === session.trackId && entry.sourceItem.trackId === session.trackId);
+    }
+    return this.forResolvedContent(records, session);
+  }
+
   private serializeSessionMutation<T>(sessionId: string, operation: () => Promise<T>, allowUncertain = false): Promise<T> {
     const previous = this.sessionMutationLanes.get(sessionId) ?? Promise.resolve();
     const result = previous.catch(() => undefined).then(async () => {
@@ -1196,6 +1215,11 @@ export class TrainingLifecycleUseCases {
 
   private async run<T>(code: ApplicationFailureCode, operation: () => Promise<T>): Promise<T> { try { return await operation(); } catch (error) { if (error instanceof TrainingApplicationFailure) throw error; throw new TrainingApplicationFailure(code, "Canonical training operation failed.", error); } }
   private runSync<T>(code: ApplicationFailureCode, operation: () => T): T { try { return operation(); } catch (error) { if (error instanceof TrainingApplicationFailure) throw error; throw new TrainingApplicationFailure(code, "Canonical training operation failed.", error); } }
+}
+
+function isCanonicalDueReviewMode(modeId: string): boolean {
+  return modeId === "certification-weak-area-review" || modeId === "certification-quick-review" ||
+    modeId === "coding-interview-weak-area-review" || modeId === "design-interview-weak-area-review";
 }
 
 function requestedNodeId(request: unknown): string | undefined {

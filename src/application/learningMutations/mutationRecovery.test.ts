@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createForegroundTimerState, createTrainingSessionResult } from "../../domain";
+import { createForegroundTimerState, createReviewSourceSnapshot, createTrainingAttempt, createTrainingSession, createTrainingSessionResult } from "../../domain";
 import { recoverPendingMutation } from "./recoverPendingMutation";
 import { JournalVerificationError, StorageReadError } from "../../storage/errors";
 import { MutationCommitFailure } from "../mutationBoundary";
@@ -13,6 +13,7 @@ import { installMemoryStorage, attempt, journal, review, session } from "../../t
 import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { transitionQualifiedSuccess } from "../../domain/learning/reviewCycleTransition";
 
 
 function outcome() { return journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_review_entry", record: review() }, { kind: "put_session", record: session() }]); }
@@ -73,6 +74,48 @@ test("accepts a review update that retains its original durable source identity"
   installMemoryStorage(); const prior = { ...review("stable-review", "older-attempt"), sourceSessionId: "older-session" }; await addReviewQueueItems([prior], productionTrackAdmissionContext);
   const updatedExistingReview = { ...prior, dueAt: "2026-07-16T10:00:00.000Z" };
   await assert.doesNotReject(() => persistMutationJournal(journal([{ kind: "put_attempt", record: attempt() }, { kind: "update_review_entry", record: updatedExistingReview, transitionId: attempt().id }, { kind: "put_session", record: session() }]), productionLearningDataAdmissionContext));
+});
+test("due-unit transition accepts current question B and retains the durable queue source A", async () => {
+  installMemoryStorage();
+  const original = { ...review("unit-review", "attempt-old"), sourceSessionId: "session-old", sourceItem: { ...review().sourceItem, questionId: "question-a", contentVersion: "v1" },
+    taxonomyOrSkillRefs: [{ axisId: "node", nodeId: "node-u", role: "primary" }, { axisId: "mental_unit", nodeId: "unit-u", role: "primary" }] };
+  await addReviewQueueItems([original], productionTrackAdmissionContext);
+  const itemB = { ...original.sourceItem, questionId: "question-b", contentVersion: "v2", artifactSha256: "c".repeat(64) };
+  const snapshot = createReviewSourceSnapshot(original, "due_queue");
+  const active = createTrainingSession({ ...session(), modeId: "coding-interview-weak-area-review", contentVersion: "v2", artifactSha256: itemB.artifactSha256,
+    itemOrder: [{ occurrenceId: "occurrence-1", item: itemB, reviewSourceSnapshot: snapshot }] });
+  const attemptB = createTrainingAttempt({ ...attempt("attempt-b", active.id), modeId: active.modeId, item: itemB,
+    reviewEvidence: { sourceItem: itemB, taxonomyOrSkillRefs: original.taxonomyOrSkillRefs }, answeredAt: "2026-07-15T10:00:01.000Z", committedAt: "2026-07-15T10:00:01.000Z" });
+  const updatedOriginal = transitionQualifiedSuccess(original, attemptB);
+  const base = journal([{ kind: "put_attempt", record: attemptB }, { kind: "update_review_entry", record: updatedOriginal, transitionId: attemptB.id }, { kind: "put_session", record: active }]);
+  const { captureMutationPhysicalWrites, createMutationPlanFingerprint } = await import("../../storage/repositories/mutationJournalRepository");
+  const { journalId, planFingerprint: _oldFingerprint, ...priorPlan } = base;
+  void _oldFingerprint;
+  const plan = { ...priorPlan, artifactSha256: itemB.artifactSha256, physicalWrites: captureMutationPhysicalWrites(base.writes, productionTrackAdmissionContext) };
+  const record = { journalId, ...plan, planFingerprint: createMutationPlanFingerprint(plan) };
+  await persistMutationJournal(record, productionLearningDataAdmissionContext);
+  await recoverPendingMutation();
+  const saved = (await getReviewQueueItems(productionTrackAdmissionContext)).value[0]!;
+  assert.equal(saved.id, original.id);
+  assert.deepEqual(saved.sourceItem, original.sourceItem);
+  assert.deepEqual(saved.taxonomyOrSkillRefs, original.taxonomyOrSkillRefs);
+  assert.equal(saved.dueAt, updatedOriginal.dueAt);
+});
+test("cross-question review update rejects a different unit or a missing source snapshot", async () => {
+  for (const mismatch of ["unit", "snapshot"] as const) {
+    installMemoryStorage();
+    const original = { ...review("unit-review", "attempt-old"), sourceSessionId: "session-old", sourceItem: { ...review().sourceItem, questionId: "question-a", contentVersion: "v1" },
+      taxonomyOrSkillRefs: [{ axisId: "node", nodeId: "node-u", role: "primary" }, { axisId: "mental_unit", nodeId: "unit-u", role: "primary" }] };
+    await addReviewQueueItems([original], productionTrackAdmissionContext);
+    const itemB = { ...original.sourceItem, questionId: "question-b", contentVersion: "v2" };
+    const active = createTrainingSession({ ...session(), modeId: "coding-interview-weak-area-review", contentVersion: "v2",
+      itemOrder: [{ occurrenceId: "occurrence-1", item: itemB, ...(mismatch === "snapshot" ? {} : { reviewSourceSnapshot: createReviewSourceSnapshot(original, "due_queue") }) }] });
+    const refs = mismatch === "unit" ? [{ axisId: "node", nodeId: "node-u", role: "primary" }, { axisId: "mental_unit", nodeId: "unit-other", role: "primary" }] : original.taxonomyOrSkillRefs;
+    const attemptB = createTrainingAttempt({ ...attempt("attempt-b", active.id), modeId: active.modeId, item: itemB, reviewEvidence: { sourceItem: itemB, taxonomyOrSkillRefs: refs } });
+    const updated = transitionQualifiedSuccess(original, attemptB);
+    await assert.rejects(() => persistMutationJournal(journal([{ kind: "put_attempt", record: attemptB }, { kind: "update_review_entry", record: updated, transitionId: attemptB.id }, { kind: "put_session", record: active }]), productionLearningDataAdmissionContext));
+    assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, [original]);
+  }
 });
 test("rejects a fabricated historical source on a nonexistent review identity", async () => { installMemoryStorage(); const fabricated = { ...review("missing-review", "older-attempt"), sourceSessionId: "older-session" }; await assert.rejects(() => persistMutationJournal(journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_review_entry", record: fabricated }, { kind: "put_session", record: session() }]), productionLearningDataAdmissionContext)); });
 test("rejects an explicit review update when its durable identity does not exist", async () => { installMemoryStorage(); const missing = { ...review("missing-update", "older-attempt"), sourceSessionId: "older-session" }; await assert.rejects(() => persistMutationJournal(journal([{ kind: "put_attempt", record: attempt() }, { kind: "update_review_entry", record: missing, transitionId: attempt().id }, { kind: "put_session", record: session() }]), productionLearningDataAdmissionContext)); });

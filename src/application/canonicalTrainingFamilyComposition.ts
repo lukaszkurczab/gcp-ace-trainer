@@ -74,7 +74,6 @@ export function createTrainingCatalog(track: CanonicalTrackRuntime): TrainingCat
     contentReleaseId: track.contentReleaseId,
     questions,
     ...(track.completionRule ? { completionRule: track.completionRule } : {}),
-    ...(track.classifyCompletionItem ? { classifyCompletionItem: track.classifyCompletionItem } : {}),
     ...(track.completionSources ? { completionSources: track.completionSources } : {}),
     ...(track.simulationProfiles ? { simulationProfiles: track.simulationProfiles } : {}),
     ...(track.planningPolicy ? { planningPolicy: track.planningPolicy } : {}),
