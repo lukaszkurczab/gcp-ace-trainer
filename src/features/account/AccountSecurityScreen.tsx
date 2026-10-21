@@ -15,13 +15,24 @@ import type { RootStackParamList } from "../../navigation/types";
 import { useThemedStyles } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
 import { getAccountSecurityErrorAfterEdit, getAccountSecurityErrorField } from "./accountSecurityFieldErrors";
-import { RecoveryOperationPanel } from "./RecoveryOperationPanel";
-import { getRecoveryOperationPresentation } from "./recoveryOperationPresentation";
+import { readAccountSecurityRouteScreen } from "./accountSecurityRoute";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ACCOUNT_SECURITY>;
 
 export function AccountSecurityScreen(props: Props) {
-  return <SecurityForm key={props.route.params.screen} {...props} />;
+  const screen = readAccountSecurityRouteScreen(props.route.params);
+  if (!screen) return <UnavailableSecurityRoute navigation={props.navigation} />;
+  return <SecurityForm key={screen} {...props} />;
+}
+
+function UnavailableSecurityRoute({ navigation }: Pick<Props, "navigation">) {
+  const { t } = useTranslation("settings");
+  return (
+    <Screen backAction={{ onPress: () => navigation.goBack() }} edges={["top", "bottom"]}>
+      <ScreenHeader title={t("securityOptionUnavailable")} />
+      <InfoBlock body={t("securityOptionUnavailableDescription")} title={t("securityOptionUnavailable")} testID="security-route-unavailable" tone="warning" />
+    </Screen>
+  );
 }
 
 function SecurityForm({ route, navigation }: Props) {
@@ -46,12 +57,10 @@ function SecurityForm({ route, navigation }: Props) {
   const configuration = useRef(readFirebaseClientConfiguration()).current;
   const user = "user" in account.state ? account.state.user : null;
   const authenticated = account.state.kind === "authenticated";
-  const recoveryOperation = account.recoveryOperation;
-  const recoveryPresentation = getRecoveryOperationPresentation(recoveryOperation);
   const usesPassword = user?.providers.includes("password") ?? false;
   const usesApple = !usesPassword && Platform.OS === "ios" && (user?.providers.includes("apple") ?? false);
   const usesGoogle = !usesPassword && !usesApple && (user?.providers.includes("google") ?? false);
-  const title = mode === "delete" ? ta("deleteAccount") : t(mode === "recovery" ? "recoveryCodes" : mode === "email" ? "changeEmail" : mode === "export" ? "exportAuthentication" : mode === "privacy" ? "privacyAuthentication" : "changePassword");
+  const title = mode === "delete" ? ta("deleteAccount") : t(mode === "email" ? "changeEmail" : mode === "export" ? "exportAuthentication" : mode === "privacy" ? "privacyAuthentication" : "changePassword");
 
   const revoke = useCallback(() => {
     epoch.current += 1;
@@ -127,13 +136,11 @@ function SecurityForm({ route, navigation }: Props) {
     if (mode === "password" && nextValue !== confirmation) { setFailure("passwordMismatch"); return; }
     revoke();
     void run(() => mode === "delete" ? account.prepareDeletion(credentials)
-      : mode === "recovery" ? account.issueRecoveryCodes(credentials)
       : mode === "export" || mode === "privacy" ? account.reauthenticateForExport(credentials)
       : mode === "email" ? account.requestEmailChange(credentials, requestedEmail)
       : account.changePassword(credentials, nextValue), (result) => {
       setPassword("");
       if (mode === "delete" && result.next === "deletionAuthorized") setPrepared(true);
-      else if (mode === "recovery" && result.next === "recoveryCodesIssued" && result.recoveryCodes?.length === 10) { setSuccess(null); }
       else if ((mode === "export" || mode === "privacy") && result.next === "authenticated") navigation.goBack();
       else if (mode === "email" && result.next === "verificationSent" && requestedUid !== null) navigation.replace(ROUTES.ACCOUNT_EMAIL_CHANGE_PENDING, { requestedEmail, uid: requestedUid });
       else if (mode === "password" && result.next === "authenticated") { setNextValue(""); setConfirmation(""); setSuccess("passwordChanged"); }
@@ -150,8 +157,6 @@ function SecurityForm({ route, navigation }: Props) {
       ? ta("passwordMismatch")
     : failure === "weakPassword"
       ? ta("weakPassword")
-      : mode === "recovery" && failure === "invalidCredential"
-        ? ta("invalidCredential")
       : t("emailChangePasswordError");
   const field = (label: string, value: string, setter: (value: string) => void, id: string, secret: boolean) => (
     <View style={styles.field}>
@@ -172,27 +177,17 @@ function SecurityForm({ route, navigation }: Props) {
           {mode === "delete" ? !prepared ? <View style={styles.deleteWarning} testID="security-delete-warning">
             <Text accessibilityRole="header" maxFontSizeMultiplier={2} style={styles.deleteWarningTitle}>{t("deletePermanent")}</Text>
             <Text maxFontSizeMultiplier={2} style={styles.body}>{t("deleteConsequences")}</Text>
-          </View> : null : <Text maxFontSizeMultiplier={2} style={styles.body}>{t(mode === "recovery" ? "recoveryWarning" : mode === "email" ? "emailChangeIntro" : mode === "export" ? "exportAuthenticationIntro" : mode === "privacy" ? "privacyAuthenticationIntro" : "passwordChangeIntro")}</Text>}
+          </View> : null : <Text maxFontSizeMultiplier={2} style={styles.body}>{t(mode === "email" ? "emailChangeIntro" : mode === "export" ? "exportAuthenticationIntro" : mode === "privacy" ? "privacyAuthenticationIntro" : "passwordChangeIntro")}</Text>}
           {!authenticated ? <InfoBlock body={account.state.kind === "deleting" ? ta("deletionPendingDescription") : ta("providerUnavailable")} title={title} testID="security-unavailable" /> : pendingDeletion ? <>
             <InfoBlock body={ta("deletionPendingDescription")} title={ta("deleting")} />
             <Button disabled={busy} loading={busy} onPress={() => { void run(() => account.retryPendingDeletion(), () => {}); }} testID="security-delete-retry">{t("retryDeletion")}</Button>
           </> : mode === "password" && !usesPassword ? <InfoBlock body={t("providerPassword")} title={title} testID="security-provider-password" /> : <>
             {mode === "email" ? field(t("newEmail"), nextValue, setNextValue, "security-new-email", false) : null}
             {mode === "password" ? <>{field(t("newPassword"), nextValue, setNextValue, "security-new-password", true)}{field(t("confirmNewPassword"), confirmation, setConfirmation, "security-confirm-password", true)}</> : null}
-            {mode === "recovery" && recoveryPresentation.showPanel ? <RecoveryOperationPanel
-              busy={busy}
-              onConfirmSaved={() => { void run(() => account.confirmRecoveryCodesSaved(), () => {}); }}
-              onResume={() => { void run(() => account.resumePendingRecovery(), () => {}); }}
-              onReplace={() => { void run(() => account.requestRecoveryCodeReplacement(), () => {}); }}
-              onRetry={() => { void run(() => account.retryRecoveryOperation(), () => {}); }}
-              snapshot={recoveryOperation}
-            /> : null}
-            {mode === "recovery" && recoveryPresentation.issueBlocksReplacement ? null : <>
-              {usesPassword && !prepared ? field(t(mode === "delete" ? "password" : "currentPassword"), password, setPassword, "security-password", true) : null}
-              {!prepared ? usesGoogle && configuration.kind === "configured" && getFirebaseGoogleClientId(configuration.value, Platform.OS) ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" ? "deleteConfirm" : mode === "export" || mode === "privacy" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
+            {usesPassword && !prepared ? field(t(mode === "delete" ? "password" : "currentPassword"), password, setPassword, "security-password", true) : null}
+            {!prepared ? usesGoogle && configuration.kind === "configured" && getFirebaseGoogleClientId(configuration.value, Platform.OS) ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" ? "deleteConfirm" : mode === "export" || mode === "privacy" ? "verifyIdentity" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
               {mode === "delete" && failure && errorField === null ? <Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.inlineError} testID={`security-error-${failure}`}>{failure === "pendingSyncRequiresNetwork" ? t("deletePendingSync") : ta(failure)}</Text> : null}
               {mode === "delete" && prepared ? <HoldToConfirmButton accessibilityLabel={t("holdDelete")} disabled={blocked} hint={t("holdDeleteHint")} loading={busy} onConfirm={() => { setPrepared(false); void run(() => account.deleteAccount(), () => {}); }} testID="security-delete-hold">{t("holdDelete")}</HoldToConfirmButton> : null}
-            </>}
           </>}
         </ScrollView>
       </KeyboardAvoidingView>

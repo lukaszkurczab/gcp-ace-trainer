@@ -58,7 +58,6 @@ export type FirebaseAuthClient = Readonly<{
   signIn: (email: string, password: string) => Promise<FirebaseAuthUserSnapshot>;
   signInWithApple: (appleCredentialDependencies?: AppleCredentialDependencies) => Promise<FirebaseAuthUserSnapshot>;
   signInWithGoogle: (idToken: string) => Promise<FirebaseAuthUserSnapshot>;
-  signInWithRecoveryToken: (customToken: string) => Promise<FirebaseAuthUserSnapshot>;
   signInWithSessionToken: (customToken: string) => Promise<FirebaseAuthUserSnapshot>;
   signOut: () => Promise<void>;
   refreshAccountIdentity: () => Promise<FirebaseAuthUserSnapshot | null>;
@@ -331,10 +330,6 @@ export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClien
     signInWithGoogle: async (idToken: string) => {
       if (!idToken.trim()) throw new FirebaseAuthClientError("auth/provider-unavailable");
       return afterCredential((await signInWithCredential(auth, OAuthProviderCredential.google(idToken))).user);
-    },
-    signInWithRecoveryToken: async (customToken: string) => {
-      if (!customToken) throw new FirebaseAuthClientError("auth/provider-unavailable");
-      return afterCredential((await signInWithCustomToken(auth, customToken)).user);
     },
     signInWithSessionToken: async (customToken: string) => {
       if (!customToken) throw new FirebaseAuthClientError("auth/provider-unavailable");

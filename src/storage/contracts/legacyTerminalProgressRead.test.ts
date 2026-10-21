@@ -22,7 +22,7 @@ function client(records: readonly ProgressRecordDto[], writes: string[] = []) {
       assert.equal(init?.method, "GET", "read compatibility must not cause a cloud mutation");
       writes.push(String(url));
       assert.ok(String(url).includes("/v1/progress?"));
-      return new Response(JSON.stringify({ accountRevision: 32, generation: 0, records, nextPageToken: null }));
+      return new Response(JSON.stringify({ accountRevision: 32, generation: 0, snapshotToken: "a".repeat(64), snapshotScope: "b".repeat(64), records, nextPageToken: null }));
     } });
 }
 

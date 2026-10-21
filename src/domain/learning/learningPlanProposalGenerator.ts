@@ -3,7 +3,7 @@ import { GOAL_DAY_IDS, isGoalDay, isGoalRecordForPolicy, isGoalRecordForTrack, n
 import { isGoalPolicyForTrack, type GoalPolicy } from "../goals/goalPolicy";
 import { projectGoalTargetDate } from "../goals/goalTargetDateSemantics";
 import { createArtifactSha256 } from "./contentItemRef";
-import { minimumAttemptsForMentalUnits, type ChapterCompletionStatus, type PackageCompletionState } from "./packageCompletionRule";
+import { createChapterCompletionSource, minimumAttemptsForMentalUnits, type ChapterCompletionStatus, type PackageCompletionState } from "./packageCompletionRule";
 import { createProposalSlotId, type ProposalSlotId } from "./slotIdentity";
 import type { LearningPlanExecutionPolicy, LearningPlanPolicyIdentity } from "./learningPlan";
 import type { TrackId } from "./trackIdentity";
@@ -371,7 +371,7 @@ function validateChapterStatuses(value: unknown): readonly ChapterCompletionStat
   const seen = new Set<string>();
   return Object.freeze(value.map((candidate) => {
     const chapter = asRecord(candidate, "invalid_completion_state");
-    if (!hasOnlyKeys(chapter, ["nodeId", "mentalUnitCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount", "coverageDeficit", "minimumAdditionalAttemptCount", "coverage", "rollingWindowSize", "qualityThreshold", "quality", "qualityRequirementUnmet", "status", "reason"]) ||
+    if (!hasOnlyKeys(chapter, [...(Object.hasOwn(chapter, "completionSource") ? ["completionSource"] : []), "nodeId", "mentalUnitCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount", "coverageDeficit", "minimumAdditionalAttemptCount", "coverage", "rollingWindowSize", "qualityThreshold", "quality", "qualityRequirementUnmet", "status", "reason"]) ||
       typeof chapter.nodeId !== "string" || !chapter.nodeId.trim() || seen.has(chapter.nodeId) || !positiveInteger(chapter.mentalUnitCount) ||
       !nonNegativeInteger(chapter.qualifyingAttemptCount) || !positiveInteger(chapter.requiredAttemptCount) || chapter.requiredAttemptCount !== minimumAttemptsForMentalUnits(chapter.mentalUnitCount) ||
       chapter.rollingWindowSize !== 20 || chapter.qualityThreshold !== 0.8 ||
@@ -395,8 +395,12 @@ function validateChapterStatuses(value: unknown): readonly ChapterCompletionStat
       (chapter.status === "in_progress" && chapter.reason === "minimum_attempts_unmet" && chapter.remainingAttemptCount === 0) ||
       (chapter.status === "in_progress" && chapter.reason === "coverage_unmet" && (chapter.remainingAttemptCount !== 0 || chapter.coverageDeficit === 0)) ||
       (chapter.status === "in_progress" && chapter.reason === "quality_unmet" && (chapter.remainingAttemptCount !== 0 || chapter.coverageDeficit !== 0 || chapter.qualityRequirementUnmet !== true))) fail("invalid_completion_state");
+    const completionSource = !Object.hasOwn(chapter, "completionSource") ? undefined : (() => {
+      try { return createChapterCompletionSource(chapter.completionSource); } catch { return fail("invalid_completion_state"); }
+    })();
+    if (completionSource && (chapter.status !== "completed" || (completionSource.ruleVersion === 2 ? chapter.coverage.length !== 0 : chapter.coverage.length !== chapter.mentalUnitCount))) fail("invalid_completion_state");
     seen.add(chapter.nodeId);
-    return Object.freeze({ nodeId: chapter.nodeId, mentalUnitCount: chapter.mentalUnitCount, qualifyingAttemptCount: chapter.qualifyingAttemptCount, requiredAttemptCount: chapter.requiredAttemptCount,
+    return Object.freeze({ ...(completionSource ? { completionSource } : {}), nodeId: chapter.nodeId, mentalUnitCount: chapter.mentalUnitCount, qualifyingAttemptCount: chapter.qualifyingAttemptCount, requiredAttemptCount: chapter.requiredAttemptCount,
       remainingAttemptCount: chapter.remainingAttemptCount, coverageDeficit: chapter.coverageDeficit, minimumAdditionalAttemptCount: chapter.minimumAdditionalAttemptCount,
       coverage: Object.freeze((chapter.coverage as ChapterCompletionStatus["coverage"]).map((unit) => Object.freeze({ ...unit }))),
       rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: chapter.quality, qualityRequirementUnmet: chapter.qualityRequirementUnmet as boolean | null,

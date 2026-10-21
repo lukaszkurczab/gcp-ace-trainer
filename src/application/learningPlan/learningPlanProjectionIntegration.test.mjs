@@ -193,10 +193,10 @@ test('real producer → verified canonical runtime → persisted evidence → Ho
   assert.deepEqual(quality.proposal.outcome.targetAssessment, { kind: 'quality_requirement_unmet' });
   for (let index = firstChapter.minimumAttemptCount; index < firstChapter.minimumAttemptCount + 5; index++) await addAttempt(durableAttempt(resolved, index, 'correct', {}, question));
   const completed = await assertShared(f, 'completed');
-  assert.equal(completed.home.completion.chapters[0].quality, 1);
+  assert.equal(completed.home.completion.chapters[0].quality, 0.8, 'first qualifying window is retained');
   assert.equal(completed.home.guidance.state, 'completed');
   for (let index = firstChapter.minimumAttemptCount + 5; index < firstChapter.minimumAttemptCount + 10; index++) await addAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
-  await assertShared(f, 'in_progress');
+  assert.deepEqual((await assertShared(f, 'completed')).home.completion, completed.home.completion);
 });
 
 test('Progress consumes actual shared evidence without claiming completion from minimum attempt volume', async t => {
@@ -228,7 +228,9 @@ test('Progress consumes actual shared evidence without claiming completion from 
     await assertProgressCompletion(completed, otherChapterAttempts + reachedMinimum + 16);
     assert.equal(completed.home.completion.chapters[0].quality, 0.8);
     for (let index = reachedMinimum + 16; index < reachedMinimum + 21; index++) await addAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
-    await assertProgressCompletion(await assertShared(f, 'in_progress'), otherChapterAttempts + reachedMinimum + 21);
+    const retained = await assertShared(f, 'completed');
+    await assertProgressCompletion(retained, otherChapterAttempts + reachedMinimum + 16);
+    assert.deepEqual(retained.home.completion, completed.home.completion);
   });
 });
 
@@ -247,7 +249,7 @@ async function assertProgressCompletion(state, count) {
     assert.doesNotMatch(text, /%|Completed scope|\{\{|\}\}/);
     assert.equal(rendered.nodes.some(node => node.type === 'ProgressBar'), false);
     if (model.completion.kind === 'unknown') {
-      assert.ok(text.includes(translate('The package does not define a completion rule.')));
+      assert.ok(text.includes(translate('The package’s full completion contract is unavailable.')));
     } else {
       assert.equal(model.completion.qualifyingAttemptCount, count);
       assert.ok(text.includes(translate('{{count}} qualifying attempt', { count })));
@@ -284,10 +286,14 @@ test('shared evidence is package-wide across plan revisions, exact by artifact, 
   await addAttempt({ ...old, item: oldItem, reviewEvidence: { ...old.reviewEvidence, sourceItem: oldItem } });
   const savedPlan = repositories.getLearningPlanSnapshot(TRACK, requireGoalPolicy(TRACK));
   repositories.saveLearningPlanAtomically({ policy: requireGoalPolicy(TRACK), plan: normalizeLearningPlan({ ...savedPlan.plan, planRevision: 2, updatedAt: f.now, commandId: 'revised-plan' }), expectedGoalRevision: f.goal.revision, expectedPlanStorageRevision: savedPlan.revision });
-  const state = await assertShared(f, 'in_progress');
-  assert.equal(state.home.completion.qualifyingAttemptCount, 20);
+  await assertShared(f, 'unknown'); // The historical pin has no verified source rule.
+
   const inputs = readPlanInputs(TRACK);
   const duplicate = projectLearningEvidence({ profile: resolved.track, attempts: [...inputs.attempts, inputs.attempts[0]], reviews: [], now: f.now });
+  assert.equal(duplicate.completion.kind, 'unknown');
+  const currentOnly = projectLearningEvidence({ profile: resolved.track, attempts: inputs.attempts.filter(attempt => attempt.item.contentVersion === resolved.track.contentVersion), reviews: [], now: f.now });
+  assert.equal(currentOnly.completion.kind, 'in_progress');
+  assert.equal(currentOnly.completion.qualifyingAttemptCount, 20);
   assert.equal(duplicate.attempts.length, 20);
   assert.equal(duplicate.completedFacts.attempts.length, 20);
   assert.deepEqual(duplicate.completedFacts.sessions, []);

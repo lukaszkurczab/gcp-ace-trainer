@@ -9,7 +9,6 @@ test("password-change field errors use the localized field-specific copy", () =>
 
   assert.match(screen, /failure === "passwordMismatch"\s*\? ta\("passwordMismatch"\)/u);
   assert.match(screen, /failure === "weakPassword"\s*\? ta\("weakPassword"\)/u);
-  assert.match(screen, /mode === "recovery" && failure === "invalidCredential"\s*\? ta\("invalidCredential"\)/u);
   assert.match(screen, /failure === "emailUnavailable"\s*\? "emailChangeAddressUnavailable"\s*:\s*"emailChangeAddressError"/u);
   assert.match(screen, /t\("emailChangePasswordError"\)/u);
   assert.match(screen, /testID=\{`\$\{id\}-error`\}/u);

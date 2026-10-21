@@ -243,12 +243,14 @@ test("active Premium V3 unit continuation is validated and costed in its exact s
 });
 
 test("a committed wrong answer is not treated as an active coverage target or completion credit", () => {
+  for (const fromHistory of [false, true]) {
+  const classifyCompletionItem = (item: { contentVersion: string; artifactSha256: string }) => item.contentVersion === "retained" && item.artifactSha256 === "b".repeat(64) ? "equivalent" as const : "different" as const;
   const focus = { ...practice, modeId: "certification-focus-practice", requestedLengths: [10, 20, 40], defaultRequestedLength: 10,
     minimumActualLength: 10, selection: { kind: "node", nodeId: "chapter-a" } } as unknown as ProductModeConfig;
   const targetQuestions = ["q1", "q2", "q3", "q4"].map((id) => question(id, "chapter-premium", "premium-unit"));
   const completionRule = createPackageCompletionRuleV3({ ruleVersion: 3, chapters: [{ nodeId: "chapter-premium", mentalUnitCount: 1, minimumAttemptCount: 20,
     rollingWindowSize: 20, qualityThreshold: 0.8, units: [{ mentalUnitId: "premium-unit", requiredCorrectQuestionCount: 4 }] }] });
-  const v3Track = { ...track, completionRule, questions: targetQuestions, modes: [focus, review],
+  const v3Track = { ...track, completionRule, classifyCompletionItem, questions: targetQuestions, modes: [focus, review],
     getPool: (modeId: string) => modeId === focus.modeId ? [] : [], getQuestion: (id: string) => targetQuestions.find((entry) => entry.questionId === id),
     getMode: (modeId: string) => modeId === focus.modeId ? focus : review } as unknown as CanonicalTrackRuntime;
   const focusPolicy = { ...policy, workEstimates: [...policy.workEstimates, estimate("focus-premium-unit", focus.modeId, "chapter-premium", "premium-unit", 2, 3, 5, 0, 0, 0)] };
@@ -264,8 +266,12 @@ test("a committed wrong answer is not treated as an active coverage target or co
     qualifiedAttempt("q3-before", "q3", "premium-unit", 2),
     wrongQualifiedAttempt("q4-latest-wrong", "q4", "premium-unit", 3, sessionId, "wrong-occ-0"),
     ...Array.from({ length: 16 }, (_, index) => qualifiedAttempt(`volume-${index}`, "q1", "premium-unit", index + 4)),
-  ];
-  const completion = evaluatePackageCompletion({ trackId: TRACK, contentVersion: "v2", artifactSha256: SHA, completionRule }, attempts,
+  ].map(attempt => {
+    if (!fromHistory || attempt.sessionId === sessionId) return attempt;
+    const item = { ...attempt.item, contentVersion: "retained", artifactSha256: "b".repeat(64) };
+    return { ...attempt, item, reviewEvidence: { ...attempt.reviewEvidence, sourceItem: item } };
+  });
+  const completion = evaluatePackageCompletion({ trackId: TRACK, contentVersion: "v2", artifactSha256: SHA, completionRule, classifyCompletionItem }, attempts,
     (questionId) => targetQuestions.find((item) => item.questionId === questionId));
   assert.equal(completion.kind, "in_progress");
   if (completion.kind !== "in_progress") return;
@@ -277,6 +283,7 @@ test("a committed wrong answer is not treated as an active coverage target or co
   assert.deepEqual(result.sessionDemands.filter((demand) => demand.id.startsWith("coverage:")).map((demand) => [demand.id, demand.responseCount]), [
     ["coverage:chapter-premium:premium-unit", 4],
   ], "the committed wrong question is not counted among remaining active questions; a scoped replacement block remains forecast");
+  }
 });
 
 test("unrelated due and active work cannot reduce V3 coverage lower bound", () => {

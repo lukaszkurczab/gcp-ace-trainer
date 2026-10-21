@@ -500,7 +500,6 @@ test("auth command composition keeps provider credentials and hold-only deletion
   }
   assert.equal([...provider.matchAll(/retryPendingAccountDeletion\(api,/g)].length, 1, "manual retry remains a provider command");
   assert.match(bootstrap, /retryPendingAccountDeletion\(api, deletion\.accountId, user\.uid, disableAccountRemindersForDeletion, prepareRevenueCatAccountDeletion\)/u);
-  assert.match(provider, /issueRecoveryCodes: \(credentials: FirebaseAuthCredentials\)/);
   assert.match(provider, /next: "verificationSent"/);
   assert.match(provider, /holdAccountIdentityRefresh/);
   assert.doesNotMatch(provider, /deleteAccount: \(password/);

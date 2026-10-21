@@ -54,7 +54,6 @@ const homeTabDestinations: Readonly<Record<string, BackDestinationTranslation>> 
 };
 
 const accountSecurityDestinations: Readonly<Record<string, BackDestinationTranslation>> = {
-  recovery: { namespace: "settings", key: "recoveryCodes" },
   email: { namespace: "settings", key: "changeEmail" },
   password: { namespace: "settings", key: "changePassword" },
   delete: { namespace: "account", key: "deleteAccount" },

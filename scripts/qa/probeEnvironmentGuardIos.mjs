@@ -20,7 +20,7 @@ export function buildEnvironmentProbeExpression(action = "inspect", expectedFing
       const identity=load('src/infrastructure/runtime/environmentIdentity.ts').readEnvironmentIdentity();
       if(identity.mode!=='smoke')throw Error('controlled_runtime_required');
       const rootInitialized=initialized('src/RegularApplicationRoot.tsx');
-      const protectedModules=Object.fromEntries(['src/infrastructure/storage/mmkvClient.ts','src/infrastructure/firebase/firebaseAuthClient.ts','src/infrastructure/security/recoveryOperationVault.ts','src/infrastructure/purchases/index.ts','src/content/runtime/nodePackageStorage.ts'].map(path=>[path,initialized(path)]));
+      const protectedModules=Object.fromEntries(['src/infrastructure/storage/mmkvClient.ts','src/infrastructure/firebase/firebaseAuthClient.ts','src/infrastructure/purchases/index.ts','src/content/runtime/nodePackageStorage.ts'].map(path=>[path,initialized(path)]));
       const constants=load('node_modules/expo-constants/build/Constants.js').default;
       const configMatches=constants.expoConfig?.extra?.patternlyEnvironmentFingerprint===identity.fingerprint;
       const api=load('src/infrastructure/runtime/environmentGuard.ts');
@@ -54,10 +54,9 @@ export function buildEnvironmentProbeExpression(action = "inspect", expectedFing
         const {packagePointerSources,...sanitizedStorage}=first;
         const packages=await load('src/content/runtime/nodePackageStorage.ts').inspectExpoNodePackageInventory(packagePointerSources);
         const auth=await load('src/infrastructure/firebase/secureAuthPersistence.ts').inspectQ13SecureAuthPersistence();
-        const vault=await load('src/infrastructure/security/recoveryOperationVault.ts').inspectQ13RecoveryOperationVault();
         const second=await storage.inspectPreparedQ13StorageInventory();
         if(second.kind!=='observed'||!second.complete||first.physicalInventorySha256!==second.physicalInventorySha256||first.registryChecksumSha256!==second.registryChecksumSha256)throw Error('inventory_changed');
-        inventory={storage:sanitizedStorage,packages,auth,vault,purchases:{kind:'unavailable',reason:'native_sdk_cache_not_enumerated'}};
+        inventory={storage:sanitizedStorage,packages,auth,purchases:{kind:'unavailable',reason:'native_sdk_cache_not_enumerated'}};
       }
       return {schema:'patternly.environment-native-probe.v1',action:${JSON.stringify(action)},hermes:true,mode:identity.mode,fingerprint:identity.fingerprint,configMatches,state,rootInitialized,
         protectedModules,...(inventory?{inventory}:{}),...(nativeSDKStatus?{nativeSDKStatus}:{})};

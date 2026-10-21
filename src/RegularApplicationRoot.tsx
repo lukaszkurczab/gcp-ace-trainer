@@ -10,10 +10,10 @@ import { AppPreferencesProvider, useAppPreferences } from "./preferences";
 import { buildNavigationTheme } from "./theme/navigationTheme";
 import { PatternlyAccountProvider, usePatternlyAccount } from "./application/account/AccountSessionProvider";
 import { ProfileStoragePreparationGate } from "./application/account/ProfileStoragePreparationGate";
+import { RetiredAccountSecretsCleanupHost } from "./application/account/RetiredAccountSecretsCleanupHost";
 import { AccountForegroundRefreshSidecar } from "./application/account/AccountForegroundRefreshSidecar";
 import { Q13StorageReceiptHost } from "./application/runtimeAuditability/Q13StorageReceiptHost";
 import { AndroidClockProbeHost } from "./application/runtimeAuditability/AndroidClockProbeHost";
-import { RecoveryCodeClipboardGuard } from "./infrastructure/security/RecoveryCodeClipboardGuard";
 import { Button, LoadingState, Screen } from "./components";
 import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfileTransition } from "./storage/repositories/profileStorageRepository";
 import { useTranslation } from "react-i18next";
@@ -21,8 +21,8 @@ import { useTranslation } from "react-i18next";
 export default function RegularApplicationRoot() {
   return (
     <SafeAreaProvider>
-      <RecoveryCodeClipboardGuard />
       <AppPreferencesProvider>
+        <RetiredAccountSecretsCleanupHost />
         <ProfileStoragePreparationGate>
           <PatternlyAccountProvider>
             <AccountForegroundRefreshSidecar />

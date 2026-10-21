@@ -160,7 +160,7 @@
   "targetDateGuidance.atRisk": "Your current pace may miss this target.",
   "targetDateGuidance.onTrack": "Your current pace is on track for this target.",
   "targetDateGuidance.openEnded": "Keep learning at your own pace.",
-  "targetDateGuidance.unavailable.unknownCompletionRule": "This package has no completion rule yet.",
+  "targetDateGuidance.unavailable.unknownCompletionRule": "The package’s full completion contract is unavailable.",
   "targetDateGuidance.unavailable.insufficientElapsedEvidence": "Keep practising to build a useful forecast.",
   "targetDateGuidance.unavailable.calculationError": "We could not update your guidance. Try again.",
   "targetDateGuidance.unavailable.noTarget": "The target could not be read. Adjust your goal.",

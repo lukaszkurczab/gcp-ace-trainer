@@ -38,7 +38,8 @@ async function qualityFixture(attemptCount = 25) {
     const attempt: TrainingAttempt = {
       id: `quality-${index}`, sessionId: "quality-session", occurrenceId: `quality-occurrence-${index}`,
       trackId: TRACK, modeId: resolved.track.modes[0]!.modeId, item, response: {},
-      result: index < attemptCount - 5 ? { kind: "correct", earnedPoints: 1, maxPoints: 1 } : { kind: "incorrect", earnedPoints: 0, maxPoints: 1 },
+      // Put the five wrong answers before any possible first completion.
+      result: index < 15 || index >= 20 ? { kind: "correct", earnedPoints: 1, maxPoints: 1 } : { kind: "incorrect", earnedPoints: 0, maxPoints: 1 },
       reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt,
     };
     await addTrainingAttempt(attempt, productionTrackAdmissionContext);
@@ -131,7 +132,7 @@ test("missing actual rule stays unknown before quality guard even when there are
   assert.deepEqual(proposal.completionState, { kind: "unknown" });
   assert.deepEqual(proposal.targetAssessment, { kind: "unknown_completion_rule" });
   const t = (key: string) => key;
-  assert.equal(completionCopy(proposal, t), "The package does not define a completion rule.");
+  assert.equal(completionCopy(proposal, t), "The package’s full completion contract is unavailable.");
   assert.notEqual(targetCopy(proposal.targetAssessment, t), QUALITY_MESSAGE);
 });
 
@@ -149,7 +150,7 @@ test("minimum exactly met still needs quality, while own pace and shortfall keep
   assert.equal(shortfall.slots.length, 0);
 });
 
-test("current completed window permits zero-work; later incorrect durable attempts restore the quality limit", async () => {
+test("first completed window permits zero-work after later incorrect durable attempts", async () => {
   const f = await qualityFixture();
   const base = f.inputs.attempts[0]!;
   for (let index = 0; index < 20; index++) {
@@ -174,7 +175,8 @@ test("current completed window permits zero-work; later incorrect durable attemp
   }
   const inputs = readLearningPlanInputSnapshot(TRACK, requireGoalPolicy(TRACK), productionTrackAdmissionContext);
   const completion = evaluatePackageCompletion(f.profile, inputs.attempts, f.resolved.track.getQuestion);
-  assert.equal(completion.kind, "in_progress");
-  assert.deepEqual(proposalFor(f, completion).targetAssessment, { kind: "quality_requirement_unmet" });
-  assert.deepEqual(calculatePaceForecast({ acceptedPlan: f.plan, c3Result: completion.kind, remainingAttemptCount: completion.kind === "in_progress" ? completion.remainingAttemptCount : 0, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts({ ...f, inputs }) }), { kind: "unavailable", reason: "quality_requirement_unmet" });
+  assert.equal(completion.kind, "completed");
+  assert.equal(proposalFor(f, completion).targetAssessment.kind, "minimum_volume_fits");
+  assert.equal(calculatePaceForecast({ acceptedPlan: f.plan, c3Result: completion.kind, remainingAttemptCount: completion.remainingAttemptCount, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts({ ...f, inputs }) }).kind, "available");
+
 });

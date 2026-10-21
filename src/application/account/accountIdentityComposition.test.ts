@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { pendingRevokeFailureState, accountIdentityProofMatchesSubject, accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAccountIdentityProofInFlightForActor, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, isLocalAccountStartupUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, readVerifiedAccountIdentityFence, sameVerifiedAccountIdentityFence, shouldClearAccountIdentityProofLatch, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountIdentityProofInFlight, type AccountState } from "./AccountSessionProvider";
+import { pendingRevokeFailureState, accountIdentityProofMatchesSubject, accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAccountIdentityProofInFlightForActor, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, isLocalAccountStartupUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, readVerifiedAccountIdentityFence, sameVerifiedAccountIdentityFence, shouldClearAccountIdentityProofLatch, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountIdentityProofInFlight, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { accountFinalizationPolicies, executeAccountFinalization } from "./accountFinalization";
 import { completeAccountBootstrap, prepareAuthenticatedAccountBootstrap } from "../bootstrap/accountBootstrap";
@@ -140,24 +140,6 @@ test("only the explicit local smoke runtime finalizes every password-identity co
   assert.equal(requiresPasswordEmailVerification("sandbox", unverifiedGoogle), false);
 });
 
-test("account entry copy makes the destructive choice and code acknowledgement explicit", () => {
-  const en = JSON.parse(readFileSync("src/locales/en/account.json", "utf8")) as Record<string, string>;
-  const pl = JSON.parse(readFileSync("src/locales/pl/account.json", "utf8")) as Record<string, string>;
-
-  assert.deepEqual(Object.keys(pl).sort(), Object.keys(en).sort());
-  assert.equal(en.accountEntryContinue, "Continue");
-  assert.match(en.accountDiscardDescription ?? "", /saved only on this device will be removed/u);
-  assert.match(en.accountDiscardDescription ?? "", /data already saved to your account/u);
-  assert.match(en.recoveryCodesDescription ?? "", /10 single-use codes/u);
-  assert.match(en.recoveryCodesSaveRequired ?? "", /before continuing/u);
-  assert.equal(en.accountSignedInAs, "Signed in as");
-  assert.equal(pl.accountEntryContinue, "Dalej");
-  assert.match(pl.accountDiscardDescription ?? "", /zapisane tylko na tym urządzeniu zostaną usunięte/u);
-  assert.match(pl.accountDiscardDescription ?? "", /dane zapisane już na koncie/u);
-  assert.match(pl.recoveryCodesDescription ?? "", /10 jednorazowych kodów/u);
-  assert.equal(pl.accountSignedInAs, "Zalogowano jako");
-});
-
 test("account entry owns one terminal choice and keeps synced account controls separate", () => {
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
@@ -178,11 +160,8 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.match(screen, /runCommand\("choice", \(\) => account\.setGuestAdoptionChoice\(choice\), setCommandFeedback\)/u);
   assert.doesNotMatch(screen, /useState<"transfer" \| "discard">\("transfer"\)/u);
   assert.match(screen, /testID="account-entry-continue"/);
-  const adoption = screen.slice(screen.indexOf("function AccountAdoptionScreen"), screen.indexOf("function RecoveryPendingScreen"));
+  const adoption = screen.slice(screen.indexOf("function AccountAdoptionScreen"), screen.indexOf("function AccountRecoveryScreen"));
   assert.match(adoption, /runCommand\("signOut", \(\) => account\.signOut\(\), setCommandFeedback\)/u);
-  assert.match(adoption, /<Button\s+disabled=\{busyAction !== null \|\| recoveryOperation\.blocksProfilePreparation\}\s+loading=\{busyAction === "signOut"\}\s+onPress=\{signOut\}\s+testID="account-adoption-sign-out"/u);
-  assert.match(screen, /<RecoveryOperationPanel[\s\S]*?snapshot=\{recoveryOperation\}/u);
-  assert.match(screen, /onConfirmSaved=\{\(\) => runCommand\("recovery", \(\) => account\.confirmRecoveryCodesSaved\(\)/u);
   assert.match(screen, /account\.discardGuestData\(\)/);
   assert.match(screen, /Alert\.alert\(text\.accountDiscardTitle, text\.accountDiscardDescription/);
   assert.match(screen, /style: "destructive", onPress: executeEntry/);
@@ -194,13 +173,8 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.doesNotMatch(screen, /testID="account-authenticated"/);
   assert.doesNotMatch(screen, /testID="account-adoption-confirm"/);
   assert.doesNotMatch(screen, /text\.(?:preserve|upload|restore|deduplicated|decisions|keepGuest\b|keepAccount\b|confirmAdoption\b)/);
-  assert.match(provider, /const \[recoveryOperation, setRecoveryOperation\] = useState<RecoveryOperationSnapshot>/u);
-  assert.match(provider, /recoveryCoordinator\.subscribe\(\(snapshot\) => \{[\s\S]*?setRecoveryOperation\(recoveryIssuePublicationGateRef\.current\.publish\(snapshot\)\)/u);
-  assert.match(provider, /recoveryOperation,\s*refreshPremiumEntitlement/u);
-  assert.match(provider, /confirmRecoveryCodesSaved: \(\) => runSensitiveWithAuth[\s\S]*coordinator\.confirmRecoveryCodesSaved\(\)/u);
   assert.match(provider, /discardGuestData: \(\) => runWithAuth/);
   assert.match(provider, /setGuestAdoptionChoice: \(choice\) => runWithAuth[\s\S]*?await saveGuestAdoptionChoice\(choice\)[\s\S]*?setState\(\{ \.\.\.state, accountData: \{ \.\.\.state\.accountData, guestAdoptionChoice: choice \} \}\)/u);
-  assert.match(provider, /currentCoordinator\.startIssue\(\{ firebaseUid: user\.uid, authorizationGeneration \}\)[\s\S]*?acceptRecoveryOperation\(snapshot, \{ kind: "issueStart", firebaseUid: user\.uid, authorizationGeneration \}\)/u);
 });
 
 test("account recovery owns one status message, a truthful retry, and a sign-out exit", () => {
@@ -272,34 +246,6 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
   assert.match(screen, /conflictDescription/);
   assert.match(screen, /account\.state\.kind === "guestAccessBlocked" && mode === "entry"/);
   assert.match(screen, /testID="account-binding-sign-in-notice"/);
-});
-
-test("current-account ISSUE defer requires an explicit sign-in, canonical session check, and persistent identity fence", () => {
-  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
-  const entry = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
-  const completionStart = provider.indexOf("const completeExplicitRecoveryAccountTransition");
-  const completionEnd = provider.indexOf("// Firebase publishes a new credential", completionStart);
-  const completion = provider.slice(completionStart, completionEnd);
-  const transitionStart = provider.indexOf("continueWithCurrentAccount: () => runSensitiveWithAuth");
-  const transitionEnd = provider.indexOf("discardGuestData: () => runWithAuth", transitionStart);
-  const transition = provider.slice(transitionStart, transitionEnd);
-
-  assert.ok(completionStart >= 0 && completionEnd > completionStart);
-  assert.ok(transitionStart >= 0 && transitionEnd > transitionStart);
-  assert.match(completion, /getMeWithExchangedSession/u);
-  assert.match(completion, /getAuthorizationGeneration/u);
-  assert.match(completion, /coordinator\.deferIssueToIdentity/u);
-  assert.match(completion, /deferred\.blocksProfilePreparation/u);
-  assert.ok(completion.indexOf("getMeWithExchangedSession") < completion.indexOf("coordinator.deferIssueToIdentity"));
-  assert.match(transition, /explicitRecoveryAccountTransitionRef\.current = Object\.freeze/u);
-  assert.match(transition, /await auth\.signOut\(\)/u);
-  assert.match(transition, /setState\(\{ kind: "signedOut" \}\)/u);
-  assert.doesNotMatch(transition, /continueAsGuest|discardGuestData|confirmAdoption/u);
-  assert.match(provider, /signIn: \(email, password\)[\s\S]*?completeExplicitRecoveryAccountTransition\(auth, api, user\)[\s\S]*?finalizeExplicitAuthentication\(auth, api, user\)/u);
-  assert.match(provider, /pending\.kind === "issue" && pending\.deferredFor && !pending\.blocksProfilePreparation[\s\S]*?coordinator\.reconcilePending\(user \? \{ firebaseUid: user\.uid, authorizationGeneration \} : null\)/u);
-  assert.match(entry, /onTransitionStarted=\{\(\) => \{ setRecoveryAccountTransitionRequired\(true\); setMode\("signIn"\); \}\}/u);
-  assert.match(entry, /account\.state\.kind === "guestAccessBlocked" \|\| recoveryAccountTransitionRequired \? undefined/u);
-  assert.match(entry, /!recoveryAccountTransitionRequired \? <View style=\{\[styles\.authLinks/u);
 });
 
 test("account recovery back action follows live navigator history", () => {
@@ -617,13 +563,9 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /<Icon color=\{colors\.provider\.appleIcon\} name="apple" size=\{26\} \/>/);
   assert.match(screen, /authPrimaryButton:[\s\S]*?backgroundColor: palette\.primary/);
   assert.match(screen, /authTitle:[\s\S]*?color: palette\.textPrimary/);
-  assert.match(screen, /mode === "recovery" && recoveryMethod === "code"[\s\S]*?styles\.recoveryCodeTitle/);
-  assert.match(screen, /recoveryCodeTitle:\s*\{[\s\S]*?flexShrink:\s*1[\s\S]*?fontSize:\s*34[\s\S]*?lineHeight:\s*40[\s\S]*?maxWidth:\s*"100%"/);
   assert.match(screen, /errorTestID="account-password-confirmation-error"/);
-  assert.match(screen, /mode === "register" && isRegisterFieldFailure\(feedback\) \? null : isAuthFieldFailure\(mode, recoveryMethod, feedback\) \? null : renderFeedback\(feedback, text\)/);
   assert.match(screen, /errorTestID="account-register-email-error"/);
   assert.match(screen, /errorTestID="account-register-password-error"/);
-  assert.match(screen, /errorTestID="account-recovery-code-error"/);
   assert.match(screen, /errorTestID="account-recovery-email-error"/);
   assert.match(screen, /errorTestID="account-reset-password-error"/);
   assert.match(screen, /useWindowDimensions/);
@@ -725,37 +667,6 @@ test("registration keeps consent presentation separate from the boolean domain c
   assert.doesNotMatch(provider, /registerWithApple|registerWithGoogle/u);
   assert.match(provider, /signOutRejectedIdentity[\s\S]*?auth\.getSnapshot\(\)[\s\S]*?failure: "signOutPending"/u);
   assert.match(provider, /firebaseAuthErrorCode\(error\) === "auth\/email-already-in-use"[\s\S]*?auth\.signIn\(email\.trim\(\)\.toLowerCase\(\), password\)[\s\S]*?registerAuthenticatedIdentity/u);
-});
-
-test("both recovery-code surfaces warn before copying through the guarded clipboard", () => {
-  const entry = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
-  const security = readFileSync("src/features/account/AccountSecurityScreen.tsx", "utf8");
-  const panel = readFileSync("src/features/account/RecoveryOperationPanel.tsx", "utf8");
-  const warning = panel.indexOf('t("recoveryCodesClipboardWarning")');
-  const guardedCopy = panel.indexOf("recoveryCodeClipboard.copy(codes)");
-
-  assert.ok(warning >= 0 && guardedCopy > warning);
-  assert.match(panel, /const \[codesVisible, setCodesVisible\] = useState\(\(\) => AppState\.currentState === "active"\)/u);
-  assert.match(panel, /AppState\.addEventListener\("change", \(nextState\) => \{[\s\S]*?appStateRef\.current = nextState;[\s\S]*?setAppState\(nextState\);[\s\S]*?if \(nextState !== "active"\) setCodesVisible\(false\)/u);
-  assert.match(panel, /operationId !== null && lastIssueOperationIdRef\.current !== operationId[\s\S]*?lastIssueOperationIdRef\.current = operationId;[\s\S]*?setCodesVisible\(appStateRef\.current === "active"\)/u);
-  assert.match(panel, /snapshot\.codes && appState === "active" && !codesVisible \? <View[^>]*testID="recovery-operation-codes-hidden"/u);
-  assert.match(panel, /onPress=\{\(\) => setCodesVisible\(true\)\}[^>]*testID="recovery-operation-show-codes"/u);
-  assert.match(panel, /snapshot\.codes && appState === "active" && codesVisible \? <View testID="recovery-operation-codes"/u);
-  assert.match(panel, /testID="recovery-operation-copy-codes"/u);
-  assert.match(panel, /accessibilityRole="checkbox"[\s\S]*?accessibilityState=\{\{ checked: snapshot\.savedIntent, disabled: busy \|\| snapshot\.savedIntent \}\}[\s\S]*?testID="recovery-operation-saved-ack"/u);
-  assert.doesNotMatch(panel, /Clipboard\.setStringAsync\(codes\.join/u);
-  for (const screen of [entry, security]) {
-    assert.match(screen, /import \{ RecoveryOperationPanel \} from "\.\/RecoveryOperationPanel"/u);
-    assert.match(screen, /<RecoveryOperationPanel[\s\S]*?snapshot=\{recoveryOperation\}/u);
-    assert.match(screen, /onConfirmSaved=\{[\s\S]*?account\.confirmRecoveryCodesSaved\(\)/u);
-    assert.match(screen, /onRetry=\{[\s\S]*?account\.retryRecoveryOperation\(\)/u);
-    assert.match(screen, /onResume=\{[\s\S]*?account\.resumePendingRecovery\(\)/u);
-    assert.doesNotMatch(screen, /recoveryCodeClipboard|Clipboard\.setStringAsync/u);
-  }
-  const appStateListenerStart = panel.indexOf('AppState.addEventListener("change"');
-  const appStateListenerEnd = panel.indexOf("return () => subscription.remove()", appStateListenerStart);
-  assert.ok(appStateListenerStart >= 0 && appStateListenerEnd > appStateListenerStart);
-  assert.doesNotMatch(panel.slice(appStateListenerStart, appStateListenerEnd), /setCodesVisible\(true\)/u);
 });
 
 test("unconfigured account entry never composes Google OAuth without typed provider configuration", () => {
@@ -993,7 +904,7 @@ test("account restore has a bounded initialization recovery path", () => {
   assert.doesNotMatch(timeout, /detachObserver\(\)|unsubscribe/);
   assert.match(timeout, /setState\(\{ kind: "unavailable", reason: "auth_restore_timeout" \}\)/);
   const observer = provider.slice(provider.indexOf("unsubscribe = configuredAuth.onUserChanged((restoredUser) => {"));
-  assert.match(observer, /if \(!live \|\| observerDetached \|\| recoveryCommandInFlightRef\.current/);
+  assert.match(observer, /if \(!live \|\| observerDetached\) return;/);
   assert.match(observer, /if \(!live \|\| observerDetached \|\| eventRevision !== authObserverRevision\) return;/);
   assert.match(observer, /const user = configuredAuth\.getSnapshot\(\);/);
   assert.match(observer, /return \(\) => \{[\s\S]*?live = false;[\s\S]*?detachObserver\(\);/);
@@ -1004,17 +915,16 @@ test("restore Retry synchronously fences delivered and in-flight callbacks befor
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
   const detach = provider.slice(provider.indexOf("const detachObserver = () => {"), provider.indexOf("    detachAuthObserverRef.current = detachObserver;"));
   const retry = provider.match(/const retrySessionRestore = useCallback\((\(\) => \{[\s\S]*?\n  \}), \[/)?.[1];
-  const initialGuard = provider.match(/if \(!live \|\| observerDetached \|\| recoveryCommandInFlightRef\.current[^\n]+return;/)?.[0];
+  const initialGuard = provider.match(/if \(!live \|\| observerDetached\) return;/)?.[0];
   const resumedGuard = provider.match(/if \(!live \|\| observerDetached \|\| eventRevision !== authObserverRevision\) return;/)?.[0];
   assert.ok(retry && initialGuard && resumedGuard);
   // Execute the production detach/retry bodies and callback eligibility guards.
-  // The deferred barrier models recovery preparation, not Firebase SDK timing.
+  // The deferred barrier models identity preparation, not Firebase SDK timing.
   for (const alreadyWaiting of [false, true]) {
     let resolveBarrier!: () => void;
     const effects: string[] = [];
     const scope = {
       live: true, authObserverRevision: 1, eventRevision: 1,
-      recoveryCommandInFlightRef: { current: false }, recoverySnapshot: { kind: "idle" },
       providerCancellationUidRef: { current: null }, observerBlockedUidRef: { current: null },
       detachAuthObserverRef: { current: null as null | (() => void) },
       initializationTimeout: undefined, unsubscribe: () => effects.push("unsubscribe"),
@@ -1031,7 +941,7 @@ test("restore Retry synchronously fences delivered and in-flight callbacks befor
       detachAuthObserverRef.current = detachObserver;
       return { retry: ${retry}, cleanup: detachObserver, deliver: async () => {
         ${initialGuard}
-        effects.push("recovery");
+        effects.push("identity");
         await barrier;
         ${resumedGuard}
         effects.push("profile");
@@ -1043,7 +953,7 @@ test("restore Retry synchronously fences delivered and in-flight callbacks befor
     const delivered = pending ?? owner.deliver();
     resolveBarrier();
     await delivered;
-    assert.equal(effects.filter((effect) => effect === "recovery").length, alreadyWaiting ? 1 : 0);
+    assert.equal(effects.filter((effect) => effect === "identity").length, alreadyWaiting ? 1 : 0);
     assert.equal(effects.includes("profile"), false);
     const newerDetach = () => undefined;
     scope.detachAuthObserverRef.current = newerDetach;
@@ -1063,6 +973,7 @@ test("App Check has an explicit unavailable state and never fabricates a token",
 test("account failures expose explicit provider, network, expiry, and revoked-session states", () => {
   assert.equal(classifyAccountFailure({ code: "auth/invalid-email", message: "private provider detail" }), "invalidEmail");
   assert.equal(classifyAccountFailure({ code: "auth/argument-error", message: "private provider detail" }), "invalid");
+  assert.equal(classifyAccountFailure({ code: "auth/invalid-action-code", message: "private provider detail" }), "invalid");
   assert.equal(classifyAccountFailure({ code: "auth/weak-password", message: "private provider detail" }), "weakPassword");
   assert.equal(classifyAccountFailure({ code: "auth/email-already-in-use", message: "private provider detail" }), "invalidCredential");
   assert.equal(classifyAccountFailure({ code: "auth/too-many-requests", message: "private provider detail" }), "rateLimited");
@@ -1085,8 +996,6 @@ test("account failures expose explicit provider, network, expiry, and revoked-se
     user: { email: "learner@example.com", emailVerified: true, providers: ["password"], uid: "firebase-uid" },
   });
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 503)), "backendUnavailable");
-  assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_invalid")), "invalidRecoveryCode");
-  assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_used")), "recoveryCodeUsed");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 409, "purchase_attempt_active")), "conflict");
   assert.equal(classifyAccountFailure({ code: "auth/command-in-flight" }), "conflict");
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/user-not-found", message: "private provider detail" }), true);
@@ -1119,123 +1028,17 @@ test("only authoritative identity-proof errors tombstone a binding; App Check an
   assert.match(provider, /const identityDenied = isAuthoritativeIdentityProofDenial\(error\)[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error[\s\S]*?verificationRevision: current\.bindingRevision[\s\S]*?accountSessionFailureState\(failure === "reauthenticationRequired" \? failure : "revokedSession"/u);
 });
 
-test("prepared-profile and explicit recovery keep their existing identity-proof barrier owners", () => {
+test("prepared-profile and explicit sign-in retain the shared identity-proof barrier", () => {
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
   const bootstrap = readFileSync("src/application/bootstrap/accountBootstrap.ts", "utf8");
   const preparation = bootstrap.slice(bootstrap.indexOf("export async function prepareAuthenticatedAccountBootstrap"), bootstrap.indexOf("export function completeAccountBootstrap"));
-  assert.ok(preparation.indexOf("beginIdentityProofBarrier(auth, user, generation, true)") < preparation.indexOf("guardRecoveryBeforePreparation(auth, { generation, barrier: proofBarrier }"), "startup barrier precedes recovery checks that read Auth generations or exchange tokens");
+  assert.ok(preparation.indexOf("beginIdentityProofBarrier(auth, user, generation, true)") < preparation.indexOf("const pendingRevoke = findPendingSessionRevocation"), "prepared identity proof remains ahead of the durable session-revoke gate");
   const explicitFinalize = provider.slice(provider.indexOf("const finalizeExplicitAuthentication"), provider.indexOf("// Firebase publishes a new credential"));
   assert.match(explicitFinalize, /await admitAuthenticatedBootstrap\(auth, api, user/u);
   assert.doesNotMatch(explicitFinalize.slice(0, explicitFinalize.indexOf("await admitAuthenticatedBootstrap")), /return \{ kind: "success"/u, "same-UID sign-in must not bypass the fresh durable revoke drain");
-  assert.doesNotMatch(explicitFinalize, /guardRecoveryBeforePreparation\(auth\)/u, "explicit login delegates proof ordering to the barrier-first profile preparation path");
-  const recoveryTransition = provider.slice(provider.indexOf("const completeExplicitRecoveryAccountTransition"), provider.indexOf("// Firebase publishes a new credential"));
-  assert.ok(recoveryTransition.indexOf("beginIdentityProofBarrier(auth, user, generation)") < recoveryTransition.indexOf("getMeWithExchangedSession("));
-  assert.match(recoveryTransition, /runAccountIdentityProof\([\s\S]*?resolveBarrier: \(barrier\) => resolveIdentityProofBarrier[\s\S]*?revokeDeniedBinding:/u);
+  assert.match(provider, /const beginIdentityProofBarrier = useCallback/u);
+  assert.match(provider, /const resolveIdentityProofBarrier = useCallback/u);
 });
-
-test("recovery claim denials keep the durable barrier while local generation metadata failures remain nonauthoritative", () => {
-  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
-  const guard = provider.slice(provider.indexOf("const guardRecoveryBeforePreparation"), provider.indexOf("const beginIdentityProofBarrier = useCallback"));
-  assert.match(guard, /const revokeDeniedIdentity = async \(error: unknown,[\s\S]*?isAuthoritativeIdentityProofDenial\(error\)[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error,[\s\S]*?setState\(\{ kind: "revokedSession", user \}\)/u);
-  assert.match(guard, /catch \(error\) \{\s*proofScopeRef\.current\?\.assertCurrent\(\);\s*if \(await revokeDeniedIdentity\(error, user\)\) return false;/u);
-  assert.match(guard, /catch \(error\) \{\s*if \(await revokeDeniedIdentity\(error, auth\?\.getSnapshot\(\) \?\? null\)\) return false;/u);
-  assert.match(guard, /setState\(\{ kind: "backendUnavailable", user \}\);\s*onTerminalState\?\.\("backendUnavailable"\);\s*return false;/u);
-  assert.doesNotMatch(guard, /auth\/authorization-generation-invalid" \? "revokedSession"/u);
-  const firstClaimRead = guard.indexOf("await auth.getAuthorizationGeneration()");
-  assert.ok(firstClaimRead > guard.indexOf("await ensureProofScope(user)"), "the prepared binding barrier precedes the first SDK claim read");
-  const signInExchange = guard.indexOf("await ensureRecoveryIssueSignInSession({");
-  assert.ok(signInExchange > guard.indexOf("scope.bindRecoveryOperation(pending)"));
-  assert.ok(signInExchange > guard.indexOf("const scope = await ensureProofScope(user)"), "the recovery session exchange uses the same barrier scope as the forced generation read");
-  assert.match(guard, /scope\.acceptRecoveryOperation\(replacement, \{\s*kind: "issueReplace",[\s\S]*?previousOperationId: pending\.operationId/u);
-  assert.match(guard, /scope\.acceptRecoveryOperation\(resumed, \{\s*kind: "issueResume",[\s\S]*?deferredFor: pending\.deferredFor/u);
-
-  const issueCodes = provider.slice(provider.indexOf("issueRecoveryCodes: (credentials) =>"), provider.indexOf("consumeRecoveryCode: (code) =>"));
-  const prepareIssueSession = issueCodes.indexOf("await prepareRecoveryIssueSession({");
-  assert.ok(prepareIssueSession > issueCodes.indexOf("createRecoveryProofScopeRef.current(auth, user"));
-  assert.match(issueCodes, /prepareRecoveryIssueSession\(\{[\s\S]*?canContinue: isCurrent/u);
-  const exchange = readFileSync("src/application/account/accountSessionExchange.ts", "utf8");
-  const preparation = exchange.slice(exchange.indexOf("export async function prepareRecoveryIssueSession"), exchange.indexOf("/** Read /me"));
-  assert.match(preparation, /await input\.auth\.getAuthorizationGeneration\(\);\s*if \(!current\(\)\)/u);
-  const replacementRequestStart = provider.lastIndexOf("requestRecoveryCodeReplacement: () =>");
-  const replacementRequest = provider.slice(replacementRequestStart, provider.indexOf("resumePendingRecovery: () =>", replacementRequestStart));
-  assert.ok(replacementRequest.indexOf("createRecoveryProofScopeRef.current(auth, current)") < replacementRequest.indexOf("await auth.getAuthorizationGeneration()"));
-  assert.ok(replacementRequest.indexOf("await auth.getAuthorizationGeneration()") < replacementRequest.indexOf("await auth.signOut()"));
-  const continueCurrentStart = provider.lastIndexOf("continueWithCurrentAccount: () =>");
-  const continueCurrent = provider.slice(continueCurrentStart, provider.indexOf("}), [", continueCurrentStart));
-  assert.ok(continueCurrent.indexOf("createRecoveryProofScopeRef.current(auth, current)") < continueCurrent.indexOf("await auth.getAuthorizationGeneration()"));
-  assert.match(continueCurrent, /proofScope\.assertCurrent\(\);[\s\S]*?await coordinator\.reconcilePending\([\s\S]*?proofScope\.acceptRecoveryOperation\(checked\)/u);
-
-  const scope = provider.slice(provider.indexOf("const createRecoveryProofScope = useCallback"), provider.indexOf("beginIdentityProofBarrierRef.current ="));
-  assert.match(scope, /const ownsBarrier = !owner\?\.barrier/u);
-  assert.match(scope, /(!activeLease \? capturePreparedProfileStorageLease\(\) : null)/u);
-  assert.match(scope, /const baseCurrent = \(\) => sessionCoordinator\.isCurrent\(generation\) && auth\.getSnapshot\(\)\?\.uid === user\.uid[\s\S]*?isActiveProfileStorageLeaseCurrent\(activeLease\)[\s\S]*?isPreparedProfileStorageLeaseCurrent\(preparedLease\)/u);
-  assert.match(scope, /if \(expectedRecoveryOperation !== null\)[\s\S]*?recoveryOperationIdentity\(current\) !== expectedRecoveryOperation/u);
-  assert.match(scope, /if \(!ownsBarrier \|\| !barrier \|\| isAuthoritativeIdentityProofDenial\(error\)\) return;\s*assertCurrent\(\)[\s\S]*?await resolveBarrier\(barrier, auth, user, generation\);\s*assertCurrent\(\)/u);
-  assert.match(guard, /if \(!auth \|\| user\.uid !== auth\.getSnapshot\(\)\?\.uid \|\| !createRecoveryProofScopeRef\.current\) throw new AccountSessionGenerationStaleError\(\)/u);
-
-  const transition = provider.slice(provider.indexOf("const completeExplicitRecoveryAccountTransition"), provider.indexOf("// Firebase publishes a new credential"));
-  assert.match(transition, /resolveOnSuccess: false/u);
-  const defer = transition.indexOf("await coordinator.deferIssueToIdentity(");
-  const secondGeneration = transition.indexOf("const afterGeneration = await auth.getAuthorizationGeneration()");
-  const resolve = transition.lastIndexOf("await restoreExactProofBinding()");
-  assert.ok(defer > 0 && secondGeneration > defer && resolve > secondGeneration, "an exact old binding is restored only after both generation reads and deferred identity verification");
-  assert.match(transition, /proofBarrier && !proofBarrierResolutionAttempted && !isAuthoritativeIdentityProofDenial\(error\)/u);
-  assert.match(transition, /if \(isAuthoritativeIdentityProofDenial\(error\) && canContinue\(\)\) setState\(\{ kind: "revokedSession", user \}\)/u);
-  const firstUse = provider.slice(provider.indexOf("const runProviderFirstUse"), provider.indexOf("const registerProviderIdentity"));
-  assert.match(firstUse, /const recoveryTransitionIntent = explicitRecoveryAccountTransitionRef\.current[\s\S]*?completeExplicitRecoveryAccountTransition\(auth, api, user\)/u);
-  const transitionReuse = firstUse.slice(firstUse.indexOf("if (recoveryTransition?.kind === \"success\")"), firstUse.indexOf("const generation = sessionCoordinator.restart(user.uid)"));
-  assert.match(transitionReuse, /pending\.operationId !== recoveryTransitionIntent\.operationId[\s\S]*?pending\.deferredFor\?\.firebaseUid !== user\.uid[\s\S]*?pending\.deferredFor\.authorizationGeneration !== pending\.authorizationGeneration[\s\S]*?pending\.blocksProfilePreparation/u);
-  assert.match(transitionReuse, /else if \(!await guardRecoveryBeforePreparation\(auth\)\)/u);
-  assert.doesNotMatch(transitionReuse.slice(transitionReuse.indexOf("if (recoveryTransition?.kind === \"success\")"), transitionReuse.indexOf("} else if")), /getAuthorizationGeneration\(/u);
-});
-
-test("recovery proof scope accepts only exact operation identity or witnessed coordinator successors", () => {
-  const actorUid = "scope-actor";
-  const deferredUid = "deferred-actor";
-  const issue = (overrides: Record<string, unknown> = {}) => ({
-    kind: "issue" as const,
-    operationId: "00000000-0000-4000-8000-000000000101",
-    status: "delivery_unconfirmed" as const,
-    firebaseUid: actorUid,
-    authorizationGeneration: 8,
-    generationId: null,
-    codes: null,
-    savedIntent: false,
-    replacementPending: false,
-    deferredFor: null as Readonly<{ firebaseUid: string; authorizationGeneration: number }> | null,
-    accountResolution: null as "missing_generation" | "different_uid" | "different_generation" | null,
-    needsAccountResolution: false,
-    failure: null as null,
-    blocksProfilePreparation: true,
-    ...overrides,
-  });
-  const original = issue();
-  const deferred = issue({ deferredFor: { firebaseUid: deferredUid, authorizationGeneration: 2 } });
-  const resumed = issue({ deferredFor: null, blocksProfilePreparation: false, status: "provider_retryable" });
-  const resumeWitness = { kind: "issueResume" as const, operationId: original.operationId, firebaseUid: actorUid, authorizationGeneration: 8, deferredFor: { firebaseUid: deferredUid, authorizationGeneration: 2 } };
-  assert.equal(recoveryOperationTransitionIsAllowed(original, deferred, actorUid), false, "a changed deferred binding is not an implicit same-operation success");
-  assert.equal(recoveryOperationTransitionIsAllowed(deferred, resumed, actorUid, resumeWitness), true, "resume accepts only the exact captured operation and deferred identity");
-  assert.equal(recoveryOperationTransitionIsAllowed(deferred, issue({ ...resumed, deferredFor: null, authorizationGeneration: 9 }), actorUid, resumeWitness), false);
-  assert.equal(recoveryOperationTransitionIsAllowed(deferred, issue({ ...resumed, deferredFor: null, operationId: "00000000-0000-4000-8000-000000000102" }), actorUid, resumeWitness), false);
-
-  const replacementId = "00000000-0000-4000-8000-000000000103";
-  const replacement = issue({ operationId: replacementId, previousIssueOperationId: original.operationId, status: "provider_retryable" });
-  const replaceWitness = { kind: "issueReplace" as const, previousOperationId: original.operationId, firebaseUid: actorUid, authorizationGeneration: 8 };
-  assert.equal(recoveryOperationTransitionIsAllowed(original, replacement, actorUid, replaceWitness), true, "replacement requires the exact validated vault predecessor ID");
-  assert.equal(recoveryOperationTransitionIsAllowed(original, issue({ ...replacement, previousIssueOperationId: "00000000-0000-4000-8000-000000000104" }), actorUid, replaceWitness), false);
-  assert.equal(recoveryOperationTransitionIsAllowed(issue({ status: "provider_retryable" }), replacement, actorUid, replaceWitness), false, "replacement cannot bypass the delivery_unconfirmed predecessor status");
-  const replacementTerminal = { kind: "terminal" as const, operationId: replacementId, status: "superseded" as const, previousIssueOperationId: original.operationId, blocksProfilePreparation: false as const };
-  assert.equal(recoveryOperationTransitionIsAllowed(original, replacementTerminal, actorUid, replaceWitness), true);
-  assert.equal(recoveryOperationTransitionIsAllowed(original, { ...replacementTerminal, previousIssueOperationId: undefined }, actorUid, replaceWitness), false);
-
-  const idle = { kind: "idle" as const, blocksProfilePreparation: false as const };
-  const firstIssue = issue({ operationId: replacementId, status: "in_progress" });
-  assert.equal(recoveryOperationTransitionIsAllowed(idle, firstIssue, actorUid, { kind: "issueStart", firebaseUid: actorUid, authorizationGeneration: 8 }), true);
-  assert.equal(recoveryOperationTransitionIsAllowed(idle, firstIssue, "foreign-actor", { kind: "issueStart", firebaseUid: actorUid, authorizationGeneration: 8 }), false);
-  assert.equal(recoveryOperationTransitionIsAllowed(original, { kind: "terminal", operationId: original.operationId, status: "acknowledged", blocksProfilePreparation: false }, actorUid), true);
-  assert.equal(recoveryOperationTransitionIsAllowed(original, { kind: "terminal", operationId: replacementId, status: "acknowledged", blocksProfilePreparation: false }, actorUid), false, "a terminal result cannot clear a different accepted operation");
-});
-
 test("cold account startup admits local attestation unavailability without admitting server or identity denials", () => {
   for (const error of [new PatternlyApiClientError("request_timeout"), new PatternlyApiClientError("transport_failed"), new PatternlyApiClientError("app_check_unavailable"), { code: "auth/network-request-failed" }]) {
     assert.equal(isLocalAccountStartupUnavailable(error), true);
@@ -1494,65 +1297,6 @@ test("cold identity proof and reconnect revocation both persist the exact bindin
   await exercise("active");
   const accountDataService = readFileSync("src/application/account/accountDataService.ts", "utf8");
   assert.doesNotMatch(accountDataService, /revokeBindingForAuthoritativeIdentityDenial|isAuthoritativeIdentityProofDenial/u);
-});
-
-test("a definitive SDK claim denial after /me cannot restore the deferred recovery binding", async () => {
-  const accountId = "recovery-claim-denial-account";
-  const uid = "recovery-claim-denial-uid";
-  const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
-  const base = new MemoryKeyValueStorage();
-  const controlValues = new Map<string, string>();
-  const control: StorageManifestStore = {
-    async get(key) { return controlValues.get(key) ?? null; },
-    async set(key, value) { controlValues.set(key, value); },
-    async remove(key) { controlValues.delete(key); },
-  };
-  let nextIdentity = 700;
-  const identity = { async create() { return { installationId: uuid(nextIdentity++), localDatasetId: uuid(nextIdentity++) }; } };
-  let router = await openProfileStorageRouter(base, control, { identity });
-  const profile = await router.selectAccount(accountId);
-  router = await openProfileStorageRouter(base, control);
-  const binding = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: uid, accountId, canContinue: () => true });
-  setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
-  try {
-    await prepareProfileStorage();
-    activatePreparedProfile(profile.id, profile.kind);
-    const lease = captureActiveProfileStorageLease();
-    assert.ok(lease);
-    const user = { uid, email: "recovery-claim@example.test", emailVerified: true, providers: ["password"] as const };
-    const coordinator = createAccountSessionCoordinator<unknown>(() => undefined);
-    const generation = coordinator.begin(uid);
-    const barrierReceipt = await beginAccountIdentityProofBarrier({ profileId: profile.id, accountId, firebaseUid: uid, verificationRevision: binding.verificationRevision, lease, canContinue: () => coordinator.isCurrent(generation) });
-    assert.ok(barrierReceipt);
-    const barrier: AccountIdentityProofBarrierContext = { receipt: barrierReceipt, profile, lease, previousBinding: binding, requestUid: uid, generation };
-    const proof = await runAccountIdentityProof({
-      request: async () => ({ user: { id: accountId, identity: { subject: uid } } }),
-      user, generation, barrier, barrierAlreadyCaptured: true, resolveOnSuccess: false,
-      beginBarrier: async () => barrier,
-      resolveBarrier: (captured) => resolveAccountIdentityProofBarrier({ receipt: captured.receipt, lease, canContinue: () => coordinator.isCurrent(generation) }),
-      matchesProofSubject: (value, captured) => value.user.id === captured.previousBinding.accountId && value.user.identity.subject === captured.previousBinding.firebaseUid,
-      getCurrentState: () => ({ kind: "loading" }), getCurrentSdkUid: () => uid,
-      isCurrentGeneration: coordinator.isCurrent, isLeaseCurrent: isActiveProfileStorageLeaseCurrent,
-      readBinding: readActiveAccountIdentityBinding,
-      revokeDeniedBinding: async (error) => { await revokeBindingForAuthoritativeIdentityDenial(error, { profile, uid, lease, verificationRevision: binding.verificationRevision, canContinue: () => coordinator.isCurrent(generation) }); },
-    });
-    assert.equal(proof.kind, "verified");
-    if (proof.kind !== "verified") return;
-    assert.ok(proof.barrier, "the positive /me result keeps the barrier until later generation checks complete");
-    assert.deepEqual(await readActiveAccountIdentityBinding(lease), { kind: "invalidated" });
-
-    const claimError = { code: "auth/user-token-expired" };
-    assert.equal(isAuthoritativeIdentityProofDenial(claimError), true);
-    await revokeBindingForAuthoritativeIdentityDenial(claimError, { profile, uid, lease, verificationRevision: binding.verificationRevision, canContinue: () => coordinator.isCurrent(generation) });
-    assert.deepEqual(await readActiveAccountIdentityBinding(lease), { kind: "invalidated" }, "a later definitive SDK denial cannot use the retained receipt to restore access");
-
-    closeActiveProfileStorage();
-    router = await openProfileStorageRouter(base, control);
-    assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "invalidated" }, "the denial survives reopening the canonical router");
-  } finally {
-    closeActiveProfileStorage();
-    setProfileStoragePreparationFactoryForTests(null);
-  }
 });
 
 test("cold account_not_found clears persisted Firebase auth or exposes a truthful sign-out retry", async () => {

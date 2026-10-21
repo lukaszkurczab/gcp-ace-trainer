@@ -23,7 +23,6 @@ function runtime({ state = "ready", rootInitialized = true, storageInitialized =
     return { kind: "observed", complete: true, physicalInventorySha256: changed && reads > 1 ? "changed" : "stable", registryChecksumSha256: "registry", packagePointerSources: pointerSources };
   } }, storageInitialized && !allProtectedClosed);
   add("src/infrastructure/firebase/firebaseAuthClient.ts", {}, !allProtectedClosed);
-  add("src/infrastructure/security/recoveryOperationVault.ts", { inspectQ13RecoveryOperationVault: async () => ({ kind: "observed", record: "absent", recordSha256: null }) }, !allProtectedClosed);
   add("src/infrastructure/purchases/index.ts", {}, !allProtectedClosed);
   add("src/content/runtime/nodePackageStorage.ts", { inspectExpoNodePackageInventory: async (sources) => {
     assert.equal(sources, pointerSources);

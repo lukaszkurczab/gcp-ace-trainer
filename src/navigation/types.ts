@@ -29,7 +29,7 @@ export type RootStackParamList = {
   [ROUTES.YOUR_DATA]: undefined;
   [ROUTES.PRIVACY_REQUESTS]: undefined;
   [ROUTES.LEGAL_REQUESTS]: { kind: "complaint" | "withdrawal" | "data_recovery" | "suspension_appeal" };
-  [ROUTES.ACCOUNT_SECURITY]: { screen: "recovery" | "email" | "password" | "delete" | "export" | "privacy" };
+  [ROUTES.ACCOUNT_SECURITY]: { screen: "email" | "password" | "delete" | "export" | "privacy" };
   [ROUTES.ACCOUNT_EMAIL_CHANGE_PENDING]: { uid: string; requestedEmail: string };
   [ROUTES.ACCOUNT_ENTRY]: { initialMode?: "entry" | "register" | "signIn" | "recovery" | "resetPassword" } | undefined;
   [ROUTES.BACKEND_DIAGNOSTICS]: undefined;

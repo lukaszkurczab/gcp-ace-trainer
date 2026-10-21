@@ -5,20 +5,19 @@ import { buildSec03AccountStateExpression } from './prepareSec03AccountStateIos.
 const fingerprint='a'.repeat(64);
 const prefix='../../../../../Users/test/patternly/node_modules/';
 const options={fingerprint,dependencyPrefix:prefix,apiKey:'test_privatekey',environment:{EXPO_PUBLIC_PATTERNLY_API_ORIGIN:'http://127.0.0.1:8080',EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY:'test_privatekey'}};
-function fixture({vaultPresent=false,generation=1,profileKind='account',state='ready',configured=false,subject='private-uid',customerStatus='success',configurationMatches=true}={}){
+function fixture({generation=1,profileKind='account',state='ready',configured=false,subject='private-uid',customerStatus='success',configurationMatches=true}={}){
  const calls=[];const modules=new Map();
  const add=(path,exports)=>modules.set(modules.size,{verboseName:path.startsWith('node_modules/')?prefix+path.slice(13):path,isInitialized:true,exports});
  add('src/infrastructure/runtime/environmentIdentity.ts',{readEnvironmentIdentity:()=>({mode:'smoke',fingerprint,apiOrigin:'http://127.0.0.1:8080'}),createEnvironmentIdentity:()=>({fingerprint:configurationMatches?fingerprint:'c'.repeat(64)})});
  add('node_modules/expo-constants/build/Constants.js',{default:{expoConfig:{ios:{bundleIdentifier:'com.lkurczab.patternly.sec03'},extra:{patternlyEnvironmentFingerprint:fingerprint}}}});
  add('src/infrastructure/runtime/environmentGuard.ts',{createNativeEnvironmentMarkerStore:()=>({}),createEnvironmentGuard:()=>({inspect:async()=>state})});
- add('src/RegularApplicationRoot.tsx',{});add('src/infrastructure/storage/mmkvClient.ts',{getActiveStorageProfileOrNull:()=>({kind:profileKind,accountId:'12345678-1234-4234-8234-123456789012'}),isProfileTransitionActive:()=>false});add('src/infrastructure/security/recoveryOperationVault.ts',{createSecureRecoveryOperationVault:()=>({load:async()=>vaultPresent?{}:null}),inspectQ13RecoveryOperationVault:async()=>({kind:'observed',record:'present',recordSha256:'d'.repeat(64)})});add('src/content/runtime/nodePackageStorage.ts',{});
+ add('src/RegularApplicationRoot.tsx',{});add('src/infrastructure/storage/mmkvClient.ts',{getActiveStorageProfileOrNull:()=>({kind:profileKind,accountId:'12345678-1234-4234-8234-123456789012'}),isProfileTransitionActive:()=>false});add('src/content/runtime/nodePackageStorage.ts',{});
  add('src/infrastructure/firebase/publicConfig.ts',{readFirebaseClientConfiguration:()=>({kind:'configured',value:{}}),readDevelopmentFirebaseAuthEmulatorOrigin:()=> 'http://127.0.0.1:19099'});
  add('src/infrastructure/firebase/firebaseAuthClient.ts',{createFirebaseAuthClient:()=>({getSnapshot:()=>({uid:'private-uid',providers:['password']}),getIdToken:async()=> 'secret-token',getAuthorizationGeneration:async()=>generation})});
  add('src/infrastructure/clients/PatternlyApiClientAdapter.ts',{createPatternlyApiClient:input=>{assert.equal(input.apiOrigin,'http://127.0.0.1:8080');return {getMe:async()=>{calls.push('getMe');return {user:{id:'12345678-1234-4234-8234-123456789012',identity:{subject}}};}};}});
  add('node_modules/react-native/Libraries/BatchedBridge/NativeModules.js',{default:{RNPurchases:{isConfigured:async()=>{calls.push('isConfigured');return configured;},getAppUserID:async()=>{calls.push('getAppUserID');return '12345678-1234-4234-8234-123456789012';}}}});
  add('src/infrastructure/purchases/index.ts',{readPurchaseConfig:(env,id,enabled)=>{assert.equal(env.EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY,'test_privatekey');assert.equal(enabled,true);return {apiKey:env.EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY,accountId:id};},createRevenueCatGateway:()=>({}),createPurchasesAdapter:()=>({configure:async()=>{calls.push('configure');return {status:'success'};},getCustomerInfo:async()=>{calls.push('getCustomerInfo');return {status:customerStatus};}})});
  add('node_modules/expo-crypto/build/Crypto.js',{randomUUID:()=> '12345678-1234-4234-8234-123456789012'});
- add('src/application/account/recoveryOperationCoordinator.ts',{createRecoveryOperationCoordinator:input=>({load:async()=>({kind:'idle'}),startIssue:async identity=>{assert.equal(identity.authorizationGeneration,1);assert.equal(identity.firebaseUid,'private-uid');assert.equal(typeof input.vault.load,'function');calls.push('issue');return {kind:'issue',status:'result_available',codes:Array(10).fill('secret-code'),savedIntent:false,operationId:input.newOperationId()};}})});
  add('src/application/premiumTesting.ts',{setPremiumTestingAccess:()=>calls.push('premiumTestToggle')});
  add('src/content/application/nodePackageInstaller.ts',{installPremiumNodeOffer:async input=>{assert.equal(input.offerId,'aud-04-local-smoke-package-fixture');assert.equal(typeof input.assertActivationAllowed,'function');input.assertActivationAllowed();calls.push('install');return {identity:{nodeId:'aud04_local_smoke_fixture',artifactSha256:'cab88ae60938984308e535b5265bcd487a42f375a860df1bbd6b99012ca4c27b'},artifactBytes:{length:100},manifest:{packageSize:60}};}});
  add('src/infrastructure/firebase/secureAuthPersistence.ts',{inspectQ13SecureAuthPersistence:async(_,affinity)=>({kind:'observed',userRecord:'present',userRecordAffinity:affinity('private-uid')?'matches_current_sdk_uid':'different_or_unavailable'})});
@@ -53,16 +52,8 @@ test('attempt retains a safe observable stage before SDK effect',async()=>{
  assert.equal(f.context[key].stage,'customer_info_attempted');assert.equal(JSON.stringify(f.context[key]).includes('private'),false);
 });
 
-test('recovery requires actual current session and empty vault; reports only redacted pre-ACK metadata',async()=>{
- const f=fixture();const result=await vm.runInNewContext(buildSec03AccountStateExpression({...options,action:'recovery'}),f.context);
- assert.deepEqual(f.calls,['getMe','issue']);assert.equal(result.savedIntent,false);assert.equal(result.codeCount,10);assert.equal(JSON.stringify(result).includes('secret-code'),false);
- for(const [optionsOverride,error]of [[{vaultPresent:true},/vault_not_empty/],[{generation:null},/auth_not_ready/]]){
-  const bad=fixture(optionsOverride);await assert.rejects(vm.runInNewContext(buildSec03AccountStateExpression({...options,action:'recovery'}),bad.context),error);assert.deepEqual(bad.calls,['getMe']);
- }
-});
-
 test('state observation emits only hashes and scalar affinity, with no SDK effect',async()=>{
  const f=fixture();const result=await vm.runInNewContext(buildSec03AccountStateExpression({...options,action:'observe'}),f.context);
- assert.equal(result.auth.userRecordAffinity,'matches_current_sdk_uid');assert.equal(result.account.subjectMatches,true);assert.equal(result.vaultState,null);assert.deepEqual(f.calls,['getMe']);
+ assert.equal(result.auth.userRecordAffinity,'matches_current_sdk_uid');assert.equal(result.account.subjectMatches,true);assert.deepEqual(f.calls,['getMe']);
  assert.equal(JSON.stringify(result).includes('private-uid'),false);assert.equal(JSON.stringify(result).includes('12345678'),false);
 });

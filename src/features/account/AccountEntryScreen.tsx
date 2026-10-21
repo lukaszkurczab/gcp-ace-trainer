@@ -58,8 +58,6 @@ import {
   type AppColors,
 } from "../../theme";
 import { useAccountCommand } from "./useAccountCommand";
-import { RecoveryOperationPanel } from "./RecoveryOperationPanel";
-import { getRecoveryOperationPresentation } from "./recoveryOperationPresentation";
 import { accountSyncAutomaticRetryAllowed, getAccountSyncConflictPresentation } from "./accountSyncConflictPresentation";
 
 type AccountEntryProps = NativeStackScreenProps<
@@ -79,7 +77,6 @@ type AccountCopy = Record<Exclude<keyof typeof accountCopy,
   | "learningPlanRecoveryDismiss"
   | "learningPlanRecoveryDescription"
   | "learningPlanRecoveryTitle"
-  | `recoveryOperation${string}`
 > | "invalidEmail", string>;
 type AccountContext = ReturnType<typeof usePatternlyAccount>;
 type AccountContextRef = Readonly<{ current: AccountContext }>;
@@ -127,12 +124,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   alreadyHaveAccount: t("alreadyHaveAccount"),
   needAccount: t("needAccount"),
   sendRecovery: t("sendRecovery"),
-  consumeRecoveryCode: t("consumeRecoveryCode"),
-  recoveryCode: t("recoveryCode"),
   recoveryDescription: t("recoveryDescription"),
-  recoveryCodeOption: t("recoveryCodeOption"),
-  recoveryCodeDescription: t("recoveryCodeDescription"),
-  backToEmailRecovery: t("backToEmailRecovery"),
   recoveryAccepted: t("recoveryAccepted"),
   recoveryAcceptedDescription: t("recoveryAcceptedDescription"),
   resetPasswordComplete: t("resetPasswordComplete"),
@@ -158,16 +150,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   localCleanupFailure: t("localCleanupFailure"),
   sessionRevocationPending: t("sessionRevocationPending"),
   reauthenticationRequired: t("reauthenticationRequired"),
-  recoveryCodes: t("recoveryCodes"),
-  recoveryCodesDescription: t("recoveryCodesDescription"),
-  recoveryCodesIntro: t("recoveryCodesIntro"),
-  copyRecoveryCodes: t("copyRecoveryCodes"),
-  recoveryCodesCopied: t("recoveryCodesCopied"),
-  recoveryCodesClipboardWarning: t("recoveryCodesClipboardWarning"),
-  recoveryCodesCopyFailed: t("recoveryCodesCopyFailed"),
   accountReadyTitle: t("accountReadyTitle"),
   accountReadyDescription: t("accountReadyDescription"),
-  issueRecoveryCodes: t("issueRecoveryCodes"),
   accountEntryTitle: t("accountEntryTitle"),
   accountEntryDescription: t("accountEntryDescription"),
   transferGuestData: t("transferGuestData"),
@@ -184,11 +168,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   keepGuestData: t("keepGuestData"),
   keepAccountData: t("keepAccountData"),
   accountEntryContinue: t("accountEntryContinue"),
-  recoveryCodeReauthDescription: t("recoveryCodeReauthDescription"),
-  recoveryCodeSignInAgain: t("recoveryCodeSignInAgain"),
-  recoveryCodeSignInAgainButton: t("recoveryCodeSignInAgainButton"),
-  recoveryCodesSaved: t("recoveryCodesSaved"),
-  recoveryCodesSaveRequired: t("recoveryCodesSaveRequired"),
   accountRecoveryTitle: t("accountRecoveryTitle"),
   accountBindingMismatch: t("accountBindingMismatch"),
   accountBindingMismatchDescription: t("accountBindingMismatchDescription"),
@@ -264,8 +243,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   providerUnavailable: t("providerUnavailable"),
   guestChoiceRequired: t("guestChoiceRequired"),
   invalidCredential: t("invalidCredential"),
-  invalidRecoveryCode: t("invalidRecoveryCode"),
-  recoveryCodeUsed: t("recoveryCodeUsed"),
   unverifiedIdentity: t("unverifiedIdentity"),
   };
   const account = usePatternlyAccount();
@@ -285,14 +262,11 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const providerAuthFixtureRuntime = useMemo(() => createProviderAuthFixtureRuntime(), []);
   const [termsPresentationState, setTermsPresentationState] = useState<TermsPresentationState>("pristine");
   const [resetCode, setResetCode] = useState("");
-  const [recoveryCode, setRecoveryCode] = useState("");
-  const [recoveryMethod, setRecoveryMethod] = useState<"email" | "code">("email");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [verificationResentFor, setVerificationResentFor] = useState<string | null>(null);
   const { busyAction: verificationBusyAction, runCommand: runVerificationCommand } = useAccountCommand();
   const verificationUid = account.state.kind === "verificationPending" ? account.state.user.uid : null;
   useEffect(() => { setVerificationResentFor(null); }, [verificationUid]);
-  const [recoveryAccountTransitionRequired, setRecoveryAccountTransitionRequired] = useState(false);
   const backAction = mode === "register"
     ? { destinationLabel: text.signIn, onPress: () => { setFeedback(null); setMode("signIn"); } }
     : navigationIndex > 0
@@ -383,7 +357,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       text={text}
     />
   );
-  if (account.state.kind === "recoveryPending") return <RecoveryPendingScreen account={account} backAction={backAction} onTransitionStarted={() => { setRecoveryAccountTransitionRequired(true); setMode("signIn"); }} text={text} />;
   if (account.state.kind === "unavailable") {
     const authRestoreTimedOut = account.state.reason === "auth_restore_timeout";
     return (
@@ -608,7 +581,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         ambientVariant="auth"
         edges={screenEdges}
         footer={
-          account.state.kind === "guestAccessBlocked" || recoveryAccountTransitionRequired ? undefined : (
+          account.state.kind === "guestAccessBlocked" ? undefined : (
             <Button
               labelStyle={styles.guestActionLabel}
               onPress={continueWithoutAccount}
@@ -655,7 +628,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             placeholderTextColor={styles.authPlaceholder.color as string}
             text={text}
           />
-          {!recoveryAccountTransitionRequired ? <View style={[styles.authLinks, largeText ? styles.authLinksLargeText : null]}>
+          <View style={[styles.authLinks, largeText ? styles.authLinksLargeText : null]}>
             <Button
               labelStyle={styles.textActionLabel}
               onPress={() => setMode("recovery")}
@@ -671,7 +644,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             >
               {text.register}
             </Button>
-          </View> : null}
+          </View>
           <Divider label={text.or} />
           {Platform.OS === "ios" ? (
             <ProviderButton
@@ -721,17 +694,17 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const modeTitle = mode === "register"
     ? text.register
     : mode === "recovery"
-      ? recoveryMethod === "code" ? text.consumeRecoveryCode : text.forgotPassword
+      ? text.forgotPassword
       : mode === "resetPassword"
         ? text.resetPassword
         : text.account;
   const modeDescription = mode === "recovery"
-    ? recoveryMethod === "code" ? text.recoveryCodeDescription : text.recoveryDescription
+    ? text.recoveryDescription
     : mode === "resetPassword"
       ? text.resetPasswordDescription
       : null;
 
-  if (mode === "recovery" && feedback?.kind === "success" && feedback.next === "recoveryAccepted")
+  if (mode === "recovery" && feedback?.kind === "success" && feedback.next === "passwordResetEmailSent")
     return (
       <AuthStatusScreen
         backAction={backAction}
@@ -768,9 +741,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         <AuthText
           style={[
             styles.authTitle,
-            mode === "recovery" && recoveryMethod === "code"
-              ? styles.recoveryCodeTitle
-              : null,
           ]}
         >
           {modeTitle}
@@ -778,7 +748,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         {modeDescription ? (
           <AuthText style={styles.authDescription}>{modeDescription}</AuthText>
         ) : null}
-      {mode === "register" && isRegisterFieldFailure(feedback) ? null : isAuthFieldFailure(mode, recoveryMethod, feedback) ? null : renderFeedback(feedback, text)}
+      {mode === "register" && isRegisterFieldFailure(feedback) ? null : isAuthFieldFailure(mode, feedback) ? null : renderFeedback(feedback, text)}
       {mode === "register" ? (
         <>
         <CredentialsForm
@@ -810,29 +780,12 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         </>
       ) : null}
       {mode === "recovery" ? (
-        <RecoveryForm
-          code={recoveryCode}
-          email={email}
-          feedback={feedback}
-          inputStyle={styles.authInput}
-          method={recoveryMethod}
-          onCodeChange={(value) => { setFeedback(null); setRecoveryCode(value); }}
-          onConsume={() =>
-            void account
-              .consumeRecoveryCode(recoveryCode)
-              .then(setResult(setFeedback))
-          }
-          onEmailChange={(value) => { setFeedback(null); setEmail(value); }}
-          onSelectCode={() => { setFeedback(null); setRecoveryMethod("code"); }}
-          onSelectEmail={() => { setFeedback(null); setRecoveryMethod("email"); }}
-          onSubmit={() =>
-            void account
-              .requestPasswordRecovery(email)
-              .then(setResult(setFeedback))
-          }
-          placeholderTextColor={styles.authPlaceholder.color as string}
-          text={text}
-        />
+        <View style={styles.authForm}>
+          <FormField error={feedback?.kind === "failure" && feedback.failure === "invalidEmail" ? text.invalidEmail : undefined} errorTestID="account-recovery-email-error" label={text.email}>
+            <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" maxFontSizeMultiplier={2} onChangeText={(value) => { setFeedback(null); setEmail(value); }} placeholder={text.enterEmail} placeholderTextColor={styles.authPlaceholder.color} style={[styles.authInput, styles.centeredInput, feedback?.kind === "failure" && feedback.failure === "invalidEmail" ? styles.authInputError : null]} testID="account-recovery-email" value={email} />
+          </FormField>
+          <Button labelStyle={styles.authPrimaryLabel} onPress={() => void account.requestPasswordRecovery(email).then(setResult(setFeedback))} style={styles.authPrimaryButton} testID="account-recovery-submit" variant="primary">{text.sendRecovery}</Button>
+        </View>
       ) : null}
       {mode === "resetPassword" ? (
         <ResetPasswordForm
@@ -890,51 +843,12 @@ function AccountAdoptionScreen({
   const entryChoice = accountData.guestAdoptionChoice;
   const [conflictChoice, setConflictChoice] = useState<"guest" | "account" | null>(null);
   const [goalPlanChoices, setGoalPlanChoices] = useState<Readonly<Record<string, "guest" | "account">>>({});
-  const [recoveryPassword, setRecoveryPassword] = useState("");
-  const [recoveryFeedback, setRecoveryFeedback] = useState<Feedback | null>(null);
-  const [recoveryNeedsReauthentication, setRecoveryNeedsReauthentication] = useState(false);
   const [commandFeedback, setCommandFeedback] = useState<Feedback | null>(null);
   const { busyAction, runCommand } = useAccountCommand();
 
   if (!plan) return null;
   const authenticated = account.state.kind === "authenticated" ? account.state : null;
   if (!authenticated) return null;
-  const recoveryUsesPassword = authenticated.user.providers.includes("password");
-  const issueCodes = () => {
-    const credentials = recoveryUsesPassword
-      ? { kind: "password" as const, password: recoveryPassword }
-      : authenticated.user.providers.includes("apple")
-        ? { kind: "apple" as const }
-        : null;
-    if (!credentials) {
-      setRecoveryNeedsReauthentication(true);
-      setRecoveryFeedback({ kind: "failure", failure: "providerUnavailable" });
-      return;
-    }
-    runCommand(
-      "recovery",
-      () => account.issueRecoveryCodes(credentials),
-      (result) => {
-        if (
-          result.kind === "success" &&
-          result.next === "recoveryCodesIssued" &&
-          result.recoveryCodes &&
-          result.recoveryCodes.length > 0
-        ) {
-          setRecoveryPassword("");
-          setRecoveryNeedsReauthentication(false);
-          setRecoveryFeedback(null);
-          return;
-        }
-        if (result.kind === "failure" && isReauthenticationFailure(result)) setRecoveryNeedsReauthentication(true);
-        setRecoveryFeedback(
-          result.kind === "failure"
-            ? result
-            : { kind: "failure", failure: "remoteFailure" },
-        );
-      },
-    );
-  };
   const hasGuestData = plan.localRecordCount > 0;
   const effectiveChoice = hasGuestData ? entryChoice : "discard";
   const executeEntry = () => {
@@ -963,20 +877,12 @@ function AccountAdoptionScreen({
   const signOut = () => {
     runCommand("signOut", () => account.signOut(), setCommandFeedback);
   };
-  const recoveryOperation = account.recoveryOperation;
-  const recoveryPresentation = getRecoveryOperationPresentation(recoveryOperation);
-  const showRecoveryFailure = (result: Feedback) => setRecoveryFeedback(result.kind === "failure" ? result : null);
-  const canContinue =
-    (effectiveChoice === "discard" || plan.conflictRecordIds.length === 0 || conflictChoice !== null) &&
-    (effectiveChoice === "discard" || accountData.preview.preview.goalPlanConflictGroups.every((group) => goalPlanChoices[group.groupId] !== undefined)) &&
-    !recoveryOperation.blocksProfilePreparation;
-
   return (
     <Screen backAction={backAction}
       edges={["top", "bottom"]}
       footer={
         <Button
-          disabled={!canContinue || busyAction !== null}
+          disabled={busyAction !== null}
           loading={busyAction === "continue"}
           onPress={continueEntry}
           testID="account-entry-continue"
@@ -1044,74 +950,9 @@ function AccountAdoptionScreen({
           </View>
         )) : null}
       </View> : null}
-      <View style={styles.recoverySection} testID="account-recovery-codes-panel">
-        <AuthText style={styles.accountHeading}>{text.recoveryCodes}</AuthText>
-        {recoveryOperation.kind === "idle" ? <AuthText style={styles.accountBody}>{text.recoveryCodesIntro}</AuthText> : null}
-        {recoveryPresentation.showPanel ? <RecoveryOperationPanel
-          busy={busyAction !== null}
-          onConfirmSaved={() => runCommand("recovery", () => account.confirmRecoveryCodesSaved(), showRecoveryFailure)}
-          onResume={() => runCommand("recovery", () => account.resumePendingRecovery(), showRecoveryFailure)}
-          onReplace={() => runCommand("recovery", () => account.requestRecoveryCodeReplacement(), showRecoveryFailure)}
-          onRetry={() => runCommand("recovery", () => account.retryRecoveryOperation(), showRecoveryFailure)}
-          snapshot={recoveryOperation}
-        /> : null}
-        {!recoveryPresentation.issueBlocksReplacement ? <>
-          <View style={styles.accountActionGroup}>
-            {recoveryFeedback && !isReauthenticationFailure(recoveryFeedback) ? renderFeedback(recoveryFeedback, text, text.recoveryCodes) : null}
-            {recoveryNeedsReauthentication && recoveryUsesPassword ? (
-              <View style={styles.accountActionGroup}>
-                <AuthText style={styles.accountBody}>{text.recoveryCodeReauthDescription}</AuthText>
-                <AuthPasswordInput
-                  error={isReauthenticationFailure(recoveryFeedback) ? text.reauthenticationRequired : undefined}
-                  errorTestID="account-recovery-reauth-password-error"
-                  inputStyle={styles.input}
-                  label={text.password}
-                  onChangeText={(value) => {
-                    setRecoveryPassword(value);
-                    setRecoveryFeedback(null);
-                  }}
-                  placeholder={text.password}
-                  placeholderTextColor={styles.placeholder.color as string}
-                  testID="account-recovery-reauth-password"
-                  text={text}
-                  value={recoveryPassword}
-                />
-              </View>
-            ) : recoveryNeedsReauthentication ? (
-              <InfoBlock
-                body={text.recoveryCodeSignInAgain}
-                title={text.recoveryCodes}
-                testID="account-recovery-sign-in-required"
-                tone="warning"
-              />
-            ) : null}
-            {recoveryNeedsReauthentication && !recoveryUsesPassword ? (
-              <Button
-                disabled={busyAction !== null}
-                loading={busyAction === "signOut"}
-                onPress={signOut}
-                testID="account-recovery-sign-in-again"
-                variant="secondary"
-              >
-                {text.recoveryCodeSignInAgainButton}
-              </Button>
-            ) : (
-              <Button
-                disabled={busyAction !== null}
-                loading={busyAction === "recovery"}
-                onPress={issueCodes}
-                testID="account-recovery-codes-submit"
-                variant="secondary"
-              >
-                {text.issueRecoveryCodes}
-              </Button>
-            )}
-          </View>
-        </> : null}
-      </View>
       {commandFeedback ? renderFeedback(commandFeedback, text, text.account) : null}
       <Button
-        disabled={busyAction !== null || recoveryOperation.blocksProfilePreparation}
+        disabled={busyAction !== null}
         loading={busyAction === "signOut"}
         onPress={signOut}
         testID="account-adoption-sign-out"
@@ -1119,30 +960,6 @@ function AccountAdoptionScreen({
       >
         {text.signOut}
       </Button>
-    </Screen>
-  );
-}
-
-function RecoveryPendingScreen({ account, backAction, onTransitionStarted, text }: Readonly<{ account: AccountContext; backAction: BackAction; onTransitionStarted: () => void; text: AccountCopy }>) {
-  const { t } = useTranslation("account");
-  const { busyAction, runCommand } = useAccountCommand();
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const showFailure = (result: Feedback) => setFeedback(result.kind === "failure" ? result : null);
-  return (
-    <Screen backAction={backAction} edges={["top", "bottom"]}>
-      <ScreenHeader title={t("recoveryOperationTitle")} />
-      <View style={{ gap: spacing.md }} testID="account-recovery-pending">
-        <RecoveryOperationPanel
-          busy={busyAction !== null}
-          onConfirmSaved={() => runCommand("recovery", () => account.confirmRecoveryCodesSaved(), showFailure)}
-          onDefer={() => { onTransitionStarted(); runCommand("recovery", () => account.continueWithCurrentAccount(), showFailure); }}
-          onResume={() => runCommand("recovery", () => account.resumePendingRecovery(), showFailure)}
-          onReplace={() => runCommand("recovery", () => account.requestRecoveryCodeReplacement(), showFailure)}
-          onRetry={() => runCommand("retry", () => account.retryRecoveryOperation(), showFailure)}
-          snapshot={account.recoveryOperation}
-        />
-        {feedback?.kind === "failure" ? renderFeedback(feedback, text, text.accountRecoveryTitle) : null}
-      </View>
     </Screen>
   );
 }
@@ -2103,59 +1920,6 @@ function AuthPasswordInput({
   );
 }
 
-function RecoveryForm({
-  code,
-  email,
-  feedback,
-  inputStyle,
-  method,
-  onCodeChange,
-  onConsume,
-  onEmailChange,
-  onSelectCode,
-  onSelectEmail,
-  onSubmit,
-  placeholderTextColor,
-  text,
-}: Readonly<{
-  code: string;
-  email: string;
-  feedback: Feedback | null;
-  inputStyle: StyleProp<TextStyle>;
-  method: "email" | "code";
-  onCodeChange: (value: string) => void;
-  onConsume: () => void;
-  onEmailChange: (value: string) => void;
-  onSelectCode: () => void;
-  onSelectEmail: () => void;
-  onSubmit: () => void;
-  placeholderTextColor: string;
-  text: AccountCopy;
-}>) {
-  const styles = useThemedStyles(createStyles);
-  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalidEmail";
-  const invalidRecoveryCode = feedback?.kind === "failure" && (feedback.failure === "invalidRecoveryCode" || feedback.failure === "recoveryCodeUsed");
-  if (method === "code")
-    return (
-      <View style={styles.authForm}>
-        <FormField error={invalidRecoveryCode ? feedback?.failure === "recoveryCodeUsed" ? text.recoveryCodeUsed : text.invalidRecoveryCode : undefined} errorTestID="account-recovery-code-error" label={text.recoveryCode}>
-          <TextInput autoCapitalize="characters" autoCorrect={false} maxFontSizeMultiplier={2} onChangeText={onCodeChange} placeholder={text.recoveryCode} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, invalidRecoveryCode ? styles.authInputError : null]} testID="account-recovery-code" value={code} />
-        </FormField>
-        <Button labelStyle={styles.authPrimaryLabel} onPress={onConsume} style={styles.authPrimaryButton} testID="account-recovery-code-submit" variant="primary">{text.consumeRecoveryCode}</Button>
-        <Button labelStyle={styles.textActionLabel} onPress={onSelectEmail} testID="account-recovery-email-option" variant="ghost">{text.backToEmailRecovery}</Button>
-      </View>
-    );
-  return (
-    <View style={styles.authForm}>
-        <FormField error={invalidEmail ? text.invalidEmail : undefined} errorTestID="account-recovery-email-error" label={text.email}>
-        <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" maxFontSizeMultiplier={2} onChangeText={onEmailChange} placeholder={text.enterEmail} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, invalidEmail ? styles.authInputError : null]} testID="account-recovery-email" value={email} />
-      </FormField>
-      <Button labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID="account-recovery-submit" variant="primary">{text.sendRecovery}</Button>
-      <Button labelStyle={styles.textActionLabel} onPress={onSelectCode} testID="account-recovery-code-option" variant="ghost">{text.recoveryCodeOption}</Button>
-    </View>
-  );
-}
-
 function ResetPasswordForm({
   confirmation,
   feedback,
@@ -2195,15 +1959,6 @@ function renderFeedback(
   title = text.signInProblem,
 ) {
   if (!feedback) return null;
-  if (feedback.kind === "success" && feedback.next === "recoveryAccepted")
-    return (
-      <InfoBlock
-        body={text.recoveryAcceptedDescription}
-        title={text.recoveryAccepted}
-        testID="account-recovery-accepted"
-        tone="success"
-      />
-    );
   if (feedback.kind === "success")
     return (
       <InfoBlock
@@ -2243,15 +1998,10 @@ function isRegisterFieldFailure(feedback: Feedback | null): boolean {
 
 function isAuthFieldFailure(
   mode: AccountMode,
-  recoveryMethod: "email" | "code",
   feedback: Feedback | null,
 ): boolean {
   if (feedback?.kind !== "failure") return false;
-  if (mode === "recovery") {
-    return recoveryMethod === "code"
-      ? feedback.failure === "invalidRecoveryCode" || feedback.failure === "recoveryCodeUsed"
-      : feedback.failure === "invalidEmail";
-  }
+  if (mode === "recovery") return feedback.failure === "invalidEmail";
   if (mode === "resetPassword") {
     return feedback.failure === "passwordMismatch" || feedback.failure === "weakPassword";
   }
@@ -2262,8 +2012,7 @@ function isAuthFieldFailure(
   StyleSheet.create({
     accountIntro: { gap: spacing.sm },
     accountSection: { gap: spacing.md },
-    recoverySection: { borderTopColor: palette.border, borderTopWidth: 1, paddingTop: spacing.xl, gap: spacing.md },
-    progressToggleRow: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
+      progressToggleRow: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
     progressToggleLabel: { flex: 1, minWidth: 0 },
     accountActionGroup: { gap: spacing.sm },
     accountRecoveryContainer: { flex: 1, gap: spacing.md },
@@ -2347,12 +2096,6 @@ function isAuthFieldFailure(
       fontSize: 38,
       lineHeight: 44,
       letterSpacing: -0.8,
-    },
-    recoveryCodeTitle: {
-      flexShrink: 1,
-      fontSize: 34,
-      lineHeight: 40,
-      maxWidth: "100%",
     },
     authDescription: {
       color: palette.textSecondary,

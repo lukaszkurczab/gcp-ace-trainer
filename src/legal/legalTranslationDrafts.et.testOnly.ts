@@ -16,7 +16,7 @@ Poliitika hõlmab mobiilirakendust, kontot ja sünkroonimisteenuseid, avalikke �
 
 Külalisena või kontoga kasutamisel võidakse seadmesse salvestada paigalduse tunnus, kohaliku andmestiku tunnus, valitud õpitee, eesmärgid, seaded, õppeseansid, vastused, tulemused, kordamisjärjekord, taastamise olek, teavituste ajakava ja sisuteadete saatmata teadete järjekord. Kohalikud meeldetuletused ajastatakse seadmes; Patternly ei registreeri praegu serveri tõuketeavituste tokenit.
 
-Kohalikke õpiandmeid kaitsevad Patternly kasutatavad seadme salvestusruumi turvakontrollid. Sinu palvel kopeeritud taastamiskood kustutatakse, kui operatsioonisüsteem seda võimaldab, ja ainult juhul, kui lõikelaud sisaldab endiselt seda koodi. Ainult seadmesse jäävaid andmeid vastutavale töötlejale ei saadeta, välja arvatud juhul, kui lood konto ja sünkroonid lubatud kirje, saadad teate või kasutad muud võrgufunktsiooni.
+Kohalikke õpiandmeid kaitsevad Patternly kasutatavad seadme salvestusruumi turvakontrollid. Ainult seadmesse jäävaid andmeid vastutavale töötlejale ei saadeta, välja arvatud juhul, kui lood konto ja sünkroonid lubatud kirje, saadad teate või kasutad muud võrgufunktsiooni.
 
 4. Konto- ja autentimisandmed
 
@@ -40,13 +40,13 @@ Teateid töödeldakse sisu parandamiseks ja sisuteadete kanali kaitsmiseks. Õig
 
 Patternly kasutab kontode kaitsmiseks, rikete uurimiseks ja väärkasutuse ennetamiseks autentimistokeneid, App Checki või seadme tõendamise signaale, päringute metaandmeid, võrgu- või e-posti andmete räsimisel saadud piirangutunnuseid, tegevuslogisid ja turvasündmuste kirjeid. Patternly ei kasuta reklaami- ega rakendusteülest jälgimistarkvara, üldotstarbelist välist tootepõhise analüütika tarkvara ega välist krahhide raporteerimise tarkvara. RevenueCat töötleb ostuajalugu tellimusfunktsioonide ja allpool kirjeldatud ostuanalüütika jaoks.
 
-Tegevuslogisid säilitatakse {{privacy.operationalLogRetentionDays}} päeva ja turvalogisid {{privacy.securityLogRetentionDays}} päeva. Patternly eemaldab tootmislogidest mandaadid ja päringute sisu. Sinu palvel kopeeritud taastamiskoodid võivad jääda süsteemi lõikelauale; Patternly püüab need {{privacy.clipboardRecoveryCodeRetentionMinutes}} minuti pärast eemaldada, kui operatsioonisüsteem seda võimaldab, ega kustuta hiljem sinu kopeeritud sisu.
+Tegevuslogisid säilitatakse {{privacy.operationalLogRetentionDays}} päeva ja turvalogisid {{privacy.securityLogRetentionDays}} päeva. Patternly eemaldab tootmislogidest mandaadid ja päringute sisu. See versioon ei loo ega kopeeri enam konto taastamiskoode. Varasema versiooni kopeeritud kood võib jääda süsteemi lõikelauale. Kui selle puhastusmarker on alles, püüab Patternly sobiva koodi kustutada salvestatud aegumisajal, {{privacy.clipboardRecoveryCodeRetentionMinutes}} minutit pärast kopeerimist, kui operatsioonisüsteem seda võimaldab. Hiljem kopeeritud sisu ei eemaldata; see ei taga iga ajaloolise koopia kustutamist.
 
 8. Volitatud töötlejad, saajad ja edastused
 
 Kontrollitud aktiivsed pilveteenuse volitatud töötlejad ja nende eesmärgid: {{privacy.activeCloudProcessors}}. Aktiivsed iseseisvad vastutavad töötlejad ja saajad: {{privacy.activeIndependentRecipients}}. E-kirjade edastamise teenusepakkuja: {{privacy.emailDeliveryProvider}}. Teenusepakkujate piirkonnad: {{privacy.hostingRegions}}. Väljapoole EMP-d tehtavate edastuste kaitsemeetmed: {{privacy.internationalTransferSafeguards}}.
 
-RevenueCati olek: {{privacy.revenueCatStatus}}. Kui saad hiljem App Store’i kaudu tellimuse, võib Apple tehingu- ja tellimuskirjeid iseseisvalt säilitada. Patternly konto kustutamine ei tühista seda App Store’i tellimust ega eemalda Apple’i iseseisva vastutuse all olevaid kirjeid. Patternly vaatab oma volitatud töötlejad, saajad ja edastuskorrad üle iga kord, kui teenusepakkujad või nende töötlemiskohad muutuvad.
+RevenueCati olek: {{privacy.revenueCatStatus}}. Kui saad hiljem Google Play kaudu tellimuse, võib Google tehingu- ja tellimuskirjeid iseseisvalt säilitada. Patternly konto kustutamine ei tühista seda Google Play tellimust ega eemalda Google’i iseseisva vastutuse all olevaid kirjeid. Patternly vaatab oma volitatud töötlejad, saajad ja edastuskorrad üle iga kord, kui teenusepakkujad või nende töötlemiskohad muutuvad.
 
 9. Säilitamine ja konto kustutamine
 
@@ -97,7 +97,7 @@ Teenuse täiustamisel võivad funktsioonid ja sisu muutuda. Olulistest muudatust
 
 Mõnda funktsiooni saab kasutada külalisena, salvestades andmed seadmesse. Konto võib võimaldada toetatud andmete taastamist ja sünkroonimist. Vastutad oma konto kaudu tehtud tegevuse eest, välja arvatud juhul, kui teatad volitamata juurdepääsust viivitamata.
 
-Kontoteenuse leping sõlmitakse tähtajatult ja kehtib seni, kuni sina või operaator selle nende tingimuste kohaselt lõpetab. Patternly konto kustutamine lõpetab kontoteenuse. Kui ostad hiljem App Store’i kaudu tellimuse, ei tühista konto kustutamine seda iseenesest.
+Kontoteenuse leping sõlmitakse tähtajatult ja kehtib seni, kuni sina või operaator selle nende tingimuste kohaselt lõpetab. Patternly konto kustutamine lõpetab kontoteenuse. Kui ostad hiljem Google Play kaudu tellimuse, ei tühista konto kustutamine seda iseenesest.
 
 Saad konto kustutada rakenduses oleva kustutamisvoo kaudu. Privaatsuspoliitika selgitab, milliseid andmeid see mõjutab, millised säilitamisreeglid kehtivad ja millised on kustutamise piirid.
 
@@ -117,11 +117,11 @@ Võid seadusega lubatud ulatuses tsiteerida piiratud osi, kuid ilma kirjaliku lo
 
 Uued Premiumi ostud on praegu keelatud, seega kehtivat tasulist pakkumist ei ole. Kui ostud hiljem lubatakse, on kavandatud pakkumine {{terms.premiumProductName}} (toote tunnus {{terms.premiumProductIdentifier}}), igakuine automaatselt uuenev digiteenus ilma prooviperioodita. Kavandatud hind koos kohaldatavate maksudega Poolas on {{terms.premiumPriceIncludingTaxes}}; kavandatud pikendamise hind on {{terms.premiumRenewalPriceIncludingTaxes}} iga {{terms.premiumBillingPeriod}} kohta. Need on Poola kavandatud hinnad, mitte praegune pakkumine; teiste riikide hinnad pole kinnitatud. Enne ostude lubamist tuleb selle pakkumise kohta esitada asjakohane müüja, kehtiv hind, pikendamisperiood, Premiumi ulatus, makseviis ja -aeg, teenuse algus ning maksekohustus.
 
-Praegune müüja kokkulepe on järgmine: {{terms.merchantOfRecord}}. Tulevase poe-põhise pakkumise müüja ja maksekorraldus pole kinnitatud. Kui tellimus tehakse tulevikus kättesaadavaks ja ostad selle Apple App Store’i kaudu, pakub Apple selle poe makse- ja tellimuse haldamise kanalit; see ei vabasta operaatorit vastutusest Patternly vastavuse ega sinu seaduslike nõuete eest vastutava müüja vastu.
+Praegune müüja kokkulepe on järgmine: {{terms.merchantOfRecord}}. Tulevase poe-põhise pakkumise müüja ja maksekorraldus pole kinnitatud. Kui tellimus tehakse tulevikus kättesaadavaks ja ostad selle Google Play kaudu, pakub Google selle poe makse- ja tellimuse haldamise kanalit; see ei vabasta operaatorit vastutusest Patternly vastavuse ega sinu seaduslike nõuete eest vastutava müüja vastu.
 
-Tellimus uueneb ainult enne ostu selgelt näidatud tingimustel. Kui ostad selle hiljem Apple App Store’i kaudu, saad tulevased pikendamised peatada Apple’i konto seadetes ning rakenduse või Patternly konto kustutamine ei tühista seda App Store’i tellimust. Olulist hinnatõusu ei loeta kunagi vastuvõetuks üksnes Patternly kasutamise jätkamise tõttu; selleks on vaja kohaldatavat jaatava nõusoleku, uuesti ostmise või uuendamise korda.
+Tellimus uueneb ainult enne ostu selgelt näidatud tingimustel. Kui ostad selle hiljem Google Play kaudu, saad tulevased pikendamised peatada Google Play tellimuste seadetes ning rakenduse või Patternly konto kustutamine ei tühista seda Google Play tellimust. Olulist hinnatõusu ei loeta kunagi vastuvõetuks üksnes Patternly kasutamise jätkamise tõttu; selleks on vaja kohaldatavat jaatava nõusoleku, uuesti ostmise või uuendamise korda.
 
-Kui ostad hiljem tellimuse Apple App Store’i kaudu, võib Apple tehingute tagasimakseid oma platvormil hallata. Patternly teenust, selle vastavust või sinu seaduslikke tarbijaõigusi puudutavad kaebused saad esitada ka operaatorile.
+Kui ostad hiljem tellimuse Google Play kaudu, võib Google tehingute tagasimakseid oma platvormil hallata. Patternly teenust, selle vastavust või sinu seaduslikke tarbijaõigusi puudutavad kaebused saad esitada ka operaatorile.
 
 Premiumi juurdepääs algab kohe pärast ostu ainult siis, kui oled eraldi ja sõnaselgelt taotlenud teenuse alustamist enne 14-päevase taganemistähtaja lõppu. Ühtegi valikut ei tohi olla ette märgitud. Kui taganed pärast teenuse algust, võidakse kohustusliku õiguse lubatud juhul nõuda proportsionaalset tasu kuni taganemiseni osutatud teenuse eest. Premiumi ei pakuta eraldi ühekordse digitaalse infosisu tarne vormis, seega ei palu Patternly sul sel alusel taganemisõigusest ilmajäämist kinnitada. Muud seadusest tulenevad taganemisõigused jäävad kehtima. Kaebuse esitamine ei piirdu 14 päevaga.
 
@@ -139,7 +139,7 @@ Sisuteate või tugisõnumi esitamisel kinnitad, et see on seaduslik ega sisalda 
 
 Võid Patternly kasutamise igal ajal lõpetada ja konto kustutada. Kui platvormi tellimus muutub hiljem kättesaadavaks, võib olla vaja see platvormi kaudu eraldi tühistada. Operaator võib juurdepääsu proportsionaalselt piirata ainult olulise rikkumise, kinnitatud turvaohu, ebaseadusliku kasutuse, maksmata jätmise või siduva õigusnõude tõttu.
 
-Kui kahju vältimiseks või seaduse täitmiseks pole vaja kohe tegutseda, selgitab operaator põhjust, teatab sellest mõistliku aja ette ja annab võimaluse rikkumine kõrvaldada. Võid esitada apellatsiooni aadressil {{terms.complaintEmail}}. Kui piirangu alus lõpeb, taastatakse juurdepääs. Peatamine ei kõrvalda seadusest tulenevaid vastavuse, tagasimakse, andmete tagastamise, kaebuse või tühistamise õigusi. Kui ostad hiljem tellimuse Apple App Store’i kaudu, ei peata juurdepääsu piiramine iseenesest selle tulevasi pikendamisi.
+Kui kahju vältimiseks või seaduse täitmiseks pole vaja kohe tegutseda, selgitab operaator põhjust, teatab sellest mõistliku aja ette ja annab võimaluse rikkumine kõrvaldada. Võid esitada apellatsiooni aadressil {{terms.complaintEmail}}. Kui piirangu alus lõpeb, taastatakse juurdepääs. Peatamine ei kõrvalda seadusest tulenevaid vastavuse, tagasimakse, andmete tagastamise, kaebuse või tühistamise õigusi. Kui ostad hiljem tellimuse Google Play kaudu, ei peata juurdepääsu piiramine iseenesest selle tulevasi pikendamisi.
 
 11. Vastutus ja seadusest tulenevad õigused
 
@@ -149,7 +149,7 @@ Operaator ei välista ega piira üldjuhul kohustusliku õiguse alusel vastutust.
 
 12. Kolmandate isikute teenused
 
-Patternly võib kasutada Apple’i ning autentimise, majutuse, teavituste ja arvelduse teenusepakkujaid. Nende enda tingimused võivad reguleerida sinu suhet nendega. Viited sertifitseerimisasutustele ja tehnoloogiaomanikele tähistavad õppeteemasid ega tähenda sponsorlust või heakskiitu.
+Patternly võib kasutada Google’i ning autentimise, majutuse, teavituste ja arvelduse teenusepakkujaid. Nende enda tingimused võivad reguleerida sinu suhet nendega. Viited sertifitseerimisasutustele ja tehnoloogiaomanikele tähistavad õppeteemasid ega tähenda sponsorlust või heakskiitu.
 
 13. Kohaldatav õigus ja vaidlused
 
@@ -185,7 +185,7 @@ Kui oled selleks õigustatud tarbija, on sul üldjuhul õigus kauglepingust 14 p
 
 Patternly peab vastama kirjeldusele, kokkulepitud tasulise teenuse ulatusele, funktsionaalsusele, ühilduvusele, ligipääsetavusele, järjepidevusele, turvalisusele ja uuendustele, mida võid lepingu ja kohustusliku õiguse alusel mõistlikult oodata. Kui teenus ei vasta neile nõuetele, teavita aadressil {{terms.complaintEmail}}. Võid nõuda vastavuse taastamist mõistliku aja jooksul ja olulise ebamugavuseta.
 
-Kui seaduses sätestatud tingimused on täidetud, võid nõuda vastutavalt müüjalt proportsionaalset hinnaalandust või lepingu lõpetada ja saada kohaldatava tagasimakse. Kui ostsid Apple App Store’i kaudu, ei asenda selle tehingutööriistad neid õiguskaitsevahendeid.
+Kui seaduses sätestatud tingimused on täidetud, võid nõuda vastutavalt müüjalt proportsionaalset hinnaalandust või lepingu lõpetada ja saada kohaldatava tagasimakse. Kui ostsid Google Play kaudu, ei asenda selle tehingutööriistad neid õiguskaitsevahendeid.
 
 19. Kaebused
 

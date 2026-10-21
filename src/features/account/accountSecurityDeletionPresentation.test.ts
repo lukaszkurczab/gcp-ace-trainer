@@ -25,13 +25,13 @@ test("delete account switches from identity confirmation to the hold action", ()
   assert.equal(en.password, "Password");
   assert.equal(en.holdDelete, "Hold to delete");
   assert.equal(en.deletePermanent, "This cannot be undone");
-  assert.equal(en.deleteConsequences, "Your sign-in, account progress, recovery codes, and learning data on this device will be deleted. Device preferences and limited security records will remain.");
+  assert.equal(en.deleteConsequences, "Your sign-in, account progress, and learning data on this device will be deleted. Device preferences and limited security records will remain.");
   assert.equal(en.deleteConfirm, "Confirm");
   assert.equal(en.deletePendingSync, "Sync pending changes before deleting your account.");
   assert.doesNotMatch(en.deleteConsequences, /GDPR|Article|retention period|technical deletion/u);
   assert.equal(pl.password, "Hasło");
   assert.equal(pl.holdDelete, "Przytrzymaj, aby usunąć");
-  assert.equal(pl.deleteConsequences, "Dane logowania, postęp konta, kody odzyskiwania i dane nauki na tym urządzeniu zostaną usunięte. Preferencje urządzenia i ograniczone zapisy bezpieczeństwa pozostaną.");
+  assert.equal(pl.deleteConsequences, "Dane logowania, postęp konta i dane nauki na tym urządzeniu zostaną usunięte. Preferencje urządzenia i ograniczone zapisy bezpieczeństwa pozostaną.");
   assert.doesNotMatch(pl.deleteConsequences, /RODO|art\.|okres przechowywania|techniczne zapisy/u);
   assert.equal(pl.deleteConfirm, "Potwierdź");
   assert.equal(pl.deletePendingSync, "Zsynchronizuj oczekujące zmiany przed usunięciem konta.");
@@ -51,11 +51,11 @@ test("delete account switches from identity confirmation to the hold action", ()
   assert.deepEqual(locales.map((locale) => locale.deleteConsequences), [
     en.deleteConsequences,
     pl.deleteConsequences,
-    "Deine Anmeldedaten, dein Kontofortschritt, Wiederherstellungscodes und Lerndaten auf diesem Gerät werden gelöscht. Geräteeinstellungen und begrenzte Sicherheitsnachweise bleiben erhalten.",
-    "Vos identifiants de connexion, la progression de votre compte, vos codes de récupération et les données d’apprentissage de cet appareil seront supprimés. Les préférences de l’appareil et certaines données de sécurité limitées seront conservées.",
-    "Se eliminarán tu acceso, el progreso de tu cuenta, los códigos de recuperación y los datos de aprendizaje de este dispositivo. Se conservarán las preferencias del dispositivo y algunos registros de seguridad limitados.",
-    "Il tuo accesso, i progressi dell’account, i codici di recupero e i dati di apprendimento su questo dispositivo verranno eliminati. Le preferenze del dispositivo e alcuni dati di sicurezza limitati resteranno.",
-    "Sinu sisselogimisandmed, konto edenemine, taastamiskoodid ja selles seadmes olevad õpiandmed kustutatakse. Seadme eelistused ja piiratud turvakirjed jäävad alles.",
+    "Deine Anmeldedaten, dein Kontofortschritt und deine Lerndaten auf diesem Gerät werden gelöscht. Geräteeinstellungen und begrenzte Sicherheitsnachweise bleiben erhalten.",
+    "Vos identifiants de connexion, la progression de votre compte et les données d’apprentissage de cet appareil seront supprimés. Les préférences de l’appareil et certaines données de sécurité limitées seront conservées.",
+    "Se eliminarán tu acceso, el progreso de tu cuenta y los datos de aprendizaje de este dispositivo. Se conservarán las preferencias del dispositivo y algunos registros de seguridad limitados.",
+    "Il tuo accesso, i progressi dell’account e i dati di apprendimento su questo dispositivo verranno eliminati. Le preferenze del dispositivo e alcuni dati di sicurezza limitati resteranno.",
+    "Sinu sisselogimisandmed, konto edenemine ja selles seadmes olevad õpiandmed kustutatakse. Seadme eelistused ja piiratud turvakirjed jäävad alles.",
   ]);
   assert.deepEqual([de.deletePermanent, fr.deletePermanent, es.deletePermanent, it.deletePermanent, et.deletePermanent], ["Diese Aktion kann nicht rückgängig gemacht werden", "Cette action est irréversible", "Esta acción no se puede deshacer", "Questa operazione non può essere annullata", "Seda toimingut ei saa tagasi võtta"]);
   for (const locale of locales) {

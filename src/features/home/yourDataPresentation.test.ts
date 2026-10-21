@@ -23,8 +23,6 @@ function state(kind: AccountState["kind"]): AccountState {
     case "signingOut":
     case "deleting":
       return { kind } as AccountState;
-    case "recoveryPending":
-      return { kind };
     case "verificationPending":
     case "signOutPending":
       return { kind, user };
@@ -48,7 +46,6 @@ test("Your data presents an explicit action/details/privacy matrix for every acc
     guest: { action: "guestExport", details: "guest", icon: "database", privacyRequests: true, reset: true, stateCopy: "guest", testID: "guest-local-data-export" },
     signedOut: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "signedOut", testID: "data-open-account" },
     guestAccessBlocked: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "guestAccessBlocked", testID: "data-open-account" },
-    recoveryPending: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "recoveryPending", testID: "data-open-account" },
     verificationPending: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "verificationPending", testID: "data-open-account" },
     providerRegistrationRequired: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "providerRegistrationRequired" },
     loading: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "loading" },
@@ -108,7 +105,7 @@ test("Your data keeps details and privacy access exclusive to authenticated and 
     stateCopy: "guest",
   });
 
-  for (const kind of ["signedOut", "guestAccessBlocked", "recoveryPending", "verificationPending", "providerRegistrationRequired", "loading", "deletionPending", "signingOut", "deleting", "backendUnavailable", "revokedSession", "signOutPending"] as const) {
+  for (const kind of ["signedOut", "guestAccessBlocked", "verificationPending", "providerRegistrationRequired", "loading", "deletionPending", "signingOut", "deleting", "backendUnavailable", "revokedSession", "signOutPending"] as const) {
     const presentation = getYourDataPresentation(state(kind));
     assert.equal(presentation.details, "none", kind);
     assert.equal(presentation.privacyRequests, false, kind);
@@ -116,13 +113,12 @@ test("Your data keeps details and privacy access exclusive to authenticated and 
   }
 });
 
-test("recovery-pending and local-offline copy exist in every supported data locale", () => {
+test("local-offline copy exists in every supported data locale", () => {
   const locales = ["en", "pl", "de", "es", "fr", "it", "et"] as const;
   const entries = locales.map((locale) => {
     const data = JSON.parse(readFileSync(`src/locales/${locale}/data.json`, "utf8")) as {
       state: Record<string, { title: string; body: string }> & {
         localOffline: { title: string; body: string };
-        recoveryPending: { title: string; body: string };
       };
     };
     return { locale, state: data.state };
@@ -131,18 +127,12 @@ test("recovery-pending and local-offline copy exist in every supported data loca
   assert.ok(english);
   const englishStateKeys = Object.keys(english.state).sort();
 
-  assert.deepEqual(english.state.recoveryPending, {
-    title: "Finish account recovery",
-    body: "A saved recovery step needs your attention before we open your data.",
-  });
   assert.deepEqual(english.state.localOffline, {
     title: "Account data on this device",
     body: "Your saved learning stays on this device. Reconnect to check your account before syncing changes or using account data actions.",
   });
   for (const entry of entries) {
     assert.deepEqual(Object.keys(entry.state).sort(), englishStateKeys, entry.locale);
-    assert.ok(entry.state.recoveryPending.title.trim().length > 0, entry.locale);
-    assert.ok(entry.state.recoveryPending.body.trim().length > 0, entry.locale);
     assert.ok(entry.state.localOffline.title.trim().length > 0, entry.locale);
     assert.ok(entry.state.localOffline.body.trim().length > 0, entry.locale);
   }

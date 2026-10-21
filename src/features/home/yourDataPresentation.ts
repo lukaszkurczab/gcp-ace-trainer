@@ -14,7 +14,6 @@ export type YourDataStateCopy =
   | "guest"
   | "signedOut"
   | "guestAccessBlocked"
-  | "recoveryPending"
   | "verificationPending"
   | "providerRegistrationRequired"
   | "loading"
@@ -62,8 +61,6 @@ export function getYourDataPresentation(state: AccountState): YourDataPresentati
       return presentation("signedOut", "openAccount", "user", "data-open-account", "none", false);
     case "guestAccessBlocked":
       return presentation("guestAccessBlocked", "openAccount", "user", "data-open-account", "none", false);
-    case "recoveryPending":
-      return presentation("recoveryPending", "openAccount", "user", "data-open-account", "none", false);
     case "verificationPending":
       return presentation("verificationPending", "openAccount", "user", "data-open-account", "none", false);
     case "providerRegistrationRequired":

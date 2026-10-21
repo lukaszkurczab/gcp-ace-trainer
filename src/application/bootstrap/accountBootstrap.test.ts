@@ -282,7 +282,6 @@ function createPreparationPorts(input: Readonly<{
     sessionCoordinator: coordinator,
     stateRef,
     setState: (next: AccountState) => { state.push(next); },
-    recoveryOperation: { blocksProfilePreparation: false },
     logoutControlSnapshotRef: { current: { blocked: null, completed: [], pending: [], version: 2 } },
     sessionExchangeUidRef: { current: null },
     classifyAccountFailure,
@@ -292,10 +291,8 @@ function createPreparationPorts(input: Readonly<{
     setAccountEntryMode: () => undefined,
     beginIdentityProofBarrier: async () => null,
     resolveIdentityProofBarrier: async () => { throw new Error("unexpected identity barrier"); },
-    guardRecoveryBeforePreparation: async () => true,
     logoutControl: { blockAndQueueRevoke: async () => ({ blocked: null, completed: [], pending: [], version: 2 }) },
     setLogoutControlSnapshot: () => undefined,
-    recoverySessionIdentityRef: { current: null },
     legalAcceptancePendingRef: { current: false },
     runAccountIdentityProof,
     isAuthoritativeIdentityProofDenial,
@@ -318,33 +315,6 @@ function newerAttempt(ports: AccountBootstrapPreparationPorts, user: FirebaseAut
     handoffReady: true,
   };
 }
-
-test("a recovery guard that settles after a generation switch cannot clear or publish over the newer attempt", async () => {
-  const user = { uid: "guard-race-uid", email: "person@example.test", emailVerified: true, providers: ["password"] } as const;
-  const fixture = await createBootstrapFixture("existing-account");
-  const { ports, auth, state, generation, coordinator } = createPreparationPorts({ selectedProfile: fixture.selected, user });
-  const guard = deferred<boolean>();
-  const guardStarted = deferred<void>();
-  const racedPorts = {
-    ...ports,
-    guardRecoveryBeforePreparation: async () => { guardStarted.resolve(); return guard.promise; },
-  } as AccountBootstrapPreparationPorts;
-  const oldPreparation = prepareAuthenticatedAccountBootstrap(racedPorts, auth as never, {} as PatternlyApiClient, user, generation);
-  await guardStarted.promise;
-
-  const nextGeneration = coordinator.restart(user.uid);
-  const currentAttempt = newerAttempt(ports, user, nextGeneration);
-  ports.profilePreparationRef.current = currentAttempt;
-  ports.setState({ kind: "signedOut" });
-  const stateBeforeOldGuardSettles = state.at(-1);
-
-  guard.resolve(false);
-  const oldAttempt = await oldPreparation;
-  assert.ok(oldAttempt);
-  assert.deepEqual(await oldAttempt.completion, { kind: "failure", failure: "revokedSession" });
-  assert.equal(ports.profilePreparationRef.current, currentAttempt);
-  assert.equal(state.at(-1), stateBeforeOldGuardSettles);
-});
 
 test("a stale preparation entry rejects before superseding the newer current attempt", async () => {
   const user = { uid: "stale-entry-uid", email: "person@example.test", emailVerified: true, providers: ["password"] } as const;

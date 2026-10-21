@@ -160,7 +160,7 @@
   "targetDateGuidance.atRisk": "Votre rythme actuel risque de ne pas vous permettre de respecter cette échéance.",
   "targetDateGuidance.onTrack": "Votre rythme actuel vous permet de respecter cette échéance.",
   "targetDateGuidance.openEnded": "Continuez à apprendre à votre rythme.",
-  "targetDateGuidance.unavailable.unknownCompletionRule": "Ce contenu ne définit pas encore de règle de validation.",
+  "targetDateGuidance.unavailable.unknownCompletionRule": "Le contenu ne fournit pas le contrat complet de réussite.",
   "targetDateGuidance.unavailable.insufficientElapsedEvidence": "Continuez à vous entraîner pour obtenir une prévision utile.",
   "targetDateGuidance.unavailable.calculationError": "Impossible de mettre à jour vos conseils. Réessayez.",
   "targetDateGuidance.unavailable.noTarget": "Impossible de lire l’échéance. Modifiez votre objectif.",

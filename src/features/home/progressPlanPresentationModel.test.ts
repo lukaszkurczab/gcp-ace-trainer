@@ -263,3 +263,16 @@ test("Progress rejects invalid count, minimum, window and quality rather than pr
   ] as const;
   for (const completion of invalid) assert.deepEqual(buildProgressPlanPresentationModel({ snapshot: ready(completion as unknown as PackageCompletionState), activeTrackId: TRACK_ID, locale: "en" }), { kind: "unavailable", trackId: TRACK_ID, reason: "calculation_error" });
 });
+
+test("Progress preserves earned-rule provenance and refuses malformed provenance", () => {
+  const base=completionCompleted();
+  if(base.kind === "unknown") throw Error("fixture");
+  const source={contentVersion:"old-v2",artifactSha256:"b".repeat(64),ruleVersion:2 as const,completedAt:"2026-01-01T00:00:00.000Z",attemptId:"earning-attempt"};
+  const completion={...base,chapters:[{...base.chapters[0]!,completionSource:source}]};
+  const model=buildProgressPlanPresentationModel({snapshot:ready(completion),activeTrackId:TRACK_ID,locale:"en"});
+  assert.equal(model.kind,"ready");
+  if(model.kind === "ready") assert.deepEqual(model.completion,completion);
+  const invalid={...completion,chapters:[{...completion.chapters[0]!,completionSource:{...source,ruleVersion:3 as const}}]};
+  const rejected=buildProgressPlanPresentationModel({snapshot:ready(invalid),activeTrackId:TRACK_ID,locale:"en"});
+  assert.equal(rejected.kind,"unavailable","v3 provenance requires a full unit coverage snapshot");
+});

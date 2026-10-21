@@ -7,8 +7,7 @@ import { readTrainingAttempts } from "../../storage/repositories/trainingAttempt
 import type { Q13ActorFence } from "../account/AccountSessionProvider";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { inspectQ13SecureAuthPersistence } from "../../infrastructure/firebase/secureAuthPersistence";
-import { inspectQ13RecoveryOperationVault } from "../../infrastructure/security/recoveryOperationVault";
-import { inspectQ13RecoveryCodeClipboard } from "../../infrastructure/security/recoveryCodeClipboard";
+import { inspectQ13RetiredAccountSecretsCleanup, type RetiredAccountSecretsCleanupState } from "../../infrastructure/security/retiredAccountSecrets";
 import { inspectQ13GuestPrivacyDraft } from "../../features/home/guestPrivacyDraft";
 import { inspectPreparedQ13StorageInventory, inspectPreparedQ13StorageReadiness, type Q13StorageInventorySnapshot, type Q13StorageReadiness } from "../../storage/repositories/profileStorageRepository";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
@@ -21,6 +20,7 @@ export type Q13FullStorageReceipt = Readonly<{
   packages: Q13NodePackageInventory;
   actor: Readonly<{ kind: "ready" | "denied"; accountIdSha256?: string; profileIdSha256?: string; uidSha256?: string; activeSessionCount?: number; activeSessionSha256?: string; activeAnswerRecordCount?: number; activeAnswerRecordsSha256?: string } | { kind: "unavailable"; reason: Q13ActorUnavailableReason }>;
   secureStoreInventory: Readonly<{ kind: "observed"; slotCount: number; inventorySha256: string; authUserAffinity: "not_checked" | "absent" | "matches_current_sdk_uid" | "different_or_unavailable"; dynamicFirebaseNamespace: "unavailable" } | { kind: "unavailable"; reason: "storage_inventory_unavailable" | "profile_control_unavailable" | "encrypted_control_unavailable" | "secure_slot_unavailable" | "storage_changed" }>;
+  retiredDeviceSecretsCleanup: RetiredAccountSecretsCleanupState;
 }>;
 
 export type Q13ActorUnavailableReason =
@@ -130,19 +130,18 @@ export async function inspectQ13CapabilityProbe(
   const packages = packageSources
     ? await inspectExpoNodePackageInventory(packageSources)
     : Object.freeze({ kind: "unavailable" as const, reason: "pointer_source_unavailable" as const });
-  const [authSlot, recoveryOperationSlot, clipboardSlot, guestPrivacySlot] = await Promise.all([
-    inspectQ13SecureAuthPersistence(undefined, actorFence.kind === "ready" ? actorFence.isCurrentSdkUid : undefined), inspectQ13RecoveryOperationVault(), inspectQ13RecoveryCodeClipboard(), inspectQ13GuestPrivacyDraft(),
+  const [authSlot, guestPrivacySlot] = await Promise.all([
+    inspectQ13SecureAuthPersistence(undefined, actorFence.kind === "ready" ? actorFence.isCurrentSdkUid : undefined), inspectQ13GuestPrivacyDraft(),
   ]);
-  const secureStoreInventory = [authSlot, recoveryOperationSlot, clipboardSlot, guestPrivacySlot].every((entry) => entry.kind === "observed")
+  const retiredDeviceSecretsCleanup = inspectQ13RetiredAccountSecretsCleanup();
+  const secureStoreInventory = [authSlot, guestPrivacySlot].every((entry) => entry.kind === "observed")
     && storage.kind === "observed" && storage.secureControl?.kind === "observed" && storage.control?.kind === "observed"
     ? Object.freeze({
         kind: "observed" as const,
-        slotCount: 4 + storage.secureControl.slotCount + storage.control.slotCount,
+        slotCount: 2 + storage.secureControl.slotCount + storage.control.slotCount,
         authUserAffinity: authSlot.kind === "observed" ? authSlot.userRecordAffinity : "not_checked",
         inventorySha256: sha256Utf8(JSON.stringify([
           ["firebase-auth-user", authSlot.kind === "observed" ? authSlot.userRecordSha256 : null, authSlot.kind === "observed" ? authSlot.userRecord : null, authSlot.kind === "observed" ? authSlot.userRecordAffinity : null],
-          ["recovery-operation", recoveryOperationSlot.kind === "observed" ? recoveryOperationSlot.recordSha256 : null, recoveryOperationSlot.kind === "observed" ? recoveryOperationSlot.record : null],
-          ["recovery-clipboard-marker", clipboardSlot.kind === "observed" ? clipboardSlot.markerSha256 : null, clipboardSlot.kind === "observed" ? clipboardSlot.marker : null],
           ["guest-privacy-draft", guestPrivacySlot.kind === "observed" ? guestPrivacySlot.draftSha256 : null, guestPrivacySlot.kind === "observed" ? guestPrivacySlot.draft : null],
           storage.secureControl,
           storage.control.slotInventorySha256,
@@ -214,5 +213,5 @@ export async function inspectQ13CapabilityProbe(
     if (finalDecision.kind === "unavailable") actor = Object.freeze({ kind: "unavailable", reason: finalDecision.reason });
   }
   const { packagePointerSources: _privateSources, ...publicStorage } = finalStorage;
-  return Object.freeze({ kind: "observed", storageReadiness: readiness, inventory: Object.freeze(publicStorage), packageRoot, packages: finalPackages, actor, secureStoreInventory: finalSecureStoreInventory });
+  return Object.freeze({ kind: "observed", storageReadiness: readiness, inventory: Object.freeze(publicStorage), packageRoot, packages: finalPackages, actor, secureStoreInventory: finalSecureStoreInventory, retiredDeviceSecretsCleanup });
 }

@@ -31,7 +31,7 @@ export function buildHomePlanPracticeSetupParams(
 
 export function completionCopy(outcome: Pick<ProposalOutcome, "completionState"> & Partial<Pick<ProposalOutcome, "identity">>, t: Translate, trackId?: TrackId): string {
   const completion = outcome.completionState;
-  if (completion.kind === "unknown") return t("The package does not define a completion rule.");
+  if (completion.kind === "unknown") return t("The package’s full completion contract is unavailable.");
   if (completion.kind === "completed") return t("The package completion rule is currently met.");
   const missingUnits = completion.chapters.flatMap((chapter) => chapter.coverage
     .filter((unit) => unit.deficit > 0)
@@ -63,7 +63,7 @@ export function targetCopy(target: TargetAssessment, t: Translate): string {
   if (target.kind === "open_ended") return t("No target date. The plan stays open-ended.");
   if (target.kind === "quality_requirement_unmet") return t("Attempt minimums are met, but recent accuracy is below the required level. Keep practising; completion timing is not predictable yet.");
   if (target.kind === "quality_outcome_unknown") return t("Recent accuracy is not measured yet, so the remaining completion effort is unknown.");
-  if (target.kind === "unknown_completion_rule") return t("The target outlook is unknown because the package has no completion rule.");
+  if (target.kind === "unknown_completion_rule") return t("The package’s full completion contract is unavailable.");
   if (target.kind === "unavailable_due_to_shortfall") return t("Target outlook is unavailable until the material shortfall is resolved.");
   if (target.kind === "minimum_volume_fits") {
     if (target.remainingAttempts === 0) return t("Required completion is already recorded; this forecast excludes optional practice.");

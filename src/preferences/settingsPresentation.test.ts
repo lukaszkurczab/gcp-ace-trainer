@@ -23,7 +23,7 @@ const premiumScreen = readFileSync("src/features/premium/PremiumPurchaseScreen.t
 
 test("Settings exposes account and participant navigation actions plus conditional developer verification actions", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 12);
+  assert.equal(navigationRows.length, 11);
 
   for (const callback of [
     "onOpenAccount",

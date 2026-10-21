@@ -1,5 +1,6 @@
 import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
-import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
+import type { PackageCompletionRule, CompletionCreditClassifier, VerifiedCompletionSource } from "../../domain/learning/packageCompletionRule";
+import { createCompletionCreditClassifier } from "./completionCredit";
 import aws from "../generated/canonical-content/aws-certified-solutions-architect-associate.json";
 import backend from "../generated/canonical-content/backend-system-design-interview.json";
 import claude from "../generated/canonical-content/claude-certified-architect-professional-certification.json";
@@ -30,6 +31,8 @@ export type CanonicalTrackRuntime = Readonly<{
   questions: readonly Question[];
   interactions: CanonicalInteractionRegistry;
   completionRule?: PackageCompletionRule;
+  classifyCompletionItem?: CompletionCreditClassifier;
+  completionSources?: readonly VerifiedCompletionSource[];
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   planningPolicy?: LearningPlanningPolicy;
   trainingIdentity?: ContentTrackIdentity;
@@ -125,8 +128,23 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
     const modeConfigs = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, projections, (edge) => markStartup("mode_artifact_questions", edge));
     markStartup("catalog_projection", "end");
     markStartup("catalog_tracks", "begin");
-    const byTrack = new Map(catalogs.map((catalog) => [catalog.trackId, createTrackRuntime(catalog, modeConfigs,
-      successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId), interactionRegistry)]));
+    // Prepare public retained proof before any synchronous read projection.
+    // A failed old artifact becomes unavailable credit, never a failed current catalog.
+    const retainedProofs = dependencies.artifacts === undefined
+      ? await verifyRetainedCompletionCatalogs(await loadRetainedClaudePackages().catch(() => []), interactionRegistry) : [];
+    const byTrack = new Map(catalogs.map((catalog) => {
+      const completionSources = [catalog, ...retainedProofs.filter(source => source.trackId === catalog.trackId)].map(source => Object.freeze({
+        trackId: source.trackId, contentVersion: source.contentVersion, artifactSha256: source.artifactSha256, completionRule: source.completionRule,
+        getQuestion: (questionId: string) => {
+          const question = source.getQuestionById(questionId);
+          return question ? Object.freeze({ nodeId: question.nodeId, mentalUnitId: question.mentalUnitId }) : undefined;
+        },
+      }));
+      return [catalog.trackId, createTrackRuntime(catalog, modeConfigs,
+        successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId), interactionRegistry,
+        dependencies.artifacts === undefined && catalog.trackId === "claude-certified-architect-professional-certification" ? createCompletionCreditClassifier(catalog, retainedProofs) : undefined,
+        completionSources)] as const;
+    }));
     markStartup("catalog_tracks", "end");
     return Object.freeze({
       tracks: Object.freeze(catalogs.map((catalog) => catalog.trackId)),
@@ -140,7 +158,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
   } finally { markStartup("catalog_build", "end"); }
 }
 
-function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): CanonicalTrackRuntime {
+function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry, classifyCompletionItem?: CompletionCreditClassifier, completionSources?: readonly VerifiedCompletionSource[]): CanonicalTrackRuntime {
   const modes = Object.freeze(configs.filter((config) => config.trackId === catalog.trackId));
   markStartup("planning_policy", "begin");
   let planningPolicy: LearningPlanningPolicy | undefined;
@@ -158,6 +176,8 @@ function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly
     questions: catalog.questions,
     interactions,
     ...(catalog.completionRule ? { completionRule: catalog.completionRule } : {}),
+    ...(classifyCompletionItem ? { classifyCompletionItem } : {}),
+    ...(completionSources ? { completionSources: Object.freeze(completionSources) } : {}),
     ...(catalog.simulationProfiles ? { simulationProfiles: catalog.simulationProfiles } : {}),
     ...(planningPolicy ? { planningPolicy } : {}),
     trainingIdentity: predecessor ? Object.freeze({ contentVersion: predecessor.training.contentVersion, artifactSha256: predecessor.training.artifactSha256 }) : Object.freeze({ contentVersion: catalog.contentVersion, artifactSha256: catalog.artifactSha256 }),
@@ -186,28 +206,47 @@ function resolvePool(catalog: CanonicalQuestionCatalog, mode: ProductModeConfig)
 export function getCanonicalModeConfig(trackId: string, modeId: string): ProductModeConfig { return getProductModeConfig(trackId, modeId); }
 
 /** Exact-only historical Claude data, outside the replaced active bundle directory. */
-export async function resolveRetainedClaudeTrack(identity: Readonly<{ trackId: string; contentVersion: string; artifactSha256: string }>, interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): Promise<CanonicalTrackRuntime | null> {
-  if (identity.trackId !== "claude-certified-architect-professional-certification") return null;
-  const retainedPackages = [
+async function loadRetainedClaudePackages() {
+  return [
     (await import("../generated/retained-content/claude-pre-qle-v2.json")).default,
     (await import("../generated/retained-content/claude-qle-v2-first-cases.json")).default,
     (await import("../generated/retained-content/claude-qle-v2-before-identity.json")).default,
   ];
-  const retained = retainedPackages.find(({ lock, ledger }) =>
-    (identity.contentVersion === lock.contentVersion && identity.artifactSha256 === lock.sha256) ||
-    (identity.contentVersion === ledger.training.contentVersion && identity.artifactSha256 === ledger.training.artifactSha256));
-  if (!retained) return null;
+}
+
+type RetainedClaudePackage = Awaited<ReturnType<typeof loadRetainedClaudePackages>>[number];
+
+/** Failed historical proofs stay absent from the classifier's verified pin set. */
+export async function verifyRetainedCompletionCatalogs(sources: readonly RetainedClaudePackage[], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): Promise<readonly CanonicalQuestionCatalog[]> {
+  const verified: CanonicalQuestionCatalog[] = [];
+  for (const source of sources) {
+    try { verified.push(...await verifyRetainedClaudePackage(source, interactions)); }
+    catch { /* An unverified pin yields explicit unavailable completion, not current-account failure. */ }
+  }
+  return Object.freeze(verified);
+}
+
+async function verifyRetainedClaudePackage(retained: RetainedClaudePackage, interactions: CanonicalInteractionRegistry): Promise<readonly CanonicalQuestionCatalog[]> {
   const { artifact, lock, ledger } = retained;
-  if (ledger.trackId !== identity.trackId || ledger.planningPolicy.contentVersion !== artifact.contentVersion || ledger.planningPolicy.policyVersion !== artifact.planningPolicy.policyVersion) throw new Error("Retained Claude policy identity does not match its artifact.");
-  const fullMatch = identity.contentVersion === lock.contentVersion && identity.artifactSha256 === lock.sha256;
-  const trainingMatch = identity.contentVersion === ledger.training.contentVersion && identity.artifactSha256 === ledger.training.artifactSha256;
-  if (!fullMatch && !trainingMatch) return null;
-  const catalog = await createCanonicalQuestionCatalog(artifact, lock, identity.trackId, contentHasher.sha256, interactions);
+  if (ledger.trackId !== artifact.trackId || ledger.planningPolicy.contentVersion !== artifact.contentVersion || ledger.planningPolicy.policyVersion !== artifact.planningPolicy.policyVersion) throw new Error("Retained Claude policy identity does not match its artifact.");
+  const catalog = await createCanonicalQuestionCatalog(artifact, lock, artifact.trackId, contentHasher.sha256, interactions);
   const training = { ...artifact } as Record<string, unknown>;
   delete training.planningPolicy;
   training.schemaVersion = "patternly-content-artifact-v1";
   training.contentVersion = ledger.training.contentVersion;
   if (ledger.planningPolicy.artifactSha256 !== lock.sha256 || ledger.training.questionCount !== catalog.questions.length || await contentHasher.sha256(JSON.stringify(training)) !== ledger.training.artifactSha256) throw new Error("Retained Claude predecessor does not match its exact ledger.");
-  const exactCatalog = trainingMatch ? await createCanonicalQuestionCatalog(training, { trackId: identity.trackId, contentVersion: ledger.training.contentVersion, sha256: ledger.training.artifactSha256, questionCount: ledger.training.questionCount }, identity.trackId, contentHasher.sha256, interactions) : catalog;
-  return createTrackRuntime(exactCatalog, PRODUCT_MODE_CONFIGS, fullMatch ? ledger : undefined, interactions);
+  const trainingCatalog = await createCanonicalQuestionCatalog(training, { trackId: artifact.trackId, contentVersion: ledger.training.contentVersion, sha256: ledger.training.artifactSha256, questionCount: ledger.training.questionCount }, artifact.trackId, contentHasher.sha256, interactions);
+  return [catalog, trainingCatalog];
+}
+
+export async function resolveRetainedClaudeTrack(identity: Readonly<{ trackId: string; contentVersion: string; artifactSha256: string }>, interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): Promise<CanonicalTrackRuntime | null> {
+  if (identity.trackId !== "claude-certified-architect-professional-certification") return null;
+  const retained = (await loadRetainedClaudePackages()).find(({ lock, ledger }) =>
+    (identity.contentVersion === lock.contentVersion && identity.artifactSha256 === lock.sha256) ||
+    (identity.contentVersion === ledger.training.contentVersion && identity.artifactSha256 === ledger.training.artifactSha256));
+  if (!retained) return null;
+  const catalogs = await verifyRetainedClaudePackage(retained, interactions);
+  const exact = catalogs.find(catalog => catalog.contentVersion === identity.contentVersion && catalog.artifactSha256 === identity.artifactSha256);
+  if (!exact) return null;
+  return createTrackRuntime(exact, PRODUCT_MODE_CONFIGS, exact.contentVersion === retained.lock.contentVersion && exact.artifactSha256 === retained.lock.sha256 ? retained.ledger : undefined, interactions);
 }

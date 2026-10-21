@@ -339,7 +339,7 @@ test("sandbox account failure bridge is bounded and release stays inert", () => 
     assert.equal(readAccountStartupFailureTestID(), undefined);
     const error = Object.assign(new Error("uid secret token response password"), { name: "FirebaseError", code: "auth/user-token-expired" });
     recordAccountStartupFailure("revoke_replacement_claim", error, "signOutPending");
-    writer.failed("recovery_guard", new Error("obsolete"), "signOutPending");
+    writer.failed("session_revocation_gate", new Error("obsolete"), "signOutPending");
     assert.equal(readAccountStartupFailureTestID(), "account-failure:revoke_replacement_claim:auth_token_expired");
     assert.doesNotMatch(JSON.stringify(readDevelopmentAccountStartupDiagnostic()), /secret|token response|password|uid/u);
     for (const [name, code, status, expected] of [

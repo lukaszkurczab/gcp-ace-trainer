@@ -16,9 +16,9 @@ export function buildOfflineAccountReadExpression(fingerprint, appId) {
     const constants=load('node_modules/expo-constants/build/Constants.js').default;
     if(identity.mode!=='smoke'||identity.fingerprint!==${JSON.stringify(fingerprint)}||constants.expoConfig?.extra?.patternlyEnvironmentFingerprint!==identity.fingerprint||constants.expoConfig?.ios?.bundleIdentifier!==${JSON.stringify(appId)})throw Error('runtime_rejected');
     const hook=globalThis.__REACT_DEVTOOLS_GLOBAL_HOOK__;
-    const findActor=()=>{const actors=[];for(const id of hook.renderers.keys())for(const root of hook.getFiberRoots(id)){const walk=f=>{if(!f)return;const v=f.memoizedProps?.value;if(v?.state&&typeof v.retryRecoveryOperation==='function')actors.push(v);walk(f.child);walk(f.sibling);};walk(root.current);}if(actors.length!==1)throw Error('actor_unavailable');return actors[0];};
+    const findActor=()=>{const actors=[];for(const id of hook.renderers.keys())for(const root of hook.getFiberRoots(id)){const walk=f=>{if(!f)return;const v=f.memoizedProps?.value;if(v?.state&&typeof v.captureHomeResumeActorFence==='function'&&typeof v.retryPendingAccountSync==='function')actors.push(v);walk(f.child);walk(f.sibling);};walk(root.current);}if(actors.length!==1)throw Error('actor_unavailable');return actors[0];};
     const actor=findActor(),hash=load('src/infrastructure/identity/sha256.ts').sha256Utf8;
-    const actorIdentity=v=>JSON.stringify([v.state.kind,v.state.user?.uid??null,v.state.backendUser?.id??v.state.accountId??null,v.state.generation?.generation??null,v.recoveryOperation.kind,v.recoveryOperation.operationId??null]);
+    const actorIdentity=v=>JSON.stringify([v.state.kind,v.state.user?.uid??null,v.state.backendUser?.id??v.state.accountId??null,v.state.generation?.generation??null]);
     const expectedActor=actorIdentity(actor);
     const actorFence=actor.captureHomeResumeActorFence();
     const storage=load('src/infrastructure/storage/mmkvClient.ts');
@@ -27,9 +27,8 @@ export function buildOfflineAccountReadExpression(fingerprint, appId) {
     const first=await storage.inspectPreparedQ13StorageInventory();
     if(first.kind!=='observed'||!first.complete)throw Error('inventory_unavailable');
     const {packagePointerSources,...inventory}=first;
-    const recovery=actor.recoveryOperation;
     const accountId=actor.state.backendUser?.id??actor.state.accountId;
-    const receipt={schema:'patternly.offline-account-ios-read.v1',fingerprint:identity.fingerprint,appId:${JSON.stringify(appId)},state:actor.state.kind,accountIdSha256:accountId?hash(accountId):null,uidSha256:actor.state.user?hash(actor.state.user.uid):null,profile:lease?{kind:lease.profile.kind,profileIdSha256:hash(lease.profile.id),accountIdSha256:lease.profile.accountId?hash(lease.profile.accountId):null}:null,recovery:{kind:recovery.kind,reason:recovery.reason??null,blocksProfilePreparation:recovery.blocksProfilePreparation,operationIdSha256:recovery.operationId?hash(recovery.operationId):null,status:recovery.status??null,savedIntent:recovery.savedIntent??null,codeCount:recovery.codes?.length??0},inventory};
+    const receipt={schema:'patternly.offline-account-ios-read.v1',fingerprint:identity.fingerprint,appId:${JSON.stringify(appId)},state:actor.state.kind,accountIdSha256:accountId?hash(accountId):null,uidSha256:actor.state.user?hash(actor.state.user.uid):null,profile:lease?{kind:lease.profile.kind,profileIdSha256:hash(lease.profile.id),accountIdSha256:lease.profile.accountId?hash(lease.profile.accountId):null}:null,inventory};
     if(lease){
       const context=load('src/application/tracks/trackAdmissionContext.ts');
       const repo=load('src/storage/repositories/accountDataRepository.ts');

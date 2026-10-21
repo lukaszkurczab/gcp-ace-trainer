@@ -185,3 +185,18 @@ test("rejects malformed or inconsistent input with the one explicit error class"
   assertInvalid(input({ goalRecord: { ...snapshot("build_foundations"), status: "paused" } }), "invalid_goal_snapshot");
   assertInvalid({ ...input(), extra: true }, "invalid_input");
 });
+
+test("proposal preserves earned-rule completion provenance and rejects malformed or unearned provenance", () => {
+  const base=chapterCompletion(20,1);
+  if(base.kind === "unknown") throw Error("fixture");
+  const source={contentVersion:"old-v2",artifactSha256:"b".repeat(64),ruleVersion:2 as const,completedAt:"2026-01-01T00:00:00.000Z",attemptId:"earning-attempt"};
+  const completion={...base,chapters:[{...base.chapters[0]!,completionSource:source}]};
+  const proposal=generateLearningPlanProposal(input({completionState:completion}));
+  assert.deepEqual(proposal.completionState,completion);
+  for(const malformed of [{...source,artifactSha256:"broken"},{...source,ruleVersion:4},{...source,completedAt:"2026-02-30T00:00:00.000Z"},{...source,attemptId:""},{...source,extra:true}]) {
+    assertInvalid(input({completionState:{...completion,chapters:[{...completion.chapters[0]!,completionSource:malformed}]} as PackageCompletionState}),"invalid_completion_state");
+  }
+  const partial=chapterCompletion(2);
+  if(partial.kind === "unknown") throw Error("fixture");
+  assertInvalid(input({completionState:{...partial,chapters:[{...partial.chapters[0]!,completionSource:source}]}}),"invalid_completion_state");
+});

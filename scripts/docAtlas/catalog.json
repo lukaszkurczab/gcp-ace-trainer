@@ -682,8 +682,8 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/RegularApplicationRoot.tsx": {
-      "description": "Składa bezpieczny obszar ekranu, preferencje, przygotowanie szyfrowanego profilu, sesję konta, gotowość treści i nawigację. Zmiana profilu może wyświetlić powierzchnię ponownego przygotowania.",
-      "reviewedHash": "534641c490963ed79394a8e298df39196e560f2e32faeb7b2b867c6047654079",
+      "description": "Składa bezpieczny obszar ekranu, preferencje, przygotowanie szyfrowanego profilu, sesję konta, gotowość treści i nawigację. Zmiana profilu może wyświetlić powierzchnię ponownego przygotowania. Host sprzątania dawnych sekretów urządzenia działa przed bramką magazynu profilu, niezależnie od konta i jego gotowości.",
+      "reviewedHash": "96194d1a25f6324d4e412cff6ff54ac29533d75613e88db20fcddb472367b880",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/navigation/RootNavigator.tsx": {
@@ -702,8 +702,8 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/application/bootstrap/accountBootstrap.ts": {
-      "description": "Koordynuje start tożsamości, obserwację Firebase i usługi konta. Retry niedokończonego usuwania najpierw odłącza SDK RevenueCat dla przypiętego konta; błąd nie uruchamia efektów backendu.",
-      "reviewedHash": "c5673718e708fb22f73da1e32375e4df814fb085e453828e9cf54b89af81bb72",
+      "description": "Koordynuje start tożsamości, obserwację Firebase i usługi konta. Retry niedokończonego usuwania najpierw odłącza SDK RevenueCat dla przypiętego konta; błąd nie uruchamia efektów backendu. Start nie odtwarza już operacji kodowych; wspólne identity fences, generacja, pending revoke i przygotowanie profilu pozostają.",
+      "reviewedHash": "f4b2d4b4a80b1e12d1a8e676a316fae025299523827c2163f475c1085b28d197",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/application/bootstrap/trainingLifecycleComposition.ts": {
@@ -712,8 +712,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/account/AccountSessionProvider.tsx": {
-      "description": "Publikuje authenticated dopiero po exact subject/account/UID i trwałym verified binding bez bariery; fence lease/generation chroni async Premium, a latch blokuje cache do ukończenia proof. Marker usuwania unieważnia aktora Premium; nowa operacja, retry i signed-out resume wymagają odłączenia SDK dla dokładnego konta przed backendowym efektem.",
-      "reviewedHash": "01379f048298c5721cb991cfd2d869f20e0645365adb79699ff5bc74bedad7b1",
+      "description": "Publikuje authenticated dopiero po exact subject/account/UID i trwałym verified binding bez bariery; fence lease/generation chroni async Premium, a latch blokuje cache do ukończenia proof. Marker usuwania unieważnia aktora Premium; nowa operacja, retry i signed-out resume wymagają odłączenia SDK dla dokładnego konta przed backendowym efektem. Bez komend i blokad Recovery Codes; zachowuje Firebase reset e-mail, identity proof, pending revoke i deletion. Obserwuje niezależne sprzątanie dawnych sekretów urządzenia.",
+      "reviewedHash": "c80ee08631939638389297ed1f1b23f2edf83d6f0942d6fc3c86f86d9cc404e3",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/application/account/ProfileStoragePreparationGate.tsx": {
@@ -732,8 +732,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/infrastructure/clients/PatternlyApiClientAdapter.ts": {
-      "description": "Adapter API z walidacją transportu i danych. getProgress wymaga zgodnych snapshotToken/snapshotScope; zachowuje jeden izolowany kompletny JSON do16Mi code units. syncProgress może uzupełnić go tylko dokładnymi ACK o tym samym dowodzie konta/auth/generacji pochodzącym ze świeżej transakcji backendu. Końcowy GET potwierdza scope+rewizję, po czym wraca do dokładnego znacznika updateTime. Wspólny serializer i kanoniczny documentId zachowują granicę pamięci i kolejność; brak proof/replay/zmiana z drugiego klienta wymaga pełnego odczytu. Brak trwałego cache lub offline fallbacku.",
-      "reviewedHash": "d3d62141d66d1297dae638209003e3f402c8ac7f16ea416a6ad9ce1e8f4c3e89",
+      "description": "Adapter API z walidacją transportu i danych. getProgress wymaga zgodnych snapshotToken/snapshotScope; zachowuje jeden izolowany kompletny JSON do16Mi code units. syncProgress może uzupełnić go tylko dokładnymi ACK o tym samym dowodzie konta/auth/generacji pochodzącym ze świeżej transakcji backendu. Końcowy GET potwierdza scope+rewizję, po czym wraca do dokładnego znacznika updateTime. Wspólny serializer i kanoniczny documentId zachowują granicę pamięci i kolejność; brak proof/replay/zmiana z drugiego klienta wymaga pełnego odczytu. Brak trwałego cache lub offline fallbacku. Usunięto całą rodzinę klienta Recovery Codes (issue/consume/status/ACK).",
+      "reviewedHash": "be945e0cf9394a3f2c6d6bbd060dfc79fe71093d46567dd116b00c8674eba144",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/infrastructure/storage/mmkvClient.ts": {
@@ -767,8 +767,8 @@
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/application/trainingLifecycle/TrainingLifecycleUseCases.ts": {
-      "description": "Właściciel operacji treningu: uruchamia, aktualizuje i finalizuje sesję przez kanoniczne kontrakty i zapis.",
-      "reviewedHash": "daf50580565025baa00ed085c6f367989f7598ede442c879ddba6c07d3c95630",
+      "description": "Właściciel operacji treningu: uruchamia, aktualizuje i finalizuje sesję przez kanoniczne kontrakty i zapis. Nowe należne powtórki Claude sprawdzają obecność ID w bieżącym katalogu, a ocalałe pytania nadal rozwiązują dokładny dawny artefakt; filtr nie przepisuje trwałej kolejki. Statyczny opis równoległego wycinka CONTENT-HISTORY-01, bez odbioru całego P0.",
+      "reviewedHash": "f4fcf6e6cc3dfafe65b0ab69fb2d85a9f45d5443b89a1a6f14b8868c3021c12f",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/trainingLifecycle/ForegroundSessionTimerFacade.ts": {
@@ -827,8 +827,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/domain/learning/packageCompletionRule.ts": {
-      "description": "Kontrakt reguły ukończenia pochodzącej z wersjonowanego pakietu, zamiast zaszytej w ekranie stałej.",
-      "reviewedHash": "0a7e7ccc7930baa401cda8e59e0e5d941d721764de00d1697d22c9aef29c643d",
+      "description": "Jednym przyrostowym reduktorem wylicza bieżący postęp i pierwszy exact moment spełnienia reguły; ukończone działy zachowują metryki źródła oraz proweniencję mimo rozbudowy i późniejszych błędów. Niepełny dowód daje unknown.",
+      "reviewedHash": "7e72cb3ee0c497f8cb9919b3a1e3b62f79fc3853a9382f6ccf501e6ffba76df9",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/domain/identity/recordFingerprint.ts": {
@@ -842,8 +842,8 @@
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/application/learningPlan/learningEvidenceProjection.ts": {
-      "description": "Przekształca zapisane evidence nauki w projekcje używane przez plan/postęp.",
-      "reviewedHash": "74ac733bd5056dd7e7e738f653e88cb7b4012f1c8700ab6cee5f950c6efa96a2",
+      "description": "Oddziela aktywność i powtórki exact od kwalifikowanych prób oraz historycznych milestone; sprawdza czas również prób starego źródła. Odtwarza ukończenia bez zapisu, podmiany referencji lub przeliczania ocen.",
+      "reviewedHash": "4f5a3a77566925c7680552dde30af4dd351d8cf671b205c4b6efd9efb04ffdce",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/application/account/premiumStoreMap.ts": {
@@ -890,13 +890,13 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly-backend/src/api/app.ts": {
-      "description": "Rejestruje endpointy i ich guardy. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; obie ścieżki używają tych samych odmów konta/autoryzacji. Opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK; brak opt-in zachowuje kształt starszego kontraktu.",
-      "reviewedHash": "182a72b17aacba1043496c279aa8ca258bce3c3a8784ddf3cebc23fe896fb33f",
+      "description": "Rejestruje endpointy i ich guardy. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; obie ścieżki używają tych samych odmów konta/autoryzacji. Opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK; brak opt-in zachowuje kształt starszego kontraktu. Sześć tras Recovery Codes wyrejestrowano, bez handlera zgodności lub flagi.",
+      "reviewedHash": "9e35e6458457666ff2fe581fe30f8a9ea61b9103371cf21c457069d7df0b33d4",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi.ts": {
-      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Progress opisuje snapshotScope/snapshotToken oraz warunkową kontrolę rewizji. Sync dokumentuje opcjonalny proof ze świeżej transakcji i jego brak w historycznym replay/duplicates; nie zmienia trwałych receipts.",
-      "reviewedHash": "36105e1748d07460785daeaf8196de304d076f3b14e9ac4997e16dd8f9794c4f",
+      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Progress opisuje snapshotScope/snapshotToken oraz warunkową kontrolę rewizji. Sync dokumentuje opcjonalny proof ze świeżej transakcji i jego brak w historycznym replay/duplicates; nie zmienia trwałych receipts. Kontrakt nie zawiera tras i schematów Recovery Codes.",
+      "reviewedHash": "4592d9e5cedf668f55f334eaca9800e546a0e3d7abd7aa79c3c8ed361aa4d157",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi-validator.ts": {
@@ -910,18 +910,18 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/config/environment.ts": {
-      "description": "Waliduje zmienne środowiskowe i warunki konfiguracji usługi przed startem. Osobny opcjonalny REVENUECAT_V2_DELETE_API_KEY nie zastępuje kluczy readera; brak konfiguracji nie oznacza braku klienta.",
-      "reviewedHash": "fb58afa48f937c665ccb277e8fc282c25d4364e69c766fa6eb0b7c9c9e573f3f",
+      "description": "Waliduje zmienne środowiskowe i warunki konfiguracji usługi przed startem. Osobny opcjonalny REVENUECAT_V2_DELETE_API_KEY nie zastępuje kluczy readera; brak konfiguracji nie oznacza braku klienta. Usunięto key ring Recovery Codes i dedykowane ustawienia limitera; pozostałe sekrety nie zmieniają właściciela.",
+      "reviewedHash": "73f90a265971a1c0fe337138704d17403aaa9e5b965006e9d833dde07688be6d",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/infrastructure/firestore/stores.ts": {
-      "description": "Składa magazyny modułów i ich zależności. Runtime usuwania klienta RC wiąże walidowany projekt mapy Premium z osobnym kluczem v2; brak klucza przekazuje jawny null client, bez fallbacku do readera.",
-      "reviewedHash": "028a10be06d8effef19d8aec16a6a967b994a8b804993918dc6defc8521f0fef",
+      "description": "Składa magazyny modułów i ich zależności. Runtime usuwania klienta RC wiąże walidowany projekt mapy Premium z osobnym kluczem v2; brak klucza przekazuje jawny null client, bez fallbacku do readera. Nie składa już dedykowanego ciphera Recovery Codes.",
+      "reviewedHash": "95d504d45c10c8aad302f040190d77fb6d7ed3574242920c129fa9a869d27a1a",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/infrastructure/logging/logger.ts": {
-      "description": "Ogranicza dane logów do bezpiecznych pól, zdarzeń i kodów.",
-      "reviewedHash": "1e27a3f0d59e7f8027e86955bddcc569e48ad2f7304f0829873de9c16577d8d1",
+      "description": "Ogranicza dane logów do bezpiecznych pól, zdarzeń i kodów. Zachowuje redakcję historycznych kodów/tokenów mimo usunięcia ich wystawiania.",
+      "reviewedHash": "613d5a214c702c03a0b75036b8ec9e1a0a33508d7e45cefdf7a98b5033c16141",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-backend/src/infrastructure/revenuecat/client.ts": {
@@ -950,8 +950,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/account-lifecycle/store.ts": {
-      "description": "Prowadzi recovery i usuwanie z lease/fence. Zachowuje pierwotny checkpoint i logiczne 7 dni znaczników, także dla poprawnego legacy45dni. Nowa operacja przypina projekt RC i backendowy AppUserID: po Auth zapisuje accepted/absent przed Firestore erasure i minimalnym proof; błędy lub niepowiązane stare operacje pozostają pending. Accepted nie dowodzi purge kopii.",
-      "reviewedHash": "8b4781f7eb5609bd68dc7865ddc0d2f1f8d11e954f145fa27dd4ff14c814e8b6",
+      "description": "Prowadzi revoke i usuwanie z lease/fence. Zachowuje pierwotny checkpoint i logiczne 7 dni znaczników, także dla poprawnego legacy45dni. Nowa operacja przypina projekt RC i backendowy AppUserID: po Auth zapisuje accepted/absent przed Firestore erasure i minimalnym proof; błędy lub niepowiązane stare operacje pozostają pending. Accepted nie dowodzi purge kopii. Issue/consume/status/ACK i cipher usunięto. Przejęcie starego slotu przez revoke/delete zapisuje jedynie terminalną metadane; legacy erasure i TTL zostają do wycofania danych usługowych.",
+      "reviewedHash": "5b628748802bdaab5d67e4b6b67373f4db273755188b09df5e2db934d68e2c49",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-backend/src/modules/content/packages.ts": {
@@ -1205,13 +1205,13 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/account/AccountEntryScreen.tsx": {
-      "description": "Wejście do konta i alternatywa sesji Gościa; konkretny błąd odzyskiwania dziennika jest pokazany przed ogólną blokadą adopcji aktywnej sesji. Stały slot Screen.backAction korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny.",
-      "reviewedHash": "a5e1a29cc8c4151e925cf7427dc08b2201eda813a67451bdfb71b4bf74d12132",
+      "description": "Wejście do konta i alternatywa sesji Gościa; konkretny błąd odzyskiwania dziennika jest pokazany przed ogólną blokadą adopcji aktywnej sesji. Stały slot Screen.backAction korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny. Zapomniane hasło obsługuje wyłącznie Firebase e-mail/oobCode, bez alternatywy kodowej.",
+      "reviewedHash": "c92489cd95186dfde7842832ad805e865e102e0e31430092705187f52004b568",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/features/account/AccountSecurityScreen.tsx": {
-      "description": "Zarządzanie bezpieczeństwem konta i recovery. Screen.backAction utrzymuje powrót poza formularzem i klawiaturą; zachowany callback dismiss/revoke/goBack. Własne przewijanie formularza i wszystkie operacje danych pozostają w dotychczasowym kontrakcie.",
-      "reviewedHash": "4c19a45c0f22203bd45f94c85381778cb6a27ac2b35331fe107a3421dc247e71",
+      "description": "Zarządzanie bezpieczeństwem konta: e-mail, hasło, eksport, prywatność i usuwanie. Screen.backAction utrzymuje powrót poza formularzem i klawiaturą; zachowany callback dismiss/revoke/goBack. Własne przewijanie formularza i wszystkie operacje danych pozostają w dotychczasowym kontrakcie. Wycofany parametr recovery kończy się jawną niedostępnością.",
+      "reviewedHash": "b2034a292ab607c04e21cf129edf95042002c6f7faf9e864597d2e98bbb28b43",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/features/practice/PracticeSetupScreen.tsx": {
@@ -1420,9 +1420,9 @@
       "reviewedHash": "e92c6f16a8cbd9b10c80739b3f81d06e78a987219f8a185aca53fdf6e4aefc38"
     },
     "patternly/scripts/checkRetentionContract.mjs": {
-      "description": "Weryfikuje zgodność wartości retencji między APP, fixture i backend policy; kontrakt źródeł nie potwierdza deployed runtime.",
+      "description": "Weryfikuje zgodność wartości retencji między APP, fixture i backend policy; kontrakt źródeł nie potwierdza deployed runtime. Dla dawnego schowka sprawdza już tylko kontrakt wycofania; nie odtwarza kopiowania kodów.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "bc44cfba3fdcd7098341fe1c3bbc61ab9e0ca56ec58158aba50a9f88b3941d80"
+      "reviewedHash": "022293753fbfc025ae406ad2c6fa85fd863c0d62ba53df5b917c00c1ba1c74d6"
     },
     "patternly/scripts/releaseGate.mjs": {
       "description": "Sprawdza bieżącą tożsamość dziewięciu banków, czystość źródeł i wymagane dowody wydania. Dokładne dane po synchronizacji APP mają wąski wyjątek; blokady legal UNAPPROVED i zgodność renderowania pozostają.",
@@ -1440,9 +1440,9 @@
       "reviewedHash": "374e1e4c75708872c584f3a3d4b0c284689b8e4a6fe8fde1d669dd2026f6f47c"
     },
     "patternly-backend/package.json": {
-      "description": "Dodaje wąskie polecenia izolowanych emulator suites dla usunięcia, expiry i offline restore; nie uruchamia produkcyjnej operacji.",
+      "description": "Dodaje wąskie polecenia izolowanych emulator suites dla usunięcia, expiry i offline restore; nie uruchamia produkcyjnej operacji. Dedykowany runner Recovery Codes usunięto także z CI; pozostałe lifecycle/klienckie bramki pozostają.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "2c718d8a193ee39bb9cc7c6dfb2c8640e9decbec463b9e98d5e8d31022f2201d"
+      "reviewedHash": "42a2da572bb3f8303672e5e509154ff518465ac4effbbcf84731c67692abd889"
     },
     "patternly-backend/scripts/run-account-deletion-expiry-emulator-tests.mjs": {
       "description": "Uruchamia lokalny emulator regression dla logicznego expiry/tombstone i wznowienia; fixed demo/loopback only.",
@@ -1465,14 +1465,9 @@
       "reviewedHash": "9d493c77549b334bb19026184855f1d9a08ca126f57d99850c7a9bb3cf8d042f"
     },
     "patternly-backend/tests/deletedIdentityR01.emulator.ts": {
-      "description": "Dowodzi w emulatorze usunięcia starego UID i odmowy odtworzenia prawa/progressu po rejestracji same-email nowym UID.",
+      "description": "Dowodzi w emulatorze usunięcia starego UID i odmowy odtworzenia prawa/progressu po rejestracji same-email nowym UID. Dawne rekordy kodów seeduje bezpośrednio, sprawdza ich erasure i odmowę dawnej trasy także po restore; nie używa issuera.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "a85f35261cfc170dc91532064b904147448a07a582810f1d8f10572d103ea078"
-    },
-    "patternly-backend/tests/aud08Recovery.emulator.test.ts": {
-      "description": "Regression recovery: niezgodny legacy tombstone nie może zostać uznany za wygasły i usunięty ani doprowadzić do token mint. RC-DELETE-01 używa jawnej testowej fikstury braku klienta RC; produkcja nadal odmawia bez konfiguracji. Zegar testu licznika jest stały w jednym modelowanym oknie.",
-      "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "43c9f9a18ced0aa75c6255a4d66ab35193354c63ab83119836642fe3a70d735a"
+      "reviewedHash": "ecb16e16f6764d167e0e8dbbd5641b0464693303561eecc1b5c04ade62f9a5f5"
     },
     "patternly-backend/tests/usersStoreLegacyDeletedIdentities.test.ts": {
       "description": "Unit regressions dla exact shape i identity binding legacy marker przed cleanup po expiry.",
@@ -1485,9 +1480,9 @@
       "reviewedHash": "9ec20949733406eebea3b0b47a00fceff6437cd4ff9b07a92eec06c1b2c2b821"
     },
     "patternly-backend/tests/firestore.emulator.test.ts": {
-      "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore. PAT-CODE-011 dodaje fizyczny readback staged drzewa, brakujących rodziców, blokadę complete/proof przy residualach, częściowy cleanup i retry/takeover z odmową staremu workerowi oraz konflikt accountId. PAT-CODE-012 rozdziela aktywny, prawidłowo wygasły oraz malformed tombstone; stary worker wywołuje obecny cleanup i rzeczywisty fence, z odmową oraz pełnym readback bez zmiany potomka, użytkownika i aktualnej operacji. Nie zmienia readera ani retencji. RC-DELETE-01 używa jawnej testowej fikstury braku klienta RC; produkcja nadal odmawia bez konfiguracji. Syntetyczne checkpointy po etapie RC mają jawne accepted przed testowanym cleanup.",
+      "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore. PAT-CODE-011 dodaje fizyczny readback staged drzewa, brakujących rodziców, blokadę complete/proof przy residualach, częściowy cleanup i retry/takeover z odmową staremu workerowi oraz konflikt accountId. PAT-CODE-012 rozdziela aktywny, prawidłowo wygasły oraz malformed tombstone; stary worker wywołuje obecny cleanup i rzeczywisty fence, z odmową oraz pełnym readback bez zmiany potomka, użytkownika i aktualnej operacji. Nie zmienia readera ani retencji. RC-DELETE-01 używa jawnej testowej fikstury braku klienta RC; produkcja nadal odmawia bez konfiguracji. Syntetyczne checkpointy po etapie RC mają jawne accepted przed testowanym cleanup. Kodowe scenariusze zastąpiono osobną negatywną kontrolą tras; wspólne usuwanie nadal obejmuje historyczne rekordy kodów.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "bc19681313df24c0e357ebc8dc7fc7f49046af26c62a9aabfb9232522fb9f8ba"
+      "reviewedHash": "2d097f9ce0e1474c0e26d78a6dea2fa2db2b9f9a0300870e533a9aee291e7bbc"
     },
     "patternly-backend/tests/fixtures/accountLifecycleCrashWorker.ts": {
       "description": "Worker IPC B4: przed initializeApp wymaga wspólnej konfiguracji demo/loopback oraz kanału IPC. Wykonuje rzeczywisty efekt Admin SDK revoke/deletion i zatrzymuje się po potwierdzeniu IPC przed finalizacją operacji, umożliwiając SIGKILL z parenta. RC-DELETE-01 używa jawnej testowej fikstury braku klienta RC; produkcja nadal odmawia bez konfiguracji.",
@@ -1767,7 +1762,7 @@
     "patternly-web/src/generated/demoQuestions.json": {
       "description": "Wygenerowana przez APP projekcja current-source: dwa pytania interaktywne z autorskimi Details oraz publicSamples z ich metadanymi i trzecią próbką obrazową bez payloadu pytania. Provenance wskazuje bieżący sourceInputFingerprint, releaseId, hashe artefaktów i locków, źródło oraz tryby Free; obraz ma ścieżkę i SHA256. Nie zawiera pełnego banku ani ręcznego admission.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "6a23cf1a7bf622ea283c665f239d36f43c8ae49beb2dda65da22ed2bf26b65f9"
+      "reviewedHash": "b57b7ceaee60cb8014262ee75bf390be15ac163a6f63f286e21dfed989c5c0ca"
     },
     "patternly/scripts/runLocalProfile.mjs": {
       "description": "Uruchamia jawny lokalny profil, synchronizuje bieżące treści przed Expo i sprawdza emulator Auth. Smoke wymaga gotowej bazy, uwierzytelniania i czytnika uprawnień; dopuszcza wyłącznie jawne HTTP503/not_ready z contentPackages=false, informując o użyciu treści wbudowanych. Pełne HTTP200/ready wymaga wszystkich czterech kontroli; produkcyjny /ready bez zmian.",
@@ -1788,13 +1783,13 @@
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-backend/tests/revenueCatDeletionFixture.ts": {
-      "description": "Jawna fikstura testów istniejącego lifecycle: znany brak klienta RC. Nie jest domyślnym zachowaniem produkcji; błędy/skutki i SIGKILL są odbierane w osobnym izolowanym teście.",
-      "reviewedHash": "cb1aefcb78dc6b5e6ce88b1e306899fa94e03487582bbd4b8d2c452c54522ddb",
+      "description": "Jawna fikstura testów istniejącego lifecycle: znany brak klienta RC. Nie jest domyślnym zachowaniem produkcji; błędy/skutki i SIGKILL są odbierane w osobnym izolowanym teście. Konstruktor nie przekazuje już nieistniejącego ciphera kodów.",
+      "reviewedHash": "ae5df379014076414b39ecf7c2944476f6819fa9d31b254bce98f7a8e553a9cb",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-backend/tests/rcCustomerDeletion.emulator.ts": {
-      "description": "Izolowane fixture demo odbierają dokładny backendowy AppUserID, przypięty projekt, brak klucza, błąd przed/po modelowanym skutku, błędny sekret i obce konto. SIGKILL workera przed checkpointem oraz lease/retry weryfikują trwałość i minimalny terminalny receipt. Bez rzeczywistego providera.",
-      "reviewedHash": "b9f0a1c857f2498d88991b53b82f4c87596eeffbefeb57808abda3532776c44a",
+      "description": "Izolowane fixture demo odbierają dokładny backendowy AppUserID, przypięty projekt, brak klucza, błąd przed/po modelowanym skutku, błędny sekret i obce konto. SIGKILL workera przed checkpointem oraz lease/retry weryfikują trwałość i minimalny terminalny receipt. Bez rzeczywistego providera. Konstruktor fixture dostosowano do usunięcia ciphera kodów; kontrakt kasowania klienta RC zachowano.",
+      "reviewedHash": "b3693064c4e12fb34c9c5ca332ed3ae1a44fa0c7a9c92dddc0913d59f0b90018",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/components/BackLink.tsx": {
@@ -1803,9 +1798,9 @@
       "reviewedHash": "bed45e937a930a053fe6b3ceae1abd04e68f47603261eb6c546c1016649b97aa"
     },
     "patternly/src/navigation/backDestination.ts": {
-      "description": "Czyste mapowanie istniejących tras i parametrów na klucze faktycznych zlokalizowanych nazw ekranów. Uwzględnia aktywną zakładkę Home, stan wejścia konta, pod-ekran bezpieczeństwa i rodzaj żądania prawnego; nie nawiguje i nie zmienia historii. TopicRoadmap nazywa faktyczny ekran Choose topic.",
+      "description": "Czyste mapowanie istniejących tras i parametrów na klucze faktycznych zlokalizowanych nazw ekranów. Uwzględnia aktywną zakładkę Home, stan wejścia konta, pod-ekran bezpieczeństwa i rodzaj żądania prawnego; nie nawiguje i nie zmienia historii. TopicRoadmap nazywa faktyczny ekran Choose topic. Mapowanie nie zawiera wycofanego ekranu kodów; recovery w wejściu konta oznacza reset e-mail.",
       "flow": "Start aplikacji i nawigacja",
-      "reviewedHash": "0f300efed5d9f16b8e2a985da7fdc186471532ff1ccfb78d64d980214249e80b"
+      "reviewedHash": "081eb49372c1863af7750695eb57a20f107bdcdc46863659572c4c104292e548"
     },
     "patternly/src/components/AppShellHeader.tsx": {
       "description": "Wspólny nagłówek: BackLink nazywa rzeczywisty cel, a opcjonalna trailingAction mieści akcję bieżącego ekranu, np. flagę egzaminu. Wiersz powrotu nie dodaje marki ani kontekstu ścieżki. Stack zachowuje górny safe area; bez akcji powrotu nagłówek może zachować markę.",
@@ -1851,6 +1846,46 @@
       "description": "Kanoniczne parametry tras i konfiguracja sesji praktyki. Builder Premium przyjmuje wyłącznie zadeklarowaną długość i obsługiwany moment feedbacku; nadal przekazuje nodeId przez istniejące admission, bez nowego kontraktu pinów zwykłej sesji.",
       "reviewedHash": "96f9ba8ff0b8e6c94b836422ccab5ddf21ca7022ee86367510e9d86dee87b910",
       "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly-web/scripts/verify-production.mjs": {
+      "description": "Weryfikuje istniejący produkcyjny dist z rzeczywistym zatwierdzonym eksportem: manifest SHA256 wszystkich plików, komplet publicznych tras bez JS, canonical i języki, brak placeholderów/admin/intake, demo i hydratacja locale w Operze. Rozróżnia local-production, firebase-hosting-production oraz remote-production wyłącznie dla patternly.it; tylko ten ostatni sprawdza HTTP/www do kanonicznego HTTPS. Dla Hosting respektuje cleanUrls. Zapisuje prywatny receipt i screenshoty, sprawdza niezmienność dist i nie wdraża.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "6196013748e83914d1a403ea113850a4a045e0c7eaa72b89cc37c96e6cc68a7c"
+    },
+    "patternly/src/infrastructure/security/retiredAccountSecrets.ts": {
+      "description": "Sprząta dokładne dawne sloty urządzenia bez odczytu sekretu operacji lub wywołań API. Schowek czyści dopiero po terminie i zgodności digestu istniejącego markera; brak native modułu lub błąd daje pending/retry. Nie tworzy kodów ani markerów.",
+      "flow": "Dane, prywatność i zgłoszenia",
+      "reviewedHash": "3fddef716bbd64bc2b486c33f4cad63c1b115aaa36afb06fa09fd6d78cb114ea"
+    },
+    "patternly/src/application/account/RetiredAccountSecretsCleanupHost.tsx": {
+      "description": "Jedyny właściciel startu i foreground retry sprzątania dawnych sekretów urządzenia; montowany przed bramką profilu. Nie zależy od Firebase, konta lub MMKV.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "6504b1d529faa01bbebc9cc37c243021b48a73b7db467ea2a320a88255c06e2d"
+    },
+    "patternly/src/features/account/accountSecurityRoute.ts": {
+      "description": "Waliduje obecne warianty ekranu bezpieczeństwa; dawny recovery, brak i błędne parametry zwracają null zamiast uruchamiać formularz zmiany hasła.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "3034c9bfe8cd61767ee09b581819b5eaf7e7aeaf5269bddbeeae0e26dfdbad89"
+    },
+    "patternly/scripts/firebasePasswordReset.emulator.mjs": {
+      "description": "Próba rzeczywistego Firebase SDK wyłącznie na loopback demo Auth: żądanie resetu, lokalny OOB, potwierdzenie i logowanie nowym hasłem; błędny i ponownie użyty token są odrzucane. Bez dowodu dostawy e-maila lub wymuszonego expiry.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "8a84c53359f19efcb76947ee02d26c7d1f65aba08ba63ccf6201830fa242d5e1"
+    },
+    "patternly-backend/tests/removedRecoveryRoutes.test.ts": {
+      "description": "Rzeczywista rejestracja Fastify: wszystkie sześć dawnych tras kodów daje404 z credential-shaped nagłówkami i bez nich; zerowe wywołania auth, App Check i store. To dowód lokalny.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "dc604e1f74ed2a8bcd2fc9cb296d397b7df42ae1b8fdc461b49e19d21ea23c79"
+    },
+    "patternly/src/content/canonical/completionCredit.ts": {
+      "description": "Porównuje całe pytania ze zweryfikowanych exact pakietów; bound classifier rozdziela identyczny, zmieniony i niedostępny credit bez przepinania historii.",
+      "reviewedHash": "99f67165cbd2bd9f2740481c722e0823d7a1eb0be942945503ac5d94cee6fedd",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/content/canonical/runtimeCatalog.ts": {
+      "description": "Weryfikuje bieżące i istniejące retained pakiety; przed sync projekcją udostępnia classifier identycznych pytań oraz exact źródła reguł ukończenia z neutralnym node/unit resolverem. Historyczny odczyt treści pozostaje ścisły.",
+      "reviewedHash": "ac283935c9d75400db1723da2b4171814761b797a4aecc21583b32a5f2ff0e83",
+      "flow": "Treść od producenta do sesji"
     }
   },
   "flows": [
@@ -1863,7 +1898,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "9bd33d609b69ae4da51036d3f9ad7d1da5ad77b55017d05d2c8c08afab87d84e"
+      "reviewedDigest": "b70eac2dc094ffc860f2f82e72666c068af80fbd3ca7184a1ad4ff5ee3e118eb"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -1875,7 +1910,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "9d17b8c25f763b03c152e3e6a991ed4370602d13693ad307b59175feffb1063f"
+      "reviewedDigest": "ac7d6f6a421c7aec299d88d48a5e482cbd4c63b273f84e93ecf4ad2a76f5eaea"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -1885,7 +1920,7 @@
         "patternly-content",
         "patternly-backend/src/modules/content"
       ],
-      "reviewedDigest": "4daa4d715d4e9a242e7c6e67c16cafa9dfdbd1035f428309d206e6dd5a809559"
+      "reviewedDigest": "d5d87ec427dcfafeec0596a5b6cbdbeffa692e5222868dbd13558f0744434e05"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -1900,7 +1935,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "9918eceb14e845c91223162ca83d22ee09e53e2141f753531012cebd95fd3670"
+      "reviewedDigest": "cd9284c8fe0802fb659f8dc0812757016908b3a0f906269f742dd4b447d5839f"
     },
     {
       "name": "Cel, plan i postęp",
@@ -1911,7 +1946,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "27540ee7f845eff27b27100d8d52239e17bd726fdccfe4c15229b2800646927f"
+      "reviewedDigest": "d01b0a89b72a8ea49ac53441c1d10b88924d564e8593c2a3b05f73a836dbd23e"
     },
     {
       "name": "Premium i zakup",
@@ -1935,7 +1970,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "7bbe2bc7ba01b8d84c3cf29d6676d176a9d741400c32b8b9ffd42a0e7665a64c"
+      "reviewedDigest": "24bcb2c12b5480b2d3384bb370a7dd8cba097e2f4e92848474b79da65a24a757"
     },
     {
       "name": "Witryna, demo i panel",
@@ -1944,7 +1979,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "44beb01ffade5f9ed540e61b266062c4a6269b70203e77375a6944ec6a544fb1"
+      "reviewedDigest": "094ef1f3ba19b2733e749c95ba6ae32780ea64280e9bdc351548fba25f6f9485"
     }
   ]
 }

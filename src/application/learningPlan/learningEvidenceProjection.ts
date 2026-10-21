@@ -38,9 +38,11 @@ export function projectLearningEvidence(input: Readonly<{
   // Preserve source evidence order for the existing proposal freshness contract;
   // the canonical evaluator owns deterministic rolling-window time/ID ordering.
   const activityAttempts = Object.freeze(uniqueAttempts.filter(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && attempt.item.contentVersion === profile.contentVersion && attempt.item.artifactSha256 === profile.artifactSha256));
-  const attempts = Object.freeze(activityAttempts.filter(attempt => qualifyingIds.has(attempt.id)));
+  const attempts = Object.freeze(uniqueAttempts.filter(attempt => qualifyingIds.has(attempt.id)));
   if (activityAttempts.some(attempt => !profile.getQuestion(attempt.item.questionId))) throw new Error("Learning evidence item is absent from its verified package.");
-  for (const attempt of activityAttempts) {
+  const milestoneAttempts = uniqueAttempts.filter(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId &&
+    profile.completionSources?.some(source => source.trackId === profile.trackId && source.contentVersion === attempt.item.contentVersion && source.artifactSha256 === attempt.item.artifactSha256));
+  for (const attempt of new Set([...activityAttempts, ...attempts, ...milestoneAttempts])) {
     const answeredAtMs = Date.parse(attempt.answeredAt);
     if (!Number.isFinite(answeredAtMs) || answeredAtMs > nowMs) throw new Error("Learning evidence answer time is invalid for its captured clock.");
   }
@@ -56,7 +58,7 @@ export function projectLearningEvidence(input: Readonly<{
   }));
   return Object.freeze({
     identity: Object.freeze({ trackId: profile.trackId, contentVersion: profile.contentVersion, artifactSha256: profile.artifactSha256 }), capturedAt: input.now, activityAttempts,
-    completion: evaluatePackageCompletion(profile, attempts, profile.getQuestion), attempts, reviews, recordedReviews, dueReviews,
+    completion: evaluatePackageCompletion(profile, uniqueAttempts, profile.getQuestion), attempts, reviews, recordedReviews, dueReviews,
     completedFacts: Object.freeze({
       // Session requested/actual lengths are calendar/activity facts, not committed attempt volume.
       sessions: Object.freeze([]),

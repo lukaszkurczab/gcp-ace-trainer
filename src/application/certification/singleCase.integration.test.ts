@@ -20,6 +20,7 @@ import type { CanonicalContentLockRecord, Question } from "../../content/canonic
 import { selectSingleCase } from "./singleCaseRecommendation";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { recoverPendingMutation } from "../learningMutations/recoverPendingMutation";
+import { TrainingApplicationFailure } from "../trainingLifecycle/contracts";
 
 const TRACK = "claude-certified-architect-professional-certification", NOW = "2026-10-13T12:00:00.000Z";
 const candidate = (async () => {
@@ -418,6 +419,69 @@ test("case block state cannot disappear in active or terminal imported sessions"
   }
 });
 
+
+test("removed retained questions stay in completed history but cannot enter a new due Review", async () => {
+  const { ContentPackageRuntimeOwner } = await import("../contentPackageRuntimeOwner");
+  const retained = JSON.parse(readFileSync("src/content/generated/retained-content/claude-pre-qle-v2.json", "utf8"));
+  const removedId = "CCARP-D05-O02-expansion-17";
+  for (const withSurvivingDue of [false, true]) {
+    const storage = installMemoryStorage();
+    const owner = new ContentPackageRuntimeOwner(() => null, async () => []);
+    await owner.verifyBundledPackages();
+    const pin = {trackId:TRACK,contentVersion:retained.lock.contentVersion,artifactSha256:retained.lock.sha256};
+    const old = await owner.resolveExactArtifact(pin);
+    const current = await owner.resolveForDiscovery(TRACK,"certification");
+    assert.equal(current.track.getQuestion(removedId),undefined);
+    let seed = true, serial = 0, now = NOW;
+    const compose = () => composeTrainingLifecycleUseCases({wallClock:{now:()=>now},sessionIds:{async create(){return `removed-review-${++serial}`;}},premiumSessionAdmission:{async authorize(){return "allowed";}},packages:{
+      async resolveForPreparation(input){return seed ? old : owner.resolveForPreparation(input);},
+      async resolveExactArtifact(input){return owner.resolveExactArtifact(input);},
+      async resolveForDiscovery(trackId,familyId){return owner.resolveForDiscovery(trackId,familyId);},
+    }});
+    const lifecycle = compose();
+    const opened = await lifecycle.startSession({trackId:TRACK,modeId:"certification-focus-practice",request:{requestedLength:40,mentalUnitId:"CCARP-D05-O02"}});
+    assert.ok(opened.session.itemOrder.some(item=>item.item.questionId === removedId));
+    const survivor = opened.session.itemOrder.find(item=>current.track.getQuestion(item.item.questionId) && retained.artifact.questions.find((q:Question)=>q.questionId === item.item.questionId)?.answer.type === "choice_single")!.item.questionId;
+    for (let index=0; index<opened.session.actualLength; index++) {
+      const active = (await getActiveTrainingSession(admission))!;
+      const id = active.itemOrder[active.currentItemIndex]!.item.questionId;
+      const question = retained.artifact.questions.find((q:Question)=>q.questionId === id) as Question;
+      let response = question.answer;
+      if (id === removedId || (withSurvivingDue && id === survivor)) {
+        assert.equal(question.answer.type,"choice_single"); assert.equal(question.interaction.type,"choice_single");
+        if (question.answer.type !== "choice_single" || question.interaction.type !== "choice_single") throw Error("fixture requires single choice");
+        const correct = question.answer.optionId;
+        response = {type:"choice_single",optionId:question.interaction.options.find(option=>option.optionId !== correct)!.optionId};
+      }
+      await lifecycle.submitPracticeResponse(response);
+      if (active.currentItemIndex < active.actualLength-1) await lifecycle.advancePracticeSession();
+    }
+    const completed = await lifecycle.completeActivePracticeSession(opened.session.id);
+    assert.ok(isCompletedTrainingSession(completed.session));
+    seed = false; now = "2026-10-14T13:00:00.000Z";
+    const before = storage.snapshot();
+    const reviews = (await getReviewQueueItems(admission)).value;
+    assert.ok(reviews.some(entry=>entry.sourceItem.questionId === removedId));
+    const attempts = (await getTrainingAttempts(admission)).value;
+    const command = {trackId:TRACK,modeId:"certification-weak-area-review",request:{requestedLength:10,reviewSource:"due_queue"}};
+    if (withSurvivingDue) {
+      const next = await compose().startSession(command);
+      assert.equal(next.session.artifactSha256,pin.artifactSha256);
+      assert.deepEqual(next.session.itemOrder.map(item=>item.item.questionId),[survivor]);
+      assert.equal((await compose().resumeActiveSession()).artifactSha256,pin.artifactSha256);
+    } else {
+      await assert.rejects(compose().startSession(command),(error:unknown)=>error instanceof TrainingApplicationFailure && error.code === "unknown_mode" && error.cause instanceof Error && /eligible content/u.test(error.cause.message));
+      assert.deepEqual(storage.snapshot(),before,"empty eligible queue writes no data");
+      assert.equal(await getActiveTrainingSession(admission),null);
+    }
+    assert.deepEqual((await getReviewQueueItems(admission)).value,reviews);
+    assert.deepEqual((await getTrainingAttempts(admission)).value,attempts);
+    assert.deepEqual(await getTrainingSessionResult(opened.session.id,admission),completed.result);
+    assert.deepEqual((await getTrainingSessions(admission)).value.find(session=>session.id === opened.session.id),completed.session);
+    const history = await projectCertificationPracticeReview({session:completed.session,result:completed.result,attempts,resolveQuestion:item=>owner.resolveItem(item)});
+    assert.ok(history.items.some(item=>item.questionId === removedId));
+  }
+});
 
 test("historical Claude due Review resolves actual retained pins and never substitutes current content", async () => {
   const { ContentPackageRuntimeOwner } = await import("../contentPackageRuntimeOwner");

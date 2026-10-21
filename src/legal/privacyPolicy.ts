@@ -18,7 +18,7 @@ This Policy covers the mobile app, account and synchronization services, public 
 
 Guest and account use may store an installation identifier, local dataset identifier, selected track, goals, settings, learning sessions, answers, results, review queue, recovery state, notification schedule and content-report outbox on the device. Local reminders are scheduled on the device; Patternly does not currently register a server push token.
 
-Local learning data is protected by the device storage controls used by Patternly. A recovery code copied at your request is cleared when the operating system permits and only if the clipboard still contains that code. Data remaining only on the device is not sent to the Controller unless you create an account and synchronize an allowed record, submit a report, or invoke another network feature.
+Local learning data is protected by the device storage controls used by Patternly. Data remaining only on the device is not sent to the Controller unless you create an account and synchronize an allowed record, submit a report, or invoke another network feature.
 
 4. Account and authentication data
 
@@ -42,13 +42,13 @@ Reports are processed to improve content and protect the reporting channel. The 
 
 Patternly uses authentication tokens, App Check or device-attestation signals, request metadata, rate-limit identifiers derived by hashing network or email data, operational logs and security-event records to protect accounts, investigate faults and prevent abuse. Patternly does not use advertising or cross-app tracking SDKs, a general-purpose external product-analytics SDK, or an external crash-reporting SDK. RevenueCat processes purchase history for subscription functionality and purchase analytics as described below.
 
-Operational logs are retained for ${vars.privacy.operationalLogRetentionDays.en} days and security logs for ${vars.privacy.securityLogRetentionDays.en} days. Patternly redacts credentials and payloads from production logs. Recovery codes copied at your request may remain in the system clipboard; Patternly attempts to clear them after ${vars.privacy.clipboardRecoveryCodeRetentionMinutes.en} minutes where the operating system permits and does not remove content you copied later.
+Operational logs are retained for ${vars.privacy.operationalLogRetentionDays.en} days and security logs for ${vars.privacy.securityLogRetentionDays.en} days. Patternly redacts credentials and payloads from production logs. This version no longer creates or copies account recovery codes. A code copied by an earlier version may remain in the system clipboard. If its cleanup marker is still present, Patternly attempts to clear the matching code at the recorded expiry, ${vars.privacy.clipboardRecoveryCodeRetentionMinutes.en} minutes after copying, when the operating system permits. It does not remove content copied later; this is not a guarantee that every historical copy has been erased.
 
 8. Processors, recipients and transfers
 
 Verified active cloud processors and their purposes: ${vars.privacy.activeCloudProcessors.en}. Active independent controllers and recipients: ${vars.privacy.activeIndependentRecipients.en}. Email delivery provider: ${vars.privacy.emailDeliveryProvider.en}. Provider regions: ${vars.privacy.hostingRegions.en}. Safeguards for transfers outside the EEA: ${vars.privacy.internationalTransferSafeguards.en}.
 
-RevenueCat status: ${vars.privacy.revenueCatStatus.en}. If you later obtain a subscription through the App Store, Apple may independently retain transaction and subscription records. Deleting a Patternly account does not cancel that App Store subscription or remove records controlled independently by Apple. Patternly reviews its processors, recipients and transfer arrangements whenever providers or their processing locations change.
+RevenueCat status: ${vars.privacy.revenueCatStatus.en}. If you later obtain a subscription through Google Play, Google may independently retain transaction and subscription records. Deleting a Patternly account does not cancel that Google Play subscription or remove records controlled independently by Google. Patternly reviews its processors, recipients and transfer arrangements whenever providers or their processing locations change.
 
 9. Retention and account deletion
 
@@ -94,7 +94,7 @@ Polityka obejmuje aplikację mobilną, konto i synchronizację, publiczne strony
 
 Tryb gościa i konto mogą zapisywać na urządzeniu identyfikator instalacji i lokalnego zbioru, wybraną ścieżkę, cele, ustawienia, sesje nauki, odpowiedzi, wyniki, kolejkę powtórek, stan odzyskiwania, harmonogram powiadomień i kolejkę raportów. Przypomnienia są lokalne; Patternly nie rejestruje obecnie tokena zdalnych powiadomień.
 
-Lokalne dane nauki są chronione przez mechanizmy pamięci urządzenia używane przez Patternly. Kod odzyskiwania skopiowany na Twoje żądanie jest usuwany, gdy pozwala na to system operacyjny i tylko wtedy, gdy schowek nadal zawiera ten kod. Dane pozostające wyłącznie na urządzeniu nie są wysyłane Administratorowi, chyba że utworzysz konto i zsynchronizujesz dozwolony rekord, wyślesz raport lub użyjesz innej funkcji sieciowej.
+Lokalne dane nauki są chronione przez mechanizmy pamięci urządzenia używane przez Patternly. Dane pozostające wyłącznie na urządzeniu nie są wysyłane Administratorowi, chyba że utworzysz konto i zsynchronizujesz dozwolony rekord, wyślesz raport lub użyjesz innej funkcji sieciowej.
 
 4. Konto i uwierzytelnianie
 
@@ -118,13 +118,13 @@ Raporty służą poprawie treści i ochronie kanału zgłoszeń. Podstawą jest 
 
 Patternly wykorzystuje tokeny, App Check lub sygnały atestacji, metadane żądań, identyfikatory limitów utworzone przez hashowanie danych sieciowych lub emaila, logi operacyjne i zdarzenia bezpieczeństwa w celu ochrony kont, diagnostyki i przeciwdziałania nadużyciom. Patternly nie korzysta z SDK reklam ani śledzenia między aplikacjami, ogólnego zewnętrznego SDK analityki produktu ani zewnętrznego SDK raportowania awarii. RevenueCat przetwarza historię zakupów na potrzeby działania subskrypcji i analityki zakupowej opisanej poniżej.
 
-Logi operacyjne są przechowywane ${vars.privacy.operationalLogRetentionDays.pl} dni, a bezpieczeństwa ${vars.privacy.securityLogRetentionDays.pl} dni. Patternly usuwa dane dostępowe i payloady z logów produkcyjnych. Kod odzyskiwania skopiowany na Twoje żądanie może pozostać w schowku systemowym; Patternly próbuje usunąć go po ${vars.privacy.clipboardRecoveryCodeRetentionMinutes.pl} minutach, jeśli system na to pozwala, i nie usuwa treści skopiowanej później przez użytkownika.
+Logi operacyjne są przechowywane ${vars.privacy.operationalLogRetentionDays.pl} dni, a bezpieczeństwa ${vars.privacy.securityLogRetentionDays.pl} dni. Patternly usuwa dane dostępowe i payloady z logów produkcyjnych. Ta wersja nie tworzy ani nie kopiuje już kodów odzyskiwania konta. Kod skopiowany przez starszą wersję może pozostać w schowku systemowym. Jeśli zachował się jego znacznik czyszczenia, Patternly próbuje usunąć pasujący kod po zapisanym terminie, ${vars.privacy.clipboardRecoveryCodeRetentionMinutes.pl} minut od skopiowania, gdy pozwala na to system operacyjny. Nie usuwa treści skopiowanej później; nie jest to gwarancja usunięcia każdej historycznej kopii.
 
 8. Podmioty przetwarzające, odbiorcy i transfery
 
 Zweryfikowani aktywni dostawcy chmurowi i cele: ${vars.privacy.activeCloudProcessors.pl}. Aktywni niezależni administratorzy i odbiorcy: ${vars.privacy.activeIndependentRecipients.pl}. Dostawca email: ${vars.privacy.emailDeliveryProvider.pl}. Regiony dostawców: ${vars.privacy.hostingRegions.pl}. Zabezpieczenia transferów poza EOG: ${vars.privacy.internationalTransferSafeguards.pl}.
 
-Status RevenueCat: ${vars.privacy.revenueCatStatus.pl}. Jeżeli później uzyskasz subskrypcję przez App Store, Apple może niezależnie zachować dane transakcji i subskrypcji. Usunięcie konta Patternly nie anuluje tej subskrypcji App Store ani nie usuwa danych kontrolowanych niezależnie przez Apple. Patternly przegląda procesorów, odbiorców i transfery po każdej zmianie dostawcy lub miejsca przetwarzania.
+Status RevenueCat: ${vars.privacy.revenueCatStatus.pl}. Jeżeli później uzyskasz subskrypcję przez Google Play, Google może niezależnie zachować dane transakcji i subskrypcji. Usunięcie konta Patternly nie anuluje tej subskrypcji Google Play ani nie usuwa danych kontrolowanych niezależnie przez Google. Patternly przegląda procesorów, odbiorców i transfery po każdej zmianie dostawcy lub miejsca przetwarzania.
 
 9. Retencja i usunięcie konta
 

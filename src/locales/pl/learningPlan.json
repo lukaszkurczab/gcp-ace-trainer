@@ -160,7 +160,7 @@
   "targetDateGuidance.atRisk": "Przy obecnym tempie możesz nie zdążyć na ten termin.",
   "targetDateGuidance.onTrack": "Twoje obecne tempo pozwala zdążyć na ten termin.",
   "targetDateGuidance.openEnded": "Ucz się dalej we własnym tempie.",
-  "targetDateGuidance.unavailable.unknownCompletionRule": "Ten pakiet nie ma jeszcze reguły ukończenia.",
+  "targetDateGuidance.unavailable.unknownCompletionRule": "Pakiet nie udostępnia pełnego kontraktu ukończenia.",
   "targetDateGuidance.unavailable.insufficientElapsedEvidence": "Ćwicz dalej, aby zbudować wiarygodną prognozę.",
   "targetDateGuidance.unavailable.calculationError": "Nie udało się odświeżyć wskazówki. Spróbuj ponownie.",
   "targetDateGuidance.unavailable.noTarget": "Nie udało się odczytać terminu. Zmień cel.",

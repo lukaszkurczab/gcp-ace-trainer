@@ -131,10 +131,6 @@
     "providerRegistrationRequired": {
       "title": "Vaata konto dokumendid üle",
       "body": "Enne kontoandmete avamist lõpeta konto loomine või tühista see."
-    },
-    "recoveryPending": {
-      "title": "Lõpeta konto taastamine",
-      "body": "Salvestatud konto taastamise samm vajab sinu tähelepanu, enne kui saame sinu andmed avada."
     }
   },
   "privacyRequests": {

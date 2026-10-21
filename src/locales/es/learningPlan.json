@@ -160,7 +160,7 @@
   "targetDateGuidance.atRisk": "Puede que no alcances el objetivo al ritmo actual.",
   "targetDateGuidance.onTrack": "Tu ritmo actual te permitirá alcanzar el objetivo a tiempo.",
   "targetDateGuidance.openEnded": "Sigue aprendiendo a tu ritmo.",
-  "targetDateGuidance.unavailable.unknownCompletionRule": "Este paquete aún no tiene un criterio de finalización.",
+  "targetDateGuidance.unavailable.unknownCompletionRule": "El paquete no proporciona el contrato completo de finalización.",
   "targetDateGuidance.unavailable.insufficientElapsedEvidence": "Sigue practicando para obtener una previsión útil.",
   "targetDateGuidance.unavailable.calculationError": "No se pudo actualizar la orientación. Inténtalo de nuevo.",
   "targetDateGuidance.unavailable.noTarget": "No se pudo leer la fecha objetivo. Ajusta tu objetivo.",

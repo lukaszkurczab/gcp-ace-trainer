@@ -19,7 +19,7 @@ Esta Política se aplica a la aplicación móvil, la cuenta y los servicios de s
 
 El uso como invitado o con una cuenta puede guardar en el dispositivo un identificador de instalación, un identificador del conjunto de datos local, la ruta seleccionada, objetivos, ajustes, sesiones de aprendizaje, respuestas, resultados, cola de repaso, estado de recuperación, programación de notificaciones y cola de denuncias de contenido. Los recordatorios locales se programan en el dispositivo; Patternly actualmente no registra un token de notificaciones push en el servidor.
 
-Los datos locales de aprendizaje están protegidos por los controles de almacenamiento del dispositivo que utiliza Patternly. Un código de recuperación copiado a petición suya se borra cuando el sistema operativo lo permite y solo si el portapapeles todavía contiene ese mismo código. Los datos que permanecen exclusivamente en el dispositivo no se envían al Responsable del tratamiento, salvo que cree una cuenta y sincronice un registro permitido, envíe una denuncia o utilice otra función de red.
+Los datos locales de aprendizaje están protegidos por los controles de almacenamiento del dispositivo que utiliza Patternly. Los datos que permanecen exclusivamente en el dispositivo no se envían al Responsable del tratamiento, salvo que cree una cuenta y sincronice un registro permitido, envíe una denuncia o utilice otra función de red.
 
 4. Datos de cuenta y autenticación
 
@@ -43,13 +43,13 @@ Las denuncias se tratan para mejorar el contenido y proteger el canal de denunci
 
 Patternly utiliza tokens de autenticación, App Check o señales de atestación del dispositivo, metadatos de solicitudes, identificadores de limitación derivados del hash de datos de red o de correo electrónico, registros operativos y eventos de seguridad para proteger cuentas, investigar fallos y prevenir abusos. Patternly no utiliza SDK de publicidad ni de seguimiento entre aplicaciones, SDK externo general de analítica de producto ni SDK externo de informes de fallos. RevenueCat trata el historial de compras para ofrecer funciones de suscripción y analítica de compras, según se describe más adelante.
 
-Los registros operativos se conservan durante {{privacy.operationalLogRetentionDays}} días y los registros de seguridad durante {{privacy.securityLogRetentionDays}} días. Patternly redacta credenciales y cargas útiles de los registros de producción. Los códigos de recuperación copiados a petición suya pueden permanecer en el portapapeles del sistema; Patternly intenta borrarlos después de {{privacy.clipboardRecoveryCodeRetentionMinutes}} minutos cuando el sistema operativo lo permite y no elimina lo que usted haya copiado posteriormente.
+Los registros operativos se conservan durante {{privacy.operationalLogRetentionDays}} días y los registros de seguridad durante {{privacy.securityLogRetentionDays}} días. Patternly redacta credenciales y cargas útiles de los registros de producción. Esta versión ya no crea ni copia códigos de recuperación de cuenta. Un código copiado por una versión anterior puede permanecer en el portapapeles del sistema. Si su marcador de limpieza sigue presente, Patternly intenta borrar el código coincidente al vencimiento registrado, {{privacy.clipboardRecoveryCodeRetentionMinutes}} minutos después de copiarlo, cuando el sistema operativo lo permite. No elimina contenido copiado después; esto no garantiza que se hayan borrado todas las copias históricas.
 
 8. Encargados, destinatarios y transferencias
 
 Encargados activos de servicios en la nube verificados y sus finalidades: {{privacy.activeCloudProcessors}}. Responsables independientes activos y destinatarios: {{privacy.activeIndependentRecipients}}. Proveedor de envío de correo electrónico: {{privacy.emailDeliveryProvider}}. Regiones de los proveedores: {{privacy.hostingRegions}}. Garantías para transferencias fuera del EEE: {{privacy.internationalTransferSafeguards}}.
 
-Estado de RevenueCat: {{privacy.revenueCatStatus}}. Si más adelante obtiene una suscripción a través de App Store, Apple puede conservar de forma independiente registros de transacciones y suscripciones. Eliminar una cuenta de Patternly no cancela esa suscripción de App Store ni elimina registros cuyo responsable independiente sea Apple. Patternly revisa sus encargados, destinatarios y acuerdos de transferencia cuando cambian los proveedores o sus ubicaciones de tratamiento.
+Estado de RevenueCat: {{privacy.revenueCatStatus}}. Si más adelante obtiene una suscripción a través de Google Play, Google puede conservar de forma independiente registros de transacciones y suscripciones. Eliminar una cuenta de Patternly no cancela esa suscripción de Google Play ni elimina registros cuyo responsable independiente sea Google. Patternly revisa sus encargados, destinatarios y acuerdos de transferencia cuando cambian los proveedores o sus ubicaciones de tratamiento.
 
 9. Conservación y eliminación de la cuenta
 
@@ -100,7 +100,7 @@ Las funciones y el contenido pueden cambiar a medida que mejora el servicio. Los
 
 Algunas funciones pueden utilizarse como invitado y guardar datos en el dispositivo. Una cuenta puede permitir la recuperación y sincronización de datos admitidos. Usted es responsable de las actividades realizadas mediante su cuenta, salvo que comunique rápidamente un acceso no autorizado.
 
-El contrato del servicio de cuenta se celebra por tiempo indefinido y continúa hasta que usted o el Operador lo rescindan de acuerdo con estas Condiciones. Eliminar su cuenta de Patternly pone fin al servicio de cuenta. Si más adelante compra una suscripción mediante App Store, eliminar la cuenta no cancela por sí misma esa suscripción.
+El contrato del servicio de cuenta se celebra por tiempo indefinido y continúa hasta que usted o el Operador lo rescindan de acuerdo con estas Condiciones. Eliminar su cuenta de Patternly pone fin al servicio de cuenta. Si más adelante compra una suscripción mediante Google Play, eliminar la cuenta no cancela por sí misma esa suscripción.
 
 Puede eliminar su cuenta mediante el proceso disponible en la aplicación. La Política de privacidad explica los datos afectados, los plazos de conservación y los límites de la eliminación.
 
@@ -121,11 +121,11 @@ Puede citar fragmentos limitados cuando la ley lo permita, pero sin autorizació
 
 Las nuevas compras de Premium están actualmente deshabilitadas, por lo que no hay una oferta de pago vigente. Si las compras se habilitan más adelante, la oferta prevista es {{terms.premiumProductName}} (identificador de producto {{terms.premiumProductIdentifier}}), un servicio digital mensual con renovación automática y sin periodo de prueba. El precio previsto con impuestos aplicables en Polonia es {{terms.premiumPriceIncludingTaxes}}; el precio de renovación previsto es {{terms.premiumRenewalPriceIncludingTaxes}} por cada periodo de {{terms.premiumBillingPeriod}}. Son precios previstos para Polonia, no una oferta vigente; los precios de otros países no están confirmados. Antes de habilitar una compra deberán indicarse para esa oferta el vendedor correspondiente, el precio vigente, el periodo de renovación, el alcance de Premium, el método y momento del pago, el inicio del servicio y la obligación de pago.
 
-El acuerdo actual de comerciante registrado es: {{terms.merchantOfRecord}}. No están confirmados el vendedor ni el mecanismo de pago de una futura oferta específica de una tienda. Si más adelante se ofrece una suscripción y usted la compra mediante Apple App Store, Apple proporciona el canal de pago y gestión de suscripciones de esa tienda; esto no elimina la responsabilidad del Operador por la conformidad de Patternly ni sus derechos legales frente al comerciante responsable.
+El acuerdo actual de comerciante registrado es: {{terms.merchantOfRecord}}. No están confirmados el vendedor ni el mecanismo de pago de una futura oferta específica de una tienda. Si más adelante se ofrece una suscripción y usted la compra mediante Google Play, Google proporciona el canal de pago y gestión de suscripciones de esa tienda; esto no elimina la responsabilidad del Operador por la conformidad de Patternly ni sus derechos legales frente al comerciante responsable.
 
-Toda suscripción se renovará únicamente en las condiciones claramente mostradas antes de la compra. Si más adelante compra una mediante Apple App Store, podrá detener futuras renovaciones en los ajustes de su cuenta de Apple, y eliminar la aplicación o su cuenta de Patternly no cancelará esa suscripción de App Store. Un aumento sustancial del precio nunca se acepta por el mero hecho de seguir utilizando Patternly; requiere el mecanismo legal aplicable de consentimiento afirmativo, nueva compra o renovación.
+Toda suscripción se renovará únicamente en las condiciones claramente mostradas antes de la compra. Si más adelante compra una mediante Google Play, podrá detener futuras renovaciones en los ajustes de suscripciones de Google Play, y eliminar la aplicación o su cuenta de Patternly no cancelará esa suscripción de Google Play. Un aumento sustancial del precio nunca se acepta por el mero hecho de seguir utilizando Patternly; requiere el mecanismo legal aplicable de consentimiento afirmativo, nueva compra o renovación.
 
-Si más adelante compra una suscripción mediante Apple App Store, Apple puede tramitar reembolsos de transacciones en su plataforma. Aun así, puede dirigir al Operador las reclamaciones sobre el servicio de Patternly, su conformidad o los recursos legales de consumidores.
+Si más adelante compra una suscripción mediante Google Play, Google puede tramitar reembolsos de transacciones en su plataforma. Aun así, puede dirigir al Operador las reclamaciones sobre el servicio de Patternly, su conformidad o los recursos legales de consumidores.
 
 El acceso a Premium comienza inmediatamente después de la compra solo si usted solicita por separado y de forma expresa que el servicio empiece antes de que finalice el plazo de desistimiento de 14 días. No puede haber ninguna casilla premarcada. Si desiste después de que el servicio haya empezado, puede deberse un importe proporcional por el servicio prestado hasta el desistimiento cuando la legislación imperativa lo permita. Premium no se ofrece como un suministro único y separado de contenido digital, por lo que Patternly no le pide que reconozca la pérdida del derecho de desistimiento por ese motivo. En los demás casos, se mantienen los derechos legales de desistimiento. El plazo para presentar una reclamación no se limita a 14 días.
 
@@ -144,7 +144,7 @@ Si envía una denuncia de contenido o un mensaje de asistencia, confirma que es 
 
 Puede dejar de utilizar Patternly y eliminar su cuenta en cualquier momento. Si más adelante se ofrece una suscripción en una plataforma, puede que tenga que cancelarla por separado a través de esa plataforma. El Operador solo puede restringir el acceso de forma proporcional por incumplimiento sustancial, amenaza de seguridad verificada, uso ilícito, impago o requisito jurídico vinculante.
 
-Salvo que sea necesaria una actuación inmediata para evitar daños o cumplir la ley, el Operador explicará el motivo, avisará con antelación razonable y le dará la oportunidad de subsanar el incumplimiento. Puede recurrir a través de {{terms.complaintEmail}}. El acceso se restablecerá cuando desaparezca el motivo. La suspensión no elimina los derechos legales de conformidad, reembolso, devolución de datos, reclamación o cancelación. Si más adelante compra una suscripción mediante Apple App Store, la suspensión no detendrá por sí misma futuras renovaciones de esa suscripción.
+Salvo que sea necesaria una actuación inmediata para evitar daños o cumplir la ley, el Operador explicará el motivo, avisará con antelación razonable y le dará la oportunidad de subsanar el incumplimiento. Puede recurrir a través de {{terms.complaintEmail}}. El acceso se restablecerá cuando desaparezca el motivo. La suspensión no elimina los derechos legales de conformidad, reembolso, devolución de datos, reclamación o cancelación. Si más adelante compra una suscripción mediante Google Play, la suspensión no detendrá por sí misma futuras renovaciones de esa suscripción.
 
 11. Responsabilidad y derechos legales
 
@@ -154,7 +154,7 @@ En general, el Operador no excluye ni limita la responsabilidad impuesta por nor
 
 12. Servicios de terceros
 
-Patternly puede depender de Apple y de proveedores de autenticación, alojamiento, notificaciones y facturación. Sus propias condiciones pueden regir su relación con ellos. Las referencias a proveedores de certificación y propietarios de tecnologías identifican temas de aprendizaje y no implican patrocinio ni respaldo.
+Patternly puede depender de Google y de proveedores de autenticación, alojamiento, notificaciones y facturación. Sus propias condiciones pueden regir su relación con ellos. Las referencias a proveedores de certificación y propietarios de tecnologías identifican temas de aprendizaje y no implican patrocinio ni respaldo.
 
 13. Legislación aplicable y litigios
 
@@ -190,7 +190,7 @@ Si es un consumidor con derecho, normalmente dispone de 14 días para desistir d
 
 Patternly debe ajustarse a su descripción, al alcance acordado del servicio de pago, su funcionalidad, compatibilidad, accesibilidad, continuidad, seguridad y las actualizaciones que razonablemente pueda esperar conforme al contrato y a la legislación imperativa. Comunique cualquier falta de conformidad a {{terms.complaintEmail}}. Puede exigir que se restablezca la conformidad en un plazo razonable y sin inconvenientes importantes.
 
-Cuando se cumplan los requisitos legales, puede solicitar al comerciante responsable una reducción proporcional del precio o resolver el contrato y obtener el reembolso correspondiente. Si compró mediante Apple App Store, sus herramientas de transacciones no sustituyen estos recursos.
+Cuando se cumplan los requisitos legales, puede solicitar al comerciante responsable una reducción proporcional del precio o resolver el contrato y obtener el reembolso correspondiente. Si compró mediante Google Play, sus herramientas de transacciones no sustituyen estos recursos.
 
 19. Reclamaciones
 

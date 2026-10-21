@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRuleV2, createPackageCompletionRuleV3, evaluatePackageCompletion, minimumAttemptsForMentalUnits, type TrainingAttempt } from "..";
+import { qualifyPackageAttempts, type VerifiedPackageCompletionProfile } from "./packageCompletionRule";
 
 const artifactSha256 = "a".repeat(64);
 const rule = createPackageCompletionRuleV2({ ruleVersion: 2, chapters: [
@@ -20,6 +21,36 @@ function attempt(id: string, questionId: string, index: number, kind: "correct" 
 function evaluate(attempts: readonly TrainingAttempt<unknown>[], completionRule = rule) {
   return evaluatePackageCompletion({ ...profile, completionRule }, attempts, (questionId) => questionById.get(questionId));
 }
+
+function historical(value: TrainingAttempt<unknown>): TrainingAttempt<unknown> {
+  const item = {...value.item,contentVersion:"old",artifactSha256:"b".repeat(64)};
+  return {...value,item,reviewEvidence:{...value.reviewEvidence,sourceItem:item}};
+}
+
+test("verified identical credits preserve original refs, volume, quality and retry identity across versions", () => {
+  const compatible: VerifiedPackageCompletionProfile = {...profile,classifyCompletionItem:item=>item.contentVersion === "old" && item.artifactSha256 === "b".repeat(64) ? "equivalent" : "different"};
+  const old = [...Array.from({length:20},(_,i)=>historical(attempt(`a${i}`,"question-a",i))),...Array.from({length:20},(_,i)=>historical(attempt(`b${i}`,"question-b",20+i)))];
+  const before = structuredClone(old);
+  assert.equal(evaluate(old).kind,"in_progress","strict remains the default");
+  const qualified = qualifyPackageAttempts(compatible,[...old,old[0]!]);
+  assert.equal(qualified.length,40);
+  assert.equal(qualified[0],old[0],"credit returns the original record, never a current-pin copy");
+  assert.equal(evaluatePackageCompletion(compatible,old,id=>questionById.get(id)).kind,"completed");
+  const lowerQuality = [...old,...Array.from({length:5},(_,i)=>attempt(`wrong${i}`,"question-a",40+i,"incorrect"))];
+  const evaluated = evaluatePackageCompletion(compatible,lowerQuality,id=>questionById.get(id));
+  assert.equal(evaluated.kind,"in_progress");
+  assert.equal(evaluated.chapters[0]!.quality,0.75);
+  assert.deepEqual(old,before);
+});
+
+test("unverified historical credit is unknown only when verified evidence cannot establish completion", () => {
+  const uncertain: VerifiedPackageCompletionProfile = {...profile,classifyCompletionItem:()=>"unavailable"};
+  const old = historical(attempt("unknown","question-a",0));
+  assert.deepEqual(evaluatePackageCompletion(uncertain,[old],id=>questionById.get(id)),{kind:"unknown"});
+  const complete = [...Array.from({length:20},(_,i)=>attempt(`a${i}`,"question-a",i+1)),...Array.from({length:20},(_,i)=>attempt(`b${i}`,"question-b",i+21))];
+  assert.equal(evaluatePackageCompletion(uncertain,[old,...complete],id=>questionById.get(id)).kind,"completed");
+  assert.equal(qualifyPackageAttempts(uncertain,[old,...complete]).length,40);
+});
 
 test("v2 validates exact chapter fields, distinct unit thresholds, and safe integer bounds", () => {
   assert.equal(minimumAttemptsForMentalUnits(1), 20);
@@ -56,7 +87,7 @@ test("attempt overage in one chapter cannot compensate another and partial resul
   const result = evaluate(attempts);
   assert.equal(result.kind, "in_progress");
   if (result.kind !== "in_progress") return;
-  assert.equal(result.qualifyingAttemptCount, 50);
+  assert.equal(result.qualifyingAttemptCount, 30, "completed chapter retains its first earning snapshot");
   assert.equal(result.remainingAttemptCount, 10);
   assert.equal(result.chapters[1]?.qualifyingAttemptCount, 10);
   assert.equal(result.chapters[1]?.quality, null);
@@ -130,21 +161,18 @@ test("v3 blocks a green volume and quality result until four distinct latest-cor
   }
 });
 
-test("v3 uses only each question's latest exact-package result and the attempt id tie-break", () => {
+test("v3 preserves the first exact completion after later quality and coverage regression", () => {
   const firstTwenty = Array.from({ length: 20 }, (_, index) => attempt(`base-${index}`, `unit-a-q${(index % 4) + 1}`, index));
   const regression = attempt("regression", "unit-a-q4", 30, "incorrect");
-  const afterRegression = evaluateV3([...firstTwenty, regression]);
-  assert.equal(afterRegression.kind, "in_progress");
-  if (afterRegression.kind !== "in_progress") return;
-  assert.equal(afterRegression.chapters[0]?.coverage[0]?.latestCorrectQuestionCount, 3);
-  assert.equal(afterRegression.coverageDeficit, 1);
-  assert.equal(afterRegression.chapters[0]?.quality, 0.95);
-
-  const tieCorrect = attempt("q4-a", "unit-a-q4", 40);
-  const tieIncorrect = attempt("q4-z", "unit-a-q4", 40, "partial", { answeredAt: tieCorrect.answeredAt });
-  const tied = evaluateV3([...firstTwenty, tieCorrect, tieIncorrect]);
-  assert.equal(tied.kind, "in_progress");
-  if (tied.kind === "in_progress") assert.equal(tied.chapters[0]?.coverage[0]?.latestCorrectQuestionCount, 3);
+  const before = evaluateV3(firstTwenty);
+  const after = evaluateV3([...firstTwenty, regression]);
+  assert.equal(after.kind, "completed");
+  assert.deepEqual(after, before);
+  assert.equal(after.chapters[0]?.completionSource?.attemptId, "base-19");
+  assert.equal(after.chapters[0]?.coverage[0]?.latestCorrectQuestionCount, 4);
+  const tied = evaluateV3([...firstTwenty.slice(0,19), attempt("z-final", "unit-a-q4", 19), attempt("a-final", "unit-a-q4", 19, "incorrect")].reverse());
+  assert.equal(tied.kind, "completed");
+  assert.equal(tied.chapters[0]?.completionSource?.attemptId, "z-final", "time then ID orders the first earning moment");
 });
 
 test("v3 exposes actual rolling quality even while attempt volume remains unmet", () => {
@@ -160,4 +188,64 @@ test("v3 exposes actual rolling quality even while attempt volume remains unmet"
   assert.equal(result.chapters[0]?.quality, 0.75);
   assert.equal(result.chapters[0]?.qualityRequirementUnmet, true);
   assert.equal(result.chapters[0]?.reason, "minimum_attempts_unmet");
+});
+
+test("an exact old v2 completion survives expanded v3 requirements while new chapters stay open", () => {
+  const oldProfile = {...profile, contentVersion:"old", artifactSha256:"b".repeat(64), getQuestion:(id:string)=>questionById.get(id)};
+  const expanded = createPackageCompletionRuleV3({ruleVersion:3,chapters:[
+    {nodeId:"chapter-a",mentalUnitCount:6,minimumAttemptCount:40,rollingWindowSize:20,qualityThreshold:0.8,units:Array.from({length:6},(_,i)=>({mentalUnitId:`expanded-${i}`,requiredCorrectQuestionCount:4}))},
+    {nodeId:"new-chapter",mentalUnitCount:1,minimumAttemptCount:20,rollingWindowSize:20,qualityThreshold:0.8,units:[{mentalUnitId:"new-unit",requiredCorrectQuestionCount:4}]},
+  ]});
+  const old = Array.from({length:20},(_,i)=>historical(attempt(`old-${i}`,"question-a",i)));
+  const before=structuredClone(old);
+  const current={...profile,completionRule:expanded,completionSources:[oldProfile],classifyCompletionItem:()=>"different" as const};
+  const completion=evaluatePackageCompletion(current,[...old,old[0]!],()=>undefined);
+  assert.equal(completion.kind,"in_progress");
+  assert.equal(completion.chapters[0]!.status,"completed");
+  assert.equal(completion.chapters[0]!.requiredAttemptCount,20,"earning rule is not replaced by expanded requirements");
+  assert.equal(completion.chapters[0]!.completionSource?.ruleVersion,2);
+  assert.equal(completion.chapters[1]!.status,"in_progress");
+  assert.equal(completion.minimumAdditionalAttemptCount,20);
+  assert.deepEqual(old,before);
+  const partial=evaluatePackageCompletion(current,old.slice(0,19),()=>undefined);
+  assert.equal(partial.kind,"in_progress");
+  assert.equal(partial.chapters[0]!.status,"in_progress");
+});
+
+test("milestones cannot combine distinct pins and choose the earliest verified source deterministically", () => {
+  const first=Array.from({length:20},(_,i)=>historical(attempt(`earlier-${i}`,"question-a",i)));
+  const later=Array.from({length:20},(_,i)=>attempt(`later-${i}`,"question-a",100+i));
+  const source={...profile,contentVersion:"old",artifactSha256:"b".repeat(64),getQuestion:(id:string)=>questionById.get(id)};
+  const complete=evaluatePackageCompletion({...profile,completionSources:[source]},[...later,...first].reverse(),id=>questionById.get(id));
+  if(complete.kind === "unknown") throw Error("verified source");
+  assert.equal(complete.chapters[0]!.completionSource?.attemptId,"earlier-19");
+  assert.equal(complete.chapters[0]!.completionSource?.contentVersion,"old");
+  const tiedOld=first.map((item,i)=>({...item,id:i===19 ? "a" : `old-tie-${i}`}));
+  const tiedCurrent=later.map((item,i)=>({...item,id:i===19 ? "aa" : `current-tie-${i}`,answeredAt:first[i]!.answeredAt,committedAt:first[i]!.committedAt}));
+  const tied=evaluatePackageCompletion({...profile,completionSources:[source]},[...tiedCurrent,...tiedOld].reverse(),id=>questionById.get(id));
+  if(tied.kind === "unknown") throw Error("verified tied sources");
+  assert.equal(tied.chapters[0]!.completionSource?.attemptId,"a","source choice uses the same time/ID ordering as individual attempts, including ID prefixes");
+  const split=evaluatePackageCompletion({...profile,completionSources:[source]},[...first.slice(0,10),...later.slice(0,10)],id=>questionById.get(id));
+  assert.equal(split.kind,"in_progress");
+  assert.equal(split.chapters[0]!.completionSource,undefined);
+});
+
+test("missing milestone proof is unknown even for deleted questions and cannot hide a verified completion", () => {
+  const old=historical(attempt("removed", "removed-question", 0));
+  const current={...profile,completionSources:[],classifyCompletionItem:()=>"different" as const};
+  assert.deepEqual(evaluatePackageCompletion(current,[old],id=>questionById.get(id)),{kind:"unknown"});
+  const complete=[...Array.from({length:20},(_,i)=>attempt(`ca${i}`,"question-a",i+1)),...Array.from({length:20},(_,i)=>attempt(`cb${i}`,"question-b",i+21))];
+  assert.equal(evaluatePackageCompletion(current,[old,...complete],id=>questionById.get(id)).kind,"completed");
+});
+
+test("a retained v3 completion keeps its original unit coverage when the chapter gains units", () => {
+  const expanded=createPackageCompletionRuleV3({ruleVersion:3,chapters:[{nodeId:"chapter-a",mentalUnitCount:6,minimumAttemptCount:40,rollingWindowSize:20,qualityThreshold:0.8,units:Array.from({length:6},(_,i)=>({mentalUnitId:`expanded-${i}`,requiredCorrectQuestionCount:4}))}]});
+  const old=Array.from({length:20},(_,i)=>historical(attempt(`v3-old-${i}`,`unit-a-q${i%4+1}`,i)));
+  const source={...profile,contentVersion:"old",artifactSha256:"b".repeat(64),completionRule:v3Rule,getQuestion:(id:string)=>v3QuestionById.get(id)};
+  const completion=evaluatePackageCompletion({...profile,completionRule:expanded,completionSources:[source]},old,()=>undefined);
+  assert.equal(completion.kind,"completed");
+  assert.equal(completion.chapters[0]!.mentalUnitCount,1);
+  assert.equal(completion.chapters[0]!.requiredAttemptCount,20);
+  assert.equal(completion.chapters[0]!.completionSource?.ruleVersion,3);
+  assert.equal(completion.chapters[0]!.coverage[0]!.latestCorrectQuestionCount,4);
 });

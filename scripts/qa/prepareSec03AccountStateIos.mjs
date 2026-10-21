@@ -8,7 +8,7 @@ import { parseOrigin, request, selectTarget } from "./readNativeStartupTrace.mjs
 
 const appId = "com.lkurczab.patternly.sec03";
 export function buildSec03AccountStateExpression({ fingerprint, dependencyPrefix, apiKey, environment, action = "revenuecat", stageKey }) {
-  if (!["revenuecat", "package", "observe", "recovery"].includes(action)) throw Error("arguments_rejected");
+  if (!["revenuecat", "package", "observe"].includes(action)) throw Error("arguments_rejected");
   if (!/^[a-f0-9]{64}$/u.test(fingerprint ?? "") || !/^test_[A-Za-z0-9]+$/u.test(apiKey ?? "")) throw Error("arguments_rejected");
   if (!environment || environment.EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY !== apiKey || environment.EXPO_PUBLIC_PATTERNLY_API_ORIGIN !== "http://127.0.0.1:8080") throw Error("arguments_rejected");
   if (stageKey !== undefined && !/^__sec03RC_[a-f0-9]{32}$/u.test(stageKey)) throw Error("arguments_rejected");
@@ -38,34 +38,12 @@ export function buildSec03AccountStateExpression({ fingerprint, dependencyPrefix
       let account;
       try{const me=await api.getMe();account={kind:'observed',accountIdSha256:hash(me.user.id),subjectMatches:me.user.identity.subject===before.uid};}catch(error){account={kind:'unavailable',category:['authorization_generation_required','authorization_generation_stale','account_not_found'].includes(error.serverCode)?error.serverCode:'local_account_unavailable'};}
       const authRecord=await load('src/infrastructure/firebase/secureAuthPersistence.ts').inspectQ13SecureAuthPersistence(undefined,uid=>uid===before.uid);
-      const vault=load('src/infrastructure/security/recoveryOperationVault.ts');
-      const vaultRecord=await vault.createSecureRecoveryOperationVault().load();
-      const vaultReceipt=await vault.inspectQ13RecoveryOperationVault();
       const profile=load('src/infrastructure/storage/mmkvClient.ts').getActiveStorageProfileOrNull();
-      return {schema:'patternly.sec03-protected-state.v1',fingerprint:${JSON.stringify(fingerprint)},appId:${JSON.stringify(appId)},firebaseUidSha256:hash(before.uid),generation,account,auth:authRecord,vault:vaultReceipt,vaultState:vaultRecord?{kind:vaultRecord.kind,status:vaultRecord.status,operationIdSha256:hash(vaultRecord.operationId),...(vaultRecord.kind==='issue'?{savedIntent:vaultRecord.savedIntent,codeCount:vaultRecord.codes?.length??0,firebaseUidMatches:vaultRecord.firebaseUid===before.uid,authorizationGeneration:vaultRecord.authorizationGeneration}:{} )}:null,profile:profile?{kind:profile.kind,profileIdSha256:hash(profile.id),accountIdSha256:profile.accountId?hash(profile.accountId):null}:null};
+      return {schema:'patternly.sec03-protected-state.v1',fingerprint:${JSON.stringify(fingerprint)},appId:${JSON.stringify(appId)},firebaseUidSha256:hash(before.uid),generation,account,auth:authRecord,profile:profile?{kind:profile.kind,profileIdSha256:hash(profile.id),accountIdSha256:profile.accountId?hash(profile.accountId):null}:null};
     }
     stage('local_account_read');
     const me=await api.getMe();
     if(auth.getSnapshot()?.uid!==before.uid||me.user.identity.subject!==before.uid||!/^[0-9a-f-]{36}$/i.test(me.user.id))throw Error('identity_rejected');
-    if(${JSON.stringify(action)}==='recovery'){
-      const generation=await auth.getAuthorizationGeneration();
-      const storage=load('src/infrastructure/storage/mmkvClient.ts');
-      const profile=storage.getActiveStorageProfileOrNull();
-      if(!Number.isSafeInteger(generation)||generation<1||auth.getSnapshot()?.uid!==before.uid||profile?.kind!=='account'||profile.accountId!==me.user.id||storage.isProfileTransitionActive())throw Error('auth_not_ready');
-      const vaultModule=load('src/infrastructure/security/recoveryOperationVault.ts');
-      const vault=vaultModule.createSecureRecoveryOperationVault();
-      if(await vault.load()!==null)throw Error('vault_not_empty');
-      const crypto=load('node_modules/expo-crypto/build/Crypto.js');
-      const coordinator=load('src/application/account/recoveryOperationCoordinator.ts').createRecoveryOperationCoordinator({api,auth,vault,newOperationId:()=>crypto.randomUUID()});
-      if((await coordinator.load()).kind!=='idle')throw Error('vault_not_empty');
-      stage('recovery_issue_attempted');
-      const result=await coordinator.startIssue({firebaseUid:before.uid,authorizationGeneration:generation});
-      if(result.kind!=='issue'||result.status!=='result_available'||result.codes?.length!==10||result.savedIntent!==false)throw Error('recovery_issue_unresolved');
-      const receipt=await vaultModule.inspectQ13RecoveryOperationVault();
-      if(receipt.kind!=='observed'||receipt.record!=='present')throw Error('recovery_issue_unresolved');
-      const hash=load('src/infrastructure/identity/sha256.ts').sha256Utf8;
-      return {schema:'patternly.sec03-recovery-preparation.v1',fingerprint:${JSON.stringify(fingerprint)},appId:${JSON.stringify(appId)},status:result.status,codeCount:result.codes.length,savedIntent:result.savedIntent,operationIdSha256:hash(result.operationId),authorizationGeneration:generation,vault:receipt,interruption:'after_local_result_persistence_and_server_issue_before_saved_intent_and_ACK',scope:'real_coordinator_and_adapters_only_not_Settings_reauth_UX'};
-    }
     if(${JSON.stringify(action)}==='package'){
       const storage=load('src/infrastructure/storage/mmkvClient.ts');
       const profile=storage.getActiveStorageProfileOrNull();
@@ -98,11 +76,11 @@ export function buildSec03AccountStateExpression({ fingerprint, dependencyPrefix
 }
 
 export async function prepareSec03AccountStateIos(projectRoot, environmentFile, receiptFile, action = "revenuecat") {
-  if (!["revenuecat", "package", "observe", "recovery", "status"].includes(action)) throw Error("arguments_rejected");
+  if (!["revenuecat", "package", "observe", "status"].includes(action)) throw Error("arguments_rejected");
   const project = realpathSync(projectRoot);
   if (!/^\/private\/tmp\/patternly-sec03-isolated-[A-Za-z0-9]+\/attempt-[0-9]+\/project$/u.test(project)) throw Error("arguments_rejected");
   const run = resolve(project, "..");
-  if (resolve(environmentFile) !== resolve(run, "environment-A.json") || !(action === "observe" ? ["state-A-before.json","state-A-after.json","state-A-diagnostic.json"].map(name=>resolve(run,name)).includes(resolve(receiptFile)) : resolve(receiptFile) === resolve(run, action === "package" ? "local-package-A.json" : action === "recovery" ? "recovery-A.json" : "revenuecat-A.json"))
+  if (resolve(environmentFile) !== resolve(run, "environment-A.json") || !(action === "observe" ? ["state-A-before.json","state-A-after.json","state-A-diagnostic.json"].map(name=>resolve(run,name)).includes(resolve(receiptFile)) : resolve(receiptFile) === resolve(run, action === "package" ? "local-package-A.json" : "revenuecat-A.json"))
     || (statSync(environmentFile).mode & 0o077) || (statSync(run).mode & 0o077)) throw Error("arguments_rejected");
   if (action !== "status" && (existsSync(receiptFile) || existsSync(resolve(run,"revenuecat-pending.json")))) throw Error("attempt_exists_inspect_first");
   const root = realpathSync(new URL("../../node_modules", import.meta.url));
@@ -133,7 +111,7 @@ export async function prepareSec03AccountStateIos(projectRoot, environmentFile, 
       return {schema:'patternly.sec03-cache-attempt-status.v1',...value};
     }
     writeFileSync(pendingPath,JSON.stringify({schema:"patternly.sec03-rc-pending.v1",key,appId,fingerprint,action,stage:"attempt_unsettled_do_not_retry"})+"\n",{mode:0o600,flag:"wx"});
-    await evaluate(`(()=>{globalThis[${JSON.stringify(key)}]={kind:'pending'};Promise.resolve().then(()=>${expression}).then(value=>globalThis[${JSON.stringify(key)}]={kind:'done',value}).catch(error=>{const allowed=['runtime_rejected','owner_unavailable','auth_not_ready','identity_rejected','native_unavailable','sdk_already_configured','configuration_rejected','sdk_configuration_failed','customer_info_failed','profile_not_ready','package_failed','vault_not_empty','recovery_issue_unresolved'];globalThis[${JSON.stringify(key)}]={kind:'failed',category:allowed.includes(error?.message)?error.message:'preparation_failed'};});return 'started';})()`);
+      await evaluate(`(()=>{globalThis[${JSON.stringify(key)}]={kind:'pending'};Promise.resolve().then(()=>${expression}).then(value=>globalThis[${JSON.stringify(key)}]={kind:'done',value}).catch(error=>{const allowed=['runtime_rejected','owner_unavailable','auth_not_ready','identity_rejected','native_unavailable','sdk_already_configured','configuration_rejected','sdk_configuration_failed','customer_info_failed','profile_not_ready','package_failed'];globalThis[${JSON.stringify(key)}]={kind:'failed',category:allowed.includes(error?.message)?error.message:'preparation_failed'};});return 'started';})()`);
     for(let attempt=0;attempt<120;attempt++){
       const value=JSON.parse(await evaluate(`JSON.stringify(globalThis[${JSON.stringify(key)}])`));
       if(value.kind==='done'){settled=true;writeFileSync(receiptFile,JSON.stringify(value.value)+"\n",{mode:0o600,flag:'wx'});return value.value;}
@@ -147,7 +125,7 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const [project,environment,receipt,action = "revenuecat",...extra]=process.argv.slice(2);
   if(!project||!environment||!receipt||extra.length){console.error('{"stage":"sec03_account_state","category":"arguments_rejected"}');process.exitCode=1;}
   else prepareSec03AccountStateIos(project,environment,receipt,action).then(value=>console.log(JSON.stringify(value))).catch(error=>{
-    const safe=new Set(['arguments_rejected','runtime_rejected','owner_unavailable','auth_not_ready','identity_rejected','native_unavailable','sdk_already_configured','configuration_rejected','sdk_configuration_failed','customer_info_failed','preparation_failed','preparation_timeout_do_not_retry_without_inspection','evaluation_rejected','connect_failed','target_rejected','configuration_rejected','attempt_exists_inspect_first','profile_not_ready','package_failed','vault_not_empty','recovery_issue_unresolved']);
+    const safe=new Set(['arguments_rejected','runtime_rejected','owner_unavailable','auth_not_ready','identity_rejected','native_unavailable','sdk_already_configured','configuration_rejected','sdk_configuration_failed','customer_info_failed','preparation_failed','preparation_timeout_do_not_retry_without_inspection','evaluation_rejected','connect_failed','target_rejected','configuration_rejected','attempt_exists_inspect_first','profile_not_ready','package_failed']);
     console.error(JSON.stringify({stage:'sec03_account_state',category:safe.has(error?.message)?error.message:'preparation_failed'}));process.exitCode=1;
   });
 }

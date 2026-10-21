@@ -43,6 +43,7 @@ test("dynamic account destinations and fixed screen titles resolve to localized 
   assert.deepEqual(getBackDestinationTranslation({ name: ROUTES.TERMS_OF_SERVICE }), { namespace: "account", key: "termsOfService" });
   assert.deepEqual(getBackDestinationTranslation({ name: ROUTES.LEGAL_REQUESTS, params: { kind: "complaint" } }), { namespace: "legal", key: "legalRequests.kinds.complaint.title" });
   assert.equal(getBackDestinationTranslation({ name: ROUTES.ACCOUNT_SECURITY, params: { screen: "unknown" } }), null);
+  assert.equal(getBackDestinationTranslation({ name: ROUTES.ACCOUNT_SECURITY, params: { screen: "recovery" } }), null);
 });
 
 test("every known route destination maps to a present localized title in every app language", () => {
@@ -55,7 +56,7 @@ test("every known route destination maps to a present localized title in every a
   }));
   routes.push(
     ...["home", "progress", "settings"].map((initialTab) => ({ name: ROUTES.HOME, params: { initialTab } })),
-    ...["recovery", "email", "password", "delete", "export", "privacy"].map((screen) => ({ name: ROUTES.ACCOUNT_SECURITY, params: { screen } })),
+    ...["email", "password", "delete", "export", "privacy"].map((screen) => ({ name: ROUTES.ACCOUNT_SECURITY, params: { screen } })),
     ...["entry", "register", "signIn", "recovery", "resetPassword"].map((initialMode) => ({ name: ROUTES.ACCOUNT_ENTRY, params: { initialMode } })),
     ...["complaint", "withdrawal", "data_recovery", "suspension_appeal"].map((kind) => ({ name: ROUTES.LEGAL_REQUESTS, params: { kind } })),
   );

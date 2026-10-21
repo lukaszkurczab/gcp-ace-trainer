@@ -36,7 +36,7 @@ test('verified ready plan exposes existing edit action in all seven locales, ind
     assert.equal(rendered.textOf(button), rendered.i18n.t('Edit schedule', { ns: 'learningPlan' }));
     assert.ok(rendered.i18n.exists('Edit schedule', { ns: 'learningPlan', lng: locale }));
     assert.ok(rendered.byTestId('patternly:progress-plan:completion:unknown'));
-    assert.ok(rendered.text.includes(rendered.i18n.t('The package does not define a completion rule.', { ns: 'learningPlan' })));
+    assert.ok(rendered.text.includes(rendered.i18n.t('The package’s full completion contract is unavailable.', { ns: 'learningPlan' })));
     button.props.onPress();
     assert.deepEqual(JSON.parse(JSON.stringify(actions)), [edit]);
   }

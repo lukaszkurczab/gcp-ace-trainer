@@ -160,7 +160,7 @@
   "targetDateGuidance.atRisk": "Praeguse tempoga ei pruugi sa sihtkuupäevaks valmis jõuda.",
   "targetDateGuidance.onTrack": "Praeguse tempoga jõuad sihtkuupäevaks valmis.",
   "targetDateGuidance.openEnded": "Jätka õppimist endale sobivas tempos.",
-  "targetDateGuidance.unavailable.unknownCompletionRule": "Sellel paketil pole veel lõpetamise reeglit.",
+  "targetDateGuidance.unavailable.unknownCompletionRule": "Pakett ei paku täielikku lõpetamise lepingut.",
   "targetDateGuidance.unavailable.insufficientElapsedEvidence": "Kasuliku prognoosi saamiseks jätka harjutamist.",
   "targetDateGuidance.unavailable.calculationError": "Juhiseid ei õnnestunud uuendada. Proovi uuesti.",
   "targetDateGuidance.unavailable.noTarget": "Sihtkuupäeva ei õnnestunud lugeda. Muuda eesmärki.",

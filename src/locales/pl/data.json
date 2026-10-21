@@ -131,10 +131,6 @@
     "providerRegistrationRequired": {
       "title": "Sprawdź dokumenty konta",
       "body": "Dokończ lub anuluj tworzenie konta przed otwarciem danych konta."
-    },
-    "recoveryPending": {
-      "title": "Dokończ odzyskiwanie konta",
-      "body": "Zapisany etap odzyskiwania wymaga Twojej uwagi, zanim otworzymy Twoje dane."
     }
   },
   "privacyRequests": {

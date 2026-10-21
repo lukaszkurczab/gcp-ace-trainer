@@ -68,7 +68,7 @@ function syntheticCanonicalSource() {
   return result;
 }
 
-test("production exporter rejects complete but unapproved canonical documents before creating output", () => {
+test("production exporter honors the canonical document approval when writing output", () => {
   const temporaryRoot = mkdtempSync(join(tmpdir(), "patternly-public-legal-export-"));
   const outputPath = join(temporaryRoot, "nested", "legal.json");
   try {
@@ -76,10 +76,17 @@ test("production exporter rejects complete but unapproved canonical documents be
       cwd: root,
       encoding: "utf8",
     });
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /Public legal approval is invalid \(legalDocumentApproval\.status must be APPROVED\)/u);
-    assert.equal(existsSync(outputPath), false);
-    assert.equal(existsSync(join(temporaryRoot, "nested")), false);
+    if (source.legalDocumentApproval.status === "APPROVED") {
+      assert.equal(result.status, 0, result.stderr);
+      const exported = JSON.parse(readFileSync(outputPath, "utf8"));
+      assert.deepEqual(exported, buildProductionPublicLegalArtifactFrom(source));
+      assert.equal(exported.approvedDocumentsSha256, source.legalDocumentApproval.renderedDocumentsSha256);
+    } else {
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /Public legal approval is invalid \(legalDocumentApproval\.status must be APPROVED\)/u);
+      assert.equal(existsSync(outputPath), false);
+      assert.equal(existsSync(join(temporaryRoot, "nested")), false);
+    }
   } finally {
     rmSync(temporaryRoot, { recursive: true, force: true });
   }
@@ -167,8 +174,13 @@ test("app legal exports retain the same output as parameterized template renderi
 test("release gate and exporter use the same canonical source fingerprint", () => {
   const output = execFileSync("node", ["scripts/releaseGate.mjs"], { cwd: root, encoding: "utf8" });
   const report = JSON.parse(output);
-  assert.equal(report.publicLegalVariables.status, "incomplete");
-  assert.ok(report.publicLegalVariables.fieldPaths.includes("legalDocumentApproval.status"));
+  if (source.legalDocumentApproval.status === "APPROVED") {
+    assert.equal(report.publicLegalVariables.status, "valid");
+    assert.equal(report.publicLegalVariables.fieldPaths.length, 0);
+  } else {
+    assert.equal(report.publicLegalVariables.status, "incomplete");
+    assert.ok(report.publicLegalVariables.fieldPaths.includes("legalDocumentApproval.status"));
+  }
   const testSource = syntheticSource();
   const artifact = buildPublicLegalArtifactForTest(testSource);
   const repeatedArtifact = buildPublicLegalArtifactForTest(testSource);

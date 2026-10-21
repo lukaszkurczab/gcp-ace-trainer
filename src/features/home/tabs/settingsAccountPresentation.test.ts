@@ -110,7 +110,7 @@ test("Settings maps only the resume-required sign-out pair to canonical localize
   assert.equal(pl.resumeRequiredDescription, "Sesja i odpowiedzi są zapisane na tym urządzeniu. Dokończ ją, aby zsynchronizować postęp z kontem.");
 });
 
-test("Settings blocks invalid actions while account lifecycle work is busy and keeps recovery states available", () => {
+test("Settings blocks invalid actions while account lifecycle work is busy", () => {
   const signingOut = getSettingsAccountPresentation({
     accountData: { status: "synced" },
     backendUser: { id: "backend-user" },
@@ -133,16 +133,6 @@ test("Settings blocks invalid actions while account lifecycle work is busy and k
   assert.equal(guestAccessBlocked.status, "guestAccessBlocked");
   assert.equal(guestAccessBlocked.canOpenAccount, true);
   assert.equal(guestAccessBlocked.canSignOut, false);
-
-  const recoveryPending = getSettingsAccountPresentation({ kind: "recoveryPending" });
-  assert.deepEqual(recoveryPending, {
-    accountDataStatus: null,
-    canManageAccount: false,
-    canOpenAccount: true,
-    canSignOut: false,
-    email: null,
-    status: "unavailable",
-  });
 
   const unavailable = getSettingsAccountPresentation({ kind: "unavailable", reason: "public_environment_invalid" });
   assert.equal(unavailable.status, "unavailable");

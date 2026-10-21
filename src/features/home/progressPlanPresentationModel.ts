@@ -10,7 +10,7 @@ import type {
   HomePlanUnavailableReason,
 } from "../../application/homePlanSnapshotReader";
 import type { PackageCompletionState, TrackId } from "../../domain";
-import { minimumAttemptsForMentalUnits, type ChapterCompletionStatus } from "../../domain/learning/packageCompletionRule";
+import { createChapterCompletionSource, minimumAttemptsForMentalUnits, type ChapterCompletionStatus } from "../../domain/learning/packageCompletionRule";
 
 export type ProgressPlanCompletionPresentation = PackageCompletionState;
 
@@ -161,6 +161,12 @@ function presentCompletion(value: PackageCompletionState): ProgressPlanCompletio
 }
 
 function isValidChapterCompletion(chapter: ChapterCompletionStatus): boolean {
+  if (chapter.completionSource !== undefined) {
+    try {
+      const source = createChapterCompletionSource(chapter.completionSource);
+      if (chapter.status !== "completed" || (source.ruleVersion === 2 ? chapter.coverage.length !== 0 : chapter.coverage.length !== chapter.mentalUnitCount)) return false;
+    } catch { return false; }
+  }
   if (!chapter.nodeId.trim() || !isSafePositiveInteger(chapter.mentalUnitCount) || !isSafeNonNegativeInteger(chapter.qualifyingAttemptCount) ||
     !isSafePositiveInteger(chapter.requiredAttemptCount) || chapter.requiredAttemptCount !== minimumAttemptsForMentalUnits(chapter.mentalUnitCount) ||
     chapter.rollingWindowSize !== 20 || chapter.qualityThreshold !== 0.8 || !["in_progress", "completed"].includes(chapter.status) ||
@@ -172,8 +178,8 @@ function isValidChapterCompletion(chapter: ChapterCompletionStatus): boolean {
   let coverageDeficit = 0;
   for (const unit of chapter.coverage) {
     if (!unit.mentalUnitId.trim() || ids.has(unit.mentalUnitId) || unit.requiredCorrectQuestionCount !== 4 ||
-      !isSafeNonNegativeInteger(unit.latestCorrectQuestionCount) || unit.latestCorrectQuestionCount > unit.requiredCorrectQuestionCount ||
-      !isSafeNonNegativeInteger(unit.deficit) || unit.deficit !== unit.requiredCorrectQuestionCount - unit.latestCorrectQuestionCount) return false;
+      !isSafeNonNegativeInteger(unit.latestCorrectQuestionCount) ||
+      !isSafeNonNegativeInteger(unit.deficit) || unit.deficit !== Math.max(0, unit.requiredCorrectQuestionCount - unit.latestCorrectQuestionCount)) return false;
     ids.add(unit.mentalUnitId);
     coverageDeficit += unit.deficit;
   }

@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View, useWindowDimensions } from "
 import { useTranslation } from "react-i18next";
 
 import { Button, Icon, IconTile, InfoBlock, ListRow, ScreenHeader, SettingsGroup, SkeletonShape, useSkeletonGlassMotion, type IconName } from "../../../components";
-import type { AccountCommandResult } from "../../../application/account/AccountSessionProvider";
+import { usePatternlyAccount, type AccountCommandResult } from "../../../application/account/AccountSessionProvider";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../../theme";
 import { hasPremiumTestingAccess, setPremiumTestingAccess } from "../../../application/premiumTesting";
@@ -16,7 +16,7 @@ import { LANGUAGE_SETTINGS_OPTIONS } from "../languageSettingsModel";
 
 type SettingsTabProps = {
   account: SettingsAccountPresentation;
-  onOpenSecurity: (screen: "recovery" | "email" | "password" | "delete") => void;
+  onOpenSecurity: (screen: "email" | "password" | "delete") => void;
   onOpenAppearance: () => void;
   onOpenAccount: () => void;
   onOpenBackendDiagnostics: () => void;
@@ -99,6 +99,7 @@ export function SettingsTab({
   onSignOut,
 }: SettingsTabProps) {
   const styles = useThemedStyles(createStyles);
+  const { retiredDeviceSecretsCleanup, retryRetiredDeviceSecretsCleanup } = usePatternlyAccount();
   const { appearance, language } = useAppPreferences();
   const { t } = useTranslation("settings");
   const { t: tAccount } = useTranslation("account");
@@ -221,6 +222,10 @@ export function SettingsTab({
         </View>
       </View>
       {account.status !== "authenticated" && account.canOpenAccount ? <Button onPress={onOpenAccount} testID="settings-account-entry" variant="secondary">{accountTitle}</Button> : null}
+      {retiredDeviceSecretsCleanup.kind === "pending" ? <View style={styles.deviceCleanupNotice}>
+        <InfoBlock body={t("deviceCleanupPending")} title={t("deviceCleanupPending")} testID="settings-device-cleanup-pending" tone="warning" />
+        <Button onPress={() => void retryRetiredDeviceSecretsCleanup()} testID="settings-device-cleanup-retry" variant="secondary">{t("retryDeviceCleanup")}</Button>
+      </View> : null}
 
       {signOutFailure ? isResumeRequiredSignOutFailure ? (
         <InfoBlock accessibilityAlert body={tAccount("resumeRequiredDescription")} title={tAccount("resumeRequired")} testID="settings-sign-out-resume-required" tone="warning" />
@@ -246,7 +251,6 @@ export function SettingsTab({
             title={text.language}
             value={languageValue}
           />
-          {account.canManageAccount ? <SettingsNavigationRow detail={t("recoveryDetail")} disabled={busyAction !== null} icon="shield-check" onPress={() => onOpenSecurity("recovery")} testID="settings-recovery" title={t("recoveryCodes")} /> : null}
           {account.canManageAccount ? <SettingsNavigationRow detail={t("emailDetail")} disabled={busyAction !== null} icon="user" onPress={() => onOpenSecurity("email")} testID="settings-email" title={t("changeEmail")} /> : null}
           {account.canManageAccount ? <SettingsNavigationRow detail={t("passwordDetail")} disabled={busyAction !== null} icon="shield" onPress={() => onOpenSecurity("password")} testID="settings-password" title={t("changePassword")} /> : null}
         </SettingsGroup>
@@ -351,6 +355,7 @@ function appMetadata(versionLabel: string): string | null {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  deviceCleanupNotice: { gap: spacing.sm },
   settingsLoading: {
     gap: spacing.xl,
     width: "100%",

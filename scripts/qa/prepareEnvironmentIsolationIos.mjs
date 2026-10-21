@@ -61,7 +61,7 @@ export function prepareEnvironmentIsolationIos(privateRoot, keyFile) {
     writeFileSync(join(privateRoot, `config-${variant}.json`), JSON.stringify(configurations[index], null, 2) + "\n", { mode: 0o600, flag: "wx" });
   }
   writeFileSync(join(project, "app.json"), JSON.stringify(configurations[0], null, 2) + "\n", { mode: 0o600, flag: "wx" });
-  const sourceFiles = ["App.tsx", "src/infrastructure/runtime/environmentIdentity.ts", "src/infrastructure/runtime/environmentGuard.ts", "src/infrastructure/runtime/EnvironmentGate.tsx", "src/infrastructure/firebase/secureAuthPersistence.ts", "src/infrastructure/security/recoveryOperationVault.ts", "src/content/runtime/nodePackageStorage.ts", "src/infrastructure/purchases/index.ts", "package-lock.json", "GoogleService-Info.plist"];
+  const sourceFiles = ["App.tsx", "src/infrastructure/runtime/environmentIdentity.ts", "src/infrastructure/runtime/environmentGuard.ts", "src/infrastructure/runtime/EnvironmentGate.tsx", "src/infrastructure/firebase/secureAuthPersistence.ts", "src/content/runtime/nodePackageStorage.ts", "src/infrastructure/purchases/index.ts", "package-lock.json", "GoogleService-Info.plist"];
   const receipt = { schema: "patternly.sec03-isolated-preparation.v1", project, bundleId,
     originalBundleId: "com.lkurczab.patternly", originalInstallationTouched: false, installedOrLaunched: false,
     firebaseScope: "unchanged-native-plist; JS Auth Emulator/local App Check only; no provider/native attestation claim",

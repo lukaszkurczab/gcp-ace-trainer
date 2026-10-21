@@ -10,14 +10,8 @@ import {
 const API_ORIGIN = "https://api.sandbox.patternly.invalid";
 const DEVICE_ID = "00000000-0000-4000-8000-000000000000";
 const FINGERPRINT = "a".repeat(64);
-const RECOVERY_OPERATION_ID = "00000000-0000-4000-8000-000000000101";
 const DELETION_OPERATION_ID = "00000000-0000-4000-8000-000000000202";
 const DELETION_PROOF_ID = "proof_abcdefghijklmnopqrstuvwx";
-const RECOVERY_CODE = "ABCD-EFGH-IJKL-MNOP";
-const RECOVERY_CODES = [
-  "ABCD-EFGH-IJKL-MNOP", "BCDE-FGHI-JKLM-NPQR", "CDEF-GHIJ-KLMN-PQRS", "DEFG-HIJK-LMNO-QRST", "EFGH-IJKL-MNOP-RSTU",
-  "FGHI-JKLM-NOPQ-STUV", "GHIJ-KLMN-OPQR-TUVW", "HIJK-LMNO-PQRS-UVWX", "IJKL-MNOP-QRST-VWXY", "JKLM-NOPQ-RSTU-WXYZ",
-];
 
 function createTestClient(input: Partial<Parameters<typeof createPatternlyApiClient>[0]> & Pick<Parameters<typeof createPatternlyApiClient>[0], "fetchImplementation">): ReturnType<typeof createPatternlyApiClient> {
   return createPatternlyApiClient({
@@ -84,6 +78,13 @@ function canonicalSyncRequest(mutation = activeTrackMutation()) {
     highWatermark: 1,
     mutations: [mutation],
   };
+}
+
+function packageDescriptor(trackId = "coding-interview-dsa-problem-solving", nodeId = "package-test-node") {
+  const now = Math.floor(Date.now() / 1000) * 1000;
+  const path = `packages/${trackId}/${nodeId}/${"a".repeat(64)}.gzip`;
+  const params = new URLSearchParams({ generation: "12345678901234567", "X-Goog-Algorithm": "GOOG4-RSA-SHA256", "X-Goog-Date": new Date(now).toISOString().replace(/[-:]/gu, "").replace(".000", ""), "X-Goog-Expires": "60", "X-Goog-Signature": "fixture" });
+  return { schemaVersion: "patternly-content-download-v1", manifest: { schemaVersion: "patternly-content-node-package-v1", trackId, nodeId, contentVersion: "v1", artifactSha256: "b".repeat(64), packageSha256: "a".repeat(64), contentReleaseId: "release-1", minimumAppVersion: "0.1.0", packageFormat: "gzip", compressedSizeBytes: 3, artifactSizeBytes: 10, packagePath: path }, object: { bucket: "patternly-contract", path, generation: "12345678901234567" }, downloadUrl: `https://storage.googleapis.com/patternly-contract/${path}?${params}`, expiresAt: new Date(now + 60000).toISOString() };
 }
 
 function deletionResponse(status: string, operationId = DELETION_OPERATION_ID, proofId: unknown = DELETION_PROOF_ID) {
@@ -324,119 +325,6 @@ test("session revocation accepts only the exact operation and a nonempty replace
   }
 });
 
-test("recovery operation methods use the canonical paths, proof body, and authentication modes", async () => {
-  const requests: Array<{ body: unknown; headers: Headers; method: string; url: URL }> = [];
-  const responses: readonly unknown[] = [
-    { operationId: RECOVERY_OPERATION_ID, status: "result_available", generationId: "generation-recovery-1", authorizationGeneration: 4, codes: RECOVERY_CODES },
-    { operationId: RECOVERY_OPERATION_ID, status: "provider_retryable", authorizationGeneration: 4 },
-    { operationId: RECOVERY_OPERATION_ID, status: "acknowledged", authorizationGeneration: 4 },
-    { operationId: RECOVERY_OPERATION_ID, status: "result_available", firebaseUid: "firebase-uid", authorizationGeneration: 5, customToken: "recovery-custom-token" },
-    { operationId: RECOVERY_OPERATION_ID, status: "in_progress" },
-    { operationId: RECOVERY_OPERATION_ID, status: "acknowledged", authorizationGeneration: 5 },
-  ];
-  let responseIndex = 0;
-  const client = createTestClient({ fetchImplementation: async (url, init) => {
-    const requestUrl = new URL(String(url));
-    const text = init?.body === undefined ? undefined : String(init.body);
-    requests.push({ body: text === undefined ? undefined : JSON.parse(text) as unknown, headers: new Headers(init?.headers), method: init?.method ?? "", url: requestUrl });
-    const response = responses[responseIndex++];
-    return new Response(JSON.stringify(response), { status: 200 });
-  } });
-
-  assert.deepEqual(await client.issueRecoveryCodes(RECOVERY_OPERATION_ID), responses[0]);
-  assert.deepEqual(await client.getRecoveryCodeIssueStatus(RECOVERY_OPERATION_ID), responses[1]);
-  assert.deepEqual(await client.acknowledgeRecoveryCodesSaved(RECOVERY_OPERATION_ID), responses[2]);
-  assert.deepEqual(await client.consumeRecoveryCode(RECOVERY_OPERATION_ID, RECOVERY_CODE), responses[3]);
-  assert.deepEqual(await client.getRecoveryCodeConsumeStatus(RECOVERY_OPERATION_ID, RECOVERY_CODE), responses[4]);
-  assert.deepEqual(await client.acknowledgeRecoveryCodeConsumption(RECOVERY_OPERATION_ID), responses[5]);
-
-  assert.deepEqual(requests.map(({ method, url }) => [method, `${url.pathname}${url.search}`]), [
-    ["POST", "/v1/account/recovery-codes"],
-    ["GET", `/v1/account/recovery-codes/issue/status?operationId=${RECOVERY_OPERATION_ID}`],
-    ["POST", "/v1/account/recovery-codes/issue/saved-ack"],
-    ["POST", "/v1/public/recovery-codes/consume"],
-    ["POST", "/v1/public/recovery-codes/consume/status"],
-    ["POST", "/v1/account/recovery-codes/consume/ack"],
-  ]);
-  assert.deepEqual(requests.map(({ body }) => body), [
-    { operationId: RECOVERY_OPERATION_ID },
-    undefined,
-    { operationId: RECOVERY_OPERATION_ID },
-    { operationId: RECOVERY_OPERATION_ID, code: RECOVERY_CODE },
-    { operationId: RECOVERY_OPERATION_ID, code: RECOVERY_CODE },
-    { operationId: RECOVERY_OPERATION_ID },
-  ]);
-  for (const request of requests) assert.equal(request.headers.get("x-firebase-appcheck"), "app-check-token");
-  for (const request of [requests[0], requests[1], requests[2], requests[5]]) assert.equal(request?.headers.get("authorization"), "Bearer id-token");
-  for (const request of [requests[3], requests[4]]) assert.equal(request?.headers.has("authorization"), false, "public proof calls do not send a bearer token");
-  assert.equal(requests[4]?.url.search, "", "recovery proof is never placed in the status URL");
-});
-
-test("recovery operation parsers reject malformed, mismatched, and extended server results", async () => {
-  const invalidIssueResults: readonly unknown[] = [
-    { operationId: "00000000-0000-4000-8000-000000000102", status: "provider_retryable" },
-    { operationId: RECOVERY_OPERATION_ID, status: "result_available", generationId: "generation-1", authorizationGeneration: 0, codes: RECOVERY_CODES },
-    { operationId: RECOVERY_OPERATION_ID, status: "result_available", generationId: "generation-1", authorizationGeneration: 2, codes: RECOVERY_CODES.slice(0, 9) },
-    { operationId: RECOVERY_OPERATION_ID, status: "result_available", generationId: "generation-1", authorizationGeneration: 2, codes: ["bad-code", ...RECOVERY_CODES.slice(1)] },
-    { operationId: RECOVERY_OPERATION_ID, status: "unexpected_status" },
-    { operationId: RECOVERY_OPERATION_ID, status: "provider_retryable", customToken: "must-not-be-accepted" },
-  ];
-  for (const payload of invalidIssueResults) {
-    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(payload), { status: 200 }) });
-    await assert.rejects(client.issueRecoveryCodes(RECOVERY_OPERATION_ID), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
-  }
-
-  const invalidConsumeResults: readonly unknown[] = [
-    { operationId: "00000000-0000-4000-8000-000000000102", status: "in_progress" },
-    { operationId: RECOVERY_OPERATION_ID, status: "result_available", firebaseUid: "", authorizationGeneration: 1, customToken: "secret-token" },
-    { operationId: RECOVERY_OPERATION_ID, status: "result_available", firebaseUid: "uid", authorizationGeneration: 0, customToken: "secret-token" },
-    { operationId: RECOVERY_OPERATION_ID, status: "result_available", firebaseUid: "uid", authorizationGeneration: 1, customToken: "secret-token", recoveryCodes: RECOVERY_CODES },
-    { operationId: RECOVERY_OPERATION_ID, status: "delivery_unconfirmed", authorizationGeneration: 1, customToken: "must-not-be-accepted" },
-  ];
-  for (const payload of invalidConsumeResults) {
-    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(payload), { status: 200 }) });
-    await assert.rejects(client.getRecoveryCodeConsumeStatus(RECOVERY_OPERATION_ID, RECOVERY_CODE), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
-  }
-
-  for (const payload of [
-    { operationId: "00000000-0000-4000-8000-000000000102", status: "acknowledged", authorizationGeneration: 1 },
-    { operationId: RECOVERY_OPERATION_ID, status: "in_progress", authorizationGeneration: 1 },
-    { operationId: RECOVERY_OPERATION_ID, status: "acknowledged", authorizationGeneration: 0 },
-    { operationId: RECOVERY_OPERATION_ID, status: "acknowledged", authorizationGeneration: 1, customToken: "must-not-be-accepted" },
-  ]) {
-    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(payload), { status: 200 }) });
-    await assert.rejects(client.acknowledgeRecoveryCodesSaved(RECOVERY_OPERATION_ID), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
-  }
-});
-
-test("recovery calls reject invalid operation IDs and proofs before token acquisition or network use", async () => {
-  let tokenCalls = 0;
-  let requests = 0;
-  const client = createTestClient({
-    getIdToken: async () => { tokenCalls += 1; return "id-token"; },
-    fetchImplementation: async () => { requests += 1; return new Response("{}", { status: 200 }); },
-  });
-  await assert.rejects(client.issueRecoveryCodes("not-an-operation-id"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
-  await assert.rejects(client.getRecoveryCodeIssueStatus("not-an-operation-id"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
-  await assert.rejects(client.consumeRecoveryCode("not-an-operation-id", RECOVERY_CODE), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
-  await assert.rejects(client.getRecoveryCodeConsumeStatus(RECOVERY_OPERATION_ID, "bad-proof"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
-  assert.equal(tokenCalls, 0);
-  assert.equal(requests, 0);
-});
-
-test("recovery calls preserve typed server failures and Retry-After", async () => {
-  const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ error: { code: "recovery_operation_pending" } }), { status: 503, headers: { "retry-after": "12" } }) });
-  await assert.rejects(client.getRecoveryCodeIssueStatus(RECOVERY_OPERATION_ID), (error: unknown) => error instanceof PatternlyApiClientError
-    && error.code === "server_error" && error.status === 503 && error.serverCode === "recovery_operation_pending" && error.retryAfterSeconds === 12);
-});
-
-function packageDescriptor(trackId = "coding-interview-dsa-problem-solving", nodeId = "package-test-node") {
-  const now = Math.floor(Date.now() / 1000) * 1000;
-  const path = `packages/${trackId}/${nodeId}/${"a".repeat(64)}.gzip`;
-  const params = new URLSearchParams({ generation: "12345678901234567", "X-Goog-Algorithm": "GOOG4-RSA-SHA256", "X-Goog-Date": new Date(now).toISOString().replace(/[-:]/gu, "").replace(".000", ""), "X-Goog-Expires": "60", "X-Goog-Signature": "fixture" });
-  return { schemaVersion: "patternly-content-download-v1", manifest: { schemaVersion: "patternly-content-node-package-v1", trackId, nodeId, contentVersion: "v1", artifactSha256: "b".repeat(64), packageSha256: "a".repeat(64), contentReleaseId: "release-1", minimumAppVersion: "0.1.0", packageFormat: "gzip", compressedSizeBytes: 3, artifactSizeBytes: 10, packagePath: path }, object: { bucket: "patternly-contract", path, generation: "12345678901234567" }, downloadUrl: `https://storage.googleapis.com/patternly-contract/${path}?${params}`, expiresAt: new Date(now + 60000).toISOString() };
-}
-
 test("content package descriptor authenticates only the API; object GET has no credentials and preserves verification metadata", async () => {
   const calls: { url: string; init: RequestInit | undefined }[] = [];
   const descriptor = packageDescriptor();
@@ -668,7 +556,7 @@ test("sync rejects legacy, malformed, ambiguous and disguised-success conflict p
 });
 
 test("purchase attempt transport validates exact ID, claim permission and bounded case state", async () => {
-  const attemptId = RECOVERY_OPERATION_ID;
+  const attemptId = "00000000-0000-4000-8000-000000000101";
   const attempt = { attemptId, outcome: "initiated", acceptedAt: "2026-10-15T10:00:00.000Z", startExpiresAt: "2026-10-15T10:15:00.000Z", initiatedAt: "2026-10-15T10:01:00.000Z", transactionKey: null, resolutionReason: null, dispatchAllowed: true };
   let body: unknown = { attempt };
   const requests: Array<{ path: string; method: string }> = [];

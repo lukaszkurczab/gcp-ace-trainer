@@ -160,7 +160,7 @@
   "targetDateGuidance.atRisk": "Mit deinem aktuellen Tempo erreichst du dieses Ziel möglicherweise nicht rechtzeitig.",
   "targetDateGuidance.onTrack": "Mit deinem aktuellen Tempo liegst du für dieses Ziel im Plan.",
   "targetDateGuidance.openEnded": "Lerne in deinem eigenen Tempo weiter.",
-  "targetDateGuidance.unavailable.unknownCompletionRule": "Für dieses Paket ist noch keine Abschlussregel festgelegt.",
+  "targetDateGuidance.unavailable.unknownCompletionRule": "Das Paket stellt keinen vollständigen Abschlussvertrag bereit.",
   "targetDateGuidance.unavailable.insufficientElapsedEvidence": "Übe weiter, damit eine aussagekräftige Prognose erstellt werden kann.",
   "targetDateGuidance.unavailable.calculationError": "Deine Empfehlung konnte nicht aktualisiert werden. Versuche es erneut.",
   "targetDateGuidance.unavailable.noTarget": "Das Ziel konnte nicht ausgelesen werden. Passe dein Ziel an.",

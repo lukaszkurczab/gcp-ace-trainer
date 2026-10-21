@@ -19,7 +19,7 @@ Diese Erklärung gilt für die mobile App, das Konto und Synchronisierungsdienst
 
 Bei der Nutzung als Gast oder mit Konto können eine Installationskennung, eine Kennung des lokalen Datensatzes, der ausgewählte Lernpfad, Ziele, Einstellungen, Lernsitzungen, Antworten, Ergebnisse, die Wiederholungswarteschlange, der Wiederherstellungsstatus, ein Benachrichtigungsplan und eine Warteschlange für Inhaltsmeldungen auf dem Gerät gespeichert werden. Lokale Erinnerungen werden auf dem Gerät geplant; Patternly registriert derzeit kein Server-Push-Token.
 
-Lokale Lerndaten werden durch die von Patternly verwendeten Speichermechanismen des Geräts geschützt. Ein auf Ihre Anfrage kopierter Wiederherstellungscode wird gelöscht, sofern das Betriebssystem dies zulässt und die Zwischenablage weiterhin genau diesen Code enthält. Daten, die ausschließlich auf dem Gerät verbleiben, werden nicht an den Verantwortlichen gesendet, es sei denn, Sie erstellen ein Konto und synchronisieren einen zulässigen Datensatz, senden eine Meldung oder nutzen eine andere Netzwerkfunktion.
+Lokale Lerndaten werden durch die von Patternly verwendeten Speichermechanismen des Geräts geschützt. Daten, die ausschließlich auf dem Gerät verbleiben, werden nicht an den Verantwortlichen gesendet, es sei denn, Sie erstellen ein Konto und synchronisieren einen zulässigen Datensatz, senden eine Meldung oder nutzen eine andere Netzwerkfunktion.
 
 4. Konto- und Authentifizierungsdaten
 
@@ -43,13 +43,13 @@ Meldungen werden verarbeitet, um Inhalte zu verbessern und den Meldekanal zu sch
 
 Patternly verwendet Authentifizierungstoken, App Check oder Geräteattestierungssignale, Anfragemetadaten, durch Hashing von Netzwerk- oder E-Mail-Daten erzeugte Ratenbegrenzungskennungen, Betriebsprotokolle und Sicherheitsereignisse, um Konten zu schützen, Fehler zu untersuchen und Missbrauch zu verhindern. Patternly verwendet weder Werbe- oder appübergreifende Tracking-SDKs noch ein allgemeines externes Produktanalyse-SDK oder ein externes SDK zur Absturzberichterstattung. RevenueCat verarbeitet die Kaufhistorie für Abonnementfunktionen und die nachstehend beschriebene Kaufanalyse.
 
-Betriebsprotokolle werden {{privacy.operationalLogRetentionDays}} Tage und Sicherheitsprotokolle {{privacy.securityLogRetentionDays}} Tage aufbewahrt. Patternly schwärzt Zugangsdaten und Nutzdaten in Produktionsprotokollen. Auf Ihre Anfrage kopierte Wiederherstellungscodes können in der Systemzwischenablage verbleiben; Patternly versucht, sie nach {{privacy.clipboardRecoveryCodeRetentionMinutes}} Minuten zu löschen, soweit das Betriebssystem dies zulässt, und entfernt keine später von Ihnen kopierten Inhalte.
+Betriebsprotokolle werden {{privacy.operationalLogRetentionDays}} Tage und Sicherheitsprotokolle {{privacy.securityLogRetentionDays}} Tage aufbewahrt. Patternly schwärzt Zugangsdaten und Nutzdaten in Produktionsprotokollen. Diese Version erstellt oder kopiert keine Kontowiederherstellungscodes mehr. Ein von einer früheren Version kopierter Code kann in der Systemzwischenablage verbleiben. Ist seine Bereinigungsmarkierung noch vorhanden, versucht Patternly nach dem gespeicherten Ablaufzeitpunkt, {{privacy.clipboardRecoveryCodeRetentionMinutes}} Minuten nach dem Kopieren, den übereinstimmenden Code zu löschen, soweit das Betriebssystem dies zulässt. Später kopierte Inhalte werden nicht entfernt; die Löschung jeder historischen Kopie ist damit nicht garantiert.
 
 8. Auftragsverarbeiter, Empfänger und Übermittlungen
 
 Verifizierte aktive Cloud-Auftragsverarbeiter und ihre Zwecke: {{privacy.activeCloudProcessors}}. Aktive unabhängige Verantwortliche und Empfänger: {{privacy.activeIndependentRecipients}}. E-Mail-Zustellungsanbieter: {{privacy.emailDeliveryProvider}}. Regionen der Anbieter: {{privacy.hostingRegions}}. Schutzmaßnahmen für Übermittlungen außerhalb des EWR: {{privacy.internationalTransferSafeguards}}.
 
-RevenueCat-Status: {{privacy.revenueCatStatus}}. Wenn Sie später ein Abonnement über den App Store beziehen, kann Apple Transaktions- und Abonnementaufzeichnungen unabhängig aufbewahren. Die Löschung eines Patternly-Kontos kündigt dieses App-Store-Abonnement nicht und entfernt keine Daten, für die Apple eigenständig verantwortlich ist. Patternly überprüft Auftragsverarbeiter, Empfänger und Übermittlungsvereinbarungen, wenn sich Anbieter oder deren Verarbeitungsorte ändern.
+RevenueCat-Status: {{privacy.revenueCatStatus}}. Wenn Sie später ein Abonnement über Google Play beziehen, kann Google Transaktions- und Abonnementaufzeichnungen unabhängig aufbewahren. Die Löschung eines Patternly-Kontos kündigt dieses Google-Play-Abonnement nicht und entfernt keine Daten, für die Google eigenständig verantwortlich ist. Patternly überprüft Auftragsverarbeiter, Empfänger und Übermittlungsvereinbarungen, wenn sich Anbieter oder deren Verarbeitungsorte ändern.
 
 9. Aufbewahrung und Kontolöschung
 
@@ -100,7 +100,7 @@ Funktionen und Inhalte können sich mit der Weiterentwicklung des Dienstes ände
 
 Einige Funktionen können als Gast genutzt werden und speichern Daten auf dem Gerät. Ein Konto kann die Wiederherstellung und Synchronisierung unterstützter Daten ermöglichen. Sie sind für Aktivitäten verantwortlich, die über Ihr Konto ausgeführt werden, es sei denn, Sie melden einen unbefugten Zugriff unverzüglich.
 
-Der Vertrag über den Kontodienst wird auf unbestimmte Zeit geschlossen und läuft, bis Sie oder der Betreiber ihn gemäß diesen Bedingungen beenden. Die Löschung Ihres Patternly-Kontos beendet den Kontodienst. Wenn Sie später ein Abonnement über den App Store erwerben, kündigt die Kontolöschung dieses Abonnement nicht selbst.
+Der Vertrag über den Kontodienst wird auf unbestimmte Zeit geschlossen und läuft, bis Sie oder der Betreiber ihn gemäß diesen Bedingungen beenden. Die Löschung Ihres Patternly-Kontos beendet den Kontodienst. Wenn Sie später ein Abonnement über Google Play erwerben, kündigt die Kontolöschung dieses Abonnement nicht selbst.
 
 Sie können Ihr Konto über den verfügbaren Löschvorgang in der App löschen. Die Datenschutzerklärung erläutert die betroffenen Daten, Aufbewahrungsregeln und Grenzen der Löschung.
 
@@ -121,11 +121,11 @@ Sie dürfen im gesetzlich zulässigen Umfang begrenzte Auszüge zitieren; ohne s
 
 Neue Premium-Käufe sind derzeit deaktiviert; es gibt daher kein aktuelles kostenpflichtiges Angebot. Falls Käufe später aktiviert werden, ist das beabsichtigte Angebot {{terms.premiumProductName}} (Produktkennung {{terms.premiumProductIdentifier}}), ein monatlicher, automatisch verlängernder digitaler Dienst ohne Probezeitraum. Der geplante Preis einschließlich anwendbarer Steuern in Polen beträgt {{terms.premiumPriceIncludingTaxes}}; der geplante Verlängerungspreis beträgt je {{terms.premiumBillingPeriod}} {{terms.premiumRenewalPriceIncludingTaxes}}. Dies sind beabsichtigte Preise für Polen, kein aktuelles Angebot; Preise für andere Länder sind nicht bestätigt. Vor Aktivierung eines Kaufs müssen der zuständige Verkäufer, der aktuelle Preis, Verlängerungszeitraum, Premium-Umfang, Zahlungsmethode und -zeitpunkt, Leistungsbeginn und Zahlungspflicht für das jeweilige Angebot angegeben werden.
 
-Die aktuelle Merchant-of-Record-Regelung lautet: {{terms.merchantOfRecord}}. Für ein künftiges store-spezifisches Angebot sind weder Verkäufer noch Zahlungsregelung bestätigt. Falls ein Abonnement später verfügbar gemacht und über den Apple App Store erworben wird, stellt Apple den Zahlungs- und Abonnementverwaltungskanal dieses Stores bereit; dadurch entfallen weder die Verantwortung des Betreibers für die Vertragsmäßigkeit von Patternly noch Ihre gesetzlichen Ansprüche gegen den verantwortlichen Händler.
+Die aktuelle Merchant-of-Record-Regelung lautet: {{terms.merchantOfRecord}}. Für ein künftiges store-spezifisches Angebot sind weder Verkäufer noch Zahlungsregelung bestätigt. Falls ein Abonnement später verfügbar gemacht und über Google Play erworben wird, stellt Google den Zahlungs- und Abonnementverwaltungskanal dieses Stores bereit; dadurch entfallen weder die Verantwortung des Betreibers für die Vertragsmäßigkeit von Patternly noch Ihre gesetzlichen Ansprüche gegen den verantwortlichen Händler.
 
-Ein Abonnement verlängert sich nur zu den vor dem Kauf klar angezeigten Bedingungen. Falls Sie später eines über den Apple App Store erwerben, können Sie künftige Verlängerungen in den Einstellungen Ihres Apple-Kontos stoppen; die Löschung der App oder Ihres Patternly-Kontos kündigt dieses App-Store-Abonnement nicht. Einer erheblichen Preiserhöhung stimmen Sie niemals allein dadurch zu, dass Sie Patternly weiter nutzen; sie erfordert den gesetzlich vorgesehenen Mechanismus der ausdrücklichen Zustimmung, des erneuten Kaufs oder der Verlängerung.
+Ein Abonnement verlängert sich nur zu den vor dem Kauf klar angezeigten Bedingungen. Falls Sie später eines über Google Play erwerben, können Sie künftige Verlängerungen in den Einstellungen Ihrer Google-Play-Abonnements stoppen; die Löschung der App oder Ihres Patternly-Kontos kündigt dieses Google-Play-Abonnement nicht. Einer erheblichen Preiserhöhung stimmen Sie niemals allein dadurch zu, dass Sie Patternly weiter nutzen; sie erfordert den gesetzlich vorgesehenen Mechanismus der ausdrücklichen Zustimmung, des erneuten Kaufs oder der Verlängerung.
 
-Falls Sie später ein Abonnement über den Apple App Store erwerben, kann Apple Transaktionserstattungen über seine Plattform bearbeiten. Beschwerden über den Patternly-Dienst, seine Vertragsmäßigkeit oder gesetzliche Verbraucherrechte können Sie weiterhin an den Betreiber richten.
+Falls Sie später ein Abonnement über Google Play erwerben, kann Google Transaktionserstattungen über seine Plattform bearbeiten. Beschwerden über den Patternly-Dienst, seine Vertragsmäßigkeit oder gesetzliche Verbraucherrechte können Sie weiterhin an den Betreiber richten.
 
 Der Premium-Zugang beginnt unmittelbar nach dem Kauf nur dann, wenn Sie vor Ablauf der 14-tägigen Widerrufsfrist gesondert und ausdrücklich verlangen, dass der Dienst beginnt. Kein Kästchen darf vorausgewählt sein. Ein Widerruf nach Leistungsbeginn kann, soweit zwingendes Recht dies erlaubt, eine anteilige Zahlung für die bis zum Widerruf erbrachte Leistung erfordern. Premium wird nicht als gesonderte einmalige Lieferung digitaler Inhalte angeboten; deshalb verlangt Patternly auf dieser Grundlage keine Bestätigung, dass Sie Ihr Widerrufsrecht verlieren. Im Übrigen bleiben die gesetzlichen Widerrufsrechte bestehen. Für das Einreichen einer Beschwerde gilt keine Frist von 14 Tagen.
 
@@ -144,7 +144,7 @@ Wenn Sie eine Inhaltsmeldung oder Supportnachricht einreichen, bestätigen Sie, 
 
 Sie können die Nutzung von Patternly jederzeit beenden und Ihr Konto löschen. Falls später ein Plattformabonnement verfügbar wird, müssen Sie es möglicherweise gesondert über diese Plattform kündigen. Der Betreiber darf den Zugang nur wegen eines wesentlichen Verstoßes, einer bestätigten Sicherheitsbedrohung, einer rechtswidrigen Nutzung, einer Nichtzahlung oder einer verbindlichen gesetzlichen Anforderung verhältnismäßig beschränken.
 
-Außer wenn sofortiges Handeln zur Schadensverhütung oder zur Einhaltung des Gesetzes erforderlich ist, erläutert der Betreiber den Grund, kündigt die Maßnahme mit angemessener Frist an und gibt Ihnen Gelegenheit, den Verstoß zu beheben. Sie können über {{terms.complaintEmail}} Einspruch einlegen. Der Zugang wird wiederhergestellt, sobald der Grund entfällt. Eine Sperrung beseitigt weder gesetzliche Rechte auf Vertragsmäßigkeit, Erstattung, Datenrückgabe, Beschwerde oder Kündigung. Falls Sie später ein Abonnement über den Apple App Store erwerben, beendet eine Sperrung dessen künftige Verlängerungen nicht selbst.
+Außer wenn sofortiges Handeln zur Schadensverhütung oder zur Einhaltung des Gesetzes erforderlich ist, erläutert der Betreiber den Grund, kündigt die Maßnahme mit angemessener Frist an und gibt Ihnen Gelegenheit, den Verstoß zu beheben. Sie können über {{terms.complaintEmail}} Einspruch einlegen. Der Zugang wird wiederhergestellt, sobald der Grund entfällt. Eine Sperrung beseitigt weder gesetzliche Rechte auf Vertragsmäßigkeit, Erstattung, Datenrückgabe, Beschwerde oder Kündigung. Falls Sie später ein Abonnement über Google Play erwerben, beendet eine Sperrung dessen künftige Verlängerungen nicht selbst.
 
 11. Verantwortung und gesetzliche Rechte
 
@@ -154,7 +154,7 @@ Der Betreiber schließt eine nach zwingendem Recht bestehende Haftung grundsätz
 
 12. Dienste Dritter
 
-Patternly kann auf Apple sowie Anbieter für Authentifizierung, Hosting, Benachrichtigungen und Abrechnung zurückgreifen. Für Ihre Beziehung zu diesen Anbietern können deren eigene Bedingungen gelten. Hinweise auf Zertifizierungsanbieter und Technologieinhaber bezeichnen Lernthemen und bedeuten keine Förderung oder Empfehlung.
+Patternly kann auf Google sowie Anbieter für Authentifizierung, Hosting, Benachrichtigungen und Abrechnung zurückgreifen. Für Ihre Beziehung zu diesen Anbietern können deren eigene Bedingungen gelten. Hinweise auf Zertifizierungsanbieter und Technologieinhaber bezeichnen Lernthemen und bedeuten keine Förderung oder Empfehlung.
 
 13. Anwendbares Recht und Streitigkeiten
 
@@ -190,7 +190,7 @@ Wenn Sie ein berechtigter Verbraucher sind, können Sie einen Fernabsatzvertrag 
 
 Patternly muss seiner Beschreibung, dem vereinbarten Umfang des kostenpflichtigen Dienstes, der Funktionalität, Kompatibilität, Barrierefreiheit, Kontinuität, Sicherheit und den Aktualisierungen entsprechen, die Sie nach Vertrag und zwingendem Recht vernünftigerweise erwarten dürfen. Melden Sie eine Abweichung an {{terms.complaintEmail}}. Sie können verlangen, dass die Vertragsmäßigkeit innerhalb angemessener Frist und ohne erhebliche Unannehmlichkeiten hergestellt wird.
 
-Wenn die gesetzlichen Voraussetzungen erfüllt sind, können Sie vom verantwortlichen Händler eine verhältnismäßige Preisminderung verlangen oder den Vertrag beenden und die entsprechende Erstattung erhalten. Falls Sie über den Apple App Store gekauft haben, ersetzen dessen Transaktionswerkzeuge diese Rechtsbehelfe nicht.
+Wenn die gesetzlichen Voraussetzungen erfüllt sind, können Sie vom verantwortlichen Händler eine verhältnismäßige Preisminderung verlangen oder den Vertrag beenden und die entsprechende Erstattung erhalten. Falls Sie über Google Play gekauft haben, ersetzen dessen Transaktionswerkzeuge diese Rechtsbehelfe nicht.
 
 19. Beschwerden
 

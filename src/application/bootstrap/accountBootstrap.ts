@@ -26,7 +26,6 @@ type BootstrapCommonPorts = Readonly<{
   sessionCoordinator: Pick<AccountSessionCoordinator<unknown>, "isCurrent">;
   stateRef: Ref<AccountState>;
   setState: (state: AccountState) => void;
-  recoveryOperation: Readonly<{ blocksProfilePreparation: boolean }>;
   logoutControlSnapshotRef: Ref<LocalLogoutControlSnapshot>;
   sessionExchangeUidRef: Ref<string | null>;
   classifyAccountFailure: (error: unknown) => AccountFailure;
@@ -39,10 +38,8 @@ export type AccountBootstrapPreparationPorts = BootstrapCommonPorts & Readonly<{
   setAccountEntryMode: (mode: "welcome" | "login") => void;
   beginIdentityProofBarrier: (auth: FirebaseAuthClient, user: FirebaseAuthUserSnapshot, generation: AccountSessionGenerationToken, preferPreparedProfile?: boolean) => Promise<AccountIdentityProofBarrierContext | null>;
   resolveIdentityProofBarrier: (barrier: AccountIdentityProofBarrierContext, auth: FirebaseAuthClient, user: FirebaseAuthUserSnapshot, generation: AccountSessionGenerationToken) => Promise<AccountIdentityBinding>;
-  guardRecoveryBeforePreparation: (auth: FirebaseAuthClient | null, owner?: Readonly<{ generation: AccountSessionGenerationToken; barrier: AccountIdentityProofBarrierContext | null }>, onTerminalState?: (kind: AccountState["kind"]) => void) => Promise<boolean>;
   logoutControl: Pick<LocalLogoutControl, "blockAndQueueRevoke">;
   setLogoutControlSnapshot: (snapshot: LocalLogoutControlSnapshot) => void;
-  recoverySessionIdentityRef: Ref<Readonly<{ firebaseUid: string; authorizationGeneration: number }> | null>;
   legalAcceptancePendingRef: Ref<boolean>;
   runAccountIdentityProof: typeof import("../account/AccountSessionProvider").runAccountIdentityProof;
   isAuthoritativeIdentityProofDenial: (error: unknown) => boolean;
@@ -107,7 +104,7 @@ export type AccountBootstrapCoordinator<T> = Readonly<{
   }>) => Promise<T>;
 }>;
 
-/** Joins matching callers through both the recovery drain and preparation. */
+/** Joins matching callers through session-revocation draining, profile preparation, and handoff. */
 export function createAccountBootstrapCoordinator<T>(): AccountBootstrapCoordinator<T> {
   type Active = Readonly<{
     owner: AccountBootstrapOwner;
@@ -168,9 +165,9 @@ export async function prepareAuthenticatedAccountBootstrap(
   const {
     profilePreparationRef, preparedProfileState, sessionCoordinator, profilePreparationHandoffRef,
     observerBlockedUidRef, setAccountEntryMode, setState, stateRef,
-    beginIdentityProofBarrier, resolveIdentityProofBarrier, guardRecoveryBeforePreparation, logoutControlSnapshotRef,
-    logoutControl, setLogoutControlSnapshot, recoverySessionIdentityRef, sessionExchangeUidRef,
-    recoveryOperation, legalAcceptancePendingRef, runAccountIdentityProof, isAuthoritativeIdentityProofDenial,
+    beginIdentityProofBarrier, resolveIdentityProofBarrier, logoutControlSnapshotRef,
+    logoutControl, setLogoutControlSnapshot, sessionExchangeUidRef,
+    legalAcceptancePendingRef, runAccountIdentityProof, isAuthoritativeIdentityProofDenial,
     isLocalAccountStartupUnavailable, classifyAccountFailure, accountSessionFailureState, revokeBindingForAuthoritativeIdentityDenial,
   } = ports;
   if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== user.uid) throw new AccountSessionGenerationStaleError();
@@ -200,7 +197,7 @@ export async function prepareAuthenticatedAccountBootstrap(
   profilePreparationRef.current = attempt;
   const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
   let proofBarrier: AccountIdentityProofBarrierContext | null = null;
-  let diagnosticStage: Exclude<import("../operationalDiagnostics").AccountStartupDiagnosticStage, "complete"> = "recovery_guard";
+  let diagnosticStage: Exclude<import("../operationalDiagnostics").AccountStartupDiagnosticStage, "complete"> = "session_revocation_gate";
   const finishPendingSignOut = (operationId?: string, failure: AccountFailure = "signOutPending", blockObserver = true): ProfilePreparationAttempt => {
     profilePreparationRef.current = null;
     if (blockObserver) observerBlockedUidRef.current = user.uid;
@@ -208,13 +205,13 @@ export async function prepareAuthenticatedAccountBootstrap(
     setAccountEntryMode("login");
     setState({ kind: "signOutPending", user, ...(operationId ? { operationId } : {}) });
     attempt.bootstrapFailure = { kind: "failure", failure };
-    startupDiagnostic?.failed("recovery_guard", new Error(failure), "signOutPending");
+    startupDiagnostic?.failed("session_revocation_gate", new Error(failure), "signOutPending");
     resolveCompletion(attempt.bootstrapFailure);
     return attempt;
   };
   try {
     if (!canContinue()) throw new AccountSessionGenerationStaleError();
-    startupDiagnostic?.pending("recovery_guard", stateRef.current.kind);
+    startupDiagnostic?.pending("session_revocation_gate", stateRef.current.kind);
     const activeBeforePreparation = getActiveStorageProfileOrNull();
     const selectedBeforePreparation = preparedProfileState.selectedProfile;
     if (activeBeforePreparation?.kind === "account" || selectedBeforePreparation.kind === "account") {
@@ -224,23 +221,6 @@ export async function prepareAuthenticatedAccountBootstrap(
       await prepareProfileStorage();
       diagnosticStage = "account_binding_barrier";
       proofBarrier = await beginIdentityProofBarrier(auth, user, generation, true);
-    }
-    diagnosticStage = "recovery_guard";
-    startupDiagnostic?.pending(diagnosticStage, stateRef.current.kind);
-    let recoveryGuardTerminalState: AccountState["kind"] | undefined;
-    const recoveryAllowed = await guardRecoveryBeforePreparation(auth, { generation, barrier: proofBarrier }, (kind) => { recoveryGuardTerminalState = kind; });
-    if (!canContinue()) throw new AccountSessionGenerationStaleError();
-    if (!recoveryAllowed) {
-      if (proofBarrier && stateRef.current.kind !== "revokedSession") {
-        try { await resolveIdentityProofBarrier(proofBarrier, auth, user, generation); } catch { /* Keep an unconfirmed restore fail-closed. */ }
-      }
-      if (!canContinue()) throw new AccountSessionGenerationStaleError();
-      profilePreparationRef.current = null;
-      attempt.bootstrapFailure = { kind: "failure", failure: stateRef.current.kind === "revokedSession" ? "revokedSession" : "conflict" };
-      if (recoveryGuardTerminalState) startupDiagnostic?.failed("recovery_guard", new Error("account_recovery_guard_blocked"), recoveryGuardTerminalState);
-      else startupDiagnostic?.pending("recovery_guard", stateRef.current.kind);
-      resolveCompletion(attempt.bootstrapFailure);
-      return null;
     }
     const pendingRevoke = findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid);
     if (pendingRevoke) return finishPendingSignOut(pendingRevoke.operationId, "signOutPending", false);
@@ -284,7 +264,6 @@ export async function prepareAuthenticatedAccountBootstrap(
               return response;
             } },
             auth,
-            ...(recoverySessionIdentityRef.current?.firebaseUid === user.uid ? { requiredAuthorizationGeneration: recoverySessionIdentityRef.current.authorizationGeneration } : {}),
             canContinue,
             onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
             user,
@@ -369,7 +348,6 @@ export async function prepareAuthenticatedAccountBootstrap(
     if (ownsPreparation && isLocalAccountStartupUnavailable(error) && canContinue()
       && !findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid)
       && !findMatchingLocalLogoutBlock(logoutControlSnapshotRef.current, user.uid)
-      && !recoveryOperation.blocksProfilePreparation
       && !legalAcceptancePendingRef.current) {
       const profile = preparedProfileState.selectedProfile;
       if (profile.kind === "account" && profile.accountId) {
@@ -425,7 +403,7 @@ export async function prepareAuthenticatedAccountBootstrap(
 export function completeAccountBootstrap(ports: AccountBootstrapCompletionPorts, token: ProfilePreparationHandoffToken): Promise<void> {
   const {
     profilePreparationHandoffRef, profilePreparationRef, stateRef, authClient,
-    apiClient, sessionCoordinator, recoveryOperation, logoutControlSnapshotRef,
+    apiClient, sessionCoordinator, logoutControlSnapshotRef,
     setState, finalizeCurrent, runtimeMode, sessionExchangeUidRef,
     accountSessionFailureState,
   } = ports;
@@ -466,7 +444,7 @@ export function completeAccountBootstrap(ports: AccountBootstrapCompletionPorts,
         const offline = attempt.localOffline;
         try {
           if (!offline || !sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== user.uid
-            || recoveryOperation.blocksProfilePreparation || findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid)
+            || findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid)
             || findMatchingLocalLogoutBlock(logoutControlSnapshotRef.current, user.uid)
             || !isActiveProfileStorageLeaseCurrent(offline.profileLease)) throw new Error("local_account_scope_unavailable");
           const binding = await readActiveAccountIdentityBinding(offline.profileLease);
