@@ -1925,6 +1925,16 @@
       "description": "Byte-identyczna kopia kanonicznego guarda APP dla sync, merge i adoption. Przyjmuje zamknięty optional legacyUnitProof zgodny z pinem sesji; nie usuwa pola lub danych. Zgodność wdrożonych starych czytników wymaga osobnego odbioru.",
       "flow": "Konto, Gość i synchronizacja",
       "reviewedHash": "0c5d4dc99f8673ae2e642408fabaeaaf87a52bc9eaa44d3e9d7c4fc00aba8346"
+    },
+    "patternly/src/application/learningPlan/applicationClockIntegration.test.ts": {
+      "description": "Sprawdza wspólny zegar lifecycle oraz rzeczywiste zapisanie i ponowne wyliczenie ręcznych budżetów dwóch tracków przez produkcyjne coordinatory i journal/CAS. Podziały 10/10 i 7/13 zachowują własne rekordy, piny, legalne długości oraz jawny niedobór czasu; test używa profilu/routera z MemoryStorage, bez nowego globalnego allocatora lub odbioru natywnego UI.",
+      "reviewedHash": "ae2b784a26b947f7f7ada319fa42c8ef453f224f88b9097555f6e919aac44949",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly-content/tests/ood-20261022-reason-corrections.test.mjs": {
+      "description": "Sprawdza źródłowego kandydata 36 korekt feedback.reason OOD B03/B04: dokładne ID i klucze, odmowę skopiowanej opcji jako reason oraz istniejące APP catalog/scoring/option-order/feedback/presentation. Test przekazuje kandydata do tych konsumentów; nie potwierdza synchronizacji lub instalacji nowych danych OOD w APP.",
+      "reviewedHash": "0f66b00f92c6340bf70713588375baa84a787e5bfe2d312b4a3d50944c90a155",
+      "flow": "Treść od producenta do sesji"
     }
   },
   "flows": [
@@ -1959,7 +1969,7 @@
         "patternly-content",
         "patternly-backend/src/modules/content"
       ],
-      "reviewedDigest": "0ddb806ce0a045773c9ba650a41538092a739f5d2a21d6b86af17248d35562da"
+      "reviewedDigest": "0219489128778ae03b044f9502563fa3164a1e9eddf9f75a114cb3a1134cd794"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -1986,7 +1996,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "7063ea1272a84e44beeed374a4f530ca109845403a4019a47ab940627e8de4f6"
+      "reviewedDigest": "806f01db6ff35ee3d9425d57577852372f3200a95892454a23236d0b65a3ff5d"
     },
     {
       "name": "Premium i zakup",
