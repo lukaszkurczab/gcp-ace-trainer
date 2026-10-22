@@ -14,14 +14,17 @@ import {
   activatePreparedProfile,
   closeActiveProfileStorage,
   installKeyValueStorageForTests,
+  getKeyValueStorage,
   MemoryKeyValueStorage,
   prepareProfileStorage,
   setProfileStoragePreparationFactoryForTests,
 } from "../../infrastructure/storage/mmkvClient";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import { foregroundTimerPhysicalKey, openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
-import { getGoalSnapshot, getReviewQueueItems } from "../../storage/repositories";
-import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { getActiveMutationJournal, getGoalSnapshot, getLearningPlanSnapshot, getReviewQueueItems } from "../../storage/repositories";
+import { readLearningPlanInputSnapshot } from "../../storage/repositories/learningPlanInputSnapshot";
+import { STORAGE_KEYS } from "../../storage/keys";
+import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 
 
 const TRACK: TrackId = "google-cloud-associate-cloud-engineer";
@@ -137,6 +140,126 @@ test("one lifecycle clock drives a real answer due time and proposal, editor, an
   assert.deepEqual(home.dueReviewIds, [dueReview.id]);
   assert.equal(home.session.modeId, replanned.proposal.outcome.nextSession.modeId);
   assert.equal(home.session.reviewSource, "due_queue");
+  } finally {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+    installKeyValueStorageForTests(new MemoryKeyValueStorage());
+  }
+});
+
+
+test("an explicit shared twenty-minute split persists and reprojects each real track budget without borrowing minutes", async () => {
+  closeActiveProfileStorage();
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  const identity = { async create() { return { installationId: INSTALLATION_ID, localDatasetId: GUEST_ID }; } };
+  let router = await openProfileStorageRouter(base, control, { identity });
+  await router.selectExistingGuest(GUEST_ID);
+  router = await openProfileStorageRouter(base, control, { identity });
+  setProfileStoragePreparationFactoryForTests(async () => ({ base, router,
+    foregroundTimerCasForTests: (before, after) => base.applyForegroundTimerRaw(before, after, foregroundTimerPhysicalKey(GUEST_ID)),
+  }));
+  const prepared = await prepareProfileStorage();
+  activatePreparedProfile(prepared.id, prepared.kind);
+  try {
+    await contentPackageRuntimeOwner.verifyBundledPackages();
+    composeTrainingLifecycleUseCases({ wallClock: createAdjustableWallClock(() => START) });
+    assert.equal(getApplicationCurrentTime(), START);
+    const tracks = [TRACK, "coding-interview-dsa-problem-solving"] as const;
+    const storage = getKeyValueStorage();
+    const rawPair = (trackId: TrackId) => ({
+      goal: storage.getString(STORAGE_KEYS.goal(trackId)),
+      plan: storage.getString(STORAGE_KEYS.learningPlan(trackId)),
+    });
+    assert.notEqual(STORAGE_KEYS.goal(tracks[0]), STORAGE_KEYS.goal(tracks[1]));
+    assert.notEqual(STORAGE_KEYS.learningPlan(tracks[0]), STORAGE_KEYS.learningPlan(tracks[1]));
+
+    // These are explicit human allocations, not a global budget input owned by the product.
+    for (const allocation of [[10, 10], [7, 13]] as const) {
+      for (const [index, trackId] of tracks.entries()) {
+        const otherTrack = tracks[1 - index]!;
+        const otherBefore = rawPair(otherTrack);
+        const policy = requireGoalPolicy(trackId);
+        const goal = { ...createDefaultGoal(policy), goalType: "build_foundations" as const,
+          preferredDays: ["fri"] as const, weeklySessionTarget: 1, targetDate: "2026-10-02" };
+        const created = await learningPlanProposalCoordinator.create(trackId, { goal, minutesPerStudyDay: allocation[index]! });
+        assert.ok("proposal" in created, `the actual ${trackId} proposal must exist before acceptance`);
+        if (!("proposal" in created)) throw new Error(`Missing actual proposal for ${trackId}.`);
+        const accepted = await learningPlanEditorCoordinator.acceptProposal(created.proposal.proposalId, trackId);
+        assert.equal(accepted.kind, "accepted", `the ${created.kind} proposal retains its separate time shortfall`);
+        if (accepted.kind !== "accepted") throw new Error(`The actual ${trackId} pair was not accepted.`);
+        assert.deepEqual(rawPair(otherTrack), otherBefore, "accepting one allocation cannot rewrite the other track's pair or revisions");
+        assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+
+        const persistedGoal = await getGoalSnapshot(trackId, policy);
+        const persistedPlan = getLearningPlanSnapshot(trackId, policy);
+        assert.ok(persistedGoal && persistedPlan, "both canonical records must be durable");
+        if (!persistedGoal || !persistedPlan) throw new Error(`Missing durable pair for ${trackId}.`);
+        const resolved = contentPackageRuntimeOwner.getPreparedDiscovery(trackId);
+        const actualTrack = resolved.track;
+        assert.equal(persistedGoal.record.trackId, trackId);
+        assert.equal(persistedPlan.plan.trackId, trackId);
+        assert.equal(persistedPlan.plan.schemaVersion, 2);
+        if (persistedPlan.plan.schemaVersion !== 2) throw new Error("The explicit allocation requires a v2 plan.");
+        assert.equal(persistedPlan.plan.minutesPerStudyDay, allocation[index]);
+        assert.equal(persistedPlan.plan.goalRevision, persistedGoal.revision);
+        assert.equal(persistedPlan.plan.contentVersion, actualTrack.contentVersion);
+        assert.equal(persistedPlan.plan.artifactSha256, actualTrack.artifactSha256);
+        assert.deepEqual(persistedPlan.plan.planningPolicyIdentity, resolved.planningPolicyIdentity);
+        assert.ok(rawPair(trackId).goal && rawPair(trackId).plan);
+      }
+
+      const actualAvailable: number[] = [];
+      for (const [index, trackId] of tracks.entries()) {
+        // No draft: the producer must read the saved budget from this track's plan.
+        const recreated = await learningPlanProposalCoordinator.create(trackId);
+        assert.ok("proposal" in recreated);
+        if (!("proposal" in recreated)) throw new Error(`The saved ${trackId} allocation cannot be reprojected.`);
+        const proposal = recreated.proposal;
+        const budget = allocation[index]!;
+        assert.equal(proposal.outcome.minutesPerStudyDay, budget);
+        assert.equal(proposal.outcome.nextSession.requestedLength, trackId === TRACK ? 40 : 10);
+        const resolved = contentPackageRuntimeOwner.getPreparedDiscovery(trackId);
+        const actualTrack = resolved.track;
+        const modeId = trackId === TRACK ? "certification-diagnostic-baseline" : "coding-interview-guided-practice";
+        const mode = actualTrack.getMode(modeId);
+        assert.deepEqual(mode.requestedLengths, trackId === TRACK ? [40] : [10, 20, 40]);
+        assert.equal(mode.minimumActualLength, trackId === TRACK ? 40 : 10);
+        const authoredRates = resolved.planningPolicy!.workEstimates.filter(rate => rate.modeId === modeId);
+        assert.ok(authoredRates.length > 0);
+        assert.ok(authoredRates.every(rate => rate.minMinutesPerResponse === (trackId === TRACK ? 1 : 2)));
+        assert.ok((trackId === TRACK ? 40 * 1 : 10 * 2) > budget, "the authored legal minimum independently exceeds this allocation");
+
+        assert.equal(proposal.nextSessionCalendar.kind, "available");
+        if (proposal.nextSessionCalendar.kind !== "available") throw new Error("The next-session calendar must expose its explicit shortfall.");
+        const next = proposal.nextSessionCalendar.calendar;
+        assert.deepEqual(next.availableDays.map(day => [day.localDate, day.availableMinutes]), [["2026-10-02", budget]]);
+        assert.equal(next.totalAvailableMinutes, budget);
+        assert.equal(next.kind, "shortfall");
+        assert.deepEqual(next.noFitDays, ["2026-10-02"]);
+        assert.equal(next.availableDays[0]!.reason, "no_legal_session_fits");
+        assert.equal(next.availableDays[0]!.selectedSession, null);
+
+        assert.equal(proposal.fullGoalCalendar.kind, "available");
+        if (proposal.fullGoalCalendar.kind !== "available") throw new Error("The full-goal calendar must retain the allocated capacity.");
+        const full = proposal.fullGoalCalendar.calendar;
+        assert.deepEqual(full.availableDays.map(day => [day.localDate, day.availableMinutes]), [["2026-10-02", budget]]);
+        assert.equal(full.totalAvailableMinutes, budget);
+        assert.equal(full.kind, "shortfall");
+        assert.ok(full.unscheduledWorkResponses > 0);
+        assert.equal(proposal.fullGoalTimeCapacity.availableMinutes, budget);
+        assert.equal(proposal.fullGoalTimeCapacity.kind, "minimum_exceeds_available_time");
+        assert.ok(proposal.fullGoalTimeCapacity.workMinMinutes! > budget);
+        assert.equal(proposal.fullGoalWorkload.kind, "incomplete");
+        assert.ok(proposal.fullGoalWorkload.unknownChapterIds.length > 0, "required scopes outside the selectable pool cannot become a full-fit claim");
+        actualAvailable.push(proposal.fullGoalTimeCapacity.availableMinutes!);
+        const inputs = readLearningPlanInputSnapshot(trackId, requireGoalPolicy(trackId), productionTrackAdmissionContext);
+        assert.deepEqual([inputs.sessions.length, inputs.attempts.length, inputs.reviews.length], [0, 0, 0]);
+        assert.equal(inputs.activeSession, null);
+      }
+      assert.deepEqual(actualAvailable, allocation, "the asymmetric7/13 control detects borrowing the other track's budget");
+      assert.equal(actualAvailable.reduce((sum, minutes) => sum + minutes, 0), 20, "actual persisted projections share only the explicitly allocated twenty minutes");
+    }
   } finally {
     closeActiveProfileStorage();
     setProfileStoragePreparationFactoryForTests(null);
