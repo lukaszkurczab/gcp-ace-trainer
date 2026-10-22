@@ -89,7 +89,7 @@ test("generic pending and profile-transition surfaces use their owned LoadingSta
     .filter((path) => path !== "src/features/practice/PracticeSessionSurface.tsx" && /<LoadingState\b/.test(source(path)))
     .sort();
 
-  assert.deepEqual(consumers, [...genericPendingPaths].sort());
+  assert.deepEqual(consumers, [...genericPendingPaths, "src/application/account/AccountProfileTransitionLoadingState.tsx"].sort());
   for (const path of genericPendingPaths) assert.match(source(path), /<LoadingState\b/, path);
 
   assert.match(source("src/navigation/RootNavigator.tsx"), /state\.kind === "loading"[\s\S]*?<LoadingState[^>]*title=\{t\("Restoring session"\)\}/);

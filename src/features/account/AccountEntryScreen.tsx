@@ -6,7 +6,6 @@ import accountCopy from "../../locales/en/account.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   AppState,
-  Alert,
   Linking,
   Platform,
   Pressable,
@@ -157,10 +156,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   transferGuestData: t("transferGuestData"),
   transferGuestDataDescription: t("transferGuestDataDescription"),
   discardGuestDataDescription: t("discardGuestDataDescription"),
-  accountDiscardTitle: t("accountDiscardTitle"),
-  accountDiscardDescription: t("accountDiscardDescription"),
-  accountDiscardKeepDevice: t("accountDiscardKeepDevice"),
-  accountDiscardConfirm: t("accountDiscardConfirm"),
+  discardGuestDataExistingDescription: t("discardGuestDataExistingDescription"),
   conflictChoiceTitle: t("conflictChoiceTitle"),
   conflictChoiceDescription: t("conflictChoiceDescription"),
   goalPlanConflictTitle: t("goalPlanConflictTitle"),
@@ -576,7 +572,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       </AuthText>
     ) : null;
     return (
-      <Screen backAction={backAction}
+      <Screen
         ambient
         ambientVariant="auth"
         edges={screenEdges}
@@ -727,17 +723,18 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
 
   return (
     <Screen
-      backAction={{
+      backAction={mode === "register" ? undefined : {
         destinationLabel: text.signIn,
         onPress: () => { setFeedback(null); setMode("signIn"); },
-        testID: mode === "register" ? "account-register-back-to-sign-in" : "account-back-to-sign-in",
+        testID: "account-back-to-sign-in",
       }}
+      automaticallyAdjustKeyboardInsets={mode === "register"}
       ambient
       ambientVariant="auth"
       edges={screenEdges}
-      style={[styles.authScreen, largeText ? styles.authScreenLargeText : null]}
+      style={[styles.authScreen, largeText ? styles.authScreenLargeText : null, mode === "register" ? styles.registrationScreen : null]}
     >
-      <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null]}>
+      <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null, mode === "register" ? styles.registrationPanel : null]}>
         <AuthText
           style={[
             styles.authTitle,
@@ -764,6 +761,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           onConfirmationChange={(value) => { setFeedback(null); setConfirmation(value); }}
           onEmailChange={(value) => { setFeedback(null); setEmail(value); }}
           onPasswordChange={(value) => { setFeedback(null); setPassword(value); }}
+          onSignIn={() => { setFeedback(null); setMode("signIn"); }}
           onSubmit={() => {
             if (password !== confirmation) {
               setFeedback({ kind: "failure", failure: "passwordMismatch" });
@@ -864,27 +862,15 @@ function AccountAdoptionScreen({
       setCommandFeedback,
     );
   };
-  const continueEntry = () => {
-    if (hasGuestData && effectiveChoice === "discard") {
-      Alert.alert(text.accountDiscardTitle, text.accountDiscardDescription, [
-        { text: text.accountDiscardKeepDevice, style: "cancel" },
-        { text: text.accountDiscardConfirm, style: "destructive", onPress: executeEntry },
-      ]);
-      return;
-    }
-    executeEntry();
-  };
-  const signOut = () => {
-    runCommand("signOut", () => account.signOut(), setCommandFeedback);
-  };
   return (
     <Screen backAction={backAction}
       edges={["top", "bottom"]}
+      style={styles.accountAdoptionScreen}
       footer={
         <Button
           disabled={busyAction !== null}
           loading={busyAction === "continue"}
-          onPress={continueEntry}
+          onPress={executeEntry}
           testID="account-entry-continue"
           variant="primary"
         >
@@ -915,8 +901,8 @@ function AccountAdoptionScreen({
             value={entryChoice === "transfer"}
           />
         </View>
-        <AuthText style={styles.accountBody} testID="account-progress-choice-description">
-          {entryChoice === "transfer" ? text.transferGuestDataDescription : text.discardGuestDataDescription}
+        <AuthText accessibilityLiveRegion="polite" style={[styles.accountBody, entryChoice === "discard" ? styles.accountDiscardWarning : null]} testID="account-progress-choice-description">
+          {entryChoice === "transfer" ? text.transferGuestDataDescription : plan.remoteRecordCount > 0 ? text.discardGuestDataExistingDescription : text.discardGuestDataDescription}
         </AuthText>
         {entryChoice === "transfer" && plan.conflictRecordIds.length > 0 ? (
           <View style={styles.accountActionGroup} testID="account-conflict-choice">
@@ -950,16 +936,7 @@ function AccountAdoptionScreen({
           </View>
         )) : null}
       </View> : null}
-      {commandFeedback ? renderFeedback(commandFeedback, text, text.account) : null}
-      <Button
-        disabled={busyAction !== null}
-        loading={busyAction === "signOut"}
-        onPress={signOut}
-        testID="account-adoption-sign-out"
-        variant="ghost"
-      >
-        {text.signOut}
-      </Button>
+      {commandFeedback?.kind === "failure" ? renderFeedback(commandFeedback, text, text.account) : null}
     </Screen>
   );
 }
@@ -1719,6 +1696,7 @@ function CredentialsForm({
   onPasswordChange,
   onOpenPrivacy,
   onOpenTerms,
+  onSignIn,
   onSubmit,
   password,
   placeholderTextColor,
@@ -1738,6 +1716,7 @@ function CredentialsForm({
   onPasswordChange: (value: string) => void;
   onOpenPrivacy?: () => void;
   onOpenTerms?: () => void;
+  onSignIn: () => void;
   onSubmit: () => void;
   password: string;
   placeholderTextColor: string;
@@ -1760,7 +1739,7 @@ function CredentialsForm({
       ? text.invalid
     : undefined;
   return (
-    <View style={styles.authForm}>
+    <View style={[styles.authForm, styles.registrationForm]}>
       <FormField error={emailError} errorTestID="account-register-email-error" label={text.email}>
         <TextInput
           accessibilityLabel={text.email}
@@ -1816,9 +1795,14 @@ function CredentialsForm({
         />
       ) : null}
       {acceptedTerms !== undefined && onAcceptedTermsChange && onOpenPrivacy && onOpenTerms ? <TermsAcceptance accepted={acceptedTerms} onChange={onAcceptedTermsChange} onOpenPrivacy={onOpenPrivacy} onOpenTerms={onOpenTerms} presentationState={termsPresentationState} text={text} /> : null}
-      <Button disabled={acceptedTerms === false} labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID={testID} variant="primary">
-        {buttonLabel}
-      </Button>
+      <View style={styles.registrationActions}>
+        <Button disabled={acceptedTerms === false} labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID={testID} variant="primary">
+          {buttonLabel}
+        </Button>
+        <Pressable accessibilityRole="link" onPress={onSignIn} style={styles.registrationSignInLink} testID="account-register-back-to-sign-in">
+          <AuthText style={[styles.textActionLabel, styles.registrationSignInLabel]}>{text.alreadyHaveAccount}</AuthText>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -2010,6 +1994,8 @@ function isAuthFieldFailure(
 
   const createStyles = (palette: AppColors) =>
   StyleSheet.create({
+    accountAdoptionScreen: { justifyContent: "center" },
+    accountDiscardWarning: { color: palette.danger },
     accountIntro: { gap: spacing.sm },
     accountSection: { gap: spacing.md },
       progressToggleRow: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
@@ -2069,6 +2055,12 @@ function isAuthFieldFailure(
       width: 12,
     },
     radioCopy: { flex: 1, gap: spacing.xs, minWidth: 0 },
+    registrationScreen: { justifyContent: "flex-start" },
+    registrationPanel: { flex: 1 },
+    registrationForm: { flex: 1 },
+    registrationActions: { marginTop: "auto", paddingTop: spacing.xl, gap: spacing.md },
+    registrationSignInLabel: { textAlign: "center" },
+    registrationSignInLink: { minHeight: 44, justifyContent: "center", alignItems: "center" },
     authScreen: { justifyContent: "center" },
     authScreenLargeText: { justifyContent: "flex-start", paddingTop: spacing.md },
     authPanel: { alignSelf: "stretch", gap: spacing.md, minWidth: 0 },

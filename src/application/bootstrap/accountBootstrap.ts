@@ -6,7 +6,7 @@ import type { StorageProfile } from "../../infrastructure/storage/profileStorage
 import type { PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
 import { recordAccountStartupFailure, type AccountStartupDiagnosticWriter } from "../operationalDiagnostics";
 import { createProfilePreparationHandoffOwner, type ProfilePreparationHandoffToken } from "../account/profilePreparationHandoff";
-import { activatePreparedProfile, captureActiveProfileStorageLease, closeActiveProfileStorage, getActiveStorageProfileOrNull, isActiveProfileStorageLeaseCurrent, notifyProfileStorageReady, prepareProfileStorage, readActiveAccountIdentityBinding, readPreparedAccountIdentityBinding, selectPreparedAccountProfile, type ActiveProfileStorageLease, type AccountIdentityBinding } from "../../storage/repositories/profileStorageRepository";
+import { activatePreparedProfile, captureActiveProfileStorageLease, closeActiveProfileStorage, getActiveStorageProfileOrNull, inspectPreparedProfileState, isActiveProfileStorageLeaseCurrent, notifyProfileStorageReady, prepareProfileStorage, readActiveAccountIdentityBinding, readPreparedAccountIdentityBinding, selectPreparedAccountProfile, type ActiveProfileStorageLease, type AccountIdentityBinding } from "../../storage/repositories/profileStorageRepository";
 import { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, guardAuthenticatedScopeAgainstIncompleteSignOut, prepareAuthenticatedProfileScope } from "../account/profileStartupCoordination";
 import { clearAccountSignOutState, getAccountDeletionState, getAccountSignOutState } from "../../storage/repositories/accountLifecycleRepository";
 import { getGuestInstallation, hasUnboundGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
@@ -184,7 +184,7 @@ export async function prepareAuthenticatedAccountBootstrap(
   const completion = new Promise<AccountCommandResult>((resolve) => { resolveCompletion = resolve; });
   const attempt: ProfilePreparationAttempt = {
     kind: "authenticated",
-    profile: preparedProfileState.selectedProfile,
+    profile: getActiveStorageProfileOrNull() ?? preparedProfileState.selectedProfile,
     user,
     generation,
     completion,
@@ -197,6 +197,7 @@ export async function prepareAuthenticatedAccountBootstrap(
   profilePreparationRef.current = attempt;
   const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
   let proofBarrier: AccountIdentityProofBarrierContext | null = null;
+  let preparedSelection: StorageProfile | null = null;
   let diagnosticStage: Exclude<import("../operationalDiagnostics").AccountStartupDiagnosticStage, "complete"> = "session_revocation_gate";
   const finishPendingSignOut = (operationId?: string, failure: AccountFailure = "signOutPending", blockObserver = true): ProfilePreparationAttempt => {
     profilePreparationRef.current = null;
@@ -213,12 +214,26 @@ export async function prepareAuthenticatedAccountBootstrap(
     if (!canContinue()) throw new AccountSessionGenerationStaleError();
     startupDiagnostic?.pending("session_revocation_gate", stateRef.current.kind);
     const activeBeforePreparation = getActiveStorageProfileOrNull();
-    const selectedBeforePreparation = preparedProfileState.selectedProfile;
-    if (activeBeforePreparation?.kind === "account" || selectedBeforePreparation.kind === "account") {
+    if (activeBeforePreparation) {
+      // The active profile is authoritative. The provider's prepared-profile
+      // snapshot may predate an in-session guest selection.
+      preparedSelection = activeBeforePreparation;
+    } else {
+      diagnosticStage = "account_storage_prepare";
+      startupDiagnostic?.pending(diagnosticStage, stateRef.current.kind);
+      await prepareProfileStorage();
+      preparedSelection = (await inspectPreparedProfileState()).selectedProfile;
+      if (!canContinue()) throw new AccountSessionGenerationStaleError();
+    }
+    attempt.profile = preparedSelection;
+    if (activeBeforePreparation?.kind === "account" || preparedSelection?.kind === "account") {
       if (activeBeforePreparation) closeActiveProfileStorage();
       diagnosticStage = "account_storage_prepare";
       startupDiagnostic?.pending(diagnosticStage, stateRef.current.kind);
       await prepareProfileStorage();
+      preparedSelection = (await inspectPreparedProfileState()).selectedProfile;
+      if (!canContinue()) throw new AccountSessionGenerationStaleError();
+      attempt.profile = preparedSelection;
       diagnosticStage = "account_binding_barrier";
       proofBarrier = await beginIdentityProofBarrier(auth, user, generation, true);
     }
@@ -229,8 +244,7 @@ export async function prepareAuthenticatedAccountBootstrap(
     setAccountEntryMode("login");
     setState({ kind: "loading" });
     let activeProfile = getActiveStorageProfileOrNull();
-    const preparedSelection = preparedProfileState.selectedProfile;
-    if (!activeProfile && preparedSelection.kind === "guest") {
+    if (!activeProfile && preparedSelection?.kind === "guest") {
       activatePreparedProfile(preparedSelection.id, preparedSelection.kind, { deferReadyNotification: true });
       activeProfile = getActiveStorageProfileOrNull();
     }
@@ -282,7 +296,7 @@ export async function prepareAuthenticatedAccountBootstrap(
           isCurrentGeneration: sessionCoordinator.isCurrent,
           isLeaseCurrent: isActiveProfileStorageLeaseCurrent,
           readBinding: readActiveAccountIdentityBinding,
-          revokeDeniedBinding: async (error) => { await revokeBindingForAuthoritativeIdentityDenial(error, { profile: preparedSelection, uid: user.uid, canContinue }); },
+          revokeDeniedBinding: async (error) => { await revokeBindingForAuthoritativeIdentityDenial(error, { profile: preparedSelection!, uid: user.uid, canContinue }); },
         });
         proofBarrier = null;
         if (identityProof.kind === "failed") throw identityProof.cause ?? new Error(identityProof.failure);
@@ -349,8 +363,8 @@ export async function prepareAuthenticatedAccountBootstrap(
       && !findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid)
       && !findMatchingLocalLogoutBlock(logoutControlSnapshotRef.current, user.uid)
       && !legalAcceptancePendingRef.current) {
-      const profile = preparedProfileState.selectedProfile;
-      if (profile.kind === "account" && profile.accountId) {
+      const profile = preparedSelection;
+      if (profile?.kind === "account" && profile.accountId) {
         try {
           const preparedBinding = await readPreparedAccountIdentityBinding(profile.id);
           if (preparedBinding.kind === "verified" && preparedBinding.binding.profileId === profile.id

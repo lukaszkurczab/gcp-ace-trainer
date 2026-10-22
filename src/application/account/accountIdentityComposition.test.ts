@@ -161,10 +161,13 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.doesNotMatch(screen, /useState<"transfer" \| "discard">\("transfer"\)/u);
   assert.match(screen, /testID="account-entry-continue"/);
   const adoption = screen.slice(screen.indexOf("function AccountAdoptionScreen"), screen.indexOf("function AccountRecoveryScreen"));
-  assert.match(adoption, /runCommand\("signOut", \(\) => account\.signOut\(\), setCommandFeedback\)/u);
+  assert.doesNotMatch(adoption, /account-adoption-sign-out|account\.signOut\(/u);
   assert.match(screen, /account\.discardGuestData\(\)/);
-  assert.match(screen, /Alert\.alert\(text\.accountDiscardTitle, text\.accountDiscardDescription/);
-  assert.match(screen, /style: "destructive", onPress: executeEntry/);
+  assert.doesNotMatch(adoption, /Alert\.alert|accountDiscardConfirm|continueEntry/);
+  assert.match(adoption, /onPress=\{executeEntry\}/);
+  assert.match(adoption, /commandFeedback\?\.kind === "failure" \? renderFeedback/);
+  assert.match(adoption, /plan\.remoteRecordCount > 0 \? text\.discardGuestDataExistingDescription : text\.discardGuestDataDescription/);
+  assert.match(adoption, /entryChoice === "discard" \? styles\.accountDiscardWarning : null/);
   assert.match(screen, /account\.confirmAdoption\(resolutions, accountData\.preview/);
   assert.match(screen, /goalPlanConflictGroups/);
   assert.match(screen, /account-goal-plan-\$\{group\.trackId\}-keep-guest/);
@@ -257,9 +260,9 @@ test("account recovery back action follows live navigator history", () => {
   assert.match(screen, /usePreventRemove\(mode === "register", \(\) => \{[\s\S]*?setMode\("signIn"\)/u);
   assert.doesNotMatch(screen, /navigation\.addListener\("beforeRemove"/u);
   assert.match(screen, /initialMode === "entry"[\s\S]*?initialMode === "register"[\s\S]*?: "entry"/u);
-  assert.match(screen, /backAction=\{\{\s*destinationLabel: text\.signIn,\s*onPress: \(\) => \{ setFeedback\(null\); setMode\("signIn"\); \},\s*testID: mode === "register" \? "account-register-back-to-sign-in" : "account-back-to-sign-in"/u);
+  assert.match(screen, /backAction=\{mode === "register" \? undefined : \{\s*destinationLabel: text\.signIn,\s*onPress: \(\) => \{ setFeedback\(null\); setMode\("signIn"\); \},\s*testID: "account-back-to-sign-in"/u);
   assert.match(screen, /mode === "register" \? \([\s\S]*?<CredentialsForm[\s\S]*?account-register-submit/u);
-  assert.doesNotMatch(screen, /testID="account-register-back-to-sign-in"|testID="account-back-to-sign-in"/u);
+  assert.match(screen, /accessibilityRole="link" onPress=\{onSignIn\} style=\{styles.registrationSignInLink\} testID="account-register-back-to-sign-in"/u);
   assert.doesNotMatch(screen, /const backAction = navigation\.canGoBack\(\)/u);
 });
 
@@ -648,7 +651,7 @@ test("registration keeps consent presentation separate from the boolean domain c
     assert.ok(provider.includes(`accountFinalizationPolicies.${policy}`) || bootstrap.includes(`accountFinalizationPolicies.${policy}`), `the ${policy} call site selects its named policy`);
   }
   assert.doesNotMatch(provider, /finalizeCurrent\(auth, api, user, false,/u, "finalization call sites no longer use positional booleans");
-  assert.match(bootstrap, /!activeProfile && preparedSelection\.kind === "guest"[\s\S]*?activatePreparedProfile\(preparedSelection\.id, preparedSelection\.kind, \{ deferReadyNotification: true \}\)/u);
+  assert.match(bootstrap, /!activeProfile && preparedSelection\?\.kind === "guest"[\s\S]*?activatePreparedProfile\(preparedSelection\.id, preparedSelection\.kind, \{ deferReadyNotification: true \}\)/u);
   assert.match(bootstrap, /guestInstallation\?\.bindingState === "adoption_pending"[\s\S]*?attempt\.guestAdoption = true[\s\S]*?notifyProfileStorageReady\(\)/u);
   assert.match(provider, /register: \(email,[\s\S]*?legalAcceptancePendingRef\.current = true[\s\S]*?auth\.register\([\s\S]*?legalAcceptancePendingRef\.current = false/u);
   assert.match(provider, /signInWithApple: \(locale, appleCredentialDependencies\) => authClient && apiClient \? runProviderFirstUse\(authClient, apiClient, locale, \(\) => authClient\.signInWithApple\(appleCredentialDependencies\)\)/u);
@@ -694,7 +697,7 @@ test("unconfigured account entry never composes Google OAuth without typed provi
 
 test("a guest transition resets navigation into the application session", () => {
   const app = readFileSync("src/RegularApplicationRoot.tsx", "utf8");
-  assert.match(app, /const \{ state \} = usePatternlyAccount\(\)/);
+  assert.match(app, /const \{ state, isMaterializedAccountTransition \} = usePatternlyAccount\(\)/);
   assert.match(app, /<NavigationContainer key=\{sessionKey\} theme=\{navigationTheme\}>/);
   assert.match(app, /state\.kind === "authenticated" \|\| state\.kind === "guest"/);
 });

@@ -10,6 +10,7 @@ import { BackLink, type BackLinkProps } from "./BackLink";
 
 
 type ScreenProps = {
+  automaticallyAdjustKeyboardInsets?: boolean;
   backgroundColor?: string;
   backAction?: BackLinkProps;
   children: ReactNode;
@@ -25,7 +26,7 @@ type ScreenProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Screen({ ambient = true, ambientVariant = "default", backgroundColor, backAction, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, scrollFocus, style }: ScreenProps) {
+export function Screen({ automaticallyAdjustKeyboardInsets = false, ambient = true, ambientVariant = "default", backgroundColor, backAction, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, scrollFocus, style }: ScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
@@ -55,6 +56,7 @@ export function Screen({ ambient = true, ambientVariant = "default", backgroundC
       {header}
       {scroll ? (
         <ScrollView
+          automaticallyAdjustKeyboardInsets={automaticallyAdjustKeyboardInsets}
           ref={scrollRef}
           onContentSizeChange={scrollFocus ? focusContent : undefined}
           contentContainerStyle={[styles.scrollContent, compact ? styles.scrollContentCompact : null]}

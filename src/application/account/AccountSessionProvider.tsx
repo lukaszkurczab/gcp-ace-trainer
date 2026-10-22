@@ -404,6 +404,9 @@ export type AccountSessionContextValue = Readonly<{
   restartExpiredSessionRevocation: () => Promise<AccountCommandResult>;
   signOut: () => Promise<AccountCommandResult>;
   pendingRemoteRevokeCount: number;
+  isMaterializedAccountTransition: boolean;
+  materializedAccountTransitionToken: object | null;
+  completeMaterializedAccountTransition: (token: object) => void;
   captureCurrentAuthenticatedActorFence: () => Readonly<{ accountIdSha256: string; profileIdSha256: string; uidSha256: string; isCurrent: () => boolean; isCurrentSdkUid: (uid: string) => boolean }> | null;
   captureHomeResumeActorFence: () => HomeResumeActorFence | null;
   inspectQ13ActorFence: () => Q13ActorFence;
@@ -600,6 +603,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   if (!retiredDeviceSecretsCleanupRef.current) retiredDeviceSecretsCleanupRef.current = getRetiredAccountSecretsCleanup();
   const [accountEntryMode, setAccountEntryMode] = useState<"welcome" | "login">(preparedProfileState.isFreshInstallation ? "welcome" : "login");
   const [guestTransitionFailure, setGuestTransitionFailure] = useState<Readonly<{ kind: "failure"; failure: AccountFailure }> | null>(null);
+  const [materializedAccountTransitionOwner, setMaterializedAccountTransitionOwner] = useState<object | null>(null);
+  const materializedAccountTransitionOwnerRef = useRef<object | null>(null);
   const stateRef = useRef<AccountState>({ kind: "loading" });
   stateRef.current = state;
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
@@ -810,7 +815,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
                 isLeaseCurrent: isActiveProfileStorageLeaseCurrent,
                 readBinding: readActiveAccountIdentityBinding,
                 revokeDeniedBinding: async (error) => { await revokeBindingForAuthoritativeIdentityDenial(error, {
-                  profile: preparedProfileState.selectedProfile,
+                  profile: getActiveStorageProfileOrNull() ?? (await inspectPreparedProfileState()).selectedProfile,
                   uid: user.uid,
                   canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
                 }); },
@@ -938,6 +943,44 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     isLocalAccountStartupUnavailable, classifyAccountFailure, accountSessionFailureState, revokeBindingForAuthoritativeIdentityDenial,
   }, auth, api, user, generation, startupDiagnostic),
   [beginIdentityProofBarrier, resolveIdentityProofBarrier, logoutControl, preparedProfileState.selectedProfile, sessionCoordinator]);
+
+  const completeMaterializedAccountProfile = useCallback(async (
+    auth: FirebaseAuthClient,
+    api: ReturnType<typeof createPatternlyApiClient>,
+    user: FirebaseAuthUserSnapshot,
+    generation: AccountSessionGenerationToken,
+  ): Promise<AccountCommandResult> => {
+    const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
+    if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+    const transitionOwner = {};
+    materializedAccountTransitionOwnerRef.current = transitionOwner;
+    setMaterializedAccountTransitionOwner(transitionOwner);
+    let handedToContentGate = false;
+    try {
+      const attempt = await startAuthenticatedProfilePreparation(auth, api, user, generation);
+      if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+      if (!attempt) {
+        const latest = stateRef.current;
+        return { kind: "failure", failure: latest.kind === "revokedSession" ? "revokedSession" : latest.kind === "backendUnavailable" ? "backendUnavailable" : "providerUnavailable" };
+      }
+      const result = await attempt.completion;
+      handedToContentGate = result.kind === "success" && result.next === "authenticated";
+      return canContinue() ? result : { kind: "failure", failure: "revokedSession" };
+    } catch (error) {
+      return { kind: "failure", failure: canContinue() ? classifyAccountFailure(error) : "revokedSession" };
+    } finally {
+      if (!handedToContentGate && materializedAccountTransitionOwnerRef.current === transitionOwner) {
+        materializedAccountTransitionOwnerRef.current = null;
+        setMaterializedAccountTransitionOwner(null);
+      }
+    }
+  }, [classifyAccountFailure, sessionCoordinator, startAuthenticatedProfilePreparation]);
+
+  const completeMaterializedAccountTransition = useCallback((token: object) => {
+    if (materializedAccountTransitionOwnerRef.current !== token) return;
+    materializedAccountTransitionOwnerRef.current = null;
+    setMaterializedAccountTransitionOwner(null);
+  }, []);
 
   const admitAuthenticatedBootstrap = useCallback((
     auth: FirebaseAuthClient,
@@ -1859,6 +1902,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     : null;
 
   const value = useMemo<AccountSessionContextValue>(() => ({
+    isMaterializedAccountTransition: materializedAccountTransitionOwner !== null,
+    materializedAccountTransitionToken: materializedAccountTransitionOwner,
+    completeMaterializedAccountTransition,
     retiredDeviceSecretsCleanup,
     retryRetiredDeviceSecretsCleanup: () => retiredDeviceSecretsCleanupRef.current!.reconcile(),
     revokeDeletionAuthorization,
@@ -2497,7 +2543,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const generation = sessionCoordinator.restart(current.uid);
       const next = await confirmAccountDataAdoption(api, state.backendUser.id, state.accountData.preview, resolutions, groupChoices);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
-      if (next.status === "synced" && await selectAccountProfileAndRestart(state.backendUser.id, () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === current.uid, { recoverBoundGuest: true })) return { kind: "success", next: "authenticated" };
+      const activeProfile = getActiveStorageProfileOrNull();
+      if (next.status === "synced" && (activeProfile?.kind !== "account" || activeProfile.accountId !== state.backendUser.id)) {
+        return completeMaterializedAccountProfile(auth, api, current, generation);
+      }
       if (next.status === "synced") await reconcileMaterializedAccountReminders().catch(() => undefined);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
@@ -2517,7 +2566,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const generation = sessionCoordinator.restart(current.uid);
       const next = await retryAccountDataSync(api, state.backendUser.id);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
-      if (next.status === "synced" && await selectAccountProfileAndRestart(state.backendUser.id, () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === current.uid, { recoverBoundGuest: true })) return { kind: "success", next: "authenticated" };
+      const activeProfile = getActiveStorageProfileOrNull();
+      if (next.status === "synced" && (activeProfile?.kind !== "account" || activeProfile.accountId !== state.backendUser.id)) {
+        return completeMaterializedAccountProfile(auth, api, current, generation);
+      }
       if (next.status === "synced") await reconcileMaterializedAccountReminders().catch(() => undefined);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
@@ -2530,7 +2582,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const next = await retryPendingAccountDataSync(api, state.backendUser.id);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       if (!next) return { kind: "success", next: "authenticated" };
-      if (next.status === "synced" && await selectAccountProfileAndRestart(state.backendUser.id, () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === current.uid, { recoverBoundGuest: true })) return { kind: "success", next: "authenticated" };
+      const activeProfile = getActiveStorageProfileOrNull();
+      if (next.status === "synced" && (activeProfile?.kind !== "account" || activeProfile.accountId !== state.backendUser.id)) {
+        return completeMaterializedAccountProfile(auth, api, current, generation);
+      }
       if (next.status === "synced") await reconcileMaterializedAccountReminders().catch(() => undefined);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
@@ -2955,7 +3010,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const next = await discardGuestDataAndLoadAccount(api, state.backendUser.id);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       if (next.status === "synced") {
-        if (await selectAccountProfileAndRestart(state.backendUser.id, () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === current.uid, { recoverBoundGuest: true })) return { kind: "success", next: "authenticated" };
+        const activeProfile = getActiveStorageProfileOrNull();
+        if (activeProfile?.kind !== "account" || activeProfile.accountId !== state.backendUser.id) {
+          return completeMaterializedAccountProfile(auth, api, current, generation);
+        }
         await reconcileMaterializedAccountReminders().catch(() => undefined);
         if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
         revokeGuestAccess();
@@ -2975,7 +3033,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     completeProfilePreparation,
     profilePreparationHandoffToken,
     state,
-  }), [retiredDeviceSecretsCleanup, accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, readCurrentPremiumAccess, captureCurrentAuthenticatedActorFence, capturePremiumPurchaseActor, captureHomeResumeActorFence, inspectQ13ActorFence, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, profilePreparationHandoffToken, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, registerProviderIdentity, cancelProviderRegistration, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runProviderFirstUse, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
+  }), [retiredDeviceSecretsCleanup, accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, readCurrentPremiumAccess, captureCurrentAuthenticatedActorFence, capturePremiumPurchaseActor, captureHomeResumeActorFence, inspectQ13ActorFence, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, completeMaterializedAccountProfile, materializedAccountTransitionOwner, profilePreparationHandoffToken, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, registerProviderIdentity, cancelProviderRegistration, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runProviderFirstUse, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }

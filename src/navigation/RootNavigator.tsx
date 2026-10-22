@@ -6,6 +6,7 @@ import { Alert, Linking, StyleSheet } from "react-native";
 
 import { AppShellHeader, LoadingState, Screen } from "../components";
 import { usePatternlyAccount } from "../application/account/AccountSessionProvider";
+import { AccountProfileTransitionLoadingState } from "../application/account/AccountProfileTransitionLoadingState";
 import { ROUTES } from "../constants/routes";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { CertificationExamReviewFixtureNavigator } from "../features/exam/certificationExamReviewFixtureNavigator";
@@ -64,7 +65,7 @@ export function RootNavigator() {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   const account = usePatternlyAccount();
-  const { state, accountEntryMode } = account;
+  const { state, accountEntryMode, isMaterializedAccountTransition } = account;
   const [auditLanguageSettings, setAuditLanguageSettings] = useState(false);
   const [auditExamReviewFixture, setAuditExamReviewFixture] = useState<CertificationExamReviewFixtureLaunch | null>(null);
   const [auditLearningPlanFixture, setAuditLearningPlanFixture] = useState<LearningPlanProposalFixtureLaunch | null>(null);
@@ -169,7 +170,9 @@ export function RootNavigator() {
   if (state.kind === "loading" || state.kind === "profilePreparing") {
     return (
       <Screen edges={["top", "bottom"]} style={styles.sessionLoading}>
-        <LoadingState description={t("Checking saved sign-in.")} showLogo testID="account-session-restore-loading" title={t("Restoring session")} />
+        {isMaterializedAccountTransition
+          ? <AccountProfileTransitionLoadingState />
+          : <LoadingState description={t("Checking saved sign-in.")} showLogo testID="account-session-restore-loading" title={t("Restoring session")} />}
       </Screen>
     );
   }

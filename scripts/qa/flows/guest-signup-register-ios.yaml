@@ -1,0 +1,45 @@
+appId: com.lkurczab.patternly
+name: Guest signup - isolated local smoke account
+# Precondition: guest with a bounded fixture; credentials belong only to local Auth emulator.
+# Does not clear app data or any emulator account/database.
+---
+- runFlow:
+    when:
+      visible:
+        id: patternly:home:select-track:root
+    commands:
+      - tapOn:
+          id: patternly:home:select-track:continue
+      - extendedWaitUntil:
+          visible:
+            id: main-tab-bar-settings
+          timeout: 30000
+- tapOn:
+    id: main-tab-bar-settings
+- tapOn:
+    id: settings-account-entry
+- tapOn:
+    id: account-entry-register
+- tapOn:
+    id: account-email
+- inputText: ${GUEST_FLOW_EMAIL}
+- tapOn:
+    id: account-password-visibility
+- tapOn:
+    id: account-password
+- inputText: ${GUEST_FLOW_PASSWORD}
+- tapOn:
+    id: account-password-confirmation
+- inputText: ${GUEST_FLOW_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: account-register-terms-checkbox
+- tapOn:
+    id: account-register-submit
+- extendedWaitUntil:
+    visible:
+      id: account-entry-choice
+    timeout: 30000
+- assertVisible:
+    id: account-keep-progress-toggle
+- takeScreenshot: adoption-preview

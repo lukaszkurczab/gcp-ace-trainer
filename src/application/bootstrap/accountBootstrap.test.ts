@@ -11,6 +11,7 @@ import { PatternlyApiClientError, type PatternlyApiClient } from "../../infrastr
 import { accountFinalizationPolicies } from "../account/accountFinalization";
 import { createProfilePreparationHandoffOwner } from "../account/profilePreparationHandoff";
 import { createPendingSessionRevocationDrain } from "../account/pendingSessionRevocation";
+import { markGuestInstallationAdoptionPending, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 import type { LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
 import { AccountBootstrapStaleError, admitAccountBootstrap, completeAccountBootstrap, createAccountBootstrapCoordinator, prepareAuthenticatedAccountBootstrap, type AccountBootstrapCompletionPorts, type AccountBootstrapPreparationPorts, type ProfilePreparationAttempt } from "./accountBootstrap";
 
@@ -252,7 +253,7 @@ async function createBootstrapFixture(selectedAccountId: string) {
   const selected = await router.selectAccount(selectedAccountId);
   router = await openProfileStorageRouter(base, control);
   setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
-  return { base, selected, router };
+  return { base, control, selected, router, setRouter: (next: typeof router) => { router = next; } };
 }
 
 function createPreparationPorts(input: Readonly<{
@@ -375,6 +376,26 @@ test("the canonical preparation owner selects both new and returning /me account
     closeActiveProfileStorage();
     setProfileStoragePreparationFactoryForTests(null);
   }
+});
+
+test("an active guest profile takes precedence over a stale prepared account snapshot during authenticated preparation", async () => {
+  const user = { uid: "stale-snapshot-guest-uid", email: "person@example.test", emailVerified: true, providers: ["password"] } as const;
+  const fixture = await createBootstrapFixture("stale-account-snapshot");
+  const guest = await fixture.router.selectGuest();
+  fixture.setRouter(await openProfileStorageRouter(fixture.base, fixture.control));
+  await prepareProfileStorage();
+  activatePreparedProfile(guest.id, guest.kind);
+  await provisionGuestInstallation();
+  await markGuestInstallationAdoptionPending();
+
+  const { ports, auth, state, generation } = createPreparationPorts({ selectedProfile: fixture.selected, user });
+  const attempt = await prepareAuthenticatedAccountBootstrap(ports, auth as never, {} as PatternlyApiClient, user, generation);
+
+  assert.ok(attempt);
+  assert.equal(attempt.guestAdoption, true);
+  assert.equal(attempt.profile.id, guest.id);
+  assert.equal(getActiveStorageProfileOrNull()?.id, guest.id, "preparation must keep the live guest available for account adoption");
+  assert.equal(state.at(-1)?.kind, "profilePreparing");
 });
 
 test("the canonical preparation owner stops on unavailable and authoritative /me failures", async () => {

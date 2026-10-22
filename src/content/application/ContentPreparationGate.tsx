@@ -14,6 +14,7 @@ import { abandonUnavailableExactActiveTrainingSession } from "../../application/
 import { TrainingApplicationFailure, type ExactArtifactIdentity } from "../../application/trainingLifecycle/contracts";
 import { useAppPreferences } from "../../preferences";
 import { usePatternlyAccount, type HomeResumeActorFence } from "../../application/account/AccountSessionProvider";
+import { AccountProfileTransitionLoadingState } from "../../application/account/AccountProfileTransitionLoadingState";
 import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent } from "../../infrastructure/storage/mmkvClient";
 import { getActiveStorageProfileOrNull } from "../../storage/repositories/profileStorageRepository";
 import { getGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
@@ -121,6 +122,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
   }, [account.state, state]);
 
   useEffect(() => {
+    const materializedTransitionToken = accountRef.current.materializedAccountTransitionToken;
     const endGateTrace = beginStartupSpan("content_gate");
     const generation = ++bootstrapGeneration.current;
     const lease = captureActiveProfileStorageLease();
@@ -148,6 +150,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
       endGateTrace();
       if (timeoutId !== undefined) clearTimeout(timeoutId);
       setState(nextState);
+      if (materializedTransitionToken) accountRef.current.completeMaterializedAccountTransition(materializedTransitionToken);
       if (nextState.kind === "ready" && auditResetAwaitingBootstrap.current) {
         auditResetAwaitingBootstrap.current = false;
         setAuditResetReady(true);
@@ -163,6 +166,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
         phase: currentPhase,
         reason: preparationTimeoutReason(currentPhase),
       });
+      if (materializedTransitionToken) accountRef.current.completeMaterializedAccountTransition(materializedTransitionToken);
     }, CONTENT_PREPARATION_TIMEOUT_MS);
 
     void (async () => {
@@ -355,7 +359,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
   const body = state.kind === "ready" || state.kind === "home_ready_resume_unavailable"
     ? readyShell
     : state.kind === "loading"
-      ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.preparing(state.phase)}><Screen edges={["top", "bottom"]}><ContentBootstrapLoadingSkeleton phase={state.phase} /></Screen></View>
+      ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.preparing(state.phase)}><Screen edges={["top", "bottom"]}>{account.isMaterializedAccountTransition ? <AccountProfileTransitionLoadingState /> : <ContentBootstrapLoadingSkeleton phase={state.phase} />}</Screen></View>
       : state.kind === "content_identity_unavailable"
         ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailableActive()}><Screen>
             <EmptyState

@@ -1,0 +1,15 @@
+appId: com.lkurczab.patternly
+name: Guest signup - selected choice to Home
+# Precondition: adoption preview, choice already set and read back by native probe.
+---
+- tapOn:
+    id: account-entry-continue
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home|patternly:home:select-track:root"
+    timeout: 30000
+- assertNotVisible:
+    id: account-email
+- assertNotVisible:
+    id: account-entry-choice
+- takeScreenshot: account-home

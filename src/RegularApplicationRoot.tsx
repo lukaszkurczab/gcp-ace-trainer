@@ -12,6 +12,7 @@ import { PatternlyAccountProvider, usePatternlyAccount } from "./application/acc
 import { ProfileStoragePreparationGate } from "./application/account/ProfileStoragePreparationGate";
 import { RetiredAccountSecretsCleanupHost } from "./application/account/RetiredAccountSecretsCleanupHost";
 import { AccountForegroundRefreshSidecar } from "./application/account/AccountForegroundRefreshSidecar";
+import { AccountProfileTransitionLoadingState } from "./application/account/AccountProfileTransitionLoadingState";
 import { Q13StorageReceiptHost } from "./application/runtimeAuditability/Q13StorageReceiptHost";
 import { AndroidClockProbeHost } from "./application/runtimeAuditability/AndroidClockProbeHost";
 import { Button, LoadingState, Screen } from "./components";
@@ -46,14 +47,14 @@ function AppContent() {
 
 function AppNavigation() {
   const preferences = useAppPreferences();
-  const { state } = usePatternlyAccount();
+  const { state, isMaterializedAccountTransition } = usePatternlyAccount();
   const profileTransition = useSyncExternalStore(onProfileTransitionChanged, isProfileTransitionActive, () => false);
   const navigationTheme = buildNavigationTheme(preferences.colors, preferences.colorMode);
   const sessionKey = state.kind === "authenticated" || state.kind === "guest" || state.kind === "localOffline" || state.kind === "signingOut" || state.kind === "deleting"
     ? "application-session"
     : "account-entry";
 
-  if (profileTransition) return <ProfileTransitionSurface />;
+  if (profileTransition) return isMaterializedAccountTransition ? <MaterializedAccountTransitionSurface /> : <ProfileTransitionSurface />;
 
   return (
     <NavigationContainer key={sessionKey} theme={navigationTheme}>
@@ -61,6 +62,10 @@ function AppNavigation() {
       <RootNavigator />
     </NavigationContainer>
   );
+}
+
+function MaterializedAccountTransitionSurface() {
+  return <Screen><AccountProfileTransitionLoadingState /></Screen>;
 }
 
 function ProfileTransitionSurface() {
