@@ -949,8 +949,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/progress/store.ts": {
-      "description": "Trwała synchronizacja rekordów i rewizji w Firestore. Mieszany replay waliduje parę cel–plan z nowych zapisów i aktualnego counterpartu; pełne historyczne receipts i replay całego batcha zachowują wcześniejszy wynik. Staged adoption rozstrzyga klucze pary cel–plan wyłącznie w pętli grup: keep_account zachowuje konto, a keep_guest kolejkuje każdą rzeczywistą zmianę raz; niegrupowane rekordy przechodzą osobno. readPage pomija query tylko po zgodności dokładnego snapshotToken lub scope+rewizji, zachowując oba pre/post getAll i odmowy. applyBatch wylicza opt-in proof tylko w udanej świeżej próbie transakcji z jej konta/auth/aktywnej generacji; zapisany result receipt i replay pozostają bez proof. Wznowienie staged adoption wymaga ścisłych liczników zgodnych z obecną materializacją i uchwyconym źródłem; kontrola poprzedza zapisy i wraca przy odczytach transakcyjnych. Niezgodny stary checkpoint otrzymuje istniejący409 bez odnowienia lease; completed replay pozostaje historią.",
-      "reviewedHash": "5315aad9ebe9ef5d1c6e99a2b98e927e270058acc05dbf8f17db0b9192ce0706",
+      "description": "Trwała synchronizacja rekordów i rewizji w Firestore. Mieszany replay waliduje parę cel–plan z nowych zapisów i aktualnego counterpartu; pełne historyczne receipts i replay całego batcha zachowują wcześniejszy wynik. Staged adoption rozstrzyga klucze pary cel–plan wyłącznie w pętli grup: keep_account zachowuje konto, a keep_guest kolejkuje każdą rzeczywistą zmianę raz; niegrupowane rekordy przechodzą osobno. readPage pomija query tylko po zgodności dokładnego snapshotToken lub scope+rewizji, zachowując oba pre/post getAll i odmowy. applyBatch wylicza opt-in proof tylko w udanej świeżej próbie transakcji z jej konta/auth/aktywnej generacji; zapisany result receipt i replay pozostają bez proof. Wznowienie staged adoption wymaga ścisłych liczników zgodnych z obecną materializacją i uchwyconym źródłem; kontrola poprzedza zapisy i wraca przy odczytach transakcyjnych. Niezgodny stary checkpoint otrzymuje istniejący409 bez odnowienia lease; completed replay pozostaje historią. Korekta retencji22.10: nowo materializowane targetrecords nie mają expiresAt (także w byteestimate), sourceTTL i pierwotny buildingparentdeadline zachowane; promocja atomowo usuwa termin rodzica. Existingbuildingstate/metadatafences współpracują z cleanupclaim purging. Nie naprawia legacyexpiry lub osieroconych danych.",
+      "reviewedHash": "898d81e3a165442632cd0d8d22da8740bbf953a1ea35f881dfc24a7c30bd3f17",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/users/merge.ts": {
@@ -989,8 +989,8 @@
       "flow": "Premium i zakup"
     },
     "patternly-backend/src/modules/retention-purge/service.ts": {
-      "description": "Wykonuje usuwanie rekordów zgodnie z polityką retencji; nie uruchamiaj jako zwykłego testu audytu.",
-      "reviewedHash": "4fbd6021c605f55c8fef8ab3b2060e48633b30606606a7dfaebeedd1a013c3a0",
+      "description": "Istniejący jawny boundedpurge obejmuje reports/audits, purchasecompaction i wygasłe nieaktywne generacje adopcji. Exactparent/metadata/allocationcounter/lease/childidentity są sprawdzane transakcyjnie; jednorazowyclaim purging bez nowejlease, strony do200, wspólny budżet i parentlast. Unknown/nested/missingrecorddescendants zachowująfence/unresolved; dryrun bez zapisów. Nie uruchamiać jako zwykłego audytu; providerparentTTL wymaga osobnego wyłączenia przed nowymwriterdeployem.",
+      "reviewedHash": "d9e8207b8985090136c316f34389eb95ba385276c6cbdc833f13579dfae7b392",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-content/scripts/build.mjs": {
@@ -1244,8 +1244,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/premium/PremiumPurchaseScreen.tsx": {
-      "description": "Zakup i restore Premium oraz jawna dostępność sklepu.",
-      "reviewedHash": "eab5ab592c8df15b4f17a2c2445f87bcba304115a6c75548b4d3d3783b1b9088",
+      "description": "Zakup i restore Premium oraz jawna dostępność sklepu. Nieautoryzowany lokalny Gość ma istniejące przejście do AccountEntry opisane signedOutAccount; zmiana etykiety nie zmienia dostępu lub dopuszczenia zakupu. Równoległy WIP opisany statycznie, bez odbioru tego zakresu produktu.",
+      "reviewedHash": "499b260cf230a159b5bb55d049d7976bdc1d6915e48b1e6ada2b620abaab8d38",
       "flow": "Premium i zakup"
     },
     "patternly/src/infrastructure/runtime/EnvironmentGate.tsx": {
@@ -1857,9 +1857,9 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly-web/scripts/verify-production.mjs": {
-      "description": "Weryfikuje istniejący produkcyjny dist z rzeczywistym zatwierdzonym eksportem: manifest SHA256 wszystkich plików, komplet publicznych tras bez JS, canonical i języki, brak placeholderów/admin/intake, demo i hydratacja locale w Operze. Rozróżnia local-production, firebase-hosting-production oraz remote-production wyłącznie dla patternly.it; tylko ten ostatni sprawdza HTTP/www do kanonicznego HTTPS. Dla Hosting respektuje cleanUrls. Zapisuje prywatny receipt i screenshoty, sprawdza niezmienność dist i nie wdraża.",
-      "flow": "Witryna, demo i panel",
-      "reviewedHash": "6196013748e83914d1a403ea113850a4a045e0c7eaa72b89cc37c96e6cc68a7c"
+      "description": "Weryfikuje istniejący produkcyjny dist lub jawny oddzielny kandydat przez PATTERNLY_PRODUCTION_BUILD_DIR: realpath odmawia repo/przodka, remote+kandydat i nakładania dowodów. Ten sam buildRoot zasila preview i manifest przed/po; rzeczywisty APPROVED/rawSHA/fingerprint, trasy/noJS/demo/locale i originy remote pozostają. Zapisuje prywatny receipt; nie buduje ani nie wdraża.",
+      "reviewedHash": "9ce174dcda83eb64618140bbf3e993860ae2cbce522c289a613daad1e828308b",
+      "flow": "Witryna, demo i panel"
     },
     "patternly/src/infrastructure/security/retiredAccountSecrets.ts": {
       "description": "Sprząta dokładne dawne sloty urządzenia bez odczytu sekretu operacji lub wywołań API. Schowek czyści dopiero po terminie i zgodności digestu istniejącego markera; brak native modułu lub błąd daje pending/retry. Nie tworzy kodów ani markerów.",
@@ -1965,6 +1965,16 @@
       "description": "Testy usługi cyklu konta na profilach pamięciowych i kontrolowanym API: adopcja, ACK, durable conflict/rebase/whole-pair choice i recovery. Osobny przypadek zmienionej pary oraz jednego innego konfliktowego pending target sprawdza inspect unsupported_changes i odmowę wyboru przed lokalną mutacją; kontroluje envelope, outbox, ACK, journal i surowe bajty profilu. Nie jest dowodem HTTP lub native.",
       "flow": "Konto, Gość i synchronizacja",
       "reviewedHash": "7df24a1b6ada847b83f675970a72400a23d05509135b8192ed22de765673fa6d"
+    },
+    "patternly-web/scripts/qa/production-mobile-lab.mjs": {
+      "description": "Po matching local-production PASS i dokładnym manifeście oddzielnego kandydata zapisuje sześć zimnych obserwacji mobilnego profilu Opery z CPU4× i jawną siecią. Surowe LCP/navigation/layout-shift mają stałe10s okno po load; to nie INP/p75/fieldCLS/CrUX lub fizyczny telefon. Wyjście musi być poza repo/kandydatem; skrypt nie buduje i nie publikuje.",
+      "reviewedHash": "3a3de516cb54411d298331204f7df2d6f9bc20ec229cca48f9c179b0be73e712",
+      "flow": "Witryna, demo i panel"
+    },
+    "patternly/src/application/learningPlan/progressReadProjection.ts": {
+      "description": "Projektuje kanoniczne evidence do wspólnego Progress. GCP wylicza domeny tylko z bieżącego pytania po exact track/contentVersion/artifactSha256; mapuje cztery contentDomainId do istniejących metadanych. Saved cloud-domain refs nie nadpisują źródła, historyczne piny nie dostają domeny przez aktualnyQID; correct zwiększa correct, partial/incorrect tylko total. Metryki/review i pozostałe ścieżki zachowują swoich właścicieli; odczyt nie mutuje historii.",
+      "reviewedHash": "ea38b0bdd82d9813517fcff158ca951e32c20d01e582e4fc58f280d01900464a",
+      "flow": "Cel, plan i postęp"
     }
   },
   "flows": [
@@ -1977,7 +1987,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "931e2b3794c221d1a5f41c6a647509aff069c16425564f756ed7a0f5de614d93"
+      "reviewedDigest": "51d04b2dee790df2c5a4c7344cc7952b4f4ea8c758cac62ad28a6c2a9127bbf6"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -1989,7 +1999,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "14d55b5e0bca0fd70897434b294f13220d11f205086a50544fbb6973e3cc5602"
+      "reviewedDigest": "9145faf0f35f2e024732efba49f56046aea8e2190562520e712d4f8ac51f0893"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -2026,7 +2036,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "806f01db6ff35ee3d9425d57577852372f3200a95892454a23236d0b65a3ff5d"
+      "reviewedDigest": "f46e66afb941dc1c0d42dc57597f9fc623fc19d1bcca09917b2586fcd0b31c85"
     },
     {
       "name": "Premium i zakup",
@@ -2037,7 +2047,7 @@
         "patternly-backend/src/modules/billing",
         "patternly-backend/src/modules/entitlements"
       ],
-      "reviewedDigest": "5a9a63a7df7d1e42defdb2073e6b386daacd487672b72b49a5446fbdd8782b5a"
+      "reviewedDigest": "3d8c60f6f2aff68c431a6ffac2548dd743fbc183be7817911bf59d6611a33e70"
     },
     {
       "name": "Dane, prywatność i zgłoszenia",
@@ -2050,7 +2060,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "3f29d519ef8e41ed9c3979569e4e7faf424d94de9ff7c630e79f358362694f92"
+      "reviewedDigest": "c59961b10adc72f5650527b0d42a78c76f8a24a5037134e199622f7a36cf00bd"
     },
     {
       "name": "Witryna, demo i panel",
@@ -2059,7 +2069,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "3389b91739d95444327042dd6f9a87d0c3b3efb2863b6dab77e738e8c3f478b3"
+      "reviewedDigest": "85cff3c01caff4a71cc84ba789b4a80331bb086009a5f99c4d8342fe9637d9dc"
     }
   ]
 }
