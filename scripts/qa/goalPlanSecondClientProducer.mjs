@@ -229,7 +229,7 @@ try {
   }
   const syncPlan = outboxState.syncPlan;
   assert.ok(syncPlan, "sync_plan_missing");
-  const batches = splitAccountSyncBatches({ entries: outboxState.outbox, expectedAccountRevision: input.accountRevision, sessionId: syncPlan.planId, highWatermark: syncPlan.highWatermark });
+  const batches = splitAccountSyncBatches({ entries: outboxState.outbox, expectedAccountRevision: input.accountRevision, sessionId: syncPlan.planId, highWatermark: syncPlan.highWatermark }, productionLearningDataAdmissionContext);
   assert.equal(batches.length, 1, "goal_plan_split_across_batches");
   assert.equal(batches[0].length, 2, "unexpected_batch_size");
   const request = Object.freeze({
