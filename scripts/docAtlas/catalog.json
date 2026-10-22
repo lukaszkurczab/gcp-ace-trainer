@@ -904,13 +904,13 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly-backend/src/api/app.ts": {
-      "description": "Rejestruje endpointy i ich guardy. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; obie ścieżki używają tych samych odmów konta/autoryzacji. Opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK; brak opt-in zachowuje kształt starszego kontraktu. Sześć tras Recovery Codes wyrejestrowano, bez handlera zgodności lub flagi.",
-      "reviewedHash": "9e35e6458457666ff2fe581fe30f8a9ea61b9103371cf21c457069d7df0b33d4",
+      "description": "Rejestruje endpointy i ich guardy. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; obie ścieżki używają tych samych odmów konta/autoryzacji. Opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK; brak opt-in zachowuje kształt starszego kontraktu. Sześć tras Recovery Codes wyrejestrowano, bez handlera zgodności lub flagi. Operatorowy receipt-reconciliation jest backend-only: osobny purchase_receipts:reconcile, domyślny readonlypreview, explicitaccepted-onlyapply bez dispatchera/SMTP. Scope Firebaseconfig/RCmap sprawdzany przed store; actor pochodzi z OIDC, odpowiedzi private,no-store.",
+      "reviewedHash": "f6014d5c63ee052a85e4ea9f63570672ace5a241cb862c315d3e407b864f47c3",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi.ts": {
-      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Progress opisuje snapshotScope/snapshotToken oraz warunkową kontrolę rewizji. Sync dokumentuje opcjonalny proof ze świeżej transakcji i jego brak w historycznym replay/duplicates; nie zmienia trwałych receipts. Kontrakt nie zawiera tras i schematów Recovery Codes.",
-      "reviewedHash": "4592d9e5cedf668f55f334eaca9800e546a0e3d7abd7aa79c3c8ed361aa4d157",
+      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Progress opisuje snapshotScope/snapshotToken oraz warunkową kontrolę rewizji. Sync dokumentuje opcjonalny proof ze świeżej transakcji i jego brak w historycznym replay/duplicates; nie zmienia trwałych receipts. Kontrakt nie zawiera tras i schematów Recovery Codes. Dokumentuje operator receipt-reconciliation: strict request/response, purpose, preview/apply/fingerprint i accepted-only attestation; nie jest providerproof lub aktywacją uprawnień.",
+      "reviewedHash": "e5c98ddb92bba8b9ad8d96fa9709d5800c760c7a835014146b8ec267390ed21b",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi-validator.ts": {
@@ -979,8 +979,8 @@
       "flow": "Treść od producenta do sesji"
     },
     "patternly-backend/src/modules/billing/revenuecatWebhookStore.ts": {
-      "description": "Trwały stan webhooka i wysyłki potwierdzenia; idempotencja oddziela odbiór zdarzenia od skutku dostawcy.",
-      "reviewedHash": "ba9cc727d48254d5712b6eee0523b34aa897dbdd5e655f1541895873e496221e",
+      "description": "Trwały stan webhooka i wysyłki potwierdzenia; idempotencja oddziela odbiór zdarzenia od skutku dostawcy. Accepted-only reconcileReceipt wiąże exactfact/receipt/attempt/confirmation/currentauth oraz pełnyconfigscope. FreshtransactionCAS i boundedmetadata na istniejącej próbie zapewniają sameoperationreplay przed własnym staleCAS; changedpayloadconflict, already_sent osobno. Explicitoperatorattestation nie weryfikuje providera. Nie wywołuje SMTP/claim/resend, nie ustawia failed/ready ani fikcyjnego deliveredAt.",
+      "reviewedHash": "2374258d3dc56b575acce60ddc2f9a744e4e849368f3b1e7097bb8eefa57d8e2",
       "flow": "Premium i zakup"
     },
     "patternly-backend/src/modules/billing/purchaseReceiptDispatcher.ts": {
@@ -1975,6 +1975,16 @@
       "description": "Projektuje kanoniczne evidence do wspólnego Progress. GCP wylicza domeny tylko z bieżącego pytania po exact track/contentVersion/artifactSha256; mapuje cztery contentDomainId do istniejących metadanych. Saved cloud-domain refs nie nadpisują źródła, historyczne piny nie dostają domeny przez aktualnyQID; correct zwiększa correct, partial/incorrect tylko total. Metryki/review i pozostałe ścieżki zachowują swoich właścicieli; odczyt nie mutuje historii.",
       "reviewedHash": "ea38b0bdd82d9813517fcff158ca951e32c20d01e582e4fc58f280d01900464a",
       "flow": "Cel, plan i postęp"
+    },
+    "patternly-backend/src/modules/legal-requests/store.ts": {
+      "description": "Obsługuje sprawy prawne. Active receivednotice wysyła raz po istniejącym create, rozdziela typeddefiniterefusal od unknown. Finalizacja exactrequest/user/email/kind/Timestamps w świeżej transakcji zmienia tylko pending i confirmationfields; ważne sent jest monotoniczne. Po niepotwierdzonym zapisie najwyżej jeden fencedreadback, bez odtworzenia brakującego rekordu lub powtórzenia SMTP. DTO/review/retention i dormantanswer zachowane.",
+      "reviewedHash": "13dcdc2fc33322d63710cf4f190440a4a53611d22eaaf9e7109976963390da78",
+      "flow": "Dane, prywatność i zgłoszenia"
+    },
+    "patternly-backend/src/infrastructure/email/smtpPrivacyEmailSender.ts": {
+      "description": "Transport istniejących odrębnych celów. Receivedlegal: oczekiwany odbiorca przyjęty bez sprzecznej odmowy oznacza acceptance, jawnieodrzucony bezacceptance daje domenowy typederror, niejasny/konfliktowy wynik unknown. Mały prywatny predicate4xx/5xxMAIL/RCPT/DATA współdzieli wyłącznie z istniejącą klasyfikacją purchase bez zmiany jej kontraktu; answered/privacy/security zachowują własne ścieżki. To SMTPacceptance, nie inboxproof.",
+      "reviewedHash": "dc166d2251be74034e63049ec7f82e4d1ddf804cc17ebbdeef2afd9c6c3475f8",
+      "flow": "Dane, prywatność i zgłoszenia"
     }
   },
   "flows": [
@@ -1999,7 +2009,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "9145faf0f35f2e024732efba49f56046aea8e2190562520e712d4f8ac51f0893"
+      "reviewedDigest": "9ff3f101847c11933e618bd74e9f6e59c28e8e3b3839b00c657ca73874e04870"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -2047,7 +2057,7 @@
         "patternly-backend/src/modules/billing",
         "patternly-backend/src/modules/entitlements"
       ],
-      "reviewedDigest": "3d8c60f6f2aff68c431a6ffac2548dd743fbc183be7817911bf59d6611a33e70"
+      "reviewedDigest": "4ee6b07c14b802addb2e714080e63091ffa1a9b5d4fa53aa86ba84171b0567b3"
     },
     {
       "name": "Dane, prywatność i zgłoszenia",
@@ -2060,7 +2070,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "c59961b10adc72f5650527b0d42a78c76f8a24a5037134e199622f7a36cf00bd"
+      "reviewedDigest": "294149577d1d0c4f56d6de05c59fd09d29507ef2057f67c498c5d8582faec26b"
     },
     {
       "name": "Witryna, demo i panel",
