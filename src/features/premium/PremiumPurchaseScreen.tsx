@@ -219,7 +219,7 @@ export function PremiumPurchaseView({ navigation, accountKind, hasCurrentLegalAc
 
       <Button onPress={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE)} testID="premium-terms" variant="ghost">{legalText("termsLink")}</Button>
       <Button onPress={() => navigation.navigate(ROUTES.PRIVACY_POLICY)} testID="premium-privacy" variant="ghost">{legalText("privacyLink")}</Button>
-      {!isAuthenticated && !isLocalOfflineAccount ? <Button onPress={() => navigation.navigate(ROUTES.ACCOUNT_ENTRY)} testID="premium-account-entry" variant="secondary">{t("premiumAccountRequired")}</Button> : null}
+      {!isAuthenticated && !isLocalOfflineAccount ? <Button onPress={() => navigation.navigate(ROUTES.ACCOUNT_ENTRY)} testID="premium-account-entry" variant="secondary">{t("signedOutAccount")}</Button> : null}
       {isAuthenticated && purchaseState.access !== "verified" && !purchaseState.storeActive ? <Button disabled={!purchaseEnabled || !hasServiceScope} loading={busy === "purchase"} onPress={() => onAction("purchase")} testID="premium-purchase">{price ? t("premiumPurchaseFor", { price }) : t("premiumPurchase")}</Button> : null}
       {isAuthenticated && serviceAvailable ? <Button disabled={busy !== null} onPress={onRefresh} testID="premium-refresh" variant="ghost">{t("premiumRefresh")}</Button> : null}
 

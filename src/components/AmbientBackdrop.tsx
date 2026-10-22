@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AccessibilityInfo, Animated, Easing, StyleSheet, View, useWindowDimensions } from "react-native";
+import { AccessibilityInfo, Animated, AppState, Easing, StyleSheet, View, useWindowDimensions, type AppStateStatus } from "react-native";
 import Svg, { Polyline } from "react-native-svg";
 
 import { useThemedStyles } from "../preferences/appPreferencesContext";
@@ -41,6 +41,12 @@ function AuthAmbientBackdrop({ transparent = false }: Readonly<{ transparent?: b
   const styles = useThemedStyles(createStyles);
   const { height, width } = useWindowDimensions();
   const reduceMotion = useReducedMotion();
+  const [appState, setAppState] = useState<AppStateStatus | null>(AppState.currentState);
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", setAppState);
+    return () => subscription.remove();
+  }, []);
+  const shouldAnimate = appState === "active" && reduceMotion === false;
   const variant = useMemo(() => ROUTE_VARIANTS[randomIndex(ROUTE_VARIANTS.length)]!, []);
   const routes = useMemo(() => variant.map((index) => measureRoute(AUTH_ROUTES[index]!, width, height)), [height, variant, width]);
   const [routeIndex, setRouteIndex] = useState(() => randomRouteIndex());
@@ -50,7 +56,7 @@ function AuthAmbientBackdrop({ transparent = false }: Readonly<{ transparent?: b
   const routeIndexRef = useRef(routeIndex);
 
   useEffect(() => {
-    if (reduceMotion !== false) {
+    if (!shouldAnimate) {
       animationRef.current?.stop();
       progress.setValue(0);
       opacity.setValue(0);
@@ -62,15 +68,11 @@ function AuthAmbientBackdrop({ transparent = false }: Readonly<{ transparent?: b
       const traversal = randomBetween(2000, 2900);
       progress.setValue(0);
       opacity.setValue(0);
-      const animation = Animated.sequence([
-        Animated.delay(gap),
-        Animated.parallel([
-          Animated.timing(progress, { duration: traversal, easing: Easing.inOut(Easing.sin), toValue: 1, useNativeDriver: true }),
-          Animated.sequence([
-            Animated.timing(opacity, { duration: 180, toValue: 1, useNativeDriver: true }),
-            Animated.delay(traversal - 480),
-            Animated.timing(opacity, { duration: 300, toValue: 0, useNativeDriver: true }),
-          ]),
+      const animation = Animated.parallel([
+        Animated.timing(progress, { delay: gap, duration: traversal, easing: Easing.inOut(Easing.sin), isInteraction: false, toValue: 1, useNativeDriver: true }),
+        Animated.sequence([
+          Animated.timing(opacity, { delay: gap, duration: 180, isInteraction: false, toValue: 1, useNativeDriver: true }),
+          Animated.timing(opacity, { delay: traversal - 480, duration: 300, isInteraction: false, toValue: 0, useNativeDriver: true }),
         ]),
       ]);
       animationRef.current = animation;
@@ -83,7 +85,7 @@ function AuthAmbientBackdrop({ transparent = false }: Readonly<{ transparent?: b
     };
     runNext();
     return () => { cancelled = true; animationRef.current?.stop(); };
-  }, [opacity, progress, reduceMotion]);
+  }, [opacity, progress, shouldAnimate]);
 
   const activeRoute = routes[routeIndex]!;
   return (
@@ -93,7 +95,7 @@ function AuthAmbientBackdrop({ transparent = false }: Readonly<{ transparent?: b
           <Polyline fill="none" key={route.id} points={route.points.map((point) => `${point.x},${point.y}`).join(" ")} stroke={styles.authRoute.color} strokeLinejoin="round" strokeWidth={1} />
         ))}
       </Svg>
-      {reduceMotion === false ? <RouteSignal opacity={opacity} progress={progress} route={activeRoute} /> : null}
+      {shouldAnimate ? <RouteSignal opacity={opacity} progress={progress} route={activeRoute} /> : null}
     </View>
   );
 }
@@ -158,8 +160,14 @@ function useReducedMotion(): boolean | null {
   const [reduceMotion, setReduceMotion] = useState<boolean | null>(null);
   useEffect(() => {
     let subscribed = true;
-    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => { if (subscribed) setReduceMotion(enabled); });
-    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduceMotion);
+    let observedEvent = false;
+    void AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => { if (subscribed && !observedEvent) setReduceMotion(enabled); })
+      .catch(() => { /* Keep the static backdrop when the accessibility setting is unavailable. */ });
+    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => {
+      observedEvent = true;
+      if (subscribed) setReduceMotion(enabled);
+    });
     return () => { subscribed = false; subscription.remove(); };
   }, []);
   return reduceMotion;

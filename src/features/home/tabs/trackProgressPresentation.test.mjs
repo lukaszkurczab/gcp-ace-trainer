@@ -11,13 +11,29 @@ const { runtimeSelectors } = require('../../../testing/runtimeSelectors.ts');
 const Progress = subject('src/features/home/tabs/ProgressTab.tsx', 'ProgressTab', {
   ...Object.fromEntries(['View', 'Text', 'Button', 'Pressable', 'Icon', 'Card', 'ProgressPlanSection', 'ActivitySection'].map(name => [name, name])),
   useThemedStyles: () => ({}), createStyles: () => ({}), useAppPreferences: () => ({ colors: {}, locale: 'en' }), useState: () => [false, () => {}],
-  useTranslation: () => ({ t: value => value }), presentProgressEvidence, runtimeSelectors, buildProgressPlanPresentationModel: () => ({ kind: 'unavailable' }),
+  useTranslation: () => ({ t: value => value }), presentProgressEvidence, runtimeSelectors, buildProgressPlanPresentationModel: ({ snapshot }) => snapshot ?? ({ kind: 'unavailable' }),
 });
 const claude = 'claude-certified-architect-professional-certification';
 const gcp = 'google-cloud-associate-cloud-engineer';
 const project = (trackId, activityRecords = []) => projectProgressEvidence({ activeTrackId: trackId, activityRecords, trainingAttempts: [], reviewQueueItems: [], now: '2026-10-15T12:00:00.000Z' });
 function text(tree) { return nodes(tree).filter(node => ['Text', 'Button'].includes(node.type)).flatMap(node => node.props.children).filter(value => typeof value === 'string').join(' '); }
 const render = (trackId, evidence, onProgressAction = () => {}) => Progress({ activeTrack: getTrackDisplay(trackId), evidence, activityRecords: [], onProgressAction, onOpenPractice: () => {} });
+
+test('goal setup has one entry when plan guidance owns it and retains the fallback otherwise', async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const invoked = [];
+  const props = { activeTrack: getTrackDisplay(gcp), evidence: project(gcp), activityRecords: [], onOpenGoal: () => invoked.push('goal') };
+  const homePlan = { kind: 'none', primaryAction: { kind: 'set_goal', destination: 'GoalCadence' } };
+  const guidanceTree = Progress({ ...props, homePlan, onHomePlanAction: () => {} });
+  assert.equal(nodes(guidanceTree).filter(node => node.props.testID === runtimeSelectors.progress.goal()).length, 0);
+  assert.ok(nodes(guidanceTree).some(node => node.type === 'ProgressPlanSection' && node.props.onAction));
+  for (const values of [{ homePlan }, { onHomePlanAction: () => {} }, { homePlan: { kind: 'ready', primaryAction: null }, onHomePlanAction: () => {} }]) {
+    const fallback = nodes(Progress({ ...props, ...values })).find(node => node.props.testID === runtimeSelectors.progress.goal());
+    assert.ok(fallback, 'goal remains reachable without usable setup guidance');
+    fallback.props.onPress();
+  }
+  assert.equal(invoked.length, 3);
+});
 
 test('all nine empty Progress screens consume their projected copy and action config', async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();

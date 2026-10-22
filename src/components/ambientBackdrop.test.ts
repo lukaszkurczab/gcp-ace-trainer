@@ -61,7 +61,7 @@ test("ambient keeps randomized routes and signals without rectangular glow layer
   assert.match(backdrop, /<RouteSignal opacity=\{opacity\} progress=\{progress\} route=\{activeRoute\}/);
   assert.match(backdrop, /TRAIL_OFFSETS\.map/);
   assert.match(backdrop, /AccessibilityInfo\.isReduceMotionEnabled\(\)/);
-  assert.match(backdrop, /reduceMotion === false \? <RouteSignal/);
+  assert.match(backdrop, /shouldAnimate \? <RouteSignal/);
   assert.match(backdrop, /pointerEvents="none"/);
   assert.match(backdrop, /importantForAccessibility="no-hide-descendants"/);
   assert.doesNotMatch(backdrop, /RadialGradient|<Rect|Topography/);

@@ -138,6 +138,7 @@ export function ProgressTab({
   const model = presentProgressEvidence(evidence, { activeTrackId: activeTrack.id, activityRecords }, evidence.capturedAt);
   const focus = model.algorithmsProgress?.currentFocus;
   const planPresentation = buildProgressPlanPresentationModel({ snapshot: homePlan, activeTrackId: activeTrack.id, locale });
+  const planOffersGoalSetup = Boolean(onHomePlanAction) && planPresentation.kind !== "unavailable" && planPresentation.primaryAction?.kind === "set_goal";
   const focusTitle = focus?.title ?? model.performanceScores[0]?.label ?? activeTrack.shortTitle;
   const focusDescription = focus ? undefined : model.performanceScores[0]?.description;
   const focusProgress = focus?.showProgress ? focus.progressPercent : model.performanceScores[0]?.percent ?? 0;
@@ -177,7 +178,7 @@ export function ProgressTab({
             </View>
           </View>
           {model.reviewQueueCount > 0 ? <Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(model.reviewQueueCopy, model.reviewQueueCopyParams)}</Text> : null}
-          {onOpenGoal ? <Pressable accessibilityRole="button" accessibilityLabel={t(goal ? "Manage learning goal" : "Set a learning goal")} onPress={onOpenGoal} style={({ pressed }) => [styles.weekGoalAction, pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.goal()}><Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(goal ? "Manage goal" : "Set a goal")}</Text></Pressable> : null}
+          {onOpenGoal && !planOffersGoalSetup ? <Pressable accessibilityRole="button" accessibilityLabel={t(goal ? "Manage learning goal" : "Set a learning goal")} onPress={onOpenGoal} style={({ pressed }) => [styles.weekGoalAction, pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.goal()}><Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(goal ? "Manage goal" : "Set a goal")}</Text></Pressable> : null}
         </Card>
       </View>
 

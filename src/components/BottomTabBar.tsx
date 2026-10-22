@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { radius, spacing, typography } from "../theme";
@@ -29,6 +29,7 @@ export function BottomTabBar<TId extends string>({
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
   const insets = useSafeAreaInsets();
+  const { fontScale } = useWindowDimensions();
 
   return (
     <View
@@ -65,6 +66,7 @@ export function BottomTabBar<TId extends string>({
               size={24}
             />
             <Text
+              key={fontScale}
               adjustsFontSizeToFit
               maxFontSizeMultiplier={2}
               numberOfLines={1}

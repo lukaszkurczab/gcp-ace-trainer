@@ -1,0 +1,45 @@
+appId: com.lkurczab.patternly
+name: Local practice entry for the selected track
+# Dedicated local test profile, English UI, selected TRACK_ID, no active session.
+# Creates and abandons only its own unanswered session. No purchases or resets.
+---
+- tapOn:
+    id: main-tab-bar-home
+- assertNotVisible:
+    id: "patternly:resume:card:.*"
+- tapOn:
+    id: main-tab-bar-practice
+- assertVisible:
+    id: patternly:practice:hub:root
+- tapOn:
+    id: patternly:practice:start-session
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:track:${TRACK_ID}"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:.*"
+- takeScreenshot: "${CAPTURE_PREFIX}-question"
+- tapOn:
+    id: "patternly:session:leave:.*"
+- assertVisible:
+    id: "patternly:session:abandon:.*"
+- tapOn:
+    id: "patternly:session:abandon:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root|patternly:summary:back-to-practice:.*"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "patternly:summary:back-to-practice:.*"
+    commands:
+      - takeScreenshot: "${CAPTURE_PREFIX}-unanswered-summary"
+      - tapOn:
+          id: "patternly:summary:back-to-practice:.*"
+- assertVisible:
+    id: patternly:practice:hub:root
+- tapOn:
+    id: main-tab-bar-home

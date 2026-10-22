@@ -1,0 +1,70 @@
+appId: com.lkurczab.patternly
+name: Local track navigation and practice setup
+# Existing local smoke app, English UI, idle guest, no active session.
+# Changes only the selected track. No answers, downloads, purchases or resets.
+# Pass TRACK_ID and a unique CAPTURE_PREFIX; caller restores the original track.
+---
+- tapOn:
+    id: main-tab-bar-home
+- tapOn:
+    id: patternly:home:change-track
+- repeat:
+    times: 3
+    commands:
+      - swipe:
+          direction: DOWN
+          duration: 300
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:select-track:${TRACK_ID}"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:home:select-track:${TRACK_ID}"
+- runFlow:
+    when:
+      visible:
+        id: patternly:home:select-track:continue
+    commands:
+      - tapOn:
+          id: patternly:home:select-track:continue
+- runFlow:
+    when:
+      visible:
+        id: patternly:home:select-track:root
+    commands:
+      - tapOn:
+          id: patternly:navigation:back
+- assertVisible:
+    id: main-tab-bar-home
+- takeScreenshot: "${CAPTURE_PREFIX}-home"
+- tapOn:
+    id: main-tab-bar-practice
+- assertVisible:
+    id: patternly:practice:hub:root
+- takeScreenshot: "${CAPTURE_PREFIX}-practice"
+- tapOn:
+    id: patternly:practice:open-setup
+- assertVisible:
+    id: patternly:practice:setup:root
+- takeScreenshot: "${CAPTURE_PREFIX}-setup"
+# Coding settings configure length/feedback; certification/design focus setup
+# also offers topic selection. Exercise only the controls exposed by that mode.
+- runFlow:
+    when:
+      visible:
+        id: patternly:practice:change-topic
+    commands:
+      - tapOn:
+          id: patternly:practice:change-topic
+      - assertVisible:
+          id: patternly:practice:topic-chooser:root
+      - takeScreenshot: "${CAPTURE_PREFIX}-topics"
+      - tapOn:
+          id: patternly:navigation:back
+      - assertVisible:
+          id: patternly:practice:setup:root
+- tapOn:
+    id: patternly:navigation:back
+- tapOn:
+    id: main-tab-bar-home

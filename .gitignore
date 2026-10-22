@@ -10,6 +10,8 @@ web-build/
 .maestro
 !.maestro/
 .maestro/*
+!.maestro/local-ui-track.yaml
+!.maestro/local-ui-practice-entry.yaml
 !.maestro/back-navigation-consistency.yaml
 !.maestro/practice-setup-topic-selection.yaml
 !.maestro/practice-setup-appearance.yaml
