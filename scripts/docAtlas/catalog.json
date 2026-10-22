@@ -1,6 +1,6 @@
 {
   "schemaVersion": "patternly-atlas-catalog-v1",
-  "date": "2026-10-20",
+  "date": "2026-10-22",
   "areas": [
     {
       "prefix": "patternly",
@@ -1039,9 +1039,9 @@
       "flow": "Witryna, demo i panel"
     },
     "patternly-web/src/pages/PublicPage.jsx": {
-      "description": "Publiczna prezentacja produktu: katalog, demo, obrazy aplikacji, FAQ i kontakt.",
-      "reviewedHash": "7d4d870ec5b0fb193db1791877429c6e97c26a50c823656f093403bb773ae5dd",
-      "flow": "Witryna, demo i panel"
+      "description": "Publiczna prezentacja produktu: katalog, demo, obrazy, FAQ i kontakt. FAQ obejmuje pierwszy pełny temat Free także w Design; pozostałe tematy i symulacje wymagają Premium. Dostępność zakupów ma osobny komunikat.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "3f329a653b18ac1a4627363325548b2fa767acdde081c8b0cdc44ca22948af76"
     },
     "patternly-web/src/pages/PublicTrackPage.jsx": {
       "description": "Publiczna strona tematyczna wybranej ścieżki z granicami oferty i odnośnikami.",
@@ -1049,9 +1049,9 @@
       "flow": "Witryna, demo i panel"
     },
     "patternly-web/src/publicTrackPages.js": {
-      "description": "Redakcyjna treść landingów; nie importuje pełnych banków pytań.",
-      "reviewedHash": "67d92df7fbfeea4eda771a455800fc268b1e1b4136957379c63fb0a1d2091a22",
-      "flow": "Witryna, demo i panel"
+      "description": "Redakcyjna treść trzech przewodników Coding, AWS i Claude przez wspólną projekcję stron. Claude opisuje metodę rozumowania i granicę proposed/executed action; bez importu banków, nowego demo lub deklaracji gotowości egzaminacyjnej.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "c355799ca0843e5f0f956b1d208e155c8e9ade84f8c8f99f919ffd2864bc7490"
     },
     "patternly-web/src/publicPages.js": {
       "description": "Wspólna projekcja publicznych URL dla prerenderu, metadanych i sitemap.",
@@ -1744,9 +1744,9 @@
       "reviewedHash": "28f04c989cd50457fdc27502b8d24efd923d82f06d716f2321a3ecb7e05ee249"
     },
     "patternly-web/.github/workflows/verify.yml": {
-      "description": "Weryfikuje WEB z przypiętymi zgodnymi wejściami APP/CONTENT w katalogach sąsiednich. Raportuje rzeczywiste HEAD/status trzech repo; przed buildem uruchamia canonical check i regresje current-source. Dalsze kroki sprawdzają lokalny build, testowy legal, panel oraz demo; testowy legal nie daje zgody na publikację.",
+      "description": "Weryfikuje WEB przy Node22.22.3 z przypiętymi zgodnymi wejściami APP6b1c23a5/CONTENT5155229. Raportuje HEAD/status, uruchamia canonical check i regresje current-source przed buildem. Testowy legal i lokalne wyniki nie oznaczają zatwierdzenia publikacji lub synchronizacji bieżącego CONTENT.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "5f08efa147f36bb93cf868a72072c0690930f4bdd086fbf4931324d616d2b6ac"
+      "reviewedHash": "74687300890a3914069bd58128a2fe0a3cf5cb4317dba6f3c52a55035dc60366"
     },
     "patternly-web/scripts/current-demo-contract.mjs": {
       "description": "Wspólny kontrakt verifiera i recordera: uruchamia rzeczywisty createPublicDemoCatalog producenta APP i porównuje pełny katalog z projekcją zwalidowanych bieżących źródeł, locków i puli Free. Dla obrazu odczytuje bank z historycznej rewizji APP wskazanej w manifeście, sprawdza jego SHA256 i pełną zgodność wybranego pytania z aktualnym źródłem CONTENT. Nie wymaga równości historycznego i bieżącego hasha całego banku.",
@@ -1764,14 +1764,14 @@
       "reviewedHash": "ac17bd9e168344f3cdf719ac2e230e69a135dc226fc6d6d68d9d00c600c7bea2"
     },
     "patternly-web/scripts/verify-demo-bundle.mjs": {
-      "description": "Sprawdza katalog rzeczywistym producentem current-source i zgodność historycznego pytania capture przez wspólny kontrakt. Weryfikuje metadane trzech próbek, hashe oraz dokładny spis obrazów dist. Kontroluje wystąpienia autorskiego tekstu dwóch interaktywnych pytań i projekcji Details, brak interaktywnego payloadu próbki obrazowej, starego SQL demo i wskazanych sygnatur pełnych banków.",
+      "description": "Kontroluje current-source/Free i zgodność historycznego pytania capture. W wybranym testowym output lub domyślnym dist sprawdza dwa interaktywne payloady/Details, trzy sampleidentity i dokładny spis/hash obrazu. Odrzuca payload próbki obrazowej, stare SQL demo i wskazane sygnatury pełnych banków; opcja output nie wyłącza guardów.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "a11722443ac2aa69d7c957c6ae06ae3cd6ef52cfb78d8d424d7949c580a89586"
+      "reviewedHash": "bc6cc20457d5fc278731ebac5aafebe28b157c7d101badab7b610c0e02f409a7"
     },
     "patternly-web/src/generated/demoQuestions.json": {
-      "description": "Wygenerowana przez APP projekcja current-source: dwa pytania interaktywne z autorskimi Details oraz publicSamples z ich metadanymi i trzecią próbką obrazową bez payloadu pytania. Provenance wskazuje bieżący sourceInputFingerprint, releaseId, hashe artefaktów i locków, źródło oraz tryby Free; obraz ma ścieżkę i SHA256. Nie zawiera pełnego banku ani ręcznego admission.",
+      "description": "Wygenerowana przez APP projekcja kanonicznego producenta dla zainstalowanego pakietu APP: dwa interaktywne pytania z Details i trzy publicSamples, w tym próbka obrazowa bez payloadu pytania. Provenance wiąże przypięte źródła zgodne z zainstalowanym pakietem APP, artefakty i releaseLock; korekta22.10 zmienia tylko pięć releaseLockSha256. Bez pełnych banków lub ręcznego admission.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "b57b7ceaee60cb8014262ee75bf390be15ac163a6f63f286e21dfed989c5c0ca"
+      "reviewedHash": "3354d3d4b4718b2e3e46de026617bdb3de0c270afe6fadc61a111ea785fcc207"
     },
     "patternly/scripts/runLocalProfile.mjs": {
       "description": "Uruchamia jawny lokalny profil, synchronizuje bieżące treści przed Expo i sprawdza emulator Auth. Smoke wymaga gotowej bazy, uwierzytelniania i czytnika uprawnień; dopuszcza wyłącznie jawne HTTP503/not_ready z contentPackages=false, informując o użyciu treści wbudowanych. Pełne HTTP200/ready wymaga wszystkich czterech kontroli; produkcyjny /ready bez zmian.",
@@ -1935,6 +1935,36 @@
       "description": "Sprawdza źródłowego kandydata 36 korekt feedback.reason OOD B03/B04: dokładne ID i klucze, odmowę skopiowanej opcji jako reason oraz istniejące APP catalog/scoring/option-order/feedback/presentation. Test przekazuje kandydata do tych konsumentów; nie potwierdza synchronizacji lub instalacji nowych danych OOD w APP.",
       "reviewedHash": "0f66b00f92c6340bf70713588375baa84a787e5bfe2d312b4a3d50944c90a155",
       "flow": "Treść od producenta do sesji"
+    },
+    "patternly/scripts/qa/goalPlanSecondClientProducer.mjs": {
+      "description": "Oddzielny klient QA: przyjmuje pełny zdalny snapshot, tworzy spójną parę celu/planu i kanoniczny batch przy jawnym kontekście admission. Korzysta z produkcyjnych właścicieli i prywatnego wejścia; nie dowodzi native runtime.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "c9a7d0ae3ebccfa42a3f5202a7c8a0d30f5bcd7bf002137eefd457fd041fab74"
+    },
+    "patternly-web/scripts/build-local.mjs": {
+      "description": "Buduje testowy legal z producenta APP po canonical demo check. Opcjonalny PATTERNLY_WEB_TEST_OUT_DIR rozwiązuje istniejące przodki/symlinki i odmawia katalogu wewnątrz repo lub obejmującego repo przed buildem; bez opcji używa zwykłego dist. Weryfikuje demo tego samego outputu i usuwa tymczasowy legal.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "8e932ed6681c14a8291dc6bc6679b235ef2e48ba0cd488b657e2cbdba37d6b3f"
+    },
+    "patternly-web/scripts/verify-local.mjs": {
+      "description": "Sprawdza render lokalnego testowego legal i metadata w wybranym testowym output albo domyślnym dist, w tym cztery marketingowe URL sitemap. Korzysta z istniejącego preview tego samego outputu; testowy legal nie oznacza zatwierdzenia źródła prawnego.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "e1d7a9b822cdb96c7c7b0fb3edc54e22470c66b18ab0c124567b95919d4dadf9"
+    },
+    "patternly-web/scripts/seo-content.browser.test.mjs": {
+      "description": "Testy rzeczywistej przeglądarki: crawl publicznych stron, trzy przewodniki, metadata, noJS, locale i brak błędów przy wybranym testowym output. Osobno sprawdzają odmowę ośmiu niebezpiecznych wariantów ścieżki output. Liczba zadeklarowanych przypadków nie jest dowodem ich wykonania.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "9a3c6ddd79b2da2393098708e1879e47679c934d098fea7118c592cdd9eebf09"
+    },
+    "patternly-backend/scripts/qa/sync-conflict-client.test.mjs": {
+      "description": "Dedykowane testy kontraktu synchronizacji: rzeczywisty store/HTTP/adapter, oddzielny jawnie wstrzykiwany błąd klasyfikacji oraz pary celu/planu przez aktywowany profil Memory. Deklarują jawny wybór całej pary, legalne dwa tombstones i lokalne usunięcie, zachowanie niezależnego outbox/ACK oraz retry identycznego batcha po rzeczywistym timeout odpowiedzi po zapisie. Lista przypadków nie jest wynikiem ich wykonania lub dowodem native.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "c66f465b61d3f62299e947a50bdbae2a809eaa487673af1947e703d71628cfba"
+    },
+    "patternly/src/application/account/accountLifecycle.test.ts": {
+      "description": "Testy usługi cyklu konta na profilach pamięciowych i kontrolowanym API: adopcja, ACK, durable conflict/rebase/whole-pair choice i recovery. Osobny przypadek zmienionej pary oraz jednego innego konfliktowego pending target sprawdza inspect unsupported_changes i odmowę wyboru przed lokalną mutacją; kontroluje envelope, outbox, ACK, journal i surowe bajty profilu. Nie jest dowodem HTTP lub native.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "7df24a1b6ada847b83f675970a72400a23d05509135b8192ed22de765673fa6d"
     }
   },
   "flows": [
@@ -1959,7 +1989,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "ddb3941ed528dfa1ddeaaf0776771c7899751f3a18c64a0390c697bfc7ca4e3b"
+      "reviewedDigest": "14d55b5e0bca0fd70897434b294f13220d11f205086a50544fbb6973e3cc5602"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -2029,7 +2059,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "094ef1f3ba19b2733e749c95ba6ae32780ea64280e9bdc351548fba25f6f9485"
+      "reviewedDigest": "3389b91739d95444327042dd6f9a87d0c3b3efb2863b6dab77e738e8c3f478b3"
     }
   ]
 }
