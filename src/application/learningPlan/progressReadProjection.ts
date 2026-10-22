@@ -8,7 +8,7 @@ import { buildCloudCertificationProgressViewModel, type CloudCertificationProgre
 import { projectLearningEvidence, type LearningEvidenceProjection } from "./learningEvidenceProjection";
 import { projectCodingProgress } from "../coding-interview/codingProgressProjection";
 import { LearningProjectionUnavailableError } from "../learningProjectionFailure";
-import type { ProgressEvidenceModel } from "./progressProjectionContracts";
+import type { ProgressEvidenceModel, ProgressTabPerformanceScore } from "./progressProjectionContracts";
 export * from "./progressProjectionContracts";
 
 export function projectProgressEvidence(input: Readonly<{ activeTrackId: TrackId; trainingAttempts: readonly TrainingAttempt[]; reviewQueueItems: readonly ReviewQueueEntry[]; activityRecords?: readonly ActivitySessionRecord[]; now: string }>): ProgressEvidenceModel {
@@ -18,7 +18,7 @@ export function projectProgressEvidence(input: Readonly<{ activeTrackId: TrackId
     const model = input.activeTrackId === CODING_INTERVIEW_TRACK_ID
       ? projectCodingProgress(track, evidence, input.now)
       : input.activeTrackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID
-        ? buildCloudProgressTabModel(buildCloudCertificationProgressViewModel({ attempts: evidence.attempts, reviewQueueItems: evidence.reviews, now: input.now, artifactSha256: track.artifactSha256 }))
+        ? buildCloudProgressTabModel(buildCloudCertificationProgressViewModel({ attempts: evidence.attempts, reviewQueueItems: evidence.reviews, now: input.now, artifactSha256: track.artifactSha256 }), projectGoogleCloudDomainPerformance(track, evidence.attempts))
         : buildInstalledPackageProgressTabModel(input.activeTrackId, track, evidence, input.now);
     const descriptor = findTrackDescriptor(input.activeTrackId);
     const performanceScores = model.performanceScores.map(score => {
@@ -85,8 +85,36 @@ function buildInstalledPackageProgressTabModel(
   };
 }
 
+// The current GCP package authors these four domains; presentation metadata uses
+// the corresponding semantic IDs. Historical refs are never remapped by QID.
+const GOOGLE_CLOUD_PROGRESS_DOMAINS = new Map([
+  ["gcp-ace-standard-domain-1", "setup_environment"],
+  ["gcp-ace-standard-domain-2", "planning_implementation"],
+  ["gcp-ace-standard-domain-3", "operations"],
+  ["gcp-ace-standard-domain-4", "access_security"],
+]);
+
+function projectGoogleCloudDomainPerformance(track: TrainingCatalog, attempts: readonly TrainingAttempt[]): ProgressTabPerformanceScore[] {
+  const scores = new Map<string, ProgressTabPerformanceScore>();
+  for (const attempt of attempts) {
+    if (track.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID || attempt.trackId !== track.trackId || attempt.item.trackId !== track.trackId
+      || attempt.item.contentVersion !== track.contentVersion || attempt.item.artifactSha256 !== track.artifactSha256) continue;
+    const question = track.getQuestion(attempt.item.questionId);
+    if (!question) throw new Error("Google Cloud progress item is absent from its verified package.");
+    const id = GOOGLE_CLOUD_PROGRESS_DOMAINS.get(question.contentDomainId ?? "");
+    if (!id) continue;
+    const score = scores.get(id) ?? { id, label: id, correct: 0, total: 0, percent: 0 };
+    score.total += 1;
+    if (attempt.result.kind === "correct") score.correct += 1;
+    scores.set(id, score);
+  }
+  return [...scores.values()].map(score => ({ ...score, percent: Math.round(score.correct / score.total * 100) }))
+    .sort((left, right) => left.percent - right.percent || right.total - left.total);
+}
+
 function buildCloudProgressTabModel(
   progress: CloudCertificationProgressViewModel,
+  performanceScores: ProgressTabPerformanceScore[],
 ): Omit<ProgressEvidenceModel, "identity" | "capturedAt" | "hasRecordedActivity" | "emptyState"> {
   return {
     hasData: progress.totalAttempts > 0,
@@ -108,19 +136,7 @@ function buildCloudProgressTabModel(
         value: progress.examAttemptCount,
       },
     ],
-    performanceScores: progress.taxonomyPerformance
-      .filter((score) => score.axisId === "cloud-domain" && score.totalAttempts > 0)
-      .map((score) => {
-
-        return {
-          correct: score.correctCount,
-          
-          id: score.nodeId,
-          label: score.nodeId,
-          percent: score.percent,
-          total: score.totalAttempts,
-        };
-      }),
+    performanceScores,
     performanceSectionTitle: "Performance by domain",
     reviewAction: progress.dueReviewCount + progress.manualReviewCount > 0 ? { kind: "canonicalReviewQueue" } : undefined,
     reviewActionEnabled: progress.dueReviewCount + progress.manualReviewCount > 0,
