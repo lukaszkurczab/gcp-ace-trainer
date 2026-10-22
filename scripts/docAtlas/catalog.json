@@ -1489,9 +1489,9 @@
       "reviewedHash": "9ec20949733406eebea3b0b47a00fceff6437cd4ff9b07a92eec06c1b2c2b821"
     },
     "patternly-backend/tests/firestore.emulator.test.ts": {
-      "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore. PAT-CODE-011 dodaje fizyczny readback staged drzewa, brakujących rodziców, blokadę complete/proof przy residualach, częściowy cleanup i retry/takeover z odmową staremu workerowi oraz konflikt accountId. PAT-CODE-012 rozdziela aktywny, prawidłowo wygasły oraz malformed tombstone; stary worker wywołuje obecny cleanup i rzeczywisty fence, z odmową oraz pełnym readback bez zmiany potomka, użytkownika i aktualnej operacji. Nie zmienia readera ani retencji. RC-DELETE-01 używa jawnej testowej fikstury braku klienta RC; produkcja nadal odmawia bez konfiguracji. Syntetyczne checkpointy po etapie RC mają jawne accepted przed testowanym cleanup. Kodowe scenariusze zastąpiono osobną negatywną kontrolą tras; wspólne usuwanie nadal obejmuje historyczne rekordy kodów.",
+      "description": "Regresje emulatora dla konta, generacji autoryzacji, danych i usuwania. Scenariusze potwierdzeń zakupu jawnie wstrzykują reader bez aktywnej subskrypcji; sprawdzają Terms, immediate-start i replay po zmianie generacji. Fixture origin produkcji używa spójnej mapy Premium. Nie jest to dowód zakupów u dostawcy ani backup restore. PAT-CODE-011 dodaje fizyczny readback staged drzewa, brakujących rodziców, blokadę complete/proof przy residualach, częściowy cleanup i retry/takeover z odmową staremu workerowi oraz konflikt accountId. PAT-CODE-012 rozdziela aktywny, prawidłowo wygasły oraz malformed tombstone; stary worker wywołuje obecny cleanup i rzeczywisty fence, z odmową oraz pełnym readback bez zmiany potomka, użytkownika i aktualnej operacji. Nie zmienia readera ani retencji. RC-DELETE-01 używa jawnej testowej fikstury braku klienta RC; produkcja nadal odmawia bez konfiguracji. Syntetyczne checkpointy po etapie RC mają jawne accepted przed testowanym cleanup. Kodowe scenariusze zastąpiono osobną negatywną kontrolą tras; wspólne usuwanie nadal obejmuje historyczne rekordy kodów. Test concurrent sync zachowuje dotychczasowe asercje; delegat rejestruje bezpieczną kategorię końcowego wyjątku, a tylko po nie200 wykonuje ograniczony readback przed cleanup. Sam opis testu nie potwierdza wykonania gałęzi awarii lub usunięcia niestabilności.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "2d097f9ce0e1474c0e26d78a6dea2fa2db2b9f9a0300870e533a9aee291e7bbc"
+      "reviewedHash": "6f1c8ccc480b9b1b6182fdbb3a1f6c6ce422f9e78b5f7a294710c77d15b8c5bb"
     },
     "patternly-backend/tests/fixtures/accountLifecycleCrashWorker.ts": {
       "description": "Worker IPC B4: przed initializeApp wymaga wspólnej konfiguracji demo/loopback oraz kanału IPC. Wykonuje rzeczywisty efekt Admin SDK revoke/deletion i zatrzymuje się po potwierdzeniu IPC przed finalizacją operacji, umożliwiając SIGKILL z parenta. RC-DELETE-01 używa jawnej testowej fikstury braku klienta RC; produkcja nadal odmawia bez konfiguracji.",
@@ -2070,7 +2070,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "294149577d1d0c4f56d6de05c59fd09d29507ef2057f67c498c5d8582faec26b"
+      "reviewedDigest": "5a1a01fd09efeb446351717bd73cf5669ad2cb7148ced2e0d9bb43f482cc9886"
     },
     {
       "name": "Witryna, demo i panel",

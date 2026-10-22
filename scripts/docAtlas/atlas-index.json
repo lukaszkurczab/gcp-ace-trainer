@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "90f0d82bead52526e8009359db79d8b35d26a926",
+      "head": "5e7df7d1a280a34a3fa38c861f60e798370fff09",
       "files": [
         {
           "path": ".easignore",
@@ -2845,8 +2845,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "c510c9b98b5954be7d5a0d73e8c4718c696609f8e8f465a14dea000ecf0069e0",
-          "bytes": 154300,
+          "sha256": "80d4d7cc7017ae34bc4395c93e4eb29344dfda265fe671bc2261df3edb9563af",
+          "bytes": 154568,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -69236,7 +69236,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "668dad8e792a0c462aaf15fd3624b61b71481291",
+      "head": "7ac2dfa8e18a698f337aa00193075c894dcaa98c",
       "files": [
         {
           "path": ".dockerignore",
@@ -76817,8 +76817,8 @@
         },
         {
           "path": "tests/firestore.emulator.test.ts",
-          "sha256": "2d097f9ce0e1474c0e26d78a6dea2fa2db2b9f9a0300870e533a9aee291e7bbc",
-          "bytes": 144320,
+          "sha256": "6f1c8ccc480b9b1b6182fdbb3a1f6c6ce422f9e78b5f7a294710c77d15b8c5bb",
+          "bytes": 148958,
           "symbols": [],
           "imports": [
             {
@@ -76858,88 +76858,94 @@
               "line": 6
             },
             {
-              "specifier": "firebase-admin/auth",
+              "specifier": "node:util",
               "kind": "static",
               "resolution": "external",
               "line": 7
             },
             {
-              "specifier": "firebase-admin/firestore",
+              "specifier": "firebase-admin/auth",
               "kind": "static",
               "resolution": "external",
               "line": 8
             },
             {
+              "specifier": "firebase-admin/firestore",
+              "kind": "static",
+              "resolution": "external",
+              "line": 9
+            },
+            {
               "specifier": "../src/api/app.js",
               "kind": "static",
               "target": "src/api/app.ts",
-              "line": 9
+              "line": 10
             },
             {
               "specifier": "../src/config/environment.js",
               "kind": "static",
               "target": "src/config/environment.ts",
-              "line": 10
+              "line": 11
             },
             {
               "specifier": "../src/infrastructure/firebase/verifier.js",
               "kind": "static",
               "target": "src/infrastructure/firebase/verifier.ts",
-              "line": 11
+              "line": 12
             },
             {
               "specifier": "../src/infrastructure/firestore/paths.js",
               "kind": "static",
               "target": "src/infrastructure/firestore/paths.ts",
-              "line": 12
+              "line": 13
             },
             {
               "specifier": "../src/infrastructure/time/utcCalendar.js",
               "kind": "static",
               "target": "src/infrastructure/time/utcCalendar.ts",
-              "line": 13
+              "line": 14
             },
             {
               "specifier": "../src/modules/content-reports/contracts.js",
               "kind": "static",
               "target": "src/modules/content-reports/contracts.ts",
-              "line": 14
+              "line": 15
             },
             {
               "specifier": "./revenueCatDeletionFixture.js",
               "kind": "static",
               "target": "tests/revenueCatDeletionFixture.ts",
-              "line": 15
+              "line": 16
             },
             {
               "specifier": "../src/infrastructure/security/pseudonymKeyRing.js",
               "kind": "static",
               "target": "src/infrastructure/security/pseudonymKeyRing.ts",
-              "line": 16
+              "line": 17
             },
             {
               "specifier": "../src/modules/users/merge.js",
               "kind": "static",
               "target": "src/modules/users/merge.ts",
-              "line": 17
+              "line": 18
             },
             {
               "specifier": "./support.js",
               "kind": "static",
               "target": "tests/support.ts",
-              "line": 18
+              "line": 19
             },
             {
               "specifier": "../src/infrastructure/firestore/stores.js",
               "kind": "type",
               "target": "src/infrastructure/firestore/stores.ts",
-              "line": 19
+              "line": 20
             },
             {
               "specifier": "../src/modules/legal-requests/store.js",
               "kind": "type",
               "target": "src/modules/legal-requests/store.ts",
-              "line": 339
+              "line": 340
             }
           ],
           "jsonKeys": [],
@@ -77004,7 +77010,7 @@
             "staged erasure resumes partial cleanup and rejects the old worker after fence takeover",
             "staged erasure refuses conflicting root ownership without changing its descendants"
           ],
-          "lines": 2144
+          "lines": 2205
         },
         {
           "path": "tests/fixtures/accountLifecycleCrashWorker.ts",
@@ -100251,7 +100257,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "c510c9b98b5954be7d5a0d73e8c4718c696609f8e8f465a14dea000ecf0069e0",
+  "catalogHash": "80d4d7cc7017ae34bc4395c93e4eb29344dfda265fe671bc2261df3edb9563af",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "2091842e327a9881fa436399f7cd34d75909cc9a33d4f9c8e0ba562931b6c824",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "d65c8a900b84d0ae1f7bb84bc25e6655d544cf8b33df32fb8f3eb0a02a52a1f1",
@@ -101736,7 +101742,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "db9baa0fc69907c908d91eec5ced5df11c5914380286510c8f05528abbcec995",
     "Atlas/Struktura/patternly-backend/src/modules/tracks/tracks — folder backend · src › modules.md": "da0bbe1c9da83cad3e049f90851e1670529a7d9f14a50311c3d8ac7a9aa7bbed",
     "Atlas/Struktura/patternly-backend/src/modules/users/users — folder backend · src › modules.md": "31ddda91f94522a50659f376084bbf7c02254400ecaf8b8732178204e1991d62",
-    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "a5d2ba737f5ee3df8105d98828afba81b93a29d63e9fe6ec07e2f9d33d3179c3",
+    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "f79a5a0fe1a947d982a08819a72a3ba58c02b3e07bf134668ddbdfdfc3cc70be",
     "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "cf1cb05a8e46ed8d19917896598edf0d2dbae1fcd78e749acc19e288e4d56ec8",
     "Atlas/Struktura/patternly-backend/tests/fixtures/cost02-package/cost02-package — folder backend · tests › fixtures.md": "f2faa341f2a472b765bf09a6c0899d223b236426a49487c43156a00a4d758f0c",
     "Atlas/Struktura/patternly-backend/_Pliki/package.json — backend.md": "00768a9907e68cda9e199cd42fc4f310ed616b20b627090ecf32d1dda4dde0b4",
@@ -101893,7 +101899,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deletedIdentityR01.emulator.ts — backend · tests.md": "8afa34298567a70b9519559922d3fa7caea226b22ba0eb0dd54777a24b131e46",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deployment.test.ts — backend · tests.md": "2520297795e41c50e7a4a9685ba10305055972478382f533e33b5a78515057f3",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/environment.test.ts — backend · tests.md": "05a7b879bcbd8d3fee16b63be786b4dd162bcd1429ef82345eeb38c500fe7da4",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/firestore.emulator.test.ts — backend · tests.md": "4c284f69c96e2562d93d6ddbd2e0c4a58a0d8fa3f22e3e8845244783b8626041",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/firestore.emulator.test.ts — backend · tests.md": "ae349d1e10f569f799c7c8cbb052f8453ec867a462289d29f3d7f6558dd6f6b9",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/accountLifecycleCrashWorker.ts — backend · tests › fixtures.md": "e25b0e04a16b190320cce72d2ecda618d1b757acbc608c4be4406a88317beb32",
     "Atlas/Struktura/patternly-backend/tests/fixtures/cost02-package/_Pliki/provenance.json — backend · tests › fixtures › cost02-package.md": "2d1765c901ae87190f524dd7aa84045d38c853fbaa4e02240960997e24a2f62a",
     "Atlas/Struktura/patternly-backend/tests/fixtures/_Pliki/gcsPackageFixture.ts — backend · tests › fixtures.md": "707f3cee6b3758aa0118dfa7504621b631766348066a15ab401a169fecdb55bd",
