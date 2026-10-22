@@ -1418,6 +1418,116 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   }
 });
 
+test("explicit pair choice refuses another conflicting pending target without local mutation", async () => {
+  const profileFixture = await activateFreshAccountStorage(accountId);
+  try {
+    await prepareBoundLearningDatasetWithOutbox();
+    const uploaded = await retryPendingAccountDataSync(apiWithAcknowledgedLocalSync(), accountId);
+    assert.equal(uploaded?.status, "synced");
+    const acknowledged = await getAccountSyncState(productionLearningDataAdmissionContext);
+    assert.equal(acknowledged.outbox.length, 0);
+    assert.ok(Object.keys(acknowledged.acknowledged).length > 0, "preservation needs independently acknowledged records");
+
+    const policy = requireGoalPolicy(guestTrack);
+    const originalGoal = (await getGoalSnapshot(guestTrack, policy))!;
+    const originalPlan = getLearningPlanSnapshot(guestTrack, policy)!;
+    const localGoal = await saveGoalSnapshot({ ...originalGoal.record, preferredDays: ["tue", "thu"], weeklySessionTarget: 2 }, originalGoal.revision, policy);
+    const localPlan = createLearningPlan({ ...originalPlan.plan, goalRevision: localGoal.revision,
+      acceptedTarget: acceptedTargetFromGoal(localGoal.record), planRevision: originalPlan.plan.planRevision + 1,
+      commandId: "command:unsupported-local-pair", updatedAt: "2026-10-09T00:00:00.000Z" });
+    saveLearningPlanAtomically({ policy, plan: localPlan, expectedGoalRevision: localGoal.revision, expectedPlanStorageRevision: originalPlan.revision });
+    const originalAttempt = (await getTrainingAttempts(productionTrackAdmissionContext)).value[0]!;
+    await addTrainingAttempt(Object.freeze({ ...originalAttempt, id: "unsupported-pending-attempt" }), productionTrackAdmissionContext);
+    await ensureAccountOutboxFromLocalDataset(productionLearningDataAdmissionContext);
+    const pending = await getAccountSyncState(productionLearningDataAdmissionContext);
+    const pairEntries = pending.outbox.filter((entry) => entry.trackId === guestTrack && (entry.recordType === "goal" || entry.recordType === "learning_plan"));
+    const otherEntries = pending.outbox.filter((entry) => !pairEntries.includes(entry));
+    assert.deepEqual(pairEntries.map((entry) => entry.recordType).sort(), ["goal", "learning_plan"]);
+    assert.equal(otherEntries.length, 1);
+    assert.equal(otherEntries[0]!.recordId, "unsupported-pending-attempt");
+    assert.equal(otherEntries[0]!.expectedVersion, null);
+
+    const localSnapshot = await buildAccountDataSnapshot(productionLearningDataAdmissionContext);
+    const remoteGoal = Object.freeze({ ...localGoal.record, preferredDays: Object.freeze(["mon", "fri"] as const) });
+    const remoteRevision = localGoal.revision + 1;
+    const remotePlan = Object.freeze({ ...localPlan, goalRevision: remoteRevision, acceptedTarget: acceptedTargetFromGoal(remoteGoal) });
+    const remote = remoteRecords(localSnapshot).map((record) => {
+      const isPair = record.trackId === guestTrack && (record.recordType === "goal" || record.recordType === "learning_plan");
+      const baseline = Object.values(acknowledged.acknowledged).find((entry) => entry.recordId === record.recordId && entry.recordType === record.recordType && entry.trackId === record.trackId);
+      const state = isPair ? record.recordType === "goal"
+        ? { schemaVersion: 1 as const, revision: remoteRevision, record: remoteGoal }
+        : { schemaVersion: 1 as const, revision: remoteRevision, plan: remotePlan } : record.state;
+      const changed = { ...record, state, version: isPair ? (baseline!.remoteVersion + 1) : baseline?.remoteVersion ?? 1 };
+      return { ...changed, fingerprint: accountDataRecordFingerprint(changed) };
+    });
+    assert.equal(remotePlan.goalRevision, remoteRevision);
+    assert.deepEqual(remotePlan.acceptedTarget, acceptedTargetFromGoal(remoteGoal));
+    assert.notDeepEqual(remoteGoal, localGoal.record);
+    const changedPending = pending.outbox.filter((entry) => {
+      const latest = remote.find((record) => record.recordId === entry.recordId && record.recordType === entry.recordType && record.trackId === entry.trackId);
+      return entry.expectedVersion === null ? latest !== undefined : latest?.version !== entry.expectedVersion;
+    });
+    assert.equal(changedPending.filter((entry) => pairEntries.includes(entry)).length, 2);
+    assert.deepEqual(changedPending.filter((entry) => !pairEntries.includes(entry)).map((entry) => entry.recordId), [otherEntries[0]!.recordId]);
+
+    const remoteAccountRevision = acknowledged.remoteAccountRevision + 3;
+    let setupPosts = 0;
+    let setupGets = 0;
+    const conflicted = await retryPendingAccountDataSync(api({
+      syncProgress: async (request) => { setupPosts++; return conflictTransport(remoteAccountRevision).syncProgress(request); },
+      getProgress: async () => { setupGets++; throw new Error("confirmed 409 must stop before explicit inspection"); },
+    }), accountId);
+    assert.equal(conflicted?.status, "conflict");
+    assert.equal(conflicted?.syncConflict?.code, "account_revision_conflict");
+    assert.equal(setupPosts, 1);
+    assert.equal(setupGets, 0);
+
+    const beforeState = await getAccountSyncState(productionLearningDataAdmissionContext);
+    const beforeEnvelope = readAccountSyncStateEnvelope(productionLearningDataAdmissionContext);
+    const beforeGoal = await getGoalSnapshot(guestTrack, policy);
+    const beforePlan = getLearningPlanSnapshot(guestTrack, policy);
+    const scopedRaw = () => [...profileFixture.base.snapshot()]
+      .filter(([key]) => key.startsWith(`patternly:profile:v1:${profileFixture.profileId}:`))
+      .sort(([left], [right]) => left.localeCompare(right));
+    assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+    const beforeRaw = scopedRaw();
+    assert.ok(beforeState.outbox.length > 0);
+    assert.ok(Object.keys(beforeState.acknowledged).length > 0);
+    const assertUnchanged = async () => {
+      assert.deepEqual(await getGoalSnapshot(guestTrack, policy), beforeGoal);
+      assert.deepEqual(getLearningPlanSnapshot(guestTrack, policy), beforePlan);
+      assert.deepEqual(readAccountSyncStateEnvelope(productionLearningDataAdmissionContext), beforeEnvelope, "sync envelope revision and payload remain exact");
+      const after = await getAccountSyncState(productionLearningDataAdmissionContext);
+      assert.deepEqual(after.outbox, beforeState.outbox);
+      assert.deepEqual(after.acknowledged, beforeState.acknowledged);
+      assert.deepEqual(after.syncConflict, beforeState.syncConflict);
+      assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
+      assert.deepEqual(scopedRaw(), beforeRaw, "all scoped canonical and journal bytes remain unchanged");
+    };
+    let reads = 0;
+    let posts = 0;
+    const latest = api({
+      getProgress: async () => { reads++; return { accountRevision: remoteAccountRevision, records: remote }; },
+      syncProgress: async () => { posts++; throw new Error("explicit inspection and refusal must not POST"); },
+    });
+    const preview = await inspectAccountSyncConflict(latest, accountId);
+    assert.equal(preview.kind, "unsupported_changes");
+    assert.equal(preview.changedOtherRecordCount, 1);
+    assert.deepEqual(preview.changedPairTrackIds, [guestTrack]);
+    assert.equal(preview.conflictId, beforeState.syncConflict!.conflictId);
+    assert.equal(reads, 1);
+    assert.equal(posts, 0);
+    await assertUnchanged();
+    await assert.rejects(() => resolveAccountSyncConflict({ api: latest, accountId, conflictId: preview.conflictId, resolution: "keep_account", trackId: guestTrack }),
+      (error: unknown) => error instanceof AccountDataFailure && error.code === "account_sync_conflict_unsupported_changes");
+    assert.equal(reads, 2, "inspect and attempted choice each read the latest state explicitly");
+    assert.equal(posts, 0);
+    await assertUnchanged();
+  } finally {
+    profileFixture.restore();
+  }
+});
+
 test("bound sync rejects incomplete applied and duplicate ACK coverage before GET or local ACK writes", async () => {
   const { snapshot, state: beforeState } = await prepareBoundLearningDatasetWithOutbox();
   let downloads = 0;
