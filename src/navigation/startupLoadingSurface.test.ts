@@ -10,13 +10,9 @@ test("bootstrap owns one branded phase-aware loading surface with no synthetic c
 
   assert.match(gate, /export function ContentBootstrapLoadingSkeleton\(\{ phase \}/);
   assert.match(gate, /state\.kind === "loading"[\s\S]*?runtimeSelectors\.content\.preparing\(state\.phase\)[\s\S]*?<ContentBootstrapLoadingSkeleton phase=\{state\.phase\} \/>/);
-  assert.match(gate, /const phaseCopy = t\(PREPARATION_PHASE_COPY\[phase\]\)/);
-  assert.match(gate, /const title = t\("Preparing content…"\);/);
-  assert.match(gate, /<LoadingState[\s\S]*?title=\{title\}/);
-  assert.match(gate, /description=\{phaseCopy\}/);
-  assert.match(gate, /descriptionTestID="content-bootstrap-phase"/);
-  assert.match(gate, /testID="content-bootstrap-loading-skeleton"/);
-  assert.match(gate, /showLogo/);
+  assert.match(gate, /<View style=\{\{ flex: 1 \}\} testID="content-bootstrap-loading-skeleton"><AccountProfileTransitionLoadingState \/><\/View>/);
+  assert.match(gate, /runtimeSelectors\.content\.preparing\(state\.phase\)/);
+  assert.match(source("src/application/account/AccountProfileTransitionLoadingState.tsx"), /testID="account-profile-transition-loading"/);
   assert.match(loadingState, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
   assert.match(loadingState, /<SkeletonShape motion=\{motion\} style=\{styles\.statusBand\}/);
   assert.equal((loadingState.match(/useSkeletonGlassMotion\(\)/g) ?? []).length, 1);

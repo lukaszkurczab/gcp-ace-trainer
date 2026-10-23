@@ -194,7 +194,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   }, [isFocused]);
   const { fontScale } = useWindowDimensions();
   const account = usePatternlyAccount();
-  const { readState, requestKey, retry } = usePracticeReadModel({
+  const { ownerMatches, readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load the session settings."),
     requestedTrackId: route.params?.trackId,
   });
@@ -260,7 +260,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     );
   }
 
-  if (readState.requestKey !== requestKey || readState.kind === "pending") {
+  if (!ownerMatches || readState.requestKey !== requestKey || readState.kind === "pending") {
     return renderLoading();
   }
   if (readState.kind === "unavailable") return renderUnavailable(t(readState.reason), t("Try again"), retry);

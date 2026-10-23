@@ -116,7 +116,7 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
     return () => { focusEpochRef.current += 1; };
   }, [isFocused]);
   const account = usePatternlyAccount();
-  const { readState, requestKey, retry } = usePracticeReadModel({
+  const { ownerMatches, readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load the topic list."),
     requestedTrackId: route.params?.trackId,
   });
@@ -153,7 +153,7 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
     );
   }
 
-  if (readState.requestKey !== requestKey || readState.kind === "pending") return (
+  if (!ownerMatches || readState.requestKey !== requestKey || readState.kind === "pending") return (
     <View style={styles.shell}>
       <Screen backAction={{ destinationLabel: route.params?.returnToSetup ? t("Practice setup") : t("Practice"), onPress: navigateBackToPractice }} edges={["top"]}>
 

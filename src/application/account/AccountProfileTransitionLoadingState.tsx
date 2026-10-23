@@ -3,6 +3,6 @@ import { useTranslation } from "react-i18next";
 import { LoadingState } from "../../components";
 
 export function AccountProfileTransitionLoadingState() {
-  const { t } = useTranslation("account");
-  return <LoadingState testID="account-profile-transition-loading" title={t("profileTransitionTitle")} />;
+  const { t } = useTranslation("common");
+  return <LoadingState showLogo testID="account-profile-transition-loading" title={t("Preparing Patternly")} />;
 }

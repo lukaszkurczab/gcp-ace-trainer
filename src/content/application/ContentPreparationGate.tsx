@@ -2,7 +2,7 @@ import { beginStartupSpan, markStartup } from "../../infrastructure/diagnostics/
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import { Button, EmptyState, LoadingState, Screen } from "../../components";
+import { Button, EmptyState, Screen } from "../../components";
 import { abandonUnavailableActiveTrainingSession, bootstrapApplication } from "../../application/bootstrap";
 import { createBootstrapProgressObserver, describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
@@ -67,11 +67,8 @@ export function useHomeResumeUnavailable(): HomeResumeContextValue | null {
 }
 
 export function ContentBootstrapLoadingSkeleton({ phase }: Readonly<{ phase: ContentPreparationPhase }>) {
-  const { t } = useTranslation("common");
-  const title = t("Preparing content…");
-  const phaseCopy = t(PREPARATION_PHASE_COPY[phase]);
-
-  return <LoadingState description={phaseCopy} descriptionTestID="content-bootstrap-phase" showLogo testID="content-bootstrap-loading-skeleton" title={title} />;
+  void phase;
+  return <View style={{ flex: 1 }} testID="content-bootstrap-loading-skeleton"><AccountProfileTransitionLoadingState /></View>;
 }
 
 export function ContentPreparationGate({ children, completeAccountPreparation, handoffToken }: { children: ReactNode; completeAccountPreparation: (token: ProfilePreparationHandoffToken) => Promise<void>; handoffToken: ProfilePreparationHandoffToken | null }) {

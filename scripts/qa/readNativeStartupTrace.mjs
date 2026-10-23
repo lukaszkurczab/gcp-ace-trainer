@@ -30,7 +30,7 @@ export function validateTrace(value) {
     || !Array.isArray(value.trace.events) || value.trace.events.length === 0 || value.trace.events.length > 512) throw Error("trace_rejected");
   for (const event of value.trace.events) {
     if (!event || Object.keys(event).some((key) => !["stage", "edge", "atMs", "span"].includes(key))
-      || typeof event.stage !== "string" || !/^[a-z][a-z_:-]{0,79}$/u.test(event.stage)
+      || typeof event.stage !== "string" || !/^[a-z][a-z0-9_:-]{0,79}$/u.test(event.stage)
       || !["begin", "end", "event"].includes(event.edge) || !Number.isFinite(event.atMs) || event.atMs < 0
       || (event.span !== undefined && (!Number.isSafeInteger(event.span) || event.span <= 0))) throw Error("trace_rejected");
   }

@@ -1,0 +1,95 @@
+# Existing iPhone 17, idle smoke actor; navigation only, no progress/settings writes.
+appId: com.lkurczab.patternly
+name: Navigation continuity without learner mutations
+---
+# Fixed iPhone 17 prelude: this point closes the observed developer overlay,
+# or selects Settings when no overlay is present. Both are navigation-only;
+# the following explicit Home action restores the same starting context.
+- assertVisible:
+    id: home-overview
+- tapOn:
+    point: "92%,93%"
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: home-overview
+- takeScreenshot: 01-home
+- tapOn:
+    id: patternly:home:change-track
+- assertVisible:
+    id: patternly:home:select-track:root
+- tapOn:
+    id: patternly:navigation:back
+- assertVisible:
+    id: home-overview
+- tapOn:
+    id: main-tab-bar-practice
+- assertVisible:
+    id: patternly:practice:hub:root
+- takeScreenshot: 02-practice
+- tapOn:
+    id: patternly:practice:open-setup
+- assertVisible:
+    id: patternly:practice:setup:root
+- takeScreenshot: 03-setup
+- runFlow:
+    when:
+      visible:
+        id: patternly:practice:change-topic
+    commands:
+      - tapOn:
+          id: patternly:practice:change-topic
+      - assertVisible:
+          id: patternly:practice:topic-chooser:root
+      - tapOn:
+          id: patternly:navigation:back
+      - assertVisible:
+          id: patternly:practice:setup:root
+- tapOn:
+    id: patternly:navigation:back
+- assertVisible:
+    id: patternly:practice:hub:root
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: home-overview
+- tapOn:
+    id: main-tab-bar-progress
+- takeScreenshot: 04-progress
+- scrollUntilVisible:
+    element:
+      id: patternly:progress:activity
+    direction: DOWN
+- tapOn:
+    id: patternly:progress:activity
+- assertVisible:
+    id: patternly:activity:filter
+- takeScreenshot: 05-activity
+- tapOn:
+    id: patternly:navigation:back
+- tapOn:
+    id: main-tab-bar-settings
+- takeScreenshot: 06-settings
+- tapOn:
+    id: settings-language
+- takeScreenshot: 07-language
+- tapOn:
+    id: patternly:navigation:back
+- tapOn:
+    id: settings-appearance
+- takeScreenshot: 08-appearance
+- tapOn:
+    id: patternly:navigation:back
+- scrollUntilVisible:
+    element:
+      id: settings-premium
+    direction: DOWN
+- tapOn:
+    id: settings-premium
+- takeScreenshot: 09-premium
+- tapOn:
+    id: patternly:navigation:back
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: home-overview

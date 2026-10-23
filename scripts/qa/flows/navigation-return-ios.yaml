@@ -1,0 +1,20 @@
+appId: com.lkurczab.patternly
+name: Return to the existing Today screen
+---
+- assertVisible:
+    id: home-overview
+# Observed iPhone 17 warning-close / Settings position; neither changes data.
+- tapOn:
+    point: "92%,93%"
+- tapOn:
+    id: main-tab-bar-home
+- tapOn:
+    id: main-tab-bar-practice
+- assertVisible:
+    id: patternly:practice:hub:root
+- takeScreenshot: practice-before-return
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: home-overview
+- takeScreenshot: today-after-return

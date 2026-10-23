@@ -57,3 +57,11 @@ test("CDP matches response IDs and cleans up after success", async () => {
   assert.deepEqual(await request(socket, 1, "Runtime.evaluate"), { id: 1, result: { value: 1 } });
   assert.equal(socket.listenerCount("message"), 0);
 });
+
+test("native trace accepts versioned stage names emitted by the current producer", () => {
+  const value = { hermes: true, trace: { ...trace.trace, events: [{ stage: "premium:response_v2", edge: "event", atMs: 1 }] } };
+  assert.equal(validateTrace(value), value.trace);
+  for (const stage of ["2private", "premium:response v2", "premium:response_v2?payload"]) {
+    assert.throws(() => validateTrace({ ...value, trace: { ...value.trace, events: [{ stage, edge: "event", atMs: 1 }] } }));
+  }
+});

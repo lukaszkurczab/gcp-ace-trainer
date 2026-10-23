@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState, LoadingState, Screen } from "../../components";
+import { EmptyState, Screen } from "../../components";
+import { AccountProfileTransitionLoadingState } from "./AccountProfileTransitionLoadingState";
 import { createProfileStoragePreparationDiagnosticWriter, describeOperationalFailure, operationalDiagnosticCode, type ProfileStoragePreparationDiagnosticStage } from "../../application/operationalDiagnostics";
 import { useAppPreferences } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
@@ -144,7 +145,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
   const body = state.kind === "ready"
     ? <PreparedProfileStorageContext.Provider value={{ profile: state.profile, logoutControl: state.logoutControl, logoutControlSnapshot: state.logoutControlSnapshot }}>{children}</PreparedProfileStorageContext.Provider>
     : state.kind === "loading"
-      ? <Screen edges={["top", "bottom"]}><LoadingState description={t("Opening local profile storage…")} showLogo testID="profile-storage-preparing" title={t("Preparing your profile…")} /></Screen>
+      ? <Screen edges={["top", "bottom"]}><View style={{ flex: 1 }} testID="profile-storage-preparing"><AccountProfileTransitionLoadingState /></View></Screen>
       : lostKey
         ? <EncryptedStorageRecoverySurface
             error={removalError}

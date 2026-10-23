@@ -13,7 +13,7 @@ import { productionLearningPlanProposalRuntime, type LearningPlanProposalScreenR
 import { AppShellHeader, Button, Card, EmptyState, Icon, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { CODING_INTERVIEW_TRACK_ID, type GoalDay, type LearningPlan, type PlanningWorkEstimateResult, type ProposalOutcome } from "../../domain";
-import { getTrackDisplay } from "../../domain";
+import { getTrackDisplay, type TrackId } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../preferences";
 import { completionCopy, targetCopy, type Translate } from "./homePlanUiContract";
@@ -23,10 +23,15 @@ import { TRACK_DENSITY_DESCRIPTORS } from "../../domain/tracks/trackAdmission";
 import { getTrackRoadmapCatalog } from "../practice/trackRoadmapCatalog";
 import { buildLearningPlanWorkloadPresentation } from "./learningPlanWorkloadPresentation";
 import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
+import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.LEARNING_PLAN_PROPOSAL>;
 type ViewState = { kind: "loading" } | LearningPlanProposalResult;
 type ProposalActionError = "accept-validation" | "accept-storage" | "accept-reminders-pending" | "open-proposal-storage" | "open-existing-storage";
+
+function currentScopeMatches(expected: object): boolean {
+  try { return readLearningPlanStorageScope() === expected; } catch { return false; }
+}
 
 const DAY_KEYS: Readonly<Record<GoalDay, string>> = {
   mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday",
@@ -40,6 +45,7 @@ export function LearningPlanProposalScreen({ navigation, route, runtime = produc
   const { t: tCommon } = useTranslation("common");
   const { proposalId, trackId } = route.params;
   const [state, setState] = useState<ViewState>({ kind: "loading" });
+  const [loadedIdentity, setLoadedIdentity] = useState<Readonly<{ scope: object; proposalId: string; trackId: TrackId }> | null>(null);
   const [updating, setUpdating] = useState(false);
   const [acceptedPlan, setAcceptedPlan] = useState<LearningPlanSnapshot | null>(null);
   const [actionError, setActionError] = useState<ProposalActionError | null>(null);
@@ -49,12 +55,23 @@ export function LearningPlanProposalScreen({ navigation, route, runtime = produc
 
   useFocusEffect(useCallback(() => {
     let active = true;
-    setState({ kind: "loading" });
+    const scope = readLearningPlanStorageScope();
     void runtime.resolve(proposalId, trackId).then((result) => {
-      if (active) setState(result);
+      if (active && currentScopeMatches(scope)) {
+        setState(result);
+        setLoadedIdentity({ scope, proposalId, trackId });
+      }
     });
     return () => { active = false; };
   }, [proposalId, trackId, runtime]));
+
+  let identityMatches = false;
+  try {
+    identityMatches = loadedIdentity?.scope === readLearningPlanStorageScope() &&
+      loadedIdentity.proposalId === proposalId && loadedIdentity.trackId === trackId;
+  } catch {
+    identityMatches = false;
+  }
 
   const goBack = useCallback(() => {
     if (runtime.exitFixture) {
@@ -136,12 +153,11 @@ export function LearningPlanProposalScreen({ navigation, route, runtime = produc
   const backDestinationLabel = navigation.canGoBack() || runtime.exitFixture ? undefined : tCommon("Today");
   const header = <AppShellHeader backAction={{ destinationLabel: backDestinationLabel, onPress: goBack }} context={t("Learning plan")} placement="stack" />;
 
+  if (state.kind === "loading" || !identityMatches) {
+    return <LearningPlanProposalLoadingSkeleton header={header} />;
+  }
   if (acceptedPlan) {
     return <PersistedPlanView plan={acceptedPlan.plan} track={tCommon(track.shortTitle)} t={t} updating={updating} actionError={actionError} onEdit={() => { void editAcceptedPlan(); }} onRetryReminders={() => { void retryReminders(); }} onBack={goBack} backDestinationLabel={backDestinationLabel} />;
-  }
-
-  if (state.kind === "loading") {
-    return <LearningPlanProposalLoadingSkeleton header={header} />;
   }
 
   if (state.kind === "stale") {

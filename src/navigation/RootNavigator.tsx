@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer, NavigationIndependentTree, useTheme } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
-import { Alert, Linking, StyleSheet } from "react-native";
+import { Alert, Linking, StyleSheet, View } from "react-native";
 
-import { AppShellHeader, LoadingState, Screen } from "../components";
+import { AppShellHeader, Screen } from "../components";
 import { usePatternlyAccount } from "../application/account/AccountSessionProvider";
 import { AccountProfileTransitionLoadingState } from "../application/account/AccountProfileTransitionLoadingState";
 import { ROUTES } from "../constants/routes";
@@ -65,7 +65,7 @@ export function RootNavigator() {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   const account = usePatternlyAccount();
-  const { state, accountEntryMode, isMaterializedAccountTransition } = account;
+  const { state, accountEntryMode } = account;
   const [auditLanguageSettings, setAuditLanguageSettings] = useState(false);
   const [auditExamReviewFixture, setAuditExamReviewFixture] = useState<CertificationExamReviewFixtureLaunch | null>(null);
   const [auditLearningPlanFixture, setAuditLearningPlanFixture] = useState<LearningPlanProposalFixtureLaunch | null>(null);
@@ -170,9 +170,7 @@ export function RootNavigator() {
   if (state.kind === "loading" || state.kind === "profilePreparing") {
     return (
       <Screen edges={["top", "bottom"]} style={styles.sessionLoading}>
-        {isMaterializedAccountTransition
-          ? <AccountProfileTransitionLoadingState />
-          : <LoadingState description={t("Checking saved sign-in.")} showLogo testID="account-session-restore-loading" title={t("Restoring session")} />}
+        <View style={{ flex: 1 }} testID="account-session-restore-loading"><AccountProfileTransitionLoadingState /></View>
       </Screen>
     );
   }

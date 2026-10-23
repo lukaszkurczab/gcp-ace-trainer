@@ -42,6 +42,8 @@ import {
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
 import { captureHomeShellReadFence } from "../../application/homeShellReadFence";
 import { captureProfileReadFence } from "../../application/profileReadFence";
+import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
+import { readActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
 import type { CodingInterviewDashboard } from "../../application/coding-interview";
 import { getApplicationCurrentTime, resumeActiveTrainingSession } from "../../application/trainingLifecycle";
@@ -49,6 +51,7 @@ import { TrainingApplicationFailure } from "../../application/trainingLifecycle/
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { SelectTrackScreen } from "./SelectTrackScreen";
+import { isHomeSnapshotOwnerCurrent, type HomeSnapshotOwner } from "./homeSnapshotOwner";
 import {
   buildPracticeSessionConfig,
   buildCertificationPracticeResumeRoute,
@@ -115,6 +118,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<HomeShellTab>(route.params?.initialTab ?? "home");
   const initialRouteTabRef = useRef<HomeShellTab | null>(route.params?.initialTab ?? null);
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
+  const [loadedOwner, setLoadedOwner] = useState<HomeSnapshotOwner | null>(null);
   const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);
   const [shellReload, setShellReload] = useState(0);
   const [shellReadError, setShellReadError] = useState<string | null>(null);
@@ -154,12 +158,15 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
-      setHasLoadedActiveTrack(false);
+      // Keep the last committed projection visible while this same mounted
+      // profile refreshes. Profile/actor changes replace the authenticated
+      // navigator, so this cache cannot cross an account boundary.
       setShellReadError(null);
 
       async function loadShellData() {
         try {
           const assertCurrentProfile = captureProfileReadFence();
+          const ownerScope = readLearningPlanStorageScope();
           const accountState = accountRef.current.state;
           const shouldRetryAccountSync = accountState.kind === "authenticated" && accountState.accountData.status === "resumeRequired";
           if (shouldRetryAccountSync) {
@@ -220,6 +227,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             assertCurrentProfile();
             assertCurrentSources();
             setActiveTrackId(savedTrackId ?? null);
+            setLoadedOwner({ scope: ownerScope, trackId: savedTrackId ?? null });
             setData({
               activityRecords,
               algorithmsDashboard,
@@ -265,7 +273,14 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     }
   }, [data.activeSession?.id, hasLoadedActiveTrack, homeResumeContext]);
 
-  if (!hasLoadedActiveTrack) return (
+  let snapshotOwnerMatches = false;
+  try {
+    snapshotOwnerMatches = isHomeSnapshotOwnerCurrent(loadedOwner, readLearningPlanStorageScope(), readActiveTrackId());
+  } catch {
+    snapshotOwnerMatches = false;
+  }
+
+  if (!hasLoadedActiveTrack || !snapshotOwnerMatches) return (
     <View style={styles.shell}>
       <Screen
         edges={["top"]}
@@ -450,11 +465,12 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   }
 
   function openAccount(): void {
+    const returnIntent = activeTab === "settings" ? { returnToSettings: true } : undefined;
     if (settingsAccount.status === "guest" || settingsAccount.status === "signedOut") {
-      navigation.navigate(ROUTES.ACCOUNT_ENTRY, { initialMode: "signIn" });
+      navigation.navigate(ROUTES.ACCOUNT_ENTRY, { initialMode: "signIn", ...returnIntent });
       return;
     }
-    navigation.navigate(ROUTES.ACCOUNT_ENTRY);
+    navigation.navigate(ROUTES.ACCOUNT_ENTRY, returnIntent);
   }
 
   async function createRecoveredLearningPlan(): Promise<void> {

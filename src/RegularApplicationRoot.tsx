@@ -15,7 +15,8 @@ import { AccountForegroundRefreshSidecar } from "./application/account/AccountFo
 import { AccountProfileTransitionLoadingState } from "./application/account/AccountProfileTransitionLoadingState";
 import { Q13StorageReceiptHost } from "./application/runtimeAuditability/Q13StorageReceiptHost";
 import { AndroidClockProbeHost } from "./application/runtimeAuditability/AndroidClockProbeHost";
-import { Button, LoadingState, Screen } from "./components";
+import { Button, Screen } from "./components";
+import { View } from "react-native";
 import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfileTransition } from "./storage/repositories/profileStorageRepository";
 import { useTranslation } from "react-i18next";
 
@@ -72,7 +73,7 @@ function ProfileTransitionSurface() {
   const { t } = useTranslation("account");
   return (
     <Screen>
-      <LoadingState showLogo testID="profile-transition-required" title={t("profileTransitionTitle")} description={t("profileTransitionDescription")} />
+      <View style={{ flex: 1 }} testID="profile-transition-required"><AccountProfileTransitionLoadingState /></View>
       <Button onPress={() => { void reloadForProfileTransition().catch(() => undefined); }} testID="profile-transition-retry">
         {t("profileTransitionRetry")}
       </Button>

@@ -6,6 +6,7 @@ import type { ShellTab } from "../home/types";
 
 type BottomNavigationTarget = {
   navigate: (name: string, params?: object) => void;
+  popTo: (name: typeof ROUTES.HOME, params?: { initialTab?: Exclude<ShellTab, "practice"> }) => void;
 };
 
 type AppBottomNavigationProps = {
@@ -31,7 +32,7 @@ export function AppBottomNavigation({
       return;
     }
 
-    navigation.navigate(ROUTES.HOME, { initialTab: tab });
+    navigation.popTo(ROUTES.HOME, { initialTab: tab });
   }
 
   return (

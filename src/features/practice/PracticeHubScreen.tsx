@@ -143,7 +143,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const [designAdmissionPending, setDesignAdmissionPending] = useState(false);
   const [designAccessUnavailable, setDesignAccessUnavailable] = useState(false);
   const [designAdmissionRequest, setDesignAdmissionRequest] = useState<Readonly<{ mode: CanonicalPracticeModeId; source: "practiceHub" | "modeShortcut"; target: "session" | "setup" }> | null>(null);
-  const { readState, requestKey, retry } = usePracticeReadModel({
+  const { ownerMatches, readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load your practice options."),
     includeReviews: true,
     requestedTrackId: route.params?.trackId,
@@ -166,7 +166,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     );
   }
 
-  if (readState.requestKey !== requestKey || readState.kind === "pending") return (
+  if (!ownerMatches || readState.requestKey !== requestKey || readState.kind === "pending") return (
     <View style={styles.shell}>
       <Screen backAction={{ destinationLabel: navigation.canGoBack() ? undefined : t("Today"), onPress: () => goBackOrHome(navigation) }} edges={["top"]} style={styles.screenContent}>
 

@@ -1,6 +1,6 @@
 import { readAccountStartupFailureTestID } from "../../application/operationalDiagnostics";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigationState, usePreventRemove } from "@react-navigation/native";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useIsFocused, useNavigationState, usePreventRemove } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import accountCopy from "../../locales/en/account.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -58,6 +58,8 @@ import {
 } from "../../theme";
 import { useAccountCommand } from "./useAccountCommand";
 import { accountSyncAutomaticRetryAllowed, getAccountSyncConflictPresentation } from "./accountSyncConflictPresentation";
+import { useSettingsRecoveryReturn } from "./useSettingsRecoveryReturn";
+import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 
 type AccountEntryProps = NativeStackScreenProps<
   RootStackParamList,
@@ -92,6 +94,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const { locale } = useAppPreferences();
   const legalLocale = locale === "pl" ? "pl" : "en";
   const navigationIndex = useNavigationState((state) => state.index);
+  const previousRouteName = useNavigationState((state) => state.routes[state.index - 1]?.name);
+  const isFocused = useIsFocused();
   const { t } = useTranslation("account");
   const text = {
   account: t("account"),
@@ -242,6 +246,15 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   unverifiedIdentity: t("unverifiedIdentity"),
   };
   const account = usePatternlyAccount();
+  let accountStorageScope: object | null = null;
+  try { accountStorageScope = readLearningPlanStorageScope(); } catch { accountStorageScope = null; }
+  const healthyAccount = account.state.kind === "authenticated" && isHealthyAccountData(account.state.accountData);
+  const returnAccount = account.state.kind === "authenticated" && accountStorageScope !== null
+    ? { healthy: healthyAccount, scope: accountStorageScope, uid: account.state.user.uid }
+    : null;
+  const returnToSettings = route.params?.returnToSettings === true;
+  const returnToSettingsHome = useCallback(() => navigation.goBack(), [navigation]);
+  const markSettingsRecoveryRetry = useSettingsRecoveryReturn({ account: returnAccount, enabled: returnToSettings, focused: isFocused, goBack: returnToSettingsHome, previousRouteName });
   const accountRef = useRef(account);
   accountRef.current = account;
   const initialMode = route.params?.initialMode;
@@ -258,6 +271,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const providerAuthFixtureRuntime = useMemo(() => createProviderAuthFixtureRuntime(), []);
   const [termsPresentationState, setTermsPresentationState] = useState<TermsPresentationState>("pristine");
   const [resetCode, setResetCode] = useState("");
+  const [passwordResetCompleted, setPasswordResetCompleted] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [verificationResentFor, setVerificationResentFor] = useState<string | null>(null);
   const { busyAction: verificationBusyAction, runCommand: runVerificationCommand } = useAccountCommand();
@@ -283,6 +297,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     });
   };
   const beginRegistration = () => {
+    setPasswordResetCompleted(false);
     setFeedback(null);
     setAcceptedTerms(false);
     setTermsPresentationState("pristine");
@@ -455,6 +470,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         account={account}
         accountData={account.state.accountData}
         backAction={backAction}
+        onRetryRequested={markSettingsRecoveryRetry}
         text={text}
       />
     );
@@ -605,11 +621,13 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             </AuthText>
           ) : null}
           {retainedDataNotice}
+          {passwordResetCompleted ? <InfoBlock body={text.resetPasswordCompleteDescription} title={text.resetPasswordComplete} testID="account-reset-complete" tone="success" /> : null}
           <SignInForm
             email={email}
             feedback={feedback ?? account.guestTransitionFailure}
             inputStyle={styles.authInput}
             onEmailChange={(value) => {
+              setPasswordResetCompleted(false);
               setFeedback(null);
               setEmail(value);
             }}
@@ -627,7 +645,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           <View style={[styles.authLinks, largeText ? styles.authLinksLargeText : null]}>
             <Button
               labelStyle={styles.textActionLabel}
-              onPress={() => setMode("recovery")}
+              onPress={() => { setPasswordResetCompleted(false); setMode("recovery"); }}
               variant="ghost"
             >
               {text.forgotPassword}
@@ -700,27 +718,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       ? text.resetPasswordDescription
       : null;
 
-  if (mode === "recovery" && feedback?.kind === "success" && feedback.next === "passwordResetEmailSent")
-    return (
-      <AuthStatusScreen
-        backAction={backAction}
-        body={text.recoveryAcceptedDescription}
-        footerAction={{ label: text.backToSignIn, onPress: () => { setFeedback(null); setMode("signIn"); }, testID: "account-recovery-back-to-sign-in" }}
-        testID="account-recovery-accepted"
-        title={text.recoveryAccepted}
-      />
-    );
-  if (mode === "resetPassword" && feedback?.kind === "success")
-    return (
-      <AuthStatusScreen
-        action={{ label: text.signIn, onPress: () => { setFeedback(null); setMode("signIn"); }, testID: "account-reset-back-to-sign-in" }}
-        backAction={backAction}
-        body={text.resetPasswordCompleteDescription}
-        testID="account-reset-complete"
-        title={text.resetPasswordComplete}
-      />
-    );
-
   return (
     <Screen
       backAction={mode === "register" ? undefined : {
@@ -759,7 +756,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           onOpenPrivacy={() => navigation.navigate(ROUTES.PRIVACY_POLICY, { returnDestinationLabel: modeTitle })}
           onOpenTerms={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE, { returnDestinationLabel: modeTitle })}
           onConfirmationChange={(value) => { setFeedback(null); setConfirmation(value); }}
-          onEmailChange={(value) => { setFeedback(null); setEmail(value); }}
+          onEmailChange={(value) => { setPasswordResetCompleted(false); setFeedback(null); setEmail(value); }}
           onPasswordChange={(value) => { setFeedback(null); setPassword(value); }}
           onSignIn={() => { setFeedback(null); setMode("signIn"); }}
           onSubmit={() => {
@@ -779,8 +776,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       ) : null}
       {mode === "recovery" ? (
         <View style={styles.authForm}>
+          {feedback?.kind === "success" && feedback.next === "passwordResetEmailSent" ? <InfoBlock body={text.recoveryAcceptedDescription} title={text.recoveryAccepted} testID="account-recovery-accepted" tone="success" /> : null}
           <FormField error={feedback?.kind === "failure" && feedback.failure === "invalidEmail" ? text.invalidEmail : undefined} errorTestID="account-recovery-email-error" label={text.email}>
-            <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" maxFontSizeMultiplier={2} onChangeText={(value) => { setFeedback(null); setEmail(value); }} placeholder={text.enterEmail} placeholderTextColor={styles.authPlaceholder.color} style={[styles.authInput, styles.centeredInput, feedback?.kind === "failure" && feedback.failure === "invalidEmail" ? styles.authInputError : null]} testID="account-recovery-email" value={email} />
+            <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" maxFontSizeMultiplier={2} onChangeText={(value) => { setPasswordResetCompleted(false); setFeedback(null); setEmail(value); }} placeholder={text.enterEmail} placeholderTextColor={styles.authPlaceholder.color} style={[styles.authInput, styles.centeredInput, feedback?.kind === "failure" && feedback.failure === "invalidEmail" ? styles.authInputError : null]} testID="account-recovery-email" value={email} />
           </FormField>
           <Button labelStyle={styles.authPrimaryLabel} onPress={() => void account.requestPasswordRecovery(email).then(setResult(setFeedback))} style={styles.authPrimaryButton} testID="account-recovery-submit" variant="primary">{text.sendRecovery}</Button>
         </View>
@@ -799,7 +797,15 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             }
             void account
               .confirmPasswordReset(resetCode, password)
-              .then(setResult(setFeedback));
+              .then((result) => {
+                if (result.kind === "success") {
+                  setFeedback(null);
+                  setPasswordResetCompleted(true);
+                  setMode("signIn");
+                  return;
+                }
+                setFeedback(result);
+              });
           }}
           password={password}
           placeholderTextColor={styles.authPlaceholder.color as string}
@@ -945,11 +951,13 @@ function AccountRecoveryScreen({
   account,
   accountData,
   backAction,
+  onRetryRequested,
   text,
 }: Readonly<{
   account: AccountContext;
   accountData: AccountDataSession;
   backAction: BackAction;
+  onRetryRequested: () => void;
   text: AccountCopy;
 }>) {
   const styles = useThemedStyles(createStyles);
@@ -971,6 +979,7 @@ function AccountRecoveryScreen({
     }
   }, [accountData.status, feedbackAction]);
   const retry = () => {
+    onRetryRequested();
     setFeedback(null);
     setFeedbackAction("retry");
     runCommand("retry", () => account.retryAccountSync(), (result) => {
