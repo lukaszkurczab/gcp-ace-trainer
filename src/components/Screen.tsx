@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, type ReactNode, type RefObject } from "react";
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle, useWindowDimensions } from "react-native";
+import { Platform, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle, useWindowDimensions } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 
 import { spacing } from "../theme";
@@ -50,7 +50,7 @@ export function Screen({ automaticallyAdjustKeyboardInsets = false, ambient = tr
   const content = <View ref={contentRef} collapsable={scrollFocus ? false : undefined} style={contentStyle}>{children}</View>;
 
   return (
-    <SafeAreaView edges={edges} style={[styles.safeArea, backgroundColor ? { backgroundColor } : null, ambient ? styles.ambientSafeArea : null]}>
+    <SafeAreaView edges={edges} style={[styles.safeArea, Platform.OS === "android" && edges.includes("top") ? styles.androidTopSpacing : null, backgroundColor ? { backgroundColor } : null, ambient ? styles.ambientSafeArea : null]}>
       {ambient ? <AmbientBackdrop variant={ambientVariant} /> : null}
       {backAction ? <View key={`navigation:${fontScale}`} style={styles.navigation}><BackLink {...backAction} /></View> : null}
       {header}
@@ -81,6 +81,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   ambientSafeArea: {
     backgroundColor: "transparent",
+  },
+  androidTopSpacing: {
+    paddingTop: spacing.sm,
   },
   navigation: {
     backgroundColor: palette.background,

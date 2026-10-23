@@ -388,9 +388,11 @@ export function HomeTab({
             </View>
             <View style={styles.goalOnboardingCopy}>
               <Text maxFontSizeMultiplier={2} style={styles.firstUseTitle}>{t(goalInvitationAudience === "account" ? "No goal is set for this track" : "Set a goal for this track")}</Text>
-              <Text maxFontSizeMultiplier={2} style={styles.firstUseDetail}>
-                {t(goalInvitationAudience === "account" ? "Your account has no goal for {{trackName}} yet. You can add one now or later." : "Choose when and why you want to practise {{trackName}}.", { trackName: t(activeTrack.shortTitle) })}
-              </Text>
+              {goalInvitationAudience === "guest" ? (
+                <Text maxFontSizeMultiplier={2} style={styles.firstUseDetail}>
+                  {t("Choose when and why you want to practise {{trackName}}.", { trackName: t(activeTrack.shortTitle) })}
+                </Text>
+              ) : null}
             </View>
           </View>
           <Button onPress={onSetGoal} testID={runtimeSelectors.goalOnboarding.setGoal()}>

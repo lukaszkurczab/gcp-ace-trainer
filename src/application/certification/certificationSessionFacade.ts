@@ -62,7 +62,6 @@ export type CertificationPracticeProjection = Readonly<{
   }> | null;
 }>;
 export type CertificationPracticeQuestion = Readonly<{
-  constraints: readonly string[];
   interaction:
     | Readonly<{ type: "choice_single"; scoringMethod: "exact_selected_set"; options: readonly Readonly<{ optionId: string; text: string }>[] }>
     | Readonly<{ type: "choice_multiple"; scoringMethod: "exact_selected_set"; options: readonly Readonly<{ optionId: string; text: string }>[] }>;
@@ -441,7 +440,7 @@ export async function getCertificationExamProjection(expectedTrackId?: TrackId):
   const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
   if (question.question.questionId !== occurrence.item.questionId || (raw !== null && !question.interactions.isComplete(question.question.questionId, raw))) throw new TrainingApplicationFailure("invalid_response", "Cloud exam response does not match its exact interaction.");
   const interaction = question.interactions.present(question.question.questionId, raw, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
-  return Object.freeze({ session, draft, question: Object.freeze({ ...question.question, constraints: certificationQuestionPresentation(session.trackId).constraints === "hide" ? [] : question.question.constraints }), interaction, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: lifecycle.currentTime(), operation: await lifecycle.getSimulationOperationState(session) });
+  return Object.freeze({ session, draft, question: question.question, interaction, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: lifecycle.currentTime(), operation: await lifecycle.getSimulationOperationState(session) });
 }
 
 export async function reconcileCertificationExamOperation(): Promise<"verified" | "conflict" | "unknown"> {
@@ -532,7 +531,6 @@ export function projectCertificationPracticeQuestion(question: TrainingQuestionS
   }
   const options = Object.freeze(renderer.options.map((option) => Object.freeze({ optionId: option.id, text: option.text })));
   return Object.freeze({
-    constraints: Object.freeze(certificationQuestionPresentation(question.trackId).constraints === "hide" ? [] : [...(question.constraints ?? [])]),
     interaction: Object.freeze({ type: question.interactionType, scoringMethod: "exact_selected_set", options }),
     nodeId: question.nodeId,
     prompt: question.prompt,

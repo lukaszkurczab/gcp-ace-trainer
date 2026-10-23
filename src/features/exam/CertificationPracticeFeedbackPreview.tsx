@@ -73,7 +73,7 @@ export function CertificationPracticeFeedbackPreview({
       headerAction={headerAction}
       position={{ label: `${preview.ordinal} / ${preview.runtimeIdentity.actualLength}`, accessibilityLabel: `Question ${preview.ordinal} / ${preview.runtimeIdentity.actualLength}` }}
       progress={preview.ordinal / preview.runtimeIdentity.actualLength}
-      question={{ presentation: certificationQuestionPresentation(preview.runtimeIdentity.trackId), constraints: preview.question.constraints, itemId: preview.question.questionId, prompt: preview.question.prompt, responseControl }}
+      question={{ presentation: certificationQuestionPresentation(preview.runtimeIdentity.trackId), itemId: preview.question.questionId, prompt: preview.question.prompt, responseControl }}
       runtimeIdentity={preview.runtimeIdentity}
     />;
 }

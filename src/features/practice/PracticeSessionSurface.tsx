@@ -34,7 +34,6 @@ import {
 
 export type PracticeQuestionPresentation = Readonly<{
   presentation?: TrackQuestionPresentation;
-  constraints?: readonly string[];
   itemId: string;
   prompt: string;
   responseControl: PracticeResponseControl;
@@ -269,29 +268,25 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readon
   const copy = getPracticeSessionExitCopy(trackId);
   return (
     <Modal animationType="fade" onRequestClose={onDismiss} transparent visible>
-      <View style={styles.modalBackdrop}>
+      <View style={[styles.modalBackdrop, { paddingTop: Math.max(insets.top, spacing.sm) }]}>
         <Pressable accessibilityLabel={t("Keep learning")} accessibilityRole="button" onPress={onDismiss} style={styles.modalDismissArea} />
         <View accessibilityViewIsModal style={styles.exitModalSheet}>
           <ScrollView
             alwaysBounceVertical={false}
             bounces={false}
-            contentContainerStyle={[styles.exitModalScrollContent, { paddingTop: Math.max(insets.top, spacing.sm) }]}
+            contentContainerStyle={[styles.exitModalScrollContent, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             style={styles.exitModalScroll}
           >
-            <View style={styles.exitModalStack}>
-              <View style={styles.exitSurface}>
-                <Text maxFontSizeMultiplier={2} style={styles.exitTitle}>{t("Pause or end this session?")}</Text>
-                <Text maxFontSizeMultiplier={2} style={styles.noticeText}>{t(copy.description)}</Text>
-                <View style={styles.exitSheetActions}>
-                  <Button onPress={onDismiss} testID={sessionId ? runtimeSelectors.session.keepLearning(sessionId) : undefined}>{t("Keep learning")}</Button>
-                  <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined} variant="secondary">{t("Pause and resume later")}</Button>
-                </View>
-              </View>
-              <View style={[styles.exitDestructiveAction, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]}>
-                <Button onPress={onAbandon} testID={sessionId ? runtimeSelectors.session.abandon(sessionId) : undefined} variant="destructive">{t(copy.destructiveLabel)}</Button>
-              </View>
+            <Text maxFontSizeMultiplier={2} style={styles.exitTitle}>{t("Pause or end this session?")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.noticeText}>{t(copy.description)}</Text>
+            <View style={styles.exitSheetActions}>
+              <Button onPress={onDismiss} testID={sessionId ? runtimeSelectors.session.keepLearning(sessionId) : undefined}>{t("Keep learning")}</Button>
+              <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined} variant="secondary">{t("Pause and resume later")}</Button>
+            </View>
+            <View style={styles.exitDestructiveAction}>
+              <Button labelStyle={styles.exitDestructiveLabel} onPress={onAbandon} testID={sessionId ? runtimeSelectors.session.abandon(sessionId) : undefined} variant="ghost">{t(copy.destructiveLabel)}</Button>
             </View>
           </ScrollView>
         </View>
@@ -339,13 +334,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   practiceSessionLoadingResponseLineLong: { width: "92%" },
   practiceSessionLoadingResponseLineShort: { width: "56%" },
   completingActions: { minHeight: 48 },
-  exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.button, borderTopRightRadius: radius.button, borderWidth: 1, elevation: 8, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: palette.effects.shadow, shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, width: "100%" },
-  exitModalSheet: { maxHeight: "100%", width: "100%" },
+  exitModalSheet: { backgroundColor: palette.bottomSheet.surface, borderColor: palette.bottomSheet.border, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, borderTopWidth: StyleSheet.hairlineWidth, maxHeight: "100%", overflow: "hidden", width: "100%" },
   exitModalScroll: { flexShrink: 1, width: "100%" },
-  exitModalScrollContent: { flexGrow: 1, justifyContent: "flex-end" },
-  exitModalStack: { width: "100%" },
+  exitModalScrollContent: { gap: spacing.md, paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
   exitSheetActions: { gap: spacing.sm },
-  exitDestructiveAction: { backgroundColor: palette.background, paddingHorizontal: spacing.xl, width: "100%" },
+  exitDestructiveAction: { borderColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: spacing.sm },
+  exitDestructiveLabel: { color: palette.danger },
   exitTitle: { ...typography.heading, color: palette.textPrimary },
   leaveAction: { minHeight: 48, paddingVertical: spacing.sm },
   notice: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },

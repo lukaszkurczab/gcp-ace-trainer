@@ -409,7 +409,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}
     primaryAction={primaryAction}
     progress={projection.ordinal / projection.total}
-    question={{ constraints: projection.question.constraints ?? [], itemId: projection.question.questionId, prompt: projection.question.prompt, responseControl }}
+    question={{ itemId: projection.question.questionId, prompt: projection.question.prompt, responseControl }}
     responseEditable={editable}
     retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : exitFailure === "reconcile_abandon" ? "Check session status" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : uncertainResponse ? "Check saved response" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}

@@ -11,16 +11,15 @@ test("shared surface receives presentation config without provider-ID dispatch",
   assert.doesNotMatch(surface, /CLAUDE_|GOOGLE_|claude-certified|google-cloud|claude_prompt_layout/);
 });
 
-test("structured presentation preserves authored prompt and constraint strings", () => {
+test("structured presentation preserves the authored prompt", () => {
   assert.match(card, />\{question\.prompt\}<\/Text>/);
-  assert.match(card, />• \{constraint\}<\/Text>/);
   assert.match(card, /presentation = DEFAULT_TRACK_QUESTION_PRESENTATION/);
   assert.match(card, /fontSize: 20[\s\S]*?lineHeight: 28/);
 });
 
-test("structured constraints have localized semantics and stable identity", () => {
-  assert.match(card, /accessibilityRole="header"[\s\S]*?t\("Key constraints"\)/);
-  assert.match(card, /runtimeSelectors\.session\.question\(question\.itemId\)\}:constraints/);
+test("question card has no supplementary constraints block", () => {
+  assert.doesNotMatch(card, /constraints|Key constraints/);
+  assert.match(card, /testID=\{runtimeSelectors\.session\.question\(question\.itemId\)\}/);
   assert.match(card, /maxFontSizeMultiplier=\{2\}/);
 });
 

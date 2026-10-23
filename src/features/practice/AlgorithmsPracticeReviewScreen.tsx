@@ -116,7 +116,7 @@ export function AlgorithmsPracticeReviewScreen({ navigation, route }: Props) {
         </View>
       )}
     >
-      <PracticeQuestionCard question={{ constraints: item.constraints, itemId: questionId, prompt: item.prompt }} />
+      <PracticeQuestionCard question={{ itemId: questionId, prompt: item.prompt }} />
       <Text maxFontSizeMultiplier={2} style={[styles.result, styles[item.correctness]]}>{t(item.correctness === "unanswered" ? "Unanswered" : item.correctness === "correct" ? "Correct" : item.correctness === "partial" ? "Partial" : "Incorrect")}</Text>
       <PracticeResponseControls
         control={buildPracticeResponseControl({

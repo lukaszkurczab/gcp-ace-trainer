@@ -166,6 +166,6 @@ test("Certification and Design unlock actions only after the refreshed projectio
  test("Claude practice shows neither optional hints nor key constraints", () => {
  const runner = source("src/features/practice/CertificationPracticeSessionScreen.tsx");
  assert.doesNotMatch(runner, /Show hint|caseHint|recordCaseExposure/);
- assert.match(runner, /constraints: questionView.constraints, presentation: projection.questionPresentation/);
- assert.doesNotMatch(runner, /constraints: projection.session.trackId/);
+ assert.match(runner, /presentation: projection.questionPresentation/);
+ assert.doesNotMatch(runner, /constraints:/);
 });
