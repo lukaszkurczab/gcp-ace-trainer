@@ -37,7 +37,7 @@ test("the default iOS command uses the local profile and sandbox remains explici
   assert.equal(scripts["start:sandbox"], "node scripts/runLocalProfile.mjs sandbox start");
   assert.equal(scripts["web:smoke"], "node scripts/runLocalProfile.mjs smoke web");
   assert.equal(scripts["web:sandbox"], "node scripts/runLocalProfile.mjs sandbox web");
-  assert.equal(scripts["android:local"], "node scripts/runLocalProfile.mjs smoke android-local");
+  assert.equal(scripts["android:local"], "node scripts/verifyNativeScreensPatch.mjs && node scripts/runLocalProfile.mjs smoke android-local");
 });
 
 test("smoke profile requires explicit matching local E2E endpoints", () => {
