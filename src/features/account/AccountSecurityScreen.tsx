@@ -4,6 +4,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import * as Google from "expo-auth-session/providers/google";
+import Constants from "expo-constants";
 
 import { Button, HoldToConfirmButton, InfoBlock, Screen, ScreenHeader } from "../../components";
 import { usePatternlyAccount, type AccountCommandResult } from "../../application/account/AccountSessionProvider";
@@ -55,6 +56,9 @@ function SecurityForm({ route, navigation }: Props) {
   const focused = useRef(true);
   const providerPrompt = useRef(false);
   const configuration = useRef(readFirebaseClientConfiguration()).current;
+  const isLocalAndroidApp = Platform.OS === "android"
+    && Constants.expoConfig?.android?.package === "com.lkurczab.patternly.local"
+    && Constants.expoConfig?.extra?.patternlyRuntime === "smoke";
   const user = "user" in account.state ? account.state.user : null;
   const authenticated = account.state.kind === "authenticated";
   const usesPassword = user?.providers.includes("password") ?? false;
@@ -185,7 +189,7 @@ function SecurityForm({ route, navigation }: Props) {
             {mode === "email" ? field(t("newEmail"), nextValue, setNextValue, "security-new-email", false) : null}
             {mode === "password" ? <>{field(t("newPassword"), nextValue, setNextValue, "security-new-password", true)}{field(t("confirmNewPassword"), confirmation, setConfirmation, "security-confirm-password", true)}</> : null}
             {usesPassword && !prepared ? field(t(mode === "delete" ? "password" : "currentPassword"), password, setPassword, "security-password", true) : null}
-            {!prepared ? usesGoogle && configuration.kind === "configured" && getFirebaseGoogleClientId(configuration.value, Platform.OS) ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" ? "deleteConfirm" : mode === "export" || mode === "privacy" ? "verifyIdentity" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
+            {!prepared ? !isLocalAndroidApp && usesGoogle && configuration.kind === "configured" && getFirebaseGoogleClientId(configuration.value, Platform.OS) ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" ? "deleteConfirm" : mode === "export" || mode === "privacy" ? "verifyIdentity" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
               {mode === "delete" && failure && errorField === null ? <Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.inlineError} testID={`security-error-${failure}`}>{failure === "pendingSyncRequiresNetwork" ? t("deletePendingSync") : ta(failure)}</Text> : null}
               {mode === "delete" && prepared ? <HoldToConfirmButton accessibilityLabel={t("holdDelete")} disabled={blocked} hint={t("holdDeleteHint")} loading={busy} onConfirm={() => { setPrepared(false); void run(() => account.deleteAccount(), () => {}); }} testID="security-delete-hold">{t("holdDelete")}</HoldToConfirmButton> : null}
           </>}

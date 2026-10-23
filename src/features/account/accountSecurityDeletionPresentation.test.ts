@@ -14,7 +14,7 @@ test("delete account switches from identity confirmation to the hold action", ()
   assert.match(screen, /failure && errorField === null && mode !== "delete" \? <InfoBlock/u);
   assert.match(screen, /mode === "delete" && failure && errorField === null \? <Text accessibilityLiveRegion="polite" accessibilityRole="alert"[\s\S]*?failure === "pendingSyncRequiresNetwork" \? t\("deletePendingSync"\) : ta\(failure\)/u);
   assert.match(screen, /usesPassword && !prepared \? field\(t\(mode === "delete" \? "password" : "currentPassword"\)/u);
-  assert.match(screen, /!prepared \? usesGoogle/u);
+  assert.match(screen, /!prepared \? !isLocalAndroidApp && usesGoogle/u);
   assert.match(screen, /usesApple \? t\("verifyApple"\)/u);
   assert.match(screen, /mode === "delete" \? "deleteConfirm" : mode === "export" \|\| mode === "privacy" \? "verifyIdentity"/u);
   assert.match(screen, /testID="security-google-verify"[\s\S]*?t\("verifyGoogle"\)/u);

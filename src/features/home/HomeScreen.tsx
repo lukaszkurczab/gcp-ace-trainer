@@ -29,6 +29,8 @@ import {
   loadReviewQueueItems as getReviewQueueItems,
   loadTrainingAttempts as getTrainingAttempts,
   persistGoalOnboardingDismissal,
+  readActiveTrackId,
+  readLearningPlanStorageScope,
 } from "../../application/learningReadModels";
 import {
   homePlanSnapshotReader,
@@ -42,8 +44,6 @@ import {
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
 import { captureHomeShellReadFence } from "../../application/homeShellReadFence";
 import { captureProfileReadFence } from "../../application/profileReadFence";
-import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
-import { readActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
 import type { CodingInterviewDashboard } from "../../application/coding-interview";
 import { getApplicationCurrentTime, resumeActiveTrainingSession } from "../../application/trainingLifecycle";
@@ -273,6 +273,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     }
   }, [data.activeSession?.id, hasLoadedActiveTrack, homeResumeContext]);
 
+  if (shellReadError) return <Screen edges={["top"]} scroll={false}><AppShellHeader /><EmptyState actionLabel={t("Try again")} description={t(shellReadError)} onActionPress={() => setShellReload((reload) => reload + 1)} title={t("Patternly is unavailable")} /></Screen>;
+
   let snapshotOwnerMatches = false;
   try {
     snapshotOwnerMatches = isHomeSnapshotOwnerCurrent(loadedOwner, readLearningPlanStorageScope(), readActiveTrackId());
@@ -294,7 +296,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       <AppBottomNavigation activeId={activeTab} navigation={navigation} onHomeTabChange={handleHomeTabChange} />
     </View>
   );
-  if (shellReadError) return <Screen edges={["top"]} scroll={false}><AppShellHeader /><EmptyState actionLabel={t("Try again")} description={t(shellReadError)} onActionPress={() => setShellReload((reload) => reload + 1)} title={t("Patternly is unavailable")} /></Screen>;
   if (!activeTrackId) {
     return (
       <SelectTrackScreen

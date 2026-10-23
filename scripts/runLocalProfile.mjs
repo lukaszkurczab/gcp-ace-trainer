@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs";
-import { spawn } from "node:child_process";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { createRequire } from "node:module";
 
 const PROFILE_NAMES = Object.freeze(["smoke", "sandbox"]);
 const SMOKE_PROJECT_ID = "patternly-app-sandbox";
@@ -27,6 +28,7 @@ const ACTIONS = Object.freeze({
   web: ["start", "--web", "--localhost"],
   ios: ["run:ios"],
   android: ["run:android"],
+  "android-local": ["run:android"],
 });
 
 export function parseDotenv(source) {
@@ -134,7 +136,11 @@ export async function probeSmokeApiReady(origin, fetchImplementation = fetch, op
 
 export async function runLocalProfile(argv = process.argv.slice(2), options = {}) {
   const [profile, action, ...extraArgs] = argv;
-  if (!(action in ACTIONS)) throw new Error("Usage: runLocalProfile.mjs <smoke|sandbox> <start|web|ios|android> [Expo arguments]");
+  if (!(action in ACTIONS)) throw new Error("Usage: runLocalProfile.mjs <smoke|sandbox> <start|web|ios|android|android-local> [Expo arguments]");
+  if (action === "android-local") {
+    const targetOverride = extraArgs.find((argument) => /^(?:--device|--app-id|--binary|--variant)(?:=|$)|^-d(?:=|$)/u.test(argument));
+    if (targetOverride) throw new Error(`android-local does not allow the Expo target override ${targetOverride.split("=", 1)[0]}.`);
+  }
   const repositoryRoot = options.repositoryRoot ?? process.cwd();
   const profilePath = localProfilePath(profile, repositoryRoot);
   let profileEnvironment;
@@ -144,13 +150,38 @@ export async function runLocalProfile(argv = process.argv.slice(2), options = {}
     const reason = error instanceof Error ? error.message : String(error);
     throw new Error(`Cannot load local ${profile} profile at ${profilePath}: ${reason}`);
   }
-  const environment = validateLocalProfile(profile, { ...process.env, ...profileEnvironment });
+  let environment = validateLocalProfile(profile, { ...process.env, ...profileEnvironment });
+  if (action !== "android-local" && environment.PATTERNLY_ANDROID_LOCAL_APP) {
+    throw new Error("PATTERNLY_ANDROID_LOCAL_APP is reserved for the android-local action.");
+  }
+  if (action === "android-local") {
+    if (profile !== "smoke") throw new Error("android-local requires the smoke profile.");
+    if (!/^[a-f0-9]{64}$/u.test(environment.EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN ?? "")) {
+      throw new Error("android-local requires EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN with 64 lowercase hex characters.");
+    }
+    if (!environment.ANDROID_SERIAL || environment.ANDROID_SERIAL.trim() !== environment.ANDROID_SERIAL) {
+      throw new Error("android-local requires ANDROID_SERIAL so endpoint forwarding targets exactly one connected Android device.");
+    }
+    if (!environment.ANDROID_HOME) throw new Error("android-local requires ANDROID_HOME to locate ADB.");
+    environment = Object.freeze({ ...environment, EAS_BUILD_PLATFORM: "android", PATTERNLY_ANDROID_LOCAL_APP: "true", REACT_NATIVE_PACKAGER_HOSTNAME: "127.0.0.1" });
+    assertExistingAndroidTreeIsLocal(repositoryRoot);
+  }
   await (options.prepareCurrentContent ?? (() => prepareCurrentContent(repositoryRoot)))();
   if (profile === "smoke") {
     await probeSmokeAuthEmulator(environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN, environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID, options.fetchImplementation);
     await probeSmokeApiReady(environment.EXPO_PUBLIC_PATTERNLY_API_ORIGIN, options.fetchImplementation);
   }
-  const child = (options.spawn ?? spawn)(options.command ?? "npx", ["expo", ...ACTIONS[action], ...extraArgs], {
+  let androidDeviceName;
+  if (action === "android-local") {
+    androidDeviceName = resolveAndroidLocalDeviceName(environment, options);
+    ensureAndroidLocalLoopbackAccess(environment, options);
+  }
+  const actionArguments = [
+    ...ACTIONS[action],
+    ...(action === "android-local" ? ["--device", androidDeviceName] : []),
+    ...extraArgs,
+  ];
+  const child = (options.spawn ?? spawn)(options.command ?? "npx", ["expo", ...actionArguments], {
     cwd: repositoryRoot,
     env: environment,
     stdio: "inherit",
@@ -159,6 +190,99 @@ export async function runLocalProfile(argv = process.argv.slice(2), options = {}
     child.once("error", reject);
     child.once("exit", (code, signal) => resolveProcess({ code: code ?? 1, signal }));
   });
+}
+
+function assertExistingAndroidTreeIsLocal(repositoryRoot) {
+  const androidRoot = resolve(repositoryRoot, "android");
+  if (!existsSync(androidRoot)) return;
+  const reject = (reason) => {
+    throw new Error(`android-local refused the existing Android native tree (${reason}). Preserve that tree, regenerate Android only from the local smoke profile, then retry npm run android:local.`);
+  };
+  const gradlePath = resolve(androidRoot, "app", "build.gradle");
+  const manifestPath = resolve(androidRoot, "app", "src", "main", "AndroidManifest.xml");
+  let gradle;
+  let manifest;
+  try {
+    gradle = readFileSync(gradlePath, "utf8");
+    manifest = readFileSync(manifestPath, "utf8");
+  } catch {
+    reject("unsupported or incomplete generated project files");
+  }
+  const declaresExactly = (source, key, value) => {
+    const declarations = source.match(new RegExp(`^\\s*${key}\\b[^\\r\\n]*$`, "gmu")) ?? [];
+    const declaration = declarations.length === 1
+      ? new RegExp(`^\\s*${key}\\s+(['"])([^'"]+)\\1\\s*$`, "u").exec(declarations[0])
+      : null;
+    return declaration?.[2] === value;
+  };
+  if (!declaresExactly(gradle, "namespace", "com.lkurczab.patternly.local")) reject("namespace is not the exact local Android identity");
+  if (!declaresExactly(gradle, "applicationId", "com.lkurczab.patternly.local")) reject("applicationId is not the exact local Android identity");
+  const schemes = [...manifest.matchAll(/\bandroid:scheme\s*=\s*["']([^"']+)["']/gu)].map((match) => match[1]);
+  if (!schemes.includes("com.lkurczab.patternly.local") || schemes.includes("com.lkurczab.patternly")) reject("manifest does not declare only the local app scheme");
+  if (containsGoogleServicesJson(androidRoot)) reject("a native google-services.json is present");
+}
+
+function containsGoogleServicesJson(directory) {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.name === "google-services.json") return true;
+    if (entry.isDirectory() && !["build", ".cxx", ".gradle"].includes(entry.name)
+      && containsGoogleServicesJson(resolve(directory, entry.name))) return true;
+  }
+  return false;
+}
+
+function resolveAndroidLocalDeviceName(environment, options = {}) {
+  // Use the installed Expo CLI's own inventory: --device resolves names, not ADB serials.
+  const require = createRequire(import.meta.url);
+  const expoRequire = createRequire(require.resolve("expo/package.json"));
+  const inventoryPath = resolve(dirname(expoRequire.resolve("@expo/cli/package.json")), "build/src/start/platforms/android/getDevices.js");
+  const result = (options.spawnSync ?? spawnSync)(process.execPath, ["-e",
+    "require(process.argv[1]).getDevicesAsync().then(devices => process.stdout.write(JSON.stringify(devices))).catch(() => process.exit(1))", inventoryPath,
+  ], { encoding: "utf8", env: environment });
+  let devices;
+  try { devices = JSON.parse(result.stdout); } catch { /* Report only the safe stage below. */ }
+  if (result.error || result.status !== 0 || !Array.isArray(devices)) throw new Error("android-local Expo device inventory failed.");
+  const selected = devices.filter((device) => device.pid === environment.ANDROID_SERIAL);
+  if (selected.length !== 1 || !selected[0].isAuthorized || !selected[0].isBooted || !selected[0].name) {
+    throw new Error("android-local selected serial is not one authorized, booted Expo device.");
+  }
+  if (devices.filter((device) => device.name === selected[0].name).length !== 1) {
+    throw new Error("android-local selected Expo device name is ambiguous; disconnect other devices with the same name.");
+  }
+  return selected[0].name;
+}
+
+function ensureAndroidLocalLoopbackAccess(environment, options = {}) {
+  const serial = environment.ANDROID_SERIAL;
+  if (!serial || serial.trim() !== serial) throw new Error("android-local requires ANDROID_SERIAL so endpoint forwarding targets exactly one connected Android device.");
+  const sdkRoot = environment.ANDROID_HOME;
+  if (!sdkRoot) throw new Error("android-local requires ANDROID_HOME to locate ADB.");
+  const adb = resolve(sdkRoot, "platform-tools", "adb");
+  const run = options.spawnSync ?? spawnSync;
+  const execute = (args, stage) => {
+    const result = run(adb, ["-s", serial, ...args], { encoding: "utf8" });
+    if (result.error || result.status !== 0) throw new Error(`android-local ${stage} failed for the selected device.`);
+    return result.stdout ?? "";
+  };
+  if (execute(["get-state"], "device check").trim() !== "device") throw new Error("android-local selected device is not online.");
+  const mappings = execute(["reverse", "--list"], "reverse-map check")
+    .split(/\r?\n/u)
+    .map((line) => line.trim().split(/\s+/u).slice(-2))
+    .filter((parts) => parts.length === 2 && parts[0].startsWith("tcp:") && parts[1].startsWith("tcp:"));
+  const activeMappings = [...mappings];
+  for (const originValue of [environment.EXPO_PUBLIC_PATTERNLY_API_ORIGIN, environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN]) {
+    const origin = new URL(originValue);
+    const port = origin.port || "80";
+    const deviceEndpoint = `tcp:${port}`;
+    const existing = activeMappings.filter(([devicePort]) => devicePort === deviceEndpoint);
+    if (existing.some(([, hostPort]) => hostPort !== deviceEndpoint)) {
+      throw new Error(`android-local found a conflicting ADB reverse mapping for ${deviceEndpoint} on the selected device.`);
+    }
+    if (existing.length === 0) {
+      execute(["reverse", deviceEndpoint, deviceEndpoint], "loopback forwarding setup");
+      activeMappings.push([deviceEndpoint, deviceEndpoint]);
+    }
+  }
 }
 
 function prepareCurrentContent(repositoryRoot) {

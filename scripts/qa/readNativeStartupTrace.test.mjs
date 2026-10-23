@@ -16,6 +16,16 @@ test("origins must be loopback with explicit port and no extra URL capabilities"
   assert.equal(parseOrigin("http://127.0.0.1:8082").hostname, "127.0.0.1");
 });
 const target = { type: "node", appId: "com.lkurczab.patternly", deviceName: "iPhone 17", id: "local-1", reactNative: { logicalDeviceId: "local" }, webSocketDebuggerUrl: "ws://localhost:8082/inspector/debug?device=local&page=1" };
+
+test("local Android inspection requires its exact separate package and observed device", () => {
+  const origin = parseOrigin("http://localhost:8082");
+  const local = { ...target, appId: "com.lkurczab.patternly.local", deviceName: "2201117TY - 13 - API 33" };
+  assert.equal(selectTarget([local], origin, local.appId), local.webSocketDebuggerUrl);
+  assert.throws(() => selectTarget([local], origin), /target_rejected/);
+  assert.throws(() => selectTarget([{ ...local, deviceName: "iPhone 17" }], origin, local.appId), /target_rejected/);
+  assert.throws(() => selectTarget([{ ...local, appId: target.appId }], origin, local.appId), /target_rejected/);
+  assert.throws(() => selectTarget([local, target], origin, local.appId), /target_rejected/);
+});
 test("target is exact and rejects ambiguity, other devices and cross-origin sockets", () => {
   const origin = parseOrigin("http://localhost:8082");
   assert.equal(selectTarget([target], origin), target.webSocketDebuggerUrl);

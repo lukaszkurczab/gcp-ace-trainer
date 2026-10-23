@@ -8,7 +8,7 @@ import type { RootStackParamList } from "../../navigation";
 import { ActivityView } from "./ActivityView";
 import { navigateToActivityResult } from "./activityNavigation";
 import { ALL_ACTIVITY_TRACKS, buildActivityModel, type ActivityFilter } from "./tabs/activityModel";
-import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
+import { readLearningPlanStorageScope } from "../../application/learningReadModels";
 import { useScopedReadSnapshot } from "../../application/useScopedReadSnapshot";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ACTIVITY>;

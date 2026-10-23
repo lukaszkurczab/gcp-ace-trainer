@@ -6,20 +6,25 @@ const require = createRequire(import.meta.url);
 const { ROUTES } = require('../../constants/routes.ts');
 const { getTrackDisplay } = require('../../domain/index.ts');
 const { getSettingsAccountPresentation } = require('./tabs/settingsAccountPresentation.ts');
+const { isHomeSnapshotOwnerCurrent } = require('./homeSnapshotOwner.ts');
 const { LearningProjectionUnavailableError, isLocalLearningProjectionFailure, requireHomePlanReadIntegrity } = require("../../application/learningProjectionFailure.ts");
 const { runtimeSelectors } = require('../../testing/runtimeSelectors.ts');
 
 function shell(overrides = {}) {
   const hooks = controlledHooks();
+  const shellStorageScope = {};
+  const shellTrackId = overrides.shellTrackId ?? 'aws-certified-solutions-architect-associate';
   const bindings = {
     ...Object.fromEntries(['View', 'Screen', 'EmptyState', 'AppShellHeader', 'AppBottomNavigation', 'HomeLoadingSkeleton', 'ProgressLoadingSkeleton', 'SettingsLoadingSkeleton', 'HomeTab', 'ProgressTab', 'SettingsTab'].map(name => [name, name])),
     ...hooks.bindings, useRef: current => ({ current }),
     usePatternlyAccount: () => ({ state: { kind: 'guest' }, readCurrentPremiumAccess: () => ({ kind: 'free' }) }),
     useHomeResumeUnavailable: () => null, useThemedStyles: () => ({}), createStyles: () => ({}),
     useTranslation: () => ({ t: key => key }), markStartup: () => {},
-    getSettingsAccountPresentation, getTrackDisplay, runtimeSelectors, ROUTES,
+    getSettingsAccountPresentation, getTrackDisplay, isHomeSnapshotOwnerCurrent, runtimeSelectors, ROUTES,
     CODING_INTERVIEW_TRACK_ID: 'coding-interview-dsa-problem-solving',
-    getActiveTrackId: async () => 'aws-certified-solutions-architect-associate',
+    getActiveTrackId: async () => shellTrackId,
+    readActiveTrackId: () => shellTrackId,
+    readLearningPlanStorageScope: () => shellStorageScope,
     captureProfileReadFence: () => () => {}, captureHomeShellReadFence: () => () => {},
     projectHomePractice: () => ({ kind: "none" }),
     projectProgressEvidence: () => ({ capturedAt: "2026-10-15T10:00:00Z" }), isLocalLearningProjectionFailure, requireHomePlanReadIntegrity,
@@ -50,7 +55,7 @@ test('Home shell retains global read error and Retry recovery', async () => {
 });
 
 test('Home shell retains local Coding Interview dashboard failure', async () => {
-  const ui = shell({ getActiveTrackId: async () => 'coding-interview-dsa-problem-solving', loadCodingInterviewDashboard: async () => { throw new LearningProjectionUnavailableError('coding_dashboard'); } });
+  const ui = shell({ shellTrackId: 'coding-interview-dsa-problem-solving', loadCodingInterviewDashboard: async () => { throw new LearningProjectionUnavailableError('coding_dashboard'); } });
   ui.render('home'); await settle();
   const home = nodes(ui.render('home')).find(node => node.type === 'HomeTab');
   assert.equal(home.props.dashboardError, 'Coding Interview recommendation is unavailable.');
@@ -99,7 +104,7 @@ test('profile, storage, integrity and unknown dashboard failures block Settings'
   const { CanonicalEvidenceIntegrityError, StorageReadError } = require('../../storage/errors.ts');
   const { TrainingApplicationFailure } = require('../../application/trainingLifecycle/contracts.ts');
   for (const error of [new ProfileReadFenceChangedError(), new CanonicalEvidenceIntegrityError(), new LearningProjectionUnavailableError('coding_dashboard', new CanonicalEvidenceIntegrityError()), new LearningProjectionUnavailableError('coding_dashboard', new ProfileReadFenceChangedError()), new StorageReadError('test-fixture'), new TrainingApplicationFailure('persistence_failure', 'fixture', new CanonicalEvidenceIntegrityError()), Error('unknown projection failure')]) {
-    const ui = shell({ getActiveTrackId: async () => 'coding-interview-dsa-problem-solving', loadCodingInterviewDashboard: async () => { throw error; } });
+    const ui = shell({ shellTrackId: 'coding-interview-dsa-problem-solving', loadCodingInterviewDashboard: async () => { throw error; } });
     ui.render('settings'); await settle();
     const tree = nodes(ui.render('settings'));
     assert.ok(tree.some(node => node.type === 'EmptyState' && node.props.title === 'Patternly is unavailable'), error.name);
@@ -127,7 +132,7 @@ test('a local projection failure cannot hide a final stale profile/source fence'
 test('Home shell supplies the same captured durable arrays and clock to Home and Progress projections', async () => {
   const attempts = [], reviews = [], captured = [];
   const ui = shell({
-    getActiveTrackId: async () => 'coding-interview-dsa-problem-solving',
+    shellTrackId: 'coding-interview-dsa-problem-solving',
     getTrainingAttempts: async () => ({ ok: true, value: attempts }),
     getReviewQueueItems: async () => ({ ok: true, value: reviews }),
     homePlanSnapshotReader: { read: async input => { captured.push({ now: input.now }); return null; } },

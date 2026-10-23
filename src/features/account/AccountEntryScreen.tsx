@@ -21,6 +21,7 @@ import {
 } from "react-native";
 import type { Edge } from "react-native-safe-area-context";
 import * as Google from "expo-auth-session/providers/google";
+import Constants from "expo-constants";
 import { StatusBar } from "expo-status-bar";
 import GoogleIcon from "../../assets/icons/google.svg";
 import { getTrackDisplay, type TrackId } from "../../domain";
@@ -59,7 +60,7 @@ import {
 import { useAccountCommand } from "./useAccountCommand";
 import { accountSyncAutomaticRetryAllowed, getAccountSyncConflictPresentation } from "./accountSyncConflictPresentation";
 import { useSettingsRecoveryReturn } from "./useSettingsRecoveryReturn";
-import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
+import { readLearningPlanStorageScope } from "../../application/learningReadModels";
 
 type AccountEntryProps = NativeStackScreenProps<
   RootStackParamList,
@@ -313,6 +314,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   };
   const { t: tSettings } = useTranslation("settings");
   const firebaseConfig = useMemo(() => readFirebaseClientConfiguration(), []);
+  const isLocalAndroidApp = Platform.OS === "android"
+    && Constants.expoConfig?.android?.package === "com.lkurczab.patternly.local"
+    && Constants.expoConfig?.extra?.patternlyRuntime === "smoke";
 
   useEffect(() => {
     const consumeUrl = (url: string | null) => {
@@ -687,7 +691,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
               text={text.continueWithApple}
             />
           ) : null}
-          {firebaseConfig.kind === "configured" && getFirebaseGoogleClientId(firebaseConfig.value, Platform.OS) ? (
+          {isLocalAndroidApp ? (
+            <InfoBlock body={text.providerUnavailable} title={text.continueWithGoogle} testID="account-google-provider-unavailable" tone="warning" />
+          ) : firebaseConfig.kind === "configured" && getFirebaseGoogleClientId(firebaseConfig.value, Platform.OS) ? (
             <GoogleProviderButton
               accountRef={accountRef}
               configuration={firebaseConfig.value}
