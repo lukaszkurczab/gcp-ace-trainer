@@ -9,12 +9,22 @@ export function sha256Utf8(value: string): string {
   const w = new Uint32Array(64);
   for (let offset=0; offset<bytes.length; offset+=64) {
     for (let i=0;i<16;i+=1) { const p=offset+i*4; w[i]=((bytes[p]!<<24)|(bytes[p+1]!<<16)|(bytes[p+2]!<<8)|bytes[p+3]!)>>>0; }
-    for (let i=16;i<64;i+=1) { const a=w[i-15]!,b=w[i-2]!; w[i]=(w[i-16]!+(r(a,7)^r(a,18)^(a>>>3))+w[i-7]!+(r(b,17)^r(b,19)^(b>>>10)))>>>0; }
+    for (let i=16;i<64;i+=1) {
+      const a=w[i-15]!,b=w[i-2]!;
+      const sigma0=((a>>>7)|(a<<25))^((a>>>18)|(a<<14))^(a>>>3);
+      const sigma1=((b>>>17)|(b<<15))^((b>>>19)|(b<<13))^(b>>>10);
+      w[i]=(w[i-16]!+sigma0+w[i-7]!+sigma1)>>>0;
+    }
     let a=h0,b=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;
-    for (let i=0;i<64;i+=1) { const t1=(h+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[i]!+w[i]!)>>>0; const t2=((r(a,2)^r(a,13)^r(a,22))+((a&b)^(a&c)^(b&c)))>>>0; h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0; }
+    for (let i=0;i<64;i+=1) {
+      const sum1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7));
+      const sum0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10));
+      const t1=(h+sum1+((e&f)^(~e&g))+K[i]!+w[i]!)>>>0;
+      const t2=(sum0+((a&b)^(a&c)^(b&c)))>>>0;
+      h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;
+    }
     h0=(h0+a)>>>0;h1=(h1+b)>>>0;h2=(h2+c)>>>0;h3=(h3+d)>>>0;h4=(h4+e)>>>0;h5=(h5+f)>>>0;h6=(h6+g)>>>0;h7=(h7+h)>>>0;
   }
   return [h0,h1,h2,h3,h4,h5,h6,h7].map((word)=>word.toString(16).padStart(8,"0")).join("");
 }
-function r(value: number, shift: number): number { return (value>>>shift)|(value<<(32-shift)); }
 function utf8Bytes(value: string): number[] { const bytes:number[]=[]; for(let i=0;i<value.length;i+=1){let cp=value.charCodeAt(i);if(cp>=0xd800&&cp<=0xdbff&&i+1<value.length){const next=value.charCodeAt(i+1);if(next>=0xdc00&&next<=0xdfff){cp=0x10000+((cp-0xd800)<<10)+(next-0xdc00);i+=1;}}if(cp<=0x7f)bytes.push(cp);else if(cp<=0x7ff)bytes.push(0xc0|(cp>>>6),0x80|(cp&63));else if(cp<=0xffff)bytes.push(0xe0|(cp>>>12),0x80|((cp>>>6)&63),0x80|(cp&63));else bytes.push(0xf0|(cp>>>18),0x80|((cp>>>12)&63),0x80|((cp>>>6)&63),0x80|(cp&63));}return bytes; }

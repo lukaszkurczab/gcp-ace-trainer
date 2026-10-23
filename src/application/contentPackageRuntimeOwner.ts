@@ -1,5 +1,5 @@
 import { indexCaseRecipes } from "../content/canonical/caseRecipe";
-import { resolveRetainedClaudeTrack } from "../content/canonical/runtimeCatalog";
+import { resolveRetainedClaudeTrack, type VerificationObserver } from "../content/canonical/runtimeCatalog";
 import { createCanonicalTrainingFamilyComposition } from "./canonicalTrainingFamilyComposition";
 import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime } from "../content/canonical";
 import { isCanonicalSafeIdentity } from "../domain/identity/canonicalIdentity";
@@ -41,6 +41,7 @@ export class ContentPackageRuntimeOwner {
   private readonly installedExact = new Map<string, ResolvedPackageRuntime>();
   private readonly discovered = new Map<string, ResolvedPackageRuntime>();
   private readonly sourceTracks = new Map<string, CanonicalTrackRuntime>();
+  subscribeBundledVerification(observer: VerificationObserver): () => void { return this.catalogOwner.subscribeVerification(observer); }
   async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string; caseId?: string }>): Promise<ResolvedPackageRuntime> {
     const track = (await this.catalogOwner.load()).getTrack(input.trackId);
     assertFamily(track, input.familyId);

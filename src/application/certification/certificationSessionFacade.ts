@@ -1,3 +1,4 @@
+import { beginStartupSpan } from "../../infrastructure/diagnostics/startupTrace";
 import type { TrackQuestionPresentation } from "../../domain/tracks/trackAdmission";
 import { certificationQuestionPresentation } from "./certificationQuestionPresentation";
 import { isCaseAttemptEvidence, sessionCaseStates } from "../../domain/learning/caseEvidence";
@@ -163,8 +164,12 @@ export async function getCertificationPracticeProjection(): Promise<Certificatio
   return Object.freeze({ session, questionPresentation: certificationQuestionPresentation(session.trackId), question: projectCertificationPracticeQuestion(question, presentation.model), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, elapsedForegroundMs: time.elapsedForegroundMs, operation, response, feedback });
 }
 export async function submitCertificationPracticeResponse(response: CanonicalQuestionResponse): Promise<void> {
-  await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireCertificationPractice());
-  await getTrainingLifecycleUseCases().submitPracticeResponse(response);
+  const endCheckpoint = beginStartupSpan("practice_response_checkpoint");
+  try { await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireCertificationPractice()); }
+  finally { endCheckpoint(); }
+  const endAnswer = beginStartupSpan("practice_answer_command");
+  try { await getTrainingLifecycleUseCases().submitPracticeResponse(response); }
+  finally { endAnswer(); }
 }
 export async function retryCertificationPracticeResponse(): Promise<void> { await getTrainingLifecycleUseCases().retryPracticeSubmission(); }
 
@@ -248,7 +253,11 @@ export async function getCertificationExamReviewProjection(sessionId: string): P
   assertCurrentProfile();
   return projection;
 }
-export async function advanceCertificationPracticeSession(): Promise<TrainingSession> { return getTrainingLifecycleUseCases().advancePracticeSession(); }
+export async function advanceCertificationPracticeSession(): Promise<TrainingSession> {
+  const endAdvance = beginStartupSpan("practice_advance_command");
+  try { return await getTrainingLifecycleUseCases().advancePracticeSession(); }
+  finally { endAdvance(); }
+}
 export async function recoverCertificationPracticeOperation(): Promise<void> { await getTrainingLifecycleUseCases().recoverActiveTrainingOperation(); }
 export function subscribeCertificationPracticeOperation(sessionId: string, listener: (operation: PracticeDurableOperationState) => void): () => void {
   return getTrainingLifecycleUseCases().subscribeOperationProjection(sessionId, (operation) => {

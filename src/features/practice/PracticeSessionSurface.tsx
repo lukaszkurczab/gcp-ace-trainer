@@ -239,6 +239,7 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
     <View style={styles.actions}>
       {props.primaryAction ? (
         <Button
+          accessibilityLabel={t(props.primaryAction.label)}
           disabled={!props.primaryAction.enabled}
           labelStyle={styles.sessionActionLabel}
           loading={props.primaryAction.loading}

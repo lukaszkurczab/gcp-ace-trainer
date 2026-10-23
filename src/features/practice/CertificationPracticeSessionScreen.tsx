@@ -1,4 +1,4 @@
-import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
+import { beginStartupSpan, markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { usePreventRemove, type NavigationAction } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
@@ -33,8 +33,6 @@ import { Button, EmptyState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { isCertificationPracticeModeId } from "../../tracks/certification";
-import { useAppPreferences } from "../../preferences";
-import type { PracticeSessionRouteParams } from "./sessionConfig";
 import type { TrainingSession } from "../../domain";
 import { getTrackRegistration } from "../../domain";
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
@@ -43,6 +41,9 @@ import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./Practi
 import { getCertificationMode } from "../../tracks/certification";
 import { toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
 import { buildCertificationPracticeTarget } from "./sessionConfig";
+import { captureProfileReadFence } from "../../application/profileReadFence";
+
+type PendingPracticeAction = { owner: object; sessionId: string; occurrenceId: string; ordinal: number; nextOccurrenceId: string | null; phase: "submitting_before_journal" | "advancing" | "completing"; assertProfile: () => void; };
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeCertificationPracticeSession>>, { kind: "verified" }>;
@@ -63,7 +64,39 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const permitRouteExit = useRef(false);
   const pendingRouteAction = useRef<NavigationAction | null>(null);
   const actionPending = useRef(false);
-  const pendingActionProjection = useRef<CertificationPracticeProjection | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingPracticeAction | null>(null);
+  const actionToken = useRef<PendingPracticeAction | null>(null);
+  const pendingActionProjection = useRef<{ token: PendingPracticeAction; projection: CertificationPracticeProjection } | null>(null);
+  const routeOwner = useRef({ params: route.params, key: route.key });
+  const projectionRef = useRef(projection);
+  const projectionFence = useRef<(() => void) | null>(null);
+  const refreshEpoch = useRef(0);
+  if (routeOwner.current.params !== route.params || routeOwner.current.key !== route.key) {
+    routeOwner.current = { params: route.params, key: route.key };
+    actionToken.current = null;
+    actionPending.current = false;
+    pendingActionProjection.current = null;
+    refreshEpoch.current += 1;
+  }
+  projectionRef.current = projection;
+  const owner = routeOwner.current;
+  const matchesActionPosition = (token: PendingPracticeAction, current: CertificationPracticeProjection | null) =>
+    current?.session.id === token.sessionId && (
+      (current.ordinal === token.ordinal && current.occurrenceId === token.occurrenceId)
+      || (token.phase === "advancing" && current.ordinal === token.ordinal + 1 && current.occurrenceId === token.nextOccurrenceId)
+    );
+  const isCurrentAction = (token: PendingPracticeAction) => {
+    if (routeOwner.current !== token.owner || actionToken.current !== token) return false;
+    try { token.assertProfile(); } catch { return false; }
+    return matchesActionPosition(token, projectionRef.current);
+  };
+  const clearAction = (token: PendingPracticeAction) => {
+    if (!isCurrentAction(token)) return;
+    actionToken.current = null;
+    pendingActionProjection.current = null;
+    actionPending.current = false;
+    setPendingAction(null);
+  };
   const recoveryInFlight = useRef(false);
   const mode = isCertificationPracticeModeId(route.params.mode) ? route.params.mode : null;
 
@@ -77,6 +110,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   });
 
   const applyProjection = (next: CertificationPracticeProjection) => {
+    projectionFence.current = captureProfileReadFence();
     setProjection(next);
     setSelection((current) => reconcilePracticeChoiceSelection({
       current,
@@ -88,32 +122,54 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     setSelectionError(null);
   };
   const refresh = async () => {
-    const next = await getCertificationPracticeProjection();
-    applyProjection(next);
+    const assertProfile = captureProfileReadFence();
+    const epoch = refreshEpoch.current;
+    const sessionId = projectionRef.current?.session.id;
+    try {
+      const next = await getCertificationPracticeProjection();
+      try { assertProfile(); } catch { return; }
+      if (routeOwner.current !== owner || epoch !== refreshEpoch.current || (sessionId && next.session.id !== sessionId)) return;
+      applyProjection(next);
+    } catch (cause) {
+      try { assertProfile(); } catch { return; }
+      if (routeOwner.current === owner && epoch === refreshEpoch.current) throw cause;
+    }
   };
   useEffect(() => {
-    if (!hasReachedPracticeActionProjection(pendingActionProjection.current, projection)) return;
-    pendingActionProjection.current = null;
-    actionPending.current = false;
+    const pending = pendingActionProjection.current;
+    if (pending && hasReachedPracticeActionProjection(pending.projection, projection)) clearAction(pending.token);
   }, [projection]);
   useEffect(() => {
     if (!mode) return;
     let live = true;
     let foregroundEntered = false;
+    const assertProfile = captureProfileReadFence();
+    const isLive = () => {
+      if (!live || routeOwner.current !== owner) return false;
+      try { assertProfile(); return true; } catch { return false; }
+    };
+    setProjection(null);
     setCompletionFailure(null);
     setCompletionOperation(null);
     setRecoveryFailure(null);
     void (async () => {
       try {
     const opened = await openCertificationPracticeSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, trackId: route.params.trackId, feedbackMode: route.params.feedbackMode, reviewSource: mode === "certification-quick-review" && (route.params.reviewSource === "due_queue" || route.params.reviewSource === "manual_request") ? route.params.reviewSource : undefined, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-scenario-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, competency: route.params.competencyId, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, feedbackMode: route.params.feedbackMode, reviewSource: mode === "certification-weak-area-review" && (route.params.reviewSource === "due_queue" || route.params.reviewSource === "manual_request") ? route.params.reviewSource : undefined, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : { modeId: mode, ...(route.params.preset ? { preset: route.params.preset, caseId: route.params.caseId } : {}), trackId: route.params.trackId, requestedLength: route.params.sessionLength, ...buildCertificationPracticeTarget(route.params.topicId, route.params.nodeId), ...(mode === "certification-focus-practice" && route.params.mentalUnitId ? { mentalUnitId: route.params.mentalUnitId, expectedContentVersion: route.params.expectedContentVersion, expectedArtifactSha256: route.params.expectedArtifactSha256 } : {}), feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId });
-        if (opened.kind === "active_session_conflict") { if (live) setConflict(opened.session); return; }
+        if (opened.kind === "active_session_conflict") { if (isLive()) setConflict(opened.session); return; }
+        if (!isLive()) return;
         await enterCertificationPracticeForeground();
         foregroundEntered = true;
-        if (live) applyProjection(opened.projection);
-      } catch (cause) { if (live) setError(describeSessionPreparationFailure(cause, (message) => t(message), t("Cloud practice is unavailable."))); }
+        if (isLive()) applyProjection(opened.projection);
+      } catch (cause) { if (isLive()) setError(describeSessionPreparationFailure(cause, (message) => t(message), t("Cloud practice is unavailable."))); }
     })();
     return () => {
       live = false;
+      if (routeOwner.current === owner) {
+        actionToken.current = null;
+        actionPending.current = false;
+        pendingActionProjection.current = null;
+        refreshEpoch.current += 1;
+      }
       if (foregroundEntered && !permitRouteExit.current) void leaveCertificationPracticeForeground().catch(() => undefined);
     };
   }, [mode, route.params]);
@@ -138,7 +194,10 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
 
   useEffect(() => {
     if (!projection) return;
+    const assertProfile = captureProfileReadFence();
     return subscribeCertificationPracticeOperation(projection.session.id, (operation) => {
+      try { assertProfile(); } catch { return; }
+      if (routeOwner.current !== owner) return;
       setCompletionOperation(operation.kind === "completing" || operation.kind === "completion_failed" || operation.kind === "completed" ? operation : null);
     });
   }, [projection?.session.id]);
@@ -164,12 +223,17 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const uncertainResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction === "reconcile";
   const retryFrozenResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction === "retry_same_command";
   const frozenPracticeResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction !== "submit_again";
+  const localPending = pendingAction?.owner === owner && actionToken.current === pendingAction ? pendingAction : null;
+  const canonicalPhase = renderedCompletionOperation?.kind ?? projection.operation.kind;
+  const transientPhase = localPending && !pendingActionProjection.current
+    && (canonicalPhase === "unanswered" || canonicalPhase === "feedback" || canonicalPhase === "advance_failed" || (retryFrozenResponse && canonicalPhase === "submit_journal_failed"))
+    ? localPending.phase : canonicalPhase;
   const phase: PracticeSurfacePhase = exitFailure === "retry_abandon" || exitFailure === "retry_checkpoint"
     ? "abandonment_failed_before_journal"
     : exitFailure === "recover_abandon" || exitFailure === "recover_operation"
       ? "abandonment_recovery_required"
-      : uncertainResponse ? "submit_outcome_unknown" : renderedCompletionOperation?.kind ?? projection.operation.kind;
-  const editable = !exitFailure && !completionFailure && !frozenPracticeResponse && allowsPracticeResponseEditing(phase);
+      : uncertainResponse ? "submit_outcome_unknown" : transientPhase;
+  const editable = !localPending && !exitFailure && !completionFailure && !frozenPracticeResponse && allowsPracticeResponseEditing(phase);
   const operationNotice = noticeForPracticeOperation(renderedCompletionOperation ?? projection.operation);
   const notice = recoveryFailure
     ? { message: recoveryFailure, tone: "error" as const }
@@ -193,65 +257,79 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const canRecover = !exitFailure && !completionFailure && "error" in projection.operation && projection.operation.error.allowedAction === "recover";
   const canAdvance = !exitFailure && !completionFailure && (projection.operation.kind === "feedback" || projection.operation.kind === "advance_failed");
   const selected = selection?.sessionId === projection.session.id && selection.occurrenceId === projection.occurrenceId ? selection.selectedOptionIds : [];
-  const feedbackStateById = new Map(feedback?.controls?.map((control) => [control.id, control.state]) ?? []);
   const toggle = (id: string) => setSelection((current) => {
     const currentIds = current?.sessionId === projection.session.id && current.occurrenceId === projection.occurrenceId ? current.selectedOptionIds : [];
     const selectedOptionIds = multiple ? (currentIds.includes(id) ? currentIds.filter((item) => item !== id) : [...currentIds, id]) : [id];
     return Object.freeze({ sessionId: projection.session.id, occurrenceId: projection.occurrenceId, selectedOptionIds: Object.freeze(selectedOptionIds) });
   });
-  const refreshAfterCommand = async (message: string) => {
+  const refreshAfterCommand = async (message: string, token?: PendingPracticeAction) => {
+    const assertProfile = token?.assertProfile ?? captureProfileReadFence();
+    if (token && !isCurrentAction(token)) return;
+    refreshEpoch.current += 1;
+    const endProjection = beginStartupSpan("practice_command_projection");
     try {
       const next = await getCertificationPracticeProjection();
-      pendingActionProjection.current = next;
+      try { assertProfile(); } catch { return; }
+      if (routeOwner.current !== owner || (token && !isCurrentAction(token))) return;
+      if (token && !matchesActionPosition(token, next)) return;
+      refreshEpoch.current += 1;
+      if (token) pendingActionProjection.current = { token, projection: next };
       applyProjection(next);
     } catch (cause) {
-      pendingActionProjection.current = null;
-      actionPending.current = false;
+      try { assertProfile(); } catch { return; }
+      if (routeOwner.current !== owner || (token && !isCurrentAction(token))) return;
+      if (token) clearAction(token);
       setError(describeOperationalFailure(cause, t(message)));
-    }
+    } finally { endProjection(); }
+  };
+  const isCurrentQuestion = () => {
+    if (routeOwner.current !== owner || !hasReachedPracticeActionProjection(projection, projectionRef.current)) return false;
+    try { projectionFence.current?.(); return true; } catch { return false; }
+  };
+  const beginAction = (phase: PendingPracticeAction["phase"]) => {
+    const token: PendingPracticeAction = { owner, sessionId: projection.session.id, occurrenceId: projection.occurrenceId, ordinal: projection.ordinal, nextOccurrenceId: phase === "advancing" ? projection.session.itemOrder[projection.session.currentItemIndex + 1]?.occurrenceId ?? null : null, phase, assertProfile: projectionFence.current ?? captureProfileReadFence() };
+    actionPending.current = true;
+    actionToken.current = token;
+    setPendingAction(token);
+    return token;
   };
   const submit = async () => {
-    if (actionPending.current || (!editable && !retryFrozenResponse)) return;
+    if (!isCurrentQuestion() || actionPending.current || (!editable && !retryFrozenResponse)) return;
     if (!selected.length) { setSelectionError(t("Choose an answer before submitting.")); return; }
-    actionPending.current = true;
+    const token = beginAction("submitting_before_journal");
+    const endHandler = beginStartupSpan("practice_submit_handler");
     try {
       try {
         if (retryFrozenResponse) await retryCertificationPracticeResponse();
         else await submitCertificationPracticeResponse(projection.question.interaction.type === "choice_multiple" ? { type: "choice_multiple", optionIds: selected } : { type: "choice_single", optionId: selected[0]! });
-      }
-      catch { await refreshAfterCommand("We couldn't display your answer. Try again."); return; }
-      await refreshAfterCommand("We couldn't display your answer. Try again.");
-    } catch {
-      pendingActionProjection.current = null;
-      actionPending.current = false;
-    }
+      } catch { /* Canonical projection determines the allowed retry/recovery action. */ }
+      await refreshAfterCommand("We couldn't display your answer. Try again.", token);
+    } finally { endHandler(); }
   };
   const next = async () => {
-    if (actionPending.current || !canAdvance) return;
-    actionPending.current = true;
+    if (!isCurrentQuestion() || actionPending.current || !canAdvance) return;
+    const finishing = projection.operation.kind !== "advance_failed" && projection.ordinal === projection.total;
+    const token = beginAction(finishing ? "completing" : "advancing");
+    const endHandler = beginStartupSpan("practice_advance_handler");
     try {
-      if (projection.operation.kind === "advance_failed") {
-        try { await advanceCertificationPracticeSession(); }
-        catch { await refreshAfterCommand("We couldn't open the next question. Try again."); return; }
-        await refreshAfterCommand("We couldn't open the next question. Try again.");
-        return;
-      }
-      if (projection.ordinal === projection.total) {
+      if (finishing) {
         try {
           const result = await completeCertificationPracticeSession();
+          if (!isCurrentAction(token)) return;
+          if ((result.kind === "verified" ? result.value.session.id : result.expectedSessionId) !== token.sessionId) return;
           await applyCompletionResult(result);
-          if (result.kind !== "verified") actionPending.current = false;
+          if (result.kind !== "verified") clearAction(token);
+        } catch (cause) {
+          if (!isCurrentAction(token)) return;
+          clearAction(token);
+          setSelectionError(describeOperationalFailure(cause, t("We couldn't finish the session. Try again.")));
         }
-        catch (cause) { actionPending.current = false; setSelectionError(describeOperationalFailure(cause, t("We couldn't finish the session. Try again."))); }
         return;
       }
       try { await advanceCertificationPracticeSession(); }
-      catch { await refreshAfterCommand("We couldn't open the next question. Try again."); return; }
-      await refreshAfterCommand("We couldn't open the next question. Try again.");
-    } catch {
-      pendingActionProjection.current = null;
-      actionPending.current = false;
-    }
+      catch { /* Canonical projection determines the allowed retry/recovery action. */ }
+      await refreshAfterCommand("We couldn't open the next question. Try again.", token);
+    } finally { endHandler(); }
   };
   const recover = async () => {
     if (!canRecover || recoveryInFlight.current) return;
@@ -410,7 +488,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     modeLabel={t(getCertificationMode(mode).title)}
     notice={notice}
     onAbandon={() => void endSession()}
-    onChoicePress={(optionId) => { setSelectionError(null); toggle(optionId); }}
+    onChoicePress={(optionId) => { if (actionPending.current || !isCurrentQuestion() || !editable) return; setSelectionError(null); toggle(optionId); }}
     onComplexityValuePress={() => undefined}
     onConfirmLeave={() => void pause()}
     onDismissExit={() => { pendingRouteAction.current = null; setExit("none"); }}

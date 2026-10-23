@@ -22,7 +22,7 @@ import { hasGuestAccess } from "../../storage/repositories/guestAccessRepository
 import { captureExactMissingActorAnchor, captureExactMissingActorFenceAtConfirmation, type ExactMissingActorAnchor } from "../../application/exactMissingActorFence";
 import { prepareLifecycleAfterProfileCompletion } from "./profilePreparationBarrier";
 import type { ProfilePreparationHandoffToken } from "../../application/account/profilePreparationHandoff";
-import { createContentPreparationAttempt } from "./contentPreparationAttempt";
+import { createContentPreparationAttempt, type ContentPreparationOutcome } from "./contentPreparationAttempt";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -123,12 +123,18 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
     const endGateTrace = beginStartupSpan("content_gate");
     const generation = ++bootstrapGeneration.current;
     const lease = captureActiveProfileStorageLease();
-    const attempt = createContentPreparationAttempt(
-      () => bootstrapGeneration.current === generation && (!activeHandoffToken || activeHandoffToken.isCurrent()),
-      () => lease !== null && isActiveProfileStorageLeaseCurrent(lease),
-    );
+    const isCurrent = () => bootstrapGeneration.current === generation && (!activeHandoffToken || activeHandoffToken.isCurrent())
+      && (lease === null || isActiveProfileStorageLeaseCurrent(lease));
+    const attempt = createContentPreparationAttempt({
+      isCurrent,
+      canAcceptLateSuccess: () => lease !== null && isActiveProfileStorageLeaseCurrent(lease),
+      now: () => performance.now(),
+      stallMs: CONTENT_PREPARATION_TIMEOUT_MS,
+    });
     const bootstrapProgress = createBootstrapProgressObserver();
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let timerEpoch = 0;
+    let unsubscribeVerification = () => {};
     let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
     let resumeActorFence: HomeResumeActorFence | null = null;
     let currentPhase: ContentPreparationPhase = "opening-storage";
@@ -136,16 +142,31 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
     exactMissingActorAnchor.current = null;
 
     const setPhase = (phase: ContentPreparationPhase) => {
+      if (!isCurrent()) return;
       markStartup(phase);
       currentPhase = phase;
       if (attempt.pending()) setState({ kind: "loading", phase });
     };
 
-    const complete = (nextState: ContentPreparationState) => {
-      if (!attempt.complete(nextState.kind === "ready" || nextState.kind === "home_ready_resume_unavailable")) return;
+    const clearTimer = () => {
+      timerEpoch++;
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      timeoutId = undefined;
+    };
+
+    const publishOutcome = (outcome: ContentPreparationOutcome, nextState?: ContentPreparationState) => {
+      if (!isCurrent() || outcome.publication === "none") return;
+      clearTimer();
+      if (outcome.publication === "timeout") {
+        markStartup("blocking");
+        endGateTrace();
+        setState({ kind: "blocking", phase: currentPhase, reason: preparationTimeoutReason(currentPhase) });
+        if (materializedTransitionToken) accountRef.current.completeMaterializedAccountTransition(materializedTransitionToken);
+        return;
+      }
+      if (!nextState) return;
       markStartup(nextState.kind);
       endGateTrace();
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
       setState(nextState);
       if (materializedTransitionToken) accountRef.current.completeMaterializedAccountTransition(materializedTransitionToken);
       if (nextState.kind === "ready" && auditResetAwaitingBootstrap.current) {
@@ -154,17 +175,24 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
       }
     };
 
-    timeoutId = setTimeout(() => {
-      if (!attempt.timeout()) return;
-      markStartup("blocking");
-      endGateTrace();
-      setState({
-        kind: "blocking",
-        phase: currentPhase,
-        reason: preparationTimeoutReason(currentPhase),
-      });
-      if (materializedTransitionToken) accountRef.current.completeMaterializedAccountTransition(materializedTransitionToken);
-    }, CONTENT_PREPARATION_TIMEOUT_MS);
+    const armTimer = () => {
+      clearTimer();
+      if (!attempt.pending()) return;
+      const epoch = timerEpoch;
+      timeoutId = setTimeout(() => {
+        if (epoch !== timerEpoch || !isCurrent()) return;
+        publishOutcome(attempt.expireIfDue());
+        if (attempt.pending()) armTimer(); // An early timer wake is not progress.
+      }, Math.max(0, attempt.view().deadline - performance.now()));
+    };
+
+    const complete = (nextState: ContentPreparationState) => {
+      const outcome = attempt.complete(nextState.kind === "ready" || nextState.kind === "home_ready_resume_unavailable");
+      unsubscribeVerification();
+      publishOutcome(outcome, nextState); // Expiry is published even when the whole result was rejected.
+    };
+
+    armTimer();
 
     void (async () => {
       const initialUrl = __DEV__ && !initialUrlHandled.current ? await Linking.getInitialURL() : null;
@@ -175,7 +203,17 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
           setPhase("verifying-content");
           return (async () => {
             const endBundledTrace = beginStartupSpan("bundled_materialization");
-            try { await contentPackageRuntimeOwner.verifyBundledPackages(); }
+            try {
+              unsubscribeVerification = contentPackageRuntimeOwner.subscribeBundledVerification({
+                onWorkPlan(plan) { publishOutcome(attempt.attachWorkPlan(plan)); },
+                onVerifiedUnit(proof) {
+                  const outcome = attempt.acceptVerifiedUnit(proof);
+                  publishOutcome(outcome);
+                  if (outcome.accepted) armTimer();
+                },
+              });
+              await contentPackageRuntimeOwner.verifyBundledPackages();
+            }
             finally { endBundledTrace(); }
             const endInstalledTrace = beginStartupSpan("installed_inventory");
             try { await contentPackageRuntimeOwner.verifyInstalledPackages(); }
@@ -249,9 +287,10 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
     });
     return () => {
       attempt.cancel();
+      unsubscribeVerification();
       endGateTrace();
       bootstrapProgress.dispose();
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      clearTimer();
     };
   }, [activeHandoffToken, bootstrapRevision, t]);
 
