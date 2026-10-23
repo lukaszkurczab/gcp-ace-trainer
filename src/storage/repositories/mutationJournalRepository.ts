@@ -758,7 +758,7 @@ export function assertValidMutationJournal(value: unknown, context: LearningData
 export function hasPendingMutationJournal(): boolean { return getKeyValueStorage().getString(STORAGE_KEYS.ACTIVE_JOURNAL) !== undefined; }
 export function getActiveMutationJournal(context: LearningDataAdmissionContext): MutationJournalRecord | null {
   const record = readCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, (value) => hasValidMutationJournalIntegrity(value, context));
-  if (record !== null) assertValidMutationJournal(record, context);
+  if (record !== null && !hasValidOperationPlan(record, context)) throw new Error("Mutation journal record is unsupported.");
   return record;
 }
 export function reconcileMutationJournalWriteAttempt(value: unknown, expected: Readonly<{ commandFingerprint: string; planFingerprint: string }>, context: LearningDataAdmissionContext): "verified" | "conflict" | "unknown" {
@@ -887,7 +887,6 @@ export async function updateMutationJournalPhase(record: MutationJournalRecord, 
   return inJournalCriticalSection(async () => {
     assertValidMutationJournal(record, context);
     const current = getActiveMutationJournal(context);
-    if (current !== null) assertValidMutationJournal(current, context);
     if (!current || current.commandIdentity.fingerprint !== record.commandIdentity.fingerprint) throw new JournalWriteError(new Error("Pending mutation ownership changed."));
     // The plan fingerprint is computed over the immutable operation, scope,
     // command, expected revisions and write set with status normalized.
@@ -916,7 +915,6 @@ export async function clearMutationJournal(context: LearningDataAdmissionContext
   await inJournalCriticalSection(async () => {
     const current = getActiveMutationJournal(context);
     if (!current) return;
-    assertValidMutationJournal(current, context);
     if (expectedCommandFingerprint && current.commandIdentity.fingerprint !== expectedCommandFingerprint) {
       throw new JournalWriteError(new Error("Mutation journal ownership changed before clear."), "Mutation journal ownership changed before clear.");
     }

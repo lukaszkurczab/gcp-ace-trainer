@@ -16,6 +16,8 @@ import {
   hasValidMutationJournalIntegrity,
   isMutationJournalRecord,
   persistMutationJournal,
+  updateMutationJournalPhase,
+  clearMutationJournal,
 } from "./mutationJournalRepository";
 import { createMutationPlanFingerprint as fingerprint } from "./mutationJournalRepository";
 import { productionTrackAdmissionContext } from "../../application/tracks/trackAdmissionContext";
@@ -329,4 +331,28 @@ test("refuses to journal terminal cleanup when the foreground timer belongs to a
   ], "abandon_training_session"));
   assert.deepEqual(storage.snapshot(), before);
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
+});
+
+
+test("pending journal read, phase and clear reject corrupt, forged and operation-invalid records without changing bytes", async () => {
+  const record = journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_session", record: session() }]);
+  const operationInvalid = replanWithWrites(record, record.writes.filter((write) => write.kind !== "put_session"));
+  assert.equal(hasValidMutationJournalIntegrity(operationInvalid, productionLearningDataAdmissionContext), true);
+  assert.equal(isMutationJournalRecord(operationInvalid, productionLearningDataAdmissionContext), false);
+  const envelope = (payload: unknown) => JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision: 1, payload });
+  const cases = [
+    { name: "corrupt JSON", raw: "not-json", error: { name: "CorruptStoredRecordError" } },
+    { name: "wrong fingerprint", raw: envelope({ ...record, planFingerprint: "0".repeat(64) }), error: { name: "UnsupportedStoredRecordError" } },
+    { name: "forged physical order with recomputed fingerprint", raw: envelope(refingerprint(record, [...record.physicalWrites].reverse())), error: { name: "UnsupportedStoredRecordError" } },
+    { name: "valid integrity but incomplete operation", raw: envelope(operationInvalid), error: { name: "Error", message: "Mutation journal record is unsupported." } },
+  ];
+  for (const candidate of cases) {
+    const storage = installMemoryStorage();
+    storage.setString(STORAGE_KEYS.ACTIVE_JOURNAL, candidate.raw);
+    const before = storage.snapshot();
+    assert.throws(() => getActiveMutationJournal(productionLearningDataAdmissionContext), candidate.error, candidate.name);
+    await assert.rejects(() => updateMutationJournalPhase(record, "materialized", productionLearningDataAdmissionContext), candidate.error, candidate.name);
+    await assert.rejects(() => clearMutationJournal(productionLearningDataAdmissionContext, record.commandIdentity.fingerprint), candidate.error, candidate.name);
+    assert.deepEqual(storage.snapshot(), before, `${candidate.name} must preserve all stored bytes`);
+  }
 });
