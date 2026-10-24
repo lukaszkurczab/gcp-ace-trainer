@@ -1,4 +1,4 @@
-import { learningUnitIdentity } from "./mentalUnitEvidence";
+import { learningUnitIdentity, learningUnitInCurrentCatalog } from "./mentalUnitEvidence";
 import { isIndependentCaseAttempt } from "./caseEvidence";
 import type { TrainingAttempt } from "./trainingAttempt";
 import { createTrainingAttempt } from "./trainingAttempt";
@@ -233,7 +233,7 @@ export function evaluatePackageCompletion(
     if (source.trackId !== profile.trackId) throw new Error("Completion source belongs to another track.");
     if (!source.completionRule) continue;
     const exact = { trackId: source.trackId, contentVersion: source.contentVersion, artifactSha256: source.artifactSha256, completionRule: source.completionRule };
-    const projected = projectChapters(exact, qualifyPackageAttempts(exact, attempts.filter(attempt => matchesPackage(exact, attempt.item))), source.getQuestion, true);
+    const projected = projectChapters(exact, qualifyPackageAttempts(exact, attempts.filter(attempt => matchesPackage(exact, attempt.item)), source.getQuestion), source.getQuestion, true);
     for (const chapter of projected) if (chapter.completionSource) {
       const previous = milestones.get(chapter.nodeId);
       const left = chapter.completionSource;
@@ -243,7 +243,7 @@ export function evaluatePackageCompletion(
       if (order < 0) milestones.set(chapter.nodeId, chapter);
     }
   }
-  const current = projectChapters(profile, qualifyPackageAttempts(profile, attempts), resolveQuestion, true);
+  const current = projectChapters(profile, qualifyPackageAttempts(profile, attempts, resolveQuestion), resolveQuestion, true);
   const chapters = current.map(chapter => {
     const previous = milestones.get(chapter.nodeId);
     if (!previous) return chapter;
@@ -324,7 +324,11 @@ function projectChapters(
 }
 
 /** Durable unit evidence spans bank versions; original records remain immutable. */
-export function qualifyPackageAttempts(profile: VerifiedPackageCompletionProfile, attempts: readonly TrainingAttempt<unknown>[]): readonly TrainingAttempt<unknown>[] {
+export function qualifyPackageAttempts(
+  profile: VerifiedPackageCompletionProfile,
+  attempts: readonly TrainingAttempt<unknown>[],
+  resolveQuestion: (questionId: string) => CompletionQuestionIdentity | undefined,
+): readonly TrainingAttempt<unknown>[] {
   if (typeof profile.trackId !== "string" || !profile.trackId.trim() || typeof profile.contentVersion !== "string" || !profile.contentVersion.trim()) {
     throw new Error("Package completion profile content identity is invalid.");
   }
@@ -336,7 +340,7 @@ export function qualifyPackageAttempts(profile: VerifiedPackageCompletionProfile
     if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(attempt)) throw new Error(`Conflicting durable attempts share id ${attempt.id}.`);
     byId.set(attempt.id, attempt);
   }
-  return Object.freeze([...byId.values()].filter((attempt) => isIndependentCaseAttempt(attempt) && attempt.trackId === profile.trackId && isResolvedContentRef(attempt.item) && attempt.item.trackId === profile.trackId && (matchesPackage(profile, attempt.item) || learningUnitIdentity(attempt.reviewEvidence) !== undefined || profile.completionSources?.some(source => source.trackId === profile.trackId && matchesPackage(source, attempt.item) && source.getQuestion(attempt.item.questionId) !== undefined))).sort((left, right) => left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id)));
+  return Object.freeze([...byId.values()].filter((attempt) => isIndependentCaseAttempt(attempt) && attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && completionAttemptIdentity(profile, attempt, resolveQuestion) !== undefined).sort((left, right) => left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id)));
 }
 
 /** Exact legacy lookup is allowed only against the record's own available package. */
@@ -345,9 +349,9 @@ export function completionAttemptIdentity(profile: VerifiedPackageCompletionProf
   if (saved) return saved;
   // Conflicting or incomplete saved attribution must not be replaced by a lookup.
   if (attempt.reviewEvidence.taxonomyOrSkillRefs.some(ref => ref.axisId === "mental_unit")) return undefined;
-  if (matchesPackage(profile, attempt.item)) return resolveQuestion(attempt.item.questionId);
+  if (matchesPackage(profile, attempt.item)) return learningUnitInCurrentCatalog(attempt.reviewEvidence, { ...profile, getQuestion: resolveQuestion });
   const source = profile.completionSources?.find(source => source.trackId === attempt.trackId && matchesPackage(source, attempt.item));
-  return source?.getQuestion(attempt.item.questionId);
+  return source && learningUnitInCurrentCatalog(attempt.reviewEvidence, source);
 }
 
 function matchesPackage(profile: VerifiedPackageCompletionProfile, item: ResolvedContentRef): boolean {

@@ -34,7 +34,7 @@ export function projectLearningEvidence(input: Readonly<{
   const nowMs = Date.parse(input.now);
   if (!Number.isFinite(nowMs)) throw new Error("Learning evidence clock is invalid.");
   const uniqueAttempts = uniqueRecords(input.attempts);
-  const qualifyingIds = new Set(qualifyPackageAttempts(profile, uniqueAttempts).map(attempt => attempt.id));
+  const qualifyingIds = new Set(qualifyPackageAttempts(profile, uniqueAttempts, profile.getQuestion).map(attempt => attempt.id));
   // Preserve source evidence order for the existing proposal freshness contract;
   // the canonical evaluator owns deterministic rolling-window time/ID ordering.
   const activityAttempts = Object.freeze(uniqueAttempts.filter(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && completionAttemptIdentity(profile, attempt, profile.getQuestion) !== undefined));

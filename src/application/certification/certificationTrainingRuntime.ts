@@ -326,7 +326,7 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
   private latestUncovered(pool: readonly TrainingQuestionSummary[], attempts: readonly TrainingAttempt<unknown>[]): ReadonlySet<string> | undefined {
     if (this.catalog.completionRule?.ruleVersion !== 3) return undefined;
     const poolIds = new Set(pool.map((question) => question.questionId)); const latest = new Map<string, TrainingAttempt<unknown>>();
-    for (const attempt of qualifyPackageAttempts(this.catalog, attempts)) if (poolIds.has(attempt.item.questionId)) latest.set(attempt.item.questionId, attempt);
+    for (const attempt of qualifyPackageAttempts(this.catalog, attempts, this.catalog.getQuestion)) if (poolIds.has(attempt.item.questionId)) latest.set(attempt.item.questionId, attempt);
     return new Set(pool.filter((question) => latest.get(question.questionId)?.result.kind !== "correct").map((question) => question.questionId));
   }
   private buildReinsertionSlots(mode: ProductModeConfig, items: TrainingSession["itemOrder"], orders: TrainingSession["optionOrderByOccurrence"]): NonNullable<TrainingSession["conditionalReinsertSlots"]> {

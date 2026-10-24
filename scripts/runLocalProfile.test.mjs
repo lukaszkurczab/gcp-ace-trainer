@@ -167,6 +167,98 @@ test("android-local keeps smoke identity, pins Expo to one local Android package
   }
 });
 
+test("android-local-start preserves existing and unrelated reverse mappings, adds only missing local ports, and launches only Expo", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-start-"));
+  try {
+    writeNativeAndroidFixture(root, "com.lkurczab.patternly.local", "com.lkurczab.patternly.local");
+    const profile = { ...smoke, EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64),
+      EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN: "http://127.0.0.1:19099", ANDROID_SERIAL: "usb-device-123", ANDROID_HOME: "/test/android-sdk" };
+    writeFileSync(join(root, ".env.smoke.local"), Object.entries(profile).map(([key, value]) => `${key}=${value}`).join("\n"));
+    const adbCalls = [];
+    const stages = [];
+    let childOptions;
+    const result = await runLocalProfile(["smoke", "android-local-start"], {
+      repositoryRoot: root,
+      prepareCurrentContent: async () => stages.push("content"),
+      fetchImplementation: async url => {
+        stages.push(url.pathname === "/ready" ? "api-probe" : "auth-probe");
+        return url.pathname === "/ready"
+          ? { status: 200, json: async () => ({ status: "ready", checks: readyChecks }) }
+          : { ok: true, json: async () => ({ signIn: { allowDuplicateEmails: false } }) };
+      },
+      spawnSync: (_command, args) => {
+        if (args[0] === "-e") return { status: 0, stdout: JSON.stringify([{ pid: "usb-device-123", name: "2201117TY - 13 - API 33", isAuthorized: true, isBooted: true }]) };
+        adbCalls.push(args);
+        if (args.at(-1) === "get-state") return { status: 0, stdout: "device\n" };
+        if (args.at(-1) === "--list") return { status: 0, stdout: "unrelated tcp:4555 tcp:4555\nusb tcp:8081 tcp:8081\nusb tcp:19099 tcp:19099\n" };
+        return { status: 0, stdout: "" };
+      },
+      spawn: (_command, args, options) => {
+        stages.push("expo");
+        childOptions = { args, env: options.env };
+        const child = new EventEmitter();
+        queueMicrotask(() => child.emit("exit", 0, null));
+        return child;
+      },
+    });
+    assert.deepEqual(stages, ["content", "auth-probe", "api-probe", "expo"]);
+    assert.deepEqual(adbCalls, [
+      ["-s", "usb-device-123", "get-state"],
+      ["-s", "usb-device-123", "reverse", "--list"],
+      ...[8080, 18081].map(port => ["-s", "usb-device-123", "reverse", `tcp:${port}`, `tcp:${port}`]),
+    ]);
+    assert.deepEqual(childOptions.args, ["expo", "start", "--localhost", "--port", "8081"]);
+    assert.equal(childOptions.args.includes("run:android"), false);
+    assert.equal(childOptions.args.includes("--device"), false);
+    assert.equal(childOptions.env.PATTERNLY_RUNTIME_MODE, "smoke");
+    assert.equal(childOptions.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE, "smoke");
+    assert.equal(childOptions.env.EAS_BUILD_PLATFORM, "android");
+    assert.equal(childOptions.env.PATTERNLY_ANDROID_LOCAL_APP, "true");
+    assert.equal(childOptions.env.REACT_NATIVE_PACKAGER_HOSTNAME, "127.0.0.1");
+    assert.deepEqual(result, { code: 0, signal: null });
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("android-local-start rejects every extra argument before reading local state", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-start-args-"));
+  try {
+    let sideEffects = 0;
+    const options = { repositoryRoot: root, prepareCurrentContent: async () => { sideEffects++; },
+      spawnSync: () => { sideEffects++; }, spawn: () => { sideEffects++; } };
+    for (const args of [["--device", "other"], ["--port", "8082"], ["--no-bundler"]]) {
+      await assert.rejects(() => runLocalProfile(["smoke", "android-local-start", ...args], options), /does not accept Expo arguments/u);
+    }
+    assert.equal(sideEffects, 0);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("android-local-start rejects conflicts on each required reverse port before Expo", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-start-conflicts-"));
+  try {
+    const profile = { ...smoke, EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64),
+      EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN: "http://127.0.0.1:19099", ANDROID_SERIAL: "usb-device-123", ANDROID_HOME: "/test/android-sdk" };
+    writeFileSync(join(root, ".env.smoke.local"), Object.entries(profile).map(([key, value]) => `${key}=${value}`).join("\n"));
+    for (const port of [8081, 8080, 19099, 18081]) {
+      const adbCalls = [];
+      await assert.rejects(() => runLocalProfile(["smoke", "android-local-start"], {
+        repositoryRoot: root, prepareCurrentContent: async () => {},
+        fetchImplementation: async url => url.pathname === "/ready"
+          ? { status: 200, json: async () => ({ status: "ready", checks: readyChecks }) }
+          : { ok: true, json: async () => ({ signIn: { allowDuplicateEmails: false } }) },
+        spawnSync: (_command, args) => {
+          if (args[0] === "-e") return { status: 0, stdout: JSON.stringify([{ pid: "usb-device-123", name: "2201117TY - 13 - API 33", isAuthorized: true, isBooted: true }]) };
+          adbCalls.push(args);
+          if (args.at(-1) === "get-state") return { status: 0, stdout: "device" };
+          if (args.at(-1) === "--list") return { status: 0, stdout: `tcp:${port} tcp:9555\n` };
+          return { status: 0, stdout: "" };
+        },
+        spawn: () => assert.fail("conflicting reverse mapping must block Expo"),
+      }), new RegExp(`conflicting ADB reverse mapping for tcp:${port}`, "u"));
+      assert.deepEqual(adbCalls.map(args => args.slice(2, 4)), [["get-state"], ["reverse", "--list"]]);
+    }
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
 test("android-local rejects missing, unauthorized, stopped and ambiguous Expo devices before forwarding", async () => {
   const root = mkdtempSync(join(tmpdir(), "patternly-android-local-inventory-"));
   try {

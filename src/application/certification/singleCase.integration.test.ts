@@ -74,7 +74,7 @@ test("real producer → canonical admission → production lifecycle/journal →
     const ours = attempts.filter(a => a.sessionId === finalized.session.id).sort((a,b) => a.occurrenceId.localeCompare(b.occurrenceId));
     assert.equal(ours.length, 3);
     assert.deepEqual(ours.map(a => { const e = a.reviewEvidence.evidence?.details; assert.ok(isCaseAttemptEvidence(e)); return e.assistanceBeforeSubmit; }), [false, true, true]);
-    assert.equal(qualifyPackageAttempts(h.family.catalog, ours).length, 1);
+    assert.equal(qualifyPackageAttempts(h.family.catalog, ours, h.family.catalog.getQuestion).length, 1);
     assert.equal((await getReviewQueueItems(admission)).value.filter(r => r.sourceSessionId === finalized.session.id).length, 1);
     const review = await projectCertificationPracticeReview({ session: finalized.session as never, result: finalized.result, attempts, resolveQuestion: async item => ({ question: h.family.catalog.getQuestion(item.questionId)!, interactions: h.family.presentation }) });
     assert.equal(review.caseSummary?.steps.length, 3); assert.equal(review.overallPointsEarned, 6); // existing scorer retains diagnostic components; there are exactly three graded attempts
@@ -90,7 +90,7 @@ test("hint is durable before display, survives restart, and cannot become indepe
   const resumed = await lifecycle.resumeActiveSession(); assert.deepEqual(resumed.caseState?.hintShownStepIds, [recipe.steps[0]!.stepId]);
   await lifecycle.submitPracticeResponse(h.track.getQuestion(recipe.steps[0]!.questionId)!.answer);
   const attempts = (await getTrainingAttempts(admission)).value;
-  assert.equal(qualifyPackageAttempts(h.family.catalog, attempts).length, 0);
+  assert.equal(qualifyPackageAttempts(h.family.catalog, attempts, h.family.catalog.getQuestion).length, 0);
   assert.equal((await getReviewQueueItems(admission)).value.length, 0);
   await assert.rejects(lifecycle.recordCaseExposure("hint"));
 });
@@ -177,7 +177,7 @@ test("abandon after durable help preserves known exposure in the next case witho
   await fresh.submitPracticeResponse(h.track.getQuestion(recipe.steps[0]!.questionId)!.answer);
   const evidence = (await getTrainingAttempts(admission)).value[0]!.reviewEvidence.evidence?.details;
   assert.ok(isCaseAttemptEvidence(evidence)); assert.equal(evidence.priorExposure, "known"); assert.equal(evidence.assistanceBeforeSubmit, false);
-  assert.equal(qualifyPackageAttempts(h.family.catalog, (await getTrainingAttempts(admission)).value).length, 1);
+  assert.equal(qualifyPackageAttempts(h.family.catalog, (await getTrainingAttempts(admission)).value, h.family.catalog.getQuestion).length, 1);
 });
 
 test("bundled owner admits only current matching case/node; retained exact identities never enter discovery", async () => {
@@ -603,7 +603,7 @@ test("case submit and solution reveal failures before ACK recover once without l
   const second = attempts.find(a => a.item.questionId === recipe.steps[1]!.questionId)!;
   assert.ok(isCaseAttemptEvidence(second.reviewEvidence.evidence?.details));
   assert.equal(second.reviewEvidence.evidence.details.assistanceBeforeSubmit, true);
-  assert.equal(qualifyPackageAttempts(h.family.catalog, attempts).length, 1);
+  assert.equal(qualifyPackageAttempts(h.family.catalog, attempts, h.family.catalog.getQuestion).length, 1);
 });
 
 
@@ -663,7 +663,7 @@ test("terminal single-case account roundtrip preserves exact exposure, evidence 
   assert.deepEqual((await getTrainingAttempts(admission)).value, attempts);
   assert.deepEqual((await getReviewQueueItems(admission)).value, reviews);
   assert.equal(await getActiveTrainingSession(admission), null);
-  assert.equal(qualifyPackageAttempts(h.family.catalog, (await getTrainingAttempts(admission)).value).length, 1);
+  assert.equal(qualifyPackageAttempts(h.family.catalog, (await getTrainingAttempts(admission)).value, h.family.catalog.getQuestion).length, 1);
   const { caseState: omitted, ...state } = summary.state;
   assert.ok(omitted);
   const corrupted = { ...summary, state, fingerprint: accountDataRecordFingerprint({ ...summary, state }) };

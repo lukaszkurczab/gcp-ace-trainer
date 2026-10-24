@@ -29,6 +29,7 @@ const ACTIONS = Object.freeze({
   ios: ["run:ios"],
   android: ["run:android"],
   "android-local": ["run:android"],
+  "android-local-start": ["start", "--localhost", "--port", "8081"],
 });
 
 export function parseDotenv(source) {
@@ -136,8 +137,12 @@ export async function probeSmokeApiReady(origin, fetchImplementation = fetch, op
 
 export async function runLocalProfile(argv = process.argv.slice(2), options = {}) {
   const [profile, action, ...extraArgs] = argv;
-  if (!(action in ACTIONS)) throw new Error("Usage: runLocalProfile.mjs <smoke|sandbox> <start|web|ios|android|android-local> [Expo arguments]");
-  if (action === "android-local") {
+  if (!(action in ACTIONS)) throw new Error("Usage: runLocalProfile.mjs <smoke|sandbox> <start|web|ios|android|android-local|android-local-start> [Expo arguments]");
+  const isAndroidLocalAction = action === "android-local" || action === "android-local-start";
+  if (action === "android-local-start" && extraArgs.length > 0) {
+    throw new Error("android-local-start does not accept Expo arguments; it always starts the local packager on port 8081.");
+  }
+  if (isAndroidLocalAction) {
     const targetOverride = extraArgs.find((argument) => /^(?:--device|--app-id|--binary|--variant)(?:=|$)|^-d(?:=|$)/u.test(argument));
     if (targetOverride) throw new Error(`android-local does not allow the Expo target override ${targetOverride.split("=", 1)[0]}.`);
   }
@@ -151,10 +156,10 @@ export async function runLocalProfile(argv = process.argv.slice(2), options = {}
     throw new Error(`Cannot load local ${profile} profile at ${profilePath}: ${reason}`);
   }
   let environment = validateLocalProfile(profile, { ...process.env, ...profileEnvironment });
-  if (action !== "android-local" && environment.PATTERNLY_ANDROID_LOCAL_APP) {
+  if (!isAndroidLocalAction && environment.PATTERNLY_ANDROID_LOCAL_APP) {
     throw new Error("PATTERNLY_ANDROID_LOCAL_APP is reserved for the android-local action.");
   }
-  if (action === "android-local") {
+  if (isAndroidLocalAction) {
     if (profile !== "smoke") throw new Error("android-local requires the smoke profile.");
     if (!/^[a-f0-9]{64}$/u.test(environment.EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN ?? "")) {
       throw new Error("android-local requires EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN with 64 lowercase hex characters.");
@@ -163,6 +168,10 @@ export async function runLocalProfile(argv = process.argv.slice(2), options = {}
       throw new Error("android-local requires ANDROID_SERIAL so endpoint forwarding targets exactly one connected Android device.");
     }
     if (!environment.ANDROID_HOME) throw new Error("android-local requires ANDROID_HOME to locate ADB.");
+    if (action === "android-local-start" && (environment.EXPO_PUBLIC_PATTERNLY_API_ORIGIN !== "http://127.0.0.1:8080"
+      || environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN !== "http://127.0.0.1:19099")) {
+      throw new Error("android-local-start requires the local API on port 8080 and Auth emulator on port 19099.");
+    }
     environment = Object.freeze({ ...environment, EAS_BUILD_PLATFORM: "android", PATTERNLY_ANDROID_LOCAL_APP: "true", REACT_NATIVE_PACKAGER_HOSTNAME: "127.0.0.1" });
     assertExistingAndroidTreeIsLocal(repositoryRoot);
   }
@@ -172,9 +181,9 @@ export async function runLocalProfile(argv = process.argv.slice(2), options = {}
     await probeSmokeApiReady(environment.EXPO_PUBLIC_PATTERNLY_API_ORIGIN, options.fetchImplementation);
   }
   let androidDeviceName;
-  if (action === "android-local") {
+  if (isAndroidLocalAction) {
     androidDeviceName = resolveAndroidLocalDeviceName(environment, options);
-    ensureAndroidLocalLoopbackAccess(environment, options);
+    ensureAndroidLocalLoopbackAccess(environment, options, action === "android-local-start" ? [8081, 8080, 19099, 18081] : undefined);
   }
   const actionArguments = [
     ...ACTIONS[action],
@@ -252,7 +261,7 @@ function resolveAndroidLocalDeviceName(environment, options = {}) {
   return selected[0].name;
 }
 
-function ensureAndroidLocalLoopbackAccess(environment, options = {}) {
+function ensureAndroidLocalLoopbackAccess(environment, options = {}, requiredPorts) {
   const serial = environment.ANDROID_SERIAL;
   if (!serial || serial.trim() !== serial) throw new Error("android-local requires ANDROID_SERIAL so endpoint forwarding targets exactly one connected Android device.");
   const sdkRoot = environment.ANDROID_HOME;
@@ -270,18 +279,23 @@ function ensureAndroidLocalLoopbackAccess(environment, options = {}) {
     .map((line) => line.trim().split(/\s+/u).slice(-2))
     .filter((parts) => parts.length === 2 && parts[0].startsWith("tcp:") && parts[1].startsWith("tcp:"));
   const activeMappings = [...mappings];
-  for (const originValue of [environment.EXPO_PUBLIC_PATTERNLY_API_ORIGIN, environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN]) {
-    const origin = new URL(originValue);
-    const port = origin.port || "80";
+  const ports = requiredPorts ?? [environment.EXPO_PUBLIC_PATTERNLY_API_ORIGIN, environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN]
+    .map(originValue => Number(new URL(originValue).port || "80"));
+  if (!Array.isArray(ports) || ports.some(port => !Number.isInteger(port) || port < 1 || port > 65535) || new Set(ports).size !== ports.length) {
+    throw new Error("android-local endpoint forwarding configuration is invalid.");
+  }
+  const missingPorts = [];
+  for (const port of ports) {
     const deviceEndpoint = `tcp:${port}`;
     const existing = activeMappings.filter(([devicePort]) => devicePort === deviceEndpoint);
     if (existing.some(([, hostPort]) => hostPort !== deviceEndpoint)) {
       throw new Error(`android-local found a conflicting ADB reverse mapping for ${deviceEndpoint} on the selected device.`);
     }
-    if (existing.length === 0) {
-      execute(["reverse", deviceEndpoint, deviceEndpoint], "loopback forwarding setup");
-      activeMappings.push([deviceEndpoint, deviceEndpoint]);
-    }
+    if (existing.length === 0) missingPorts.push(deviceEndpoint);
+  }
+  for (const deviceEndpoint of missingPorts) {
+    execute(["reverse", deviceEndpoint, deviceEndpoint], "loopback forwarding setup");
+    activeMappings.push([deviceEndpoint, deviceEndpoint]);
   }
 }
 
