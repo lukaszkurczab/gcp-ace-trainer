@@ -416,7 +416,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
       position={{ accessibilityLabel: `${t("Question")} ${projection.position.current} ${t("of")} ${projection.position.total}`, label: `${projection.position.current} ${t("of")} ${projection.position.total}` }}
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
-      question={{ constraints: projection.constraints, itemId: projection.item.questionId, prompt: projection.prompt, responseControl }}
+      question={{ itemId: projection.item.questionId, prompt: projection.prompt, responseControl }}
       responseRendererBindings={activeRendererBindings}
       interactionResponse={interactionResponse ?? projection.response?.value ?? null}
       onInteractionResponseChange={async (response) => {

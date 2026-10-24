@@ -23,7 +23,7 @@ import { TRACK_DENSITY_DESCRIPTORS } from "../../domain/tracks/trackAdmission";
 import { getTrackRoadmapCatalog } from "../practice/trackRoadmapCatalog";
 import { buildLearningPlanWorkloadPresentation } from "./learningPlanWorkloadPresentation";
 import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
-import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
+import { readLearningPlanStorageScope } from "../../application/learningReadModels";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.LEARNING_PLAN_PROPOSAL>;
 type ViewState = { kind: "loading" } | LearningPlanProposalResult;

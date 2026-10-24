@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -37,6 +37,7 @@ test("the default iOS command uses the local profile and sandbox remains explici
   assert.equal(scripts["start:sandbox"], "node scripts/runLocalProfile.mjs sandbox start");
   assert.equal(scripts["web:smoke"], "node scripts/runLocalProfile.mjs smoke web");
   assert.equal(scripts["web:sandbox"], "node scripts/runLocalProfile.mjs sandbox web");
+  assert.equal(scripts["android:local"], "node scripts/verifyNativeScreensPatch.mjs && node scripts/runLocalProfile.mjs smoke android-local");
 });
 
 test("smoke profile requires explicit matching local E2E endpoints", () => {
@@ -103,6 +104,229 @@ test("failed smoke preflight cannot spawn Expo", async () => {
         ? { ok: true, json: async () => ({ signIn: { allowDuplicateEmails: false } }) }
         : { ok: false, json: async () => ({ status: "not_ready" }) },
     }), /smoke API is not ready/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("android-local keeps smoke identity, pins Expo to one local Android package, and forwards only its loopback ports", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-launch-"));
+  try {
+    writeNativeAndroidFixture(root, "com.lkurczab.patternly.local", "com.lkurczab.patternly.local");
+    const profile = {
+      ...smoke,
+      EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64),
+      ANDROID_SERIAL: "usb-device-123",
+      ANDROID_HOME: "/test/android-sdk",
+    };
+    writeFileSync(join(root, ".env.smoke.local"), Object.entries(profile).map(([key, value]) => `${key}=${value}`).join("\n"));
+    const adbCalls = [];
+    const stages = [];
+    let childOptions;
+    const result = await runLocalProfile(["smoke", "android-local", "--port", "8083", "--no-bundler"], {
+      repositoryRoot: root,
+      prepareCurrentContent: async () => stages.push("content"),
+      fetchImplementation: async (url) => {
+        stages.push(url.pathname === "/ready" ? "api-probe" : "auth-probe");
+        return url.pathname === "/ready"
+          ? { status: 200, json: async () => ({ status: "ready", checks: readyChecks }) }
+          : { ok: true, json: async () => ({ signIn: { allowDuplicateEmails: false } }) };
+      },
+      spawnSync: (_command, args) => {
+        if (args[0] === "-e") return { status: 0, stdout: JSON.stringify([{ pid: "usb-device-123", name: "Test_Phone", isAuthorized: true, isBooted: true }]) };
+        adbCalls.push(args);
+        if (args.at(-1) === "get-state") return { status: 0, stdout: "device\n" };
+        if (args.at(-1) === "--list") return { status: 0, stdout: "tcp:8080 tcp:8080\n" };
+        return { status: 0, stdout: "" };
+      },
+      spawn: (_command, args, options) => {
+        stages.push("expo");
+        childOptions = { args, env: options.env };
+        const child = new EventEmitter();
+        queueMicrotask(() => child.emit("exit", 0, null));
+        return child;
+      },
+    });
+    assert.deepEqual(stages, ["content", "auth-probe", "api-probe", "expo"]);
+    assert.deepEqual(adbCalls, [
+      ["-s", "usb-device-123", "get-state"],
+      ["-s", "usb-device-123", "reverse", "--list"],
+      ["-s", "usb-device-123", "reverse", "tcp:9099", "tcp:9099"],
+    ]);
+    assert.deepEqual(childOptions.args, ["expo", "run:android", "--device", "Test_Phone", "--port", "8083", "--no-bundler"]);
+    assert.equal(childOptions.env.PATTERNLY_RUNTIME_MODE, "smoke");
+    assert.equal(childOptions.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE, "smoke");
+    assert.equal(childOptions.env.EAS_BUILD_PLATFORM, "android");
+    assert.equal(childOptions.env.PATTERNLY_ANDROID_LOCAL_APP, "true");
+    assert.equal(childOptions.env.REACT_NATIVE_PACKAGER_HOSTNAME, "127.0.0.1");
+    assert.equal(childOptions.env.EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN, "a".repeat(64));
+    assert.equal(childOptions.env.EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID, "patternly-app-sandbox");
+    assert.deepEqual(result, { code: 0, signal: null });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("android-local rejects missing, unauthorized, stopped and ambiguous Expo devices before forwarding", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-inventory-"));
+  try {
+    const profile = { ...smoke, EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64), ANDROID_SERIAL: "usb-device-123", ANDROID_HOME: "/test/android-sdk" };
+    writeFileSync(join(root, ".env.smoke.local"), Object.entries(profile).map(([key, value]) => `${key}=${value}`).join("\n"));
+    const target = { pid: "usb-device-123", name: "Test_Phone", isAuthorized: true, isBooted: true };
+    for (const devices of [[], [{ ...target, pid: "other" }], [{ ...target, isAuthorized: false }], [{ ...target, isBooted: false }], [target, { ...target, pid: "other" }]]) {
+      await assert.rejects(() => runLocalProfile(["smoke", "android-local"], {
+        repositoryRoot: root, prepareCurrentContent: async () => {},
+        fetchImplementation: async (url) => url.pathname === "/ready"
+          ? { status: 200, json: async () => ({ status: "ready", checks: readyChecks }) }
+          : { ok: true, json: async () => ({ signIn: { allowDuplicateEmails: false } }) },
+        spawnSync: (_command, args) => {
+          assert.equal(args[0], "-e", "invalid inventory must stop before ADB forwarding");
+          return { status: 0, stdout: JSON.stringify(devices) };
+        },
+        spawn: () => assert.fail("invalid inventory must not launch Expo"),
+      }), /selected serial is not one authorized, booted Expo device|selected Expo device name is ambiguous/u);
+    }
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("android-local refuses base and near-match Android identities before any effects", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-base-tree-"));
+  try {
+    writeFileSync(join(root, ".env.smoke.local"), Object.entries({
+      ...smoke,
+      EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64),
+      ANDROID_SERIAL: "usb-device-123",
+      ANDROID_HOME: "/test/android-sdk",
+    }).map(([key, value]) => `${key}=${value}`).join("\n"));
+    for (const [namespace, applicationId] of [
+      ["com.lkurczab.patternly", "com.lkurczab.patternly"],
+      ["comXlkurczabXpatternlyXlocal", "com.lkurczab.patternly.local"],
+      ["com.lkurczab.patternly.local", "comXlkurczabXpatternlyXlocal"],
+    ]) {
+      writeNativeAndroidFixture(root, namespace, applicationId);
+      let sideEffects = 0;
+      await assert.rejects(() => runLocalProfile(["smoke", "android-local"], {
+        repositoryRoot: root,
+        prepareCurrentContent: async () => { sideEffects += 1; },
+        fetchImplementation: async () => { sideEffects += 1; throw new Error("must not probe"); },
+        spawnSync: () => { sideEffects += 1; throw new Error("must not invoke ADB"); },
+        spawn: () => { sideEffects += 1; throw new Error("must not spawn Expo"); },
+      }), /refused the existing Android native tree .*Preserve that tree, regenerate Android only from the local smoke profile/u);
+      assert.equal(sideEffects, 0);
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("android-local refuses a matching local tree that contains google-services.json", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-google-config-"));
+  try {
+    writeNativeAndroidFixture(root, "com.lkurczab.patternly.local", "com.lkurczab.patternly.local");
+    mkdirSync(join(root, "android", "app"), { recursive: true });
+    writeFileSync(join(root, "android", "app", "google-services.json"), "{}");
+    writeFileSync(join(root, ".env.smoke.local"), Object.entries({
+      ...smoke,
+      EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64),
+      ANDROID_SERIAL: "usb-device-123",
+      ANDROID_HOME: "/test/android-sdk",
+    }).map(([key, value]) => `${key}=${value}`).join("\n"));
+    await assert.rejects(() => runLocalProfile(["smoke", "android-local"], {
+      repositoryRoot: root,
+      prepareCurrentContent: async () => assert.fail("native-tree validation must precede content preparation"),
+    }), /native google-services.json is present/u);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("android-local fails closed on an unsupported Gradle identity declaration", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-unsupported-gradle-"));
+  try {
+    writeNativeAndroidFixture(root, "com.lkurczab.patternly.local", "com.lkurczab.patternly.local");
+    writeFileSync(join(root, "android", "app", "build.gradle"), `android {\n    namespace = 'com.lkurczab.patternly.local'\n    defaultConfig {\n        applicationId 'com.lkurczab.patternly.local'\n    }\n}\n`);
+    writeFileSync(join(root, ".env.smoke.local"), Object.entries({
+      ...smoke,
+      EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64),
+      ANDROID_SERIAL: "usb-device-123",
+      ANDROID_HOME: "/test/android-sdk",
+    }).map(([key, value]) => `${key}=${value}`).join("\n"));
+    await assert.rejects(() => runLocalProfile(["smoke", "android-local"], {
+      repositoryRoot: root,
+      prepareCurrentContent: async () => assert.fail("unsupported Gradle identity syntax must fail before content preparation"),
+    }), /namespace is not the exact local Android identity/u);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+function writeNativeAndroidFixture(root, namespace, applicationId) {
+  const main = join(root, "android", "app", "src", "main");
+  mkdirSync(main, { recursive: true });
+  writeFileSync(join(root, "android", "app", "build.gradle"), `android {\n    namespace '${namespace}'\n    defaultConfig {\n        applicationId '${applicationId}'\n    }\n}\n`);
+  writeFileSync(join(main, "AndroidManifest.xml"), `<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application><activity><intent-filter><data android:scheme="${applicationId}" /></intent-filter></activity></application></manifest>`);
+}
+
+test("android-local rejects target and build-identity overrides before reading profiles or starting work", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-argument-guards-"));
+  try {
+    let sideEffects = 0;
+    const options = {
+      repositoryRoot: root,
+      prepareCurrentContent: async () => { sideEffects += 1; },
+      fetchImplementation: async () => { sideEffects += 1; throw new Error("must not probe"); },
+      spawnSync: () => { sideEffects += 1; throw new Error("must not invoke ADB"); },
+      spawn: () => { sideEffects += 1; throw new Error("must not spawn Expo"); },
+    };
+    const invalidOptions = [
+      ["--device", "other-device"], ["-d", "other-device"], ["--device=other-device"], ["-d=other-device"],
+      ["--app-id", "com.other.app"], ["--app-id=com.other.app"],
+      ["--binary", "/tmp/other.apk"], ["--binary=/tmp/other.apk"],
+      ["--variant", "release"], ["--variant=release"],
+    ];
+    for (const args of invalidOptions) {
+      await assert.rejects(() => runLocalProfile(["smoke", "android-local", ...args], options), /does not allow the Expo target override/u);
+    }
+    assert.equal(sideEffects, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("android-local rejects missing target, invalid App Check token, and conflicting endpoint forwarding", async () => {
+  const root = mkdtempSync(join(tmpdir(), "patternly-android-local-guards-"));
+  try {
+    const writeProfile = (overrides = {}) => writeFileSync(join(root, ".env.smoke.local"), Object.entries({
+      ...smoke,
+      EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64),
+      ANDROID_SERIAL: "usb-device-123",
+      ANDROID_HOME: "/test/android-sdk",
+      ...overrides,
+    }).map(([key, value]) => `${key}=${value}`).join("\n"));
+    writeProfile({ PATTERNLY_ANDROID_LOCAL_APP: "true" });
+    await assert.rejects(() => runLocalProfile(["smoke", "android"], {
+      repositoryRoot: root, prepareCurrentContent: async () => assert.fail("normal smoke launch must not sync with the local-app switch"),
+    }), /reserved for the android-local action/);
+    writeProfile({ ANDROID_SERIAL: "" });
+    await assert.rejects(() => runLocalProfile(["smoke", "android-local"], {
+      repositoryRoot: root, prepareCurrentContent: async () => {}, fetchImplementation: async (url) => url.pathname === "/ready"
+        ? { status: 200, json: async () => ({ status: "ready", checks: readyChecks }) }
+        : { ok: true, json: async () => ({ signIn: { allowDuplicateEmails: false } }) },
+    }), /requires ANDROID_SERIAL/);
+    writeProfile({ EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "invalid" });
+    await assert.rejects(() => runLocalProfile(["smoke", "android-local"], { repositoryRoot: root, prepareCurrentContent: async () => {} }), /smoke local App Check requires the generated token/);
+    writeProfile();
+    await assert.rejects(() => runLocalProfile(["smoke", "android-local"], {
+      repositoryRoot: root, prepareCurrentContent: async () => {}, fetchImplementation: async (url) => url.pathname === "/ready"
+        ? { status: 200, json: async () => ({ status: "ready", checks: readyChecks }) }
+        : { ok: true, json: async () => ({ signIn: { allowDuplicateEmails: false } }) },
+      spawnSync: (_command, args) => args[0] === "-e"
+        ? { status: 0, stdout: JSON.stringify([{ pid: "usb-device-123", name: "Test_Phone", isAuthorized: true, isBooted: true }]) }
+        : args.at(-1) === "get-state"
+        ? { status: 0, stdout: "device" }
+        : args.at(-1) === "--list" ? { status: 0, stdout: "tcp:8080 tcp:8082\n" } : { status: 0, stdout: "" },
+      spawn: () => assert.fail("Expo must not start with a conflicting endpoint mapping"),
+    }), /conflicting ADB reverse mapping for tcp:8080/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

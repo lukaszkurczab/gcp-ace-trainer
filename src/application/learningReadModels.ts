@@ -20,6 +20,8 @@ import {
   getTrainingSessionResult,
   dismissGoalOnboarding,
 } from "../storage/repositories";
+import { readActiveTrackId as readActiveTrackIdFromStorage } from "../storage/repositories/activeTrackRepository";
+import { readLearningPlanStorageScope as readLearningPlanStorageScopeFromStorage } from "../storage/repositories/learningPlanInputSnapshot";
 import { commitActiveTrackSelection, loadSettledActiveTrackSelection } from "./account/accountDataService";
 import { getAttempts, getPracticeHistory } from "../storage/queries";
 import type { StorageIssue } from "../storage/repositories/result";
@@ -30,6 +32,9 @@ import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext"
 /** Application-owned read ports consumed by presentation. */
 export type { StorageIssue };
 
+/** Synchronous opaque owner reads used by presentation to reject stale snapshots. */
+export function readLearningPlanStorageScope(): object { return readLearningPlanStorageScopeFromStorage(); }
+export function readActiveTrackId(): TrackId | null { return readActiveTrackIdFromStorage(); }
 export async function loadActiveTrackId() { return loadSettledActiveTrackSelection(); }
 export async function selectActiveTrack(trackId: TrackId) { await commitActiveTrackSelection(trackId); }
 export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId, requireGoalPolicy(trackId)); }

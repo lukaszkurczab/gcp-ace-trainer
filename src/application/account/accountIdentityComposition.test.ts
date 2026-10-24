@@ -254,7 +254,7 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
 test("account recovery back action follows live navigator history", () => {
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
 
-  assert.match(screen, /import \{ useNavigationState, usePreventRemove \} from "@react-navigation\/native";/u);
+  assert.match(screen, /import \{ useIsFocused, useNavigationState, usePreventRemove \} from "@react-navigation\/native";/u);
   assert.match(screen, /const navigationIndex = useNavigationState\(\(state\) => state\.index\);/u);
   assert.match(screen, /const backAction = mode === "register"[\s\S]*?setMode\("signIn"\)[\s\S]*?navigationIndex > 0[\s\S]*?if \(navigation\.canGoBack\(\)\) navigation\.goBack\(\);/u);
   assert.match(screen, /usePreventRemove\(mode === "register", \(\) => \{[\s\S]*?setMode\("signIn"\)/u);
@@ -683,8 +683,11 @@ test("unconfigured account entry never composes Google OAuth without typed provi
   const provider = screen.slice(providerStart, providerEnd);
 
   assert.doesNotMatch(accountEntry, /Google\.useIdTokenAuthRequest/);
-  assert.match(accountEntry, /firebaseConfig\.kind === "configured" && getFirebaseGoogleClientId\(firebaseConfig\.value, Platform\.OS\) \? \([\s\S]*?<GoogleProviderButton[\s\S]*?configuration=\{firebaseConfig\.value\}/);
-  assert.match(securityScreen, /usesGoogle && configuration\.kind === "configured" && getFirebaseGoogleClientId\(configuration\.value, Platform\.OS\)[\s\S]*?<GoogleVerification/u);
+  assert.match(accountEntry, /const isLocalAndroidApp = Platform\.OS === "android"[\s\S]*?Constants\.expoConfig\?\.android\?\.package === "com\.lkurczab\.patternly\.local"[\s\S]*?Constants\.expoConfig\?\.extra\?\.patternlyRuntime === "smoke"/u);
+  assert.match(accountEntry, /isLocalAndroidApp \? \([\s\S]*?<InfoBlock[\s\S]*?text\.providerUnavailable[\s\S]*?account-google-provider-unavailable[\s\S]*?\) : firebaseConfig\.kind === "configured" && getFirebaseGoogleClientId\(firebaseConfig\.value, Platform\.OS\) \? \([\s\S]*?<GoogleProviderButton[\s\S]*?configuration=\{firebaseConfig\.value\}/u);
+  assert.match(securityScreen, /const isLocalAndroidApp = Platform\.OS === "android"[\s\S]*?Constants\.expoConfig\?\.android\?\.package === "com\.lkurczab\.patternly\.local"[\s\S]*?Constants\.expoConfig\?\.extra\?\.patternlyRuntime === "smoke"/u);
+  assert.match(securityScreen, /!isLocalAndroidApp && usesGoogle && configuration\.kind === "configured" && getFirebaseGoogleClientId\(configuration\.value, Platform\.OS\)[\s\S]*?<GoogleVerification/u);
+  assert.match(securityScreen, /: <InfoBlock body=\{ta\("providerUnavailable"\)\} title=\{title\} \/>/u);
   assert.match(provider, /configuration: FirebaseClientConfiguration/);
   assert.match(provider, /Google\.useIdTokenAuthRequest\([\s\S]*?androidClientId: configuration\.googleAndroidClientId[\s\S]*?iosClientId: configuration\.googleIosClientId[\s\S]*?webClientId: configuration\.googleWebClientId/);
   assert.match(provider, /googleResponse\.type !== "success"[\s\S]*?googleResponse\.type === "error"/);
@@ -790,7 +793,8 @@ test("startup waits for persisted auth resolution before choosing the entry scre
 
   assert.match(authClient, /onUserChanged: \(listener\) => onAuthStateChanged\(auth, \(user\) => \{\s*current = user;\s*listener\(user \? snapshot\(user\) : null\);/);
   assert.doesNotMatch(authClient, /onUserChanged:[^\n]*listener\(current \? snapshot\(current\) : null\)/);
-  assert.match(rootNavigator, /state\.kind === "loading" \|\| state\.kind === "profilePreparing"[\s\S]*?<LoadingState[^>]*title=\{t\("Restoring session"\)\}/);
+  assert.match(rootNavigator, /state\.kind === "loading" \|\| state\.kind === "profilePreparing"[\s\S]*?<AccountProfileTransitionLoadingState \/>/);
+  assert.match(rootNavigator, /import \{ AccountProfileTransitionLoadingState \} from "\.\.\/application\/account\/AccountProfileTransitionLoadingState"/);
   assert.match(rootNavigator, /applicationSessionReady = state\.kind === "guest" \|\| state\.kind === "localOffline" \|\| state\.kind === "signingOut" \|\| state\.kind === "deleting" \|\| \(state\.kind === "authenticated" && state\.accountData\.status === "synced"\)/);
   assert.match(rootNavigator, /initialRouteName=\{applicationSessionReady \? ROUTES\.HOME : ROUTES\.ACCOUNT_ENTRY\}/);
   assert.match(rootNavigator, /key=\{applicationSessionReady \? "application" : "account"\}/);

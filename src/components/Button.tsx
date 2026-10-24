@@ -52,12 +52,13 @@ export function Button({
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
   const isDisabled = disabled || loading;
+  const resolvedAccessibilityLabel = accessibilityLabel !== undefined ? accessibilityLabel : typeof children === "string" || typeof children === "number" ? String(children) : undefined;
   const disabledStyle = variant === "primary" ? styles.primaryDisabled : variant === "secondary" ? styles.secondaryDisabled : variant === "destructive" ? styles.destructiveDisabled : styles.ghostDisabled;
   const disabledLabelStyle = variant === "primary" ? styles.primaryDisabledLabel : variant === "secondary" ? styles.secondaryDisabledLabel : variant === "destructive" ? styles.destructiveDisabledLabel : styles.ghostDisabledLabel;
 
   return (
     <Pressable
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={resolvedAccessibilityLabel}
       accessibilityRole={accessibilityRole}
       accessibilityState={{ ...accessibilityState, busy: loading, disabled: isDisabled }}
       disabled={isDisabled}

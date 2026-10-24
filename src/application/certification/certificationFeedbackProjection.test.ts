@@ -43,11 +43,10 @@ function exact(value: Question): ResolvedInteractionItem {
   } };
 }
 
-test("active Certification projection strips answers, explanations and feedback structurally", () => {
+test("active Certification projection strips supplementary hints, answers, explanations and feedback structurally", () => {
   const exactQuestion = exact(question);
   const projected = projectCertificationPracticeQuestion(exactQuestion.question, exactQuestion.interactions.present(question.questionId, null).model);
   assert.deepEqual(projected, {
-    constraints: [],
     interaction: {
       options: [
         { optionId: "correct", text: "Correct choice" },

@@ -13,6 +13,7 @@ import ai901 from "../generated/canonical-content/microsoft-azure-ai-fundamental
 import lockFile from "../generated/canonical-content/content-lock.json";
 import objectDesign from "../generated/canonical-content/object-oriented-design-interview.json";
 import successorLedger from "../generated/canonical-content/content-successor-ledger.json";
+import { verifyRetainedCompletionCatalogs, type VerificationWorkPlan } from "./runtimeCatalog";
 
 test("canonical runtime catalog exposes all locked tracks, modes, pools, and exact artifact identities", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
@@ -108,7 +109,11 @@ test("all nine predecessor projections preserve exact deep-copy bytes and leave 
 test("runtime refuses a successor ledger that no longer reconstructs the exact training artifact", async () => {
   const altered = structuredClone(successorLedger) as unknown as { tracks: Array<{ training: { artifactSha256: string } }> };
   altered.tracks[0]!.training.artifactSha256 = "0".repeat(64);
-  await assert.rejects(() => buildCanonicalRuntimeCatalog({ successorLedger: altered }), /does not reconstruct the exact training predecessor/u);
+  const owner = createCanonicalRuntimeCatalogOwner({ successorLedger: altered });
+  const proofs: string[] = [];
+  owner.subscribeVerification({ onWorkPlan() {}, onVerifiedUnit: (proof) => { proofs.push(proof.unitId); } });
+  await assert.rejects(() => owner.load(), /does not reconstruct the exact training predecessor/u);
+  assert.deepEqual(proofs, [], "a valid current artifact alone is not a successor-ledger proof");
 });
 
 test("injected loader failures are visible and do not poison the active cache", async () => {
@@ -162,10 +167,88 @@ test("public owner retries after a failed cached load and then preserves cache i
     const { sha256Utf8 } = await import("../../infrastructure/identity/sha256");
     return sha256Utf8(value);
   } });
+  const plans: VerificationWorkPlan[] = [], proofs: string[] = [];
+  owner.subscribeVerification({ onWorkPlan: (plan) => { plans.push(plan); }, onVerifiedUnit: (proof) => { proofs.push(proof.unitId); } });
   await assert.rejects(() => owner.load(), /SHA-256/);
+  assert.equal(plans.length, 1); assert.equal(proofs.length, 0);
   fail = false;
-  const recovered = await owner.load();
+  const loading = owner.load();
+  assert.equal(owner.load(), loading);
+  const recovered = await loading;
   assert.equal(await owner.load(), recovered);
+  assert.equal(plans.length, 2);
+  assert.notEqual(plans[0]!.build, plans[1]!.build);
+  assert.equal(plans[1]!.units.length, 12);
+  assert.equal(plans[1]!.units.filter((unit) => unit.kind === "retained_pair").length, 3);
+  assert.equal(Object.isFrozen(plans[1]!.units), true);
+  assert.equal(Object.isFrozen(plans[1]!.units[0]), true);
+  assert.deepEqual(proofs, plans[1]!.units.map((unit) => unit.id));
+  const replay: string[] = [];
+  const off = owner.subscribeVerification({ onWorkPlan: (plan) => { assert.equal(plan, plans[1]); }, onVerifiedUnit: (proof) => { replay.push(proof.unitId); } });
+  off();
+  assert.deepEqual(replay, proofs, "fulfilled cache replays only its own completed finite plan");
+});
+
+test("owner installs its run before notifications and replays in-flight proofs without another build", async () => {
+  let release!: () => void;
+  let reachedSecondHash!: () => void;
+  let hashes = 0;
+  const pause = new Promise<void>((resolve) => { release = resolve; });
+  const secondHash = new Promise<void>((resolve) => { reachedSecondHash = resolve; });
+  const events: string[] = [], replay: string[] = [];
+  let reentrant: Promise<unknown> | undefined;
+  const owner = createCanonicalRuntimeCatalogOwner({ artifacts: [aws, backend, claude, coding, frontend, gcp, az104, ai901, objectDesign], locks: lockFile.tracks,
+    sha256Utf8: async (value) => {
+      hashes++;
+      if (hashes === 2) { reachedSecondHash(); await pause; }
+      return createHash("sha256").update(value).digest("hex");
+    } });
+  const off = owner.subscribeVerification({
+    onWorkPlan() { reentrant = owner.load(); },
+    onVerifiedUnit(proof) {
+      events.push(proof.unitId);
+      if (events.length === 1) owner.subscribeVerification({ onWorkPlan() {}, onVerifiedUnit: (next) => { replay.push(next.unitId); } });
+    },
+  });
+  assert.equal(hashes, 0, "subscribing never starts work");
+  const loading = owner.load(); assert.equal(loading, reentrant);
+  // Let the first validated proof publish and the second real SHA wait.
+  await Promise.race([secondHash, loading.then(() => { assert.fail("catalog finished before the second hash pause"); })]);
+  assert.equal(events.length, 1); assert.deepEqual(replay, events, "proof is recorded before reentrant replay");
+  off();
+  const stopThrowing = owner.subscribeVerification({ onWorkPlan() { throw new Error("observer"); }, onVerifiedUnit() { throw new Error("observer"); } });
+  release();
+  const result = await loading;
+  stopThrowing();
+  assert.equal(result.tracks.length, 9); assert.equal(hashes, 9);
+  assert.equal(events.length, 1, "unsubscribed observer receives no future proofs");
+  assert.equal(replay.length, 9);
+  assert.equal(new Set(replay).size, 9);
+});
+
+test("partial verified work never hides a later mode failure or invalid inventory", async () => {
+  const source = [coding];
+  const owner = createCanonicalRuntimeCatalogOwner({ artifacts: source, locks: lockFile.tracks,
+    sha256Utf8: async (value) => createHash("sha256").update(value).digest("hex") });
+  const proofs: string[] = [];
+  owner.subscribeVerification({ onWorkPlan: (plan) => { assert.equal(plan.units.length, 1); }, onVerifiedUnit: (proof) => { proofs.push(proof.unitId); } });
+  await assert.rejects(() => owner.load());
+  assert.deepEqual(proofs, [`current:0:${coding.trackId}`], "mode validation still fails after a real valid artifact proof");
+  const invalid = createCanonicalRuntimeCatalogOwner({ artifacts: Array(10).fill(coding), locks: lockFile.tracks, sha256Utf8: async () => "0".repeat(64) });
+  let plans = 0;
+  invalid.subscribeVerification({ onWorkPlan() { plans++; }, onVerifiedUnit() { assert.fail("invalid inventory proof"); } });
+  await assert.rejects(() => invalid.load(), /SHA-256/);
+  assert.equal(plans, 0);
+});
+
+test("retained pair earns no proof when predecessor fails after valid v2 verification", async () => {
+  const retained = (await import("../generated/retained-content/claude-qle-v2-before-identity.json")).default;
+  const corrupt = structuredClone(retained);
+  corrupt.ledger.training.artifactSha256 = "0".repeat(64);
+  const pairs: number[] = [];
+  const result = await verifyRetainedCompletionCatalogs([corrupt], undefined, (index) => { pairs.push(index); });
+  assert.deepEqual(result, []); assert.deepEqual(pairs, []);
+  assert.deepEqual(await verifyRetainedCompletionCatalogs([], undefined, () => assert.fail("unavailable pair")), []);
 });
 
 test("canonical runtime catalog caches only a validated active catalog", async () => {

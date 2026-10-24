@@ -51,15 +51,15 @@ function render(presentation, trackId = 'test-provider-independent') {
 }
 function text(tree) { return nodes(tree).filter(node => node.type === 'Text').flatMap(node => node.props.children).filter(value => typeof value === 'string').join(' '); }
 
-test('all nine descriptors render existing question layouts and constraints policy', () => {
+test('all nine descriptors render the prompt without supplementary constraints', () => {
   assert.equal(TRACK_DENSITY_DESCRIPTORS.length, 9);
   for (const descriptor of TRACK_DENSITY_DESCRIPTORS) {
     const config = projectCertificationQuestionPresentation(descriptor);
     const output = render(config, descriptor.trackId);
     assert.equal(output.controls.length, 1, descriptor.trackId);
     assert.ok(text(output.card).includes(question.prompt));
-    assert.equal(text(output.card).includes(question.constraints[0]), config.constraints === 'show');
-    assert.equal(text(output.card).includes('Key constraints'), config.constraints === 'show' && config.variant === 'structuredCertificationPrompt');
+    assert.equal(text(output.card).includes(question.constraints[0]), false, descriptor.trackId);
+    assert.equal(text(output.card).includes('Key constraints'), false, descriptor.trackId);
     assert.equal(!!output.tree.props.scrollFocus, config.focusFeedback);
     const prompt = nodes(output.card).find(node => node.props.children === question.prompt);
     assert.equal(prompt.props.style.includes('structuredPrompt'), config.variant === 'structuredCertificationPrompt');
@@ -67,10 +67,10 @@ test('all nine descriptors render existing question layouts and constraints poli
 });
 
 test('a new descriptor selects the supported layout without any provider-ID branch', () => {
-  const descriptor = { presentation: { practiceQuestion: { variant: 'structuredCertificationPrompt', constraints: 'show', focusFeedback: true }, roadmapNodeIds: ['test_domain'], progressDomains: [{ id: 'test_domain', title: 'Test domain', description: 'Test description' }] } };
+  const descriptor = { presentation: { practiceQuestion: { variant: 'structuredCertificationPrompt', focusFeedback: true }, roadmapNodeIds: ['test_domain'], progressDomains: [{ id: 'test_domain', title: 'Test domain', description: 'Test description' }] } };
   const output = render(projectCertificationQuestionPresentation(descriptor), 'new-certification');
-  assert.ok(text(output.card).includes('Key constraints'));
-  assert.ok(text(output.card).includes('Authored constraint'));
+  assert.equal(text(output.card).includes('Key constraints'), false);
+  assert.equal(text(output.card).includes('Authored constraint'), false);
   assert.equal(output.controls.length, 1);
   assert.equal(resolveTrackDomainMetadata(descriptor, 'test_domain').metadata.title, 'Test domain');
   // A familiar provider ID cannot override the supplied contract, including no config.

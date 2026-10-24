@@ -14,6 +14,8 @@ export type StartupTraceStage =
   | "predecessor_clone_stringify" | "predecessor_hash" | "catalog_projection" | "catalog_tracks"
   | "planning_policy" | "pool_construction"
   | "mode_artifact_questions"
+  | "practice_submit_handler" | "practice_advance_handler" | "practice_response_checkpoint"
+  | "practice_answer_command" | "practice_advance_command" | "practice_command_projection"
   | "premium:response_v2" | "premium:response_missing_v2" | "premium:response_rejected" | "premium:refresh_failed"
   | "premium:actor_denied" | "premium:scope_unavailable" | "premium:allowed" | "premium:denied" | "premium:unavailable"
   | "account_foreground_refresh" | "account_foreground_refresh:success" | "account_foreground_refresh:failure"

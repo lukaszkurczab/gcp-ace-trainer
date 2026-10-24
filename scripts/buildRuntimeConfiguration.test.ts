@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createRequire } from "node:module";
+import { spawnSync } from "node:child_process";
 
 const require = createRequire(import.meta.url);
-const { createExpoConfig, validateReleasePublicLegalLinks } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { android: { googleServicesFile: string }; extra: { patternlyRuntime: string }; ios: { googleServicesFile: string }; plugins: unknown[] } }; validateReleasePublicLegalLinks: (legalVariables: unknown, publicEnvironment: unknown) => void };
+const { createExpoConfig, validateReleasePublicLegalLinks } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { name: string; scheme: string; android: { package: string; googleServicesFile?: string }; extra: { patternlyRuntime: string }; ios: { googleServicesFile: string }; plugins: unknown[]; updates: { enabled?: boolean; checkAutomatically?: string } } }; validateReleasePublicLegalLinks: (legalVariables: unknown, publicEnvironment: unknown) => void };
 const releaseLegalVariables = require("../config/public-legal.release.json");
 
 const base = {
@@ -81,6 +82,56 @@ test("smoke is explicit, locally bound, and permits debug App Check", () => {
   assert.throws(() => createExpoConfig({}), /requires PATTERNLY_RUNTIME_MODE/);
   assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox" }), /must equal/);
   assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_API_ORIGIN: "https:\/\/sandbox.patternly.test" }), /127\.0\.0\.1/);
+});
+
+test("separate local Android identity requires explicit emulator-only configuration", () => {
+  const local = { ...smoke, EAS_BUILD_PLATFORM: "android", PATTERNLY_ANDROID_LOCAL_APP: "true", EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64) };
+  const config = createExpoConfig(local).expo;
+  assert.equal(config.name, "Patternly Local");
+  assert.equal(config.android.package, "com.lkurczab.patternly.local");
+  assert.equal(config.scheme, "com.lkurczab.patternly.local");
+  assert.equal(config.extra.patternlyRuntime, "smoke");
+  assert.equal(config.android.googleServicesFile, undefined);
+  assert.equal(config.updates.enabled, false);
+  assert.equal(config.updates.checkAutomatically, "NEVER");
+  assert.ok(!config.plugins.some((plugin) => String(Array.isArray(plugin) ? plugin[0] : plugin).startsWith("@react-native-firebase/")));
+  for (const invalid of [
+    { PATTERNLY_ANDROID_LOCAL_APP: "other" }, { EAS_BUILD_PLATFORM: "ios" }, { EAS_BUILD_PLATFORM: "" },
+    { EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "" }, { EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID: "other" },
+  ]) assert.throws(() => createExpoConfig({ ...local, ...invalid }), /Patternly Local requires Android smoke/);
+  for (const mode of ["sandbox", "release"]) {
+    assert.throws(() => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: mode,
+      EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment(mode === "release" ? "production" : "sandbox"),
+      EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EAS_BUILD_PLATFORM: "android", PATTERNLY_ANDROID_LOCAL_APP: "true",
+    }), /Patternly Local requires Android smoke/);
+  }
+  const normal = createExpoConfig(smoke).expo;
+  assert.equal(normal.name, "Patternly");
+  assert.equal(normal.android.package, "com.lkurczab.patternly");
+  assert.equal(normal.scheme, "com.lkurczab.patternly");
+  assert.equal(normal.android.googleServicesFile, "./google-services.json");
+  assert.ok(normal.plugins.includes("@react-native-firebase/app-check"));
+});
+
+test("native Firebase linking is excluded only behind the validated local Android gate", () => {
+  const readNativeConfig = (environment: Record<string, string>) => spawnSync(process.execPath,
+    ["-e", "process.stdout.write(JSON.stringify(require('./react-native.config.js')))"],
+    { env: { ...process.env, ...environment }, encoding: "utf8" });
+  const normal = readNativeConfig({ PATTERNLY_ANDROID_LOCAL_APP: "" });
+  assert.equal(normal.status, 0);
+  assert.deepEqual(JSON.parse(normal.stdout), { dependencies: {} });
+  const local = { ...smoke, EAS_BUILD_PLATFORM: "android", PATTERNLY_ANDROID_LOCAL_APP: "true", EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "a".repeat(64) };
+  const configured = readNativeConfig(local);
+  assert.equal(configured.status, 0, configured.stderr);
+  assert.deepEqual(JSON.parse(configured.stdout), { dependencies: {
+    "@react-native-firebase/app": { platforms: { android: null } },
+    "@react-native-firebase/app-check": { platforms: { android: null } },
+  } });
+  for (const invalid of [{ EAS_BUILD_PLATFORM: "ios" }, { EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN: "" }, { PATTERNLY_ANDROID_LOCAL_APP: "false" }]) {
+    const rejected = readNativeConfig({ ...local, ...invalid });
+    assert.notEqual(rejected.status, 0);
+    assert.equal(rejected.stdout, "");
+  }
 });
 
 test("remote artifacts require their public Firebase configuration before prebuild", () => {

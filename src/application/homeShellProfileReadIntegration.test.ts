@@ -20,6 +20,7 @@ import { addTrainingAttempt, saveActiveTrackId } from "../storage/repositories";
 import * as storageApi from "../infrastructure/storage/mmkvClient";
 import { openProfileStorageRouter } from "../infrastructure/storage/profileStorageRouter";
 import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
+import { readActiveTrackId, readLearningPlanStorageScope } from "./learningReadModels";
 
 
 // The actual nested Home load command cannot be imported in Node with React Native.
@@ -52,6 +53,7 @@ async function runHome(
     loadActiveTrainingSession: reads.loadActiveTrainingSession,
     getReviewQueueItems: reads.loadReviewQueueItems, getTrainingAttempts: reads.loadTrainingAttempts,
     loadActivitySessionRecords, homePlanSnapshotReader, captureProfileReadFence, captureHomeShellReadFence, projectProgressEvidence, projectHomePractice, isLocalLearningProjectionFailure, requireHomePlanReadIntegrity,
+    readActiveTrackId, readLearningPlanStorageScope,
     loadGoal: async (trackId: string) => { const result = await reads.loadGoal(trackId); await changeAfterGoal(); return result; },
     loadGoalOnboardingDismissed: reads.loadGoalOnboardingDismissed,
     loadCodingInterviewDashboard: async (input: Parameters<typeof reads.loadCodingInterviewDashboard>[0]) => {
@@ -61,7 +63,7 @@ async function runHome(
     getApplicationCurrentTime: () => "2026-10-09T12:00:00.000Z",
     describeOperationalFailure, CODING_INTERVIEW_TRACK_ID,
     setActiveTrackId: () => {}, setData: (value: typeof outcome.published) => { outcome.published = value; },
-    setHasLoadedActiveTrack: () => {}, setShellReadError: (value: string) => { outcome.readError = value; },
+    setHasLoadedActiveTrack: () => {}, setLoadedOwner: () => {}, setShellReadError: (value: string) => { outcome.readError = value; },
   };
   await vm.runInNewContext(`${commandSource()}; loadShellData();`, context);
   return outcome;

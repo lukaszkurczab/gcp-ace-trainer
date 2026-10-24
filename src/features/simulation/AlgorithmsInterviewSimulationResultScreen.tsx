@@ -94,7 +94,7 @@ export function AlgorithmsInterviewSimulationReviewScreen({ navigation, route }:
         </View>
       )}
     >
-      <PracticeQuestionCard question={{ constraints: item.constraints, itemId: item.questionId, prompt: item.prompt }} />
+      <PracticeQuestionCard question={{ itemId: item.questionId, prompt: item.prompt }} />
       <Text maxFontSizeMultiplier={2} style={[styles.result, styles[outcome]]}>{t(outcome === "unanswered" ? "Unanswered" : outcome === "correct" ? "Correct" : outcome === "partial" ? "Partial" : "Incorrect")}</Text>
       <PracticeResponseControls
         control={buildPracticeResponseControl({

@@ -21,6 +21,19 @@ before(async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
 });
 
+test("bundled verification observes this owner's cached catalog without opening installed storage", async () => {
+  const plans: object[] = [], proofs: string[] = [];
+  const off = contentPackageRuntimeOwner.subscribeBundledVerification({
+    onWorkPlan(plan) { plans.push(plan.build); assert.equal(plan.units.length, 12); },
+    onVerifiedUnit(proof) { assert.equal(proof.build, plans[0]); proofs.push(proof.unitId); },
+  });
+  assert.equal(plans.length, 1);
+  assert.equal(proofs.length, 12);
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  assert.equal(plans.length, 1); assert.equal(proofs.length, 12);
+  off();
+});
+
 test("resolves an exact canonical artifact by track, content version, and SHA", async () => {
   const prepared = contentPackageRuntimeOwner.getPreparedDiscovery(TRACK_ID);
   const resolved = await contentPackageRuntimeOwner.resolveExactArtifact({

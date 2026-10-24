@@ -26,7 +26,7 @@ test("exam response changes persist the canonical choice response before publish
   assert.match(screen, /accessibilityState=\{\{ checked: selected, disabled: actionPending \|\| resolutionRequired \}\}/);
   assert.match(screen, /if \(shouldClearPendingExamWrite\(attempted, refreshed\)\) setPendingExamWrite\(null\)/);
   assert.match(screen, /await retryCertificationExamDraftSave\(\)/);
-  assert.match(screen, /<PracticeQuestionCard question=\{\{ constraints: projection\.question\.constraints, itemId: projection\.question\.questionId, prompt: projection\.question\.prompt \}\} presentation=\{\{ \.\.\.questionPresentation, constraints: "hide" \}\} \/>/);
+  assert.match(screen, /<PracticeQuestionCard question=\{\{ itemId: projection\.question\.questionId, prompt: projection\.question\.prompt \}\} presentation=\{questionPresentation\} \/>/);
 });
 
 test("an unavailable refresh after an uncertain exam save retains the attempted response until exact confirmation", () => {
@@ -97,10 +97,10 @@ test("exam keeps finish reachable through the navigator and the final-question a
   assert.match(header, /trailingAction=\{options\.headerRight\?\./);
 });
 
-test("exam presentation keeps the track variant while hiding repeated constraints", () => {
+test("exam presentation keeps the track variant without a constraints override", () => {
   assert.match(screen, /const questionPresentation = certificationQuestionPresentation\(projection\.session\.trackId\)/);
   const structured = certificationQuestionPresentation("claude-certified-architect-professional-certification");
   assert.equal(structured.variant, "structuredCertificationPrompt");
   assert.equal(structured.focusFeedback, true);
-  assert.deepEqual({ ...structured, constraints: "hide" }, { variant: "structuredCertificationPrompt", constraints: "hide", focusFeedback: true });
+  assert.deepEqual(structured, { variant: "structuredCertificationPrompt", focusFeedback: true });
 });

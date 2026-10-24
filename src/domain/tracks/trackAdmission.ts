@@ -24,12 +24,11 @@ export const CANONICAL_TRACK_BRIEF_SOURCE = Object.freeze({
 /** App-owned presentation; excluded from the immutable source-brief fingerprint. */
 export type TrackQuestionPresentation = Readonly<{
   variant: "default" | "structuredCertificationPrompt";
-  constraints: "show" | "hide";
   focusFeedback: boolean;
 }>;
 
 export const DEFAULT_TRACK_QUESTION_PRESENTATION: TrackQuestionPresentation = Object.freeze({
-  variant: "default", constraints: "show", focusFeedback: false,
+  variant: "default", focusFeedback: false,
 });
 
 export type TrackDomainMetadata = Readonly<{ id: string; title: string; description: string }>;
@@ -42,7 +41,7 @@ export type TrackPresentationDescriptor = Readonly<{
 
 export function isSupportedTrackQuestionPresentation(value: TrackQuestionPresentation): boolean {
   return !!value && (value.variant === "default" || value.variant === "structuredCertificationPrompt")
-    && (value.constraints === "show" || value.constraints === "hide") && typeof value.focusFeedback === "boolean";
+    && typeof value.focusFeedback === "boolean";
 }
 
 export type TrackBriefDescriptor = Readonly<{
@@ -206,7 +205,7 @@ export const TRACK_DENSITY_DESCRIPTORS: readonly TrackBriefDescriptor[] = Object
     progressDomains: [],
   }),
   descriptor("claude-certified-architect-professional-certification", "certification", "Practice defensible architecture decisions for production Claude systems, from discovery and integration to evaluation, governance, handoff, and operations.", "An experienced solution architect or technical lead preparing for CCAR-P with hands-on experience building and operating LLM systems.", ["official_exam_domain", "architecture_competency", "decision_model", "skill_atom"], "solution_design_and_architecture", certificationModes, ["architecture_selection", "context_and_model_tradeoffs", "secure_integration", "evaluation_and_diagnosis", "risk_and_governance", "stakeholder_alignment", "operational_enablement", "due_review"], packagePlan("solution_design_and_architecture", ["Complete solution-design node: business constraints, end-to-end boundaries, architecture patterns, orchestration, decomposition, and value evidence.", "Whole-node practice for model/context engineering, enterprise integration, evaluation, governance, stakeholder lifecycle, and team operations."], ["Use the CCAR-P v1.0 blueprint for scope and checked first-party documentation for each tested mechanism.", "Independently authored scenarios do not reproduce exam items or imply Anthropic affiliation.", "Practice feedback uses Patternly scoring; the provider scaled passing score is not a raw percentage or a readiness prediction."]), "6f1463cb914c15943c455ba5bc2413aa656e803754eb8297c1b26818acb1cff9", "e88c08dcd163dab7c7b562ef1f2a26160860d07b", {
-    practiceQuestion: { variant: "structuredCertificationPrompt", constraints: "hide", focusFeedback: true },
+    practiceQuestion: { variant: "structuredCertificationPrompt", focusFeedback: true },
     progressEmptyState: { title: "No performance evidence for this version yet", recordedActivityDescription: "Earlier activity and reviews remain available.", reviewAction: true },
     roadmapNodeIds: [
       "solution_design_and_architecture",

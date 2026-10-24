@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import type { ReactNode } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -81,5 +81,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   stackSafeArea: {
     backgroundColor: palette.surface,
+    paddingTop: Platform.OS === "android" ? spacing.sm : 0,
   },
 });

@@ -21,6 +21,9 @@ import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from 
 
 const artifacts: readonly unknown[] = Object.freeze([aws, backend, claude, coding, frontend, gcp, az104, ai901, objectDesign]);
 const locks = new Map((lockFile.tracks as CanonicalContentLockRecord[]).map((entry) => [entry.trackId, entry]));
+const retainedVerificationIds = Object.freeze([
+  "retained:claude-pre-qle-v2.json", "retained:claude-qle-v2-first-cases.json", "retained:claude-qle-v2-before-identity.json",
+]);
 
 export type CanonicalTrackRuntime = Readonly<{
   trackId: string;
@@ -60,15 +63,75 @@ export async function loadCanonicalRuntimeCatalog(): Promise<CanonicalRuntimeCat
   return loadWithCache();
 }
 
-export type CanonicalRuntimeCatalogOwner = Readonly<{ load(): Promise<CanonicalRuntimeCatalog> }>;
+export type VerificationWorkPlan = Readonly<{
+  build: object;
+  units: readonly Readonly<{ id: string; kind: "current_artifact" | "retained_pair" }>[];
+}>;
+export type VerifiedUnit = Readonly<{ build: object; unitId: string }>;
+export type VerificationObserver = Readonly<{
+  onWorkPlan(plan: VerificationWorkPlan): void;
+  onVerifiedUnit(proof: VerifiedUnit): void;
+}>;
+export type CanonicalRuntimeCatalogOwner = Readonly<{
+  load(): Promise<CanonicalRuntimeCatalog>;
+  subscribeVerification(observer: VerificationObserver): () => void;
+}>;
+
+function createVerificationPlan(sourceArtifacts: readonly unknown[], includeRetained: boolean): VerificationWorkPlan | undefined {
+  if (sourceArtifacts.length > 9) return undefined;
+  const trackIds = sourceArtifacts.map((artifact) => artifact && typeof artifact === "object" && !Array.isArray(artifact)
+    ? (artifact as Record<string, unknown>).trackId : undefined);
+  if (trackIds.some((id) => typeof id !== "string" || id.length === 0) || new Set(trackIds).size !== trackIds.length) return undefined;
+  const units: VerificationWorkPlan["units"][number][] = trackIds.map((id, index) => Object.freeze({ id: `current:${index}:${id}`, kind: "current_artifact" }));
+  if (includeRetained) for (const id of retainedVerificationIds) units.push(Object.freeze({ id, kind: "retained_pair" }));
+  return Object.freeze({ build: Object.freeze({}), units: Object.freeze(units) });
+}
 
 export function createCanonicalRuntimeCatalogOwner(dependencies: CanonicalRuntimeBuildDependencies = {}): CanonicalRuntimeCatalogOwner {
-  let cached: Promise<CanonicalRuntimeCatalog> | undefined;
+  type Run = { promise: Promise<CanonicalRuntimeCatalog>; plan: VerificationWorkPlan | undefined; completed: Set<string> };
+  let cached: Run | undefined;
+  const subscribers = new Set<Readonly<{ observer: VerificationObserver }>>();
+  const notify = (subscriber: Readonly<{ observer: VerificationObserver }>, event: () => void) => {
+    if (!subscribers.has(subscriber)) return;
+    try { event(); } catch { /* Observation cannot change content validation or its result. */ }
+  };
   return Object.freeze({
     load() {
-      if (cached) return cached;
-      cached = buildCatalog(dependencies).catch((error) => { cached = undefined; throw error; });
-      return cached;
+      if (cached) return cached.promise;
+      const sourceArtifacts = Object.freeze([...(dependencies.artifacts ?? artifacts)]);
+      const snapshot = { ...dependencies, ...(dependencies.artifacts === undefined ? {} : { artifacts: sourceArtifacts }),
+        ...(dependencies.locks === undefined ? {} : { locks: Object.freeze([...dependencies.locks]) }) };
+      let resolve!: (catalog: CanonicalRuntimeCatalog) => void;
+      let reject!: (error: unknown) => void;
+      const promise = new Promise<CanonicalRuntimeCatalog>((yes, no) => { resolve = yes; reject = no; });
+      const run: Run = { promise, plan: createVerificationPlan(sourceArtifacts, dependencies.artifacts === undefined), completed: new Set() };
+      // Install both identities before reentrant observers or the builder can call load().
+      cached = run;
+      const plan = run.plan;
+      if (plan) for (const subscriber of [...subscribers]) notify(subscriber, () => subscriber.observer.onWorkPlan(plan));
+      const verified = (unitId: string) => {
+        if (!plan || run.completed.has(unitId) || !plan.units.some((unit) => unit.id === unitId)) return;
+        run.completed.add(unitId);
+        const proof = Object.freeze({ build: plan.build, unitId });
+        for (const subscriber of [...subscribers]) notify(subscriber, () => subscriber.observer.onVerifiedUnit(proof));
+      };
+      void buildCatalog(snapshot, verified).then(resolve, (error: unknown) => {
+        if (cached === run) cached = undefined;
+        reject(error);
+      });
+      return promise;
+    },
+    subscribeVerification(observer) {
+      const subscriber = { observer };
+      subscribers.add(subscriber);
+      const run = cached;
+      if (run?.plan) {
+        const plan = run.plan;
+        const completed = [...run.completed];
+        notify(subscriber, () => observer.onWorkPlan(plan));
+        for (const unitId of completed) notify(subscriber, () => observer.onVerifiedUnit(Object.freeze({ build: plan.build, unitId })));
+      }
+      return () => { subscribers.delete(subscriber); };
     },
   });
 }
@@ -83,7 +146,7 @@ export async function buildCanonicalRuntimeCatalog(dependencies: CanonicalRuntim
   return buildCatalog(dependencies);
 }
 
-async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}): Promise<CanonicalRuntimeCatalog> {
+async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}, verified?: (unitId: string) => void): Promise<CanonicalRuntimeCatalog> {
   markStartup("catalog_build", "begin");
   try {
     const sourceArtifacts = dependencies.artifacts ?? artifacts;
@@ -93,7 +156,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
     const successorLedger = dependencies.successorLedger ?? (dependencies.artifacts === undefined ? successorLedgerFile : undefined);
     if (successorLedger !== undefined) assertValidContentSuccessorLedger(successorLedger);
     const catalogs: CanonicalQuestionCatalog[] = [];
-    for (const artifact of sourceArtifacts) {
+    for (const [index, artifact] of sourceArtifacts.entries()) {
       if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || typeof (artifact as Record<string, unknown>).trackId !== "string") throw new Error("Canonical artifact is unavailable; restart to load canonical content.");
       const trackId = (artifact as Record<string, unknown>).trackId as string;
       const lock = sourceLocks.get(trackId);
@@ -120,6 +183,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
         finally { markStartup("predecessor_hash", "end"); }
         if (predecessorHash !== entry.training.artifactSha256) throw new Error(`Content successor ledger does not reconstruct the exact training predecessor for ${trackId}.`);
       }
+      verified?.(`current:${index}:${trackId}`);
     }
     markStartup("catalog_projection", "begin");
     const projections = catalogs.map((catalog) => ({ schemaVersion: "patternly-content-artifact-v1", trackId: catalog.trackId, contentVersion: catalog.contentVersion, questions: catalog.questions.map((question) => ({ trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, questionId: question.questionId, interaction: { type: question.interaction.type } })) }));
@@ -129,7 +193,10 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
     // Optional retained rules preserve already earned legacy completions.
     // Attributed unit progress does not depend on these historical catalogs.
     const retainedProofs = dependencies.artifacts === undefined
-      ? await verifyRetainedCompletionCatalogs(await loadRetainedClaudePackages().catch(() => []), interactionRegistry) : [];
+      ? await verifyRetainedCompletionCatalogs(await loadRetainedClaudePackages().catch(() => []), interactionRegistry, (index) => {
+        const unitId = retainedVerificationIds[index];
+        if (unitId) verified?.(unitId);
+      }) : [];
     const byTrack = new Map(catalogs.map((catalog) => {
       const completionSources = [catalog, ...retainedProofs.filter(source => source.trackId === catalog.trackId)].map(source => Object.freeze({
         trackId: source.trackId, contentVersion: source.contentVersion, artifactSha256: source.artifactSha256, completionRule: source.completionRule,
@@ -213,10 +280,10 @@ async function loadRetainedClaudePackages() {
 type RetainedClaudePackage = Awaited<ReturnType<typeof loadRetainedClaudePackages>>[number];
 
 /** Failed historical proofs stay absent from the classifier's verified pin set. */
-export async function verifyRetainedCompletionCatalogs(sources: readonly RetainedClaudePackage[], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): Promise<readonly CanonicalQuestionCatalog[]> {
+export async function verifyRetainedCompletionCatalogs(sources: readonly RetainedClaudePackage[], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry, onVerifiedPair?: (index: number) => void): Promise<readonly CanonicalQuestionCatalog[]> {
   const verified: CanonicalQuestionCatalog[] = [];
-  for (const source of sources) {
-    try { verified.push(...await verifyRetainedClaudePackage(source, interactions)); }
+  for (const [index, source] of sources.entries()) {
+    try { verified.push(...await verifyRetainedClaudePackage(source, interactions)); onVerifiedPair?.(index); }
     catch { /* An unverified pin yields explicit unavailable completion, not current-account failure. */ }
   }
   return Object.freeze(verified);

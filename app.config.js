@@ -180,6 +180,13 @@ function updatesConfiguration(runtimeMode) {
 function createExpoConfig(environment = process.env) {
   const runtimeMode = readRuntimeMode(environment);
   const publicEnvironment = assertRuntimeEnvironment(environment, runtimeMode);
+  const localAndroidFlag = environment.PATTERNLY_ANDROID_LOCAL_APP;
+  const localAndroid = localAndroidFlag === "true";
+  if (localAndroidFlag && (!localAndroid || runtimeMode !== "smoke" || environment.EAS_BUILD_PLATFORM !== "android"
+    || environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID !== "patternly-app-sandbox"
+    || !/^[a-f0-9]{64}$/.test(environment.EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN ?? ""))) {
+    throw new Error("Patternly Local requires Android smoke with its local emulator App Check token.");
+  }
   require("tsx/cjs");
   const { createEnvironmentIdentity } = require("./src/infrastructure/runtime/environmentIdentity.ts");
   const environmentIdentity = createEnvironmentIdentity(environment);
@@ -190,11 +197,11 @@ function createExpoConfig(environment = process.env) {
   }
   return {
     expo: {
-      name: "Patternly",
+      name: localAndroid ? "Patternly Local" : "Patternly",
       slug: "patternly",
       version: "0.1.1",
       runtimeVersion: { policy: "appVersion" },
-      scheme: "com.lkurczab.patternly",
+      scheme: localAndroid ? "com.lkurczab.patternly.local" : "com.lkurczab.patternly",
       icon: "./assets/brand/app-icon/patternly-app-icon.png",
       orientation: "portrait",
       userInterfaceStyle: "automatic",
@@ -206,8 +213,12 @@ function createExpoConfig(environment = process.env) {
           resizeMode: "contain",
           backgroundColor: "#0C1324",
         }],
-        ["@react-native-firebase/app", { ios: { disableSPM: true } }],
-        "@react-native-firebase/app-check",
+        // Local Android uses JS Auth emulation and the explicit local App Check token.
+        // It has no registered native Firebase app and must not copy the cloud config.
+        ...(localAndroid ? [] : [
+          ["@react-native-firebase/app", { ios: { disableSPM: true } }],
+          "@react-native-firebase/app-check",
+        ]),
         ["expo-secure-store", { configureAndroidBackup: false, faceIDPermission: false }],
         ["expo-build-properties", {
           ios: {
@@ -235,8 +246,8 @@ function createExpoConfig(environment = process.env) {
         appleTeamId: "4KJFN6SXMH",
       },
       android: {
-        package: "com.lkurczab.patternly",
-        ...(environment.EAS_BUILD_PLATFORM === "ios" && runtimeMode === "release" ? {} : { googleServicesFile: nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.android, runtimeMode) }),
+        package: localAndroid ? "com.lkurczab.patternly.local" : "com.lkurczab.patternly",
+        ...(localAndroid || environment.EAS_BUILD_PLATFORM === "ios" && runtimeMode === "release" ? {} : { googleServicesFile: nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.android, runtimeMode) }),
         versionCode: 2,
         adaptiveIcon: {
           foregroundImage: "./assets/brand/app-icon/patternly-app-icon-foreground.png",
@@ -250,7 +261,7 @@ function createExpoConfig(environment = process.env) {
         patternlyEnvironmentFingerprint: environmentIdentity.fingerprint,
         eas: { projectId: "204d9769-4832-4c4a-b932-6359c4ff9dab" },
       },
-      updates: updatesConfiguration(runtimeMode),
+      updates: localAndroid ? { enabled: false, checkAutomatically: "NEVER" } : updatesConfiguration(runtimeMode),
     },
   };
 }

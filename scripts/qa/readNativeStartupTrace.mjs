@@ -13,10 +13,11 @@ export function parseOrigin(value) {
 }
 
 export function selectTarget(targets, metroOrigin, expectedAppId = "com.lkurczab.patternly") {
-  if (!["com.lkurczab.patternly", "com.lkurczab.patternly.sec03"].includes(expectedAppId)
+  const expectedDevice = expectedAppId === "com.lkurczab.patternly.local" ? "2201117TY - 13 - API 33" : "iPhone 17";
+  if (!["com.lkurczab.patternly", "com.lkurczab.patternly.sec03", "com.lkurczab.patternly.local"].includes(expectedAppId)
     || !Array.isArray(targets) || targets.length !== 1) throw Error("target_rejected");
   const target = targets[0];
-  if (target.type !== "node" || target.appId !== expectedAppId || target.deviceName !== "iPhone 17") throw Error("target_rejected");
+  if (target.type !== "node" || target.appId !== expectedAppId || target.deviceName !== expectedDevice) throw Error("target_rejected");
   const url = new URL(target.webSocketDebuggerUrl);
   if (url.protocol !== "ws:" || url.host !== metroOrigin.host || url.pathname !== "/inspector/debug"
     || url.username || url.password || url.hash || [...url.searchParams].length !== 2

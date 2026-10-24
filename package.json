@@ -7,6 +7,7 @@
   },
   "main": "expo/AppEntry",
   "scripts": {
+    "postinstall": "patch-package --error-on-fail && node scripts/verifyNativeScreensPatch.mjs",
     "eas-build-pre-install": "node scripts/verifyBundledCurrentContent.mjs",
     "start": "node scripts/runLocalProfile.mjs",
     "android": "node scripts/runLocalProfile.mjs",
@@ -14,6 +15,7 @@
     "start:smoke": "node scripts/runLocalProfile.mjs smoke start",
     "ios:smoke": "node scripts/runLocalProfile.mjs smoke ios",
     "android:smoke": "node scripts/runLocalProfile.mjs smoke android",
+    "android:local": "node scripts/verifyNativeScreensPatch.mjs && node scripts/runLocalProfile.mjs smoke android-local",
     "start:sandbox": "node scripts/runLocalProfile.mjs sandbox start",
     "ios:sandbox": "node scripts/runLocalProfile.mjs sandbox ios",
     "android:sandbox": "node scripts/runLocalProfile.mjs sandbox android",
@@ -76,6 +78,7 @@
     "fflate": "^0.8.3",
     "firebase": "^12.17.0",
     "i18next": "^26.4.0",
+    "patch-package": "8.0.1",
     "react": "19.2.3",
     "react-i18next": "^17.0.12",
     "react-native": "0.86.3",
@@ -83,7 +86,7 @@
     "react-native-nitro-modules": "^0.36.1",
     "react-native-purchases": "^10.9.0",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.26.0",
+    "react-native-screens": "4.26.2",
     "react-native-svg": "15.15.4",
     "react-native-svg-transformer": "^1.5.3"
   },

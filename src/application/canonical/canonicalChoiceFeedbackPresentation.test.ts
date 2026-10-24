@@ -164,7 +164,7 @@ const claudeReviewedKeys = [
   ["CCARP-D01-O04-expansion-08", "b"],
   ["CCARP-D01-O04-expansion-09", "b"],
   ["CCARP-D01-O04-expansion-10", "b"],
-  ["CCARP-D01-O04-expansion-12", "b"],
+  ["CCARP-D01-O04-packet-dispatch-contract", "bounded_packet_batches"],
   ["CCARP-D01-O04-expansion-13", "b"],
   ["CCARP-D01-O04-expansion-14", "b"],
   ["CCARP-D02-O01-expansion-02", "c"],

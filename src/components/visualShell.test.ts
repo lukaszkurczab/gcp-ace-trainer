@@ -303,8 +303,10 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(button, /style,\s*isDisabled \? disabledStyle : null/);
   assert.match(button, /isDisabled \? disabledLabelStyle : null/);
   assert.match(home, /useState<HomeShellTab>\(route\.params\?\.initialTab \?\? "home"\)/);
-  assert.match(home, /if \(!hasLoadedActiveTrack\) return \([\s\S]*?<HomeLoadingSkeleton \/>[\s\S]*?<ProgressLoadingSkeleton \/>[\s\S]*?<SettingsLoadingSkeleton \/>[\s\S]*?<AppBottomNavigation activeId=\{activeTab\}/);
-  const pendingBranch = home.slice(home.indexOf("if (!hasLoadedActiveTrack)"), home.indexOf("if (shellReadError)"));
+  assert.ok(home.indexOf("if (shellReadError) return") < home.indexOf("if (!hasLoadedActiveTrack || !snapshotOwnerMatches)"),
+    "a first-read failure must render its retry state before the successful-owner loading gate");
+  assert.match(home, /if \(!hasLoadedActiveTrack \|\| !snapshotOwnerMatches\) return \([\s\S]*?<HomeLoadingSkeleton \/>[\s\S]*?<ProgressLoadingSkeleton \/>[\s\S]*?<SettingsLoadingSkeleton \/>[\s\S]*?<AppBottomNavigation activeId=\{activeTab\}/);
+  const pendingBranch = home.slice(home.indexOf("if (!hasLoadedActiveTrack || !snapshotOwnerMatches)"), home.indexOf("if (!activeTrackId)"));
   assert.doesNotMatch(pendingBranch, /scroll=\{false\}/);
   assert.match(home, /navigation\.setParams\(\{ initialTab: tab \}\)/);
   assert.match(settings, /<Screen\b/);

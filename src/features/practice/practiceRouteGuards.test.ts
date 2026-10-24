@@ -118,6 +118,29 @@ test("Certification and Design unlock actions only after the refreshed projectio
   for (const runner of runners) {
     assert.match(runner, /const actionPending = useRef\(false\)/);
     assert.match(runner, /const pendingActionProjection = useRef<[^>]+ \| null>\(null\)/);
+    if (runner.includes("type PendingPracticeAction")) {
+      assert.match(runner, /useEffect\(\(\) => \{\s*const pending = pendingActionProjection\.current;\s*if \(pending && hasReachedPracticeActionProjection\(pending\.projection, projection\)\) clearAction\(pending\.token\);\s*\}, \[projection\]\)/);
+      assert.match(runner, /const isCurrentAction = [\s\S]*routeOwner\.current !== token\.owner \|\| actionToken\.current !== token[\s\S]*token\.assertProfile\(\)[\s\S]*return matchesActionPosition\(token, projectionRef\.current\)/);
+      assert.match(runner, /const matchesActionPosition = [\s\S]*current\?\.session\.id === token\.sessionId[\s\S]*current\.ordinal === token\.ordinal && current\.occurrenceId === token\.occurrenceId[\s\S]*token\.phase === "advancing" && current\.ordinal === token\.ordinal \+ 1 && current\.occurrenceId === token\.nextOccurrenceId/);
+      assert.match(runner, /nextOccurrenceId: phase === "advancing" \? projection\.session\.itemOrder\[projection\.session\.currentItemIndex \+ 1\]\?\.occurrenceId \?\? null : null/);
+      assert.match(runner, /if \(token && !matchesActionPosition\(token, next\)\) return;/);
+      assert.match(runner, /const clearAction = [\s\S]*if \(!isCurrentAction\(token\)\) return;\s*actionToken\.current = null;\s*pendingActionProjection\.current = null;\s*actionPending\.current = false;\s*setPendingAction\(null\)/);
+      assert.match(runner, /if \(token\) pendingActionProjection\.current = \{ token, projection: next \};\s*applyProjection\(next\)/);
+      assert.match(runner, /if \(token\) clearAction\(token\);\s*setError\(describeOperationalFailure/);
+      assert.match(runner, /const beginAction = [\s\S]*actionPending\.current = true;\s*actionToken\.current = token;\s*setPendingAction\(token\);\s*return token/);
+      const submit = runner.match(/const submit = async \(\) => \{([\s\S]*?)\n  \};\n  const next/);
+      assert.ok(submit);
+      assert.match(submit[1]!, /if \(!isCurrentQuestion\(\) \|\| actionPending\.current \|\|/);
+      assert.match(submit[1]!, /const token = beginAction\("submitting_before_journal"\);[\s\S]*await submitCertificationPracticeResponse[\s\S]*await refreshAfterCommand\([^;]+, token\)/);
+      assert.doesNotMatch(submit[1]!, /actionPending\.current = false|clearAction/);
+      const next = runner.match(/const next = async \(\) => \{([\s\S]*?)\n  \};\n  const recover/);
+      assert.ok(next);
+      assert.match(next[1]!, /if \(!isCurrentQuestion\(\) \|\| actionPending\.current \|\| !canAdvance\) return;[\s\S]*beginAction\(finishing \? "completing" : "advancing"\)/);
+      assert.match(next[1]!, /if \(!isCurrentAction\(token\)\) return;\s*if \(\(result\.kind === "verified" \? result\.value\.session\.id : result\.expectedSessionId\) !== token\.sessionId\) return;\s*await applyCompletionResult\(result\);\s*if \(result\.kind !== "verified"\) clearAction\(token\)/);
+      assert.match(next[1]!, /await refreshAfterCommand\([^;]+, token\)/);
+      assert.doesNotMatch(next[1]!, /finally \{[^}]*clearAction|actionPending\.current = false/);
+      continue;
+    }
     if (runner.includes("hasReachedPracticeActionProjection")) assert.match(runner, /if \(!hasReachedPracticeActionProjection\(pendingActionProjection\.current, projection\)\) return;/);
     else assert.match(runner, /useEffect\(\(\) => \{\s*if \(!projection \|\| pendingActionProjection\.current !== projection\) return;\s*pendingActionProjection\.current = null;\s*actionPending\.current = false;\s*\}, \[projection\]\)/);
     assert.match(runner, /pendingActionProjection\.current = next;\s*applyProjection\(next\)/);
@@ -143,6 +166,6 @@ test("Certification and Design unlock actions only after the refreshed projectio
  test("Claude practice shows neither optional hints nor key constraints", () => {
  const runner = source("src/features/practice/CertificationPracticeSessionScreen.tsx");
  assert.doesNotMatch(runner, /Show hint|caseHint|recordCaseExposure/);
- assert.match(runner, /constraints: questionView.constraints, presentation: projection.questionPresentation/);
- assert.doesNotMatch(runner, /constraints: projection.session.trackId/);
+ assert.match(runner, /presentation: projection.questionPresentation/);
+ assert.doesNotMatch(runner, /constraints:/);
 });

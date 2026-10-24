@@ -3,8 +3,7 @@ import { useCallback, useRef, useState } from "react";
 
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import type { TrackId } from "../../domain";
-import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
-import { readActiveTrackId } from "../../storage/repositories/activeTrackRepository";
+import { readActiveTrackId, readLearningPlanStorageScope } from "../../application/learningReadModels";
 import {
   loadPracticeReadData,
   STORED_TRACK_REQUEST_KEY,

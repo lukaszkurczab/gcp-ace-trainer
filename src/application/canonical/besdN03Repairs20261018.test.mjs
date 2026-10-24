@@ -41,7 +41,7 @@ const currentTrackPromise = (async () => {
 })();
 
 // Execute the real card JSX with native components/hooks replaced by inert test
-// bindings. This checks its show/hide branches; it is not a native/device test.
+// bindings. This checks its rendered text; it is not a native/device test.
 function loadQuestionCard() {
   const require = createRequire(import.meta.url);
   const ts = require("typescript");
@@ -79,29 +79,27 @@ function assertNoAnswerLeak(view, question) {
   assert.equal(JSON.stringify(view).includes(question.feedback.reason), false, `${question.questionId} keeps its correction rationale after submission`);
 }
 
-test("BESD N03: APP card JSX shows all current B01-B04 constraints without leaking the answer", async () => {
+test("BESD N03: APP card JSX preserves current B01-B04 prompts without supplementary hints", async () => {
   const { questions } = await currentTrackPromise;
   const Card = loadQuestionCard();
   const presentation = findTrackDescriptor(trackId).presentation.practiceQuestion;
-  assert.equal(presentation.constraints, "show");
   for (const unit of ["BESD-N03-B01", "BESD-N03-B02", "BESD-N03-B03", "BESD-N03-B04"]) {
     assert.ok(questions.some((question) => question.mentalUnitId === unit), `${unit} has current invariant questions`);
   }
   for (const question of questions) {
     const model = toCanonicalQuestionViewModel(question);
     const shown = textNodes(Card({ question: model, presentation })).join("\n");
-    for (const constraint of question.constraints) assert.ok(shown.includes(constraint), `${question.questionId} displays authored business invariant: ${constraint}`);
+    assert.ok(shown.includes(question.prompt), `${question.questionId} preserves the complete authored prompt`);
     assert.doesNotMatch(shown, /the primary decision is/i);
     assertNoAnswerLeak(model, question);
-    assert.equal(textNodes(Card({ question: model, presentation })).filter(value => value === "• ").length, question.constraints.length);
-
-    const hidden = textNodes(Card({ question: model, presentation: { ...presentation, constraints: "hide" } }));
-    assert.equal(hidden.includes("• "), false, `${question.questionId} hides constraints when presentation requires it`);
+    assert.equal(textNodes(Card({ question: model, presentation })).includes("• "), false);
 
     const acceptedText = question.interaction.options.find((option) => option.optionId === question.answer.optionId).text;
-    const leakedModel = { ...model, constraints: [...model.constraints, acceptedText] };
-    assert.throws(() => assertNoAnswerLeak(leakedModel, question), /does not disclose the accepted option/,
-      "negative control confirms the answer-leak assertion rejects a displayed correct choice");
+    const legacyModel = { ...model, constraints: [...question.constraints, acceptedText] };
+    assert.throws(() => assertNoAnswerLeak(legacyModel, question), /does not disclose the accepted option/,
+      "the source-contract check still rejects a correct choice embedded in authored constraints");
+    assert.deepEqual(textNodes(Card({ question: legacyModel, presentation })), textNodes(Card({ question: model, presentation })),
+      "even legacy inputs containing the accepted choice cannot reveal a supplementary hint");
   }
 });
 

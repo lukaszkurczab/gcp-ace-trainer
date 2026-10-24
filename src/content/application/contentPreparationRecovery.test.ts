@@ -13,8 +13,28 @@ const simulationScreen = readFileSync("src/features/simulation/DesignInterviewSi
 
 test("production content preparation strictly verifies the installed package inventory before resuming", () => {
   const prepareContent = source.slice(source.indexOf("return bootstrapApplication("), source.indexOf("async () => {\n          setPhase(\"resuming-session\")"));
-  assert.match(prepareContent, /try \{ await contentPackageRuntimeOwner\.verifyBundledPackages\(\); \}\s*finally \{ endBundledTrace\(\); \}\s*const endInstalledTrace = beginStartupSpan\("installed_inventory"\);\s*try \{ await contentPackageRuntimeOwner\.verifyInstalledPackages\(\); \}\s*finally \{ endInstalledTrace\(\); \}/);
-  assert.doesNotMatch(prepareContent, /\bcatch\b/);
+  const assertVerificationSequence = (candidate: string) => {
+    // The named observer may precede verification; its statement must end before the awaited call.
+    assert.match(candidate, /try \{\s*(?:unsubscribeVerification = contentPackageRuntimeOwner\.subscribeBundledVerification\(\{(?:(?!\}\);)[\s\S])*\}\);\s*)?await contentPackageRuntimeOwner\.verifyBundledPackages\(\);\s*\}\s*finally \{ endBundledTrace\(\); \}\s*const endInstalledTrace = beginStartupSpan\("installed_inventory"\);\s*try \{ await contentPackageRuntimeOwner\.verifyInstalledPackages\(\); \}\s*finally \{ endInstalledTrace\(\); \}/);
+    assert.doesNotMatch(candidate, /\bcatch\b/);
+    assert.doesNotMatch(candidate, /\bresumeActiveSession\b/);
+  };
+  assertVerificationSequence(prepareContent);
+
+  const bundled = "await contentPackageRuntimeOwner.verifyBundledPackages();";
+  const installed = "await contentPackageRuntimeOwner.verifyInstalledPackages();";
+  for (const [name, broken] of [
+    ["bundled verification is not awaited", prepareContent.replace(bundled, bundled.replace("await ", ""))],
+    ["installed verification is not awaited", prepareContent.replace(installed, installed.replace("await ", ""))],
+    ["bundled verification is removed", prepareContent.replace(bundled, "")],
+    ["installed verification runs first", prepareContent.replace(bundled, "SWAP_VERIFICATION").replace(installed, bundled).replace("SWAP_VERIFICATION", installed)],
+    ["verification failure is swallowed", prepareContent.replace(bundled, "await contentPackageRuntimeOwner.verifyBundledPackages().catch(() => undefined);")],
+    ["outer preparation failure is swallowed", prepareContent.replace("return (async () => {", "return (async () => {\ntry {").replace("})();", "} catch {}\n})();")],
+    ["preparation resumes the active session", prepareContent.replace("return (async () => {", "return (async () => {\nawait lifecycle.resumeActiveSession();")],
+  ] as const) {
+    assert.notEqual(broken, prepareContent, name);
+    assert.throws(() => assertVerificationSequence(broken), assert.AssertionError, name);
+  }
 });
 
 test("blocking operational reasons are translated while dynamic fallback text remains intact", () => {
