@@ -349,10 +349,26 @@ async function defaultRunBuild({ producerRoot, outputRoot }) {
   const producer = await import(pathToFileURL(path.join(producerRoot, "scripts", "build.mjs")).href);
   return producer.buildAll({ rootDirectory: producerRoot, outputRoot });
 }
-async function producerHead(producerRoot) {
-  const { stdout } = await execFileAsync("git", ["-C", producerRoot, "rev-parse", "HEAD"], { encoding: "utf8" });
-  const head = stdout.trim();
-  if (!/^[a-f0-9]{40}$/u.test(head)) fail("Cannot resolve the current patternly-content HEAD");
+async function assertCurrentProducerSource(producerRoot, { expectedContentCommit, previousHead } = {}) {
+  let root, head, main, remote, status;
+  try {
+    const git = async (...args) => (await execFileAsync("git", ["-C", producerRoot, ...args], { encoding: "utf8" })).stdout.trim();
+    [root, head, main, remote, status] = await Promise.all([
+      git("rev-parse", "--show-toplevel"),
+      git("rev-parse", "--verify", "HEAD^{commit}"),
+      git("rev-parse", "--verify", "refs/remotes/origin/master^{commit}"),
+      git("remote", "get-url", "origin"),
+      git("status", "--porcelain=v1", "--untracked-files=all", "--ignore-submodules=none"),
+    ]);
+  } catch { fail("Current content source is unavailable; use the canonical patternly-content checkout with origin/master present"); }
+  if (await realpath(root) !== await realpath(producerRoot)) fail("Current content source must be the patternly-content repository root");
+  if (!/^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)lukaszkurczab\/patternly-content(?:\.git)?$/iu.test(remote)) {
+    fail("Current content source origin must identify lukaszkurczab/patternly-content");
+  }
+  if (!/^[a-f0-9]{40}$/u.test(head) || head !== main) fail("Current content source HEAD must match origin/master; application bank unchanged");
+  if (expectedContentCommit && head !== expectedContentCommit) fail("Selected content checkout HEAD differs from the expected exact SHA");
+  if (previousHead && head !== previousHead) fail("Current content source commit changed during preparation; application bank unchanged");
+  if (status) fail("Current content source has working changes; preserve WIP and use clean master before preparing the application bank");
   return head;
 }
 async function assertProducerRoot(producerRoot) {
@@ -584,7 +600,7 @@ async function replaceCurrentBank({ stagedDirectory, targetDirectory, stagedLock
   await remove(lockBackup, { force: false });
   await remove(journalPath, { force: false });
 }
-async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoot, producerRoot = process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), targetLockFile = path.join(appRoot, RELEASE_LOCK_RELATIVE_PATH), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, getProducerHead = producerHead, getCurrentIdentity, getFreshSourceFingerprint, expectedInventory = null, remove = rm, move = rename } = {}) {
+async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoot, producerRoot = process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), targetLockFile = path.join(appRoot, RELEASE_LOCK_RELATIVE_PATH), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, expectedContentCommit = process.env.PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA, getCurrentIdentity, getFreshSourceFingerprint, expectedInventory = null, remove = rm, move = rename } = {}) {
   if (mode !== "sync" && mode !== "check") fail(`Unknown mode: ${mode}`);
   const resolvedAppRoot = path.resolve(appRoot);
   const resolvedProducerRoot = path.resolve(producerRoot);
@@ -593,6 +609,7 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
   if (!isWithin(resolvedAppRoot, resolvedTarget) || resolvedTarget !== path.join(resolvedAppRoot, GENERATED_DIRECTORY)) fail(`Target must be exactly ${GENERATED_DIRECTORY} within the application root`);
   if (!isWithin(resolvedAppRoot, resolvedLockFile) || resolvedLockFile !== path.join(resolvedAppRoot, RELEASE_LOCK_RELATIVE_PATH)) fail(`Release lock target must be exactly ${RELEASE_LOCK_RELATIVE_PATH} within the application root`);
   await assertSafeTargetBoundary(resolvedAppRoot, resolvedTarget);
+  const head = await assertCurrentProducerSource(resolvedProducerRoot, { expectedContentCommit });
   if (mode === "sync") await recoverCurrentBank({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile, remove, move });
   else await assertNoInterruptedTransaction({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile });
   await assertProducerRoot(resolvedProducerRoot);
@@ -606,7 +623,6 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
     ? null
     : await import(pathToFileURL(path.join(resolvedProducerRoot, "scripts/content/current-source-identity.mjs")).href);
   const safeCheckTemporaryRoot = mode === "check" ? await assertSafeCheckTemporaryRoot(resolvedAppRoot, temporaryRoot) : undefined;
-  const head = await getProducerHead(resolvedProducerRoot);
   const temporaryParent = mode === "sync" ? path.dirname(resolvedTarget) : safeCheckTemporaryRoot;
   const temporaryDirectory = await mkdtemp(path.join(temporaryParent, `.canonical-content-build-${process.pid}-`));
   let lockStageDirectory;
@@ -641,6 +657,7 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
     if (mode === "check") {
       await compareDirectories(resolvedTarget, temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
       if (!initialReleaseLock.equals(stagedReleaseLock)) fail("Current content release metadata differs from generated source; run sync:content-release");
+      await assertCurrentProducerSource(resolvedProducerRoot, { expectedContentCommit, previousHead: head });
       return { mode, head, currentIdentity, ...staged, ledger };
     }
 
@@ -653,6 +670,7 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
     } finally {
       if (await pathKind(freshnessDirectory) === "directory") await remove(freshnessDirectory, { recursive: true, force: false });
     }
+    await assertCurrentProducerSource(resolvedProducerRoot, { expectedContentCommit, previousHead: head });
     await replaceCurrentBank({ stagedDirectory: temporaryDirectory, targetDirectory: resolvedTarget, stagedLockFile, targetLockFile: resolvedLockFile, expectedInventory, producerRoot: resolvedProducerRoot, remove, move, expectedTargetDigests: stagedTargetDigests });
     const installed = await validateBuiltContent(resolvedTarget, { expectedInventory, producerRoot: resolvedProducerRoot });
     for (const [fileName, bytes] of staged.files) if (!installed.files.get(fileName)?.equals(bytes)) fail(`Installed canonical content differs from staged canonical bytes: ${fileName}`);

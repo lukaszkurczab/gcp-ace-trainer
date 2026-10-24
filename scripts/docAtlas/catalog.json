@@ -1563,7 +1563,7 @@
     "patternly/integration/contracts/content-release/release.lock.json": {
       "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów, lineage producenta oraz wykonane kategorie kontroli. Lokalny start synchronizuje provenance do aktualnego commitu CONTENT; sama zmiana commitu bez zmiany wejść nie zmienia fingerprintu ani payloadów. Schema v4 nie nadaje semantic approval ani zgody na publikację.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "c31bf70500e2105073c2ed563fbea607d877d8e85c0fa522d18b9ac3c9bc7da9"
+      "reviewedHash": "4fdfec74803c242199e329243ba1a787289c1ccd028ff3ed1d61a52d0b435c23"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -2104,6 +2104,26 @@
       "description": "Przekazuje bieżący wyemitowany bank Coding Interview DSA przez kontrakt producenta i istniejących konsumentów APP dla 47 wskazanych pytań z ośmiu jednostek complexity_and_constraints: walidację/scoring, runtime interaction registry, option-order, feedback i presentation. P01–P06 obejmują ordering i permutacje, ograniczenia złożoności, najsilniejsze zaoferowane ograniczenia, tightest upper bounds i stabilne ID distractorów; D07–D08 są wyłącznie diagnostyczne. Zadeklarowany zakres nie dowodzi wykonania testu, oceny pełnej jakości banku ani synchronizacji/instalacji APP.",
       "flow": "Treść od producenta do sesji",
       "reviewedHash": "9f4e976994b5f7c567cdb31c4f628a06135a4f3dd60e4628e28ee1ab336772e2"
+    },
+    "patternly/scripts/syncBundledContentRelease.mjs": {
+      "description": "Jedyny synchronizator bieżącego banku APP. Przed recovery i importem producenta wymaga kanonicznego katalogu CONTENT, origin/master zgodnego z HEAD, czystego drzewa i zgodnego opcjonalnego SHA. Ponawia kontrolę źródła przed podmianą lub wynikiem check; zachowuje scoring, fingerprint freshness i transakcyjne recovery bez zmiany historii konta.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "54ffaecc7cd7c8f3e4ba4334849a95ed4506d32a0d5c11d1641c13e40bcef557"
+    },
+    "patternly/scripts/syncBundledContentRelease.test.mjs": {
+      "description": "Regresje synchronizacji na izolowanych fixture Git/FS: czysty główny commit i detached checkout, odmowa WIP, obcego katalogu/origin/ref/SHA, zmiana źródła w trakcie, parity i proweniencja oraz atomowa podmiana/recovery z zachowaniem bajtów APP. Lista przypadków nie jest wynikiem ich wykonania.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "1e83ace8b5116aa620bec5fb6d1db6ce161468a2fc003bb0ed2d1c9893fc3b98"
+    },
+    "patternly/scripts/releaseManifest.test.mjs": {
+      "description": "Regresje integralności manifestu wydania, tożsamości wejść i dowodów. Fixture synchronizacji identyfikuje własny czysty główny commit CONTENT i sprawdza, że tylko pochodne banku APP mogą pozostać niezacommitowane; nie uruchamia prawdziwego wydania.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "caa12499e76593935bcf2f39224d2bf9512524c6e2b62639f5952e2091650548"
+    },
+    "patternly-content/tests/currentSourceQuality.test.mjs": {
+      "description": "Bieżące testy dziewięciu banków: walidacja, scoring i build oraz zgodność contentVersion z bezpiecznym formatem i limitem APP. Nie są audytem merytorycznym pytań ani dowodem świeżości rejestru audytu lub wydania.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "7f46b0efa65d3ede1fda86cf8557824e4fe21ef8426531d35159344142ca7896"
     }
   },
   "flows": [
@@ -2136,9 +2156,11 @@
         "patternly/src/content",
         "patternly/src/application/contentPackageRuntimeOwner.ts",
         "patternly-content",
-        "patternly-backend/src/modules/content"
+        "patternly-backend/src/modules/content",
+        "patternly/scripts/syncBundledContentRelease",
+        "patternly/scripts/releaseManifest.test.mjs"
       ],
-      "reviewedDigest": "0b76cdb387de223c16ea0df1b65aa4f2e840a5b50144eb2c2c53d0b5cb5dfa76"
+      "reviewedDigest": "f1009521615002ca9d773e7eefea46c1d36b5445994882e27ca199f5578325e3"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",

@@ -21,9 +21,16 @@ import {
 
 
 const SMALL_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 9, mentalUnitCount: 9, questionCount: 48 });
-const HEAD = "1".repeat(40);
 const DESIGN_TRACK_IDS = ["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"];
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
+function git(root, ...args) { return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim(); }
+function commitProducer(root) {
+  git(root, "add", "-A");
+  git(root, "-c", "user.name=content-sync-test", "-c", "user.email=content-sync-test@example.com", "commit", "-qm", "fixture source");
+  const head = git(root, "rev-parse", "HEAD");
+  git(root, "update-ref", "refs/remotes/origin/master", head);
+  return head;
+}
 
 test("sync arguments expose only current-source sync/check", () => {
   assert.deepEqual(parseArgs([]), { mode: "sync" });
@@ -201,6 +208,9 @@ async function fixture() {
     path.join(producerRoot, "scripts", "content", name),
   )));
   await cp(path.join(contractRoot, "config/track-runtime-bindings.json"), path.join(producerRoot, "config/track-runtime-bindings.json"));
+  git(producerRoot, "init", "-q", "-b", "master");
+  git(producerRoot, "remote", "add", "origin", "https://github.com/lukaszkurczab/patternly-content.git");
+  const head = commitProducer(producerRoot);
   await createBuiltSet(producerOutput);
   await mkdir(targetDirectory, { recursive: true });
   for (const name of await readdir(producerOutput)) await cp(path.join(producerOutput, name), path.join(targetDirectory, name), { recursive: true });
@@ -222,7 +232,7 @@ async function fixture() {
       const bytes = Buffer.from(artifact.artifactBytes);
       return { trackId, contentVersion: artifact.track.contentVersion, artifactSha256: sha256(bytes), artifactBytes: bytes.length, questionCount: artifact.questions.length };
     });
-    return { schemaVersion: "patternly-current-content-identity-v1", ownerPolicy: "standing-owner-decision-2026-10-19-current-source", sourceInputFingerprint: sha256(Buffer.from(JSON.stringify(tracks))), sourceRepositoryCommit: HEAD, sourceTree: "dirty", tracks, verificationCategories: [], claims: { semanticReview: "not_claimed", publication: "not_performed", deployment: "not_performed", deviceAcceptance: "not_claimed" } };
+    return { schemaVersion: "patternly-current-content-identity-v1", ownerPolicy: "standing-owner-decision-2026-10-19-current-source", sourceInputFingerprint: sha256(Buffer.from(JSON.stringify(tracks))), sourceRepositoryCommit: git(producerRoot, "rev-parse", "HEAD"), sourceTree: "clean", tracks, verificationCategories: [], claims: { semanticReview: "not_claimed", publication: "not_performed", deployment: "not_performed", deviceAcceptance: "not_claimed" } };
   };
   const runBuild = async ({ outputRoot }) => {
     for (const name of await readdir(producerOutput)) await cp(path.join(producerOutput, name), path.join(outputRoot, name), { recursive: true });
@@ -230,14 +240,115 @@ async function fixture() {
   };
   const getCurrentIdentity = async ({ built }) => identityFor(built.outputRoot);
   const getFreshSourceFingerprint = async () => (await identityFor(producerOutput)).sourceInputFingerprint;
-  const options = { appRoot, producerRoot, targetDirectory, targetLockFile, runBuild, getProducerHead: async () => HEAD, getCurrentIdentity, getFreshSourceFingerprint, expectedInventory: SMALL_INVENTORY };
-  return { root, appRoot, producerRoot, producerOutput, targetDirectory, targetLockFile, options };
+  const options = { appRoot, producerRoot, targetDirectory, targetLockFile, runBuild, expectedContentCommit: head, getCurrentIdentity, getFreshSourceFingerprint, expectedInventory: SMALL_INVENTORY };
+  return { root, appRoot, producerRoot, producerOutput, targetDirectory, targetLockFile, options, head };
 }
 
 async function snapshot(directory) {
   const names = (await readdir(directory)).sort();
   return Promise.all(names.map(async (name) => [name, sha256(await readFile(path.join(directory, name)))]));
 }
+
+test("current-bank preparation rejects non-main or working inputs before build or recovery", async (t) => {
+  const cases = [
+    ["tracked WIP", async state => writeFile(path.join(state.producerRoot, "scripts/build.mjs"), "// changed\n"), /has working changes/u],
+    ["staged WIP", async state => { await writeFile(path.join(state.producerRoot, "candidate.json"), "{}\n"); git(state.producerRoot, "add", "candidate.json"); }, /has working changes/u],
+    ["untracked WIP", async state => writeFile(path.join(state.producerRoot, "candidate.json"), "{}\n"), /has working changes/u],
+    ["missing main ref", async state => git(state.producerRoot, "update-ref", "-d", "refs/remotes/origin/master"), /source is unavailable/u],
+    ["different main ref", async state => { await writeFile(path.join(state.producerRoot, "later.txt"), "next\n"); commitProducer(state.producerRoot); git(state.producerRoot, "reset", "--hard", state.head); }, /HEAD must match origin\/master/u],
+    ["foreign origin", async state => git(state.producerRoot, "remote", "set-url", "origin", "https://github.com/example/other-content.git"), /origin must identify/u],
+    ["nested root", async state => { state.options.producerRoot = path.join(state.producerRoot, "scripts"); }, /must be the patternly-content repository root/u],
+    ["wrong expected SHA", async state => { state.options.expectedContentCommit = "f".repeat(40); }, /expected exact SHA/u],
+  ];
+  for (const [name, changeSource, category] of cases) await t.test(name, async (t) => {
+    const state = await fixture();
+    t.after(() => rm(state.root, { recursive: true, force: true }));
+    await changeSource(state);
+    const before = await snapshot(state.targetDirectory);
+    const lockBefore = await readFile(state.targetLockFile);
+    const sourceBefore = git(state.producerRoot, "status", "--porcelain=v1", "--untracked-files=all");
+    const journal = `${state.targetDirectory}.transaction.json`;
+    await writeFile(journal, "preserve unresolved transaction\n");
+    let buildCalled = false;
+    await assert.rejects(syncCanonicalContent({ ...state.options, runBuild: async () => { buildCalled = true; } }), category);
+    assert.equal(buildCalled, false);
+    assert.deepEqual(await snapshot(state.targetDirectory), before);
+    assert.deepEqual(await readFile(state.targetLockFile), lockBefore);
+    assert.equal(await readFile(journal, "utf8"), "preserve unresolved transaction\n");
+    assert.equal(git(state.producerRoot, "status", "--porcelain=v1", "--untracked-files=all"), sourceBefore);
+  });
+});
+
+test("a clean detached canonical main checkout retains exact source provenance", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  git(state.producerRoot, "checkout", "--quiet", "--detach", state.head);
+  git(state.producerRoot, "remote", "set-url", "origin", "git@github.com:lukaszkurczab/patternly-content.git");
+  const result = await syncCanonicalContent(state.options);
+  assert.equal(result.head, state.head);
+  const lock = JSON.parse(await readFile(state.targetLockFile, "utf8"));
+  assert.equal(lock.sourceRepositoryCommit, state.head);
+  assert.equal(lock.currentIdentity.sourceTree, "clean");
+  await syncCanonicalContent({ ...state.options, mode: "check" });
+});
+
+test("direct sync honors the expected source SHA from its environment", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const inherited = process.env.PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA;
+  process.env.PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA = "f".repeat(40);
+  const options = { ...state.options, expectedContentCommit: undefined };
+  const before = await snapshot(state.targetDirectory);
+  try {
+    await assert.rejects(syncCanonicalContent(options), /expected exact SHA/u);
+    assert.deepEqual(await snapshot(state.targetDirectory), before);
+  } finally {
+    if (inherited === undefined) delete process.env.PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA;
+    else process.env.PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA = inherited;
+  }
+});
+
+test("source drift during preparation cannot replace APP bank bytes", async (t) => {
+  for (const kind of ["working edit", "main ref", "head and main"]) await t.test(kind, async (t) => {
+    const state = await fixture();
+    t.after(() => rm(state.root, { recursive: true, force: true }));
+    const before = await snapshot(state.targetDirectory);
+    const lockBefore = await readFile(state.targetLockFile);
+    await assert.rejects(syncCanonicalContent({
+      ...state.options,
+      expectedContentCommit: "",
+      getFreshSourceFingerprint: async () => {
+        const fingerprint = await state.options.getFreshSourceFingerprint();
+        if (kind === "main ref") git(state.producerRoot, "update-ref", "-d", "refs/remotes/origin/master");
+        else {
+          await writeFile(path.join(state.producerRoot, "later.txt"), "changed while preparing\n");
+          if (kind === "head and main") commitProducer(state.producerRoot);
+        }
+        return fingerprint;
+      },
+    }), /source is unavailable|has working changes|commit changed during preparation/u);
+    assert.deepEqual(await snapshot(state.targetDirectory), before);
+    assert.deepEqual(await readFile(state.targetLockFile), lockBefore);
+  });
+});
+
+test("check cannot report success after the source becomes dirty", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  const before = await snapshot(state.targetDirectory);
+  const lockBefore = await readFile(state.targetLockFile);
+  await assert.rejects(syncCanonicalContent({
+    ...state.options, mode: "check",
+    getCurrentIdentity: async options => {
+      const identity = await state.options.getCurrentIdentity(options);
+      await writeFile(path.join(state.producerRoot, "candidate.json"), "{}\n");
+      return identity;
+    },
+  }), /has working changes/u);
+  assert.deepEqual(await snapshot(state.targetDirectory), before);
+  assert.deepEqual(await readFile(state.targetLockFile), lockBefore);
+});
 
 test("source fingerprint drift fails before installing any current-bank bytes", async (t) => {
   const state = await fixture();
@@ -256,7 +367,7 @@ test("sync replaces the whole generated directory with an exact validated set", 
   const state = await fixture();
   t.after(() => rm(state.root, { recursive: true, force: true }));
   const result = await syncCanonicalContent(state.options);
-  assert.equal(result.head, HEAD);
+  assert.equal(result.head, state.head);
   assert.deepEqual(result.inventory, SMALL_INVENTORY);
   assert.deepEqual((await readdir(state.targetDirectory)).sort(), [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), "content-lock.json", SUCCESSOR_LEDGER_FILE_NAME].sort());
   const installed = Object.fromEntries(await snapshot(state.targetDirectory));
@@ -273,6 +384,7 @@ test("sync loads content validation contracts from its explicit producer root", 
   const signature = "export function validatePlanningPolicy(policy, questions) {";
   assert.ok(policySource.includes(signature), "test producer has its own contract implementation");
   await writeFile(policyPath, policySource.replace(signature, `${signature}\n  throw new Error("explicit producer contract root used");`));
+  state.options.expectedContentCommit = commitProducer(state.producerRoot);
   await assert.rejects(syncCanonicalContent(state.options), /explicit producer contract root used/u);
   assert.ok(await lstat(state.targetDirectory));
 });

@@ -357,7 +357,10 @@ test("releaseGate does not let a physical receipt bypass current identity checks
 
 test("release verification accepts only exact source-derived APP outputs as uncommitted changes", async () => {
   execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "--allow-empty", "-qm", "selected current content source"], { cwd: contentFixtureRoot });
-  await syncCanonicalContent({ appRoot: applicationRoot, producerRoot: contentFixtureRoot });
+  const contentCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: contentFixtureRoot, encoding: "utf8" }).trim();
+  execFileSync("git", ["remote", "set-url", "origin", "https://github.com/lukaszkurczab/patternly-content.git"], { cwd: contentFixtureRoot });
+  execFileSync("git", ["update-ref", "refs/remotes/origin/master", contentCommit], { cwd: contentFixtureRoot });
+  await syncCanonicalContent({ appRoot: applicationRoot, producerRoot: contentFixtureRoot, expectedContentCommit: contentCommit });
   const status = currentContentWorktreeStatus(applicationRoot);
   assert.equal(status.status, "derived_content");
   assert.ok(status.changedPaths.includes("integration/contracts/content-release/release.lock.json"));
