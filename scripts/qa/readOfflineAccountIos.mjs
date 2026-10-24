@@ -7,14 +7,17 @@ import { parseOrigin, request, selectTarget } from "./readNativeStartupTrace.mjs
 /** Read-only receipts from already initialized production owners. Never prepares a profile,
  * refreshes credentials, builds a mutating account snapshot, or returns learner payloads. */
 export function buildOfflineAccountReadExpression(fingerprint, appId) {
-  if (!/^[a-f0-9]{64}$/u.test(fingerprint ?? "") || !["com.lkurczab.patternly", "com.lkurczab.patternly.sec03"].includes(appId)) throw Error("arguments_rejected");
+  if (!/^[a-f0-9]{64}$/u.test(fingerprint ?? "") || !["com.lkurczab.patternly", "com.lkurczab.patternly.sec03", "com.lkurczab.patternly.local"].includes(appId)) throw Error("arguments_rejected");
+  const platformIdentityCheck = appId === "com.lkurczab.patternly.local"
+    ? `identity.apiOrigin!=='http://127.0.0.1:8080'||identity.firebaseProjectId!=='patternly-app-sandbox'||constants.expoConfig?.android?.package!==${JSON.stringify(appId)}||load('src/infrastructure/firebase/publicConfig.ts').readDevelopmentFirebaseAuthEmulatorOrigin()!=='http://127.0.0.1:19099'`
+    : `constants.expoConfig?.ios?.bundleIdentifier!==${JSON.stringify(appId)}`;
   return `(async()=>{
     if(!globalThis.HermesInternal||typeof __DEV__==='undefined'||!__DEV__)throw Error('runtime_rejected');
     const entries=Array.from(__r.getModules().entries());
     const load=path=>{const matches=entries.filter(([,m])=>m.isInitialized&&m.verboseName.endsWith(path));if(matches.length!==1)throw Error('owner_unavailable');return __r(matches[0][0]);};
     const identity=load('src/infrastructure/runtime/environmentIdentity.ts').readEnvironmentIdentity();
     const constants=load('node_modules/expo-constants/build/Constants.js').default;
-    if(identity.mode!=='smoke'||identity.fingerprint!==${JSON.stringify(fingerprint)}||constants.expoConfig?.extra?.patternlyEnvironmentFingerprint!==identity.fingerprint||constants.expoConfig?.ios?.bundleIdentifier!==${JSON.stringify(appId)})throw Error('runtime_rejected');
+    if(identity.mode!=='smoke'||identity.fingerprint!==${JSON.stringify(fingerprint)}||constants.expoConfig?.extra?.patternlyEnvironmentFingerprint!==identity.fingerprint||${platformIdentityCheck})throw Error('runtime_rejected');
     const hook=globalThis.__REACT_DEVTOOLS_GLOBAL_HOOK__;
     const findActor=()=>{const actors=[];for(const id of hook.renderers.keys())for(const root of hook.getFiberRoots(id)){const walk=f=>{if(!f)return;const v=f.memoizedProps?.value;if(v?.state&&typeof v.captureHomeResumeActorFence==='function'&&typeof v.retryPendingAccountSync==='function')actors.push(v);walk(f.child);walk(f.sibling);};walk(root.current);}if(actors.length!==1)throw Error('actor_unavailable');return actors[0];};
     const actor=findActor(),hash=load('src/infrastructure/identity/sha256.ts').sha256Utf8;
@@ -23,13 +26,63 @@ export function buildOfflineAccountReadExpression(fingerprint, appId) {
     const actorFence=actor.captureHomeResumeActorFence();
     const storage=load('src/infrastructure/storage/mmkvClient.ts');
     const lease=storage.captureActiveProfileStorageLease();
-    if(lease&&(!actorFence||!actorFence.isCurrent()))throw Error('actor_unavailable');
+    const androidGuest=${JSON.stringify(appId === "com.lkurczab.patternly.local")}&&actor.state.kind==='guest';
+    if(lease&&!androidGuest&&(!actorFence||!actorFence.isCurrent()))throw Error('actor_unavailable');
+    let firstGuestRegistryIdentity=null,guestInstallation=null,guestAdmission=null;
+    const guestRegistryIdentity=state=>JSON.stringify({selected:[state.selectedProfile?.id,state.selectedProfile?.kind,state.selectedProfile?.accountId??null],profiles:state.profiles?.map(profile=>[profile.id,profile.kind,profile.accountId??null]).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))});
+    const assertGuestOwner=()=>{
+      const currentActor=findActor(),currentLease=storage.captureActiveProfileStorageLease(),currentProfile=storage.getActiveStorageProfileOrNull();
+      if(!lease||!currentLease||!storage.isActiveProfileStorageLeaseCurrent(lease)||currentLease.generation!==lease.generation
+        ||currentLease.profile.id!==lease.profile.id||currentLease.profile.kind!=='guest'||currentLease.profile.accountId!==null
+        ||!currentProfile||currentProfile.id!==lease.profile.id||currentProfile.kind!=='guest'||currentProfile.accountId!==null
+        ||storage.isProfileTransitionActive()||currentActor.state.kind!=='guest'||actorIdentity(currentActor)!==expectedActor
+        ||currentActor.captureHomeResumeActorFence()!==null)throw Error('source_changed');
+      if(guestInstallation){
+        const marker=load('src/storage/repositories/guestInstallationRepository.ts').readGuestInstallation();
+        if(!marker||marker.accountId!==null||marker.bindingState!=='guest'||marker.localDatasetId!==lease.profile.id
+          ||JSON.stringify(marker)!==JSON.stringify(guestInstallation))throw Error('guest_marker_invalid');
+        if(load('src/storage/repositories/mutationJournalRepository.ts').getActiveMutationJournal(guestAdmission))throw Error('source_pending');
+      }
+    };
+    if(androidGuest){
+      if(!lease||actorFence!==null||lease.profile.kind!=='guest'||lease.profile.accountId!==null
+        ||!storage.isActiveProfileStorageLeaseCurrent(lease)||storage.isProfileTransitionActive())throw Error('guest_lease_unavailable');
+      assertGuestOwner();
+      const firstGuestState=await storage.inspectPreparedProfileState();
+      assertGuestOwner();
+      firstGuestRegistryIdentity=guestRegistryIdentity(firstGuestState);
+      const guestProfiles=firstGuestState.profiles?.filter(profile=>profile.kind==='guest')??[];
+      if(!firstGuestState.selectedProfile||firstGuestState.selectedProfile.id!==lease.profile.id||firstGuestState.selectedProfile.kind!=='guest'
+        ||firstGuestState.selectedProfile.accountId!==null||guestProfiles.length!==1||guestProfiles[0]?.id!==lease.profile.id
+        ||guestProfiles[0]?.accountId!==null)throw Error('guest_selection_mismatch');
+      guestInstallation=load('src/storage/repositories/guestInstallationRepository.ts').readGuestInstallation();
+      if(!guestInstallation||guestInstallation.bindingState!=='guest'||guestInstallation.accountId!==null||guestInstallation.localDatasetId!==lease.profile.id)throw Error('guest_marker_invalid');
+      guestAdmission=load('src/application/tracks/trackAdmissionContext.ts').productionLearningDataAdmissionContext;
+      if(load('src/storage/repositories/mutationJournalRepository.ts').getActiveMutationJournal(guestAdmission))throw Error('source_pending');
+      assertGuestOwner();
+    }
     const first=await storage.inspectPreparedQ13StorageInventory();
+    if(androidGuest){
+      assertGuestOwner();
+      const currentGuestState=await storage.inspectPreparedProfileState();
+      assertGuestOwner();
+      if(guestRegistryIdentity(currentGuestState)!==firstGuestRegistryIdentity)throw Error('source_changed');
+    }
     if(first.kind!=='observed'||!first.complete)throw Error('inventory_unavailable');
     const {packagePointerSources,...inventory}=first;
     const accountId=actor.state.backendUser?.id??actor.state.accountId;
     const receipt={schema:'patternly.offline-account-ios-read.v1',fingerprint:identity.fingerprint,appId:${JSON.stringify(appId)},state:actor.state.kind,accountIdSha256:accountId?hash(accountId):null,uidSha256:actor.state.user?hash(actor.state.user.uid):null,profile:lease?{kind:lease.profile.kind,profileIdSha256:hash(lease.profile.id),accountIdSha256:lease.profile.accountId?hash(lease.profile.accountId):null}:null,inventory};
-    if(lease){
+    if(androidGuest){
+      const context=load('src/application/tracks/trackAdmissionContext.ts');
+      const sessions=await load('src/storage/repositories/trainingSessionRepository.ts').getTrainingSessions(context.productionTrackAdmissionContext);
+      assertGuestOwner();
+      const attempts=await load('src/storage/repositories/trainingAttemptRepository.ts').getTrainingAttempts(context.productionTrackAdmissionContext);
+      assertGuestOwner();
+      if(!sessions?.ok||sessions.issues?.length||!Array.isArray(sessions.value)||!attempts?.ok||attempts.issues?.length||!Array.isArray(attempts.value))throw Error('guest_source_invalid');
+      const summarize=xs=>xs.map(x=>({idSha256:hash(x.id),sha256:hash(JSON.stringify(x)),status:x.status??null})).sort((a,b)=>a.idSha256.localeCompare(b.idSha256));
+      receipt.learning={sessions:summarize(sessions.value),attempts:summarize(attempts.value)};
+      receipt.sync={kind:'not_applicable',reason:'active_profile_is_guest'};
+    }else if(lease){
       const context=load('src/application/tracks/trackAdmissionContext.ts');
       const repo=load('src/storage/repositories/accountDataRepository.ts');
       const sync=await repo.getAccountSyncState(context.productionLearningDataAdmissionContext);
@@ -41,7 +94,13 @@ export function buildOfflineAccountReadExpression(fingerprint, appId) {
       if(!storage.isActiveProfileStorageLeaseCurrent(lease)||JSON.stringify((await repo.getAccountSyncState(context.productionLearningDataAdmissionContext)).outbox)!==JSON.stringify(sync.outbox))throw Error('inventory_changed');
     }
     const second=await storage.inspectPreparedQ13StorageInventory();
-    if(second.kind!=='observed'||!second.complete||second.physicalInventorySha256!==first.physicalInventorySha256||actorIdentity(findActor())!==expectedActor||(actorFence&&!actorFence.isCurrent()))throw Error('inventory_changed');
+    if(androidGuest){
+      assertGuestOwner();
+      const secondGuestState=await storage.inspectPreparedProfileState();
+      assertGuestOwner();
+      if(guestRegistryIdentity(secondGuestState)!==firstGuestRegistryIdentity)throw Error('source_changed');
+    }
+    if(second.kind!=='observed'||!second.complete||second.physicalInventorySha256!==first.physicalInventorySha256||actorIdentity(findActor())!==expectedActor||(!androidGuest&&actorFence&&!actorFence.isCurrent()))throw Error('inventory_changed');
     return receipt;
   })()`;
 }
@@ -66,7 +125,7 @@ export async function readOfflineAccountIos(originValue, fingerprint, appId = "c
   try {
     await new Promise((accept, reject) => { socket.once("open", accept); socket.once("error", () => reject(Error("connect_failed"))); });
     await new Promise((accept) => setTimeout(accept, 300));
-    await evaluate(`(()=>{globalThis[${JSON.stringify(key)}]={kind:'pending'};Promise.resolve().then(()=>${expression}).then(value=>globalThis[${JSON.stringify(key)}]={kind:'done',value}).catch(error=>{const allowed=['runtime_rejected','owner_unavailable','actor_unavailable','inventory_unavailable','inventory_changed'];globalThis[${JSON.stringify(key)}]={kind:'failed',category:allowed.includes(error?.message)?error.message:'read_failed'};});return 'scheduled';})()`);
+    await evaluate(`(()=>{globalThis[${JSON.stringify(key)}]={kind:'pending'};Promise.resolve().then(()=>${expression}).then(value=>globalThis[${JSON.stringify(key)}]={kind:'done',value}).catch(error=>{const allowed=['runtime_rejected','owner_unavailable','actor_unavailable','guest_lease_unavailable','guest_selection_mismatch','guest_marker_invalid','source_pending','source_changed','guest_source_invalid','inventory_unavailable','inventory_changed'];globalThis[${JSON.stringify(key)}]={kind:'failed',category:allowed.includes(error?.message)?error.message:'read_failed'};});return 'scheduled';})()`);
     for (let attempt = 0; attempt < 100; attempt++) {
       const result = JSON.parse(await evaluate(`JSON.stringify(globalThis[${JSON.stringify(key)}])`));
       if (result.kind === "done") return result.value;
@@ -82,7 +141,7 @@ export async function readOfflineAccountIos(originValue, fingerprint, appId = "c
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [origin, fingerprint, appId, ...extra] = process.argv.slice(2);
-  const safe = new Set(["arguments_rejected", "origin_rejected", "target_rejected", "discovery_failed", "connect_failed", "runtime_rejected", "owner_unavailable", "actor_unavailable", "inventory_unavailable", "inventory_changed", "read_failed", "read_timeout", "evaluation_rejected", "transport_closed"]);
+  const safe = new Set(["arguments_rejected", "origin_rejected", "target_rejected", "discovery_failed", "connect_failed", "runtime_rejected", "owner_unavailable", "actor_unavailable", "guest_lease_unavailable", "guest_selection_mismatch", "guest_marker_invalid", "source_pending", "source_changed", "guest_source_invalid", "inventory_unavailable", "inventory_changed", "read_failed", "read_timeout", "evaluation_rejected", "transport_closed"]);
   Promise.resolve().then(() => { if (extra.length) throw Error("arguments_rejected"); return readOfflineAccountIos(origin, fingerprint, appId); })
     .then((receipt) => console.log(JSON.stringify(receipt)))
     .catch((error) => { console.error(JSON.stringify({ stage: "offline_account_read", category: safe.has(error?.message) ? error.message : "read_failed" })); process.exitCode = 1; });

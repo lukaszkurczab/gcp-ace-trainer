@@ -150,7 +150,7 @@ test("V3 unit target resolves a Premium chapter, selects a latest-noncorrect que
   assert.equal(prepared.session.actualLength, Math.min(freeMode.defaultRequestedLength, targetUnitPool.length));
   assert.ok(prepared.session.actualLength >= 4);
   const latestByQuestion = new Map<string, TrainingAttempt<unknown>>();
-  for (const attempt of qualifyPackageAttempts(track, attempts)) latestByQuestion.set(attempt.item.questionId, attempt);
+  for (const attempt of qualifyPackageAttempts(track, attempts, track.getQuestion)) latestByQuestion.set(attempt.item.questionId, attempt);
   assert.notEqual(latestByQuestion.get(prepared.session.itemOrder[0]!.item.questionId)?.result.kind, "correct",
     "the first selected Premium-unit question must have no latest correct answer");
   assert.ok(prepared.session.itemOrder.every((occurrence) => track.getQuestion(occurrence.item.questionId)?.nodeId === targetQuestion.nodeId && track.getQuestion(occurrence.item.questionId)?.mentalUnitId === targetQuestion.mentalUnitId));

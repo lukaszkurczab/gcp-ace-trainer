@@ -107,6 +107,34 @@ test("changed and removed questions retain unit progress without equivalence or 
   assert.equal(targetCopy({kind:"unknown_completion_rule"},translate),"The package’s full completion contract is unavailable.");
 });
 
+test("conflicting legacy node refs remain stored without contributing completion, activity or pace credit", async () => {
+  const storage = installMemoryStorage();
+  const instance = await owner();
+  const current = (await instance.resolveForDiscovery(TRACK, "certification")).track;
+  for (const catalog of [current, (await instance.resolveExactArtifact(pin)).track]) {
+    const question = catalog.questions[0]!;
+    const item = { trackId: TRACK, questionId: question.questionId, contentVersion: catalog.contentVersion, artifactSha256: catalog.artifactSha256 };
+    const instant = "2026-10-01T00:00:00.000Z";
+    await addTrainingAttempt(createTrainingAttempt({
+      id: `conflicting-node-${catalog.artifactSha256}`, sessionId: "conflicting-node-session", trackId: TRACK,
+      modeId: "certification-focus-practice", occurrenceId: `conflicting-node-occurrence-${catalog.artifactSha256}`,
+      item, response: {}, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
+      reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [{ axisId: "node", nodeId: "foreign-node", role: "primary" }] },
+      answeredAt: instant, committedAt: instant,
+    }), admission);
+  }
+  const persisted = (await getTrainingAttempts(admission)).value;
+  assert.equal(persisted.length, 2);
+  const before = storage.snapshot();
+  const evidence = projectLearningEvidence({ profile: current, attempts: persisted, reviews: [], now: NOW });
+  assert.deepEqual(evidence.completion, { kind: "unknown" });
+  assert.deepEqual(evidence.attempts, []);
+  assert.deepEqual(evidence.activityAttempts, []);
+  assert.deepEqual(evidence.completedFacts.attempts, []);
+  assert.deepEqual((await getTrainingAttempts(admission)).value, persisted);
+  assert.deepEqual(storage.snapshot(), before, "projection preserves every durable attempt and its recorded result");
+});
+
 test("verified retained completion survives changed content, retry and owner reconstruction without storage writes", async () => {
   const storage=installMemoryStorage();
   const instance=await owner();

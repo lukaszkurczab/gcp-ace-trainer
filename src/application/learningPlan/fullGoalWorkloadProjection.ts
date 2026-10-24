@@ -693,7 +693,7 @@ function latestCorrectQuestionIdSet(input: Parameters<typeof projectFullGoalWork
   try {
     const latest = new Map<string, boolean>();
     for (const attempt of qualifyPackageAttempts({ trackId: input.track.trackId, contentVersion: input.track.contentVersion,
-      artifactSha256: input.track.artifactSha256, completionRule: rule }, input.attempts)) {
+      artifactSha256: input.track.artifactSha256, completionRule: rule }, input.attempts, input.track.getQuestion)) {
       if (!input.track.getQuestion(attempt.item.questionId)) continue;
       latest.set(attempt.item.questionId, attempt.result.kind === "correct");
     }

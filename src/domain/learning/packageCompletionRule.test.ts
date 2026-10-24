@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRuleV2, createPackageCompletionRuleV3, evaluatePackageCompletion, minimumAttemptsForMentalUnits, type TrainingAttempt } from "..";
-import { qualifyPackageAttempts, type VerifiedPackageCompletionProfile } from "./packageCompletionRule";
+import { completionAttemptIdentity, qualifyPackageAttempts, type VerifiedPackageCompletionProfile } from "./packageCompletionRule";
 
 const artifactSha256 = "a".repeat(64);
 const rule = createPackageCompletionRuleV2({ ruleVersion: 2, chapters: [
@@ -36,7 +36,7 @@ test("durable unit attribution preserves partial progress, results and first com
   const partial = evaluate(old.slice(0,10));
   assert.equal(partial.kind, "in_progress");
   assert.equal(partial.qualifyingAttemptCount, 10);
-  assert.equal(qualifyPackageAttempts(profile,[...old,old[0]!]).length,20);
+  assert.equal(qualifyPackageAttempts(profile,[...old,old[0]!], id => questionById.get(id)).length,20);
   const complete = evaluate([...old,...Array.from({length:20},(_,i)=>attempt(`b${i}`,"question-b",20+i))]);
   assert.equal(complete.kind,"completed");
   assert.equal(complete.chapters[0]!.completionSource?.contentVersion,profile.contentVersion,"provenance identifies the current rule, not the last old answer");
@@ -46,9 +46,44 @@ test("durable unit attribution preserves partial progress, results and first com
 test("missing historical unit attribution is explicitly unknown without losing recorded attempts", () => {
   const old = historical(attempt("unknown","question-a",0));
   assert.deepEqual(evaluate([old]), {kind:"unknown"});
-  assert.equal(qualifyPackageAttempts(profile,[old]).length,0);
+  assert.equal(qualifyPackageAttempts(profile,[old], id => questionById.get(id)).length,0);
   const complete = [...Array.from({length:20},(_,i)=>attempt(`a${i}`,"question-a",i+1)),...Array.from({length:20},(_,i)=>attempt(`b${i}`,"question-b",i+21))];
   assert.equal(evaluate([old,...complete]).kind,"completed");
+});
+
+test("legacy completion uses an exact source only when every saved node ref agrees", () => {
+  const resolveQuestion = (id: string) => questionById.get(id);
+  const source = { ...profile, contentVersion: "old", artifactSha256: "b".repeat(64), getQuestion: resolveQuestion };
+  const current = { ...profile, completionSources: [source] };
+  for (const retained of [false, true]) {
+    const records = Array.from({ length: 20 }, (_, index) => {
+      const value = attempt(`legacy-${index}`, "question-a", index);
+      return retained ? historical(value) : value;
+    });
+    for (const refs of [
+      [{ axisId: "node", nodeId: "foreign-node", role: "primary" }],
+      [{ axisId: "node", nodeId: "chapter-a" }, { axisId: "node", nodeId: "foreign-node", role: "secondary" }],
+      [{ axisId: "node", nodeId: "" }],
+      [{ axisId: "mental_unit", nodeId: "unit-a" }],
+    ]) {
+      const conflicting = records.map(value => ({ ...value, reviewEvidence: { ...value.reviewEvidence, taxonomyOrSkillRefs: refs } }));
+      const before = structuredClone(conflicting);
+      assert.equal(completionAttemptIdentity(current, conflicting[0]!, resolveQuestion), undefined);
+      assert.deepEqual(qualifyPackageAttempts(current, conflicting, resolveQuestion), []);
+      assert.deepEqual(evaluatePackageCompletion(current, conflicting, resolveQuestion), { kind: "unknown" });
+      assert.deepEqual(conflicting, before, "unresolved attribution never rewrites historical evidence or results");
+      const proven = Array.from({ length: 40 }, (_, index) => attempt(`proven-${index}`, index < 20 ? "question-a" : "question-b", index + 20));
+      assert.equal(evaluatePackageCompletion(current, [...proven, ...conflicting], resolveQuestion).kind, "completed", "unresolved extra history cannot revoke a proven completion");
+    }
+    for (const refs of [[], [{ axisId: "node", nodeId: "chapter-a" }], [{ axisId: "node", nodeId: "chapter-a", role: "secondary" }]]) {
+      const matching = records.map(value => ({ ...value, reviewEvidence: { ...value.reviewEvidence, taxonomyOrSkillRefs: refs } }));
+      assert.deepEqual(completionAttemptIdentity(current, matching[0]!, resolveQuestion), { nodeId: "chapter-a", mentalUnitId: "unit-a" });
+      assert.deepEqual(qualifyPackageAttempts(current, matching, resolveQuestion), matching);
+      const completion = evaluatePackageCompletion(current, matching, resolveQuestion);
+      assert.notEqual(completion.kind, "unknown");
+      if (completion.kind !== "unknown") assert.equal(completion.chapters[0]!.status, "completed");
+    }
+  }
 });
 
 test("v2 validates exact chapter fields, distinct unit thresholds, and safe integer bounds", () => {
