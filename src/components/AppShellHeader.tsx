@@ -1,4 +1,4 @@
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import type { ReactNode } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -22,14 +22,17 @@ type AppShellHeaderProps = {
 export function AppShellHeader({ backAction, context, placement = "inline", trailingAction }: AppShellHeaderProps) {
   const styles = useThemedStyles(createStyles);
   const { colorMode } = useAppPreferences();
+  const { fontScale } = useWindowDimensions();
+  // Recreate native header measurements when Dynamic Type changes on an open screen.
+  const layoutKey = `app-shell-header:${fontScale}`;
   if (backAction) {
     const link = <View style={styles.backSlot}><BackLink {...backAction} /></View>;
-    if (placement === "stack") return <SafeAreaView edges={["top"]} style={styles.stackSafeArea}><View style={[styles.stackHeader, styles.header]}>{link}{trailingAction}</View></SafeAreaView>;
-    return <View style={styles.header}>{link}{trailingAction}</View>;
+    if (placement === "stack") return <SafeAreaView edges={["top"]} key={layoutKey} style={styles.stackSafeArea}><View style={[styles.stackHeader, styles.header]}>{link}{trailingAction}</View></SafeAreaView>;
+    return <View key={layoutKey} style={styles.header}>{link}{trailingAction}</View>;
   }
 
   const header = (
-    <View style={[styles.header, placement === "stack" ? styles.stackHeader : null]}>
+    <View key={layoutKey} style={[styles.header, placement === "stack" ? styles.stackHeader : null]}>
       <View style={styles.brandRow}>
         <PatternlyMark decorative size={30} treatment={colorMode === "dark" ? "mint" : "navy"} />
         <View style={styles.headerCopy}>
@@ -41,7 +44,7 @@ export function AppShellHeader({ backAction, context, placement = "inline", trai
     </View>
   );
 
-  if (placement === "stack") return <SafeAreaView edges={["top"]} style={styles.stackSafeArea}>{header}</SafeAreaView>;
+  if (placement === "stack") return <SafeAreaView edges={["top"]} key={layoutKey} style={styles.stackSafeArea}>{header}</SafeAreaView>;
   return header;
 }
 

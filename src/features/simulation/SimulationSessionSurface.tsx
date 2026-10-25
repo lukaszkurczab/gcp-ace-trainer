@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AnswerOption, Button, Card, Icon, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { radius, spacing, typography } from "../../theme";
@@ -158,8 +159,9 @@ function SavedStatus() {
 function Question({ itemId, locked, onChange, question, sessionId, variant }: Readonly<{ itemId?: string; locked: boolean; onChange?: (change: SimulationResponseChange) => void; question: NonNullable<SimulationSurfaceProjection["question"]>; sessionId?: string; variant?: "simulation" | "simulationSaved" }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
   return (
-    <Card style={styles.questionCard} testID={itemId ? runtimeSelectors.simulation.question(itemId) : undefined}>
+    <Card style={styles.questionCard} key={`simulation-question:${fontScale}`} testID={itemId ? runtimeSelectors.simulation.question(itemId) : undefined}>
       {variant ? <Text maxFontSizeMultiplier={2} style={[styles.questionLabel, variant === "simulationSaved" ? styles.savedQuestionLabel : null]}>{t("QUESTION")}</Text> : null}
       <Text maxFontSizeMultiplier={2} style={[styles.prompt, variant === "simulation" ? styles.simulationPrompt : null, variant === "simulationSaved" ? styles.savedPrompt : null]}>{question.prompt}</Text>
       {question.code ? <Text maxFontSizeMultiplier={2} accessibilityLabel={t("Code sample")} style={styles.code}>{question.code}</Text> : null}
@@ -190,9 +192,10 @@ function simulationOptionSelector(itemId: string | undefined, optionId: string):
 function ConfirmationActionSheet({ confirmation, sessionId }: Readonly<{ confirmation: NonNullable<SimulationSurfaceProjection["confirmation"]>; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const insets = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();
   const dismiss = confirmation.dismiss ?? confirmation.secondary;
-  return <Modal animationType={reduceMotion ? "none" : "slide"} onRequestClose={dismiss.onPress} statusBarTranslucent transparent visible><View style={styles.confirmationRoot}><Pressable accessibilityLabel={t(dismiss.label)} accessibilityRole="button" onPress={dismiss.onPress} style={styles.confirmationBackdrop} /><View accessibilityViewIsModal style={styles.confirmationStack}><View style={styles.confirmationSheet}><Text maxFontSizeMultiplier={2} style={styles.confirmationTitle}>{t(confirmation.title)}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t(confirmation.description)}</Text><Action action={confirmation.primary} fullWidth sessionId={sessionId} /><Action action={confirmation.secondary} fullWidth sessionId={sessionId} /></View>{confirmation.destructive ? <View style={styles.confirmationDestructive}><Action action={confirmation.destructive} fullWidth sessionId={sessionId} /></View> : null}</View></View></Modal>;
+  return <Modal animationType={reduceMotion ? "none" : "slide"} onRequestClose={dismiss.onPress} statusBarTranslucent transparent visible><View style={[styles.confirmationRoot, { paddingBottom: insets.bottom }]}><Pressable accessibilityLabel={t(dismiss.label)} accessibilityRole="button" onPress={dismiss.onPress} style={styles.confirmationBackdrop} /><View accessibilityViewIsModal style={styles.confirmationStack}><View style={styles.confirmationSheet}><Text maxFontSizeMultiplier={2} style={styles.confirmationTitle}>{t(confirmation.title)}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t(confirmation.description)}</Text><Action action={confirmation.primary} fullWidth sessionId={sessionId} /><Action action={confirmation.secondary} fullWidth sessionId={sessionId} /></View>{confirmation.destructive ? <View style={styles.confirmationDestructive}><Action action={confirmation.destructive} fullWidth sessionId={sessionId} /></View> : null}</View></View></Modal>;
 }
 
 function CompletedSurface({ projection, sessionId }: Readonly<{ projection: SimulationSurfaceProjection; sessionId?: string }>) {

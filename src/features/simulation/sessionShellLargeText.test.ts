@@ -6,12 +6,12 @@ const source = readFileSync("src/features/coding-interview/session/SessionShell.
 const practiceSurface = readFileSync("src/features/practice/PracticeSessionSurface.tsx", "utf8");
 const buttonSource = readFileSync("src/components/Button.tsx", "utf8");
 
-test("SessionShell keeps the Figma top bar in one row at large text", () => {
+test("SessionShell refreshes native chrome geometry when the text size changes", () => {
   assert.match(source, /import \{ Pressable, StyleSheet, Text, View, useWindowDimensions \} from "react-native";/);
   assert.equal((source.match(/const \{ fontScale \} = useWindowDimensions\(\);/g) ?? []).length, 2);
   assert.deepEqual(
     [...source.matchAll(/key=\{`([^`]+)`\}/g)].map((match) => match[1]),
-    ["timer:${fontScale}", "mode:${fontScale}", "position:${fontScale}"],
+    ["timer:${fontScale}", "mode:${fontScale}", "session-top-bar:${fontScale}", "position:${fontScale}"],
   );
   assert.match(source, /topBar:\s*\{[\s\S]*flexDirection:\s*"row"[\s\S]*minHeight:\s*20/);
   assert.match(source, /topBar:\s*\{[\s\S]*paddingHorizontal:\s*spacing\.xl/);

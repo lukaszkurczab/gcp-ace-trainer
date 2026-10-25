@@ -29,8 +29,8 @@ type SessionShellProps = Readonly<{
 }>;
 
 /**
- * Pure session geometry shared by Algorithms Practice and Interview
- * Simulation. Its semantic values are intentionally supplied by an
+ * Pure session geometry shared by practice, simulation and exam screens.
+ * Its semantic values are intentionally supplied by an
  * application projection; before verification the slots stay reserved but
  * unlabelled.
  */
@@ -57,6 +57,7 @@ export function SessionShell({
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
   const isExamLayout = layout === "exam";
+  const isLargeExamLayout = isExamLayout && fontScale >= 1.3;
   const isSimulationLayout = layout === "simulation" || layout === "simulationSaved" || layout === "simulationConfirmation";
   const isSavedSimulationLayout = layout === "simulationSaved";
   const isConfirmationSimulationLayout = layout === "simulationConfirmation";
@@ -65,6 +66,16 @@ export function SessionShell({
   const verifiedProgress = typeof progress === "number" && Number.isFinite(progress)
     ? Math.min(1, Math.max(0, progress))
     : null;
+  const timerSlot = (
+    <View key="timer" accessible={Boolean(timer)} accessibilityElementsHidden={!timer} accessibilityLabel={timer?.accessibilityLabel} accessibilityRole={timer ? "timer" : undefined} importantForAccessibility={timer ? "yes" : "no-hide-descendants"} style={[styles.topSlot, isSimulationLayout ? styles.topSlotSimulation : null]} testID={timerTestID}>
+      {timer ? <Text key={`timer:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.topText, isLargeSimulationLayout ? styles.topTextLargeSimulation : null]}>{timer.label}</Text> : null}
+    </View>
+  );
+  const modeSlot = (
+    <View key="mode" style={[styles.modeSlot, isSimulationLayout ? styles.modeSlotSimulation : null, isLargeExamLayout ? styles.modeSlotLargeExam : null]}>
+      {modeLabel ? <Text accessibilityLabel={modeLabel} ellipsizeMode="clip" key={`mode:${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={isExamLayout ? undefined : 2} style={[styles.modeText, isSimulationLayout ? styles.modeTextSimulation : null, isExamLayout ? styles.modeTextExam : null]} testID={modeTestID}>{modeLabel}</Text> : null}
+    </View>
+  );
 
   return (
     <Screen
@@ -75,14 +86,11 @@ export function SessionShell({
       header={(
         <>
           {headerAction ? <View style={styles.headerAction}>{headerAction}</View> : null}
-          <View style={[styles.topBar, isSimulationLayout ? styles.topBarSimulation : null, isLargeSimulationLayout ? styles.topBarLargeSimulation : null, isExamLayout ? styles.topBarExam : null]}>
-            <View accessible={Boolean(timer)} accessibilityElementsHidden={!timer} accessibilityLabel={timer?.accessibilityLabel} accessibilityRole={timer ? "timer" : undefined} importantForAccessibility={timer ? "yes" : "no-hide-descendants"} style={[styles.topSlot, isSimulationLayout ? styles.topSlotSimulation : null]} testID={timerTestID}>
-              {timer ? <Text key={`timer:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.topText, isLargeSimulationLayout ? styles.topTextLargeSimulation : null]}>{timer.label}</Text> : null}
-            </View>
-            <View style={[styles.modeSlot, isSimulationLayout ? styles.modeSlotSimulation : null]}>
-              {modeLabel ? <Text accessibilityLabel={modeLabel} ellipsizeMode="clip" key={`mode:${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={isExamLayout ? undefined : 2} style={[styles.modeText, isSimulationLayout ? styles.modeTextSimulation : null, isExamLayout ? styles.modeTextExam : null]} testID={modeTestID}>{modeLabel}</Text> : null}
-            </View>
-            <PositionSlot disabled={positionDisabled} isExamLayout={isExamLayout} isConfirmationSimulationLayout={isConfirmationSimulationLayout} isSavedSimulationLayout={isSavedSimulationLayout} isSimulationLayout={isSimulationLayout} onPress={onPositionPress} position={position} positionAccessibilityLabel={positionAccessibilityLabel} positionTestID={positionTestID} styles={styles} />
+          <View key={`session-top-bar:${fontScale}`} style={[styles.topBar, isSimulationLayout ? styles.topBarSimulation : null, isLargeSimulationLayout ? styles.topBarLargeSimulation : null, isExamLayout ? styles.topBarExam : null, isLargeExamLayout ? styles.topBarLargeExam : null]}>
+            {isLargeExamLayout ? modeSlot : null}
+            {timerSlot}
+            {!isLargeExamLayout ? modeSlot : null}
+            <PositionSlot key="position" disabled={positionDisabled} isExamLayout={isExamLayout} isConfirmationSimulationLayout={isConfirmationSimulationLayout} isSavedSimulationLayout={isSavedSimulationLayout} isSimulationLayout={isSimulationLayout} onPress={onPositionPress} position={position} positionAccessibilityLabel={positionAccessibilityLabel} positionTestID={positionTestID} styles={styles} />
           </View>
           <View accessible={verifiedProgress !== null} accessibilityElementsHidden={verifiedProgress === null} accessibilityLabel={verifiedProgress === null ? undefined : t("Session progress")} accessibilityRole={verifiedProgress === null ? undefined : "progressbar"} accessibilityValue={verifiedProgress === null ? undefined : { max: 100, min: 0, now: Math.round(verifiedProgress * 100) }} importantForAccessibility={verifiedProgress === null ? "no-hide-descendants" : "yes"} style={[styles.progressTrack, isSimulationLayout ? styles.progressTrackSimulation : null, isConfirmationSimulationLayout ? styles.progressTrackConfirmation : null]} testID={progressTestID}>
             {verifiedProgress === null ? null : <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.progressFill, { width: `${verifiedProgress * 100}%` }]} />}
@@ -101,8 +109,11 @@ export function SessionShell({
 const createStyles = (palette: AppColors) => StyleSheet.create({
   contentExam: { paddingTop: spacing.lg },
   topBarExam: { gap: spacing.sm, minHeight: 44, paddingVertical: 0 },
+  topBarLargeExam: { flexWrap: "wrap", justifyContent: "space-between" },
+  modeSlotLargeExam: { flex: 0, flexBasis: "100%", width: "100%" },
   modeTextExam: { fontSize: 12, lineHeight: 16 },
-  positionButtonExam: { alignItems: "center", borderColor: palette.border, borderRadius: 12, borderWidth: 1, flexDirection: "row", gap: spacing.xs, minHeight: 44, paddingHorizontal: spacing.sm },
+  positionButton: { justifyContent: "center", minHeight: 44, minWidth: 44 },
+  positionButtonExam: { alignItems: "center", borderColor: palette.border, borderRadius: 12, borderWidth: 1, flexDirection: "row", gap: spacing.xs, paddingHorizontal: spacing.sm },
   headerAction: { alignItems: "flex-start", paddingHorizontal: spacing.xl, paddingBottom: spacing.sm },
   simulationActionRegion: {
     minHeight: 80,
@@ -214,7 +225,7 @@ function PositionSlot({ disabled, isExamLayout, isConfirmationSimulationLayout, 
   const style = [styles.topSlot, styles.positionSlot, isSimulationLayout ? styles.topSlotSimulation : null];
   const content = position ? <Text key={`position:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.topText, isSavedSimulationLayout || isConfirmationSimulationLayout ? styles.topTextLargeSimulation : null]}>{position.label}</Text> : null;
   if (onPress && position) {
-    return <Pressable accessibilityLabel={positionAccessibilityLabel ?? position.accessibilityLabel} accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[style, isExamLayout ? styles.positionButtonExam : null]} testID={positionTestID}>{isExamLayout ? <Icon color={styles.topText.color} name="grid" size={16} /> : null}{content}{isExamLayout ? <Icon color={styles.topText.color} name="chevron-down" size={14} /> : null}</Pressable>;
+    return <Pressable accessibilityLabel={positionAccessibilityLabel ?? position.accessibilityLabel} accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[style, styles.positionButton, isExamLayout ? styles.positionButtonExam : null]} testID={positionTestID}>{isExamLayout ? <Icon color={styles.topText.color} name="grid" size={16} /> : null}{content}{isExamLayout ? <Icon color={styles.topText.color} name="chevron-down" size={14} /> : null}</Pressable>;
   }
   return <View accessible={Boolean(position)} accessibilityElementsHidden={!position} accessibilityLabel={position?.accessibilityLabel} importantForAccessibility={position ? "yes" : "no-hide-descendants"} style={style} testID={positionTestID}>{content}</View>;
 }
