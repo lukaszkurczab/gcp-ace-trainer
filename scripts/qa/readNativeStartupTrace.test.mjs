@@ -11,9 +11,10 @@ test("optional native startup timestamps retain unavailable boundaries and rejec
 });
 
 test("origins must be loopback with explicit port and no extra URL capabilities", () => {
-  for (const value of ["https://localhost:8082", "http://remote.test:8082", "http://user@localhost:8082", "http://localhost:8082/path", "http://localhost:8082/?query=1"]) assert.throws(() => parseOrigin(value));
+  for (const value of ["https://localhost:8082", "http://remote.test:8082", "http://user@localhost:8082", "http://localhost:8082/path", "http://localhost:8082/?query=1", "http://localhost", "http://localhost:8082/#fragment", "ws://localhost:8082"]) assert.throws(() => parseOrigin(value));
   assert.equal(parseOrigin("http://localhost:8082").port, "8082");
   assert.equal(parseOrigin("http://127.0.0.1:8082").hostname, "127.0.0.1");
+  assert.equal(parseOrigin("http://[::1]:8083").hostname, "[::1]");
 });
 const target = { type: "node", appId: "com.lkurczab.patternly", deviceName: "iPhone 17", id: "local-1", reactNative: { logicalDeviceId: "local" }, webSocketDebuggerUrl: "ws://localhost:8082/inspector/debug?device=local&page=1" };
 
@@ -29,7 +30,7 @@ test("local Android inspection requires its exact separate package and observed 
 test("target is exact and rejects ambiguity, other devices and cross-origin sockets", () => {
   const origin = parseOrigin("http://localhost:8082");
   assert.equal(selectTarget([target], origin), target.webSocketDebuggerUrl);
-  for (const values of [[], [target, target], [{ ...target, deviceName: "iPhone 16" }], [{ ...target, webSocketDebuggerUrl: "ws://remote.test:8082/inspector/debug?device=local&page=1" }], [{ ...target, id: "wrong" }]]) assert.throws(() => selectTarget(values, origin));
+  for (const values of [[], [target, target], [{ ...target, deviceName: "iPhone 16" }], [{ ...target, webSocketDebuggerUrl: "ws://remote.test:8082/inspector/debug?device=local&page=1" }], [{ ...target, webSocketDebuggerUrl: "ws://localhost:8083/inspector/debug?device=local&page=1" }], [{ ...target, id: "wrong" }]]) assert.throws(() => selectTarget(values, origin));
 });
 test("isolated SEC03 target requires an explicit exact allowlisted app ID with no fallback", () => {
   const origin = parseOrigin("http://localhost:8082");

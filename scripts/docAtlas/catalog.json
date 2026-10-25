@@ -961,8 +961,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/progress/store.ts": {
-      "description": "Firestore przechowuje postęp, batch receipts i staged adoption. Odczyt sprawdza autoryzację, generację i metadane przed/po; zgodny token/scope+rewizja pomija tylko query. Zamknięty read deleguje ograniczone retry całego callbacka SDK. Adoption ponownie wyznacza materializację i sprawdza checkpoint/source fences; docelowy postęp nie dziedziczy TTL źródła lub operacji.",
-      "reviewedHash": "057b5e4a19dcbcafb5b528197d74fb88a1c6a401c47f68c3fdb1538d8ab1b108",
+      "description": "Firestore przechowuje postęp, batch receipts i staged adoption. Autoryzacja, lease, generacja, metadane i pełny fingerprint poprzedzają zwrot zapisanego wyniku batcha; replay pomija odczyty rekordów mutacji. Świeża próba zachowuje CAS i goal/plan counterparts. Odczyt snapshotu sprawdza scope przed/po; zamknięty read deleguje ograniczone retry całego callbacka SDK. Adoption zachowuje checkpoint/source fences i osobną retencję.",
+      "reviewedHash": "ce6127ebaa9cb83d518a07ad622cd15feed4ae3e620b91ef5a979cd3f1018b9a",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/users/merge.ts": {
@@ -1131,8 +1131,8 @@
       "flow": "Witryna, demo i panel"
     },
     "patternly-web/src/components/SecurityIncidentsPanel.jsx": {
-      "description": "Obsługa incydentów i decyzji oraz powiadomień operatora.",
-      "reviewedHash": "27b4564806179e832d7a47d75272c5a1d518b49887d8ddd78caa42460bd6fc28",
+      "description": "Obsługa incydentów, decyzji i powiadomień operatora. Formularz buduje na każdy render indeks pierwszych doręczeń po dokładnej parze pseudonim/wersja oraz zbiór aktualnych pending effects. Zachowuje blokady wysyłki i ręczną rekoncyliację nieznanego wyniku; nie utrwala indeksów.",
+      "reviewedHash": "c0928d14d766c963c8563134273df090e5c8c740e9618cf743a2bdf527f8df53",
       "flow": "Witryna, demo i panel"
     },
     "patternly-web/vite.config.js": {
@@ -1916,9 +1916,9 @@
       "reviewedHash": "26009b6df78a33e13b3db33e152cc0a3c264536d1e03d4004b4000bdd1822edf"
     },
     "patternly/src/application/reviewQueueQueries.ts": {
-      "description": "Wyświetla bieżący materiał dla zapisanej jednostki; brak materiału lub przypisania daje unavailable konkretnego wiersza zamiast przerwania odczytu całej kolejki. Historia i termin pozostają w źródłowym rekordzie.",
+      "description": "Wyświetla bieżący materiał dla zapisanej jednostki. Każda budowa odkrywa katalog raz i skanuje pytania w kolejności do znalezienia pierwszego materiału dla żądanych jednostek. Nietrwały indeks zachowuje exact legacy proof, due/manual i unavailable konkretnego wiersza; historia i termin pozostają w źródłowym rekordzie.",
       "flow": "Cel, plan i postęp",
-      "reviewedHash": "5217aedd483ccd8a7eb2b8523a37997ee462030cd070603ad0a9a3dcd257112f"
+      "reviewedHash": "4fa41b5f6657afc9b6b50227cc75e933528e8961533d86f3c5edc924ea2db92b"
     },
     "patternly/src/application/coding-interview/codingProgressProjection.ts": {
       "description": "Projektuje praktykę i skuteczność według zapisanych jednostek i node; dodanie/zastąpienie pytania w tej samej jednostce nie zeruje jej pokrycia. Nie przyznaje nowej jednostce postępu poprzedniej.",
@@ -2134,6 +2134,16 @@
       "description": "Renderer projekcji Interview Simulation: pytanie i odpowiedzi, zapis/leave, nawigator, recovery, potwierdzenie oraz zweryfikowany wynik. Panel potwierdzenia uwzględnia dolny inset safe area; nie posiada logiki timerów, zapisu, punktacji ani finalizacji. Przy zmianie fontScale odtwarza samą kartę pytania z kontrolowanymi odpowiedziami, aby ponowić natywny pomiar promptu i opcji bez resetu projekcji sesji.",
       "flow": "Sesja, odpowiedź i trwały wynik",
       "reviewedHash": "b1e70c06b6c2a7f15fe09468458fbe519c547e98633b2d4a280aa669a48421bf"
+    },
+    "patternly-content/tests/gcp-ace-20261025-targeted-corrections.test.mjs": {
+      "description": "Przegląd z 25.10.2026: test celowany GCP ACE P01–P05 dla 12 pytań Cloud Billing z pięciu jednostek N03. Sprawdza przeniesienie poprawionych pól do artefaktu, kontrakt autora i rzeczywisty scorer, feedback oraz prezentację APP, 24 permutacje opcji, deterministyczną kolejność oraz odrzucenie wycofanych B/C/D w B02-015. Obejmuje granice alerts-only i spend caps, okresowy status Pub/Sub, separację projektów i agregację kosztów, backfill i zmianę datasetu oraz feedback tożsamości. Pięć scenariuszy Pub/Sub jest wyłącznie modelem interpretacji, nie produkcyjnym konsumentem ani dowodem działania usług. Import konsumenta nie synchronizuje danych do APP; wyniki wykonania pozostają w jedynym stanie i karcie GCP.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "59b75ebfceb6f8e1dc3314ed1612c404f5e48f986de463fe943a3f526f12e1b6"
+    },
+    "patternly/src/features/home/tabs/ProgressTab.tsx": {
+      "description": "Przedstawia evidence, plan, tygodniową aktywność i historię wybranego tracka. AlgorithmsEvidenceSection posiada lokalny stan rozwinięcia diagnostyki; jego przełączenie nie uruchamia ponownie pełnych projekcji rodzica. Aktualizacja wejść nadal korzysta z bieżącego presentProgressEvidence bez cache.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "18631bd18cb2713d81973fbdadfcc5196ff3d9aa3587adcaf2e8d0eaab51a7c0"
     }
   },
   "flows": [
@@ -2146,7 +2156,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "0a3810cbd7710466edcf3e680717affd07842f13662ae070aaf6742e8d73db60"
+      "reviewedDigest": "0b29ef26771609095e2ccbde61ae0a3cfe3bab5e32a7200b9b56c3e19cc9d91b"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -2158,7 +2168,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "3aa31564d7c74f20dd3a804effa63682e5a79712997a3ec8c953873128ee6f3f"
+      "reviewedDigest": "9319f31da39728b0cbb6850719dc872d39b1dd6cfd9fa5c7c716a8aa087c0b63"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -2170,7 +2180,7 @@
         "patternly/scripts/syncBundledContentRelease",
         "patternly/scripts/releaseManifest.test.mjs"
       ],
-      "reviewedDigest": "f1009521615002ca9d773e7eefea46c1d36b5445994882e27ca199f5578325e3"
+      "reviewedDigest": "c1b337d7db26a6b648ff2ed3eefde14710dbb0f0cb57b300c0dc083b3774a2e4"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -2186,7 +2196,7 @@
         "patternly/native/foreground-clock/android",
         "patternly/plugins/withAndroidForegroundClock.js"
       ],
-      "reviewedDigest": "4189beb9f201f02ca269c0f71f39c5c0cf9c65eb12695c439b2cfce29dc3d508"
+      "reviewedDigest": "b845d90701b2d25ecad88c63912b1d9828d981d387a490c433a18bd5a8b4a40d"
     },
     {
       "name": "Cel, plan i postęp",
@@ -2197,7 +2207,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "755c3affd1a5c0a6fb15d1f2822145f19aa850ad93dafdbfbc7a107ddce8736d"
+      "reviewedDigest": "ef90905410c83450d7993cd3e1b24accea5a85ad130ed229aee660c29b78aea1"
     },
     {
       "name": "Premium i zakup",
@@ -2230,7 +2240,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "21d80cacd74abef76d4f169be6c82308261d08937fd6a564233e0a56576c6200"
+      "reviewedDigest": "d647af5fb4730657458479e78a8d1d34fcc2ca4896be33bca82b0090c4d45902"
     }
   ]
 }

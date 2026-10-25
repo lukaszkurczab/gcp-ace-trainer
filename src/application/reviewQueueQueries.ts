@@ -13,6 +13,7 @@ import { getReviewQueueItems, getUnavailableReviewRecords, removeUnavailableRevi
 import type { StorageIssue } from "../storage/repositories/result";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
+import type { TrainingCatalog, TrainingQuestionSummary } from "./trainingLifecycle/contracts";
 
 export type ReviewQueueViewItem = { dueAt: string; id: string; isDue: boolean; isManualRequest?: boolean; isOverdue: boolean; kind: "available" | "unavailable"; questionId: string; mistakeTypeRefs: EvidenceRef[]; prompt?: string; reasons: ReviewQueueEntry["reasons"] extends readonly (infer Reason)[] ? Reason[] : never[]; sourceAttemptId: string; taxonomyRefs: EvidenceRef[]; unavailableReason?: string };
 export type ReviewQueueViewModel = { degraded: boolean; dueItems: ReviewQueueViewItem[]; issues: StorageIssue[]; ok: boolean; overdueItems: ReviewQueueViewItem[]; totalItems: number; trackTitle: string; unavailableItems: ReviewQueueViewItem[]; upcomingItems: ReviewQueueViewItem[] };
@@ -30,7 +31,9 @@ export async function loadTrackReviewQueueViewModel(input: { now?: string; track
 
 export async function buildTrackReviewQueueViewModel(input: { issues?: readonly StorageIssue[]; now?: string; reviewQueueItems: readonly ReviewQueueEntry[]; trackId: TrackId; unavailableReviewRecords?: readonly ContentIdentityUnavailableReviewRecord[] }): Promise<ReviewQueueViewModel> {
   const now = input.now ?? new Date().toISOString();
-  const items = (await Promise.all(input.reviewQueueItems.filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.trackId === input.trackId).map((entry) => buildReviewViewItem(entry, now))))
+  const entries = input.reviewQueueItems.filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.trackId === input.trackId);
+  const materials = await resolveReviewMaterials(entries, input.trackId);
+  const items = entries.map((entry) => buildReviewViewItem(entry, now, materials.get(entry)))
     .sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.id.localeCompare(right.id));
   const unavailableItems = (input.unavailableReviewRecords ?? [])
     .filter((record) => readString(record.review.trackId) === input.trackId)
@@ -39,21 +42,48 @@ export async function buildTrackReviewQueueViewModel(input: { issues?: readonly 
   return { degraded: (input.issues ?? []).length > 0, dueItems: items.filter((item) => item.kind === "available" && (item.isDue || item.isManualRequest)), issues: [...(input.issues ?? [])], ok: (input.issues ?? []).length === 0, overdueItems: items.filter((item) => item.kind === "available" && item.isOverdue), totalItems: items.length + unavailableItems.length, trackTitle: getTrackDisplay(input.trackId).title, unavailableItems: [...unavailableItems, ...items.filter(item => item.kind === "unavailable")], upcomingItems: items.filter((item) => item.kind === "available" && !item.isDue && !item.isManualRequest) };
 }
 
-async function buildReviewViewItem(entry: ReviewQueueEntry, now: string): Promise<ReviewQueueViewItem> {
+function buildReviewViewItem(entry: ReviewQueueEntry, now: string, material: TrainingQuestionSummary | undefined): ReviewQueueViewItem {
   const dueAt = entry.dueAt;
   if (!dueAt) throw new Error("Active review entry is missing its due instant.");
   const isDue = dueAt <= now;
   const isManualRequest = !isDue && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined;
-  const material = await resolveReviewMaterial(entry);
   return { dueAt, id: entry.id, isDue, isManualRequest, isOverdue: dueAt < now, kind: material ? "available" : "unavailable", ...(material ? {} : {unavailableReason: "unit_material_unavailable"}), questionId: material?.questionId ?? entry.sourceItem.questionId, mistakeTypeRefs: dedupeRefs(entry.taxonomyOrSkillRefs.filter((ref) => ref.axisId === "mistake_type")), prompt: material?.prompt, reasons: [...entry.reasons], sourceAttemptId: entry.sourceAttemptId, taxonomyRefs: dedupeRefs(entry.taxonomyOrSkillRefs) };
 }
-async function resolveReviewMaterial(entry: ReviewQueueEntry) {
+/** One current catalog per build; retain only requested units and their first material. */
+async function resolveReviewMaterials(entries: readonly ReviewQueueEntry[], trackId: TrackId): Promise<Map<ReviewQueueEntry, TrainingQuestionSummary>> {
+  const materials = new Map<ReviewQueueEntry, TrainingQuestionSummary>();
+  if (entries.length === 0) return materials;
+  let track: TrainingCatalog;
   try {
-    const { track } = await contentPackageRuntimeOwner.resolveForDiscovery(entry.trackId, getTrackRegistration(entry.trackId).familyId);
-    if (entry.trackId !== entry.sourceItem.trackId) return undefined;
-    const unit = learningUnitInCurrentCatalog(entry, track);
-    return unit && track.questions.find(question => question.nodeId === unit.nodeId && question.mentalUnitId === unit.mentalUnitId);
-  } catch { return undefined; }
+    ({ track } = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, getTrackRegistration(trackId).familyId));
+  } catch { return materials; }
+  const pending = new Map<string, Map<string, ReviewQueueEntry[]>>();
+  for (const entry of entries) {
+    try {
+      if (entry.trackId !== entry.sourceItem.trackId) continue;
+      const unit = learningUnitInCurrentCatalog(entry, track);
+      if (!unit) continue;
+      let node = pending.get(unit.nodeId);
+      if (!node) { node = new Map(); pending.set(unit.nodeId, node); }
+      const group = node.get(unit.mentalUnitId);
+      if (group) group.push(entry);
+      else node.set(unit.mentalUnitId, [entry]);
+    } catch { /* A malformed entry cannot make the other reviews unavailable. */ }
+  }
+  if (pending.size === 0) return materials;
+  try {
+    for (const question of track.questions) {
+      const node = pending.get(question.nodeId);
+      if (!node) continue;
+      const group = node.get(question.mentalUnitId);
+      if (!group) continue;
+      for (const entry of group) materials.set(entry, question);
+      node.delete(question.mentalUnitId);
+      if (node.size === 0) pending.delete(question.nodeId);
+      if (pending.size === 0) break;
+    }
+  } catch { /* Keep material already found before an unavailable catalog entry. */ }
+  return materials;
 }
 function dedupeRefs(refs: readonly EvidenceRef[]): EvidenceRef[] { return [...new Map(refs.map((ref) => [`${ref.axisId}:${ref.nodeId}:${ref.role ?? ""}`, ref])).values()]; }
 

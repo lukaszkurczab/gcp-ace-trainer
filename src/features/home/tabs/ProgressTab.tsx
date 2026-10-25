@@ -133,7 +133,6 @@ export function ProgressTab({
   const styles = useThemedStyles(createStyles);
   const { colors: palette, locale } = useAppPreferences();
   const { t } = useTranslation("common");
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
   if (evidence === null || evidenceError) return <EmptyState title={`${t("Progress")} · ${t("Unavailable")}`} description={t("Try again")} actionLabel={t("Try again")} onActionPress={onRetryHomePlan} />;
   const model = presentProgressEvidence(evidence, { activeTrackId: activeTrack.id, activityRecords }, evidence.capturedAt);
   const focus = model.algorithmsProgress?.currentFocus;
@@ -286,8 +285,6 @@ export function ProgressTab({
               onOpenActivity={onOpenActivity}
               onOpenActivityItem={onOpenActivityItem}
               onProgressAction={onProgressAction}
-              showDiagnostics={showDiagnostics}
-              setShowDiagnostics={setShowDiagnostics}
             />
           ) : (
             <>
@@ -490,8 +487,6 @@ function AlgorithmsEvidenceSection({
   model,
   onOpenActivity,
   onProgressAction,
-  setShowDiagnostics,
-  showDiagnostics,
 }: Readonly<{
   activity: readonly ProgressTabActivityItem[];
   locale: AppLocale;
@@ -499,12 +494,11 @@ function AlgorithmsEvidenceSection({
   onOpenActivity?: () => void;
   onOpenActivityItem?: (item: ActivityItem) => void;
   onProgressAction?: (action: ProgressAction) => void;
-  setShowDiagnostics: (value: (current: boolean) => boolean) => void;
-  showDiagnostics: boolean;
 }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const [showAllTrackNodes, setShowAllTrackNodes] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const { fontScale } = useWindowDimensions();
   const trackNodes = showAllTrackNodes ? model.trackNodes : model.trackNodes.slice(0, 4);
   return (

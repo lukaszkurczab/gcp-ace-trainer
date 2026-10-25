@@ -3,6 +3,7 @@ import { readFile, lstat, realpath, unlink } from 'node:fs/promises';
 import { resolve, dirname, relative, isAbsolute, sep } from 'node:path';
 import { randomUUID, createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { parseOrigin, selectTarget } from './readNativeStartupTrace.mjs';
 const APP_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 async function main(){
 const require = createRequire(resolve(APP_ROOT, 'package.json'));
@@ -16,12 +17,13 @@ for (let index=0; index<args.length; index++) {
   argumentsByName.set(name,true);
   continue;
  }
- if(!['--private-root','--manifest','--track','--output','--expected'].includes(name) || argumentsByName.has(name) || !args[index+1] || args[index+1].startsWith('--'))throw Error('private_input_rejected');
+ if(!['--private-root','--manifest','--track','--output','--expected','--metro-origin'].includes(name) || argumentsByName.has(name) || !args[index+1] || args[index+1].startsWith('--'))throw Error('private_input_rejected');
  argumentsByName.set(name,args[++index]);
 }
 for(const name of ['--private-root','--manifest','--track','--output'])if(!argumentsByName.has(name))throw Error('private_input_rejected');
 const includeLearning=argumentsByName.has('--include-learning');
 if(includeLearning && argumentsByName.has('--expected'))throw Error('private_input_rejected');
+const metroOrigin = parseOrigin(argumentsByName.get('--metro-origin') ?? 'http://127.0.0.1:8081');
 const privateRoot = resolve(argumentsByName.get('--private-root'));
 const rootMetadata = await lstat(privateRoot);
 if(!rootMetadata.isDirectory() || rootMetadata.uid!==process.getuid() || (rootMetadata.mode&0o777)!==0o700 || await realpath(privateRoot)!==privateRoot)throw Error('private_root_invalid');
@@ -38,14 +40,13 @@ const canonical=value=>JSON.stringify(sortValue(value));
 function sortValue(value){return Array.isArray(value)?value.map(sortValue):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,sortValue(value[k])])):value;}
 
 const track = argumentsByName.get('--track');
-if(!['google-cloud-associate-cloud-engineer','coding-interview-dsa-problem-solving'].includes(track))throw Error('controlled_track_rejected');
-const targets = await (await fetch('http://127.0.0.1:8081/json/list',{signal:AbortSignal.timeout(5000)})).json();
-const matches = targets.filter(t => t.type==='node' && t.title === 'com.lkurczab.patternly (iPhone 17)');
-if(matches.length !== 1) throw Error('native_target_ambiguous');
-const endpoint = new URL(matches[0].webSocketDebuggerUrl);
-if(endpoint.protocol!=='ws:' || endpoint.port!=='8081' || !['localhost','127.0.0.1'].includes(endpoint.hostname)) throw Error('target_not_local');
-endpoint.hostname = '127.0.0.1';
-const ws = new WS(endpoint.href, { origin: 'http://' + endpoint.host });
+if(!['google-cloud-associate-cloud-engineer','coding-interview-dsa-problem-solving','aws-certified-solutions-architect-associate'].includes(track))throw Error('controlled_track_rejected');
+const response = await fetch(new URL('/json/list',metroOrigin),{signal:AbortSignal.timeout(5000),redirect:'error'});
+if(!response.ok)throw Error('discovery_failed');
+const body = await response.text();
+if(body.length>65536)throw Error('target_rejected');
+const endpoint = selectTarget(JSON.parse(body),metroOrigin,'com.lkurczab.patternly');
+const ws = new WS(endpoint, { origin: `http://127.0.0.1:${metroOrigin.port}`, handshakeTimeout:5000, maxPayload:512*1024, followRedirects:false });
 await new Promise((yes,no) => {const timer=setTimeout(()=>{ws.terminate();no(Error('native_connect_timeout'));},5000);ws.once('open',()=>{clearTimeout(timer);yes();});ws.once('error',()=>{clearTimeout(timer);no(Error('native_connect_failed'));});});
 const expression = `(async()=>{
  const modules=Array.from(__r.getModules().entries());
@@ -128,4 +129,4 @@ if(includeLearning)status.learningIncluded=true;
 console.log(JSON.stringify(status));
 
 }
-main().catch(error=>{const categories=new Set(['private_input_rejected','controlled_track_rejected','private_root_invalid','private_path_invalid','private_file_invalid','controlled_manifest_invalid','controlled_actor_mismatch','native_target_ambiguous','target_not_local','native_read_timeout','native_connect_timeout','native_connect_failed','native_owner_read_rejected','native_capture_start_rejected','native_capture_timeout','expected_provenance_invalid','expected_digest_invalid','expected_checkpoint_rejected','recovery_pair_mismatch','private_snapshot_write_failed']);console.error(JSON.stringify({stage:'native_pair_readback_stopped',category:categories.has(error?.message)?error.message:'readback_or_private_input_rejected',storageMutationAttempted:false}));process.exitCode=1;});
+main().catch(error=>{const categories=new Set(['private_input_rejected','origin_rejected','discovery_failed','target_rejected','controlled_track_rejected','private_root_invalid','private_path_invalid','private_file_invalid','controlled_manifest_invalid','controlled_actor_mismatch','native_read_timeout','native_connect_timeout','native_connect_failed','native_owner_read_rejected','native_capture_start_rejected','native_capture_timeout','expected_provenance_invalid','expected_digest_invalid','expected_checkpoint_rejected','recovery_pair_mismatch','private_snapshot_write_failed']);console.error(JSON.stringify({stage:'native_pair_readback_stopped',category:categories.has(error?.message)?error.message:'readback_or_private_input_rejected',storageMutationAttempted:false}));process.exitCode=1;});
