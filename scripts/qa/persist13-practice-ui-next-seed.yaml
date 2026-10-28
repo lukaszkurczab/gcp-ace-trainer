@@ -1,0 +1,14 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-13 — seed committed feedback for one real Next action
+tags:
+  - persist13
+  - practice-ui-next
+---
+- extendedWaitUntil:
+    visible:
+      text: "Stage: practice_ui_ready"
+    timeout: 90000
+- assertVisible: "PERSIST-13 practice_ui_next seed: pending"
+- assertVisible:
+    id: "persist13-fixture-journal"
+    text: "Journal absent: true"

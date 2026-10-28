@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Linking, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState, Screen } from "../../components";
-import { AccountProfileTransitionLoadingState } from "./AccountProfileTransitionLoadingState";
-import { createProfileStoragePreparationDiagnosticWriter, describeOperationalFailure, operationalDiagnosticCode, type ProfileStoragePreparationDiagnosticStage } from "../../application/operationalDiagnostics";
+import { StartupLoadingSurface, StartupUnavailableSurface } from "../../content/application/startupPreparationSurfaces";
+import { createProfileStoragePreparationDiagnosticWriter, describeOperationalFailure, recordDevelopmentStorageRemovalFailure, type ProfileStoragePreparationDiagnosticStage } from "../../application/operationalDiagnostics";
 import { useAppPreferences } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { encryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
@@ -13,8 +12,6 @@ import { createNativeLocalLogoutControl, LocalLogoutControlError, type LocalLogo
 import { EncryptedStorageRecoverySurface, type EncryptedStorageRecoveryStatus } from "../../content/application/EncryptedStorageRecoverySurface";
 import { canStartManualRetry, createManualRetryLimit, reserveManualRetry, settleManualRetry } from "../../content/application/manualRetryLimit";
 import { PreparedProfileStorageContext } from "./profileStoragePreparationContext";
-import { parseStorageRecoveryAuditCommand, type StorageRecoveryAuditPresentation } from "./storageRecoveryAuditCommand";
-import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
 
 type PreparationState =
   | { kind: "loading" }
@@ -27,8 +24,6 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
   const [state, setState] = useState<PreparationState>({ kind: "loading" });
   const [revision, setRevision] = useState(0);
   const [recoveryStatus, setRecoveryStatus] = useState<EncryptedStorageRecoveryStatus>("base");
-  const [removalError, setRemovalError] = useState<string | undefined>();
-  const [auditPresentation, setAuditPresentation] = useState<StorageRecoveryAuditPresentation>();
   const removalInFlight = useRef(false);
   const removalAttempt = useRef(0);
   const manualRetry = useRef(createManualRetryLimit());
@@ -42,24 +37,6 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
       presentationWaiter.current?.resolve(false);
       presentationWaiter.current = null;
     };
-  }, []);
-
-  useEffect(() => {
-    if (!__DEV__ || !isPatternlySmokeRuntime()) return;
-    const apply = (url: string | null) => {
-      const presentation = parseStorageRecoveryAuditCommand(url, { development: __DEV__, smoke: isPatternlySmokeRuntime() });
-      if (!presentation) return;
-      setRecoveryStatus(presentation === "error" ? "error" : "base");
-      setRemovalError(presentation === "error" ? "[STORAGE_AUDIT_FAILURE]" : undefined);
-      setAuditPresentation(presentation);
-      setState({
-        kind: "unavailable",
-        reason: "Development-only encrypted storage recovery presentation.",
-        storageFailureCode: "encrypted_storage_key_missing",
-      });
-    };
-    const subscription = Linking.addEventListener("url", ({ url }) => { apply(url); });
-    return () => { subscription.remove(); };
   }, []);
 
   useEffect(() => {
@@ -94,7 +71,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
         const storageFailureCode = encryptedStorageFailureCode(error) ?? undefined;
         const reason = error instanceof LocalLogoutControlError
           ? t("We couldn't check the local sign-out state. Your account data remains closed. Try again.")
-          : describeOperationalFailure(error, "Local profile storage could not be prepared.");
+          : t(describeOperationalFailure(error, "Local profile storage could not be prepared.", { includeDiagnosticCode: false }));
         setState({ kind: "unavailable", reason, ...(storageFailureCode ? { storageFailureCode } : {}) });
       }
     });
@@ -102,9 +79,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
   }, [revision]);
 
   const retry = () => {
-    setAuditPresentation(undefined);
     setRecoveryStatus("base");
-    setRemovalError(undefined);
     setState({ kind: "loading" });
     setRevision((value) => value + 1);
   };
@@ -118,7 +93,6 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
     const attempt = ++removalAttempt.current;
     const presented = new Promise<boolean>((resolve) => { presentationWaiter.current = { attempt, resolve }; });
     setRecoveryStatus("removing");
-    setRemovalError(undefined);
     try {
       if (!await presented) {
         if (mounted.current && removalAttempt.current === attempt) setRecoveryStatus("base");
@@ -130,7 +104,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
       setRecoveryStatus("success");
     } catch (error) {
       if (!mounted.current || removalAttempt.current !== attempt) return;
-      setRemovalError(`[${operationalDiagnosticCode(error)}]`);
+      recordDevelopmentStorageRemovalFailure(error);
       setRecoveryStatus("error");
     } finally {
       if (removalAttempt.current === attempt) {
@@ -145,10 +119,9 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
   const body = state.kind === "ready"
     ? <PreparedProfileStorageContext.Provider value={{ profile: state.profile, logoutControl: state.logoutControl, logoutControlSnapshot: state.logoutControlSnapshot }}>{children}</PreparedProfileStorageContext.Provider>
     : state.kind === "loading"
-      ? <Screen edges={["top", "bottom"]}><View style={{ flex: 1 }} testID="profile-storage-preparing"><AccountProfileTransitionLoadingState /></View></Screen>
+      ? <StartupLoadingSurface testID="profile-storage-preparing" />
       : lostKey
         ? <EncryptedStorageRecoverySurface
-            error={removalError}
             onContinue={retry}
             onRemovingPresented={(presented) => {
               const waiter = presentationWaiter.current;
@@ -157,13 +130,13 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
               waiter.resolve(presented);
             }}
             onRemove={() => { void removeUnavailableData(); }}
-            canRetry={auditPresentation !== "retry-limit" && canStartManualRetry(manualRetry.current)}
+            canRetry={canStartManualRetry(manualRetry.current)}
             onRetryBootstrap={retryLostKeyPreparation}
-            onReturn={() => { setRemovalError(undefined); setRecoveryStatus("base"); }}
-            retryLimitReached={auditPresentation === "retry-limit" || manualRetry.current.failedAttempts >= 5}
+            onReturn={() => { setRecoveryStatus("base"); }}
+            retryLimitReached={manualRetry.current.failedAttempts >= 5}
             status={recoveryStatus}
           />
-        : <Screen><EmptyState actionLabel={t("Try again")} description={state.reason} onActionPress={retry} title={t("Profile storage unavailable")} /></Screen>;
+        : <StartupUnavailableSurface description={state.reason} onRetry={retry} title={t("Profile storage unavailable")} />;
 
   return <View style={{ backgroundColor: colors.background, flex: 1 }} testID={runtimeSelectors.profileStorage.state(state.kind)}>{body}</View>;
 }

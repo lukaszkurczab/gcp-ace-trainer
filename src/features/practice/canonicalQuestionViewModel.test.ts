@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { isCanonicalResponseComplete, scoreCanonicalQuestion, type Question } from "../../content/canonical";
-import { canonicalResponseToPracticeLocalResponse, toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
+import { canonicalResponseToPracticeLocalResponse, toCanonicalQuestionViewModel, toCertificationQuestionViewModel } from "./canonicalQuestionViewModel";
 import { toggleDimensionSelection } from "./practiceSessionPresentation";
 
 const question = {
@@ -48,4 +48,11 @@ test("dimension checkbox selections keep stable IDs, round-trip, and preserve le
   const emptySelection = toggleDimensionSelection(partialSelection, "time", "linear");
   assert.deepEqual(emptySelection.time, []);
   assert.equal(isCanonicalResponseComplete(question, { type: "complexity", selectedValueIdsByDimension: emptySelection }), false);
+});
+
+test("certification statement controls project allowed values without requiring or revealing an answer key", () => {
+  const model = toCertificationQuestionViewModel({ questionId: "statement-fixture", nodeId: "tools", prompt: "Assess each statement.", interaction: { type: "decision_matrix", dimensions: [{ dimensionId: "row-1", label: "Tool access requires authorization.", values: [{ valueId: "yes", text: "Yes" }, { valueId: "no", text: "No" }] }] } });
+  assert.equal(model.interaction.interactionType, "decision_matrix");
+  assert.deepEqual(model.interaction.model, { renderer: { kind: "complexity", dimensions: [{ id: "row-1", label: "Tool access requires authorization.", values: [{ id: "yes", text: "Yes" }, { id: "no", text: "No" }] }] } });
+  assert.doesNotMatch(JSON.stringify(model), /answer|acceptedValueIds|correctValueIds/);
 });

@@ -1,0 +1,50 @@
+# Regular Home or root shortfall fixture; caller checks own actor/profile.
+# LANGUAGE is en/pl; APPEARANCE light/system. No learning/history operations.
+appId: com.lkurczab.patternly
+name: Learning plan audit locale and appearance
+---
+- runFlow:
+    when:
+      visible:
+        id: patternly:learning-plan:state:shortfall
+    commands:
+      - tapOn:
+          id: patternly:navigation:back
+- assertVisible:
+    id: patternly:home:change-track
+- tapOn:
+    id: main-tab-bar-settings
+- scrollUntilVisible:
+    element:
+      id: settings-language
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: settings-language
+- scrollUntilVisible:
+    element:
+      id: "language-option-${LANGUAGE}"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: "language-option-${LANGUAGE}"
+- tapOn:
+    id: patternly:navigation:back
+- scrollUntilVisible:
+    element:
+      id: settings-appearance
+    direction: UP
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: settings-appearance
+- tapOn:
+    id: "preference-option-${APPEARANCE}"
+- tapOn:
+    id: patternly:navigation:back
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: patternly:home:change-track

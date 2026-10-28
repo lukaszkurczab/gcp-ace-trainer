@@ -1,0 +1,27 @@
+appId: com.lkurczab.patternly
+name: 8D2 retry limit footer visibility probe
+# Existing DEV smoke; pl/dark/max text set and read back before run. No recovery action.
+---
+- openLink: "com.lkurczab.patternly://audit/show-encrypted-storage-recovery?presentation=retry-limit"
+- extendedWaitUntil:
+    visible:
+      id: patternly:content:encrypted-storage:removal:base
+    timeout: 15000
+- scrollUntilVisible:
+    element: "Wykorzystano limit prób.*"
+    direction: DOWN
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: patternly:content:encrypted-storage:hold
+    direction: DOWN
+    timeout: 20000
+- swipe:
+    start: "50%, 70%"
+    end: "50%, 25%"
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: d15-pl-dark-large-settled-footer

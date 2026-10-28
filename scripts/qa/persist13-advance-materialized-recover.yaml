@@ -1,0 +1,20 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-13 — recover materialized advance
+tags:
+  - persist13
+  - advance-materialized
+---
+- extendedWaitUntil:
+    visible:
+      text: "Stage: complete"
+    timeout: 60000
+- assertVisible: "PERSIST-13 advance_materialized recover: observed"
+- assertVisible:
+    id: "persist13-fixture-bootstrap"
+    text: "Bootstrap ready: true"
+- assertVisible:
+    id: "persist13-fixture-journal"
+    text: "Journal absent: true"
+- assertVisible:
+    id: "persist13-fixture-cleanup"
+    text: "Fixture cleanup: true"

@@ -40,11 +40,18 @@ export function json(value: unknown, path: string, errors: string[]): void {
 }
 
 export function validateQuestionBase(value: unknown, type: string, errors: string[]): Record<string, unknown> | null {
-  const common = ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "constraints", "interaction", "answer", "feedback", "difficulty", "sourceRefs", "contentDomainId", "questionRelation", "caseRecipe"];
+  const common = ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "constraints", "interaction", "answer", "feedback", "difficulty", "sourceRefs", "contentDomainId", "questionRelation", "caseRecipe", "examMetadata"];
   if (!exact(value, common, ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "interaction", "answer", "feedback", "difficulty"], "question", errors)) return null;
   for (const key of ["questionId", "trackId", "nodeId", "mentalUnitId"]) safeIdentity(value[key], `question.${key}`, errors);
   if (Object.hasOwn(value, "contentDomainId")) safeIdentity(value.contentDomainId, "question.contentDomainId", errors);
   if (Object.hasOwn(value, "questionRelation")) validateQuestionRelation(value.questionRelation, value.questionId, "question.questionRelation", errors);
+  if (Object.hasOwn(value, "examMetadata")) {
+    if (exact(value.examMetadata, ["decisionSkill", "scenarioFamilyId"], ["decisionSkill"], "question.examMetadata", errors)) {
+      if (!["knowledge", "diagnosis", "prerequisite", "next_action", "contextual_choice"].includes(String(value.examMetadata.decisionSkill))) errors.push("question.examMetadata.decisionSkill: unsupported decision skill");
+      if (Object.hasOwn(value.examMetadata, "scenarioFamilyId") && (safeIdentity(value.examMetadata.scenarioFamilyId, "question.examMetadata.scenarioFamilyId", errors) && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(value.examMetadata.scenarioFamilyId))) errors.push("question.examMetadata.scenarioFamilyId: must be a lowercase kebab-case identity");
+    }
+    if (value.trackId !== "claude-certified-architect-professional-certification") errors.push("question.examMetadata: available only for CCAR-P exam selection");
+  }
   if (Object.hasOwn(value, "caseRecipe")) { errors.push(...validateCaseRecipe(value.caseRecipe)); if (value.trackId !== CLAUDE_CASE_TRACK) errors.push("caseRecipe: unavailable for this track"); }
   text(value.prompt, "question.prompt", errors);
   if (value.difficulty !== null) id(value.difficulty, "question.difficulty", errors);
@@ -54,9 +61,10 @@ export function validateQuestionBase(value: unknown, type: string, errors: strin
   return value;
 }
 
-export function validateChoiceOptions(interaction: Record<string, unknown>, type: string, errors: string[]): string[] {
+export function validateChoiceOptions(interaction: Record<string, unknown>, type: string, errors: string[], allowRequiredSelectionCount = false): string[] {
   const refs: string[] = [];
-  if (exact(interaction, ["type", "scoringMethod", "options"], ["type", "scoringMethod", "options"], "question.interaction", errors)) {
+  const keys = ["type", "scoringMethod", "options"];
+  if (exact(interaction, allowRequiredSelectionCount ? [...keys, "requiredSelectionCount"] : keys, keys, "question.interaction", errors)) {
     if (interaction.scoringMethod !== "exact_selected_set") errors.push("question.interaction.scoringMethod: invalid method");
     if (!Array.isArray(interaction.options)) errors.push("question.interaction.options: must be an array");
     else {

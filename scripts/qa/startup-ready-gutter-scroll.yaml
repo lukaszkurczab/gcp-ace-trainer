@@ -1,0 +1,12 @@
+appId: com.lkurczab.patternly
+name: Startup ready confirmed blank gutter scroll
+# Existing iPhone17 only; fresh original must show the right gutter outside card/actions.
+# At 97% width this is inside ScrollView and beyond the content's right padding.
+# A real upward pan, never a press or learning action. Review settled original afterward.
+---
+- swipe:
+    start: "97%, 70%"
+    end: "97%, 40%"
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 10000

@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { ReactNode } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
@@ -24,6 +24,7 @@ import { getTrackRoadmapCatalog } from "../practice/trackRoadmapCatalog";
 import { buildLearningPlanWorkloadPresentation } from "./learningPlanWorkloadPresentation";
 import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
 import { readLearningPlanStorageScope } from "../../application/learningReadModels";
+import { useRouteLifetime } from "./routeLifetime";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.LEARNING_PLAN_PROPOSAL>;
 type ViewState = { kind: "loading" } | LearningPlanProposalResult;
@@ -44,6 +45,7 @@ export function LearningPlanProposalScreen({ navigation, route, runtime = produc
   const { t } = useTranslation("learningPlan");
   const { t: tCommon } = useTranslation("common");
   const { proposalId, trackId } = route.params;
+  const lifetime = useRouteLifetime(JSON.stringify([route.key, proposalId, trackId]));
   const [state, setState] = useState<ViewState>({ kind: "loading" });
   const [loadedIdentity, setLoadedIdentity] = useState<Readonly<{ scope: object; proposalId: string; trackId: TrackId }> | null>(null);
   const [updating, setUpdating] = useState(false);
@@ -52,6 +54,8 @@ export function LearningPlanProposalScreen({ navigation, route, runtime = produc
   const [workloadDetailsExpanded, setWorkloadDetailsExpanded] = useState(false);
   const notification = { body: t("notificationBody", { ns: "notifications" }), title: t("notificationTitle", { ns: "notifications" }) };
   const track = getTrackDisplay(trackId);
+
+  useEffect(() => () => lifetime.remove(() => runtime.discardProposal(proposalId)), [lifetime, proposalId, runtime]);
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -84,73 +88,117 @@ export function LearningPlanProposalScreen({ navigation, route, runtime = produc
 
   async function updatePlan(): Promise<void> {
     setUpdating(true);
-    const result = await runtime.create(trackId);
-    setUpdating(false);
-    if (isProposal(result)) {
-      navigation.replace(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId });
-      return;
+    try {
+      const result = await runtime.create(trackId);
+      if (!lifetime.isCurrent()) {
+        if (isProposal(result)) runtime.discardProposal(result.proposal.proposalId);
+        return;
+      }
+      if (isProposal(result)) {
+        navigation.replace(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId });
+        return;
+      }
+      setState(result);
+    } catch {
+      if (lifetime.isCurrent()) setState({ kind: "package_error" });
+    } finally {
+      if (lifetime.isCurrent()) setUpdating(false);
     }
-    setState(result);
   }
 
   async function editProposal(): Promise<void> {
     setUpdating(true);
     setActionError(null);
-    const result = await runtime.startProposalEdit(proposalId, trackId);
-    setUpdating(false);
-    if (result.kind === "ready") {
-      navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId });
-    } else if (result.kind === "stale") {
-      setActionError(null);
-      setState({ kind: "stale" });
-    } else {
-      setActionError("open-proposal-storage");
+    const finish = lifetime.beginAction();
+    try {
+      const result = await runtime.startProposalEdit(proposalId, trackId);
+      if (!lifetime.isCurrent()) {
+        if (result.kind === "ready") runtime.discardEditor(result.session.editorId);
+        return;
+      }
+      if (result.kind === "ready") {
+        navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId });
+      } else if (result.kind === "stale") {
+        setActionError(null);
+        setState({ kind: "stale" });
+      } else {
+        setActionError("open-proposal-storage");
+      }
+    } catch {
+      if (lifetime.isCurrent()) setActionError("open-proposal-storage");
+    } finally {
+      if (lifetime.isCurrent()) setUpdating(false);
+      finish();
     }
   }
 
   async function acceptProposal(): Promise<void> {
     setUpdating(true);
     setActionError(null);
-    const result = await runtime.accept(proposalId, trackId, notification);
-    setUpdating(false);
-    if (result.kind === "plan_saved_reminders_synced" || result.kind === "plan_saved_reminders_pending" || result.kind === "plan_saved_reminders_cleared") {
-      setAcceptedPlan(result.snapshot);
-      setActionError(result.kind === "plan_saved_reminders_pending" ? "accept-reminders-pending" : null);
-    } else if (result.kind === "stale") {
-      setActionError(null);
-      setAcceptedPlan(null);
-      setState({ kind: "stale" });
-    } else if (result.kind === "validation_error") {
-      setActionError("accept-validation");
-    } else {
-      setActionError("accept-storage");
+    const finish = lifetime.beginAction();
+    try {
+      const result = await runtime.accept(proposalId, trackId, notification);
+      if (!lifetime.isCurrent()) return;
+      if (result.kind === "plan_saved_reminders_synced" || result.kind === "plan_saved_reminders_pending" || result.kind === "plan_saved_reminders_cleared") {
+        setAcceptedPlan(result.snapshot);
+        setActionError(result.kind === "plan_saved_reminders_pending" ? "accept-reminders-pending" : null);
+      } else if (result.kind === "stale") {
+        setActionError(null);
+        setAcceptedPlan(null);
+        setState({ kind: "stale" });
+      } else if (result.kind === "validation_error") {
+        setActionError("accept-validation");
+      } else {
+        setActionError("accept-storage");
+      }
+    } catch {
+      if (lifetime.isCurrent()) setActionError("accept-storage");
+    } finally {
+      if (lifetime.isCurrent()) setUpdating(false);
+      finish();
     }
   }
 
   async function retryReminders(): Promise<void> {
     setUpdating(true);
-    const result = await runtime.retryReminders(notification);
-    setUpdating(false);
-    setActionError(result.kind === "synced" || result.kind === "disabled" ? null : "accept-reminders-pending");
+    try {
+      const result = await runtime.retryReminders(notification);
+      if (lifetime.isCurrent()) setActionError(result.kind === "synced" || result.kind === "disabled" ? null : "accept-reminders-pending");
+    } catch {
+      if (lifetime.isCurrent()) setActionError("accept-reminders-pending");
+    } finally {
+      if (lifetime.isCurrent()) setUpdating(false);
+    }
   }
 
   async function editAcceptedPlan(): Promise<void> {
     setUpdating(true);
     setActionError(null);
-    const result = await runtime.startExistingEdit(trackId);
-    setUpdating(false);
-    if (result.kind === "ready") {
-      navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId });
-    } else if (result.kind === "stale") {
-      setActionError(null);
-      setAcceptedPlan(null);
-      setState({ kind: "stale" });
-    } else {
-      setActionError("open-existing-storage");
+    const finish = lifetime.beginAction();
+    try {
+      const result = await runtime.startExistingEdit(trackId);
+      if (!lifetime.isCurrent()) {
+        if (result.kind === "ready") runtime.discardEditor(result.session.editorId);
+        return;
+      }
+      if (result.kind === "ready") {
+        navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId });
+      } else if (result.kind === "stale") {
+        setActionError(null);
+        setAcceptedPlan(null);
+        setState({ kind: "stale" });
+      } else {
+        setActionError("open-existing-storage");
+      }
+    } catch {
+      if (lifetime.isCurrent()) setActionError("open-existing-storage");
+    } finally {
+      if (lifetime.isCurrent()) setUpdating(false);
+      finish();
     }
   }
 
-  const backDestinationLabel = navigation.canGoBack() || runtime.exitFixture ? undefined : tCommon("Today");
+  const backDestinationLabel = navigation.canGoBack() ? undefined : tCommon("Today");
   const header = <AppShellHeader backAction={{ destinationLabel: backDestinationLabel, onPress: goBack }} context={t("Learning plan")} placement="stack" />;
 
   if (state.kind === "loading" || !identityMatches) {
@@ -188,17 +236,16 @@ export function LearningPlanProposalScreen({ navigation, route, runtime = produc
     return (
       <Screen
         edges={["bottom"]}
-        footer={<View style={styles.footerActions}><Button onPress={() => navigation.navigate(ROUTES.GOAL_CADENCE, { trackId, returnTo: "progress" })} testID={runtimeSelectors.learningPlan.adjustGoal()}>{t("Adjust goal")}</Button><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { trackId })} testID={runtimeSelectors.learningPlan.backToPractice()} variant="secondary">{t("Back to Practice")}</Button></View>}
+        footer={<View style={styles.footerActions}><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { trackId })} testID={runtimeSelectors.learningPlan.backToPractice()}>{t("Back to Practice")}</Button><Button onPress={() => navigation.navigate(ROUTES.GOAL_CADENCE, { trackId, returnTo: "progress" })} testID={runtimeSelectors.learningPlan.adjustGoal()} variant="secondary">{t("Adjust goal")}</Button></View>}
         footerVariant="sticky"
         header={header}
       >
         <View style={styles.root} testID={runtimeSelectors.learningPlan.state("shortfall")}>
           <PlanHeader subtitle={t("A proposal based on your current goal")} title={t("Not enough material for this plan")} track={tCommon(track.shortTitle)} />
+          <Card variant="warning"><Text maxFontSizeMultiplier={2} style={styles.body}>{t("The package needs {{requested}} eligible questions per session, but only {{available}} are available. {{missing}} more are required.", { available: capacity.eligibleItemCount, missing: capacity.missingItemCount, requested: capacity.requestedLength })}</Text></Card>
           <GoalContext outcome={outcome} t={t} tCommon={tCommon} />
-          <ExecutionSummary outcome={outcome} estimate={state.proposal.nextSessionTimeEstimate} t={t} />
           <CalendarAndScopeSummary calendar={state.proposal.nextSessionCalendar} locale={locale} t={t} />
           <FullGoalWorkloadSummary trackId={trackId} workload={state.proposal.fullGoalWorkload} calendar={state.proposal.fullGoalCalendar} capacity={state.proposal.fullGoalTimeCapacity} locale={locale} t={t} tCommon={tCommon} expanded={workloadDetailsExpanded} onToggleDetails={() => setWorkloadDetailsExpanded((expanded) => !expanded)} />
-          <Card variant="warning"><Text maxFontSizeMultiplier={2} style={styles.body}>{t("The package needs {{requested}} eligible questions per session, but only {{available}} are available. {{missing}} more are required.", { available: capacity.eligibleItemCount, missing: capacity.missingItemCount, requested: capacity.requestedLength })}</Text></Card>
           <FactCard label={t("Target outlook")} value={targetCopy(outcome.targetAssessment, t)} />
           <FixtureCallDiagnostics runtime={runtime} />
         </View>

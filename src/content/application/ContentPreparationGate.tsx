@@ -2,7 +2,8 @@ import { beginStartupSpan, markStartup } from "../../infrastructure/diagnostics/
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import { Button, EmptyState, Screen } from "../../components";
+import { StartupLoadingSurface, StartupUnavailableSurface, UnavailableActiveSurface } from "./startupPreparationSurfaces";
+import { startupFailureCopy } from "./startupFailureCopy";
 import { abandonUnavailableActiveTrainingSession, bootstrapApplication } from "../../application/bootstrap";
 import { createBootstrapProgressObserver, describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
@@ -14,7 +15,6 @@ import { abandonUnavailableExactActiveTrainingSession } from "../../application/
 import { TrainingApplicationFailure, type ExactArtifactIdentity } from "../../application/trainingLifecycle/contracts";
 import { useAppPreferences } from "../../preferences";
 import { usePatternlyAccount, type HomeResumeActorFence } from "../../application/account/AccountSessionProvider";
-import { AccountProfileTransitionLoadingState } from "../../application/account/AccountProfileTransitionLoadingState";
 import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent } from "../../infrastructure/storage/mmkvClient";
 import { getActiveStorageProfileOrNull } from "../../storage/repositories/profileStorageRepository";
 import { getGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
@@ -64,11 +64,6 @@ const HomeResumeContext = createContext<HomeResumeContextValue | null>(null);
 
 export function useHomeResumeUnavailable(): HomeResumeContextValue | null {
   return useContext(HomeResumeContext);
-}
-
-export function ContentBootstrapLoadingSkeleton({ phase }: Readonly<{ phase: ContentPreparationPhase }>) {
-  void phase;
-  return <View style={{ flex: 1 }} testID="content-bootstrap-loading-skeleton"><AccountProfileTransitionLoadingState /></View>;
 }
 
 export function ContentPreparationGate({ children, completeAccountPreparation, handoffToken }: { children: ReactNode; completeAccountPreparation: (token: ProfilePreparationHandoffToken) => Promise<void>; handoffToken: ProfilePreparationHandoffToken | null }) {
@@ -395,21 +390,13 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
   const body = state.kind === "ready" || state.kind === "home_ready_resume_unavailable"
     ? readyShell
     : state.kind === "loading"
-      ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.preparing(state.phase)}><Screen edges={["top", "bottom"]}>{account.isMaterializedAccountTransition ? <AccountProfileTransitionLoadingState /> : <ContentBootstrapLoadingSkeleton phase={state.phase} />}</Screen></View>
+      ? <StartupLoadingSurface testID={runtimeSelectors.content.preparing(state.phase)} contentSkeleton={!account.isMaterializedAccountTransition} />
       : state.kind === "content_identity_unavailable"
-        ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailableActive()}><Screen>
-            <EmptyState
-              description={state.error ?? t("An active session uses content that is no longer available. Abandon it to keep its saved facts and start a new session.")}
-              title={t("Active session needs attention")}
-            />
-            {confirmUnavailableActiveAbandon
-              ? <View style={{ gap: 12 }}>
-                  <Button onPress={() => setConfirmUnavailableActiveAbandon(false)} testID={runtimeSelectors.content.unavailableActiveCancel()} variant="secondary">{t("Cancel")}</Button>
-                  <Button loading={abandoningUnavailableActive} onPress={() => { void abandonUnavailableActive(); }} testID={runtimeSelectors.content.unavailableActiveConfirm()} variant="destructive">{t("Abandon unavailable session")}</Button>
-                </View>
-              : <Button onPress={() => setConfirmUnavailableActiveAbandon(true)} testID={runtimeSelectors.content.unavailableActiveAbandon()} variant="destructive">{t("Abandon unavailable session")}</Button>}
-            {!confirmUnavailableActiveAbandon ? <Button onPress={retry} testID={runtimeSelectors.content.unavailableActiveRetry()} variant="secondary">{t("Try again")}</Button> : null}
-          </Screen></View>
-      : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel={t("Try again")} description={developmentResetUnavailable ? `${t(state.reason)} Development reset is unavailable because lifecycle preparation did not complete.` : t(state.reason)} onActionPress={retry} title={t("Application unavailable")} /></Screen></View>;
+        ? <UnavailableActiveSurface
+            error={state.error ? t(startupFailureCopy(state.error, "The unavailable session could not be abandoned.")) : undefined}
+            confirming={confirmUnavailableActiveAbandon} pending={abandoningUnavailableActive}
+            onCancel={() => setConfirmUnavailableActiveAbandon(false)} onConfirm={() => { void abandonUnavailableActive(); }}
+            onAsk={() => setConfirmUnavailableActiveAbandon(true)} onRetry={retry} />
+        : <StartupUnavailableSurface testID={developmentResetUnavailable ? "patternly:content:unavailable:development-reset-unavailable" : runtimeSelectors.content.unavailable()} description={t(startupFailureCopy(state.reason))} onRetry={retry} title={t("Application unavailable")} />;
   return <View style={{ backgroundColor: colors.background, flex: 1 }}>{body}</View>;
 }

@@ -4,7 +4,7 @@ import { canonicalEvaluation, exactResponse, isDenseArray } from "./utils";
 import { exact, uniqueIds, validateChoiceOptions, validateFeedback, validateQuestionBase } from "./validation";
 
 export type ChoiceMultipleQuestion = QuestionBase<"choice_multiple"> & Readonly<{
-  interaction: Readonly<{ type: "choice_multiple"; scoringMethod: "exact_selected_set"; options: readonly Readonly<{ optionId: string; text: string; explanation?: string }>[] }>;
+  interaction: Readonly<{ type: "choice_multiple"; scoringMethod: "exact_selected_set"; requiredSelectionCount?: number; options: readonly Readonly<{ optionId: string; text: string; explanation?: string }>[] }>;
   answer: Readonly<{ type: "choice_multiple"; optionIds: readonly string[] }>;
 }>;
 export type ChoiceMultipleResponse = Readonly<{ type: "choice_multiple"; optionIds: readonly string[] }>;
@@ -12,18 +12,24 @@ export type ChoiceMultipleResponse = Readonly<{ type: "choice_multiple"; optionI
 export function validateChoiceMultipleQuestion(value: unknown): readonly string[] {
   const errors: string[] = [], question = validateQuestionBase(value, "choice_multiple", errors);
   if (!question) return Object.freeze(errors);
-  const refs = validateChoiceOptions(question.interaction as Record<string, unknown>, "choice_multiple", errors), answer = question.answer;
+  const interaction = question.interaction as Record<string, unknown>;
+  const refs = validateChoiceOptions(interaction, "choice_multiple", errors, true), answer = question.answer;
+  if (Object.hasOwn(interaction, "requiredSelectionCount")) {
+    const required = interaction.requiredSelectionCount;
+    if (typeof required !== "number" || !Number.isSafeInteger(required) || required <= 0 || required > refs.length) errors.push("question.interaction.requiredSelectionCount: must be a positive option count");
+  }
   if (exact(answer, ["type", "optionIds"], ["type", "optionIds"], "question.answer", errors)) {
     if (answer.type !== "choice_multiple") errors.push("question.answer.type: mismatched type");
     const selected = uniqueIds(answer.optionIds, "question.answer.optionIds", errors, 1);
     if (selected.some((entry) => !refs.includes(entry))) errors.push("question.answer.optionIds: unknown option");
+    if (typeof interaction.requiredSelectionCount === "number" && selected.length !== interaction.requiredSelectionCount) errors.push("question.answer.optionIds: must match requiredSelectionCount");
   }
   validateFeedback(question.feedback, "choice_multiple", ["wrong_option", "omitted_option"], (kind, target) => (kind === "wrong_option" || kind === "omitted_option") && refs.includes(target), errors);
   return Object.freeze(errors);
 }
 
 export function isChoiceMultipleResponseComplete(question: ChoiceMultipleQuestion, response: unknown): response is ChoiceMultipleResponse {
-  return exactResponse(response, "choice_multiple", "optionIds") && Array.isArray(response.optionIds) && isDenseArray(response.optionIds) && response.optionIds.length > 0 && new Set(response.optionIds).size === response.optionIds.length && response.optionIds.every((id) => typeof id === "string" && question.interaction.options.some((option) => option.optionId === id));
+  return exactResponse(response, "choice_multiple", "optionIds") && Array.isArray(response.optionIds) && isDenseArray(response.optionIds) && response.optionIds.length > 0 && (question.interaction.requiredSelectionCount === undefined || response.optionIds.length === question.interaction.requiredSelectionCount) && new Set(response.optionIds).size === response.optionIds.length && response.optionIds.every((id) => typeof id === "string" && question.interaction.options.some((option) => option.optionId === id));
 }
 
 export function scoreChoiceMultipleResponse(question: ChoiceMultipleQuestion, response: unknown): AttemptResult {
@@ -41,13 +47,13 @@ export const choiceMultipleHandler: InteractionHandler<ChoiceMultipleQuestion> =
   controlIds: (question) => Object.freeze(question.interaction.options.map((option) => option.optionId)),
   randomizeControlOrder: true,
   present(question, response, displayOrder) {
-    const selected = isChoiceMultipleResponseComplete(question, response) ? new Set(response.optionIds) : new Set<string>();
+    const selected = isChoiceMultipleResponseValidPartial(question, response) ? new Set(response.optionIds) : new Set<string>();
     const ids = displayOrder.length ? displayOrder : question.interaction.options.map((option) => option.optionId);
     if (ids.length !== question.interaction.options.length || new Set(ids).size !== ids.length || ids.some((id) => !question.interaction.options.some((option) => option.optionId === id))) throw new Error(`Canonical display order is invalid for ${question.questionId}.`);
     const options = Object.freeze(ids.map((id) => { const option = question.interaction.options.find((entry) => entry.optionId === id)!; return Object.freeze({ id, text: option.text, selected: selected.has(id) }); }));
     return Object.freeze({
       accessibility: Object.freeze({ controls: Object.freeze(options.map((option) => Object.freeze({ checked: option.selected, id: option.id, label: option.text, role: "checkbox" as const }))), interactionKind: "choice", label: question.prompt }),
-      renderer: Object.freeze({ kind: "choice", options }),
+      renderer: Object.freeze({ kind: "choice", ...(question.interaction.requiredSelectionCount === undefined ? {} : { requiredSelectionCount: question.interaction.requiredSelectionCount }), options }),
     });
   },
   presentReview(question, response, displayOrder) {
@@ -55,7 +61,7 @@ export const choiceMultipleHandler: InteractionHandler<ChoiceMultipleQuestion> =
     const diagnostics = choiceDiagnostics(question, reviewResponse);
     const { messages: _messages, ...unansweredFeedback } = question.feedback;
     return Object.freeze({ interactionType: "choice_multiple", model: choiceMultipleHandler.present(question, reviewResponse, displayOrder), diagnostics,
-      feedback: response === null ? Object.freeze(unansweredFeedback) : choiceFeedbackFromDiagnostics(question, true, diagnostics) });
+      feedback: response === null ? Object.freeze(unansweredFeedback) : isChoiceMultipleResponseValidPartial(question, response) ? choiceFeedbackFromDiagnostics(question, diagnostics) : null });
   },
   projectDiagnostics: choiceDiagnostics,
   projectFeedback(question, response) { return choiceFeedback(question, response); },
@@ -64,24 +70,29 @@ export const choiceMultipleHandler: InteractionHandler<ChoiceMultipleQuestion> =
   evaluate(question, response): InteractionEvaluation {
     const complete = isChoiceMultipleResponseComplete(question, response);
     const diagnostics = choiceDiagnostics(question, response);
-    const feedback = choiceFeedbackFromDiagnostics(question, complete, diagnostics);
+    const feedback = complete ? choiceFeedbackFromDiagnostics(question, diagnostics) : null;
     return canonicalEvaluation(question, response, complete, complete ? scoreChoiceMultipleResponse(question, response) : null, diagnostics, feedback);
   },
 });
 
 function choiceFeedback(question: ChoiceMultipleQuestion, response: unknown): CanonicalFeedback | null {
   const complete = isChoiceMultipleResponseComplete(question, response);
-  return choiceFeedbackFromDiagnostics(question, complete, choiceDiagnostics(question, response));
+  return complete ? choiceFeedbackFromDiagnostics(question, choiceDiagnostics(question, response)) : null;
 }
 
-function choiceFeedbackFromDiagnostics(question: ChoiceMultipleQuestion, complete: boolean, diagnostics: readonly Readonly<{ id: string; state: string }>[]): CanonicalFeedback | null {
-  if (!complete) return null;
+function choiceFeedbackFromDiagnostics(question: ChoiceMultipleQuestion, diagnostics: readonly Readonly<{ id: string; state: string }>[]): CanonicalFeedback | null {
   const messages = (question.feedback.messages ?? []).filter((message) => message.kind === "wrong_option" ? diagnostics.some((entry) => entry.id === message.targetId && entry.state === "incorrect") : message.kind === "omitted_option" && diagnostics.some((entry) => entry.id === message.targetId && entry.state === "omitted_correct"));
   return Object.freeze({ ...question.feedback, ...(question.feedback.messages === undefined ? {} : { messages: Object.freeze(messages) }) });
 }
 
 export function choiceDiagnostics(question: ChoiceMultipleQuestion, response: unknown) {
-  if (!isChoiceMultipleResponseComplete(question, response)) return Object.freeze([]);
+  if (!isChoiceMultipleResponseValidPartial(question, response)) return Object.freeze([]);
   const selected = new Set(response.optionIds), expected = new Set(question.answer.optionIds);
   return Object.freeze(question.interaction.options.map(({ optionId }) => Object.freeze({ id: optionId, state: selected.has(optionId) ? expected.has(optionId) ? "correct" as const : "incorrect" as const : expected.has(optionId) ? "omitted_correct" as const : "neutral" as const })));
+}
+
+export function isChoiceMultipleResponseValidPartial(question: ChoiceMultipleQuestion, response: unknown): response is ChoiceMultipleResponse {
+  if (!exactResponse(response, "choice_multiple", "optionIds") || !Array.isArray(response.optionIds) || !isDenseArray(response.optionIds) || response.optionIds.length === 0) return false;
+  const limit = question.interaction.requiredSelectionCount;
+  return (limit === undefined || response.optionIds.length <= limit) && new Set(response.optionIds).size === response.optionIds.length && response.optionIds.every((id) => typeof id === "string" && question.interaction.options.some((option) => option.optionId === id));
 }

@@ -43,6 +43,7 @@ import {
 } from "../../application/learningPlan";
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
 import { captureHomeShellReadFence } from "../../application/homeShellReadFence";
+import { useRouteLifetime } from "./routeLifetime";
 import { captureProfileReadFence } from "../../application/profileReadFence";
 import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
 import type { CodingInterviewDashboard } from "../../application/coding-interview";
@@ -106,6 +107,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const { t: tLearningPlan } = useTranslation("learningPlan");
+  const lifetime = useRouteLifetime(route.key);
+  useEffect(() => () => lifetime.remove(), [lifetime]);
   const { t: tAccount } = useTranslation("account");
   const account = usePatternlyAccount();
   const homeResumeContext = useHomeResumeUnavailable();
@@ -447,21 +450,39 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       return;
     }
     if (action.kind === "create_plan" || action.kind === "review_updated_plan") {
-      const result = await learningPlanProposalCoordinator.create(selectedTrackId);
-      if ("proposal" in result) {
-        navigation.navigate(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId: selectedTrackId });
+      try {
+        const result = await learningPlanProposalCoordinator.create(selectedTrackId);
+        if ("proposal" in result) {
+          if (!lifetime.isCurrent()) {
+            learningPlanProposalCoordinator.remove(result.proposal.proposalId);
+            return;
+          }
+          navigation.navigate(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId: selectedTrackId });
+          return;
+        }
+        if (!lifetime.isCurrent()) return;
+        Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The learning plan could not be opened. Try again."));
+        return;
+      } catch {
+        if (lifetime.isCurrent()) Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The learning plan could not be opened. Try again."));
         return;
       }
-      Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The learning plan could not be opened. Try again."));
-      return;
     }
     if (action.kind === "resume_plan" || action.kind === "adjust_schedule") {
-      const result = await learningPlanEditorCoordinator.startExistingEdit(selectedTrackId);
-      if (result.kind === "ready") {
-        navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId: selectedTrackId });
-        return;
+      try {
+        const result = await learningPlanEditorCoordinator.startExistingEdit(selectedTrackId);
+        if (result.kind === "ready") {
+          if (!lifetime.isCurrent()) {
+            learningPlanEditorCoordinator.discard(result.session.editorId);
+            return;
+          }
+          navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId: selectedTrackId });
+          return;
+        }
+        if (lifetime.isCurrent()) Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The saved learning plan could not be opened. Try again."));
+      } catch {
+        if (lifetime.isCurrent()) Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The saved learning plan could not be opened. Try again."));
       }
-      Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The saved learning plan could not be opened. Try again."));
     }
   }
 
@@ -476,12 +497,20 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
 
   async function createRecoveredLearningPlan(): Promise<void> {
     if (!activeTrackId) return;
-    const result = await learningPlanProposalCoordinator.create(activeTrackId);
-    if ("proposal" in result) {
-      navigation.navigate(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId: activeTrackId });
-      return;
+    try {
+      const result = await learningPlanProposalCoordinator.create(activeTrackId);
+      if ("proposal" in result) {
+        if (!lifetime.isCurrent()) {
+          learningPlanProposalCoordinator.remove(result.proposal.proposalId);
+          return;
+        }
+        navigation.navigate(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId: activeTrackId });
+        return;
+      }
+      if (lifetime.isCurrent()) Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The learning plan could not be opened. Try again."));
+    } catch {
+      if (lifetime.isCurrent()) Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The learning plan could not be opened. Try again."));
     }
-    Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The learning plan could not be opened. Try again."));
   }
 
   const plannedActiveSession = data.homePlan?.kind === "ready" ? data.homePlan.activeSession : data.homePlan?.kind === "unavailable" ? null : data.activeSession;

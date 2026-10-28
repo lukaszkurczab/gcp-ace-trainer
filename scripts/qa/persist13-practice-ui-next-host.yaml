@@ -1,0 +1,44 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-13 — one real Next tap and cold-verifiable Q2
+tags:
+  - persist13
+  - practice-ui-next
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:counter:.*:ordinal:1:length:10"
+    timeout: 60000
+- assertVisible:
+    id: "patternly:session:question:.*"
+- takeScreenshot: "${CAPTURE_PREFIX}-question-before-next"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:reason:.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- assertVisible:
+    id: "patternly:session:reason:.*"
+- assertVisible:
+    id: "patternly:session:continue:.*"
+    enabled: true
+- assertNotVisible:
+    id: "patternly:session:details:.*"
+- tapOn:
+    id: "patternly:session:continue:.*"
+    retryTapIfNoChange: false
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:counter:.*:ordinal:2:length:10"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:.*"
+- assertNotVisible:
+    id: "patternly:session:reason:.*"
+- takeScreenshot: "${CAPTURE_PREFIX}-question-after-next"

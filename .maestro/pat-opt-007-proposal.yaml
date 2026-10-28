@@ -1,0 +1,41 @@
+# Preconditions: existing iPhone17, own ui-exam-ios smoke actor/profile checked
+# with readLearningPlanProposalNativeState; Home has no goal for current track.
+# Reviews an unsaved goal draft. Does not accept/persist the goal/plan pair.
+appId: com.lkurczab.patternly
+name: PAT-OPT-007 production proposal from an unsaved goal draft
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      # Observed development-only warning close control, above the sticky footer.
+      - tapOn:
+          point: "92%,93%"
+- assertVisible:
+    id: patternly:home:guest-goal-onboarding:set-goal
+- tapOn:
+    id: patternly:home:guest-goal-onboarding:set-goal
+- assertVisible:
+    id: patternly:goal:root
+- scrollUntilVisible:
+    element:
+      id: patternly:goal:type:learn_at_own_pace
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: patternly:goal:type:learn_at_own_pace
+- scrollUntilVisible:
+    element: "30 min"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "30 min"
+- takeScreenshot: "${CAPTURE_PREFIX}-unsaved-goal"
+- tapOn:
+    id: patternly:goal:save
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:proposal-identity:.*
+    timeout: 30000
+- takeScreenshot: "${CAPTURE_PREFIX}-proposal"

@@ -71,6 +71,19 @@ test("optional question relations require reciprocal same-unit peers with matchi
   assert.ok(validateQuestion({ ...first, questionRelation: relation(first.questionId) }).some((error) => error.includes("cannot reference the same question")));
 });
 
+test("CCAR-P scenario family metadata is optional, validated, and retained in neutral summaries", () => {
+  const ccarp = inputs.find(({ entry }) => entry.trackId === "claude-certified-architect-professional-certification")!;
+  const artifact = ccarp.artifact as { questions: Question[] };
+  const source = artifact.questions[0]!;
+  const question = clone(source) as Question;
+  const withFamily = { ...question, examMetadata: { decisionSkill: "diagnosis" as const, scenarioFamilyId: "d04-context-window-budget-tradeoff" } };
+  assert.deepEqual(validateQuestion(withFamily), []);
+  assert.ok(validateQuestion({ ...withFamily, examMetadata: { decisionSkill: "diagnosis", scenarioFamilyId: "../unsafe" } }).some((error) => error.includes("scenarioFamilyId")));
+  assert.ok(validateQuestion({ ...withFamily, examMetadata: { scenarioFamilyId: "missing-skill" } }).some((error) => error.includes("decisionSkill")));
+  const foreign = inputs.find(({ entry }) => entry.trackId === "google-cloud-associate-cloud-engineer")!.artifact as { questions: Question[] };
+  assert.ok(validateQuestion({ ...foreign.questions[0]!, examMetadata: withFamily.examMetadata }).some((error) => error.includes("available only for CCAR-P")));
+});
+
 test("canonical scoring matches the producer oracle exhaustively", async () => {
   const oracle = await import(pathToFileURL(path.join(contentRoot, "scripts/content/question-contract.mjs")).href) as Oracle;
   for (const { entry, artifact } of inputs) { const validated = artifact as { questions: Question[] }; for (const question of validated.questions) for (const response of [answerResponse(question), partialResponse(question), { type: question.interaction.type }, null]) { const { contentDomainId: _contentDomainId, ...oracleQuestion } = question; const expected = oracle.scoreQuestion(oracleQuestion, response); const actual = scoreCanonicalQuestion(question, response); assert.deepEqual({ status: actual.kind, earnedPoints: actual.earnedPoints, maxPoints: actual.maxPoints }, { status: expected.status, earnedPoints: expected.earnedPoints, maxPoints: expected.maxPoints }, `${entry.trackId}/${question.questionId}`); } }

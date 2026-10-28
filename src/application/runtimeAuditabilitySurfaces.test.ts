@@ -2,17 +2,18 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+const decision = readFileSync("src/features/home/tabs/HomeDecisionCard.tsx", "utf8");
 const source = (path: string) => readFileSync(path, "utf8");
 
 test("passive runtime selectors are attached to visible content rather than containers with interactive descendants", () => {
   const home = source("src/features/home/tabs/HomeTab.tsx");
   const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
 
-  assert.match(home, /<Card variant="layered" style=\{styles\.decisionCard\}>/);
+  assert.match(decision, /<Card variant="layered" style=\{styles\.decisionCard\}>/);
   assert.match(home, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
-  assert.match(home, /onPress=\{isRecommendationSettingsAction \? onOpenSettings : onChooseTopic\}/);
+  assert.match(home, /onPress: isRecommendationSettingsAction \? onOpenSettings : onChooseTopic/);
   assert.match(home, /t\(isRecommendationSettingsAction \? "Manage settings" : "Choose another topic"\)/);
-  assert.match(home, /hasActiveSession \|\| isFirstUse \? null/);
+  assert.match(home, /hasActiveSession \|\| isFirstUse \? undefined/);
   assert.match(home, /t\("Open Practice"\)/);
   assert.doesNotMatch(home, /<Card[^>]*testID=\{runtimeSelectors\.home\.trackCard/);
   assert.match(feedback, /<View style=\{styles\.reasonPanel\} testID=\{runtimeSelectors\.session\.result\(itemId, feedback\.result\)\}>/);
@@ -24,27 +25,27 @@ test("active-session resume uses the single recommendation card and a separate c
 
   assert.match(home, /const resumeSessionId = recommendation\?\.action\.kind === "resume_active_practice" \|\| recommendation\?\.action\.kind === "resume_certification_practice" \|\| recommendation\?\.action\.kind === "resume_design_interview"[\s\S]*?\? recommendation\.action\.sessionId[\s\S]*?: undefined;/);
   assert.doesNotMatch(home, /<Card[^>]*onPress=/);
-  assert.equal((home.match(/<Card variant="layered" style=\{styles\.decisionCard\}>/g) ?? []).length, 1);
+  assert.equal((home.match(/<HomeDecisionCard/g) ?? []).length, 1);
   for (const helper of ["card", "title", "status", "continue"] as const) {
     assert.equal((home.match(new RegExp(`runtimeSelectors\\.resume\\.${helper}\\(resumeSessionId\\)`, "g")) ?? []).length, 1);
   }
-  assert.match(home, /<Button[\s\S]*?testID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)[\s\S]*?<\/Button>/);
+  assert.match(home, /<HomeDecisionCard[\s\S]*?primaryTestID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)/);
 });
 
 test("Home uses the approved compact presentation without changing recommendation ownership", () => {
   const home = source("src/features/home/tabs/HomeTab.tsx");
 
   assert.match(home, /trackIconContainer:[\s\S]*?height:\s*32/);
-  assert.match(home, /decisionCard:[\s\S]*?borderColor:\s*palette\.navigation\.active[\s\S]*?borderRadius:\s*22/);
-  assert.match(home, /decisionHeading:\s*\{[\s\S]*?alignItems:\s*"center"/);
-  assert.match(home, /decisionIconTile:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
+  assert.match(decision, /decisionCard:[\s\S]*?borderColor:\s*palette\.navigation\.active[\s\S]*?borderRadius:\s*22/);
+  assert.match(decision, /decisionHeading:\s*\{[\s\S]*?alignItems:\s*"flex-start"/);
+  assert.match(decision, /decisionIconTile:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
   assert.match(home, /overviewSection:\s*\{[\s\S]*?gap:\s*2/);
   assert.match(home, /overview\.map\(\(metric, index\)[\s\S]*?index < overview\.length - 1 \? styles\.overviewRowDivider : null/);
   assert.match(home, /overviewRowDivider:[\s\S]*?borderBottomWidth:\s*1/);
   assert.match(home, /focusActionLabel:\s*\{[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);
-  assert.match(home, /startButton:[\s\S]*?minHeight:\s*49/);
+  assert.match(decision, /startButton:[\s\S]*?minHeight:\s*49/);
   assert.doesNotMatch(home, /attempt\.result\.kind/);
-  assert.match(home, /<Button[\s\S]*?testID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)/);
+  assert.match(home, /<HomeDecisionCard[\s\S]*?primaryTestID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)/);
   assert.match(home, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
   assert.match(home, /onChooseTopic/);
 });

@@ -32,6 +32,17 @@ type BootstrapCommonPorts = Readonly<{
   accountSessionFailureState: typeof import("../account/AccountSessionProvider").accountSessionFailureState;
 }>;
 
+/** Publish a completed bootstrap actor to synchronous admission readers before React commits the render. */
+export function publishCompletedAccountState(
+  ports: Pick<BootstrapCommonPorts, "stateRef" | "setState">,
+  next: AccountState,
+): void {
+  if (next.kind === "authenticated" || next.kind === "localOffline" || next.kind === "guest") {
+    ports.stateRef.current = next;
+  }
+  ports.setState(next);
+}
+
 export type AccountBootstrapPreparationPorts = BootstrapCommonPorts & Readonly<{
   preparedProfileState: Readonly<{ selectedProfile: StorageProfile }>;
   observerBlockedUidRef: Ref<string | null>;
@@ -431,7 +442,9 @@ export function completeAccountBootstrap(ports: AccountBootstrapCompletionPorts,
           ? { kind: "success", next: "guest" } as const
           : { kind: "failure", failure: "providerUnavailable" } as const;
         if (profilePreparationRef.current === attempt) {
-          setState(result.kind === "success" ? { kind: "guest" } : { kind: "guestAccessBlocked" });
+          const nextState: AccountState = result.kind === "success" ? { kind: "guest" } : { kind: "guestAccessBlocked" };
+          if (result.kind === "success") publishCompletedAccountState(ports, nextState);
+          else setState(nextState);
           if (result.kind === "success") attempt.startupDiagnostic?.ready("guest");
           else attempt.startupDiagnostic?.failed("profile_completion", new Error("guest_profile_completion_failed"), "guestAccessBlocked");
           profilePreparationRef.current = null;
@@ -475,7 +488,7 @@ export function completeAccountBootstrap(ports: AccountBootstrapCompletionPorts,
             throw new Error("local_account_scope_unavailable");
           }
           revokeGuestAccess();
-          setState({ kind: "localOffline", accountId: offline.accountId, accountData, bindingRevision: offline.bindingRevision, generation, profile: offline.profileLease.profile, profileLease: offline.profileLease, user });
+          publishCompletedAccountState(ports, { kind: "localOffline", accountId: offline.accountId, accountData, bindingRevision: offline.bindingRevision, generation, profile: offline.profileLease.profile, profileLease: offline.profileLease, user });
           if (profilePreparationRef.current === attempt) attempt.startupDiagnostic?.ready("localOffline");
           profilePreparationRef.current = null;
           attempt.resolveCompletion({ kind: "success", next: "localOffline" });
@@ -508,7 +521,7 @@ export function completeAccountBootstrap(ports: AccountBootstrapCompletionPorts,
         (nextState) => {
           if (sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid) {
             reconciliationOutcome.state = nextState;
-            setState(nextState);
+            publishCompletedAccountState(ports, nextState);
           }
         },
         () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid,

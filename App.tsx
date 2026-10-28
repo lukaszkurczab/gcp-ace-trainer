@@ -1,3 +1,4 @@
+import { resolveStartupPreviewEntry, type StartupPreviewEntry } from "./src/testing/startupPreparationPreview";
 import { resolvePerf06Entry, type Perf06Entry } from "./src/testing/perf06Entry";
 import { markStartup } from "./src/infrastructure/diagnostics/startupTrace";
 import { resolvePersist13Entry, type Persist13Entry } from "./src/application/runtimeAuditability/persist13Entry";
@@ -11,8 +12,15 @@ export default function App() {
     mode: process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE,
     runId: process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE_RUN_ID,
     scenario: process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE_SCENARIO,
+    observation: process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_UI_OBSERVATION,
+    startStage: process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_START_STAGE,
   });
   const listEntry = resolvePerf06Entry(process.env.EXPO_PUBLIC_PATTERNLY_PERF06_FIXTURE, typeof __DEV__ !== "undefined" && __DEV__, process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE, entry.kind);
+  const previewEntry = resolveStartupPreviewEntry(process.env.EXPO_PUBLIC_PATTERNLY_STARTUP_PREVIEW, typeof __DEV__ !== "undefined" && __DEV__, process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE, entry.kind, listEntry.kind);
+  if (previewEntry.kind !== "regular") {
+    const StartupPreparationPreviewRoot = (require("./src/testing/StartupPreparationPreviewRoot") as { default: (props: Readonly<{ entry: StartupPreviewEntry }>) => ReactElement }).default;
+    return <StartupPreparationPreviewRoot entry={previewEntry} />;
+  }
   if (listEntry.kind !== "regular") {
     const Perf06ListFixtureRoot = (require("./src/testing/Perf06ListFixtureRoot") as { default: (props: Readonly<{ entry: Perf06Entry }>) => ReactElement }).default;
     return <Perf06ListFixtureRoot entry={listEntry} />;

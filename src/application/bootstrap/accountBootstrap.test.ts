@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { AccountSessionGenerationStaleError, accountSessionFailureState, classifyAccountFailure, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, runAccountIdentityProof, type AccountSessionGenerationToken, type AccountState } from "../account/AccountSessionProvider";
-import { MemoryKeyValueStorage, activatePreparedProfile, closeActiveProfileStorage, getActiveStorageProfileOrNull, installKeyValueStorageForTests, prepareProfileStorage, setProfileStoragePreparationFactoryForTests } from "../../infrastructure/storage/mmkvClient";
+import { AccountSessionGenerationStaleError, accountSessionFailureState, classifyAccountFailure, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, runAccountIdentityProof, type AccountCommandResult, type AccountSessionGenerationToken, type AccountState } from "../account/AccountSessionProvider";
+import { MemoryKeyValueStorage, activatePreparedProfile, captureActiveProfileStorageLease, closeActiveProfileStorage, getActiveStorageProfileOrNull, installKeyValueStorageForTests, prepareProfileStorage, readActiveAccountIdentityBinding, setProfileStoragePreparationFactoryForTests, writeActiveAccountIdentityBinding } from "../../infrastructure/storage/mmkvClient";
 import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
@@ -11,9 +11,11 @@ import { PatternlyApiClientError, type PatternlyApiClient } from "../../infrastr
 import { accountFinalizationPolicies } from "../account/accountFinalization";
 import { createProfilePreparationHandoffOwner } from "../account/profilePreparationHandoff";
 import { createPendingSessionRevocationDrain } from "../account/pendingSessionRevocation";
-import { markGuestInstallationAdoptionPending, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
+import { bindGuestInstallationToAccount, markGuestInstallationAdoptionPending, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
+import { grantGuestAccess } from "../../storage/repositories/guestAccessRepository";
+import { loadAccountDataSession } from "../account/accountDataService";
 import type { LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
-import { AccountBootstrapStaleError, admitAccountBootstrap, completeAccountBootstrap, createAccountBootstrapCoordinator, prepareAuthenticatedAccountBootstrap, type AccountBootstrapCompletionPorts, type AccountBootstrapPreparationPorts, type ProfilePreparationAttempt } from "./accountBootstrap";
+import { AccountBootstrapStaleError, admitAccountBootstrap, completeAccountBootstrap, createAccountBootstrapCoordinator, prepareAuthenticatedAccountBootstrap, publishCompletedAccountState, type AccountBootstrapCompletionPorts, type AccountBootstrapPreparationPorts, type ProfilePreparationAttempt } from "./accountBootstrap";
 
 test.afterEach(() => {
   closeActiveProfileStorage();
@@ -30,6 +32,170 @@ function deferred<T>() {
   });
   return { promise, resolve, reject };
 }
+
+test("session coordinator publishes authenticated actor before deferred React dispatch and ignores a superseded completion", async () => {
+  const loading: AccountState = { kind: "loading" };
+  let stateRef: AccountState = loading;
+  const dispatched: AccountState[] = [];
+  const publish = (state: AccountState) => publishCompletedAccountState({ stateRef: { get current() { return stateRef; }, set current(next) { stateRef = next; } }, setState: (next) => { dispatched.push(next); } }, state);
+  const coordinator = createAccountSessionCoordinator<Readonly<{ state: AccountState }>>((_token, outcome) => publish(outcome.state));
+  const first = coordinator.begin("publish-uid-a");
+  const authenticated = { kind: "authenticated" } as AccountState;
+  await coordinator.run(first, async () => ({ state: authenticated }));
+  assert.equal(stateRef, authenticated, "synchronous admission readers see the committed actor before React dispatch commits");
+  assert.deepEqual(dispatched, [authenticated]);
+
+  const staleCompletion = deferred<Readonly<{ state: AccountState }>>();
+  const second = coordinator.begin("publish-uid-b");
+  const stale = coordinator.run(second, () => staleCompletion.promise);
+  const current = coordinator.begin("publish-uid-c");
+  const guest = { kind: "guest" } as AccountState;
+  await coordinator.run(current, async () => ({ state: guest }));
+  staleCompletion.resolve({ state: authenticated });
+  await stale;
+  assert.equal(stateRef, guest, "a superseded completion cannot replace the current actor");
+  assert.deepEqual(dispatched, [authenticated, guest]);
+});
+
+test("completed bootstrap publication admits guest and localOffline actors but does not synchronously publish failures", () => {
+  const loading: AccountState = { kind: "loading" };
+  let stateRef: AccountState = loading;
+  const dispatched: AccountState[] = [];
+  const ports = {
+    stateRef: { get current() { return stateRef; }, set current(next: AccountState) { stateRef = next; } },
+    setState: (next: AccountState) => { dispatched.push(next); },
+  };
+  const guest: AccountState = { kind: "guest" };
+  publishCompletedAccountState(ports, guest);
+  assert.equal(stateRef, guest);
+
+  const localOffline = { kind: "localOffline" } as AccountState;
+  publishCompletedAccountState(ports, localOffline);
+  assert.equal(stateRef, localOffline);
+
+  const failure: AccountState = { kind: "backendUnavailable", user: { uid: "publish-uid", email: null, emailVerified: false, providers: [] } };
+  publishCompletedAccountState(ports, failure);
+  assert.equal(stateRef, localOffline, "failure state is not exposed as a ready actor before React commits");
+  assert.deepEqual(dispatched, [guest, localOffline, failure]);
+});
+
+test("guest bootstrap completion publishes its actor before a deferred React dispatch", async () => {
+  const fixture = await createBootstrapFixture("guest-publication-account");
+  const guestProfile = await fixture.router.selectGuest();
+  fixture.setRouter(await openProfileStorageRouter(fixture.base, fixture.control));
+  await prepareProfileStorage();
+  activatePreparedProfile(guestProfile.id, guestProfile.kind);
+  await provisionGuestInstallation();
+  grantGuestAccess();
+
+  const handoff = createProfilePreparationHandoffOwner<void>();
+  const handoffToken = handoff.begin();
+  const completion = deferred<AccountCommandResult>();
+  let stateRef: AccountState = { kind: "profilePreparing", profile: guestProfile };
+  const dispatched: AccountState[] = [];
+  const attempt: ProfilePreparationAttempt = {
+    kind: "guest", profile: guestProfile, completion: completion.promise, resolveCompletion: completion.resolve,
+    guestAdoption: false, handoffToken, handoffReady: true,
+  };
+  const ports = {
+    profilePreparationHandoffRef: { current: handoff },
+    profilePreparationRef: { current: attempt },
+    stateRef: { get current() { return stateRef; }, set current(next: AccountState) { stateRef = next; } },
+    setState: (next: AccountState) => { dispatched.push(next); },
+    authClient: null,
+    apiClient: null,
+    sessionCoordinator: { isCurrent: () => true },
+    logoutControlSnapshotRef: { current: { blocked: null, completed: [], pending: [], version: 2 } },
+    sessionExchangeUidRef: { current: null },
+    finalizeCurrent: async () => ({ kind: "failure", failure: "providerUnavailable" }),
+    runtimeMode: undefined,
+    accountSessionFailureState,
+  } as unknown as AccountBootstrapCompletionPorts;
+
+  await completeAccountBootstrap(ports, handoffToken);
+  assert.equal(stateRef.kind, "guest", "bootstrap readers see the completed guest actor before React commits");
+  assert.deepEqual(dispatched, [{ kind: "guest" }]);
+  assert.deepEqual(await completion.promise, { kind: "success", next: "guest" });
+});
+
+test("localOffline bootstrap publishes only with the current verified lease and generation", async () => {
+  const accountId = "55555555-5555-4555-8555-555555555555";
+  const user = { uid: "local-offline-bootstrap-uid", email: "offline@example.test", emailVerified: true, providers: ["password"] } as const;
+  const makePorts = async () => {
+    const fixture = await createBootstrapFixture(accountId);
+    await prepareProfileStorage();
+    activatePreparedProfile(fixture.selected.id, fixture.selected.kind);
+    const lease = captureActiveProfileStorageLease();
+    assert.ok(lease);
+    await writeActiveAccountIdentityBinding({ lease, accountId, firebaseUid: user.uid, canContinue: () => true });
+    await provisionGuestInstallation();
+    await bindGuestInstallationToAccount(accountId);
+    const binding = await readActiveAccountIdentityBinding(lease);
+    assert.equal(binding.kind, "verified");
+    if (binding.kind !== "verified") throw new Error("Test fixture account binding must be verified.");
+    const api = {
+      getProgress: async () => ({ accountRevision: 0, records: [] }),
+      syncProgress: async () => ({ accountRevision: 0, applied: [], duplicates: [], conflicts: [] }),
+    } as unknown as PatternlyApiClient;
+    await loadAccountDataSession(api, accountId);
+
+    const coordinator = createAccountSessionCoordinator<AccountCommandResult>(() => undefined);
+    const generation = coordinator.begin(user.uid);
+    let stateRef: AccountState = { kind: "profilePreparing", profile: fixture.selected };
+    const dispatched: AccountState[] = [];
+    const completion = deferred<AccountCommandResult>();
+    const handoff = createProfilePreparationHandoffOwner<void>();
+    const handoffToken = handoff.begin();
+    const attempt: ProfilePreparationAttempt = {
+      kind: "localOffline", profile: fixture.selected, user, generation,
+      localOffline: { accountId, bindingRevision: binding.binding.verificationRevision, profileLease: lease },
+      completion: completion.promise, resolveCompletion: completion.resolve,
+      guestAdoption: false, handoffToken, handoffReady: true,
+    };
+    const ports = {
+      profilePreparationHandoffRef: { current: handoff },
+      profilePreparationRef: { current: attempt },
+      stateRef: { get current() { return stateRef; }, set current(next: AccountState) { stateRef = next; } },
+      setState: (next: AccountState) => { dispatched.push(next); },
+      authClient: { getSnapshot: () => user },
+      apiClient: api,
+      sessionCoordinator: coordinator,
+      logoutControlSnapshotRef: { current: { blocked: null, completed: [], pending: [], version: 2 } },
+      sessionExchangeUidRef: { current: null },
+      finalizeCurrent: async () => ({ kind: "failure", failure: "providerUnavailable" }),
+      runtimeMode: undefined,
+      accountSessionFailureState,
+      classifyAccountFailure,
+      planPasswordVerificationCommand: () => ({ kind: "finalize" }),
+      disableAccountRemindersForDeletion: async () => true,
+    } as unknown as AccountBootstrapCompletionPorts;
+    return { ports, lease, coordinator, generation, completion, dispatched, getState: () => stateRef };
+  };
+
+  const valid = await makePorts();
+  await completeAccountBootstrap(valid.ports, valid.ports.profilePreparationRef.current!.handoffToken);
+  assert.equal(valid.getState().kind, "localOffline", "completion exposes the validated offline actor before React dispatch commits");
+  assert.equal(valid.dispatched[0]?.kind, "localOffline");
+  assert.deepEqual(await valid.completion.promise, { kind: "success", next: "localOffline" });
+
+  closeActiveProfileStorage();
+  setProfileStoragePreparationFactoryForTests(null);
+  installKeyValueStorageForTests(new MemoryKeyValueStorage());
+  const staleLease = await makePorts();
+  closeActiveProfileStorage();
+  await completeAccountBootstrap(staleLease.ports, staleLease.ports.profilePreparationRef.current!.handoffToken);
+  assert.notEqual(staleLease.getState().kind, "localOffline", "a stale profile lease cannot publish an offline actor");
+  assert.equal(staleLease.dispatched.at(-1)?.kind, "backendUnavailable");
+
+  closeActiveProfileStorage();
+  setProfileStoragePreparationFactoryForTests(null);
+  installKeyValueStorageForTests(new MemoryKeyValueStorage());
+  const staleGeneration = await makePorts();
+  staleGeneration.coordinator.invalidate();
+  await completeAccountBootstrap(staleGeneration.ports, staleGeneration.ports.profilePreparationRef.current!.handoffToken);
+  assert.notEqual(staleGeneration.getState().kind, "localOffline", "a superseded generation cannot publish an offline actor");
+  assert.equal(staleGeneration.dispatched.at(-1)?.kind, "revokedSession");
+});
 
 test("restore and explicit login join one drain and preparation until profile handoff completes", async () => {
   const coordinator = createAccountBootstrapCoordinator<{ completion: Promise<void> }>();

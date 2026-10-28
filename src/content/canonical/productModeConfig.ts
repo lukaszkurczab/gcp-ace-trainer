@@ -96,7 +96,7 @@ export function getProductSimulationModeConfig(trackId: string, profiles: readon
   if (certificationProfiles.length > 0) {
     const profile = certificationProfiles[0]!;
     if (certificationProfiles.length !== 1 || profile.familyId !== "certification" || profile.modeId !== "certification-exam-simulation" ||
-      trackId !== "google-cloud-associate-cloud-engineer" ||
+      (trackId !== "google-cloud-associate-cloud-engineer" && trackId !== "claude-certified-architect-professional-certification") ||
       !isCanonicalSafeIdentity(trackId) || !isCanonicalSafeIdentity(profile.profileId) || !isCanonicalSafeIdentity(profile.profileVersion)) {
       throw new ProductModeUnavailableError(`Simulation profile for ${trackId} is unavailable or does not match its exact track, family and mode.`);
     }

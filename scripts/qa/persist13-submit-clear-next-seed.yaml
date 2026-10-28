@@ -1,0 +1,17 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-13 — submit clear before one practice advance
+tags:
+  - persist13
+  - submit-clear-next
+---
+- extendedWaitUntil:
+    visible:
+      text: "Stage: submit_clear_next"
+    timeout: 60000
+- assertVisible: "PERSIST-13 submit_clear_next seed: pending"
+- assertVisible:
+    id: "persist13-fixture-journal"
+    text: "Journal absent: true"
+- assertVisible:
+    id: "persist13-fixture-materialized"
+    text: "Materialized targets verified: true"

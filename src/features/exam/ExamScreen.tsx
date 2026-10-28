@@ -19,8 +19,11 @@ import {
 } from "../../application/certification";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { certificationQuestionPresentation } from "../../application/certification/certificationQuestionPresentation";
-import { AnswerOption, Button, EmptyState, Icon, Screen, SettingsDialog, SkeletonShape, useSkeletonGlassMotion } from "../../components";
+import { Button, EmptyState, Icon, Screen, SettingsDialog, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
+import type { CanonicalQuestionResponse } from "../../content/canonical";
+import { ExamFormatFamiliarization } from "./ExamFormatFamiliarization";
+import { ExamResponseControls, type ExamResponseRenderer } from "./ExamResponseControls";
 import type { RootStackParamList } from "../../navigation";
 import { useThemedStyles } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
@@ -80,6 +83,8 @@ export function ExamScreen({ navigation, route }: Props) {
   const requestKey = `${route.params.trackId}:${route.params?.expectedSessionId ?? "new-exam"}`;
   const trackIdRef = useRef(route.params.trackId);
   trackIdRef.current = route.params.trackId;
+  const [formatsAcknowledgedFor, setFormatsAcknowledgedFor] = useState<string | null>(null);
+  const formatsReady = route.params.trackId !== "claude-certified-architect-professional-certification" || Boolean(route.params.expectedSessionId) || formatsAcknowledgedFor === route.params.trackId;
   const [readState, setReadState] = useState<ExamReadState>({ kind: "pending", requestKey });
   const [operationError, setOperationError] = useState<string | null>(null);
   const [actionPending, setActionPending] = useState(false);
@@ -132,6 +137,7 @@ export function ExamScreen({ navigation, route }: Props) {
   }
 
   useEffect(() => {
+    if (!formatsReady) return;
     setReadState({ kind: "pending", requestKey });
     setOperationError(null);
     setNavigatorVisible(false);
@@ -143,7 +149,7 @@ export function ExamScreen({ navigation, route }: Props) {
       readOwner.invalidate(token);
       if (activeTokenRef.current?.generation === token.generation) activeTokenRef.current = null;
     };
-  }, [readOwner, requestKey, route.params?.expectedSessionId]);
+  }, [formatsReady, readOwner, requestKey, route.params?.expectedSessionId]);
 
   useEffect(() => {
     if (readState.requestKey !== requestKey || readState.kind !== "ready") return;
@@ -189,17 +195,16 @@ export function ExamScreen({ navigation, route }: Props) {
     return outcome;
   }
 
-  async function selectOption(optionId: string) {
+  async function changeResponse(response: CanonicalQuestionResponse | null) {
     const token = currentToken();
     if (!token || readState.kind !== "ready" || isExamResolutionRequired(readState.projection)) return;
     const projection = readState.projection;
-    if (projection.interaction.interactionType !== "choice_single") return;
-    const attempted: PendingExamWrite = { kind: "response", occurrenceId: projection.occurrenceId, response: { type: "choice_single", optionId } };
+    const attempted: PendingExamWrite = { kind: "response", occurrenceId: projection.occurrenceId, response };
     setPendingExamWrite(attempted);
     await performAction(async () => {
       setOperationError(null);
       try {
-        await saveCertificationExamResponse({ occurrenceId: projection.occurrenceId, response: { type: "choice_single", optionId } });
+        await saveCertificationExamResponse({ occurrenceId: projection.occurrenceId, response });
         setPendingExamWrite(null);
         if (isCurrent(token)) await refreshAfterAction(token);
       } catch (cause) {
@@ -373,24 +378,18 @@ export function ExamScreen({ navigation, route }: Props) {
   const headerProjection = readState.requestKey === requestKey && readState.kind === "ready" ? readState.projection : null;
   const headerFlagged = headerProjection ? (pendingExamWrite?.kind === "flag" && pendingExamWrite.occurrenceId === headerProjection.occurrenceId ? pendingExamWrite.flagged : headerProjection.flaggedOccurrenceIds.includes(headerProjection.occurrenceId)) : false;
   const headerFlagDisabled = actionPending || !headerProjection || isExamResolutionRequired(headerProjection);
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: headerProjection ? () => (
-        <Pressable
-          accessibilityLabel={t(headerFlagged ? "Remove flag" : "Flag question")}
-          accessibilityRole="button"
-          accessibilityState={{ selected: headerFlagged, disabled: headerFlagDisabled }}
-          disabled={headerFlagDisabled}
-          onPress={() => void toggleFlag()}
-          style={({ pressed }) => [styles.flagAction, pressed && !headerFlagDisabled ? styles.pressed : null]}
-          testID={runtimeSelectors.simulation.action(headerProjection.session.id, "flag")}
-        >
-          <Icon color={headerFlagDisabled ? styles.flagDisabled.color : headerFlagged ? styles.flagSelected.color : styles.flagDefault.color} name="flag" size={22} />
-        </Pressable>
-      ) : undefined,
-    });
-  }, [navigation, headerProjection, headerFlagged, headerFlagDisabled, styles, t]);
+  useLayoutEffect(() => { navigation.setOptions({ title: "", headerRight: undefined }); }, [navigation]);
+  const flagAction = headerProjection ? <Pressable
+    accessibilityLabel={t(headerFlagged ? "Remove flag" : "Flag question")}
+    accessibilityRole="button"
+    accessibilityState={{ selected: headerFlagged, disabled: headerFlagDisabled }}
+    disabled={headerFlagDisabled}
+    onPress={() => void toggleFlag()}
+    style={({ pressed }) => [styles.flagAction, pressed && !headerFlagDisabled ? styles.pressed : null]}
+    testID={runtimeSelectors.simulation.action(headerProjection.session.id, "flag")}
+  ><Icon color={headerFlagDisabled ? styles.flagDisabled.color : headerFlagged ? styles.flagSelected.color : styles.flagDefault.color} name="flag" size={18} /></Pressable> : null;
 
+  if (!formatsReady) return <ExamFormatFamiliarization key={route.params.trackId} onStart={() => setFormatsAcknowledgedFor(route.params.trackId)} trackId={route.params.trackId} />;
   if (readState.requestKey !== requestKey || readState.kind === "pending") return <ExamLoadingSkeleton />;
   if (readState.kind === "conflict") {
     return <Screen edges={["top", "bottom"]}><EmptyState title={t("Another session is active")} description={t("The expected Cloud exam is no longer the active session.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
@@ -421,13 +420,13 @@ export function ExamScreen({ navigation, route }: Props) {
     accessibilityLabel: `${t("Time remaining")}: ${remainingLabel}`,
     label: `${t("Time remaining")}\n${remainingLabel}`,
   };
-  const pendingResponse = pendingExamWrite?.kind === "response" && pendingExamWrite.occurrenceId === projection.occurrenceId ? pendingExamWrite.response : null;
-  const savedResponse = projection.response as { type?: unknown; optionId?: unknown } | null;
-  const selectedOptionId = pendingResponse?.type === "choice_single" ? pendingResponse.optionId : savedResponse?.type === "choice_single" && typeof savedResponse.optionId === "string" ? savedResponse.optionId : null;
-  const answered = new Set(Object.keys(projection.draft.responsesByOccurrenceId));
-  const unansweredCount = projection.session.itemOrder.filter((item) => !answered.has(item.occurrenceId)).length;
-  const renderer = (projection.interaction.model as { renderer?: { kind?: string; options?: readonly Readonly<{ id: string; text: string; selected: boolean }>[] } }).renderer;
-  if (projection.interaction.interactionType !== "choice_single" || renderer?.kind !== "choice" || !Array.isArray(renderer.options)) {
+  const response = pendingExamWrite?.kind === "response" && pendingExamWrite.occurrenceId === projection.occurrenceId ? pendingExamWrite.response : projection.response as CanonicalQuestionResponse | null;
+  const completion = projection.responseCompletionByOccurrenceId;
+  const answered = new Set(Object.entries(completion).filter(([, state]) => state === "complete").map(([id]) => id));
+  const incompleteCount = Object.values(completion).filter((state) => state === "incomplete").length;
+  const unansweredCount = projection.total - answered.size;
+  const renderer = (projection.interaction.model as { renderer?: ExamResponseRenderer }).renderer;
+  if (!renderer || !["choice_single", "choice_multiple", "decision_matrix"].includes(projection.interaction.interactionType)) {
     return <Screen edges={["top", "bottom"]}><EmptyState title={t("Exam unavailable")} description={t("This exam question type is unavailable.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
 
@@ -448,7 +447,6 @@ export function ExamScreen({ navigation, route }: Props) {
         onPositionPress={() => setNavigatorVisible(true)}
         positionDisabled={actionPending || resolutionRequired}
         positionAccessibilityLabel={`${t("Question navigator")}, ${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`}
-        modeLabel={t("Certification Exam Simulation")}
         position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} / ${projection.total}` }}
         positionTestID={runtimeSelectors.session.counter(projection.session.id, projection.ordinal, projection.total)}
         progress={projection.ordinal / projection.total}
@@ -460,24 +458,8 @@ export function ExamScreen({ navigation, route }: Props) {
         {projection.operation.kind === "save_failed" && projection.operation.error.allowedAction === "retry_same_command" && pendingExamWrite ? <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{t("Couldn't save this response. Your current answer is still here.")}</Text><Button disabled={actionPending} onPress={() => void retryExamSave()} variant="secondary">{t("Retry save")}</Button></View> : null}
         {!isExamOperationUnconfirmed(projection) && resolutionRequired ? <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{t("The saved exam action needs to be restored before continuing.")}</Text><Button disabled={actionPending} onPress={() => void recoverExamOperation()} variant="secondary">{t("Restore saved exam action")}</Button></View> : null}
         {operationError && !saveUnconfirmed ? <View accessible accessibilityLabel={operationError} accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{operationError}</Text></View> : null}
-        <PracticeQuestionCard question={{ itemId: projection.question.questionId, prompt: projection.question.prompt }} presentation={questionPresentation} />
-        <View style={styles.options}>
-          {renderer.options.map((option, index) => {
-            const selected = selectedOptionId === option.id;
-            return <AnswerOption
-              accessibilityLabel={option.text}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: selected, disabled: actionPending || resolutionRequired }}
-              disabled={actionPending || resolutionRequired}
-              key={option.id}
-              letter={String.fromCharCode(65 + index)}
-              onPress={() => void selectOption(option.id)}
-              state={selected ? "selected" : "default"}
-              testID={runtimeSelectors.simulation.option(projection.question.questionId, option.id)}
-              text={option.text}
-            />;
-          })}
-        </View>
+        <PracticeQuestionCard question={{ itemId: projection.question.questionId, prompt: projection.question.prompt }} presentation={questionPresentation} questionLabelAction={flagAction} />
+        <ExamResponseControls disabled={actionPending || resolutionRequired} interactionType={projection.interaction.interactionType} itemId={projection.question.questionId} onChange={(value) => void changeResponse(value)} renderer={renderer} requiredSelectionCount={projection.requiredSelectionCount} response={response} />
       </SessionShell>
       <SimulationQuestionNavigator
         finishAction={{
@@ -491,13 +473,14 @@ export function ExamScreen({ navigation, route }: Props) {
           occurrenceId: item.occurrenceId,
           answered: answered.has(item.occurrenceId),
           state: index === projection.session.currentItemIndex ? "current" : answered.has(item.occurrenceId) ? "answered" : "unanswered",
+          incomplete: completion[item.occurrenceId] === "incomplete",
           flagged: projection.flaggedOccurrenceIds.includes(item.occurrenceId),
         }))}
         visible={navigatorVisible && !resolutionRequired}
       />
       <SettingsDialog
         closeLabel={t("Continue simulation")}
-        message={`${unansweredCount} ${t("unanswered")}. ${t("Unanswered questions receive zero points.")}`}
+        message={`${unansweredCount} ${t("unanswered")} (${incompleteCount} ${t("incomplete")}). ${t("Unanswered questions receive zero points.")}`}
         onClose={() => setFinishVisible(false)}
         onPrimaryAction={() => { setFinishVisible(false); void finishExam(); }}
         primaryActionLabel={t("Finish exam")}
@@ -546,5 +529,4 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   loadingShapes: { gap: spacing.xl },
   navigationActions: { flexDirection: "row", gap: spacing.sm },
   navigationButton: { flex: 1 },
-  options: { gap: spacing.sm },
 });

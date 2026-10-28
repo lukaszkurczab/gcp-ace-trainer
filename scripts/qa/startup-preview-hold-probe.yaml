@@ -1,0 +1,17 @@
+appId: com.lkurczab.patternly
+name: Startup preview inert hold probe
+---
+- openLink: "com.lkurczab.patternly://audit/startup-preview?scene=recovery-base&locale=de&theme=light"
+- extendedWaitUntil:
+    visible:
+      id: patternly:content:encrypted-storage:removal:base
+    timeout: 15000
+- swipe:
+    start: "50%, 77%"
+    end: "50%, 77%"
+    duration: 4000
+- waitForAnimationToEnd:
+    timeout: 10000
+- assertVisible:
+    id: patternly:content:encrypted-storage:removal:base
+- takeScreenshot: d14-after-inert-hold

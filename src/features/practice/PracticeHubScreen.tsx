@@ -1,3 +1,5 @@
+import { captureProfileReadFence } from "../../application/profileReadFence";
+import { loadActiveTrainingSession } from "../../application/learningReadModels";
 import { getTrackIconName } from "../../components/trackIcon";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -286,12 +288,18 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       examAdmissionPendingRef.current = true;
       setExamAdmissionPending(true);
       setExamAccessUnavailable(false);
-      void account.authorizePremiumSessionStart()
-        .then((admission) => {
+      void (async () => {
+          const assertProfile = captureProfileReadFence();
+          const admission = await account.authorizePremiumSessionStart();
+          assertProfile();
           switch (resolveCertificationExamAccess(admission)) {
-            case "startExam":
-              navigation.navigate(ROUTES.EXAM, { trackId: activeTrack.id });
+            case "startExam": {
+              const active = await loadActiveTrainingSession();
+              assertProfile();
+              const expectedSessionId = active?.trackId === activeTrack.id && active.modeId === "certification-exam-simulation" ? active.id : undefined;
+              navigation.navigate(ROUTES.EXAM, { trackId: activeTrack.id, ...(expectedSessionId ? { expectedSessionId } : {}) });
               return;
+            }
             case "purchasePremium":
               navigation.navigate(ROUTES.PREMIUM_PURCHASE);
               return;
@@ -299,7 +307,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               setExamAccessUnavailable(true);
               return;
           }
-        })
+        })()
         .catch(() => setExamAccessUnavailable(true))
         .finally(() => {
           examAdmissionPendingRef.current = false;

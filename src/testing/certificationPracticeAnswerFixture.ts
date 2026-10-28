@@ -123,7 +123,7 @@ export async function createCertificationPracticeAnswerFixture(): Promise<Certif
 }
 
 function resolved(question: Question): ResolvedInteractionItem {
-  const summary: TrainingQuestionSummary = Object.freeze({ questionId: question.questionId, trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, prompt: question.prompt, interactionType: question.interaction.type, difficulty: question.difficulty, ...(question.constraints ? { constraints: question.constraints } : {}), ...(question.sourceRefs ? { sourceRefs: question.sourceRefs } : {}), ...(question.contentDomainId ? { contentDomainId: question.contentDomainId } : {}), ...(question.questionRelation ? { questionRelation: question.questionRelation } : {}) });
+  const summary: TrainingQuestionSummary = Object.freeze({ questionId: question.questionId, trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, prompt: question.prompt, interactionType: question.interaction.type, ...(question.interaction.type === "choice_multiple" && question.interaction.requiredSelectionCount !== undefined ? { requiredSelectionCount: question.interaction.requiredSelectionCount } : {}), difficulty: question.difficulty, ...(question.constraints ? { constraints: question.constraints } : {}), ...(question.sourceRefs ? { sourceRefs: question.sourceRefs } : {}), ...(question.contentDomainId ? { contentDomainId: question.contentDomainId } : {}), ...(question.questionRelation ? { questionRelation: question.questionRelation } : {}) });
   const call = <T>(fn: (value: Question) => T) => fn(question);
   return Object.freeze({ question: summary, interactions: Object.freeze({
     isComplete: (_id: string, response: unknown) => call((value) => canonicalInteractionRegistry.isComplete(value, response)),
@@ -163,8 +163,18 @@ function responseForIndex(question: Question, index: number): CanonicalQuestionR
     if (index < 5) throw new Error("Canonical fixture transfer item is not multiple choice.");
     return question.answer as CanonicalQuestionResponse;
   }
-  if (index === 2) return { type: "choice_multiple", optionIds: ["b", "d"] };
-  if (index === 3) return { type: "choice_multiple", optionIds: [question.answer.optionIds[0]!] };
-  if (index === 4) return { type: "choice_multiple", optionIds: ["a", "c", "d"] };
+  const correctOptionIds = question.answer.optionIds;
+  const requiredCount = question.interaction.requiredSelectionCount ?? correctOptionIds.length;
+  if (index === 2) return { type: "choice_multiple", optionIds: [...correctOptionIds].slice(0, requiredCount) };
+  if (index === 3) {
+    const correct = correctOptionIds[0]!;
+    const wrong = question.interaction.options.find((option) => !correctOptionIds.includes(option.optionId))?.optionId;
+    if (!wrong) throw new Error("Canonical fixture needs an incorrect option for a partial selection.");
+    return { type: "choice_multiple", optionIds: [correct, wrong, ...correctOptionIds.slice(1, Math.max(1, requiredCount - 1))] };
+  }
+  if (index === 4) {
+    const wrong = question.interaction.options.filter((option) => !correctOptionIds.includes(option.optionId)).map((option) => option.optionId);
+    return { type: "choice_multiple", optionIds: wrong.slice(0, requiredCount) };
+  }
   return question.answer as CanonicalQuestionResponse;
 }

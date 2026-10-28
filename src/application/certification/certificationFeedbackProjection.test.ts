@@ -28,6 +28,32 @@ const question = Object.freeze({
   tags: Object.freeze([]),
 } as unknown as Question);
 
+const matrixQuestion = Object.freeze({
+  trackId: "claude-certified-architect-professional-certification",
+  answer: Object.freeze({ selectedValueIdsByDimension: Object.freeze({ boundary: Object.freeze(["yes"]), rollout: Object.freeze(["no"]) }), type: "decision_matrix" }),
+  constraints: Object.freeze(["Choose one value for each statement."]),
+  feedback: Object.freeze({
+    details: Object.freeze({ statementExplanations: Object.freeze({ boundary: "The trust boundary must be explicit.", rollout: "Rollout evidence must be measured before expansion." }) }),
+    messages: Object.freeze([{ kind: "wrong_value", targetId: "boundary|no", text: "This choice crosses the declared trust boundary." }]),
+    reason: "Each statement has its own decision boundary.",
+  }),
+  interaction: Object.freeze({
+    dimensions: Object.freeze([
+      Object.freeze({ acceptedValueIds: Object.freeze(["yes"]), dimensionId: "boundary", label: "The model may read customer records.", values: Object.freeze([Object.freeze({ text: "Yes", valueId: "yes" }), Object.freeze({ text: "No", valueId: "no" })]) }),
+      Object.freeze({ acceptedValueIds: Object.freeze(["no"]), dimensionId: "rollout", label: "Enable global rollout before monitoring.", values: Object.freeze([Object.freeze({ text: "Yes", valueId: "yes" }), Object.freeze({ text: "No", valueId: "no" })]) }),
+    ]),
+    scoringMethod: "dimension_exact",
+    type: "decision_matrix",
+  }),
+  mentalUnitId: "security_boundaries",
+  nodeId: "security_and_governance",
+  prompt: "Review the two controls.",
+  questionId: "claude-matrix-feedback-1",
+  schemaVersion: "1",
+  source: Object.freeze({ kind: "canonical" }),
+  tags: Object.freeze([]),
+} as unknown as Question);
+
 function exact(value: Question): ResolvedInteractionItem {
   const question: TrainingQuestionSummary = { questionId: value.questionId, trackId: value.trackId, nodeId: value.nodeId, mentalUnitId: value.mentalUnitId, prompt: value.prompt, interactionType: value.interaction.type, difficulty: value.difficulty ?? null, constraints: value.constraints };
   const call = <T>(fn: (question: Question) => T) => fn(value);
@@ -95,6 +121,40 @@ test("immediate Certification feedback returns only authored messages for select
   } as unknown as Question;
   const attempt = Object.freeze({ response: Object.freeze({ optionId: "wrong", type: "choice_single" as const }), result: Object.freeze({ kind: "incorrect" as const }) });
   assert.deepEqual(projectCertificationPracticeFeedback("afterEachAnswer", attempt, exact(withMessages))?.messages, [withMessages.feedback.messages?.[0]]);
+});
+
+test("immediate Certification matrix feedback preserves each statement's selected value and authored explanation", () => {
+  const response = Object.freeze({ selectedValueIdsByDimension: Object.freeze({ boundary: Object.freeze(["no"]), rollout: Object.freeze(["no"]) }), type: "decision_matrix" as const });
+  const attempt = Object.freeze({ response, result: Object.freeze({ kind: "incorrect" as const }) });
+  const feedback = projectCertificationPracticeFeedback("afterEachAnswer", attempt, exact(matrixQuestion));
+  assert.deepEqual(feedback?.statementRows?.map((row) => ({
+    dimensionId: row.dimensionId,
+    label: row.label,
+    selectedValueIds: row.selectedValueIds,
+    correctValueIds: row.correctValueIds,
+    explanation: row.explanation,
+    messages: row.messages,
+  })), [
+    {
+      dimensionId: "boundary",
+      label: "The model may read customer records.",
+      selectedValueIds: ["no"],
+      correctValueIds: ["yes"],
+      explanation: "The trust boundary must be explicit.",
+      messages: [{ kind: "wrong_value", targetId: "boundary|no", text: "This choice crosses the declared trust boundary." }],
+    },
+    {
+      dimensionId: "rollout",
+      label: "Enable global rollout before monitoring.",
+      selectedValueIds: ["no"],
+      correctValueIds: ["no"],
+      explanation: "Rollout evidence must be measured before expansion.",
+      messages: undefined,
+    },
+  ]);
+  assert.deepEqual(feedback?.details, {}, "row-specific explanations are not duplicated in the generic feedback block");
+  assert.equal(feedback?.messages, undefined, "row-targeted diagnostics are shown with their statement rows");
+  assert.equal(projectCertificationPracticeFeedback("atSessionEnd", attempt, exact(matrixQuestion)), null);
 });
 
 test("completed review evidence fails closed when durable outcome aggregates are missing or inconsistent", () => {

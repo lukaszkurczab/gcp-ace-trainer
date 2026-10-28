@@ -494,7 +494,7 @@ export function observeBootstrapFailure(
   }
 }
 
-/** The sole learner-visible projection of an operational failure. */
+/** Bounded technical category for diagnostics; learner surfaces use meaningful copy. */
 export function operationalDiagnosticCode(error: unknown): OperationalDiagnosticCode {
   if (error instanceof ContentError) return error.code === "unavailable" ? "CONTENT_UNAVAILABLE" : "CONTENT_INVALID";
   if (error instanceof NodePackageStorageIntegrityError) {
@@ -513,7 +513,7 @@ export function operationalDiagnosticCode(error: unknown): OperationalDiagnostic
   return "LOCAL_OPERATION_FAILED";
 }
 
-export function describeOperationalFailure(error: unknown, fallback: string): string {
+export function describeOperationalFailure(error: unknown, fallback: string, options?: Readonly<{ includeDiagnosticCode: boolean }>): string {
   if (error instanceof NodePackageStorageIntegrityError) {
     if (error.code === "unsupported") return "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.";
     if (error.code === "identity_mismatch") return "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.";
@@ -522,5 +522,16 @@ export function describeOperationalFailure(error: unknown, fallback: string): st
   if (error instanceof NodePackageStorageUnavailableError) return error.requiresReadOnlyReconciliation
     ? "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later."
     : "Patternly couldn't read saved Premium content. Try again later.";
-  return fallback + " [" + operationalDiagnosticCode(error) + "]";
+  return options?.includeDiagnosticCode === false ? fallback : fallback + " [" + operationalDiagnosticCode(error) + "]";
+}
+
+/** Removal failures have their own stage; no raw errors or record payloads leave the catch. */
+export function recordDevelopmentStorageRemovalFailure(error: unknown): void {
+  if (!developmentSmokeDiagnosticsEnabled()) return;
+  try {
+    Object.defineProperty(globalThis, Symbol.for("patternly.storage-removal-diagnostic.v1"), {
+      configurable: true, enumerable: false, writable: false,
+      value: Object.freeze({ stage: "encrypted_storage_removal", category: operationalDiagnosticCode(error) }),
+    });
+  } catch { /* Diagnostics never change recovery behavior. */ }
 }

@@ -16,7 +16,7 @@ function tsxFiles(root: string): string[] {
 const genericPendingPaths = ["src/RegularApplicationRoot.tsx", "src/application/account/ProfileStoragePreparationGate.tsx", "src/content/application/ContentPreparationGate.tsx", "src/navigation/RootNavigator.tsx"] as const;
 const specializedLoadingOwners = [
   "src/components/ReviewLoadingSkeleton.tsx#ReviewLoadingSkeleton",
-  "src/content/application/ContentPreparationGate.tsx#ContentBootstrapLoadingSkeleton",
+  "src/content/application/startupPreparationSurfaces.tsx#ContentBootstrapLoadingSkeleton",
   "src/features/exam/ExamReviewScreen.tsx#ExamReviewLoadingSkeleton",
   "src/features/exam/ExamScreen.tsx#ExamLoadingSkeleton",
   "src/features/exam/ResultScreen.tsx#ExamResultLoadingSkeleton",
@@ -86,11 +86,11 @@ test("EmptyState is the centered retained-content/unavailable status primitive",
 
 test("generic pending and profile-transition surfaces use their owned LoadingState", () => {
   assert.match(source("src/application/account/AccountProfileTransitionLoadingState.tsx"), /<LoadingState showLogo[^>]*testID="account-profile-transition-loading"/);
-  for (const path of ["src/RegularApplicationRoot.tsx", "src/application/account/ProfileStoragePreparationGate.tsx", "src/content/application/ContentPreparationGate.tsx", "src/navigation/RootNavigator.tsx"]) {
-    assert.match(source(path), /<AccountProfileTransitionLoadingState\s*\/>/, path);
-  }
-  assert.match(source("src/navigation/RootNavigator.tsx"), /state\.kind === "loading"[\s\S]*?<AccountProfileTransitionLoadingState\s*\/>/);
-  assert.match(source("src/RegularApplicationRoot.tsx"), /function ProfileTransitionSurface\(\)[\s\S]*?<AccountProfileTransitionLoadingState\s*\/>/);
+  const shared = source("src/content/application/startupPreparationSurfaces.tsx");
+  assert.match(shared, /<AccountProfileTransitionLoadingState\s*\/>/);
+  for (const path of genericPendingPaths) assert.match(source(path), /startupPreparationSurfaces/, path);
+  assert.match(source("src/navigation/RootNavigator.tsx"), /state\.kind === "loading"[\s\S]*?<StartupLoadingSurface center/);
+  assert.match(source("src/RegularApplicationRoot.tsx"), /profileTransition[\s\S]*?<ProfileTransitionSurface/);
   assert.match(source("src/features/practice/PracticeSessionSurface.tsx"), /<LoadingState description=\{t\("Preparing your summary\."\)\}/);
 });
 
@@ -133,10 +133,11 @@ test("C1 screens own local review and exam loading geometry", () => { assert.mat
 });
 
 test("bootstrap, roadmap, and setup own their phase or screen loading geometry", () => {
-  const bootstrap = source("src/content/application/ContentPreparationGate.tsx");
-  assert.match(bootstrap, /export function ContentBootstrapLoadingSkeleton\(\{ phase \}/);
-  assert.match(bootstrap, /<ContentBootstrapLoadingSkeleton phase=\{state\.phase\} \/>/);
-  assert.match(bootstrap, /<View style=\{\{ flex: 1 \}\} testID="content-bootstrap-loading-skeleton"><AccountProfileTransitionLoadingState \/><\/View>/);
+  const bootstrap = source("src/content/application/startupPreparationSurfaces.tsx");
+  assert.match(bootstrap, /export function ContentBootstrapLoadingSkeleton\(\)/);
+  assert.match(bootstrap, /<ContentBootstrapLoadingSkeleton \/>/);
+  assert.match(bootstrap, /testID="content-bootstrap-loading-skeleton"><AccountProfileTransitionLoadingState/);
+
 
   const roadmap = source("src/features/practice/TopicRoadmapScreen.tsx");
   assertLocalSkeletonDefinition("src/features/practice/TopicRoadmapScreen.tsx", "TopicRoadmapLoadingSkeleton", /accessibilityLabel=\{t\("Loading topic roadmap"\)\}/, ["roadmapLoadingCanvas", "roadmapLoadingCircle", "roadmapLoadingVerticalConnector"]);

@@ -1,0 +1,31 @@
+appId: com.lkurczab.patternly
+name: CCAR-P — verify flag on the visible Question row
+---
+- tapOn: "Question navigator, Question.*"
+- tapOn: "Question ${SINGLE_INDEX},.*"
+- scrollUntilVisible:
+    element:
+      text: "Flag question"
+    direction: UP
+- tapOn: "Flag question"
+- extendedWaitUntil:
+    visible: "Remove flag"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- tapOn: "Question navigator, Question.*"
+- assertVisible: "Question ${SINGLE_INDEX}, current, answered and saved, flagged"
+- scrollUntilVisible:
+    element:
+      text: "Question 63,.*"
+    direction: DOWN
+- tapOn: "Question 63,.*"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question 63 of 63"
+      enabled: true
+    timeout: 30000
+- takeScreenshot: ccarp-durable-flag

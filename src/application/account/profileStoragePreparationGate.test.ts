@@ -39,7 +39,7 @@ test("dev-smoke preparation diagnostics mark the exact existing await boundaries
 test("logout-control corruption or storage failure fails closed with an explicit retry surface", () => {
   assert.match(gate, /error instanceof LocalLogoutControlError/);
   assert.match(gate, /We couldn't check the local sign-out state\. Your account data remains closed\. Try again\./);
-  assert.match(gate, /<EmptyState actionLabel=\{t\("Try again"\)\} description=\{state\.reason\}/);
+  assert.match(gate, /<StartupUnavailableSurface description=\{state\.reason\}/);
   assert.ok(gate.indexOf("logoutControl.read()") < gate.indexOf("setState({ kind: \"ready\""));
 });
 
@@ -54,9 +54,9 @@ test("preparation failure is explicit, retryable, and counts only reserved lost-
   assert.match(gate, /storageFailureCode === "encrypted_storage_key_missing"/);
   assert.match(gate, /reserveManualRetry\(manualRetry\.current\)/);
   assert.match(gate, /settleManualRetry\(manualRetry\.current, false\)/);
-  assert.match(gate, /<EmptyState actionLabel=\{t\("Try again"\)\} description=\{state\.reason\} onActionPress=\{retry\}/);
-  assert.match(gate, /canRetry=\{auditPresentation !== "retry-limit" && canStartManualRetry\(manualRetry\.current\)\}/);
-  assert.match(gate, /retryLimitReached=\{auditPresentation === "retry-limit" \|\| manualRetry\.current\.failedAttempts >= 5\}/);
+  assert.match(gate, /<StartupUnavailableSurface description=\{state\.reason\} onRetry=\{retry\}/);
+  assert.match(gate, /canRetry=\{canStartManualRetry\(manualRetry\.current\)\}/);
+  assert.match(gate, /retryLimitReached=\{manualRetry\.current\.failedAttempts >= 5\}/);
 });
 
 test("key-loss recovery preserves delayed confirmed removal and requires preparation again afterward", () => {

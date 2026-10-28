@@ -1,0 +1,13 @@
+appId: com.lkurczab.patternly
+name: Startup normal ready return after language evidence
+---
+- tapOn:
+    id: patternly:navigation:back
+- tapOn:
+    id: main-tab-bar-home
+- extendedWaitUntil:
+    visible:
+      id: patternly:content:ready
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 10000

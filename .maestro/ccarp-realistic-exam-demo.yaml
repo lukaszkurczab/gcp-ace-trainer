@@ -1,0 +1,77 @@
+appId: com.lkurczab.patternly
+name: CCAR-P — response formats before the clock
+# Existing authenticated local iPhone17 fixture, Claude selected, idle on Home.
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+      - extendedWaitUntil:
+          notVisible: ".*Open debugger to view warnings.*"
+          timeout: 10000
+- tapOn:
+    id: main-tab-bar-practice
+- scrollUntilVisible:
+    element:
+      id: patternly:practice:mode-card:certification-exam-simulation
+    direction: DOWN
+- tapOn:
+    id: patternly:practice:mode-card:certification-exam-simulation
+- extendedWaitUntil:
+    visible: "Before you begin"
+    timeout: 30000
+- tapOn: "Try response formats"
+- scrollUntilVisible:
+    element:
+      id: patternly:simulation:option:format-demo-0:desk
+    direction: DOWN
+- tapOn:
+    id: patternly:simulation:option:format-demo-0:desk
+- tapOn:
+    id: patternly:simulation:option:format-demo-0:studio
+- tapOn:
+    id: patternly:simulation:option:format-demo-0:studio
+- scrollUntilVisible:
+    element:
+      text: Next
+    direction: DOWN
+- tapOn: Next
+- scrollUntilVisible:
+    element:
+      id: patternly:simulation:option:format-demo-1:pen
+    direction: DOWN
+- tapOn:
+    id: patternly:simulation:option:format-demo-1:pen
+- tapOn:
+    id: patternly:simulation:option:format-demo-1:paper
+- tapOn:
+    id: patternly:simulation:option:format-demo-1:book
+- tapOn:
+    id: patternly:simulation:option:format-demo-1:paper
+- scrollUntilVisible:
+    element:
+      text: Next
+    direction: DOWN
+- tapOn: Next
+- scrollUntilVisible:
+    element:
+      id: exam-statement-format-demo-2-calendar
+    direction: DOWN
+- tapOn:
+    id: exam-statement-format-demo-2-calendar
+- tapOn:
+    id: exam-statement-value-format-demo-2-calendar-false
+- scrollUntilVisible:
+    element:
+      text: Previous
+    direction: DOWN
+- tapOn: Previous
+- tapOn: Next
+- scrollUntilVisible:
+    element:
+      id: exam-statement-format-demo-2-calendar
+    direction: UP
+- assertVisible: ".*A calendar can show dates.*False.*"
+- takeScreenshot: ccarp-demo-partial-return

@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveRetainedClaudeTrack } from "./runtimeCatalog";
 import type { Question } from "./questionTypes";
 
-for (const file of ["claude-pre-qle-v2", "claude-qle-v2-first-cases", "claude-qle-v2-before-identity"]) {
+for (const file of ["claude-pre-qle-v2", "claude-qle-v2-first-cases", "claude-qle-v2-before-identity", "claude-qle-v2-active-before-exam"]) {
   const retained = JSON.parse(readFileSync(`src/content/generated/retained-content/${file}.json`, "utf8"));
   test(`${file}: resolves exact full and training content without question substitution`, async () => {
     for (const pin of [
@@ -24,12 +24,15 @@ for (const file of ["claude-pre-qle-v2", "claude-qle-v2-first-cases", "claude-ql
     }
   });
   test(`${file}: rejects crossed, unknown and foreign pins`, async () => {
-    for (const pin of [
-      { trackId: retained.lock.trackId, contentVersion: retained.lock.contentVersion, artifactSha256: retained.ledger.training.artifactSha256 },
-      { trackId: retained.lock.trackId, contentVersion: retained.ledger.training.contentVersion, artifactSha256: retained.lock.sha256 },
+    const invalidPins = [
+      ...(retained.lock.contentVersion === retained.ledger.training.contentVersion ? [] : [
+        { trackId: retained.lock.trackId, contentVersion: retained.lock.contentVersion, artifactSha256: retained.ledger.training.artifactSha256 },
+        { trackId: retained.lock.trackId, contentVersion: retained.ledger.training.contentVersion, artifactSha256: retained.lock.sha256 },
+      ]),
       { trackId: retained.lock.trackId, contentVersion: "unknown", artifactSha256: retained.lock.sha256 },
       { trackId: "aws-certified-solutions-architect-associate", contentVersion: retained.lock.contentVersion, artifactSha256: retained.lock.sha256 },
-    ]) assert.equal(await resolveRetainedClaudeTrack(pin), null);
+    ];
+    for (const pin of invalidPins) assert.equal(await resolveRetainedClaudeTrack(pin), null);
   });
 }
 

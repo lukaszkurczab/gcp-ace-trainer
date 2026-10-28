@@ -15,9 +15,9 @@ import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
 import type { LegalSessionOption } from "../../domain/learning/planningCalendar";
 import { getTrainingSessionProgress } from "../trainingSessions/sessionDurability";
 import { matchesReviewSourceSnapshot } from "../../domain/learning/reviewQueueEntry";
+import type { ObservedPlanningCalibration } from "../../domain/learning/planningWorkEstimate";
 
-/** Estimates only the next legal request; it does not claim to forecast the full curriculum. */
-export function estimateNextSessionTime(input: Readonly<{
+type NextSessionTimeInput = Readonly<{
   track: TrainingCatalog;
   planningPolicy?: LearningPlanningPolicy;
   planningPolicyIdentity?: ContentPlanningPolicyIdentity;
@@ -29,7 +29,37 @@ export function estimateNextSessionTime(input: Readonly<{
   completion?: PackageCompletionState;
   now: string;
   requestedLength?: number;
-}>): PlanningWorkEstimateResult {
+}>;
+
+type ObservedCalibration = ObservedPlanningCalibration;
+type CalibrationReader = (input: NextSessionTimeInput, modeId: string) => readonly ObservedCalibration[];
+
+/** Estimates only the next legal request; it does not claim to forecast the full curriculum. */
+export function estimateNextSessionTime(input: NextSessionTimeInput): PlanningWorkEstimateResult {
+  return estimateNextSessionTimeCore(input, buildObservedCalibrations);
+}
+
+/** Computes the primary next-session estimate and legal lengths from one calibration view. */
+export function estimateNextSessionTimeAndLegalOptions(input: NextSessionTimeInput): Readonly<{
+  estimate: PlanningWorkEstimateResult;
+  legalOptions: readonly LegalSessionOption[];
+}> {
+  let calibrations: readonly ObservedCalibration[] | undefined;
+  const readCalibrationsOnce: CalibrationReader = (currentInput, modeId) => {
+    if (!calibrations) calibrations = buildObservedCalibrations(currentInput, modeId);
+    return calibrations;
+  };
+  const estimateForLength = (requestedLength?: number) => estimateNextSessionTimeCore(
+    requestedLength === undefined ? input : { ...input, requestedLength },
+    readCalibrationsOnce,
+  );
+  return Object.freeze({
+    estimate: estimateForLength(input.requestedLength),
+    legalOptions: legalNextSessionOptions(input, estimateForLength),
+  });
+}
+
+function estimateNextSessionTimeCore(input: NextSessionTimeInput, readCalibrations: CalibrationReader): PlanningWorkEstimateResult {
   const { track, recommendation } = input;
   const policy = input.planningPolicy;
   const planningPolicyIdentity = input.planningPolicyIdentity;
@@ -42,14 +72,7 @@ export function estimateNextSessionTime(input: Readonly<{
   const pool = track.getPool(mode.modeId);
   const nowMs = Date.parse(input.now);
   if (!Number.isFinite(nowMs)) return unavailable("invalid_response_count", []);
-  const observedCalibrations = policy.workEstimates.filter((estimate) => estimate.modeId === mode.modeId).flatMap((estimate) => {
-    const result = calibrateObservedPlanningTime({
-      sessions: input.sessions, attempts: input.attempts, questions: track.questions, policy,
-      estimateId: estimate.estimateId, trackId: track.trackId, modeId: mode.modeId,
-      contentVersion: track.contentVersion, artifactSha256: track.artifactSha256, planningPolicyIdentity,
-    });
-    return result.kind === "observed" ? [result] : [];
-  });
+  const observedCalibrations = readCalibrations(input, mode.modeId);
 
   if (recommendation.continuation) {
     if (requestedLength !== recommendation.continuation.requestedLength) return unavailable("invalid_response_count", []);
@@ -147,11 +170,28 @@ export function estimateNextSessionTime(input: Readonly<{
   });
 }
 
+function buildObservedCalibrations(input: NextSessionTimeInput, modeId: string): readonly ObservedCalibration[] {
+  const { track, planningPolicy: policy, planningPolicyIdentity } = input;
+  if (!policy || !planningPolicyIdentity) return Object.freeze([]);
+  return Object.freeze(policy.workEstimates.filter((estimate) => estimate.modeId === modeId).flatMap((estimate) => {
+    const result = calibrateObservedPlanningTime({
+      sessions: input.sessions, attempts: input.attempts, questions: track.questions, policy,
+      estimateId: estimate.estimateId, trackId: track.trackId, modeId,
+      contentVersion: track.contentVersion, artifactSha256: track.artifactSha256, planningPolicyIdentity,
+    });
+    return result.kind === "observed" ? [result] : [];
+  }));
+}
+
 /** Returns estimates only for lengths declared by the canonical current mode. */
-export function estimateLegalNextSessionOptions(input: Parameters<typeof estimateNextSessionTime>[0]): readonly LegalSessionOption[] {
+export function estimateLegalNextSessionOptions(input: NextSessionTimeInput): readonly LegalSessionOption[] {
+  return legalNextSessionOptions(input, (requestedLength) => estimateNextSessionTime({ ...input, requestedLength }));
+}
+
+function legalNextSessionOptions(input: NextSessionTimeInput, estimateAtLength: (requestedLength?: number) => PlanningWorkEstimateResult): readonly LegalSessionOption[] {
   const options: LegalSessionOption[] = [];
   for (const sessionLength of input.recommendation.mode.requestedLengths) {
-    const estimate = estimateNextSessionTime({ ...input, requestedLength: sessionLength });
+    const estimate = estimateAtLength(sessionLength);
     if (estimate.kind !== "estimated") continue;
     options.push(Object.freeze({ sessionLength, minMinutes: estimate.minMinutes, typicalMinutes: estimate.typicalMinutes, maxMinutes: estimate.maxMinutes }));
   }

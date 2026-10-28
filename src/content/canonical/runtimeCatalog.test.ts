@@ -178,8 +178,8 @@ test("public owner retries after a failed cached load and then preserves cache i
   assert.equal(await owner.load(), recovered);
   assert.equal(plans.length, 2);
   assert.notEqual(plans[0]!.build, plans[1]!.build);
-  assert.equal(plans[1]!.units.length, 12);
-  assert.equal(plans[1]!.units.filter((unit) => unit.kind === "retained_pair").length, 3);
+  assert.equal(plans[1]!.units.length, 13);
+  assert.equal(plans[1]!.units.filter((unit) => unit.kind === "retained_pair").length, 4);
   assert.equal(Object.isFrozen(plans[1]!.units), true);
   assert.equal(Object.isFrozen(plans[1]!.units[0]), true);
   assert.deepEqual(proofs, plans[1]!.units.map((unit) => unit.id));

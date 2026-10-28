@@ -50,6 +50,7 @@
     "validate:content-boundary": "node scripts/validateContentBoundary.mjs",
     "validate:runtime-privacy-boundary": "node scripts/validateRuntimePrivacyBoundary.mjs",
     "sync:content-release": "node scripts/syncBundledContentRelease.mjs sync",
+    "sync:content-candidate": "node scripts/syncBundledContentRelease.mjs candidate",
     "check:content-release": "node scripts/syncBundledContentRelease.mjs check",
     "check:retention-contract": "node --import tsx scripts/checkRetentionContract.mjs",
     "prepare:eas-build": "node scripts/prepareEasBuild.mjs --prepare-only",

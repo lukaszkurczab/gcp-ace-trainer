@@ -115,6 +115,72 @@ function validateCertificationSimulationConfig(config, { questions, nodeIds, all
       || !Number.isSafeInteger(evidence.ambiguousNodeCount)) fail(`${path}.nodeDomainMapEvidence is malformed`);
   }
 }
+function validateClaudeSimulationConfig(config, { questions, nodeIds }) {
+  const label = "simulationProfiles.claude_ccarp.familyConfig";
+  const keys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap", "examCoverage", "scoringPolicy"];
+  requireExactKeys(config, keys, label);
+  if (config.schemaVersion !== "patternly-certification-simulation-config-v2") fail(`${label}.schemaVersion is unsupported`);
+  requireExactKeys(config.source, ["url", "checkedDate", "guideVersion"], `${label}.source`);
+  if ([config.source.url, config.source.checkedDate, config.source.guideVersion].some((value) => typeof value !== "string" || !value.trim())) fail(`${label}.source is invalid`);
+  if (config.durationMinutes !== 120) fail(`${label}.durationMinutes is invalid`);
+  requireExactKeys(config.questionCount, ["kind", "minimum", "maximum"], `${label}.questionCount`);
+  if (config.questionCount.kind !== "range" || config.questionCount.minimum !== 63 || config.questionCount.maximum !== 63) fail(`${label}.questionCount is unsupported`);
+  requireExactKeys(config.blueprint, ["kind", "sections"], `${label}.blueprint`);
+  const expectedWeights = new Map([["ccarp-domain-1", 17], ["ccarp-domain-2", 13], ["ccarp-domain-3", 19], ["ccarp-domain-4", 16], ["ccarp-domain-5", 14], ["ccarp-domain-6", 14], ["ccarp-domain-7", 7]]);
+  if (config.blueprint.kind !== "weighted_sections" || !Array.isArray(config.blueprint.sections) || config.blueprint.sections.length !== expectedWeights.size) fail(`${label}.blueprint is invalid`);
+  const sections = new Set(); const ids = new Set();
+  config.blueprint.sections.forEach((section, index) => {
+    requireExactKeys(section, ["id", "contentDomainId", "weightPercent"], `${label}.blueprint.sections[${index}]`);
+    if (typeof section.id !== "string" || !section.id.trim() || ids.has(section.id) || !expectedWeights.has(section.contentDomainId) || sections.has(section.contentDomainId) || section.weightPercent !== expectedWeights.get(section.contentDomainId)) fail(`${label}.blueprint.sections[${index}] has an unknown or invalid domain weight`);
+    ids.add(section.id); sections.add(section.contentDomainId);
+  });
+  if (sections.size !== expectedWeights.size) fail(`${label}.blueprint does not cover all CCAR-P domains`);
+  requireExactKeys(config.nodeDomainMap, nodeIds, `${label}.nodeDomainMap`);
+  const sourceDomains = new Map();
+  for (const question of questions) {
+    if (!expectedWeights.has(question.contentDomainId) || config.nodeDomainMap[question.nodeId] !== question.contentDomainId) fail(`${label}: question ${question.questionId} has missing or conflicting domain attribution`);
+    const domains = sourceDomains.get(question.nodeId) ?? new Set(); domains.add(question.contentDomainId); sourceDomains.set(question.nodeId, domains);
+  }
+  if (sourceDomains.size !== nodeIds.length || [...sourceDomains.values()].some((domains) => domains.size !== 1)) fail(`${label}.nodeDomainMap is ambiguous or incomplete`);
+  const sourceMap = Object.fromEntries([...sourceDomains].map(([nodeId, domains]) => [nodeId, [...domains][0]]));
+  if (JSON.stringify(Object.entries(config.nodeDomainMap).sort()) !== JSON.stringify(Object.entries(sourceMap).sort())) fail(`${label}.nodeDomainMap differs from source-derived per-question domains`);
+
+  const policy = config.interactionPolicy;
+  const policyKeys = ["schemaVersion", "policyId", "policyVersion", "owner", "navigation", "answerChanges", "flagging", "navigator", "sections", "timeout", "feedbackTiming"];
+  requireExactKeys(policy, policyKeys, `${label}.interactionPolicy`);
+  if (policy.schemaVersion !== "patternly-certification-simulation-policy-v1" || !policy.policyId || policy.policyVersion !== "1" || policy.owner !== "patternly_product" || policy.navigation !== "free" || policy.answerChanges !== "until_final_submission" || policy.flagging !== "available" || policy.navigator !== "available" || policy.sections !== "blueprint_visible" || policy.timeout !== "absolute_deadline" || policy.feedbackTiming !== "after_verified_finalization") fail(`${label}.interactionPolicy is unsupported`);
+  const coverage = config.examCoverage;
+  requireExactKeys(coverage, ["policy", "provenance", "formatMinimums", "skillMinimums"], `${label}.examCoverage`);
+  if (coverage.policy !== "patternly-ccarp-v1") fail(`${label}.examCoverage.policy is unsupported`);
+  requireExactKeys(coverage.provenance, ["decidedDate", "guideAvailability", "retainedProfileParameters"], `${label}.examCoverage.provenance`);
+  if (coverage.provenance.decidedDate !== "2026-10-26" || coverage.provenance.guideAvailability !== "http_403" || typeof coverage.provenance.retainedProfileParameters !== "string" || !coverage.provenance.retainedProfileParameters.trim()) fail(`${label}.examCoverage.provenance is invalid`);
+  const formatKeys = ["choice_single", "choice_multiple", "decision_matrix"];
+  const skillKeys = ["knowledge", "diagnosis", "prerequisite", "next_action", "contextual_choice"];
+  requireExactKeys(coverage.formatMinimums, formatKeys, `${label}.examCoverage.formatMinimums`);
+  requireExactKeys(coverage.skillMinimums, skillKeys, `${label}.examCoverage.skillMinimums`);
+  for (const [name, values] of [["formatMinimums", coverage.formatMinimums], ["skillMinimums", coverage.skillMinimums]]) {
+    if (Object.values(values).some((value) => !Number.isSafeInteger(value) || value < 0) || Object.values(values).reduce((sum, value) => sum + value, 0) > 63) fail(`${label}.examCoverage.${name} exceeds the configured question count`);
+  }
+  const counts = { choice_single: 0, choice_multiple: 0, decision_matrix: 0 };
+  const skills = Object.fromEntries(skillKeys.map((key) => [key, 0]));
+  for (const question of questions) {
+    if (!Object.hasOwn(counts, question.interaction?.type)) fail(`${label}: unsupported CCAR-P interaction on ${question.questionId}`);
+    counts[question.interaction.type] += 1;
+    const skill = question.examMetadata?.decisionSkill;
+    if (skill !== undefined) {
+      if (!Object.hasOwn(skills, skill)) fail(`${label}: question ${question.questionId} has an invalid dominant decision skill`);
+      skills[skill] += 1;
+    }
+    if (question.interaction.type === "choice_multiple") {
+      const required = question.interaction.requiredSelectionCount;
+      if (!Number.isSafeInteger(required) || required < 2 || required > question.interaction.options.length || question.answer.optionIds.length !== required) fail(`${label}: question ${question.questionId} has an invalid required selection count`);
+    }
+  }
+  for (const key of formatKeys) if (counts[key] < coverage.formatMinimums[key]) fail(`${label}: format pool ${key} is below its configured minimum`);
+  for (const key of skillKeys) if (skills[key] < coverage.skillMinimums[key]) fail(`${label}: decision-skill pool ${key} is below its configured minimum`);
+  requireExactKeys(config.scoringPolicy, ["policyId", "policyVersion", "method"], `${label}.scoringPolicy`);
+  if (config.scoringPolicy.policyId !== "patternly-ccarp-complete-item-v1" || config.scoringPolicy.policyVersion !== "1" || config.scoringPolicy.method !== "complete_correct_item_only") fail(`${label}.scoringPolicy is unsupported`);
+}
 function validateCodingSimulationConfig(config, { questions }) {
   const label = "simulationProfiles.coding_interview.familyConfig";
   const configKeys = ["schemaVersion", "blueprintId", "blueprintVersion", "requestedLength", "actualLength", "shorteningPolicy", "uniqueItemsRequired", "timerKind", "durationMinutes", "navigationPolicy", "answerChangePolicy", "reinsertPolicy", "feedbackTiming", "learningStages", "selectionPolicy", "poolId", "poolVersion", "eligibleQuestionIds"];
@@ -166,13 +232,20 @@ function validateDesignSimulationConfig(config, { trackId }) {
 }
 function validateSimulationProfiles(profiles, { trackId, questions, allowLegacyEvidence = false }) {
   if (!Array.isArray(profiles) || profiles.length === 0) fail(`Simulation profile metadata is malformed for ${trackId}`);
-  if (!["google-cloud-associate-cloud-engineer", CODING_TRACK_ID, ...DESIGN_TRACK_IDS].includes(trackId) || profiles.length !== 1) fail(`Simulation profile family is unsupported for ${trackId}`);
+  if (!["google-cloud-associate-cloud-engineer", CLAUDE_TRACK_ID, CODING_TRACK_ID, ...DESIGN_TRACK_IDS].includes(trackId) || profiles.length !== 1) fail(`Simulation profile family is unsupported for ${trackId}`);
   const profile = profiles[0];
   requireExactKeys(profile, ["schemaVersion", "profileId", "profileVersion", "familyId", "modeId", "familyConfig"], "simulationProfiles[0]");
   if (DESIGN_TRACK_IDS.includes(trackId)) {
     if (profile.schemaVersion !== "patternly-simulation-profile-envelope-v1" || profile.profileId !== `${trackId}-simulation-v1` || profile.profileVersion !== "1") fail("Design Interview simulation profile envelope or profile version is unsupported");
     if (profile.familyId !== "design_interview" || profile.modeId !== "design-interview-simulation") fail("Design Interview simulation profile is not bound to Design Simulation");
     validateDesignSimulationConfig(profile.familyConfig, { trackId });
+    return;
+  }
+  if (trackId === CLAUDE_TRACK_ID) {
+    if (profile.schemaVersion !== "patternly-simulation-profile-envelope-v1" || profile.profileId !== `${trackId}-patternly-practice-v2` || profile.profileVersion !== "2") fail("CCAR-P simulation profile envelope or profile version is unsupported");
+    if (profile.familyId !== "certification" || profile.modeId !== "certification-exam-simulation") fail("CCAR-P simulation profile is not bound to Certification Exam");
+    const nodeIds = [...new Set(questions.map((question) => question.nodeId))].sort();
+    validateClaudeSimulationConfig(profile.familyConfig, { questions, nodeIds });
     return;
   }
   if (trackId === CODING_TRACK_ID) {
@@ -309,12 +382,14 @@ export async function validateBuiltContent(directory, { expectedInventory = null
     }
     const hasSimulationProfiles = Object.hasOwn(artifact, "simulationProfiles");
     const knownGcpDomains = new Set(["gcp-ace-standard-domain-1", "gcp-ace-standard-domain-2", "gcp-ace-standard-domain-3", "gcp-ace-standard-domain-4"]);
+    const knownClaudeDomains = new Set(Array.from({ length: 7 }, (_, index) => `ccarp-domain-${index + 1}`));
     for (const question of artifact.questions) {
       if (!isRecord(question) || question.trackId !== entry.trackId) fail(`Foreign or malformed question in ${entry.trackId}`);
       for (const key of ["questionId", "nodeId", "mentalUnitId"]) if (typeof question[key] !== "string" || !question[key]) fail(`Question in ${entry.trackId} has invalid ${key}`);
       if (questionIds.has(question.questionId)) fail(`Duplicate questionId: ${question.questionId}`);
-      if (question.contentDomainId !== undefined && (entry.trackId !== "google-cloud-associate-cloud-engineer" || !knownGcpDomains.has(question.contentDomainId))) fail(`Unexpected contentDomainId on question ${question.questionId}`);
+      if (question.contentDomainId !== undefined && !((entry.trackId === "google-cloud-associate-cloud-engineer" && knownGcpDomains.has(question.contentDomainId)) || (entry.trackId === CLAUDE_TRACK_ID && knownClaudeDomains.has(question.contentDomainId)))) fail(`Unexpected contentDomainId on question ${question.questionId}`);
       if (hasSimulationProfiles && entry.trackId === "google-cloud-associate-cloud-engineer" && !knownGcpDomains.has(question.contentDomainId)) fail(`Missing source-derived contentDomainId on question ${question.questionId}`);
+      if (hasSimulationProfiles && entry.trackId === CLAUDE_TRACK_ID && !knownClaudeDomains.has(question.contentDomainId)) fail(`Missing source-derived CCAR-P domain attribution on question ${question.questionId}`);
       questionIds.add(question.questionId);
       nodeIds.add(`${entry.trackId}\0${question.nodeId}`);
       mentalUnitIds.add(`${entry.trackId}\0${question.nodeId}\0${question.mentalUnitId}`);
@@ -349,7 +424,7 @@ async function defaultRunBuild({ producerRoot, outputRoot }) {
   const producer = await import(pathToFileURL(path.join(producerRoot, "scripts", "build.mjs")).href);
   return producer.buildAll({ rootDirectory: producerRoot, outputRoot });
 }
-async function assertCurrentProducerSource(producerRoot, { expectedContentCommit, previousHead } = {}) {
+async function inspectProducerSource(producerRoot, { expectedContentCommit, previousHead, allowDirtyCandidate = false } = {}) {
   let root, head, main, remote, status;
   try {
     const git = async (...args) => (await execFileAsync("git", ["-C", producerRoot, ...args], { encoding: "utf8" })).stdout.trim();
@@ -368,8 +443,12 @@ async function assertCurrentProducerSource(producerRoot, { expectedContentCommit
   if (!/^[a-f0-9]{40}$/u.test(head) || head !== main) fail("Current content source HEAD must match origin/master; application bank unchanged");
   if (expectedContentCommit && head !== expectedContentCommit) fail("Selected content checkout HEAD differs from the expected exact SHA");
   if (previousHead && head !== previousHead) fail("Current content source commit changed during preparation; application bank unchanged");
-  if (status) fail("Current content source has working changes; preserve WIP and use clean master before preparing the application bank");
-  return head;
+  if (status && !allowDirtyCandidate) fail("Current content source has working changes; preserve WIP and use clean master before preparing the application bank");
+  if (!status && allowDirtyCandidate) fail("Local candidate preparation requires explicit uncommitted content changes");
+  return { head, sourceTree: status ? "dirty" : "clean" };
+}
+async function assertCurrentProducerSource(producerRoot, options = {}) {
+  return (await inspectProducerSource(producerRoot, options)).head;
 }
 async function assertProducerRoot(producerRoot) {
   await inspectDirectory(producerRoot, path.dirname(producerRoot), "patternly-content checkout");
@@ -601,7 +680,9 @@ async function replaceCurrentBank({ stagedDirectory, targetDirectory, stagedLock
   await remove(journalPath, { force: false });
 }
 async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoot, producerRoot = process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), targetLockFile = path.join(appRoot, RELEASE_LOCK_RELATIVE_PATH), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, expectedContentCommit = process.env.PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA, getCurrentIdentity, getFreshSourceFingerprint, expectedInventory = null, remove = rm, move = rename } = {}) {
-  if (mode !== "sync" && mode !== "check") fail(`Unknown mode: ${mode}`);
+  if (mode !== "sync" && mode !== "check" && mode !== "candidate") fail(`Unknown mode: ${mode}`);
+  const candidate = mode === "candidate";
+  const buildMode = candidate ? "sync" : mode;
   const resolvedAppRoot = path.resolve(appRoot);
   const resolvedProducerRoot = path.resolve(producerRoot);
   const resolvedTarget = path.resolve(targetDirectory);
@@ -609,8 +690,9 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
   if (!isWithin(resolvedAppRoot, resolvedTarget) || resolvedTarget !== path.join(resolvedAppRoot, GENERATED_DIRECTORY)) fail(`Target must be exactly ${GENERATED_DIRECTORY} within the application root`);
   if (!isWithin(resolvedAppRoot, resolvedLockFile) || resolvedLockFile !== path.join(resolvedAppRoot, RELEASE_LOCK_RELATIVE_PATH)) fail(`Release lock target must be exactly ${RELEASE_LOCK_RELATIVE_PATH} within the application root`);
   await assertSafeTargetBoundary(resolvedAppRoot, resolvedTarget);
-  const head = await assertCurrentProducerSource(resolvedProducerRoot, { expectedContentCommit });
-  if (mode === "sync") await recoverCurrentBank({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile, remove, move });
+  const source = await inspectProducerSource(resolvedProducerRoot, { expectedContentCommit, allowDirtyCandidate: candidate });
+  const { head } = source;
+  if (buildMode === "sync") await recoverCurrentBank({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile, remove, move });
   else await assertNoInterruptedTransaction({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile });
   await assertProducerRoot(resolvedProducerRoot);
   const initialTarget = await validateBuiltContent(resolvedTarget, { expectedInventory: null, producerRoot: resolvedProducerRoot, allowLegacySimulationEvidence: true });
@@ -622,15 +704,16 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
   const identityModule = getCurrentIdentity && getFreshSourceFingerprint
     ? null
     : await import(pathToFileURL(path.join(resolvedProducerRoot, "scripts/content/current-source-identity.mjs")).href);
-  const safeCheckTemporaryRoot = mode === "check" ? await assertSafeCheckTemporaryRoot(resolvedAppRoot, temporaryRoot) : undefined;
-  const temporaryParent = mode === "sync" ? path.dirname(resolvedTarget) : safeCheckTemporaryRoot;
+  const safeCheckTemporaryRoot = buildMode === "check" ? await assertSafeCheckTemporaryRoot(resolvedAppRoot, temporaryRoot) : undefined;
+  const temporaryParent = buildMode === "sync" ? path.dirname(resolvedTarget) : safeCheckTemporaryRoot;
   const temporaryDirectory = await mkdtemp(path.join(temporaryParent, `.canonical-content-build-${process.pid}-`));
   let lockStageDirectory;
   try {
     const buildResult = await runBuild({ producerRoot: resolvedProducerRoot, outputRoot: temporaryDirectory });
     const built = await validateBuiltContent(temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
     if (!buildResult?.artifacts || !buildResult?.lock) fail("Canonical source build did not return the identity-bearing build result");
-    const currentIdentity = await (getCurrentIdentity ?? identityModule.deriveCurrentSourceIdentity)({ contentRoot: resolvedProducerRoot, built: buildResult, sourceRepositoryCommit: head });
+    const derivedIdentity = await (getCurrentIdentity ?? identityModule.deriveCurrentSourceIdentity)({ contentRoot: resolvedProducerRoot, built: buildResult, sourceRepositoryCommit: head });
+    const currentIdentity = candidate ? { ...derivedIdentity, sourceTree: "dirty" } : derivedIdentity;
     assertBuildMatchesIdentity(built.files, currentIdentity);
     const stagedArtifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, parseJson(built.files.get(`${trackId}.json`), `${trackId}.json`)]));
     const targetKind = await pathKind(resolvedTarget);
@@ -643,18 +726,18 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
     const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger });
     await writeFile(path.join(temporaryDirectory, SUCCESSOR_LEDGER_FILE_NAME), JSON.stringify(ledger));
     const staged = await validateBuiltContent(temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
-    const releaseId = `patternly-current-${currentIdentity.sourceInputFingerprint.slice(0, 20)}`;
+    const releaseId = `${candidate ? "patternly-local-candidate" : "patternly-current"}-${currentIdentity.sourceInputFingerprint.slice(0, 20)}`;
     const releaseLock = buildCurrentReleaseLock({ currentIdentity, head, contentLockBytes: staged.files.get(LOCK_FILE_NAME), successorLedgerBytes: staged.files.get(SUCCESSOR_LEDGER_FILE_NAME), releaseId });
     const stagedReleaseLock = Buffer.from(`${JSON.stringify(releaseLock)}\n`);
     let stagedLockFile;
-    if (mode === "sync") {
+    if (buildMode === "sync") {
       lockStageDirectory = await mkdtemp(path.join(path.dirname(resolvedLockFile), `.current-content-lock-${process.pid}-`));
       stagedLockFile = path.join(lockStageDirectory, "release.lock.json");
       await writeFile(stagedLockFile, stagedReleaseLock);
     }
     const stagedFiles = new Map(staged.files);
     const stagedTargetDigests = { ...expectedTargetDigests, stagedFiles, stagedLock: stagedReleaseLock };
-    if (mode === "check") {
+    if (buildMode === "check") {
       await compareDirectories(resolvedTarget, temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
       if (!initialReleaseLock.equals(stagedReleaseLock)) fail("Current content release metadata differs from generated source; run sync:content-release");
       await assertCurrentProducerSource(resolvedProducerRoot, { expectedContentCommit, previousHead: head });
@@ -670,7 +753,14 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
     } finally {
       if (await pathKind(freshnessDirectory) === "directory") await remove(freshnessDirectory, { recursive: true, force: false });
     }
-    await assertCurrentProducerSource(resolvedProducerRoot, { expectedContentCommit, previousHead: head });
+    await inspectProducerSource(resolvedProducerRoot, { expectedContentCommit, previousHead: head, allowDirtyCandidate: candidate });
+    if (candidate) {
+      const before = new Map([...initialTarget.files].filter(([name]) => name !== "content-lock.json" && name !== SUCCESSOR_LEDGER_FILE_NAME));
+      for (const [fileName, bytes] of before) {
+        if (fileName === `${CLAUDE_TRACK_ID}.json`) continue;
+        if (!staged.files.get(fileName)?.equals(bytes)) fail(`Local candidate changes a non-CCAR-P generated artifact: ${fileName}`);
+      }
+    }
     await replaceCurrentBank({ stagedDirectory: temporaryDirectory, targetDirectory: resolvedTarget, stagedLockFile, targetLockFile: resolvedLockFile, expectedInventory, producerRoot: resolvedProducerRoot, remove, move, expectedTargetDigests: stagedTargetDigests });
     const installed = await validateBuiltContent(resolvedTarget, { expectedInventory, producerRoot: resolvedProducerRoot });
     for (const [fileName, bytes] of staged.files) if (!installed.files.get(fileName)?.equals(bytes)) fail(`Installed canonical content differs from staged canonical bytes: ${fileName}`);
@@ -763,7 +853,7 @@ function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sy
 export function parseArgs(argv = process.argv.slice(2)) {
   const options = { mode: "sync" };
   let index = 0;
-  if (argv[0] === "sync" || argv[0] === "check") options.mode = argv[index++];
+  if (argv[0] === "sync" || argv[0] === "check" || argv[0] === "candidate") options.mode = argv[index++];
   while (index < argv.length) {
     if (argv[index] === "--content-root" && index + 1 < argv.length) { options.producerRoot = path.resolve(argv[index + 1]); index += 2; }
     else fail(usage());
@@ -774,6 +864,7 @@ async function runCli() {
   const result = await syncCanonicalContent(parseArgs());
   console.log(`CANONICAL_CONTENT_${result.mode.toUpperCase()}=passed`);
   console.log(`CURRENT_SOURCE_FINGERPRINT=${result.currentIdentity.sourceInputFingerprint}`);
+  if (result.mode === "candidate") console.log(`CANDIDATE_PROVENANCE=local_unpublished sourceTree=${result.currentIdentity.sourceTree} sourceCommit=${result.head}`);
   console.log(`CONTENT_INVENTORY=${result.inventory.trackCount}/${result.inventory.nodeCount}/${result.inventory.mentalUnitCount}/${result.inventory.questionCount}`);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) runCli().catch((error) => { console.error(error?.stack ?? error?.message ?? error); process.exitCode = 1; });

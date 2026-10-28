@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { useAppPreferences, useThemedStyles } from "../preferences";
+import { useAppPreferences, useThemedStyles } from "../preferences/appPreferencesContext";
 import { spacing, typography, type AppColors } from "../theme";
 import { SkeletonShape, useSkeletonGlassMotion } from "./SkeletonShape";
 import { PatternlyMark } from "./PatternlyMark";

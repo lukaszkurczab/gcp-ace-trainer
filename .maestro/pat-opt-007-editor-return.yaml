@@ -1,0 +1,12 @@
+# Only for an editor started FROM a proposal, verified from the current route/Map.
+# Save schedule stages into proposal memory and pops back; never accepts a plan.
+appId: com.lkurczab.patternly
+name: PAT-OPT-007 proposal editor staging and return
+---
+- assertVisible:
+    id: patternly:learning-plan:editor:root:.*
+- tapOn:
+    id: patternly:learning-plan:editor:commit
+- assertVisible:
+    id: patternly:learning-plan:edit-schedule
+- takeScreenshot: "${CAPTURE_PREFIX}-editor-return"

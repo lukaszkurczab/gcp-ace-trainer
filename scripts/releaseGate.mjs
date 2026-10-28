@@ -197,6 +197,7 @@ function inspectReleaseLock() {
   const errors = [];
   if (lock?.schemaVersion !== 4) errors.push("schemaVersion must be 4");
   if (lock?.ownerPolicy !== "standing-owner-decision-2026-10-19-current-source") errors.push("ownerPolicy does not identify the current-source policy");
+  if (typeof lock?.releaseId === "string" && lock.releaseId.startsWith("patternly-local-candidate-")) errors.push("local unpublished content candidates cannot be used as release input");
   if (!/^[a-f0-9]{64}$/u.test(lock?.sourceInputFingerprint ?? "")) errors.push("sourceInputFingerprint must be a current SHA-256 identity");
   if (!/^[a-f0-9]{64}$/u.test(lock?.bundledSuccessorLedgerSha256 ?? "")) errors.push("bundledSuccessorLedgerSha256 must be a current SHA-256 hash");
   if (lock?.currentIdentity?.sourceInputFingerprint !== lock?.sourceInputFingerprint) errors.push("currentIdentity does not match sourceInputFingerprint");

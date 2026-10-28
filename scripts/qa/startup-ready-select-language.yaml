@@ -1,0 +1,29 @@
+appId: com.lkurczab.patternly
+name: Startup normal ready public language selection
+# Requires a frozen SDK baseline for the approved existing actor BEFORE this flow.
+# Leaves the real LanguageSettings screen open for context/selection evidence.
+---
+- assertVisible:
+    id: patternly:content:ready
+- tapOn:
+    id: main-tab-bar-settings
+- scrollUntilVisible:
+    element:
+      id: settings-language
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: settings-language
+- scrollUntilVisible:
+    element:
+      id: "language-option-${LOCALE}"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "language-option-${LOCALE}"
+- waitForAnimationToEnd:
+    timeout: 10000
+- assertNotVisible:
+    id: language-save-error
+- assertVisible:
+    id: "language-option-${LOCALE}"

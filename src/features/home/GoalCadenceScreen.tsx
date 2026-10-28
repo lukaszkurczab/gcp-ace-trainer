@@ -38,6 +38,7 @@ import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { LearningPlanReminderFailure, LearningPlanReminderResult } from "../../application/notificationPreferences";
 import { targetDatePickerValue, targetDateToLocalIso } from "./goalTargetDatePicker";
 import { GoalTargetDateCalendar } from "./GoalTargetDateCalendar";
+import { useRouteLifetime } from "./routeLifetime";
 
 type GoalCadenceScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.GOAL_CADENCE>;
 const GOAL_COPY: Readonly<Record<GoalTemplateId, Readonly<{ detail: string; title: string }>>> = {
@@ -123,6 +124,8 @@ export function GoalLoadingSkeleton({ destinationLabel, onBack }: Readonly<{ des
 }
 
 export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps) {
+  const lifetime = useRouteLifetime(route.key);
+  useEffect(() => () => lifetime.remove(), [lifetime]);
   const styles = useThemedStyles(createStyles);
   const { colors: palette, locale } = useAppPreferences();
   const { t } = useTranslation("common");
@@ -261,9 +264,9 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     try {
       await createAndOpenPlan(track.id, nextGoal, minutesPerStudyDay);
     } catch (error) {
-      setSaveError(describeOperationalFailure(error, "The goal could not be saved."));
+      if (lifetime.isCurrent()) setSaveError(describeOperationalFailure(error, "The goal could not be saved."));
     } finally {
-      setSaving(false);
+      if (lifetime.isCurrent()) setSaving(false);
     }
   }
 
@@ -284,12 +287,18 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     try {
       const result = await learningPlanProposalCoordinator.create(selectedTrackId, { goal: goalToPropose, minutesPerStudyDay: availableMinutes });
       if (isCreatedProposal(result)) {
+        if (!lifetime.isCurrent()) {
+          learningPlanProposalCoordinator.remove(result.proposal.proposalId);
+          return;
+        }
         navigation.navigate(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId: selectedTrackId });
         return;
       }
-      setSaveError(proposalCreationError(result.kind));
+      if (lifetime.isCurrent()) setSaveError(proposalCreationError(result.kind));
+    } catch (error) {
+      if (lifetime.isCurrent()) setSaveError(describeOperationalFailure(error, "The learning plan could not be opened."));
     } finally {
-      setCreatingPlan(false);
+      if (lifetime.isCurrent()) setCreatingPlan(false);
     }
   }
 

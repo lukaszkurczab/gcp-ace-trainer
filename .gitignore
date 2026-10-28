@@ -24,6 +24,13 @@ web-build/
 !.maestro/bizq05-scoped-focus-native.yaml
 !.maestro/cc03-course-details.yaml
 !.maestro/cc04-unit-coverage.yaml
+!.maestro/ccarp-realistic-exam-demo.yaml
+!.maestro/ccarp-realistic-exam-responses.yaml
+!.maestro/ccarp-realistic-exam-flag.yaml
+!.maestro/ccarp-realistic-exam-resume-finish.yaml
+!.maestro/ui-exam-verify-*.yaml
+!.maestro/pat-opt-007-*.yaml
+!.maestro/ui-plan-shortfall-*.yaml
 docs/qa/
 /.temp/
 

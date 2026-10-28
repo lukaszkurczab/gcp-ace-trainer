@@ -1,0 +1,63 @@
+appId: com.lkurczab.patternly
+name: UI-EXAM — current GCP at accessibility text size
+# Same own SESSION_ID after the standard flow, one answer and one flag.
+# The controller sets and records the actual native font scale before running.
+# This flow never confirms finalization or changes a response.
+---
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question 50 of 50"
+      enabled: true
+    timeout: 30000
+- takeScreenshot: ui-exam-ios-last-large-top
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:option:${LAST_QID}:${LAST_OPTION_ID}"
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: ui-exam-ios-last-large-options
+- tapOn:
+    id: "patternly:simulation:action:${SESSION_ID}:finish"
+- extendedWaitUntil:
+    visible: "Finish with unanswered questions?"
+    timeout: 10000
+- assertVisible: ".*49 unanswered.*"
+- takeScreenshot: ui-exam-ios-last-finish-large
+- tapOn: Continue simulation
+- assertVisible: "Question navigator, Question 50 of 50"
+- tapOn: "Question navigator, Question 50 of 50"
+- scrollUntilVisible:
+    element:
+      text: "Question 1,( current,)? answered and saved, flagged"
+    direction: UP
+- takeScreenshot: ui-exam-ios-navigator-large
+- tapOn: Finish exam
+- extendedWaitUntil:
+    visible: "Finish with unanswered questions?"
+    timeout: 10000
+- takeScreenshot: ui-exam-ios-navigator-finish-large
+- tapOn: Continue simulation
+- assertVisible: "Question navigator, Question 50 of 50"
+- tapOn: "Question navigator, Question 50 of 50"
+- scrollUntilVisible:
+    element:
+      text: "Question 1,( current,)? answered and saved, flagged"
+    direction: UP
+- tapOn: "Question 1,( current,)? answered and saved, flagged"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question 1 of 50"
+      enabled: true
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:action:${SESSION_ID}:flag"
+    direction: UP
+    centerElement: true
+- takeScreenshot: ui-exam-ios-first-large-top
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:option:${FIRST_QID}:${FIRST_LAST_OPTION_ID}"
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: ui-exam-ios-first-large-options

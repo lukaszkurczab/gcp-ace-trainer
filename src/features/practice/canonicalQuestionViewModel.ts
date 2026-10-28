@@ -44,3 +44,9 @@ export function canonicalResponseToPracticeLocalResponse(value: unknown): Practi
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 function isStringArray(value: unknown): value is string[] { return Array.isArray(value) && value.every((entry) => typeof entry === "string"); }
+
+/** Certification's neutral statement projection deliberately contains no accepted values. */
+export function toCertificationQuestionViewModel(question: import("../../application/certification").CertificationPracticeQuestion): CanonicalQuestionViewModel {
+  if (question.interaction.type !== "decision_matrix") return toCanonicalQuestionViewModel(question as Pick<Question, "constraints" | "interaction" | "prompt" | "questionId">);
+  return Object.freeze({ itemId: question.questionId, prompt: question.prompt, constraints: Object.freeze([]), interaction: Object.freeze({ interactionType: "decision_matrix", model: Object.freeze({ renderer: Object.freeze({ kind: "complexity", dimensions: Object.freeze(question.interaction.dimensions.map((row) => Object.freeze({ id: row.dimensionId, label: row.label, values: Object.freeze(row.values.map((value) => Object.freeze({ id: value.valueId, text: value.text }))) }))) }) }) }) });
+}

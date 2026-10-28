@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly
+name: 8D2 existing recovery presentation capture only
+# Existing regular DEV smoke runtime required; no launch, reset, hold, removal or Continue.
+# PRESENTATION: base/error/retry-limit. OUT is a relative screenshot name inside the Maestro output folder.
+---
+- openLink: "com.lkurczab.patternly://audit/show-encrypted-storage-recovery?presentation=${PRESENTATION}"
+- extendedWaitUntil:
+    visible:
+      id: "${READY_ID}"
+    timeout: 15000
+- takeScreenshot: "${OUT}"

@@ -34,6 +34,7 @@ export type SimulationSurfaceState =
 
 export type SimulationNavigatorPosition = Readonly<{
   answered: boolean;
+  incomplete?: boolean;
   occurrenceId: string;
   flagged?: boolean;
   state: "current" | "answered" | "unanswered" | "frozen";

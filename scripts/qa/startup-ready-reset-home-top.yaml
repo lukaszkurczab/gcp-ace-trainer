@@ -1,0 +1,13 @@
+appId: com.lkurczab.patternly
+name: Startup ready reset Home scroll through existing tabs
+# Existing HomeScreen keys Screen by activeTab; this returns a fresh top ScrollView.
+# No language persistence, learning CTA, track change or account action.
+---
+- assertVisible:
+    id: patternly:content:ready
+- tapOn:
+    id: main-tab-bar-settings
+- tapOn:
+    id: main-tab-bar-home
+- waitForAnimationToEnd:
+    timeout: 10000

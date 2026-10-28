@@ -36,6 +36,8 @@ export function createLearningPlanProposalFixtureRuntime(scenario: LearningPlanP
 
   const runtime: LearningPlanProposalScreenRuntime = {
     ...(onExit ? { exitFixture: onExit } : {}),
+    discardProposal() {},
+    discardEditor() {},
     async resolve(proposalId, trackId) {
       if (scenario === "delayed-loading") await delay(DELAY_MS);
       if (proposalId !== PROPOSAL_ID || trackId !== fixtureTrackId) return Object.freeze({ kind: "stale" as const });

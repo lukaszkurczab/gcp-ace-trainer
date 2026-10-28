@@ -1,0 +1,63 @@
+appId: com.lkurczab.patternly
+name: UI-EXAM — current GCP first, navigator, last and cancel
+# Requires the exact own active SESSION_ID, FIRST_QID and FIRST_OPTION_ID read
+# from the native session. Captures only; never confirms finalization.
+# SKIP_SETUP=true continues from the already open navigator after verified setup;
+# it prevents replaying answer/flag inputs after a later assertion failure.
+---
+- runFlow:
+    when:
+      true: ${SKIP_SETUP != 'true'}
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:simulation:root:${SESSION_ID}"
+          timeout: 30000
+      - assertVisible: "Question navigator, Question 1 of 50"
+      - takeScreenshot: ui-exam-ios-first-standard
+      - tapOn:
+          id: "patternly:simulation:option:${FIRST_QID}:${FIRST_OPTION_ID}"
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:simulation:action:${SESSION_ID}:flag"
+            enabled: true
+          timeout: 30000
+      - tapOn:
+          id: "patternly:simulation:action:${SESSION_ID}:flag"
+      - extendedWaitUntil:
+          visible:
+            text: "Question navigator, Question 1 of 50"
+            enabled: true
+          timeout: 30000
+      - tapOn: "Question navigator, Question 1 of 50"
+- assertVisible: "Question 1,( current,)? answered and saved, flagged"
+- takeScreenshot: ui-exam-ios-navigator-standard
+- tapOn: Finish exam
+- extendedWaitUntil:
+    visible: "Finish with unanswered questions?"
+    timeout: 10000
+- assertVisible: ".*49 unanswered.*"
+- takeScreenshot: ui-exam-ios-navigator-finish-standard
+- tapOn: Continue simulation
+- assertVisible: "Question navigator, Question 1 of 50"
+- takeScreenshot: ui-exam-ios-cancel-first-standard
+- tapOn: "Question navigator, Question 1 of 50"
+- scrollUntilVisible:
+    element:
+      text: "Question 50, unanswered"
+    direction: DOWN
+- tapOn: "Question 50, unanswered"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question 50 of 50"
+      enabled: true
+    timeout: 30000
+- takeScreenshot: ui-exam-ios-last-standard
+- tapOn:
+    id: "patternly:simulation:action:${SESSION_ID}:finish"
+- extendedWaitUntil:
+    visible: "Finish with unanswered questions?"
+    timeout: 10000
+- tapOn: Continue simulation
+- assertVisible: "Question navigator, Question 50 of 50"
+- takeScreenshot: ui-exam-ios-cancel-last-standard

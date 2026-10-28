@@ -22,7 +22,7 @@ import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from 
 const artifacts: readonly unknown[] = Object.freeze([aws, backend, claude, coding, frontend, gcp, az104, ai901, objectDesign]);
 const locks = new Map((lockFile.tracks as CanonicalContentLockRecord[]).map((entry) => [entry.trackId, entry]));
 const retainedVerificationIds = Object.freeze([
-  "retained:claude-pre-qle-v2.json", "retained:claude-qle-v2-first-cases.json", "retained:claude-qle-v2-before-identity.json",
+  "retained:claude-pre-qle-v2.json", "retained:claude-qle-v2-first-cases.json", "retained:claude-qle-v2-before-identity.json", "retained:claude-qle-v2-active-before-exam.json",
 ]);
 
 export type CanonicalTrackRuntime = Readonly<{
@@ -274,6 +274,7 @@ async function loadRetainedClaudePackages() {
     (await import("../generated/retained-content/claude-pre-qle-v2.json")).default,
     (await import("../generated/retained-content/claude-qle-v2-first-cases.json")).default,
     (await import("../generated/retained-content/claude-qle-v2-before-identity.json")).default,
+    (await import("../generated/retained-content/claude-qle-v2-active-before-exam.json")).default,
   ];
 }
 

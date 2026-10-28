@@ -832,5 +832,9 @@
   "Initial estimate: about {{minutes}} min": "Erste Schätzung: etwa {{minutes}} Min.",
   "No performance evidence for this version yet": "Noch keine Leistungsdaten für diese Inhaltsversion",
   "Earlier activity and reviews remain available.": "Frühere Aktivitäten und Wiederholungen bleiben verfügbar.",
-  "Your profile changed while preparing this topic. Open the topic again in your current profile.": "Dein Profil hat sich geändert, während dieses Thema vorbereitet wurde. Öffne das Thema erneut in deinem aktuellen Profil."
+  "Your profile changed while preparing this topic. Open the topic again in your current profile.": "Dein Profil hat sich geändert, während dieses Thema vorbereitet wurde. Öffne das Thema erneut in deinem aktuellen Profil.",
+  "Local profile storage could not be prepared.": "Die lokalen Profildaten konnten nicht vorbereitet werden. Versuche es erneut.",
+  "Application bootstrap failed.": "Die App konnte nicht vorbereitet werden. Versuche es erneut.",
+  "The unavailable session could not be abandoned.": "Die nicht verfügbare Einheit konnte nicht abgebrochen werden. Versuche es erneut.",
+  "Profile storage unavailable": "Profildaten nicht verfügbar"
 }

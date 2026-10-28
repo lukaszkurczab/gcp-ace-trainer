@@ -832,5 +832,9 @@
   "Initial estimate: about {{minutes}} min": "Esialgne hinnang: umbes {{minutes}} min",
   "No performance evidence for this version yet": "Selle sisuversiooni kohta pole veel tulemusi",
   "Earlier activity and reviews remain available.": "Varasemad tegevused ja kordamised on endiselt saadaval.",
-  "Your profile changed while preparing this topic. Open the topic again in your current profile.": "Sinu profiil muutus selle teema ettevalmistamise ajal. Ava teema uuesti oma praeguses profiilis."
+  "Your profile changed while preparing this topic. Open the topic again in your current profile.": "Sinu profiil muutus selle teema ettevalmistamise ajal. Ava teema uuesti oma praeguses profiilis.",
+  "Local profile storage could not be prepared.": "Kohalikke profiiliandmeid ei saanud ette valmistada. Proovi uuesti.",
+  "Application bootstrap failed.": "Rakendust ei saanud ette valmistada. Proovi uuesti.",
+  "The unavailable session could not be abandoned.": "Kättesaamatut seanssi ei saanud katkestada. Proovi uuesti.",
+  "Profile storage unavailable": "Profiiliandmed pole saadaval"
 }

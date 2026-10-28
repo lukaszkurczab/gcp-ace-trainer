@@ -63,8 +63,9 @@ export function SimulationQuestionNavigator({ finishAction, onDismiss, onOccurre
             <IconButton accessibilityLabel={t("Close question navigator")} icon="close" onPress={onDismiss} />
           </View>
           <View style={styles.summaryRow}>
+            {validPositions.some((position) => position.incomplete) ? <Text maxFontSizeMultiplier={2} style={styles.unansweredSummary}>{`${validPositions.filter((position) => position.incomplete).length} ${t("incomplete")}`}</Text> : null}
             <Text maxFontSizeMultiplier={2} style={styles.answeredSummary}>{`${validPositions.filter((position) => position.answered).length} ${t("answered")}`}</Text>
-            <Text maxFontSizeMultiplier={2} style={styles.unansweredSummary}>{`${validPositions.filter((position) => !position.answered).length} ${t("unanswered")}`}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.unansweredSummary}>{`${validPositions.filter((position) => !position.answered && !position.incomplete).length} ${t("unanswered")}`}</Text>
             <View style={styles.flaggedSummary}><Icon color={styles.flagIcon.color} name="flag" size={16} /><Text maxFontSizeMultiplier={2} style={styles.unansweredSummary}>{`${validPositions.filter((position) => position.flagged).length} ${t("Flagged")}`}</Text></View>
           </View>
           {feedback ? <NavigatorFeedbackBanner feedback={feedback} onRetry={() => void select(feedback.occurrenceId)} /> : null}

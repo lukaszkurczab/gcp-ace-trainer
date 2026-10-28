@@ -20,8 +20,7 @@ import { createProposalSlotId } from "../../domain/learning/slotIdentity";
 import { readLearningPlanInputSnapshot, type LearningPlanInputSnapshot } from "../../storage/repositories/learningPlanInputSnapshot";
 import { ActiveSessionPlanningError, recommendLearningPlanMode } from "./learningPlanModeRecommendation";
 import type { LearningPlanModeRecommendation } from "./learningPlanModeRecommendation";
-import { estimateNextSessionTime } from "./nextSessionTimeEstimate";
-import { estimateLegalNextSessionOptions, projectFullGoalScopeAvailability } from "./nextSessionTimeEstimate";
+import { estimateNextSessionTimeAndLegalOptions, projectFullGoalScopeAvailability } from "./nextSessionTimeEstimate";
 import type { FullGoalScopeAvailability } from "./nextSessionTimeEstimate";
 import { projectFullGoalWorkload } from "./fullGoalWorkloadProjection";
 import type { FullGoalWorkloadProjection } from "./fullGoalWorkloadProjection";
@@ -201,8 +200,7 @@ export class LearningPlanProposalCoordinator {
         now: requestedAt,
         requestedLength: context.recommendation.requestedLength,
       } as const;
-      const nextSessionTimeEstimate = estimateNextSessionTime(estimateInput);
-      const legalSessions = estimateLegalNextSessionOptions(estimateInput);
+      const { estimate: nextSessionTimeEstimate, legalOptions: legalSessions } = estimateNextSessionTimeAndLegalOptions(estimateInput);
       const fullGoalScopeAvailability = projectFullGoalScopeAvailability({ track: resolved.track, planningPolicy: resolved.planningPolicy, completion: context.completion });
       const fullGoalWorkload = projectFullGoalWorkload({
         track: resolved.track,

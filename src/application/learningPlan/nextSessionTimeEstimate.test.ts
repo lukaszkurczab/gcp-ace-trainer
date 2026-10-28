@@ -3,10 +3,71 @@ import test from "node:test";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { createPackageCompletionRuleV3, evaluatePackageCompletion } from "../../domain/learning/packageCompletionRule";
 import { recommendLearningPlanMode } from "./learningPlanModeRecommendation";
-import { estimateLegalNextSessionOptions, estimateNextSessionTime } from "./nextSessionTimeEstimate";
+import { estimateLegalNextSessionOptions, estimateNextSessionTime, estimateNextSessionTimeAndLegalOptions } from "./nextSessionTimeEstimate";
 import coverageFixture from "../../testing/claudeCoverageFixtureData.json";
 
 const CLAUDE_TRACK = "claude-certified-architect-professional-certification" as const;
+const CODING_TRACK = "coding-interview-dsa-problem-solving" as const;
+
+function withQuestionsReadCounter<T extends { readonly questions: readonly unknown[] }>(track: T, readCount: { value: number }): T {
+  return new Proxy(track, {
+    get(target, property) {
+      if (property === "questions") readCount.value += 1;
+      return Reflect.get(target, property, target);
+    },
+  });
+}
+
+test("paired Coding estimate and legal options reuse one fresh calibration base without changing results", async (t) => {
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(CODING_TRACK, "coding_interview");
+  const { planningPolicy, planningPolicyIdentity, track, runtime } = resolved;
+  assert.ok(planningPolicy);
+  assert.ok(planningPolicyIdentity);
+  const recommendation = recommendLearningPlanMode({
+    binding: runtime.getPlanningModeBinding(),
+    trackId: CODING_TRACK,
+    modes: track.modes,
+    sessions: [],
+    dueReviewCount: 0,
+  });
+  const modeEstimateCount = planningPolicy.workEstimates.filter((estimate) => estimate.modeId === recommendation.mode.modeId).length;
+  const requestedLengths = recommendation.mode.requestedLengths.length;
+  assert.ok(modeEstimateCount > 0, "the selected mode has canonical work estimates");
+  assert.ok(requestedLengths > 1, "the selected mode exposes multiple legal lengths");
+
+  const reads = { value: 0 };
+  const input = {
+    track: withQuestionsReadCounter(track, reads),
+    planningPolicy,
+    planningPolicyIdentity,
+    recommendation,
+    sessions: Object.freeze([]),
+    attempts: Object.freeze([]),
+    reviews: Object.freeze([]),
+    now: "2026-10-26T12:00:00.000Z",
+  } as const;
+  estimateNextSessionTime(input);
+  estimateLegalNextSessionOptions(input);
+
+  assert.equal(reads.value, modeEstimateCount * (requestedLengths + 1),
+    "the primary estimate plus each legal-length estimate rereads the real track question collection for calibration");
+  t.diagnostic(`baseline calibration-input reads: M=${modeEstimateCount}, K=${requestedLengths}, reads=${reads.value}`);
+
+  const optimizedReads = { value: 0 };
+  const optimizedInput = { ...input, track: withQuestionsReadCounter(track, optimizedReads) };
+  const baselinePrimary = estimateNextSessionTime(input);
+  const baselineOptions = estimateLegalNextSessionOptions(input);
+  const optimized = estimateNextSessionTimeAndLegalOptions(optimizedInput);
+  assert.equal(optimizedReads.value, modeEstimateCount,
+    "one combined invocation reads the calibration question collection once per same-mode work estimate");
+  assert.deepEqual(optimized.estimate, baselinePrimary);
+  assert.deepEqual(optimized.legalOptions, baselineOptions);
+
+  const secondCallReads = { value: 0 };
+  const secondCall = estimateNextSessionTimeAndLegalOptions({ ...input, track: withQuestionsReadCounter(track, secondCallReads) });
+  assert.equal(secondCallReads.value, modeEstimateCount, "a later invocation builds a fresh proposal-local calibration base");
+  assert.deepEqual(secondCall, optimized);
+});
 
 test("incomplete V3 next-session estimates stay unavailable without an exact accessible unit target", async () => {
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(CLAUDE_TRACK, "certification");

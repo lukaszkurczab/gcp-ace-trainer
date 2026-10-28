@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly
+name: Startup normal API absent ready boundary
+# Read-only normal startup; no training, account, purchase or recovery action.
+---
+- extendedWaitUntil:
+    visible:
+      id: patternly:content:ready
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: "d19-d20-${VARIANT}"

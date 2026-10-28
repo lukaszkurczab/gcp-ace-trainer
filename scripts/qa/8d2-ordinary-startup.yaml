@@ -1,0 +1,14 @@
+appId: com.lkurczab.patternly
+name: 8D2 ordinary startup read-only capture
+# Existing installed app, same current candidate, API absent; no reset/retry/account/training action.
+---
+- launchApp:
+    clearState: false
+    stopApp: true
+    arguments:
+      RCT_jsLocation: "localhost:8083"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:(ready|unavailable|unavailable-active)|patternly:profile-storage:state:unavailable"
+    timeout: 30000
+- takeScreenshot: ordinary-startup-terminal-surface

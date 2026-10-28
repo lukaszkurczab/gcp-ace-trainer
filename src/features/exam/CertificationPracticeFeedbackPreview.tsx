@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { Button, EmptyState, Screen } from "../../components";
+import { toCertificationQuestionViewModel } from "../practice/canonicalQuestionViewModel";
 import { buildPracticeResponseControl } from "../practice/practiceSessionPresentation";
 import { PracticeSessionSurface } from "../practice/PracticeSessionSurface";
 import type { CertificationPracticeAnswerPreview } from "../../testing/certificationPracticeAnswerFixture";
@@ -39,7 +40,7 @@ export function CertificationPracticeFeedbackPreview({
     choiceSelectionMode: preview.question.interaction.type === "choice_multiple" ? "multiple" : "single",
     feedbackControls: preview.feedbackControls,
     localResponse: null,
-    renderer: { interactionType: preview.question.interaction.type, model: { kind: "choice", options: preview.question.interaction.options.map((option) => ({ id: option.optionId, selected: false, text: option.text })) } },
+    renderer: toCertificationQuestionViewModel(preview.question).interaction,
   });
   const headerAction = <View style={styles.headerAction} testID="patternly:aud15:practice-preview:notice">
     <Text maxFontSizeMultiplier={2} style={styles.noticeText}>Local read-only preview · first five of ten completed answers · no saved result</Text>

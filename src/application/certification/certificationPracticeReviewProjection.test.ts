@@ -37,16 +37,16 @@ function exact(question: Question): ResolvedInteractionItem {
 test("completed practice projector preserves the canonical five-state answer matrix", async () => {
   const fixture = await fixturePromise;
   assert.deepEqual(fixture.projection.items.map((item) => item.sourceAttemptId), fixture.attempts.map((attempt) => attempt.id));
-  assert.deepEqual(fixture.projection.items.slice(0, 5).map((item) => item.result), ["correct", "incorrect", "correct", "partial", "incorrect"]);
+  assert.deepEqual(fixture.projection.items.slice(0, 5).map((item) => item.result), ["correct", "incorrect", "correct", "incorrect", "incorrect"]);
   assert.deepEqual(fixture.projection.items.slice(0, 5).map((item) => item.selectionMode), ["single", "single", "multiple", "multiple", "multiple"]);
   assert.equal(fixture.projection.total, 10);
   assert.equal(fixture.projection.maxPoints, 22);
   assert.equal(fixture.projection.maxPoints, fixture.attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0));
   assert.equal(fixture.projection.items[2]?.selectedOptionIds.join(","), "b,d");
-  assert.equal(fixture.projection.items[3]?.selectedOptionIds.length, 1);
+  assert.equal(fixture.projection.items[3]?.selectedOptionIds.length, 2);
   assert.equal(fixture.projection.overallPointsEarned, fixture.attempts.filter((attempt) => attempt.result.kind === "correct").reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0));
-  assert.ok(fixture.projection.overallPointsEarned < fixture.projection.items.reduce((sum, item) => sum + fixture.attempts.find((attempt) => attempt.occurrenceId === item.occurrenceId)!.result.earnedPoints, 0));
-  assert.deepEqual(fixture.result.evidence.details, { activeForegroundMs: 0, correctCount: 7, partialCount: 1, incorrectCount: 2, pointsEarned: 15, maxPoints: 22 });
+  assert.equal(fixture.projection.overallPointsEarned, fixture.projection.items.reduce((sum, item) => sum + fixture.attempts.find((attempt) => attempt.occurrenceId === item.occurrenceId)!.result.earnedPoints, 0));
+  assert.deepEqual(fixture.result.evidence.details, { activeForegroundMs: 0, correctCount: 7, partialCount: 0, incorrectCount: 3, pointsEarned: 11, maxPoints: 22 });
 });
 
 test("related-practice limitation requires a current near-variant peer or a strictly earlier exact-pin peer attempt", async () => {
@@ -139,10 +139,10 @@ test("completed practice review projects authored wrong and omitted-correct mess
   const omittedCorrect = wrong.selectionMode === "multiple" ? wrong.correctOptionIds.filter((id) => !wrong.selectedOptionIds.includes(id)) : [];
   assert.deepEqual(wrong.messages?.filter((message) => message.kind === "wrong_option").map((message) => message.targetId), wrongSelected);
   assert.deepEqual(wrong.messages?.filter((message) => message.kind === "omitted_option").map((message) => message.targetId), omittedCorrect);
-  const partial = projection.items[3]!;
-  assert.equal(partial.result, "partial");
-  assert.deepEqual(partial.messages?.filter((message) => message.kind === "wrong_option").map((message) => message.targetId), partial.selectedOptionIds.filter((id) => !partial.correctOptionIds.includes(id)));
-  assert.deepEqual(partial.messages?.filter((message) => message.kind === "omitted_option").map((message) => message.targetId), partial.correctOptionIds.filter((id) => !partial.selectedOptionIds.includes(id)));
+  const boundedMultipleAnswer = projection.items[3]!;
+  assert.equal(boundedMultipleAnswer.result, "incorrect");
+  assert.deepEqual(boundedMultipleAnswer.messages?.filter((message) => message.kind === "wrong_option").map((message) => message.targetId), boundedMultipleAnswer.selectedOptionIds.filter((id) => !boundedMultipleAnswer.correctOptionIds.includes(id)));
+  assert.deepEqual(boundedMultipleAnswer.messages?.filter((message) => message.kind === "omitted_option").map((message) => message.targetId), boundedMultipleAnswer.correctOptionIds.filter((id) => !boundedMultipleAnswer.selectedOptionIds.includes(id)));
 
   const noAuthoredMessagesId = fixture.session.itemOrder[5]!.item.questionId;
   const noAuthored = track.getQuestion(noAuthoredMessagesId)!;

@@ -20,13 +20,12 @@ test("Certification Exam runner uses exact resume, route-keyed reads and expired
 });
 
 test("exam response changes persist the canonical choice response before publishing the refreshed selection", () => {
-  assert.match(screen, /saveCertificationExamResponse\(\{ occurrenceId: projection\.occurrenceId, response: \{ type: "choice_single", optionId \} \}\)/);
+  assert.match(screen, /saveCertificationExamResponse\(\{ occurrenceId: projection\.occurrenceId, response \}\)/);
   assert.match(screen, /await refreshAfterAction\(token\)/);
-  assert.match(screen, /accessibilityRole="radio"/);
-  assert.match(screen, /accessibilityState=\{\{ checked: selected, disabled: actionPending \|\| resolutionRequired \}\}/);
+  assert.match(screen, /<ExamResponseControls disabled=\{actionPending \|\| resolutionRequired\}/);
   assert.match(screen, /if \(shouldClearPendingExamWrite\(attempted, refreshed\)\) setPendingExamWrite\(null\)/);
   assert.match(screen, /await retryCertificationExamDraftSave\(\)/);
-  assert.match(screen, /<PracticeQuestionCard question=\{\{ itemId: projection\.question\.questionId, prompt: projection\.question\.prompt \}\} presentation=\{questionPresentation\} \/>/);
+  assert.match(screen, /<PracticeQuestionCard question=\{\{ itemId: projection\.question\.questionId, prompt: projection\.question\.prompt \}\} presentation=\{questionPresentation\} questionLabelAction=\{flagAction\} \/>/);
 });
 
 test("an unavailable refresh after an uncertain exam save retains the attempted response until exact confirmation", () => {
@@ -77,7 +76,7 @@ test("exam actions describe navigation and finish confirmation, including unansw
   assert.match(screen, /Previous/);
   assert.match(screen, /Next/);
   assert.match(screen, /Finish with unanswered questions\?/);
-  assert.match(screen, /const unansweredCount = projection\.session\.itemOrder\.filter/);
+  assert.match(screen, /const unansweredCount = projection\.total - answered\.size/);
   assert.match(screen, /runtimeSelectors\.simulation\.action\(projection\.session\.id, "finish"\)/);
   assert.match(screen, /answered: answered\.has\(item\.occurrenceId\)/);
 });
@@ -90,7 +89,10 @@ test("exam keeps finish reachable through the navigator and the final-question a
   assert.match(screen, /positionAccessibilityLabel=\{`\$\{t\("Question navigator"\)\}, \$\{t\("Question"\)\} \$\{projection\.ordinal\} \$\{t\("of"\)\} \$\{projection\.total\}`\}/);
   assert.match(screen, /positionDisabled=\{actionPending \|\| resolutionRequired\}/);
   assert.match(screen, /finishAction=\{\{[\s\S]*disabled: actionPending \|\| resolutionRequired,[\s\S]*setFinishVisible\(true\)/);
-  assert.match(screen, /headerRight: headerProjection/);
+  assert.match(screen, /questionLabelAction=\{flagAction\}/);
+  assert.doesNotMatch(screen, /modeLabel=\{t\("Certification Exam Simulation"\)\}/);
+  const shell = readFileSync("src/features/coding-interview/session/SessionShell.tsx", "utf8");
+  assert.doesNotMatch(shell, /name="grid"/);
   assert.match(screen, /accessibilityState=\{\{ selected: headerFlagged, disabled: headerFlagDisabled \}\}/);
   assert.match(screen, /onPress=\{\(\) => void toggleFlag\(\)\}/);
   const header = readFileSync("src/navigation/RootNavigator.tsx", "utf8");

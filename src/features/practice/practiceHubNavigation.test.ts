@@ -47,7 +47,7 @@ const compiled = ts.transpileModule(`${command.getText(ast)}\nconst startAction 
 before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); });
 const settle = () => new Promise<void>((resolve) => setImmediate(resolve));
 type RouteCall = { route: string; params?: Record<string, unknown> };
-function harness(trackId: TrackId, admit: () => Promise<PremiumSessionAdmission> = async () => "allowed") {
+function harness(trackId: TrackId, admit: () => Promise<PremiumSessionAdmission> = async () => "allowed", activeSession: unknown = null, profileIsCurrent = true) {
   const activeTrack = getTrackDisplay(trackId);
   const topic = { id: getCanonicalFreePracticeNodeId(trackId) };
   const primaryMode = buildPracticeModes(activeTrack)[0]!;
@@ -70,6 +70,7 @@ function harness(trackId: TrackId, admit: () => Promise<PremiumSessionAdmission>
     ROUTES, ALGORITHM_MODE_IDS, buildPracticeSessionConfig, getGeneralPracticeReviewSource,
     isDesignInterviewModeId, requiresPremiumProductMode, resolveCertificationExamAccess, contentPackageRuntimeOwner,
     getProductSimulationModeConfig, getAlgorithmsInterviewSimulationEntry,
+    captureProfileReadFence: () => () => { if (!profileIsCurrent) throw Error("profile_changed"); }, loadActiveTrainingSession: async () => activeSession,
   };
   const runtime = vm.createContext(context);
   vm.runInContext(compiled, runtime);
@@ -175,4 +176,22 @@ test("existing admitted simulation shortcuts retain their dedicated destinations
     assert.equal(subject.routes.length, 1);
     assert.equal(subject.routes[0]!.route, route);
   }
+});
+
+
+test("exam entry resumes only the matching durable session and rejects a changed profile", async () => {
+  const track = AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID;
+  const active = { id: 'saved-exam', trackId: track, modeId: 'certification-exam-simulation' };
+  const subject = harness(track, async () => 'allowed', active);
+  subject.shortcut('certification-exam-simulation');
+  await settle();
+  assert.deepEqual(subject.routes, [{ route: ROUTES.EXAM, params: { trackId: track, expectedSessionId: active.id } }]);
+  const other = harness(track, async () => 'allowed', { ...active, trackId: 'other' });
+  other.shortcut('certification-exam-simulation');
+  await settle();
+  assert.deepEqual(other.routes, [{ route: ROUTES.EXAM, params: { trackId: track } }]);
+  const stale = harness(track, async () => 'allowed', active, false);
+  stale.shortcut('certification-exam-simulation');
+  await settle();
+  assert.deepEqual(stale.routes, []);
 });

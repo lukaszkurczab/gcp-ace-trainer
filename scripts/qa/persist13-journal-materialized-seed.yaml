@@ -1,0 +1,14 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-13 — materialized journal pause
+tags:
+  - persist13
+  - journal-materialized
+---
+- extendedWaitUntil:
+    visible:
+      text: "Stage: journal_materialized"
+    timeout: 60000
+- assertVisible: "PERSIST-13 journal_materialized seed: pending"
+- assertVisible:
+    id: "persist13-fixture-materialized"
+    text: "Materialized targets verified: true"

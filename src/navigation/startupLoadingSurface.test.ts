@@ -8,9 +8,10 @@ test("bootstrap owns one branded phase-aware loading surface with no synthetic c
   const gate = source("src/content/application/ContentPreparationGate.tsx");
   const loadingState = source("src/components/LoadingState.tsx");
 
-  assert.match(gate, /export function ContentBootstrapLoadingSkeleton\(\{ phase \}/);
-  assert.match(gate, /state\.kind === "loading"[\s\S]*?runtimeSelectors\.content\.preparing\(state\.phase\)[\s\S]*?<ContentBootstrapLoadingSkeleton phase=\{state\.phase\} \/>/);
-  assert.match(gate, /<View style=\{\{ flex: 1 \}\} testID="content-bootstrap-loading-skeleton"><AccountProfileTransitionLoadingState \/><\/View>/);
+  const presentation = source("src/content/application/startupPreparationSurfaces.tsx");
+  assert.match(presentation, /export function ContentBootstrapLoadingSkeleton\(\)/);
+  assert.match(gate, /state\.kind === "loading"[\s\S]*?<StartupLoadingSurface testID=\{runtimeSelectors\.content\.preparing\(state\.phase\)\} contentSkeleton=\{!account\.isMaterializedAccountTransition\}/);
+  assert.match(presentation, /testID="content-bootstrap-loading-skeleton"><AccountProfileTransitionLoadingState/);
   assert.match(gate, /runtimeSelectors\.content\.preparing\(state\.phase\)/);
   assert.match(source("src/application/account/AccountProfileTransitionLoadingState.tsx"), /testID="account-profile-transition-loading"/);
   assert.match(loadingState, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
@@ -24,7 +25,7 @@ test("bootstrap owns one branded phase-aware loading surface with no synthetic c
   assert.match(gate, /ContentPreparationPhase[\s\S]*?"opening-storage"[\s\S]*?"recovering-learning-state"[\s\S]*?"verifying-content"[\s\S]*?"resuming-session"/);
   assert.match(gate, /runtimeSelectors\.content\.unavailable\(\)/);
   assert.match(gate, /setState\(\{ kind: "loading", phase: "opening-storage" \}\)/);
-  assert.match(gate, /<EmptyState[\s\S]*?actionLabel=\{t\("Try again"\)\}[\s\S]*?onActionPress=/);
+  assert.match(presentation, /<EmptyState[\s\S]*?actionLabel=\{t\("Try again"\)\}[\s\S]*?onActionPress=/);
   assert.doesNotMatch(`${gate}\n${loadingState}`, /Variant|startupProgress|startupContent|Preparing your questions/);
   assert.doesNotMatch(`${gate}\n${loadingState}`, /setInterval|delay\s*:/);
 });

@@ -23,6 +23,19 @@ test("proposal route carries only identity and resolves the in-memory proposal",
   assert.doesNotMatch(routes, /LEARNING_PLAN_PROPOSAL\]:[^\n]*(outcome|goalRevision|contentVersion|packagePin|timezone)/);
 });
 
+test("proposal lifetime discards only after route removal and preserves async commit/editor guards", () => {
+  assert.match(screen, /useRouteLifetime\(JSON\.stringify\(\[route\.key, proposalId, trackId\]\)\)/);
+  assert.match(screen, /lifetime\.remove\(\(\) => runtime\.discardProposal\(proposalId\)\)/);
+  assert.match(screen, /const finish = lifetime\.beginAction\(\)/);
+  assert.match(screen, /if \(!lifetime\.isCurrent\(\)\) \{\s*if \(result\.kind === "ready"\) runtime\.discardEditor\(result\.session\.editorId\)/);
+  assert.match(runtime, /discardProposal: \(proposalId\) => learningPlanProposalCoordinator\.remove\(proposalId\)/);
+  assert.match(runtime, /discardEditor: \(editorId\) => learningPlanEditorCoordinator\.discard\(editorId\)/);
+  assert.match(goal, /if \(!lifetime\.isCurrent\(\)\) \{\s*learningPlanProposalCoordinator\.remove\(result\.proposal\.proposalId\)/);
+  assert.match(home, /if \(!lifetime\.isCurrent\(\)\) \{\s*learningPlanEditorCoordinator\.discard\(result\.session\.editorId\)/);
+  const focusEffect = screen.slice(screen.indexOf("useFocusEffect("), screen.indexOf("let identityMatches"));
+  assert.doesNotMatch(focusEffect, /discardProposal/);
+});
+
 test("proposal accepts through the plan/reminder runtime and preserves pending saves", () => {
   assert.match(screen, /runtime\.accept\(proposalId, trackId, notification\)/);
   assert.match(runtime, /accept: \(proposalId, trackId, copy\) => acceptPlanWithReminders\(proposalId, trackId, copy\)/);

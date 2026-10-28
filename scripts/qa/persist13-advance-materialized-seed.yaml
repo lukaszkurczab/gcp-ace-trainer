@@ -1,0 +1,14 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-13 — pause after advance materialization
+tags:
+  - persist13
+  - advance-materialized
+---
+- extendedWaitUntil:
+    visible:
+      text: "Stage: advance_materialized"
+    timeout: 60000
+- assertVisible: "PERSIST-13 advance_materialized seed: pending"
+- assertVisible:
+    id: "persist13-fixture-materialized"
+    text: "Materialized targets verified: true"

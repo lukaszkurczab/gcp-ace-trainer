@@ -1,0 +1,25 @@
+# Same own smoke actor/profile and OSmaximum as the capture matrix.
+# Maestro centering alone can ignore sticky-header occlusion. A slow small
+# downward content gesture puts the full warning between the header and footer.
+appId: com.lkurczab.patternly
+name: Learning plan full shortfall warning frame
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=shortfall"
+- assertVisible:
+    id: patternly:learning-plan:state:shortfall
+- scrollUntilVisible:
+    element: "${SHORTFALL_TEXT}"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- swipe:
+    start: "50%,35%"
+    end: "50%,49%"
+    duration: 800
+- takeScreenshot: "${CAPTURE_PREFIX}-full-warning"

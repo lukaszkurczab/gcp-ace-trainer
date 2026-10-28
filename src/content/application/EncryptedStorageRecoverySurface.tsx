@@ -2,9 +2,12 @@ import { useEffect, useRef } from "react";
 import { Animated, Platform, Settings, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { Button, HoldToConfirmButton, Icon, Screen } from "../../components";
+import { Button } from "../../components/Button";
+import { HoldToConfirmButton } from "../../components/HoldToConfirmButton";
+import { Icon } from "../../components/Icon";
+import { Screen } from "../../components/Screen";
 import { PatternlyMark } from "../../components/PatternlyMark";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { useAppPreferences, useThemedStyles } from "../../preferences/appPreferencesContext";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { spacing, typography, type AppColors } from "../../theme";
 import { recoveryDeviceLocale } from "./recoveryDeviceLocale";
@@ -13,7 +16,6 @@ export type EncryptedStorageRecoveryStatus = "base" | "removing" | "success" | "
 
 type Props = Readonly<{
   canRetry: boolean;
-  error?: string;
   onContinue: () => void;
   onRemovingPresented: (presented: boolean) => void;
   onRemove: () => void;
@@ -25,13 +27,13 @@ type Props = Readonly<{
 
 const REMOVING_PRESENTATION_DURATION_MS = 200;
 
-export function EncryptedStorageRecoverySurface({ canRetry, error, onContinue, onRemove, onRemovingPresented, onRetryBootstrap, onReturn, retryLimitReached, status }: Props) {
+export function EncryptedStorageRecoverySurface({ canRetry, onContinue, onRemove, onRemovingPresented, onRetryBootstrap, onReturn, retryLimitReached, status }: Props) {
   const styles = useThemedStyles(createStyles);
   const { colorMode, colors: palette } = useAppPreferences();
   const { i18n } = useTranslation("common");
   const locale = Platform.OS === "ios"
     ? recoveryDeviceLocale(Settings.get("AppleLanguages"), Settings.get("AppleLocale"))
-    : "en";
+    : recoveryDeviceLocale(undefined, Intl.DateTimeFormat().resolvedOptions().locale);
   const t = i18n.getFixedT(locale, "common");
   const removing = status === "removing";
   const success = status === "success";
@@ -88,7 +90,6 @@ export function EncryptedStorageRecoverySurface({ canRetry, error, onContinue, o
               {failed ? <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.statusIcon, styles.statusErrorIcon]}><Icon color={palette.danger} name="alert-triangle" size={30} /></View> : null}
               {failed || removing ? <Text accessibilityRole="header" maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t(failed ? "Unavailable data removal could not be completed" : "Removing unavailable data")}</Text> : null}
               {failed || removing ? <Text accessibilityLiveRegion={failed ? "assertive" : "none"} accessibilityRole={failed ? "alert" : undefined} maxFontSizeMultiplier={2} style={styles.sectionDescription}>{t(failed ? "Some local data may already have been removed. You can retry removal or return to the recovery options." : "Unsent sessions and guest progress are being removed. Account data saved in the cloud will remain.")}</Text> : null}
-              {failed && error ? <Text maxFontSizeMultiplier={2} style={styles.error}>{error}</Text> : null}
               <HoldToConfirmButton
                 accessibilityLabel={t(failed ? "Hold to retry removal" : "Remove unavailable data")}
                 disabled={removing}
@@ -115,7 +116,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   brandText: { ...typography.heading, color: palette.textPrimary, flexShrink: 1, minWidth: 0 },
   description: { ...typography.body, alignSelf: "stretch", color: palette.textSecondary, minWidth: 0, textAlign: "center" },
   documentIcon: { alignItems: "center", height: 58, justifyContent: "center", width: 58 },
-  error: { ...typography.caption, color: palette.danger, textAlign: "center" },
   hero: { alignItems: "center", alignSelf: "stretch", gap: spacing.md, minWidth: 0 },
   hint: { ...typography.caption, color: palette.textSecondary, textAlign: "center" },
   lockIcon: { bottom: 0, position: "absolute", right: 0 },

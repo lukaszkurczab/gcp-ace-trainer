@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly
+name: Startup normal dismiss confirmed development warning
+# Existing iPhone17 only. Run only after fresh original image confirms this exact DEV banner.
+# Maestro cannot address its text in the native hierarchy; review after image for dismissal.
+---
+- takeScreenshot: before-development-warning-dismissal
+- tapOn:
+    point: "92%, 93%"
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: after-development-warning-dismissal

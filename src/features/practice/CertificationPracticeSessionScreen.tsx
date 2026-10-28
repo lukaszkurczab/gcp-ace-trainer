@@ -1,3 +1,7 @@
+import type { CanonicalQuestionResponse } from "../../content/canonical";
+import { builtinPracticeResponseRenderers } from "./PracticeResponseControls";
+import { CertificationStatementControls } from "./CertificationStatementControls";
+import { toggleExamOption } from "../exam/examResponseSelection";
 import { beginStartupSpan, markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { usePreventRemove, type NavigationAction } from "@react-navigation/native";
@@ -39,9 +43,11 @@ import type { PracticeDurableOperationState } from "../../application/trainingLi
 import { hasReachedPracticeActionProjection, allowsPracticeResponseEditing, buildPracticeResponseControl, describeSessionPreparationFailure, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeSurfacePhase } from "./practiceSessionPresentation";
 import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./PracticeSessionSurface";
 import { getCertificationMode } from "../../tracks/certification";
-import { toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
+import { toCertificationQuestionViewModel } from "./canonicalQuestionViewModel";
 import { buildCertificationPracticeTarget } from "./sessionConfig";
 import { captureProfileReadFence } from "../../application/profileReadFence";
+
+const certificationResponseBindings = new Map([...builtinPracticeResponseRenderers, ["decision_matrix", CertificationStatementControls] as const]);
 
 type PendingPracticeAction = { owner: object; sessionId: string; occurrenceId: string; ordinal: number; nextOccurrenceId: string | null; phase: "submitting_before_journal" | "advancing" | "completing"; assertProfile: () => void; };
 
@@ -53,6 +59,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const { t } = useTranslation("common");
   const [projection, setProjection] = useState<CertificationPracticeProjection | null>(null);
   const [selection, setSelection] = useState<PracticeChoiceSelection | null>(null);
+  const [statementSelection, setStatementSelection] = useState<Readonly<{ sessionId: string; occurrenceId: string; values: Readonly<Record<string, readonly string[]>> }> | null>(null);
   const [selectionError, setSelectionError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState<TrainingSession | null>(null);
@@ -119,6 +126,11 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
       occurrenceId: next.occurrenceId,
       sessionId: next.session.id,
     }));
+    setStatementSelection((current) => {
+      const durable = next.response?.value;
+      if (durable?.type === "decision_matrix") return { sessionId: next.session.id, occurrenceId: next.occurrenceId, values: durable.selectedValueIdsByDimension };
+      return current?.sessionId === next.session.id && current.occurrenceId === next.occurrenceId ? current : null;
+    });
     setSelectionError(null);
   };
   const refresh = async () => {
@@ -215,9 +227,13 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   }
   if (error) return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Cloud Practice unavailable")} description={t(error)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (!projection) return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><PracticeSessionLoadingSkeleton /></Screen>;
-  const questionView = toCanonicalQuestionViewModel(projection.question);
+  const questionView = toCertificationQuestionViewModel(projection.question);
   const feedbackTiming = projection.session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "atSessionEnd" : "afterEachAnswer";
   const multiple = projection.question.interaction.type === "choice_multiple";
+  const matrix = projection.question.interaction.type === "decision_matrix" ? projection.question.interaction : null;
+  const statementValues = statementSelection?.sessionId === projection.session.id && statementSelection.occurrenceId === projection.occurrenceId ? statementSelection.values : {};
+  const matrixComplete = matrix ? matrix.dimensions.every((row) => statementValues[row.dimensionId]?.length === 1) : false;
+  const requiredSelectionCount = projection.question.interaction.type === "choice_multiple" ? projection.question.interaction.requiredSelectionCount : undefined;
   const feedback = projection.feedback;
   const renderedCompletionOperation = completionFailure?.kind === "retry_completion" || completionFailure?.kind === "recover_completion" ? completionFailure.operation : completionOperation;
   const uncertainResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction === "reconcile";
@@ -259,7 +275,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const selected = selection?.sessionId === projection.session.id && selection.occurrenceId === projection.occurrenceId ? selection.selectedOptionIds : [];
   const toggle = (id: string) => setSelection((current) => {
     const currentIds = current?.sessionId === projection.session.id && current.occurrenceId === projection.occurrenceId ? current.selectedOptionIds : [];
-    const selectedOptionIds = multiple ? (currentIds.includes(id) ? currentIds.filter((item) => item !== id) : [...currentIds, id]) : [id];
+    const selectedOptionIds = multiple ? toggleExamOption(currentIds, id, requiredSelectionCount) : currentIds.includes(id) ? [] : [id];
     return Object.freeze({ sessionId: projection.session.id, occurrenceId: projection.occurrenceId, selectedOptionIds: Object.freeze(selectedOptionIds) });
   });
   const refreshAfterCommand = async (message: string, token?: PendingPracticeAction) => {
@@ -295,13 +311,13 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   };
   const submit = async () => {
     if (!isCurrentQuestion() || actionPending.current || (!editable && !retryFrozenResponse)) return;
-    if (!selected.length) { setSelectionError(t("Choose an answer before submitting.")); return; }
+    if (matrix ? !matrixComplete : !selected.length || (requiredSelectionCount !== undefined && selected.length !== requiredSelectionCount)) { setSelectionError(t("Choose an answer before submitting.")); return; }
     const token = beginAction("submitting_before_journal");
     const endHandler = beginStartupSpan("practice_submit_handler");
     try {
       try {
         if (retryFrozenResponse) await retryCertificationPracticeResponse();
-        else await submitCertificationPracticeResponse(projection.question.interaction.type === "choice_multiple" ? { type: "choice_multiple", optionIds: selected } : { type: "choice_single", optionId: selected[0]! });
+        else await submitCertificationPracticeResponse(matrix ? { type: "decision_matrix", selectedValueIdsByDimension: statementValues } : projection.question.interaction.type === "choice_multiple" ? { type: "choice_multiple", optionIds: selected } : { type: "choice_single", optionId: selected[0]! });
       } catch { /* Canonical projection determines the allowed retry/recovery action. */ }
       await refreshAfterCommand("We couldn't display your answer. Try again.", token);
     } finally { endHandler(); }
@@ -477,12 +493,13 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
         : undefined;
   const primaryAction = completionFailure
     ? undefined
-    : getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: editable || retryFrozenResponse ? selected.length > 0 : false, isFinalPosition: projection.ordinal === projection.total, phase }) ?? undefined;
+    : getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: editable || retryFrozenResponse ? matrix ? matrixComplete : selected.length > 0 && (requiredSelectionCount === undefined || selected.length === requiredSelectionCount) : false, isFinalPosition: projection.ordinal === projection.total, phase }) ?? undefined;
   return <PracticeSessionSurface
     onFirstPromptLayout={projection.questionPresentation.variant === "structuredCertificationPrompt" ? () => markStartup("claude_prompt_layout") : undefined}
     allowLeave={!completionFailure}
     exit={{ kind: exit }}
     feedback={feedback ? { details: feedback.details, messages: feedback.messages, reason: feedback.reason, result: feedback.result, sources: feedback.sources } : undefined}
+    interactionResponse={feedback?.statementRows ? { statementRows: feedback.statementRows } : null}
     feedbackItem={projection.session.itemOrder[projection.session.currentItemIndex]?.item}
     isFinalPosition={projection.ordinal === projection.total}
     modeLabel={t(getCertificationMode(mode).title)}
@@ -500,7 +517,14 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}
     primaryAction={primaryAction}
     progress={projection.ordinal / projection.total}
-    question={{ itemId: questionView.itemId, prompt: questionView.prompt, presentation: projection.questionPresentation, responseControl: buildPracticeResponseControl({ choiceSelectionMode: multiple ? "multiple" : "single", feedbackControls: feedback?.controls, localResponse: selected.length ? { kind: "choice", selectedOptionIds: selected } : null, renderer: questionView.interaction }) }}
+    question={{ itemId: questionView.itemId, prompt: questionView.prompt, presentation: projection.questionPresentation, responseControl: buildPracticeResponseControl({ choiceSelectionMode: multiple ? "multiple" : "single", feedbackControls: feedback?.controls, localResponse: matrix ? { kind: "complexity", selectedValuesByDimension: statementValues } : selected.length ? { kind: "choice", selectedOptionIds: selected } : null, renderer: questionView.interaction }) }}
+    responseRendererBindings={certificationResponseBindings}
+    onInteractionResponseChange={(value) => {
+      if (!editable || !isCurrentQuestion()) return;
+      const response = value as CanonicalQuestionResponse | null;
+      if (response !== null && response.type !== "decision_matrix") return;
+      setStatementSelection({ sessionId: projection.session.id, occurrenceId: projection.occurrenceId, values: response?.selectedValueIdsByDimension ?? {} });
+    }}
     responseEditable={editable}
     retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : exitFailure === "reconcile_abandon" ? "Check session status" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : uncertainResponse ? "Check saved response" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}

@@ -1,0 +1,78 @@
+appId: com.lkurczab.patternly
+name: CCAR-P — cold resume, finish incomplete and review statements
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+      - extendedWaitUntil:
+          notVisible: ".*Open debugger to view warnings.*"
+          timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-practice
+    timeout: 30000
+- tapOn:
+    id: main-tab-bar-practice
+- tapOn: "Certification Exam Simulation, Premium"
+- extendedWaitUntil:
+    visible: "Question navigator, Question 63 of 63"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- tapOn: "Question navigator, Question.*"
+- assertVisible: "Question ${MATRIX_INDEX}, incomplete, saved"
+- assertVisible: "Question ${MULTI_INDEX}, incomplete, saved"
+- tapOn: "Question ${MATRIX_INDEX},.*"
+- scrollUntilVisible:
+    element:
+      id: "exam-statement-${MATRIX_QID}-${MATRIX_DIM}"
+    direction: DOWN
+- assertVisible: ".*${MATRIX_VALUE_TEXT}.*"
+- takeScreenshot: ccarp-restored-explicit-no
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- tapOn: "Question navigator, Question.*"
+- tapOn: "Question ${MULTI_INDEX},.*"
+- scrollUntilVisible:
+    element:
+      text: "Select 2 answers.*1 selected"
+    direction: DOWN
+- assertVisible: "Select 2 answers.*1 selected"
+- takeScreenshot: ccarp-restored-partial-multiple
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- tapOn: "Question navigator, Question.*"
+- tapOn: "Finish exam"
+- extendedWaitUntil:
+    visible: "Finish with unanswered questions?"
+    timeout: 10000
+- assertVisible: ".*2 incomplete.*"
+- tapOn: "Finish exam"
+- extendedWaitUntil:
+    visible: "Review answers"
+    timeout: 30000
+- takeScreenshot: ccarp-raw-result
+- tapOn: "Review answers"
+- repeat:
+    times: ${MATRIX_REVIEW_STEPS}
+    commands:
+      - tapOn: Next
+- scrollUntilVisible:
+    element:
+      text: "Your answer.*"
+    direction: DOWN
+- assertVisible: "Your answer.*"
+- assertVisible: "Correct answer.*"
+- takeScreenshot: ccarp-statement-review

@@ -1,0 +1,36 @@
+# Existing own smoke actor; exercises only opening destinations and returning.
+# Never Review/Save from GoalCadence or Start from Practice: fixture is presentation-only.
+appId: com.lkurczab.patternly
+name: Learning plan shortfall actions and fixture exit
+---
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=shortfall"
+- assertVisible:
+    id: patternly:learning-plan:state:shortfall
+- assertVisible:
+    id: patternly:navigation:back
+- tapOn:
+    id: patternly:learning-plan:adjust-goal
+- assertVisible:
+    id: patternly:goal:root
+- takeScreenshot: "${CAPTURE_PREFIX}-goal-destination"
+- tapOn:
+    id: patternly:navigation:back
+- assertVisible:
+    id: patternly:learning-plan:state:shortfall
+- tapOn:
+    id: patternly:learning-plan:back-to-practice
+- assertVisible:
+    id: patternly:practice:hub:root
+- takeScreenshot: "${CAPTURE_PREFIX}-practice-destination"
+# Ready Practice is a tab surface; use the existing iOS stack edge gesture.
+- swipe:
+    start: "1%,50%"
+    end: "90%,50%"
+    duration: 700
+- assertVisible:
+    id: patternly:learning-plan:state:shortfall
+- tapOn:
+    id: patternly:navigation:back
+- assertVisible:
+    id: patternly:home:change-track
+- takeScreenshot: "${CAPTURE_PREFIX}-home-exit"

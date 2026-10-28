@@ -27,6 +27,10 @@ export type CanonicalQuestionRelation = Readonly<{
   changedCondition: string;
   decisionBoundary: string;
 }>;
+export type CanonicalExamMetadata = Readonly<{
+  decisionSkill: "knowledge" | "diagnosis" | "prerequisite" | "next_action" | "contextual_choice";
+  scenarioFamilyId?: string;
+}>;
 export type QuestionBase<T extends string = string> = Readonly<{
   questionId: string;
   trackId: string;
@@ -39,6 +43,7 @@ export type QuestionBase<T extends string = string> = Readonly<{
   contentDomainId?: string;
   questionRelation?: CanonicalQuestionRelation;
   caseRecipe?: import("../caseRecipe").CaseRecipe;
+  examMetadata?: CanonicalExamMetadata;
   feedback: CanonicalFeedback<T>;
 }>;
 
@@ -56,6 +61,17 @@ export type ReviewInteractionPresentation = Readonly<{
   model: unknown;
   diagnostics: unknown;
   feedback: CanonicalFeedback | null;
+  statementRows?: readonly CanonicalStatementReviewRow[];
+}>;
+
+export type CanonicalStatementReviewRow = Readonly<{
+  dimensionId: string;
+  label: string;
+  selectedValueIds: readonly string[];
+  correctValueIds: readonly string[];
+  values: readonly Readonly<{ valueId: string; text: string }>[];
+  explanation?: string;
+  messages?: readonly CanonicalFeedbackMessage[];
 }>;
 
 export type InteractionHandler<Q = unknown> = Readonly<{

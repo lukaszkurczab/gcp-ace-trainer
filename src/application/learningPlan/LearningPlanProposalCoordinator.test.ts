@@ -1,17 +1,19 @@
 import assert from "node:assert/strict";
 import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import test from "node:test";
+import { StackActions, StackRouter } from "@react-navigation/routers";
 import { LearningPlanProposalCoordinator } from "./LearningPlanProposalCoordinator";
+import { LearningPlanEditorCoordinator } from "./LearningPlanEditorCoordinator";
 import { recommendLearningPlanMode } from "./learningPlanModeRecommendation";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import { acceptedTargetFromGoal, createDefaultGoal, createLearningPlanSlotId, normalizeGoalRecord, normalizeLearningPlan, createResolvedContentRef, createTrainingAttempt, createTrainingSession, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
-import { installKeyValueStorageForTests, MemoryKeyValueStorage, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
-import { saveGoalSnapshot } from "../../storage/repositories/goalRepository";
+import { acceptedTargetFromGoal, createDefaultGoal, createLearningPlanSlotId, learningPlansEqual, normalizeGoalRecord, normalizeLearningPlan, createResolvedContentRef, createTrainingAttempt, createTrainingSession, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
+import { getKeyValueStorage, installKeyValueStorageForTests, MemoryKeyValueStorage, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
+import { getGoalSnapshot, readGoalSnapshot, saveGoalSnapshot } from "../../storage/repositories/goalRepository";
 import { readLearningPlanInputSnapshot } from "../../storage/repositories/learningPlanInputSnapshot";
 import { addReviewQueueItems } from "../../storage/repositories/reviewQueueRepository";
 import { addTrainingAttempt } from "../../storage/repositories/trainingAttemptRepository";
 import { saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
-import { saveLearningPlanAtomically } from "../../storage/repositories/learningPlanRepository";
+import { getLearningPlanSnapshot, saveLearningPlanAtomically } from "../../storage/repositories/learningPlanRepository";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
@@ -22,6 +24,7 @@ import { estimatePlanningWork } from "../../domain/learning/planningWorkEstimate
 import { estimateNextSessionTime } from "./nextSessionTimeEstimate";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+import { createRouteLifetime, type RouteLifetime } from "../../features/home/routeLifetime";
 
 
 const TRACK = "google-cloud-associate-cloud-engineer" as const;
@@ -34,7 +37,7 @@ async function fixture() {
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, "certification");
   let now = "2026-10-02T12:00:00.000Z";
   let timezone = "Europe/Warsaw";
-  let afterPackage: (() => void) | null = null;
+  let afterPackage: (() => void | Promise<void>) | null = null;
   let sequence = 0;
   const coordinator = new LearningPlanProposalCoordinator({
     createProposalId: () => `clock-test:${++sequence}`,
@@ -45,7 +48,7 @@ async function fixture() {
     resolvePackage: async () => {
       const hook = afterPackage;
       afterPackage = null;
-      hook?.();
+      await hook?.();
       return resolved;
     },
     resolveTrackFamily: () => "certification",
@@ -56,7 +59,7 @@ async function fixture() {
     storage,
     setNow(value: string) { now = value; },
     setTimezone(value: string) { timezone = value; },
-    setAfterPackage(hook: () => void) { afterPackage = hook; },
+    setAfterPackage(hook: () => void | Promise<void>) { afterPackage = hook; },
   };
 }
 
@@ -79,6 +82,127 @@ function attempt(f: Awaited<ReturnType<typeof fixture>>, id: string, questionInd
 function createProposal(f: Awaited<ReturnType<typeof fixture>>, coordinator = f.coordinator) {
   const goal = createDefaultGoal(requireGoalPolicy(TRACK));
   return coordinator.create(TRACK, { goal, minutesPerStudyDay: 60 });
+}
+
+function createInstalledStackRouter() {
+  const router = StackRouter({ initialRouteName: "Home" });
+  type State = ReturnType<typeof router.getInitialState>;
+  type Action = Parameters<typeof router.getStateForAction>[1];
+  const options = { routeNames: ["Home", "Goal", "Proposal", "Editor"], routeParamList: {}, routeGetIdList: {} };
+  let state = router.getInitialState(options);
+  return Object.freeze({
+    get state(): State { return state; },
+    dispatch(action: Action): void {
+      const next = router.getStateForAction(state, action, options);
+      assert.ok(next, `installed StackRouter should handle ${action.type}`);
+      state = next as State;
+    },
+    focusedRoute() { return state.routes[state.index]!; },
+    hasRoute(key: string) { return state.routes.some((route) => route.key === key); },
+  });
+}
+
+function createRouteOwnedProposalStack(coordinator: LearningPlanProposalCoordinator) {
+  const stack = createInstalledStackRouter();
+  const owners = new Map<string, Readonly<{ proposalId: string; lifetime: RouteLifetime }>>();
+  function reconcile(): void {
+    for (const [routeKey, owner] of owners) {
+      if (stack.hasRoute(routeKey)) continue;
+      owner.lifetime.remove(() => coordinator.remove(owner.proposalId));
+      owners.delete(routeKey);
+    }
+  }
+  return Object.freeze({
+    stack,
+    pushProposal(proposalId: string): RouteLifetime {
+      stack.dispatch(StackActions.push("Proposal", { proposalId, trackId: TRACK }));
+      const lifetime = createRouteLifetime();
+      owners.set(stack.focusedRoute().key, { proposalId, lifetime });
+      return lifetime;
+    },
+    replaceProposal(proposalId: string): RouteLifetime {
+      stack.dispatch(StackActions.replace("Proposal", { proposalId, trackId: TRACK }));
+      const lifetime = createRouteLifetime();
+      owners.set(stack.focusedRoute().key, { proposalId, lifetime });
+      reconcile();
+      return lifetime;
+    },
+    reconcile() {
+      reconcile();
+    },
+  });
+}
+
+function createEditorForRouteFixture(f: Awaited<ReturnType<typeof fixture>>) {
+  const policy = requireGoalPolicy(TRACK);
+  const resolved = f.resolved;
+  if (!resolved.planningPolicyIdentity) throw new Error("The canonical planning policy identity is required.");
+  const contentContext = Object.freeze({
+    contentVersion: resolved.track.contentVersion,
+    artifactSha256: resolved.track.artifactSha256,
+    planningPolicyIdentity: resolved.planningPolicyIdentity,
+    timezone: "Europe/Warsaw",
+  });
+  let sequence = 0;
+  let loadGoalGate: Promise<void> | null = null;
+  let onLoadGoal: (() => void) | null = null;
+  let acceptGate: Promise<void> | null = null;
+  let onAccept: (() => void) | null = null;
+  let acceptFailure: string | null = null;
+  let acceptDiagnostics = "not reached";
+  const coordinator = new LearningPlanEditorCoordinator({
+    proposalCoordinator: f.coordinator,
+    readStorageScope: getKeyValueStorage,
+    readGoalSnapshot: (trackId) => readGoalSnapshot(trackId, policy),
+    peekContentContext: () => contentContext,
+    async loadGoalSnapshot(trackId) {
+      onLoadGoal?.();
+      onLoadGoal = null;
+      if (loadGoalGate) { const gate = loadGoalGate; loadGoalGate = null; await gate; }
+      return getGoalSnapshot(trackId, policy);
+    },
+    loadLearningPlanSnapshot: (trackId) => getLearningPlanSnapshot(trackId, policy),
+    async loadContentContext() { return contentContext; },
+    saveLearningPlan: saveLearningPlanAtomically,
+    async acceptGoalPlan(input) {
+      try {
+        onAccept?.();
+        onAccept = null;
+        if (acceptGate) { const gate = acceptGate; acceptGate = null; await gate; }
+        input.revalidate();
+        const before = readGoalSnapshot(TRACK, policy);
+        if (!before || before.revision !== input.expectedGoalRevision) throw new Error("The fixture goal changed during acceptance.");
+        const goal = input.plan.goalRevision === before.revision ? before : await saveGoalSnapshot(input.proposedGoal, before.revision, policy);
+        saveLearningPlanAtomically({
+          trackId: TRACK, policy, plan: input.plan,
+          expectedGoalRevision: goal.revision, expectedPlanStorageRevision: input.expectedPlanStorageRevision,
+        });
+        const committedGoal = await getGoalSnapshot(TRACK, policy);
+        const committedPlan = getLearningPlanSnapshot(TRACK, policy);
+        if (!committedGoal || !committedPlan) throw new Error("The fixture goal-plan pair did not persist.");
+        acceptDiagnostics = JSON.stringify({ goalRevision: committedGoal.revision, planGoalRevision: committedPlan.plan.goalRevision, goalMatches: JSON.stringify(committedGoal.record) === JSON.stringify(input.proposedGoal), planMatches: learningPlansEqual(committedPlan.plan, input.plan) });
+        return Object.freeze({ goal: committedGoal, plan: committedPlan });
+      } catch (error) {
+        acceptFailure = error instanceof Error ? error.message : "unknown fixture commit failure";
+        throw error;
+      }
+    },
+    createEditorId: () => `route-editor:${++sequence}`,
+    now: () => "2026-10-02T12:00:00.000Z",
+  });
+  return Object.freeze({
+    coordinator,
+    setLoadGoalGate(gate: Promise<void>, entered: () => void) { loadGoalGate = gate; onLoadGoal = entered; },
+    setAcceptGate(gate: Promise<void>, entered: () => void) { acceptGate = gate; onAccept = entered; },
+    getAcceptFailure() { return acceptFailure; },
+    getAcceptDiagnostics() { return acceptDiagnostics; },
+  });
+}
+
+function deferred<T = void>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  const promise = new Promise<T>((settle) => { resolve = settle; });
+  return Object.freeze({ promise, resolve });
 }
 
 function review(f: Awaited<ReturnType<typeof fixture>>, source: TrainingAttempt, dueAt: string, id = `review:${source.id}`): ReviewQueueEntry {
@@ -185,6 +309,148 @@ test("unchanged persisted GCP inputs stay ready through the synchronous commit g
     assert.ok(created.proposal.nextSessionTimeEstimate.typicalMinutes <= created.proposal.nextSessionTimeEstimate.maxMinutes);
   }
   assert.equal(f.coordinator.resolveForCommit(created.proposal.proposalId, TRACK).kind, "ready");
+});
+
+test("removing abandoned proposals makes them stale while an active proposal stays resolvable", async () => {
+  const f = await fixture();
+  const abandonedIds: string[] = [];
+  for (let index = 0; index < 3; index += 1) {
+    const created = await createProposal(f);
+    assert.equal(created.kind, "ready");
+    if (!("proposal" in created)) throw new Error("Expected a proposal.");
+    abandonedIds.push(created.proposal.proposalId);
+    f.coordinator.remove(created.proposal.proposalId);
+  }
+
+  const active = await createProposal(f);
+  assert.equal(active.kind, "ready");
+  if (!("proposal" in active)) throw new Error("Expected the active proposal.");
+  for (const proposalId of abandonedIds) {
+    assert.deepEqual(await f.coordinator.resolve(proposalId, TRACK), { kind: "stale" });
+    assert.deepEqual(f.coordinator.resolveForCommit(proposalId, TRACK), { kind: "stale" });
+  }
+  assert.equal((await f.coordinator.resolve(active.proposal.proposalId, TRACK)).kind, "ready");
+  assert.equal(f.coordinator.resolveForCommit(active.proposal.proposalId, TRACK).kind, "ready");
+});
+
+test("installed StackRouter pop and replace remove only proposal routes that actually leave the stack", async () => {
+  const f = await fixture();
+  const routes = createRouteOwnedProposalStack(f.coordinator);
+  const abandonedIds: string[] = [];
+
+  for (let index = 0; index < 3; index += 1) {
+    const created = await createProposal(f);
+    assert.ok("proposal" in created);
+    abandonedIds.push(created.proposal.proposalId);
+    routes.pushProposal(created.proposal.proposalId);
+    routes.stack.dispatch(StackActions.pop());
+    routes.reconcile();
+    assert.deepEqual(await f.coordinator.resolve(created.proposal.proposalId, TRACK), { kind: "stale" });
+  }
+
+  const active = await createProposal(f);
+  assert.ok("proposal" in active);
+  const activeLifetime = routes.pushProposal(active.proposal.proposalId);
+  routes.stack.dispatch(StackActions.push("Editor", { editorId: "editor-blur-return" }));
+  routes.reconcile();
+  assert.equal(activeLifetime.isCurrent(), true, "pushing an editor blurs but does not remove the proposal route");
+  routes.stack.dispatch(StackActions.pop());
+  routes.reconcile();
+  assert.equal((await f.coordinator.resolve(active.proposal.proposalId, TRACK)).kind, "ready", "returning from the editor preserves the active proposal");
+
+  const replacement = await createProposal(f);
+  assert.ok("proposal" in replacement);
+  routes.replaceProposal(replacement.proposal.proposalId);
+  assert.equal((await f.coordinator.resolve(active.proposal.proposalId, TRACK)).kind, "stale", "replace disposes the previous proposal route");
+  assert.equal((await f.coordinator.resolve(replacement.proposal.proposalId, TRACK)).kind, "ready");
+  routes.stack.dispatch(StackActions.pop());
+  routes.reconcile();
+  for (const proposalId of [...abandonedIds, replacement.proposal.proposalId]) {
+    assert.deepEqual(await f.coordinator.resolve(proposalId, TRACK), { kind: "stale" });
+  }
+});
+
+test("late canonical proposal creation after its source route is popped is discarded", async () => {
+  const f = await fixture();
+  const stack = createInstalledStackRouter();
+  stack.dispatch(StackActions.push("Goal"));
+  const sourceLifetime = createRouteLifetime();
+  const packageStarted = deferred();
+  const allowPackage = deferred();
+  f.setAfterPackage(async () => { packageStarted.resolve(); await allowPackage.promise; });
+
+  const creation = createProposal(f);
+  await packageStarted.promise;
+  stack.dispatch(StackActions.pop());
+  sourceLifetime.remove();
+  allowPackage.resolve();
+
+  const result = await creation;
+  assert.ok("proposal" in result);
+  if (!sourceLifetime.isCurrent()) f.coordinator.remove(result.proposal.proposalId);
+  assert.deepEqual(await f.coordinator.resolve(result.proposal.proposalId, TRACK), { kind: "stale" });
+});
+
+test("late editor creation is discarded after proposal-route removal while its proposal stays guarded until settle", async () => {
+  const f = await fixture();
+  const created = await createProposal(f);
+  assert.ok("proposal" in created);
+  const routes = createRouteOwnedProposalStack(f.coordinator);
+  const lifetime = routes.pushProposal(created.proposal.proposalId);
+  const pendingAction = lifetime.beginAction();
+  const editor = createEditorForRouteFixture(f);
+  const goalReadStarted = deferred();
+  const allowGoalRead = deferred();
+  editor.setLoadGoalGate(allowGoalRead.promise, () => goalReadStarted.resolve());
+
+  const startingEdit = editor.coordinator.startProposalEdit(created.proposal.proposalId, TRACK);
+  await goalReadStarted.promise;
+  routes.stack.dispatch(StackActions.pop());
+  routes.reconcile();
+  assert.equal((await f.coordinator.resolve(created.proposal.proposalId, TRACK)).kind, "ready", "cleanup waits while proposal editor validation is in flight");
+
+  allowGoalRead.resolve();
+  const started = await startingEdit;
+  assert.equal(started.kind, "ready");
+  if (started.kind === "ready" && !lifetime.isCurrent()) editor.coordinator.discard(started.session.editorId);
+  pendingAction();
+  assert.equal(started.kind === "ready" ? editor.coordinator.getSession(started.session.editorId, TRACK) : null, null);
+  assert.deepEqual(await f.coordinator.resolve(created.proposal.proposalId, TRACK), { kind: "stale" });
+});
+
+test("route removal during accept retains the proposal through the actual editor commit guard, then disposes it", async () => {
+  const f = await fixture();
+  const created = await createProposal(f);
+  assert.ok("proposal" in created);
+  const routes = createRouteOwnedProposalStack(f.coordinator);
+  const lifetime = routes.pushProposal(created.proposal.proposalId);
+  const editor = createEditorForRouteFixture(f);
+  const opened = await editor.coordinator.startProposalEdit(created.proposal.proposalId, TRACK);
+  assert.equal(opened.kind, "ready");
+  if (opened.kind !== "ready") return;
+
+  routes.stack.dispatch(StackActions.push("Editor", { editorId: opened.session.editorId }));
+  routes.reconcile();
+  assert.equal(lifetime.isCurrent(), true, "editor push leaves the proposal route mounted");
+  routes.stack.dispatch(StackActions.pop());
+  routes.reconcile();
+  assert.equal((await f.coordinator.resolve(created.proposal.proposalId, TRACK)).kind, "ready", "editor Back retains its source proposal");
+
+  const acceptingRouteAction = lifetime.beginAction();
+  const acceptanceStarted = deferred();
+  const allowAcceptance = deferred();
+  editor.setAcceptGate(allowAcceptance.promise, () => acceptanceStarted.resolve());
+  const accepting = editor.coordinator.acceptProposal(created.proposal.proposalId, TRACK);
+  await acceptanceStarted.promise;
+  routes.stack.dispatch(StackActions.pop());
+  routes.reconcile();
+  assert.equal((await f.coordinator.resolve(created.proposal.proposalId, TRACK)).kind, "ready", "route cleanup cannot invalidate resolveForCommit during acceptance");
+
+  allowAcceptance.resolve();
+  const result = await accepting;
+  acceptingRouteAction();
+  assert.equal(result.kind, "accepted", `fixture commit error: ${editor.getAcceptFailure() ?? "none"}; commit result: ${editor.getAcceptDiagnostics()}`);
+  assert.deepEqual(await f.coordinator.resolve(created.proposal.proposalId, TRACK), { kind: "stale" });
 });
 
 test("proposal accepts a goal whose optional target date was explicitly cleared by the UI", async () => {

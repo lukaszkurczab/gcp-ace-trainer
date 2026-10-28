@@ -3,11 +3,18 @@ import { canPersistTrainingSessionDraft, getTrackRegistration, initialForeground
 import { buildMutationJournal } from "./mutationJournalBuilder";
 import { commitMutation } from "./commitMutation";
 
-export async function commitTrainingSessionStart(input: {
+type SessionStartInput = {
   session: TrainingSession;
   draft: TrainingSessionDraft | null;
   createdAt: string;
-}): Promise<void> {
+};
+
+export async function commitTrainingSessionStart(input: SessionStartInput): Promise<void> {
+  await commitMutation(await buildTrainingSessionStartJournal(input));
+}
+
+/** Same immutable start plan for the canonical commit and exact test-only cutpoint authority. */
+export async function buildTrainingSessionStartJournal(input: SessionStartInput) {
   if (input.session.status !== "active") throw new Error("Training session start requires an active session.");
   const draftExpected = canPersistTrainingSessionDraft(input.session);
   if (draftExpected !== Boolean(input.draft)) throw new Error("Training session start draft does not match the session configuration.");
@@ -22,12 +29,12 @@ export async function commitTrainingSessionStart(input: {
       ? [{ kind: "put_active_foreground_timer", record: initialTimer } as const]
       : []),
   ];
-  await commitMutation(await buildMutationJournal({
+  return buildMutationJournal({
     operation: "start_training_session",
     sessionId: input.session.id,
     trackId: input.session.trackId,
     identity: JSON.parse(JSON.stringify([input.session, input.draft])),
     writes,
     createdAt: input.createdAt,
-  }));
+  });
 }

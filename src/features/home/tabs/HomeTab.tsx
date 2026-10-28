@@ -1,3 +1,4 @@
+import { HomeDecisionCard, createHomeDecisionStyles } from "./HomeDecisionCard";
 import type { HomePracticeProjection } from "../../../application/homePracticeProjection";
 import { markStartup } from "../../../infrastructure/diagnostics/startupTrace";
 import { getTrackIconName } from "../../../components/trackIcon";
@@ -293,51 +294,41 @@ export function HomeTab({
         </Pressable>
       </View>
 
-      <Card variant="layered" style={styles.decisionCard}>
-        <View style={styles.cardRail} />
-        <View
-          style={[styles.decisionHeading, largeText ? styles.decisionHeadingLargeText : null]}
-          testID={resumeSessionId
+      <HomeDecisionCard
+        largeText={largeText} stretchCopy={largeText && activeTrack.id === "claude-certified-architect-professional-certification"}
+        icon={decisionIcon} muted={decisionTone === "muted"} enabled={decisionEnabled}
+        title={homePlanReady && homePlanPresentation ? decisionTitle : t(decisionTitle)} detail={decisionDetail}
+        primaryLabel={homePlanReady || homePlanUnavailable ? decisionLabel : t(decisionLabel)}
+        secondary={hasActiveSession || isFirstUse ? undefined : { label: t(isRecommendationSettingsAction ? "Manage settings" : "Choose another topic"), chevron: !isRecommendationSettingsAction, onPress: isRecommendationSettingsAction ? onOpenSettings : onChooseTopic }}
+        headingTestID={resumeSessionId
             ? runtimeSelectors.resume.card(resumeSessionId)
             : homePlanReady || homePlanUnavailable
               ? runtimeSelectors.targetDateGuidance.root("home")
               : undefined}
-        >
-          <View style={styles.decisionIconTile}>
-            <Icon color={decisionTone === "muted" ? palette.textMuted : palette.accentTeal} name={decisionIcon} size={24} />
-          </View>
-          <View style={[styles.decisionCopy, largeText && activeTrack.id === "claude-certified-architect-professional-certification" ? styles.claudeDecisionCopyLargeText : null]}>
-            <Text
-              maxFontSizeMultiplier={2}
-              style={styles.decisionTitle}
-              testID={resumeSessionId
+
+        titleTestID={resumeSessionId
                 ? runtimeSelectors.resume.title(resumeSessionId)
                 : homePlanReady && homePlanPresentation
                   ? runtimeSelectors.targetDateGuidance.state("home", homePlanPresentation.state)
                   : homePlanUnavailable
                     ? runtimeSelectors.targetDateGuidance.state("home", "unavailable")
                   : undefined}
-            >
-              {homePlanReady && homePlanPresentation ? decisionTitle : t(decisionTitle)}
-            </Text>
-            <Text
-              maxFontSizeMultiplier={2}
-              style={styles.decisionDetail}
-              testID={resumeSessionId
+
+        detailTestID={resumeSessionId
                 ? runtimeSelectors.resume.status(resumeSessionId)
                 : homePlanReady && homePlanPresentation
                   ? runtimeSelectors.targetDateGuidance.reason("home", homePlanPresentation.reason)
                   : homePlanUnavailable
                     ? runtimeSelectors.homePlan.reason(homePlan.reason)
                   : undefined}
-            >
-              {decisionDetail}
-            </Text>
-          </View>
-        </View>
-        <Button
-          disabled={!decisionEnabled}
-          onPress={() => {
+
+        primaryTestID={resumeSessionId
+            ? runtimeSelectors.resume.continue(resumeSessionId)
+            : homePlanReady || homePlanUnavailable
+              ? runtimeSelectors.targetDateGuidance.primary("home")
+              : runtimeSelectors.home.primaryAction()}
+
+          onPrimary={() => {
             if (homePlanReady) {
               onHomePlanAction(readyHomePlan.guidance.home.primary);
               return;
@@ -353,27 +344,7 @@ export function HomeTab({
             }
             onStartLearning(model.topicId);
           }}
-          style={styles.startButton}
-          testID={resumeSessionId
-            ? runtimeSelectors.resume.continue(resumeSessionId)
-            : homePlanReady || homePlanUnavailable
-              ? runtimeSelectors.targetDateGuidance.primary("home")
-              : runtimeSelectors.home.primaryAction()}
-          variant="primary"
-        >
-          {homePlanReady || homePlanUnavailable ? decisionLabel : t(decisionLabel)}
-        </Button>
-        {hasActiveSession || isFirstUse ? null : (
-          <Pressable
-            accessibilityRole="button"
-            onPress={isRecommendationSettingsAction ? onOpenSettings : onChooseTopic}
-            style={({ pressed }) => [styles.secondaryAction, pressed ? styles.pressed : null]}
-          >
-            <Text maxFontSizeMultiplier={2} style={styles.secondaryActionText}>{t(isRecommendationSettingsAction ? "Manage settings" : "Choose another topic")}</Text>
-            {isRecommendationSettingsAction ? null : <Icon color={palette.accentPurple} name="chevron-right" size={18} />}
-          </Pressable>
-        )}
-      </Card>
+      />
       {secondaryPlan && secondaryPlanPresentation ? <Card style={styles.decisionCard}>
         <Text maxFontSizeMultiplier={2} style={styles.decisionTitle}>{secondaryPlanPresentation.stateLabel}</Text>
         <Text maxFontSizeMultiplier={2} style={styles.decisionDetail}>{tPlan("homePlan.todayDetail", { area: localizeHomePlanArea(secondaryPlan, t), count: secondaryPlan.session.sessionLength, message: secondaryPlanPresentation.message, reviews: secondaryPlan.dueReviewCount, status: tPlan(`homePlan.day.${secondaryPlan.day.status}`) })}</Text>
@@ -480,6 +451,7 @@ export function HomeTab({
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  ...createHomeDecisionStyles(palette),
   homeLoading: {
     gap: spacing.lg,
     width: "100%",
@@ -652,78 +624,17 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     fontWeight: "600",
     lineHeight: 18,
   },
-  pressed: {
-    opacity: 0.78,
-  },
-  decisionCard: {
-    backgroundColor: palette.surface,
-    borderColor: palette.navigation.active,
-    borderRadius: 22,
-    elevation: 0,
-    gap: spacing.lg,
-    overflow: "hidden",
-    padding: spacing.xl,
-    position: "relative",
-    shadowOpacity: 0,
-  },
-  cardRail: {
-    backgroundColor: palette.navigation.active,
-    borderRadius: 2,
-    height: 44,
-    left: -1,
-    position: "absolute",
-    top: 19,
-    width: 3,
-  },
-  decisionHeading: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  decisionHeadingLargeText: {
-    alignItems: "flex-start",
-    flexDirection: "column",
-  },
-  decisionTitle: {
-    color: palette.textPrimary,
-    fontSize: 22,
-    fontWeight: "600",
-    letterSpacing: -0.3,
-    lineHeight: 28,
-  },
-  decisionCopy: {
-    flex: 1,
-    gap: spacing.xxs,
-    minWidth: 0,
-  },
-  claudeDecisionCopyLargeText: {
-    alignSelf: "stretch",
-    flex: 0,
-    flexBasis: "auto",
-    flexGrow: 0,
-    flexShrink: 0,
-  },
-  decisionIconTile: {
-    alignItems: "center",
-    backgroundColor: palette.surfaceInput,
-    borderColor: palette.choice.active,
-    borderRadius: 14,
-    borderWidth: 1,
-    height: 44,
-    justifyContent: "center",
-    width: 44,
-  },
-  startButton: {
-    backgroundColor: palette.navigation.active,
-    borderColor: palette.navigation.active,
-    minHeight: 49,
-    paddingVertical: 15,
-  },
-  decisionDetail: {
-    color: palette.textSecondary,
-    fontSize: 14,
-    lineHeight: 22,
-  },
+
+
+
+
+
+
+
+
+
+
+
   firstUseState: {
     alignItems: "flex-start",
     backgroundColor: palette.surface,
@@ -824,20 +735,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     alignSelf: "stretch",
     textAlign: "left",
   },
-  secondaryAction: {
-    alignItems: "center",
-    alignSelf: "center",
-    flexDirection: "row",
-    gap: spacing.xs,
-    minHeight: 44,
-    paddingHorizontal: spacing.sm,
-  },
-  secondaryActionText: {
-    color: palette.primary,
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 18,
-  },
+
+
   detailSection: {
     gap: spacing.sm,
   },

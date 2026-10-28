@@ -334,6 +334,25 @@ test("launch readiness fails closed when the application release lock provenance
   }
 });
 
+test("launch readiness rejects the explicit local unpublished candidate release lock", () => {
+  const directory = mkdtempSync(join(tmpdir(), "patternly-local-candidate-lock-"));
+  const releaseLockPath = join(directory, "release.lock.json");
+  try {
+    const lock = JSON.parse(readFileSync(join(root, "integration/contracts/content-release/release.lock.json"), "utf8"));
+    lock.releaseId = `patternly-local-candidate-${lock.sourceInputFingerprint.slice(0, 20)}`;
+    for (const artifact of lock.artifacts) artifact.releaseId = lock.releaseId;
+    lock.currentIdentity.sourceTree = "dirty";
+    writeFileSync(releaseLockPath, JSON.stringify(lock));
+
+    const result = runWithReleaseLock(releaseLockPath);
+    const report = JSON.parse(result.output);
+    assert.equal(report.contentReleaseLock.status, "invalid");
+    assert.ok(report.contentReleaseLock.errors.includes("local unpublished content candidates cannot be used as release input"));
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("launch readiness fails closed when the application evidence checkout is dirty", () => {
   const applicationRoot = mkdtempSync(join(tmpdir(), "patternly-release-gate-app-"));
   try {

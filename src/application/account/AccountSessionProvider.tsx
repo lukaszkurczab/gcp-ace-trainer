@@ -31,7 +31,7 @@ import { markGuestInstallationAdoptionPending } from "../../storage/repositories
 import type { LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
 import { createProviderFirstUseCoordinator } from "./providerFirstUseCoordinator";
 export { completeUnrecognizedPersistedAuthSignOut } from "../bootstrap/accountBootstrap";
-import { admitAccountBootstrap, completeAccountBootstrap, createAccountBootstrapCoordinator, prepareAuthenticatedAccountBootstrap, type ProfilePreparationAttempt } from "../bootstrap/accountBootstrap";
+import { admitAccountBootstrap, completeAccountBootstrap, createAccountBootstrapCoordinator, prepareAuthenticatedAccountBootstrap, publishCompletedAccountState, type ProfilePreparationAttempt } from "../bootstrap/accountBootstrap";
 import { accountFinalizationPolicies, executeAccountFinalization, resolveAccountFinalizationBarrier, type AccountFinalizationOptions } from "./accountFinalization";
 import { resolveProviderRegistrationDocuments, type ProviderRegistrationDocumentsResult } from "../../legal/providerRegistrationDocuments";
 import type { TargetLocale } from "../../preferences/localeResolver";
@@ -641,7 +641,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const premiumRefreshQueueRef = useRef(createPremiumRefreshQueue());
   if (!sessionCoordinatorRef.current) {
     sessionCoordinatorRef.current = createAccountSessionCoordinator((_token, outcome) => {
-      if (outcome.state) setState(outcome.state);
+      if (outcome.state) publishCompletedAccountState({ stateRef, setState }, outcome.state);
     });
   }
   if (!pendingSessionRevocationDrainRef.current) pendingSessionRevocationDrainRef.current = createPendingSessionRevocationDrain();

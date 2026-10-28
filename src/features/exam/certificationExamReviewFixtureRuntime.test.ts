@@ -109,8 +109,8 @@ test("practice answer matrix exposes actual completed summary, five feedback pre
   assert.equal(summary.session.id, CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID);
   assert.equal(summary.session.status, "completed");
   assert.equal(summary.certificationExam, null);
-  assert.deepEqual(previews.map((preview) => preview.feedback.result), ["correct", "incorrect", "correct", "partial", "incorrect"]);
-  assert.deepEqual(review.items.slice(0, 5).map((item) => item.result), ["correct", "incorrect", "correct", "partial", "incorrect"]);
+  assert.deepEqual(previews.map((preview) => preview.feedback.result), ["correct", "incorrect", "correct", "incorrect", "incorrect"]);
+  assert.deepEqual(review.items.slice(0, 5).map((item) => item.result), ["correct", "incorrect", "correct", "incorrect", "incorrect"]);
   await assert.rejects(runtime.readPracticePreviews(CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID), /does not match/);
 });
 

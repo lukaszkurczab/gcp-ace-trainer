@@ -16,7 +16,7 @@ import type { PackageCompletionRule, VerifiedCompletionSource } from "../../doma
 import type { CanonicalProductSimulationProfile } from "../../content/canonical/questionTypes";
 import type { ProductModeConfig } from "../../content/canonical/productModeConfig";
 import type { LearningPlanningPolicy } from "../../content/canonical/planningPolicy";
-import type { CanonicalFeedbackProjection, InteractionEvaluation, ReviewInteractionPresentation } from "../../content/canonical/interactions/shared";
+import type { CanonicalExamMetadata, CanonicalFeedbackProjection, InteractionEvaluation, ReviewInteractionPresentation } from "../../content/canonical/interactions/shared";
 import type { RetryMutationCommandHandle, RetryableMutationOperation } from "../mutationBoundary";
 
 /** Opaque application handles. The canonical repository adapter validates each handle by identity. */
@@ -31,6 +31,8 @@ export type TrainingQuestionSummary = Readonly<{
   mentalUnitId: string;
   prompt: string;
   interactionType: string;
+  requiredSelectionCount?: number;
+  examMetadata?: CanonicalExamMetadata;
   difficulty: string | null;
   constraints?: readonly string[];
   sourceRefs?: readonly string[];
@@ -43,6 +45,7 @@ export type TrainingQuestionSummary = Readonly<{
 export interface TrainingInteractionPort {
   evaluate(questionId: string, response: unknown): InteractionEvaluation;
   isComplete(questionId: string, response: unknown): boolean;
+  isValidPartialResponse?(questionId: string, response: unknown): boolean;
   controlIds(questionId: string): readonly string[];
   randomizeControlOrder(questionId: string): boolean;
 }

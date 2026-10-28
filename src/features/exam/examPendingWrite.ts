@@ -2,7 +2,7 @@ import type { CertificationExamProjection } from "../../application/certificatio
 import type { CanonicalQuestionResponse } from "../../content/canonical";
 import type { ExamReadOwnerOutcome } from "./examReadOwner";
 
-export type PendingExamWrite = Readonly<{ kind: "response"; occurrenceId: string; response: CanonicalQuestionResponse }> | Readonly<{ kind: "flag"; occurrenceId: string; flagged: boolean }>;
+export type PendingExamWrite = Readonly<{ kind: "response"; occurrenceId: string; response: CanonicalQuestionResponse | null }> | Readonly<{ kind: "flag"; occurrenceId: string; flagged: boolean }>;
 
 export function shouldClearPendingExamWrite(
   write: PendingExamWrite,

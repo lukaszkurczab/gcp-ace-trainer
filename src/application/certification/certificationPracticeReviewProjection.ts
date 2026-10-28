@@ -2,7 +2,7 @@ import { sessionCaseStates } from "../../domain/learning/caseEvidence";
 import { indexCaseRecipes } from "../../content/canonical/caseRecipe";
 import { isCaseAttemptEvidence } from "../../domain/learning/caseEvidence";
 import { getTrackRegistration, resolvedContentRefsEqual, type AttemptResultKind, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
-import type { CanonicalFeedbackMessage, JsonValue } from "../../content/canonical";
+import type { CanonicalFeedbackMessage, CanonicalStatementReviewRow, JsonValue } from "../../content/canonical";
 import { isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../tracks/certification";
 import { projectCanonicalSourceEvidence, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { overallScoreCredit } from "../canonical/overallScoreCredit";
@@ -30,6 +30,7 @@ export type CertificationPracticeReviewItem = Readonly<{
   selectedOptionIds: readonly string[];
   sourceAttemptId: string;
   selectionMode: "single" | "multiple";
+  statementRows?: readonly CanonicalStatementReviewRow[];
 }>;
 export type CertificationDiagnosticUnitSummary = Readonly<{
   contentDomainIds: readonly string[];
@@ -120,29 +121,39 @@ export async function projectCertificationPracticeReview(input: Readonly<{
     questionById.set(question.questionId, question);
     const scored = exact.interactions.evaluate(question.questionId, response).result;
     if (!scored || JSON.stringify(scored) !== JSON.stringify(attempt.result)) return fail("Certification Practice answer evidence has an invalid result.");
-    if (question.interactionType !== "choice_single" && question.interactionType !== "choice_multiple") {
-      return fail("Certification Practice review supports only declared choice interactions.");
-    }
+    if (question.interactionType !== "choice_single" && question.interactionType !== "choice_multiple" && question.interactionType !== "decision_matrix") return fail("Certification Practice review supports only declared choice or statement interactions.");
     const review = exact.interactions.presentReview(question.questionId, response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
     const feedback = review.feedback;
-    const renderer = review.model as { renderer?: { kind?: string; options?: readonly Readonly<{ id: string; text: string; selected: boolean }>[] } };
-    if (!feedback || renderer.renderer?.kind !== "choice" || !Array.isArray(renderer.renderer.options)) return fail("Certification Practice review evidence is unavailable.");
-    const selectedOptionIds = renderer.renderer.options.filter((option) => option.selected).map((option) => option.id);
-    const correctOptionIds = (Array.isArray(review.diagnostics) ? review.diagnostics as readonly Readonly<{ id: string; state: string }>[] : [])
-      .filter((entry) => entry.state === "correct" || entry.state === "omitted_correct").map((entry) => entry.id);
-    if (selectedOptionIds.length === 0 || correctOptionIds.length === 0) return fail("Certification Practice review evidence is incomplete.");
+    if (!feedback) return fail("Certification Practice review evidence is unavailable.");
+    let options: readonly Readonly<{ optionId: string; text: string }>[] = [];
+    let selectedOptionIds: readonly string[] = [];
+    let correctOptionIds: readonly string[] = [];
+    let statementRows: CertificationPracticeReviewItem["statementRows"];
+    if (question.interactionType === "decision_matrix") {
+      if (!review.statementRows || review.statementRows.some((row) => row.correctValueIds.length === 0)) return fail("Certification Practice statement review evidence is incomplete.");
+      statementRows = review.statementRows;
+    } else {
+      const renderer = review.model as { renderer?: { kind?: string; options?: readonly Readonly<{ id: string; text: string; selected: boolean }>[] } };
+      if (renderer.renderer?.kind !== "choice" || !Array.isArray(renderer.renderer.options)) return fail("Certification Practice choice review renderer is unavailable.");
+      options = Object.freeze(renderer.renderer.options.map((option) => Object.freeze({ optionId: option.id, text: option.text })));
+      selectedOptionIds = renderer.renderer.options.filter((option) => option.selected).map((option) => option.id);
+      correctOptionIds = (Array.isArray(review.diagnostics) ? review.diagnostics as readonly Readonly<{ id: string; state: string }>[] : [])
+        .filter((entry) => entry.state === "correct" || entry.state === "omitted_correct").map((entry) => entry.id);
+      if (selectedOptionIds.length === 0 || correctOptionIds.length === 0) return fail("Certification Practice choice review evidence is incomplete.");
+    }
     return Object.freeze({
       ...(question.contentDomainId === undefined ? {} : { contentDomainId: question.contentDomainId }),
       constraints: Object.freeze([...(question.constraints ?? [])]),
       correctOptionIds: Object.freeze([...correctOptionIds]),
       details: feedback.details,
       ...(feedback.messages === undefined ? {} : { messages: feedback.messages }),
+      ...(statementRows ? { statementRows } : {}),
       sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback }),
       item: occurrence.item,
       mentalUnitId: question.mentalUnitId,
       nodeId: question.nodeId,
       occurrenceId: occurrence.occurrenceId,
-      options: Object.freeze(renderer.renderer.options.map((option) => Object.freeze({ optionId: option.id, text: option.text }))),
+      options,
       ordinal: index + 1,
       prompt: question.prompt,
       questionId: question.questionId,

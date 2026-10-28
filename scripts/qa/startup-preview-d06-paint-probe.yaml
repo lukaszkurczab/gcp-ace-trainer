@@ -1,0 +1,10 @@
+appId: com.lkurczab.patternly
+name: Startup preview D06 settled paint probe
+---
+- extendedWaitUntil:
+    visible:
+      id: patternly:content:preparing:resuming-session
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: d06-pl-dark-standard-settled-maestro

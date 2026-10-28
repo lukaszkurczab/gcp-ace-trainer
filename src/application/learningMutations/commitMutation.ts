@@ -7,7 +7,7 @@ import { CanonicalWriteOutcomeError, JournalWriteError, StorageReadError } from 
 import { getAccountSyncState, markAccountDataPending } from "../../storage/repositories/accountDataRepository";
 import { withLocalLearningWriteOperation } from "./localLearningWriteOperation";
 import type { GoalPlanAcceptanceInterruptionHook } from "../../storage/repositories/goalPlanAcceptanceRepository";
-import { pausePersist13ResetAfterMaterialization } from "../runtimeAuditability/persist13ResetPauseHook";
+import { pausePersist13Start, pausePersist13AfterJournalClear, pausePersist13ResetAfterMaterialization, pausePersist13BeforeJournalClear } from "../runtimeAuditability/persist13ResetPauseHook";
 import { recoverPendingMutation } from "./recoverPendingMutation";
 import type { ActiveProfileStorageLease } from "../../storage/repositories/mutationJournalRepository";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
@@ -44,6 +44,10 @@ export function retainMutationRetryPreflight(error: unknown, preflight: (() => P
 async function commitMutationUnlocked(record: MutationJournalRecord, beforeGoalPlanWrite?: GoalPlanAcceptanceInterruptionHook, lease = captureMutationJournalLease()): Promise<void> {
   const accountState = await getAccountSyncState(productionLearningDataAdmissionContext);
   if (accountState.materialization || accountState.pendingConfirmation) throw new MutationCommitFailure("journal_write", "not_durable", new Error("Account data transition is in progress."));
+  try {
+    const pause = pausePersist13Start(record, lease, "before_start_journal_write", () => isRetryLeaseCurrent(lease));
+    if (pause) await pause;
+  } catch (error) { throw new MutationCommitFailure("journal_write", "not_durable", error); }
   let prepared: MutationJournalRecord;
   try { prepared = await persistMutationJournal(record, productionLearningDataAdmissionContext, lease); }
   catch (error) {
@@ -70,6 +74,8 @@ async function commitMutationUnlocked(record: MutationJournalRecord, beforeGoalP
     return;
   }
   try {
+    const pause = pausePersist13Start(prepared, lease, "after_start_journal_durable_before_materialization", () => isRetryLeaseCurrent(lease));
+    if (pause) await pause;
     await materializeMutation(prepared, beforeGoalPlanWrite);
     await pausePersist13ResetAfterMaterialization(prepared.operation);
     await updateMutationJournalPhase(prepared, "materialized", productionLearningDataAdmissionContext);
@@ -81,9 +87,13 @@ async function commitMutationUnlocked(record: MutationJournalRecord, beforeGoalP
     await verifyMutation(prepared);
     if (prepared.operation !== "resolve_account_sync_conflict" && prepared.operation !== "reset_learning_state") await markAccountDataPending(productionLearningDataAdmissionContext);
     await verifyMutation(prepared);
+    const persist13Pause = pausePersist13BeforeJournalClear(prepared.operation);
+    if (persist13Pause) await persist13Pause;
     await clearMutationJournal(productionLearningDataAdmissionContext, prepared.commandIdentity.fingerprint);
   }
   catch (error) { throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error); }
+  const persist13PostClearPause = pausePersist13AfterJournalClear(prepared.operation);
+  if (persist13PostClearPause) await persist13PostClearPause;
 }
 
 function isPrewriteStorageReadFailure(error: unknown): boolean {

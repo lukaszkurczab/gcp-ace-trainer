@@ -46,7 +46,7 @@
   "A shorter path is available": "Dostępna jest krótsza ścieżka",
   "The package explicitly supports shorter sessions. Your proposal uses {{count}} questions instead of {{requested}}.": "Pakiet wyraźnie dopuszcza krótsze sesje. Propozycja zawiera {{count}} pytań zamiast {{requested}}.",
   "Not enough material for this plan": "Za mało materiału na ten plan",
-  "The package needs {{requested}} eligible questions per session, but only {{available}} are available. {{missing}} more are required.": "Pakiet wymaga {{requested}} pasujących pytań na sesję, ale dostępnych jest {{available}}. Brakuje {{missing}}.",
+  "The package needs {{requested}} eligible questions per session, but only {{available}} are available. {{missing}} more are required.": "Liczba pytań spełniających warunki na sesję: wymagana {{requested}}, dostępna {{available}}. Brakuje {{missing}}.",
   "Weekly schedule": "Plan tygodnia",
   "{{count}} question_one": "{{count}} pytanie",
   "{{count}} question_few": "{{count}} pytania",

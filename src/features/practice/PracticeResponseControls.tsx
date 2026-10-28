@@ -48,8 +48,10 @@ function renderChoice(props: PracticeResponseRendererProps) {
   const model = control.model as PracticeChoiceControl;
   if (control.interactionType !== "choice_single" && control.interactionType !== "choice_multiple" || !model || model.kind !== "choice") throw new Error("Choice response control does not match its interaction binding.");
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
   return (
     <View style={styles.stack}>
+      {model.selectionMode === "multiple" && model.requiredSelectionCount !== undefined ? <Text accessibilityLiveRegion="polite" maxFontSizeMultiplier={2} style={styles.optionText}>{t("Select {{count}} answers", { count: model.requiredSelectionCount })} · {model.options.filter((option) => practiceOptionIsSelected(option.state)).length} {t("selected")}</Text> : null}
       {model.options.map((option, index) => (
         <ChoiceOption
           editable={editable}
@@ -142,7 +144,7 @@ function ChoiceOption({ editable, index, itemId, onPress, option, role }: Readon
     accessibilityState={{ checked: selected, disabled: !editable }}
     accessibilityValue={correctness ? { text: t(correctness) } : undefined}
     disabled={!editable}
-    letter={String.fromCharCode(65 + index)}
+    letter={role === "checkbox" ? selected ? "☑" : "☐" : String.fromCharCode(65 + index)}
     onPress={onPress}
     state={option.state === "neutral" ? "default" : option.state as AnswerOptionState}
     testID={itemId ? runtimeSelectors.session.option(itemId, option.id) : undefined}

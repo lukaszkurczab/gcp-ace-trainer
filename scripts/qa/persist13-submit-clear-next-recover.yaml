@@ -1,0 +1,23 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-13 — recover, verify and advance once
+tags:
+  - persist13
+  - submit-clear-next
+---
+- extendedWaitUntil:
+    visible:
+      text: "Stage: complete"
+    timeout: 60000
+- assertVisible: "PERSIST-13 submit_clear_next recover: observed"
+- assertVisible:
+    id: "persist13-fixture-bootstrap"
+    text: "Bootstrap ready: true"
+- assertVisible:
+    id: "persist13-fixture-journal"
+    text: "Journal absent: true"
+- assertVisible:
+    id: "persist13-fixture-preserved-equal"
+    text: "Preserved equal: true"
+- assertVisible:
+    id: "persist13-fixture-cleanup"
+    text: "Fixture cleanup: true"

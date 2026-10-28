@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer, NavigationIndependentTree, useTheme } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
-import { Alert, Linking, StyleSheet, View } from "react-native";
+import { Alert, Linking } from "react-native";
 
-import { AppShellHeader, Screen } from "../components";
+import { AppShellHeader } from "../components";
 import { usePatternlyAccount } from "../application/account/AccountSessionProvider";
-import { AccountProfileTransitionLoadingState } from "../application/account/AccountProfileTransitionLoadingState";
+import { StartupLoadingSurface } from "../content/application/startupPreparationSurfaces";
 import { ROUTES } from "../constants/routes";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { CertificationExamReviewFixtureNavigator } from "../features/exam/certificationExamReviewFixtureNavigator";
@@ -169,9 +169,7 @@ export function RootNavigator() {
 
   if (state.kind === "loading" || state.kind === "profilePreparing") {
     return (
-      <Screen edges={["top", "bottom"]} style={styles.sessionLoading}>
-        <View style={{ flex: 1 }} testID="account-session-restore-loading"><AccountProfileTransitionLoadingState /></View>
-      </Screen>
+      <StartupLoadingSurface center testID="account-session-restore-loading" />
     );
   }
 
@@ -187,6 +185,8 @@ export function RootNavigator() {
             <Stack.Screen name={ROUTES.LEARNING_PLAN_PROPOSAL} initialParams={{ proposalId: "ui11-fixture-proposal", trackId: learningPlanProposalFixtureTrackId(auditLearningPlanFixture.scenario) }} options={{ headerShown: false, title: t("Learning plan") }}>
               {(screenProps) => <LearningPlanProposalScreen {...screenProps} runtime={proposalFixtureRuntime} />}
             </Stack.Screen>
+            <Stack.Screen name={ROUTES.GOAL_CADENCE} component={GoalCadenceScreen} options={{ headerShown: false, title: t("Goal") }} />
+            <Stack.Screen name={ROUTES.PRACTICE_HUB} component={PracticeHubScreen} options={{ headerShown: false, title: t("Practice Hub") }} />
           </Stack.Navigator>
         </NavigationContainer>
       </NavigationIndependentTree>
@@ -377,8 +377,4 @@ export function RootNavigator() {
   );
 }
 
-const styles = StyleSheet.create({
-  sessionLoading: {
-    justifyContent: "center",
-  },
-});
+

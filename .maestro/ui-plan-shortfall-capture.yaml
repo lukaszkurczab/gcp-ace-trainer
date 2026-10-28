@@ -1,0 +1,40 @@
+# Existing smoke fixture; caller verifies own actor/profile before opening it.
+# Presentation proof only: 10 requested - 2 eligible = 8 missing; no bank mutation.
+# Capture standard/max text with translated SHORTFALL_TEXT/TARGET_OUTLOOK_TEXT.
+appId: com.lkurczab.patternly
+name: Learning plan shortfall presentation capture
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=shortfall"
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:state:shortfall
+    timeout: 20000
+- assertVisible:
+    id: patternly:navigation:back
+- assertVisible:
+    id: patternly:learning-plan:adjust-goal
+- assertVisible:
+    id: patternly:learning-plan:back-to-practice
+- takeScreenshot: "${CAPTURE_PREFIX}-top"
+- scrollUntilVisible:
+    element: "${SHORTFALL_TEXT}"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- takeScreenshot: "${CAPTURE_PREFIX}-capacity"
+- scrollUntilVisible:
+    element: "${TARGET_OUTLOOK_TEXT}"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- takeScreenshot: "${CAPTURE_PREFIX}-outlook"
+- assertVisible:
+    id: patternly:learning-plan:adjust-goal
+- assertVisible:
+    id: patternly:learning-plan:back-to-practice

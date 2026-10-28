@@ -1,0 +1,178 @@
+appId: com.lkurczab.patternly
+name: CCAR-P — mixed responses, incomplete drafts, navigator and suspension
+# Parameters come from the actual canonical profile via runCcarpIosAcceptance.mjs.
+---
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+      - extendedWaitUntil:
+          notVisible: ".*Open debugger to view warnings.*"
+          timeout: 10000
+- runFlow:
+    when:
+      visible:
+        id: main-tab-bar-practice
+    commands:
+      - tapOn:
+          id: main-tab-bar-practice
+      - tapOn: "Certification Exam Simulation, Premium"
+- runFlow:
+    when:
+      true: ${SKIP_START != 'true'}
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: ccarp-start-timed-exam
+          direction: DOWN
+      - tapOn:
+          id: ccarp-start-timed-exam
+- extendedWaitUntil:
+    visible: "Question navigator, Question.*"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- tapOn: "Question navigator, Question.*"
+- tapOn: "Question ${MATRIX_INDEX},.*"
+- scrollUntilVisible:
+    element:
+      id: "exam-statement-${MATRIX_QID}-${MATRIX_DIM}"
+    direction: DOWN
+- tapOn:
+    id: "exam-statement-${MATRIX_QID}-${MATRIX_DIM}"
+- tapOn:
+    id: "exam-statement-value-${MATRIX_QID}-${MATRIX_DIM}-${MATRIX_VALUE}"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- tapOn: "Question navigator, Question.*"
+- assertVisible: "Question ${MATRIX_INDEX}, current, incomplete, saved"
+- tapOn: "Question ${MULTI_INDEX},.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:option:${MULTI_QID}:${MULTI_O1}"
+    direction: DOWN
+- tapOn:
+    id: "patternly:simulation:option:${MULTI_QID}:${MULTI_O1}"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:option:${MULTI_QID}:${MULTI_O2}"
+    direction: DOWN
+- tapOn:
+    id: "patternly:simulation:option:${MULTI_QID}:${MULTI_O2}"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:option:${MULTI_QID}:${MULTI_O3}"
+    direction: DOWN
+- tapOn:
+    id: "patternly:simulation:option:${MULTI_QID}:${MULTI_O3}"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "Select 2 answers.*2 selected"
+    direction: UP
+- assertVisible: "Select 2 answers.*2 selected"
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:option:${MULTI_QID}:${MULTI_O2}"
+    direction: DOWN
+- tapOn:
+    id: "patternly:simulation:option:${MULTI_QID}:${MULTI_O2}"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- tapOn: "Question navigator, Question.*"
+- tapOn: "Question ${SINGLE_INDEX},.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:option:${SINGLE_QID}:${SINGLE_O1}"
+    direction: DOWN
+- tapOn:
+    id: "patternly:simulation:option:${SINGLE_QID}:${SINGLE_O1}"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:option:${SINGLE_QID}:${SINGLE_O2}"
+    direction: DOWN
+- tapOn:
+    id: "patternly:simulation:option:${SINGLE_QID}:${SINGLE_O2}"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- tapOn:
+    id: "patternly:simulation:option:${SINGLE_QID}:${SINGLE_O2}"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:simulation:option:${SINGLE_QID}:${SINGLE_O1}"
+    direction: UP
+- tapOn:
+    id: "patternly:simulation:option:${SINGLE_QID}:${SINGLE_O1}"
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "Flag question"
+    direction: UP
+- tapOn: "Flag question"
+- extendedWaitUntil:
+    visible: "Remove flag"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      text: "Question navigator, Question.*"
+      enabled: true
+    timeout: 30000
+- tapOn: "Question navigator, Question.*"
+- assertVisible: "Question ${MATRIX_INDEX}, incomplete, saved"
+- assertVisible: "Question ${MULTI_INDEX}, incomplete, saved"
+- takeScreenshot: ccarp-partials-navigator
+- scrollUntilVisible:
+    element:
+      text: "Question 63,.*"
+    direction: DOWN
+- tapOn: "Question 63,.*"
+- assertVisible: "Question navigator, Question 63 of 63"
+- assertVisible: "Finish exam"
+- takeScreenshot: ccarp-before-cold-resume

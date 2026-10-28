@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+const presentation = readFileSync("src/content/application/startupPreparationSurfaces.tsx", "utf8");
 const source = readFileSync("src/content/application/ContentPreparationGate.tsx", "utf8");
 const preparationGate = readFileSync("src/application/account/ProfileStoragePreparationGate.tsx", "utf8");
 const surface = readFileSync("src/content/application/EncryptedStorageRecoverySurface.tsx", "utf8");
@@ -37,8 +38,8 @@ test("production content preparation strictly verifies the installed package inv
   }
 });
 
-test("blocking operational reasons are translated while dynamic fallback text remains intact", () => {
-  assert.match(source, /description=\{developmentResetUnavailable \? `\$\{t\(state\.reason\)\} Development reset is unavailable because lifecycle preparation did not complete\.` : t\(state\.reason\)\}/u);
+test("F01 blocking operational reasons use the safe translated learner projection", () => {
+  assert.match(source, /description=\{t\(startupFailureCopy\(state.reason\)\)\}/u);
 });
 
 test("lost-key recovery uses the typed failure code and the canonical hold-to-remove operation", () => {
@@ -66,9 +67,9 @@ test("lost-key recovery keeps removal, success, error, and bootstrap transitions
   assert.doesNotMatch(removal, /retry\(\)/);
   assert.match(preparationGate, /onContinue=\{retry\}/);
   assert.match(preparationGate, /onRetryBootstrap=\{retryLostKeyPreparation\}/);
-  assert.match(preparationGate, /canRetry=\{auditPresentation !== "retry-limit" && canStartManualRetry\(manualRetry\.current\)\}/);
-  assert.match(preparationGate, /retryLimitReached=\{auditPresentation === "retry-limit" \|\| manualRetry\.current\.failedAttempts >= 5\}/);
-  assert.match(preparationGate, /onReturn=\{\(\) => \{ setRemovalError\(undefined\); setRecoveryStatus\("base"\); \}\}/);
+  assert.match(preparationGate, /canRetry=\{canStartManualRetry\(manualRetry\.current\)\}/);
+  assert.match(preparationGate, /retryLimitReached=\{manualRetry\.current\.failedAttempts >= 5\}/);
+  assert.match(preparationGate, /onReturn=\{\(\) => \{ setRecoveryStatus\("base"\); \}\}/);
   assert.doesNotMatch(source, /encrypted_storage_key_missing|EncryptedStorageRecoverySurface/u);
 });
 
@@ -86,7 +87,7 @@ test("development URLs defer only during loading and terminal bootstrap consumes
   assert.match(urlEffect, /if \(!lifecycleReady\.current\) \{\s*pendingRuntimeAuditabilityUrl\.current = null;\s*if \(url === DEVELOPMENT_RESET_LEARNING_STATE_URL\) setDevelopmentResetUnavailable\(true\);\s*return;\s*\}/u);
   assert.match(urlEffect, /if \(state\.kind !== "loading" && pendingRuntimeAuditabilityUrl\.current\) \{\s*const queuedUrl = pendingRuntimeAuditabilityUrl\.current;\s*pendingRuntimeAuditabilityUrl\.current = null;\s*if \(lifecycleReady\.current\) void apply\(queuedUrl\);\s*else if \(queuedUrl === DEVELOPMENT_RESET_LEARNING_STATE_URL\) setDevelopmentResetUnavailable\(true\);\s*\}/u);
   assert.match(urlEffect, /Linking\.addEventListener\("url", \(\{ url \}\) => \{ void apply\(url\); \}\)/u);
-  assert.match(source, /Development reset is unavailable because lifecycle preparation did not complete\./u);
+  assert.match(source, /setDevelopmentResetUnavailable\(true\)/u);
   assert.doesNotMatch(urlEffect, /must also be available after bootstrap has reported a blocking/u);
 });
 
@@ -119,7 +120,7 @@ test("recovery surface centers recovery states and gives success its own concise
   assert.match(surface, /name="alert-triangle"/);
   assert.match(surface, /recoveryDeviceLocale\(Settings\.get\("AppleLanguages"\), Settings\.get\("AppleLocale"\)\)/);
   assert.match(surface, /i18n\.getFixedT\(locale, "common"\)/);
-  assert.match(preparationGate, /operationalDiagnosticCode\(error\)/);
+  assert.match(preparationGate, /recordDevelopmentStorageRemovalFailure\(error\)/);
   assert.doesNotMatch(surface, /Nothing else changed/);
   assert.doesNotMatch(source, /Unavailable local data could not be removed/);
   assert.match(surface, /accessibilityRole="header"/);
@@ -132,10 +133,10 @@ test("recovery surface centers recovery states and gives success its own concise
 test("unavailable active content is a typed gate with explicit abandon and retry paths", () => {
   assert.match(source, /kind: "content_identity_unavailable"/);
   assert.match(source, /abandonUnavailableActiveTrainingSession\(sessionId\)/);
-  assert.match(source, /runtimeSelectors\.content\.unavailableActive\(\)/);
-  assert.match(source, /runtimeSelectors\.content\.unavailableActiveConfirm\(\)/);
-  assert.match(source, /runtimeSelectors\.content\.unavailableActiveRetry\(\)/);
-  assert.match(source, /An active session uses content that is no longer available/);
+  assert.match(presentation, /runtimeSelectors\.content\.unavailableActive\(\)/);
+  assert.match(presentation, /runtimeSelectors\.content\.unavailableActiveConfirm\(\)/);
+  assert.match(presentation, /runtimeSelectors\.content\.unavailableActiveRetry\(\)/);
+  assert.match(presentation, /An active session uses content that is no longer available/);
   assert.match(source, /setBootstrapRevision\(\(revision\) => revision \+ 1\)/);
   assert.doesNotMatch(source, /contentIdentityUnavailableRepository/);
 });
@@ -181,14 +182,8 @@ test("the Premium resume notice stays bound to the exact active session and clea
   assert.doesNotMatch(homeScreen, /clearAfterSuccessfulResume\([^\n]*\);\s*navigation\.navigate\(route\.name/);
 });
 
-test("the recovery presentation fixture is development-smoke only and never calls storage operations", () => {
-  const auditEffect = preparationGate.slice(
-    preparationGate.indexOf("if (!__DEV__ || !isPatternlySmokeRuntime()) return;"),
-    preparationGate.indexOf("}, []);", preparationGate.indexOf("if (!__DEV__ || !isPatternlySmokeRuntime()) return;")),
-  );
-  assert.match(auditEffect, /parseStorageRecoveryAuditCommand/);
-  assert.match(auditEffect, /storageFailureCode: "encrypted_storage_key_missing"/);
-  assert.doesNotMatch(auditEffect, /prepareProfileStorage|inspectPreparedProfileState|removeUnavailableEncryptedStorage|createNativeLocalLogoutControl/);
-  assert.match(preparationGate, /canRetry=\{auditPresentation !== "retry-limit" && canStartManualRetry\(manualRetry\.current\)\}/);
-  assert.match(preparationGate, /auditPresentation === "retry-limit" \|\| manualRetry\.current\.failedAttempts >= 5/);
+test("legacy recovery URL cannot connect a preview to real storage callbacks", () => {
+  assert.doesNotMatch(preparationGate, /parseStorageRecoveryAuditCommand|auditPresentation|Linking/);
+  assert.match(preparationGate, /onRemove=\{\(\) => \{ void removeUnavailableData\(\); \}\}/);
+  assert.match(preparationGate, /canRetry=\{canStartManualRetry\(manualRetry.current\)\}/);
 });

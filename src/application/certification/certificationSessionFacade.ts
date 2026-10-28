@@ -22,10 +22,12 @@ import {
   type PreparedSession,
 } from "../trainingLifecycle";
 import { isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
-import { type CanonicalQuestionResponse, type JsonValue } from "../../content/canonical";
+import { type CanonicalQuestionResponse, type CanonicalStatementReviewRow, type JsonValue } from "../../content/canonical";
 import type { CanonicalChoiceFeedbackState } from "../canonical/canonicalInteractionPresentation";
+import type { CanonicalFeedbackMessage } from "../../content/canonical/interactions/shared";
 import { projectCanonicalSourceEvidence, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
+import { isValidCertificationExamDraftResponse } from "./certificationExamDraftResponse";
 import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 import { projectCertificationExamReview, type CertificationExamReviewProjection } from "./certificationExamReviewProjection";
 import { projectCertificationPracticeReview, type CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
@@ -59,12 +61,14 @@ export type CertificationPracticeProjection = Readonly<{
     reason: string;
     details: JsonValue;
     sources: readonly CanonicalSourceLink[];
+    statementRows?: readonly CanonicalStatementReviewRow[];
   }> | null;
 }>;
 export type CertificationPracticeQuestion = Readonly<{
   interaction:
     | Readonly<{ type: "choice_single"; scoringMethod: "exact_selected_set"; options: readonly Readonly<{ optionId: string; text: string }>[] }>
-    | Readonly<{ type: "choice_multiple"; scoringMethod: "exact_selected_set"; options: readonly Readonly<{ optionId: string; text: string }>[] }>;
+    | Readonly<{ type: "choice_multiple"; scoringMethod: "exact_selected_set"; requiredSelectionCount?: number; options: readonly Readonly<{ optionId: string; text: string }>[] }>
+    | Readonly<{ type: "decision_matrix"; dimensions: readonly Readonly<{ dimensionId: string; label: string; values: readonly Readonly<{ valueId: string; text: string }>[] }>[] }>;
   nodeId: string;
   prompt: string;
   questionId: string;
@@ -77,10 +81,21 @@ export type CertificationExamProjection = Readonly<{
   occurrenceId: string;
   ordinal: number;
   total: number;
+  requiredSelectionCount?: number;
+  responseCompletionByOccurrenceId: Readonly<Record<string, "empty" | "incomplete" | "complete">>;
   response: unknown | null;
   flaggedOccurrenceIds: readonly string[];
   now: string;
   operation: SimulationDurableOperationState;
+}>;
+export type CertificationExamRules = Readonly<{
+  questionCount: number;
+  durationMinutes: number;
+  profileId: string;
+  profileVersion: string;
+  source: Readonly<{ url: string; checkedDate: string; guideVersion: string }>;
+  trainingPolicy: Readonly<{ id: string; version: string; formatMinimums: Readonly<{ choice_single: number; choice_multiple: number; decision_matrix: number }>; skillMinimums: Readonly<Record<string, number>>; provenance?: unknown }>;
+  scoringPolicy: Readonly<{ id: string; version: string; method: string }>;
 }>;
 
 /** A terminal Exam is a valid outcome, not a request to start a replacement session. */
@@ -136,6 +151,16 @@ export async function resumeExpectedCertificationExam(trackId: TrackId, expected
 }
 export async function startCertificationExam(trackId: TrackId, source = "practiceHub"): Promise<PreparedSession> {
   return startTrainingSession({ trackId, modeId: "certification-exam-simulation", source, request: {} });
+}
+/** Read-only rules for the optional pre-clock control familiarization. */
+export async function getCertificationExamRules(trackId: TrackId): Promise<CertificationExamRules> {
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "certification");
+  const profile = resolved.track.simulationProfiles?.find((candidate): candidate is import("../../content/canonical").CanonicalSimulationProfile => candidate.familyId === "certification" && candidate.modeId === "certification-exam-simulation");
+  const coverage = profile?.familyConfig.examCoverage;
+  if (!profile || !coverage || coverage.policy !== "patternly-ccarp-v1") throw new TrainingApplicationFailure("missing_content", "Certification Exam rules are unavailable.");
+  const scoringPolicy = profile.familyConfig.scoringPolicy;
+  if (!scoringPolicy) throw new TrainingApplicationFailure("missing_content", "Certification Exam scoring rules are unavailable.");
+  return Object.freeze({ questionCount: profile.familyConfig.questionCount.minimum, durationMinutes: profile.familyConfig.durationMinutes, profileId: profile.profileId, profileVersion: profile.profileVersion, source: Object.freeze({ ...profile.familyConfig.source }), trainingPolicy: Object.freeze({ id: coverage.policy, version: profile.profileVersion, formatMinimums: Object.freeze({ ...coverage.formatMinimums }), skillMinimums: Object.freeze({ ...coverage.skillMinimums }), ...("provenance" in coverage && coverage.provenance !== undefined ? { provenance: coverage.provenance } : {}) }), scoringPolicy: Object.freeze({ id: scoringPolicy.policyId, version: scoringPolicy.policyVersion, method: scoringPolicy.method }) });
 }
 export async function getCertificationPracticeProjection(): Promise<CertificationPracticeProjection> {
   const [initialSession, attempts] = await Promise.all([requireActive(), loadTrainingAttempts()]);
@@ -438,9 +463,17 @@ export async function getCertificationExamProjection(expectedTrackId?: TrackId):
   if (!occurrence) throw new Error("Cloud exam occurrence is unavailable.");
   const raw = draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null;
   const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
-  if (question.question.questionId !== occurrence.item.questionId || (raw !== null && !question.interactions.isComplete(question.question.questionId, raw))) throw new TrainingApplicationFailure("invalid_response", "Cloud exam response does not match its exact interaction.");
+  if (question.question.questionId !== occurrence.item.questionId || (raw !== null && !isValidCertificationExamDraftResponse(question.question, raw, question.interactions))) throw new TrainingApplicationFailure("invalid_response", "Cloud exam response does not match its exact interaction.");
   const interaction = question.interactions.present(question.question.questionId, raw, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
-  return Object.freeze({ session, draft, question: question.question, interaction, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: lifecycle.currentTime(), operation: await lifecycle.getSimulationOperationState(session) });
+  const responseCompletionByOccurrenceId = Object.freeze(Object.fromEntries(await Promise.all(session.itemOrder.map(async (item) => {
+    const saved = draft.responsesByOccurrenceId[item.occurrenceId];
+    if (saved === undefined || saved === null) return [item.occurrenceId, "empty"] as const;
+    const exact = item.occurrenceId === occurrence.occurrenceId ? question : await contentPackageRuntimeOwner.resolveItem(item.item);
+    if (exact.question.questionId !== item.item.questionId || !isValidCertificationExamDraftResponse(exact.question, saved, exact.interactions)) throw new TrainingApplicationFailure("invalid_response", "Cloud exam draft contains a response that does not match its exact interaction.");
+    return [item.occurrenceId, exact.interactions.isComplete(exact.question.questionId, saved) ? "complete" : "incomplete"] as const;
+  }))) as Record<string, "empty" | "incomplete" | "complete">);
+  const requiredSelectionCount = question.question.requiredSelectionCount;
+  return Object.freeze({ session, draft, question: question.question, interaction, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, ...(requiredSelectionCount === undefined ? {} : { requiredSelectionCount }), responseCompletionByOccurrenceId, response: raw, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: lifecycle.currentTime(), operation: await lifecycle.getSimulationOperationState(session) });
 }
 
 export async function reconcileCertificationExamOperation(): Promise<"verified" | "conflict" | "unknown"> {
@@ -458,11 +491,14 @@ export async function recoverCertificationExamOperation(): Promise<string | null
   const [active, completed, result] = await Promise.all([loadActiveTrainingSession(), loadTrainingSession(session.id), loadTrainingSessionResult(session.id)]);
   return !active && completed?.status === "completed" && result?.sessionId === session.id ? session.id : null;
 }
-export async function saveCertificationExamResponse(input: Readonly<{ occurrenceId: string; response: CanonicalQuestionResponse }>): Promise<void> {
+export async function saveCertificationExamResponse(input: Readonly<{ occurrenceId: string; response: CanonicalQuestionResponse | null }>): Promise<void> {
   await assertCertificationExamIsActive();
   const projection = await getCertificationExamProjection();
   if (projection.occurrenceId !== input.occurrenceId) throw new Error("Cloud exam response does not belong to the active occurrence.");
-  const draft = { ...projection.draft, revision: projection.draft.revision + 1, updatedAt: getTrainingLifecycleUseCases().currentTime(), responsesByOccurrenceId: { ...projection.draft.responsesByOccurrenceId, [input.occurrenceId]: input.response } } as TrainingSessionDraft;
+  const responsesByOccurrenceId = { ...projection.draft.responsesByOccurrenceId };
+  if (input.response === null) delete responsesByOccurrenceId[input.occurrenceId];
+  else responsesByOccurrenceId[input.occurrenceId] = input.response;
+  const draft = { ...projection.draft, revision: projection.draft.revision + 1, updatedAt: getTrainingLifecycleUseCases().currentTime(), responsesByOccurrenceId } as TrainingSessionDraft;
   await getTrainingLifecycleUseCases().saveSimulationDraft({ draft, expectedPreviousRevision: projection.draft.revision });
 }
 
@@ -522,16 +558,19 @@ function certificationFeedbackModeFromSession(session: TrainingSession): "afterE
 
 /** Removes answer material before a practice question crosses the application boundary. */
 export function projectCertificationPracticeQuestion(question: TrainingQuestionSummary, model: unknown): CertificationPracticeQuestion {
-  if (question.interactionType !== "choice_single" && question.interactionType !== "choice_multiple") {
-    throw new TrainingApplicationFailure("missing_content", "Certification Practice requires a declared choice interaction.");
+  if (question.interactionType === "decision_matrix") {
+    const renderer = (model as { renderer?: { kind?: string; dimensions?: readonly Readonly<{ id: string; label: string; values: readonly Readonly<{ id: string; text: string }>[] }>[] } }).renderer;
+    if (renderer?.kind !== "complexity" || !Array.isArray(renderer.dimensions) || renderer.dimensions.some((dimension: Readonly<{ id: string; label: string; values: readonly Readonly<{ id: string; text: string }>[] }>) => typeof dimension.id !== "string" || typeof dimension.label !== "string" || !Array.isArray(dimension.values) || dimension.values.some((value: Readonly<{ id: string; text: string }>) => typeof value.id !== "string" || typeof value.text !== "string"))) throw new TrainingApplicationFailure("missing_content", "Certification Practice statement interaction is unavailable.");
+    return Object.freeze({ interaction: Object.freeze({ type: "decision_matrix", dimensions: Object.freeze(renderer.dimensions.map((dimension) => Object.freeze({ dimensionId: dimension.id, label: dimension.label, values: Object.freeze(dimension.values.map((value: Readonly<{ id: string; text: string }>) => Object.freeze({ valueId: value.id, text: value.text }))) }))) }), nodeId: question.nodeId, prompt: question.prompt, questionId: question.questionId });
   }
+  if (question.interactionType !== "choice_single" && question.interactionType !== "choice_multiple") throw new TrainingApplicationFailure("missing_content", "Certification Practice requires a declared response interaction.");
   const renderer = (model as { renderer?: { kind?: string; options?: readonly Readonly<{ id: string; text: string }>[] } }).renderer;
   if (renderer?.kind !== "choice" || !Array.isArray(renderer.options) || renderer.options.some((option) => typeof option.id !== "string" || typeof option.text !== "string")) {
     throw new TrainingApplicationFailure("missing_content", "Certification Practice choice presentation is unavailable.");
   }
   const options = Object.freeze(renderer.options.map((option) => Object.freeze({ optionId: option.id, text: option.text })));
   return Object.freeze({
-    interaction: Object.freeze({ type: question.interactionType, scoringMethod: "exact_selected_set", options }),
+    interaction: Object.freeze({ type: question.interactionType, scoringMethod: "exact_selected_set", ...(question.interactionType === "choice_multiple" && question.requiredSelectionCount !== undefined ? { requiredSelectionCount: question.requiredSelectionCount } : {}), options }),
     nodeId: question.nodeId,
     prompt: question.prompt,
     questionId: question.questionId,
@@ -547,8 +586,43 @@ export function projectCertificationPracticeFeedback(
   if (!attempt || feedbackMode !== "afterEachAnswer") return null;
   const question = exact.question;
   const feedback = exact.interactions.projectFeedback(question.questionId, attempt.response);
-  if (!feedback || (question.interactionType !== "choice_single" && question.interactionType !== "choice_multiple")) return null;
-  return Object.freeze({ controls: projectInteractionControls(exact.interactions.projectDiagnostics(question.questionId, attempt.response)), ...(feedback.messages === undefined ? {} : { messages: feedback.messages }), result: attempt.result.kind, reason: feedback.reason, details: feedback.details, sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback }) });
+  if (!feedback) return null;
+  const controls = question.interactionType === "decision_matrix"
+    ? projectDecisionMatrixControls(exact, attempt.response, feedback.messages ?? [])
+    : question.interactionType === "choice_single" || question.interactionType === "choice_multiple"
+      ? projectInteractionControls(exact.interactions.projectDiagnostics(question.questionId, attempt.response))
+      : null;
+  if (!controls) return null;
+  const review = question.interactionType === "decision_matrix"
+    ? exact.interactions.presentReview(question.questionId, attempt.response)
+    : undefined;
+  if (question.interactionType === "decision_matrix" && (!review || review.interactionType !== "decision_matrix" || !review.statementRows)) {
+    throw new TrainingApplicationFailure("verification_failure", "Certification Practice statement feedback is unavailable.");
+  }
+  const statementRows = review?.statementRows;
+  const messages = statementRows && feedback.messages
+    ? feedback.messages.filter((message) => !statementRows.some((row) => message.targetId === row.dimensionId || message.targetId.startsWith(`${row.dimensionId}|`)))
+    : feedback.messages;
+  const details = statementRows ? omitStatementExplanations(feedback.details) : feedback.details;
+  return Object.freeze({ controls, ...(messages === undefined || messages.length === 0 ? {} : { messages }), result: attempt.result.kind, reason: feedback.reason, details, sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback }), ...(statementRows ? { statementRows } : {}) });
+}
+
+function omitStatementExplanations(details: JsonValue): JsonValue {
+  if (!details || typeof details !== "object" || Array.isArray(details) || !Object.hasOwn(details, "statementExplanations")) return details;
+  const { statementExplanations: _statementExplanations, ...remaining } = details as Readonly<Record<string, JsonValue>>;
+  return Object.freeze(remaining);
+}
+
+function projectDecisionMatrixControls(exact: ResolvedInteractionItem, response: unknown, messages: readonly CanonicalFeedbackMessage[]): readonly Readonly<{ id: string; state: CanonicalChoiceFeedbackState }>[] {
+  const model = exact.interactions.present(exact.question.questionId, response).model as { renderer?: { dimensions?: readonly Readonly<{ id: string; selectedValues: readonly string[] }>[] } };
+  const dimensions = model.renderer?.dimensions;
+  if (!Array.isArray(dimensions)) throw new TrainingApplicationFailure("verification_failure", "Certification Practice statement feedback is unavailable.");
+  return Object.freeze(dimensions.map((dimension) => {
+    const selectedValueId = dimension.selectedValues[0];
+    if (typeof selectedValueId !== "string") throw new TrainingApplicationFailure("verification_failure", "Certification Practice statement response is incomplete.");
+    const wrong = messages.some((message) => message.kind === "wrong_value" && message.targetId === `${dimension.id}|${selectedValueId}`);
+    return Object.freeze({ id: dimension.id, state: wrong ? "incorrect" as const : "correct" as const });
+  }));
 }
 
 function projectInteractionControls(value: unknown): readonly Readonly<{ id: string; state: CanonicalChoiceFeedbackState }>[] {

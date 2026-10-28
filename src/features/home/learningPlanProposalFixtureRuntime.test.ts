@@ -50,6 +50,10 @@ test("fixture actions report one in-memory call and never report storage success
   assert.equal((await invalidIdentityRuntime.resolve("invented-id", trackId)).kind, "stale");
   assert.equal((await invalidIdentityRuntime.accept("invented-id", trackId, { body: "local", title: "local" })).kind, "stale");
   assert.equal((await invalidIdentityRuntime.startProposalEdit("invented-id", trackId)).kind, "stale");
+  invalidIdentityRuntime.discardProposal(proposalId);
+  invalidIdentityRuntime.discardEditor("fixture-editor");
+  assert.deepEqual(invalidIdentityRuntime.getFixtureInvocationCounts?.(), { accept: 1, create: 0, "edit-proposal": 1, "edit-existing": 0, "retry-reminders": 0 },
+    "fixture disposal is an explicit no-op and does not change the canned action counts");
 });
 
 test("delayed loading remains pending before it resolves to the ready view", async () => {

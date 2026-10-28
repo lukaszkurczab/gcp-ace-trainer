@@ -4,10 +4,30 @@ import test from "node:test";
 
 import { resolvePersist13Entry } from "./persist13Entry";
 import {
+  areHashedSnapshotsEqual,
   arePersist13PhysicalSnapshotsEqual,
+  arePersist13JournalPhysicalWriteTargetsExact,
+  arePersist13JournalTargetDeltasScoped,
+  arePersist13PracticeUiNextSnapshotsPreserved,
+  isExactPersist13SessionCollectionAdvance,
   createPersist13Manifest,
   fixtureModeAllowsManifest,
   fixtureStoreIds,
+  hasPersist13PhysicalJournal,
+  hashPersist13PracticeUiSessionState,
+  isPersist13MaterializedJournalSidecar,
+  isPersist13VerifyClearSidecar,
+  isPersist13SubmitClearNextSidecar,
+  isPersist13AdvanceMaterializedSidecar,
+  isPersist13PracticeUiProbeSidecar,
+  isPersist13PracticeUiNextObservation,
+  isPersist13PracticeUiNextObservationCore,
+  isPersist13PracticeUiNextSidecar,
+  writeAndVerifyPersist13AdvanceMaterializedSidecar,
+  writeAndVerifyPersist13PracticeUiNextSidecar,
+  writeAndVerifyPersist13PracticeUiProbeSidecar,
+  beginPersist13SubmitClearNextRecovery,
+  writeAndVerifyPersist13SubmitClearNextPhase,
   isPersist13Manifest,
   isPersist13ScenarioSidecar,
   isPersist13ControlNamespace,
@@ -15,6 +35,12 @@ import {
   PERSIST13_FIXTURE_OWNER,
   PERSIST13_SCENARIO_SIDECAR_SCHEMA,
   PERSIST13_SCENARIO_SIDECAR_KEY,
+  PERSIST13_VERIFY_CLEAR_SIDECAR_SCHEMA,
+  PERSIST13_SUBMIT_CLEAR_NEXT_SIDECAR_SCHEMA,
+  PERSIST13_ADVANCE_MATERIALIZED_SIDECAR_SCHEMA,
+  PERSIST13_PRACTICE_UI_PROBE_SIDECAR_SCHEMA,
+  PERSIST13_PRACTICE_UI_NEXT_SIDECAR_SCHEMA,
+  PERSIST13_PRACTICE_UI_NEXT_OBSERVATION_SCHEMA,
   persist13FixturePhysicalKey,
   withPersist13ManifestState,
 } from "./persist13ResetFixtureProtocol";
@@ -32,6 +58,17 @@ test("PERSIST-13 selects the regular root only when both compiled fixture values
   assert.deepEqual(resolvePersist13Entry({ mode: "recover", runId: runId.toUpperCase() }), { kind: "fixture", mode: "recover", scenario: "reset", runId });
   assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId }), { kind: "fixture", mode: "seed", scenario: "reset", runId });
   assert.deepEqual(resolvePersist13Entry({ mode: "recover", runId, scenario: "journal" }), { kind: "fixture", mode: "recover", scenario: "journal", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "journal_materialized" }), { kind: "fixture", mode: "seed", scenario: "journal_materialized", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "verify_clear" }), { kind: "fixture", mode: "seed", scenario: "verify_clear", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "submit_clear_next" }), { kind: "fixture", mode: "seed", scenario: "submit_clear_next", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "advance_materialized" }), { kind: "fixture", mode: "seed", scenario: "advance_materialized", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "practice_ui_probe" }), { kind: "fixture", mode: "seed", scenario: "practice_ui_probe", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "practice_ui_next" }), { kind: "fixture", mode: "seed", scenario: "practice_ui_next", runId });
+  const observation = "{}";
+  assert.deepEqual(resolvePersist13Entry({ mode: "recover", runId, scenario: "practice_ui_next", observation }), { kind: "fixture", mode: "recover", scenario: "practice_ui_next", runId, observation });
+  assert.deepEqual(resolvePersist13Entry({ mode: "recover", runId, scenario: "practice_ui_next" }), { kind: "fixture", mode: "recover", scenario: "practice_ui_next", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "practice_ui_next", observation }), { kind: "fixture_invalid", reason: "observation_unexpected" });
+  assert.deepEqual(resolvePersist13Entry({ mode: "recover", runId, scenario: "practice_ui_probe", observation }), { kind: "fixture_invalid", reason: "observation_unexpected" });
   assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "draft" }), { kind: "fixture", mode: "seed", scenario: "draft", runId });
   assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "other" }), { kind: "fixture_invalid", reason: "invalid_scenario" });
   assert.deepEqual(resolvePersist13Entry({ scenario: "journal" }), { kind: "fixture_invalid", reason: "scenario_without_mode" });
@@ -66,6 +103,28 @@ test("PERSIST-13 physical snapshot equality includes exact key set and raw value
   assert.equal(arePersist13PhysicalSnapshotsEqual(baseline, Object.freeze([["b", undefined], ["a", "raw-envelope"]] as const)), false);
 });
 
+test("practice UI cold-pass snapshots require exact session and timer stability", () => {
+  const before = Object.freeze([
+    { key: "session", sha256: sha256Utf8("session-before") },
+    { key: "timer", sha256: sha256Utf8("timer-before") },
+  ]);
+  const afterElapsedProgress = Object.freeze([
+    { key: "session", sha256: sha256Utf8("session-before") },
+    { key: "timer", sha256: sha256Utf8("timer-after") },
+  ]);
+  assert.equal(areHashedSnapshotsEqual(before, before), true);
+  assert.equal(areHashedSnapshotsEqual(before, afterElapsedProgress), false);
+});
+
+test("practice UI session stability permits only active foreground elapsed time", () => {
+  const hashJson = (value: unknown) => sha256Utf8(JSON.stringify(value));
+  const baseline = { id: "session", status: "active", currentItemIndex: 0, completedAt: null, activeForegroundMs: 50 };
+  assert.equal(hashPersist13PracticeUiSessionState(baseline, hashJson), hashPersist13PracticeUiSessionState({ ...baseline, activeForegroundMs: 75 }, hashJson));
+  assert.notEqual(hashPersist13PracticeUiSessionState(baseline, hashJson), hashPersist13PracticeUiSessionState({ ...baseline, completedAt: "unexpected" }, hashJson));
+  assert.notEqual(hashPersist13PracticeUiSessionState(baseline, hashJson), hashPersist13PracticeUiSessionState({ ...baseline, status: "completed" }, hashJson));
+  assert.notEqual(hashPersist13PracticeUiSessionState(baseline, hashJson), hashPersist13PracticeUiSessionState({ ...baseline, unexpectedMarker: true }, hashJson));
+});
+
 test("scenario fault key is the exact modern physical key produced by the profile router", () => {
   const values = new Map<string, string>();
   const base = {
@@ -80,6 +139,86 @@ test("scenario fault key is the exact modern physical key produced by the profil
   const exact = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_JOURNAL);
   assert.deepEqual([...values.keys()], [exact]);
   assert.equal(exact, `patternly:profile:v1:${runId}:${encodeURIComponent(STORAGE_KEYS.ACTIVE_JOURNAL)}`);
+});
+
+test("profile router resolves the exact logical outcome indexes and session that raw MMKV cannot read", () => {
+  const values = new Map<string, string>();
+  const base = {
+    getString(key: string) { return values.get(key); },
+    setString(key: string, value: string) { values.set(key, value); },
+    remove(key: string) { values.delete(key); },
+    contains(key: string) { return values.has(key); },
+    getAllKeys() { return [...values.keys()]; },
+  };
+  const profile = { id: runId, kind: "guest" as const, accountId: null };
+  const routed = createProfileScopedStorage(base, profile);
+  const rows = [
+    [STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, "attempt-index"],
+    [STORAGE_KEYS.TRAINING_SESSION_INDEX, "session-index"],
+    [STORAGE_KEYS.REVIEW_INDEX, "review-index"],
+    [STORAGE_KEYS.trainingSession("fixture-session"), "session-record"],
+  ] as const;
+  for (const [logicalKey, value] of rows) routed.setString(logicalKey, value);
+  for (const [logicalKey, expected] of rows) {
+    assert.equal(base.getString(logicalKey), undefined);
+    assert.equal(routed.getString(logicalKey), expected);
+    assert.equal(values.get(persist13FixturePhysicalKey(runId, logicalKey)), expected);
+  }
+});
+
+test("materialized recovery detects a physical journal even when a logical-key lookup misses it", () => {
+  const values = new Map<string, string>();
+  const base = {
+    getString(key: string) { return values.get(key); },
+    setString(key: string, value: string) { values.set(key, value); },
+    remove(key: string) { values.delete(key); },
+    contains(key: string) { return values.has(key); },
+    getAllKeys() { return [...values.keys()]; },
+  };
+  const profile = { id: runId, kind: "guest" as const, accountId: null };
+  createProfileScopedStorage(base, profile).setString(STORAGE_KEYS.ACTIVE_JOURNAL, "test-only-journal");
+  assert.equal(base.getString(STORAGE_KEYS.ACTIVE_JOURNAL) ?? null, null);
+  const physicalSnapshot = [...values].map(([key, value]) => [key, value] as const);
+  assert.equal(hasPersist13PhysicalJournal(physicalSnapshot, runId), true);
+  assert.equal(hasPersist13PhysicalJournal([], runId), false);
+});
+
+test("materialized journal guards reject missing, extra, and duplicate physical write targets", () => {
+  const expected = new Set(["physical-attempt", "physical-session", "physical-review"]);
+  assert.equal(arePersist13JournalPhysicalWriteTargetsExact(expected, [...expected]), true);
+  assert.equal(arePersist13JournalPhysicalWriteTargetsExact(expected, ["physical-attempt", "physical-session"]), false);
+  assert.equal(arePersist13JournalPhysicalWriteTargetsExact(expected, [...expected, "foreign-key"]), false);
+  assert.equal(arePersist13JournalPhysicalWriteTargetsExact(expected, ["physical-attempt", "physical-session", "physical-review", "physical-review"]), false);
+  assert.equal(arePersist13JournalPhysicalWriteTargetsExact(expected, [...expected, "physical-journal"]), false);
+});
+
+test("advance session-set guard permits only the current session change and rejects missing, extra, or duplicate rows", () => {
+  const before = Object.freeze([{ id: "active", index: 0 }, { id: "history", index: 4 }]);
+  const expected = Object.freeze({ id: "active", index: 1 });
+  const equal = (left: Readonly<{ id: string; index: number }>, right: Readonly<{ id: string; index: number }>) => left.id === right.id && left.index === right.index;
+  assert.equal(isExactPersist13SessionCollectionAdvance(before, [before[1]!, expected], "active", expected, equal), true);
+  assert.equal(isExactPersist13SessionCollectionAdvance(before, [expected, { id: "history", index: 5 }], "active", expected, equal), false);
+  assert.equal(isExactPersist13SessionCollectionAdvance(before, [expected], "active", expected, equal), false);
+  assert.equal(isExactPersist13SessionCollectionAdvance(before, [expected, before[1]!, { id: "extra", index: 0 }], "active", expected, equal), false);
+  assert.equal(isExactPersist13SessionCollectionAdvance(before, [expected, expected], "active", expected, equal), false);
+});
+
+test("materialized journal delta guard rejects a foreign non-target change", () => {
+  const allowed = new Set(["physical-attempt", "physical-journal"]);
+  const before = Object.freeze([
+    { key: "physical-attempt", sha256: "a".repeat(64) },
+    { key: "foreign-setting", sha256: "b".repeat(64) },
+  ]);
+  const expected = Object.freeze([
+    { key: "physical-attempt", sha256: "c".repeat(64) },
+    { key: "foreign-setting", sha256: "b".repeat(64) },
+  ]);
+  const foreignChanged = Object.freeze([
+    { key: "physical-attempt", sha256: "c".repeat(64) },
+    { key: "foreign-setting", sha256: "d".repeat(64) },
+  ]);
+  assert.equal(arePersist13JournalTargetDeltasScoped(before, expected, allowed), true);
+  assert.equal(arePersist13JournalTargetDeltasScoped(before, foreignChanged, allowed), false);
 });
 
 test("control namespace permits only the manifest, scenario sidecar and canonical router registry slots", () => {
@@ -161,6 +300,276 @@ test("draft sidecar binds the expected canonical payload and codec-prepared enve
   assert.equal(isPersist13ScenarioSidecar({ ...sidecar, expectedDraftEnvelopeSha256: undefined }, runId, "draft"), false);
 });
 
+test("materialized journal sidecar has its own closed schema and complete hash-only snapshots", () => {
+  const attemptKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.trainingAttempt("fixture-attempt"));
+  const sessionKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.trainingSession("fixture-session"));
+  const before = Object.freeze([{ key: persist13FixturePhysicalKey(runId, STORAGE_KEYS.SETTINGS), sha256: "a".repeat(64) }]);
+  const after = Object.freeze([
+    ...before,
+    { key: attemptKey, sha256: "b".repeat(64) },
+    { key: sessionKey, sha256: "c".repeat(64) },
+  ].sort((left, right) => left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
+  const sidecar = Object.freeze({
+    schema: "patternly:persist13-journal-materialized.v1" as const,
+    owner: PERSIST13_FIXTURE_OWNER,
+    runId,
+    scenario: "journal_materialized" as const,
+    phase: "materialized" as const,
+    ...fixtureStoreIds(runId),
+    fixtureProfileId: runId,
+    before,
+    after,
+    sessionIdSha256: sha256Utf8("fixture-session"),
+    occurrenceIdSha256: sha256Utf8("fixture-occurrence"),
+    responseSha256: sha256Utf8("fixture-response"),
+    expectedAttemptSha256: sha256Utf8("expected-attempt"),
+    expectedSessionSha256: sha256Utf8("expected-session"),
+    expectedReviewSha256: Object.freeze([sha256Utf8("expected-review")]),
+    expectedReviewCount: 1,
+    baselineAttemptCount: 1,
+    baselineSessionIndex: 0,
+  });
+  assert.equal(isPersist13MaterializedJournalSidecar(sidecar, runId), true);
+  assert.equal(isPersist13MaterializedJournalSidecar({ ...sidecar, extraTargetKeys: [attemptKey] }, runId), false);
+  assert.equal(isPersist13MaterializedJournalSidecar({ ...sidecar, expectedReviewSha256: [] }, runId), false);
+  assert.equal(isPersist13MaterializedJournalSidecar({ ...sidecar, expectedReviewCount: 1.5 }, runId), false);
+  assert.equal(isPersist13MaterializedJournalSidecar({ ...sidecar, phase: "faulted" }, runId), false);
+  assert.equal(isPersist13MaterializedJournalSidecar({ ...sidecar, runId: "b6d6c87c-8103-4b4c-9af9-77a0d7f002bf" }, runId), false);
+});
+
+test("verify-clear sidecar is scenario-specific, closed, run-bound and hash-only", () => {
+  const journalKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_JOURNAL);
+  const attemptKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.trainingAttempt("fixture-attempt"));
+  const sessionKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.trainingSession("fixture-session"));
+  const before = Object.freeze([{ key: persist13FixturePhysicalKey(runId, STORAGE_KEYS.SETTINGS), sha256: "a".repeat(64) }]);
+  const after = Object.freeze([
+    ...before,
+    { key: attemptKey, sha256: "b".repeat(64) },
+    { key: sessionKey, sha256: "c".repeat(64) },
+    { key: journalKey, sha256: "d".repeat(64) },
+  ].sort((left, right) => left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
+  const sidecar = Object.freeze({
+    schema: PERSIST13_VERIFY_CLEAR_SIDECAR_SCHEMA,
+    owner: PERSIST13_FIXTURE_OWNER,
+    runId,
+    scenario: "verify_clear" as const,
+    phase: "verified_pending_clear" as const,
+    ...fixtureStoreIds(runId),
+    fixtureProfileId: runId,
+    before,
+    after,
+    sessionIdSha256: sha256Utf8("fixture-session"),
+    occurrenceIdSha256: sha256Utf8("fixture-occurrence"),
+    responseSha256: sha256Utf8("fixture-response"),
+    expectedAttemptSha256: sha256Utf8("expected-attempt"),
+    expectedSessionSha256: sha256Utf8("expected-session"),
+    expectedReviewSha256: Object.freeze([sha256Utf8("expected-review")]),
+    expectedReviewCount: 1,
+    baselineAttemptCount: 1,
+    baselineSessionIndex: 0,
+  });
+  assert.equal(isPersist13VerifyClearSidecar(sidecar, runId), true);
+  assert.equal(isPersist13MaterializedJournalSidecar(sidecar, runId), false);
+  assert.equal(isPersist13ScenarioSidecar(sidecar, runId, "journal"), false);
+  assert.equal(isPersist13VerifyClearSidecar({ ...sidecar, phase: "materialized" }, runId), false);
+  assert.equal(isPersist13VerifyClearSidecar({ ...sidecar, extra: true }, runId), false);
+  assert.equal(isPersist13VerifyClearSidecar({ ...sidecar, sessionIdSha256: "raw-session-id" }, runId), false);
+  assert.equal(isPersist13VerifyClearSidecar({ ...sidecar, after: after.filter((entry) => entry.key !== journalKey) }, runId), false);
+  assert.equal(isPersist13VerifyClearSidecar(sidecar, "b6d6c87c-8103-4b4c-9af9-77a0d7f002bf"), false);
+});
+
+test("submit-clear-next sidecar is its own hash-only closed schema and cannot claim a surviving journal", () => {
+  const attemptKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.trainingAttempt("fixture-attempt"));
+  const sessionKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.trainingSession("fixture-session"));
+  const reviewKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.reviewEntry("fixture-review"));
+  const settingsKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.SETTINGS);
+  const before = Object.freeze([{ key: settingsKey, sha256: "a".repeat(64) }]);
+  const after = Object.freeze([
+    { key: attemptKey, sha256: "b".repeat(64) },
+    { key: reviewKey, sha256: "c".repeat(64) },
+    { key: sessionKey, sha256: "d".repeat(64) },
+    before[0]!,
+  ].sort((left, right) => left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
+  const sidecar = Object.freeze({
+    schema: PERSIST13_SUBMIT_CLEAR_NEXT_SIDECAR_SCHEMA,
+    owner: PERSIST13_FIXTURE_OWNER,
+    runId,
+    scenario: "submit_clear_next" as const,
+    phase: "postclear" as const,
+    ...fixtureStoreIds(runId),
+    fixtureProfileId: runId,
+    before,
+    after,
+    sessionIdSha256: sha256Utf8("session"),
+    occurrenceIdSha256: sha256Utf8("occurrence"),
+    responseSha256: sha256Utf8("response"),
+    expectedAttemptSha256: sha256Utf8("attempt"),
+    expectedSessionSha256: sha256Utf8("session-record"),
+    sessionPinsSha256: sha256Utf8("session-pins"),
+    expectedReviewSha256: Object.freeze([sha256Utf8("review")]),
+    expectedReviewCount: 1,
+    baselineAttemptCount: 0,
+    baselineReviewCount: 0,
+    baselineSessionIndex: 0,
+    timerSha256: sha256Utf8("timer"),
+    expectedAdvancedSessionSha256: sha256Utf8("advanced-session"),
+  });
+  assert.equal(isPersist13SubmitClearNextSidecar(sidecar, runId), true);
+  assert.equal(isPersist13VerifyClearSidecar(sidecar, runId), false);
+  assert.equal(isPersist13ScenarioSidecar(sidecar, runId, "journal"), false);
+  assert.equal(isPersist13SubmitClearNextSidecar({ ...sidecar, phase: "faulted" }, runId), false);
+  assert.equal(isPersist13SubmitClearNextSidecar({ ...sidecar, response: "raw answer" }, runId), false);
+  assert.equal(isPersist13SubmitClearNextSidecar({ ...sidecar, runId: "b6d6c87c-8103-4b4c-9af9-77a0d7f002bf" }, runId), false);
+  const journalKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_JOURNAL);
+  assert.equal(isPersist13SubmitClearNextSidecar({ ...sidecar, after: Object.freeze([...after, { key: journalKey, sha256: "e".repeat(64) }].sort((left, right) => left.key < right.key ? -1 : 1)) }, runId), false);
+  const controlValues = new Map<string, string>();
+  const writableControl = { getString: (key: string) => controlValues.get(key), set: (key: string, value: string) => { controlValues.set(key, value); } };
+  const barrier = Object.freeze({ ...sidecar, phase: "advance_started" as const });
+  assert.equal(writeAndVerifyPersist13SubmitClearNextPhase(writableControl, barrier), true);
+  assert.equal(writeAndVerifyPersist13SubmitClearNextPhase({ getString: (key) => controlValues.get(key), set() {} }, Object.freeze({ ...sidecar, phase: "advanced" as const })), false);
+  let writes = 0;
+  const persisted = new Map<string, string>([[PERSIST13_SCENARIO_SIDECAR_KEY, JSON.stringify(barrier)]]);
+  const criticalControl = { getString: (key: string) => persisted.get(key), set: (key: string, value: string) => { writes += 1; persisted.set(key, value); } };
+  let nextCalls = 0;
+  for (let invocation = 0; invocation < 2; invocation += 1) {
+    const current = JSON.parse(persisted.get(PERSIST13_SCENARIO_SIDECAR_KEY)!);
+    if (beginPersist13SubmitClearNextRecovery(criticalControl, current, 0)) nextCalls += 1;
+    assert.equal(JSON.parse(persisted.get(PERSIST13_SCENARIO_SIDECAR_KEY)!).phase, "advance_started");
+  }
+  assert.equal(nextCalls, 0);
+  assert.equal(writes, 0);
+});
+
+test("advance-materialized sidecar is a separate closed hash-only schema bound to a physical journal", () => {
+  const journalKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_JOURNAL);
+  const settingsKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.SETTINGS);
+  const before = Object.freeze([{ key: settingsKey, sha256: "a".repeat(64) }]);
+  const after = Object.freeze([
+    { key: journalKey, sha256: "b".repeat(64) },
+    { key: settingsKey, sha256: "a".repeat(64) },
+  ].sort((left, right) => left.key < right.key ? -1 : 1));
+  const sidecar = Object.freeze({
+    schema: PERSIST13_ADVANCE_MATERIALIZED_SIDECAR_SCHEMA, owner: PERSIST13_FIXTURE_OWNER, runId,
+    scenario: "advance_materialized" as const, phase: "materialized" as const, ...fixtureStoreIds(runId),
+    fixtureProfileId: runId, before, after,
+    sessionIdSha256: sha256Utf8("session"), expectedSessionSha256: sha256Utf8("advanced-session"),
+    expectedSessionsSha256: sha256Utf8("all-sessions"),
+    sessionPinsSha256: sha256Utf8("pins"), attemptSetSha256: sha256Utf8("attempts"),
+    reviewSetSha256: sha256Utf8("reviews"), timerSha256: sha256Utf8("timer"), attemptCount: 1, reviewCount: 1,
+  });
+  assert.equal(isPersist13AdvanceMaterializedSidecar(sidecar, runId), true);
+  assert.equal(isPersist13AdvanceMaterializedSidecar({ ...sidecar, extra: true }, runId), false);
+  assert.equal(isPersist13AdvanceMaterializedSidecar({ ...sidecar, phase: "faulted" }, runId), false);
+  assert.equal(isPersist13AdvanceMaterializedSidecar({ ...sidecar, scenario: "verify_clear" }, runId), false);
+  assert.equal(isPersist13AdvanceMaterializedSidecar({ ...sidecar, sessionIdSha256: "raw-session-id" }, runId), false);
+  assert.equal(isPersist13AdvanceMaterializedSidecar({ ...sidecar, after: after.filter((entry) => entry.key !== journalKey) }, runId), false);
+  assert.equal(isPersist13AdvanceMaterializedSidecar({ ...sidecar, before: Object.freeze([...before, { key: journalKey, sha256: "f".repeat(64) }].sort((left, right) => left.key < right.key ? -1 : 1)) }, runId), false);
+  assert.equal(isPersist13AdvanceMaterializedSidecar({ ...sidecar, runId: "b6d6c87c-8103-4b4c-9af9-77a0d7f002bf" }, runId), false);
+  const control = new Map<string, string>();
+  assert.equal(writeAndVerifyPersist13AdvanceMaterializedSidecar({ getString: (key) => control.get(key), set: (key, value) => { control.set(key, value); } }, sidecar), true);
+  assert.equal(writeAndVerifyPersist13AdvanceMaterializedSidecar({ getString: (key) => control.get(key), set() {} }, Object.freeze({ ...sidecar, phase: "recovering" as const })), false);
+});
+
+test("practice UI probe sidecar arms exactly once from a hash-only committed-feedback baseline", () => {
+  const settingsKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.SETTINGS);
+  const readySnapshot = Object.freeze([{ key: settingsKey, sha256: "a".repeat(64) }]);
+  const sidecar = Object.freeze({
+    schema: PERSIST13_PRACTICE_UI_PROBE_SIDECAR_SCHEMA, owner: PERSIST13_FIXTURE_OWNER, runId,
+    scenario: "practice_ui_probe" as const, phase: "ready" as const, ...fixtureStoreIds(runId),
+    fixtureProfileId: runId, readySnapshot,
+    sessionIdSha256: sha256Utf8("session"), occurrenceIdSha256: sha256Utf8("occurrence"),
+    expectedFeedbackSha256: sha256Utf8("feedback"), sessionPinsSha256: sha256Utf8("pins"),
+    sessionStateSha256: sha256Utf8("session-state"),
+    otherSessionsSha256: sha256Utf8("other-sessions"), attemptSetSha256: sha256Utf8("attempts"),
+    reviewSetSha256: sha256Utf8("reviews"), resultSetSha256: sha256Utf8("results"),
+    timerIdentitySha256: sha256Utf8("timer-identity"), sessionCount: 3, attemptCount: 2, reviewCount: 1,
+    resultCount: 2, currentItemIndex: 0 as const, initialSessionElapsedMs: 0,
+    initialTimerAccumulatedMs: 0, initialTimerCheckpointRevision: 1,
+  });
+  assert.equal(isPersist13PracticeUiProbeSidecar(sidecar, runId), true);
+  assert.equal(isPersist13PracticeUiProbeSidecar({ ...sidecar, rawSessionId: "session" }, runId), false);
+  assert.equal(isPersist13PracticeUiProbeSidecar({ ...sidecar, phase: "recovered" }, runId), false);
+  assert.equal(isPersist13PracticeUiProbeSidecar({ ...sidecar, readySnapshot: [...readySnapshot, { key: persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_JOURNAL), sha256: "b".repeat(64) }] }, runId), false);
+  const control = new Map<string, string>();
+  const store = { getString: (key: string) => control.get(key), set: (key: string, value: string) => { control.set(key, value); } };
+  assert.equal(writeAndVerifyPersist13PracticeUiProbeSidecar(store, sidecar), true);
+  const armed = Object.freeze({ ...sidecar, phase: "ui_armed" as const });
+  assert.equal(writeAndVerifyPersist13PracticeUiProbeSidecar(store, armed), true);
+  assert.equal(writeAndVerifyPersist13PracticeUiProbeSidecar(store, armed), false);
+  assert.equal(writeAndVerifyPersist13PracticeUiProbeSidecar({ ...store, set() {} }, Object.freeze({ ...armed, expectedFeedbackSha256: sha256Utf8("different") })), false);
+});
+
+test("practice UI Next sidecar arms once and its observation rejects journal or unrelated physical changes", () => {
+  const physical = (logical: string) => persist13FixturePhysicalKey(runId, `patternly:canonical:v1:${logical}`);
+  const sessionKey = physical("training-session:session-1");
+  const timerKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
+  const indexKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.TRAINING_SESSION_INDEX);
+  const pointerKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
+  const rows = [sessionKey, timerKey, indexKey, pointerKey].sort().map((key) => Object.freeze({ key, sha256: sha256Utf8(`raw:${key}`) }));
+  const sidecar = Object.freeze({
+    schema: PERSIST13_PRACTICE_UI_NEXT_SIDECAR_SCHEMA, owner: PERSIST13_FIXTURE_OWNER, runId,
+    scenario: "practice_ui_next" as const, phase: "ready" as const, ...fixtureStoreIds(runId), fixtureProfileId: runId,
+    readySnapshot: Object.freeze(rows), sessionIdSha256: sha256Utf8("session-1"),
+    sessionPhysicalKeySha256: sha256Utf8(sessionKey), occurrenceIdSha256: sha256Utf8("occurrence-1"),
+    nextOccurrenceIdSha256: sha256Utf8("occurrence-2"), expectedFeedbackSha256: sha256Utf8("feedback"),
+    sessionPinsSha256: sha256Utf8("pins"), expectedSessionZeroSha256: sha256Utf8("session-0"),
+    expectedSessionOneSha256: sha256Utf8("session-1"), otherSessionsSha256: sha256Utf8("other-sessions"),
+    attemptSetSha256: sha256Utf8("attempts"), reviewSetSha256: sha256Utf8("reviews"), resultSetSha256: sha256Utf8("results"),
+    timerIdentitySha256: sha256Utf8("timer"), sessionCount: 1, attemptCount: 1, reviewCount: 1, resultCount: 0,
+    currentItemIndex: 0 as const, initialSessionElapsedMs: 0, initialTimerAccumulatedMs: 0, initialTimerCheckpointRevision: 1,
+  });
+  assert.equal(isPersist13PracticeUiNextSidecar(sidecar, runId), true);
+  assert.equal(isPersist13PracticeUiNextSidecar({ ...sidecar, extra: true }, runId), false);
+  assert.equal(isPersist13PracticeUiNextSidecar({ ...sidecar, phase: "recovered" }, runId), false);
+
+  const observation = Object.freeze({
+    schema: PERSIST13_PRACTICE_UI_NEXT_OBSERVATION_SCHEMA, owner: PERSIST13_FIXTURE_OWNER, runId,
+    scenario: "practice_ui_next" as const, phase: "ui_armed" as const, sessionIdSha256: sidecar.sessionIdSha256,
+    sessionPhysicalKeySha256: sidecar.sessionPhysicalKeySha256, occurrenceIdSha256: sidecar.nextOccurrenceIdSha256,
+    sessionStableSha256: sidecar.expectedSessionOneSha256, otherSessionsSha256: sidecar.otherSessionsSha256,
+    attemptSetSha256: sidecar.attemptSetSha256, reviewSetSha256: sidecar.reviewSetSha256, resultSetSha256: sidecar.resultSetSha256,
+    timerIdentitySha256: sidecar.timerIdentitySha256, sessionCount: 1, attemptCount: 1, reviewCount: 1, resultCount: 0,
+    currentItemIndex: 1 as const, projectionKind: "unanswered" as const, sessionElapsedMs: 1, timerAccumulatedMs: 1,
+    timerCheckpointRevision: 2, beforeSnapshot: Object.freeze(rows), afterSnapshot: Object.freeze(rows),
+  });
+  assert.equal(isPersist13PracticeUiNextObservationCore(observation, runId), true);
+  assert.equal(isPersist13PracticeUiNextObservation({ ...observation, authCold: true }, runId), true);
+  const journal = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_JOURNAL);
+  const withJournal = Object.freeze([...rows, Object.freeze({ key: journal, sha256: sha256Utf8("journal") })].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)));
+  assert.equal(isPersist13PracticeUiNextObservationCore({ ...observation, afterSnapshot: withJournal }, runId), false);
+  const changedPointer = Object.freeze(rows.map((row) => row.key === pointerKey ? Object.freeze({ ...row, sha256: sha256Utf8("changed") }) : row));
+  assert.equal(isPersist13PracticeUiNextObservationCore({ ...observation, afterSnapshot: changedPointer }, runId), false);
+
+  const control = new Map<string, string>();
+  const store = { getString: (key: string) => control.get(key), set: (key: string, value: string) => { control.set(key, value); } };
+  assert.equal(writeAndVerifyPersist13PracticeUiNextSidecar(store, sidecar), true);
+  const armed = Object.freeze({ ...sidecar, phase: "ui_armed" as const });
+  assert.equal(writeAndVerifyPersist13PracticeUiNextSidecar(store, armed), true);
+  assert.equal(writeAndVerifyPersist13PracticeUiNextSidecar(store, armed), false);
+});
+
+test("practice UI Next cold snapshot guard rejects a stable unauthorized key change and permits only session/timer progress", () => {
+  const sessionKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.trainingSession("session-1"));
+  const timerKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
+  const indexKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.TRAINING_SESSION_INDEX);
+  const pointerKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
+  const settingsKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.SETTINGS);
+  const row = (key: string, value: string) => Object.freeze({ key, sha256: sha256Utf8(value) });
+  const expected = Object.freeze([row(sessionKey, "session-before"), row(timerKey, "timer-before"), row(indexKey, "index"), row(pointerKey, "pointer"), row(settingsKey, "settings")]
+    .sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0)));
+  const sessionAndTimerAdvanced = Object.freeze([row(sessionKey, "session-after"), row(timerKey, "timer-after"), row(indexKey, "index"), row(pointerKey, "pointer"), row(settingsKey, "settings")]
+    .sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0)));
+  const sessionKeyHash = sha256Utf8(sessionKey);
+  assert.equal(arePersist13PracticeUiNextSnapshotsPreserved(expected, sessionAndTimerAdvanced, runId, sessionKeyHash), true);
+
+  const stableForeignChange = Object.freeze(sessionAndTimerAdvanced.map((entry) => entry.key === settingsKey ? row(settingsKey, "changed-settings") : entry));
+  assert.equal(arePersist13PracticeUiNextSnapshotsPreserved(expected, stableForeignChange, runId, sessionKeyHash), false);
+  assert.equal(arePersist13PracticeUiNextSnapshotsPreserved(expected, Object.freeze(sessionAndTimerAdvanced.filter((entry) => entry.key !== indexKey)), runId, sessionKeyHash), false);
+  const withJournal = Object.freeze([...sessionAndTimerAdvanced, row(persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_JOURNAL), "journal")]
+    .sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0)));
+  assert.equal(arePersist13PracticeUiNextSnapshotsPreserved(expected, withJournal, runId, sessionKeyHash), false);
+});
+
 test("fixture selector keeps ordinary providers behind a dynamic import boundary", () => {
   const selector = readFileSync("App.tsx", "utf8");
   const ordinaryRoot = readFileSync("src/RegularApplicationRoot.tsx", "utf8");
@@ -200,4 +609,16 @@ test("fixture pauses only after the durable reset materialization and exact nati
 test("the raw fixture supplies its explicit timer CAS at the existing preparation boundary", () => {
   const fixture = readFileSync("src/application/runtimeAuditability/Persist13ResetFixtureRoot.tsx", "utf8");
   assert.match(fixture, /foregroundTimerCasForTests\(before, after\)[\s\S]*?applySynchronousForegroundTimerRaw\(stores\.base,\s*persist13FixturePhysicalKey\(manifest\.fixtureProfileId, STORAGE_KEYS\.ACTIVE_FOREGROUND_TIMER\), before, after\)/u);
+});
+
+test("start cutpoint seed/recover entry requires an exact stage before stores open", () => {
+  const runId = "921c535a-011e-42dc-b452-bd6f912eb1a3";
+  for (const startStage of ["before_start_journal_write", "after_start_journal_durable_before_materialization"]) {
+    const entry = resolvePersist13Entry({ mode: "seed", scenario: "start_cutpoint", runId, startStage });
+    assert.equal(entry.kind, "fixture");
+    assert.equal(resolvePersist13Entry({ mode: "recover", scenario: "start_cutpoint", runId, startStage }).kind, "fixture");
+  }
+  assert.equal(resolvePersist13Entry({ mode: "seed", scenario: "start_cutpoint", runId }).kind, "fixture_invalid");
+  assert.equal(resolvePersist13Entry({ mode: "seed", scenario: "start_cutpoint", runId, startStage: "wrong" }).kind, "fixture_invalid");
+  assert.equal(resolvePersist13Entry({ mode: "seed", scenario: "journal", runId, startStage: "before_start_journal_write" }).kind, "fixture_invalid");
 });

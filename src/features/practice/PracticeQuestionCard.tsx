@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { DEFAULT_TRACK_QUESTION_PRESENTATION, isSupportedTrackQuestionPresentation, type TrackQuestionPresentation } from "../../domain/tracks/trackAdmission";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -7,7 +8,7 @@ import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 type PracticeQuestionContent = Readonly<{ itemId: string; prompt: string }>;
 
-export function PracticeQuestionCard({ question, presentation = DEFAULT_TRACK_QUESTION_PRESENTATION }: Readonly<{ question: PracticeQuestionContent; presentation?: TrackQuestionPresentation }>) {
+export function PracticeQuestionCard({ question, presentation = DEFAULT_TRACK_QUESTION_PRESENTATION, questionLabelAction }: Readonly<{ question: PracticeQuestionContent; presentation?: TrackQuestionPresentation; questionLabelAction?: ReactNode }>) {
   const { t } = useTranslation("common");
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
@@ -15,13 +16,14 @@ export function PracticeQuestionCard({ question, presentation = DEFAULT_TRACK_QU
   const variant = presentation.variant;
   return (
     <View style={styles.questionCard} testID={runtimeSelectors.session.question(question.itemId)}>
-      <Text key={`label:${fontScale}`} maxFontSizeMultiplier={2} style={styles.questionLabel}>{t("Question")}</Text>
+      <View style={styles.labelRow}><Text key={`label:${fontScale}`} maxFontSizeMultiplier={2} style={styles.questionLabel}>{t("Question")}</Text>{questionLabelAction}</View>
       <Text key={`prompt:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.prompt, variant === "structuredCertificationPrompt" ? styles.structuredPrompt : null]}>{question.prompt}</Text>
     </View>
   );
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  labelRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
   questionLabel: { ...typography.caption, color: palette.primary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
   prompt: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", letterSpacing: -0.3, lineHeight: 28 },
   questionCard: { gap: spacing.md },

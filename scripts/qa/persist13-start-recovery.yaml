@@ -1,0 +1,10 @@
+appId: com.lkurczab.patternly
+name: Patternly start recovery cold bootstrap
+---
+- extendedWaitUntil:
+    visible: "Stage: ${RECOVERY_STAGE}"
+    timeout: 60000
+- assertVisible: "PERSIST-13 start_cutpoint recover: observed"
+- assertVisible: "Journal absent: true"
+- assertVisible: "Preserved equal: true"
+- assertVisible: "Bootstrap ready: true"

@@ -1,0 +1,32 @@
+appId: com.lkurczab.patternly
+name: UI-EXAM — enter current GCP exam on an isolated local account
+# Preflight outside this flow: authenticated own LOCAL fixture, no active session,
+# current candidate, existing iPhone 17, visible development warning dismissed.
+# No reset, login, purchase or finalization.
+---
+- tapOn:
+    id: patternly:home:change-track
+- scrollUntilVisible:
+    element:
+      id: patternly:home:select-track:google-cloud-associate-cloud-engineer
+    direction: DOWN
+- tapOn:
+    id: patternly:home:select-track:google-cloud-associate-cloud-engineer
+- tapOn:
+    id: patternly:home:select-track:continue
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-practice
+    timeout: 30000
+- tapOn:
+    id: main-tab-bar-practice
+- scrollUntilVisible:
+    element:
+      id: patternly:practice:mode-card:certification-exam-simulation
+    direction: DOWN
+- tapOn:
+    id: patternly:practice:mode-card:certification-exam-simulation
+- extendedWaitUntil:
+    visible: "Question navigator, Question 1 of 50"
+    timeout: 30000
+- takeScreenshot: ui-exam-ios-entry-first-standard

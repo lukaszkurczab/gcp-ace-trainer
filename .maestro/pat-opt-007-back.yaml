@@ -1,0 +1,13 @@
+# Caller records exact own proposal/route IDs before and after with passive readers.
+# Back only: no accept, reset, abandonment of training sessions, or persisted writes.
+appId: com.lkurczab.patternly
+name: PAT-OPT-007 actual proposal route Back
+---
+- assertVisible:
+    id: patternly:learning-plan:edit-schedule
+- takeScreenshot: "${CAPTURE_PREFIX}-before-back"
+- tapOn:
+    id: patternly:navigation:back
+- assertVisible:
+    id: "${RETURN_SELECTOR}"
+- takeScreenshot: "${CAPTURE_PREFIX}-after-back"

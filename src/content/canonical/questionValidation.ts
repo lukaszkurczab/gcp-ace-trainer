@@ -142,6 +142,7 @@ function validateSimulationProfiles(value: unknown, questions: readonly unknown[
     if (profile.modeId === "certification-exam-simulation") {
       if (profile.familyId !== "certification") errors.push(`${path}.familyId: unsupported family`);
       safeIdentity(profile.profileId, `${path}.profileId`, errors);
+      if (trackId === "claude-certified-architect-professional-certification" && (profile.profileId !== "claude-certified-architect-professional-certification-patternly-practice-v2" || profile.profileVersion !== "2")) errors.push(`${path}: unsupported CCAR-P training profile version`);
       validateCertificationSimulationConfig(profile.familyConfig, questions, nodeIds, trackId, path, errors);
       return;
     }
@@ -256,8 +257,11 @@ function validateCodingInterviewSimulationConfig(value: unknown, questions: read
 function validateCertificationSimulationConfig(value: unknown, questions: readonly unknown[], nodeIds: readonly string[], trackId: unknown, path: string, errors: string[]): void {
   const configKeys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap"];
   const configPath = `${path}.familyConfig`;
-  if (!exact(value, [...configKeys, "nodeDomainMapEvidence"], configKeys, configPath, errors)) return;
-  if (value.schemaVersion !== "patternly-certification-simulation-config-v1") { errors.push(`${configPath}.schemaVersion: unsupported certification config version`); return; }
+  if (!exact(value, [...configKeys, "nodeDomainMapEvidence", "examCoverage", "scoringPolicy"], configKeys, configPath, errors)) return;
+  if (value.schemaVersion !== "patternly-certification-simulation-config-v1" && value.schemaVersion !== "patternly-certification-simulation-config-v2") { errors.push(`${configPath}.schemaVersion: unsupported certification config version`); return; }
+  const ccarp = trackId === "claude-certified-architect-professional-certification";
+  if (ccarp && (value.schemaVersion !== "patternly-certification-simulation-config-v2" || !Object.hasOwn(value, "examCoverage") || !Object.hasOwn(value, "scoringPolicy"))) errors.push(`${configPath}: CCAR-P requires the v2 exam and scoring policies`);
+  if (!ccarp && (Object.hasOwn(value, "examCoverage") || Object.hasOwn(value, "scoringPolicy"))) errors.push(`${configPath}: CCAR-P exam policies are unavailable for this track`);
   if (!exact(value.source, ["url", "checkedDate", "guideVersion"], ["url", "checkedDate", "guideVersion"], `${configPath}.source`, errors)) return;
   text(value.source.url, `${configPath}.source.url`, errors); id(value.source.checkedDate, `${configPath}.source.checkedDate`, errors); text(value.source.guideVersion, `${configPath}.source.guideVersion`, errors);
   if (!Number.isSafeInteger(value.durationMinutes) || Number(value.durationMinutes) <= 0 || !Number.isSafeInteger(Number(value.durationMinutes) * 60_000)) errors.push(`${configPath}.durationMinutes: must be a positive safe duration`);
@@ -288,6 +292,11 @@ function validateCertificationSimulationConfig(value: unknown, questions: readon
   const policyKeys = ["schemaVersion", "policyId", "policyVersion", "owner", "navigation", "answerChanges", "flagging", "navigator", "sections", "timeout", "feedbackTiming"];
   if (!exact(policy, policyKeys, policyKeys, `${configPath}.interactionPolicy`, errors)) return;
   if (policy.schemaVersion !== "patternly-certification-simulation-policy-v1" || !id(policy.policyId, `${configPath}.interactionPolicy.policyId`, errors) || policy.policyVersion !== "1" || policy.owner !== "patternly_product" || policy.navigation !== "free" || policy.answerChanges !== "until_final_submission" || policy.flagging !== "available" || policy.navigator !== "available" || policy.sections !== "blueprint_visible" || policy.timeout !== "absolute_deadline" || policy.feedbackTiming !== "after_verified_finalization") errors.push(`${configPath}.interactionPolicy: unsupported policy`);
+  if (Object.hasOwn(value, "examCoverage")) validateExamCoverage(value.examCoverage, value.questionCount.minimum, `${configPath}.examCoverage`, errors);
+  if (Object.hasOwn(value, "scoringPolicy")) {
+    const score = value.scoringPolicy;
+    if (exact(score, ["policyId", "policyVersion", "method"], ["policyId", "policyVersion", "method"], `${configPath}.scoringPolicy`, errors) && (score.policyId !== "patternly-ccarp-complete-item-v1" || score.policyVersion !== "1" || score.method !== "complete_correct_item_only")) errors.push(`${configPath}.scoringPolicy: unsupported CCAR-P training score policy`);
+  }
   if (!exact(value.nodeDomainMap, nodeIds, nodeIds, `${configPath}.nodeDomainMap`, errors)) return;
   const knownDomains = new Set(Array.isArray(value.blueprint.sections) ? value.blueprint.sections.flatMap((section) => record(section) && typeof section.contentDomainId === "string" ? [section.contentDomainId] : []) : []);
   for (const [nodeId, domainId] of Object.entries(value.nodeDomainMap)) if (typeof domainId !== "string" || !knownDomains.has(domainId)) errors.push(`${configPath}.nodeDomainMap.${nodeId}: unknown domain`);
@@ -311,6 +320,32 @@ function validateCertificationSimulationConfig(value: unknown, questions: readon
       typeof evidence.itemCount !== "number" || !Number.isSafeInteger(evidence.itemCount) || evidence.itemCount < 1) {
       errors.push(`${configPath}.nodeDomainMapEvidence: malformed optional predecessor provenance`);
     }
+  }
+}
+
+function validateExamCoverage(value: unknown, questionCount: unknown, path: string, errors: string[]): void {
+  const keys = ["policy", "formatMinimums", "skillMinimums", "provenance"];
+  if (!exact(value, keys, keys, path, errors)) return;
+  if (value.policy !== "patternly-ccarp-v1") errors.push(`${path}.policy: unsupported CCAR-P training policy`);
+  const formatKeys = ["choice_single", "choice_multiple", "decision_matrix"];
+  const skillKeys = ["knowledge", "diagnosis", "prerequisite", "next_action", "contextual_choice"];
+  let formatTotal = 0;
+  if (exact(value.formatMinimums, formatKeys, formatKeys, `${path}.formatMinimums`, errors)) for (const key of formatKeys) {
+    const minimum = value.formatMinimums[key];
+    if (!Number.isSafeInteger(minimum) || Number(minimum) < 0) errors.push(`${path}.formatMinimums.${key}: must be a non-negative integer`);
+    else formatTotal += Number(minimum);
+  }
+  let skillTotal = 0;
+  if (exact(value.skillMinimums, skillKeys, skillKeys, `${path}.skillMinimums`, errors)) for (const key of skillKeys) {
+    const minimum = value.skillMinimums[key];
+    if (!Number.isSafeInteger(minimum) || Number(minimum) < 0) errors.push(`${path}.skillMinimums.${key}: must be a non-negative integer`);
+    else skillTotal += Number(minimum);
+  }
+  if (Number.isSafeInteger(questionCount) && (formatTotal > Number(questionCount) || skillTotal > Number(questionCount))) errors.push(`${path}: format and skill minima must fit within the configured question count`);
+  if (exact(value.provenance, ["decidedDate", "guideAvailability", "retainedProfileParameters"], ["decidedDate", "guideAvailability", "retainedProfileParameters"], `${path}.provenance`, errors)) {
+    id(value.provenance.decidedDate, `${path}.provenance.decidedDate`, errors);
+    if (value.provenance.guideAvailability !== "http_403") errors.push(`${path}.provenance.guideAvailability: expected the verified guide availability status`);
+    text(value.provenance.retainedProfileParameters, `${path}.provenance.retainedProfileParameters`, errors);
   }
 }
 function deepFreeze<T>(value: T): T { if (value && typeof value === "object" && !Object.isFrozen(value)) { for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child); Object.freeze(value); } return value; }

@@ -832,5 +832,9 @@
   "Initial estimate: about {{minutes}} min": "Estimation initiale : environ {{minutes}} min",
   "No performance evidence for this version yet": "Pas encore de résultats pour cette version du contenu",
   "Earlier activity and reviews remain available.": "Votre activité et vos révisions précédentes restent accessibles.",
-  "Your profile changed while preparing this topic. Open the topic again in your current profile.": "Ton profil a changé pendant la préparation de ce sujet. Ouvre à nouveau le sujet dans ton profil actuel."
+  "Your profile changed while preparing this topic. Open the topic again in your current profile.": "Ton profil a changé pendant la préparation de ce sujet. Ouvre à nouveau le sujet dans ton profil actuel.",
+  "Local profile storage could not be prepared.": "Impossible de préparer les données locales du profil. Réessaie.",
+  "Application bootstrap failed.": "Impossible de préparer l’application. Réessaie.",
+  "The unavailable session could not be abandoned.": "Impossible d’abandonner la session indisponible. Réessaie.",
+  "Profile storage unavailable": "Données du profil indisponibles"
 }

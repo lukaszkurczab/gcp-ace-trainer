@@ -148,7 +148,9 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
         rootTestID={runtimeSelectors.summary.root(route.params.sessionId)}
         score={normalizedDetails.score}
         secondaryNote={certificationExam && summary.certificationExam
-          ? { text: `${t("Points")}: ${summary.certificationExam.overallPointsEarned} / ${summary.certificationExam.maxPoints}` }
+          ? { text: session.configurationSnapshot.scoringPolicyId === "patternly-ccarp-complete-item-v1"
+            ? `${t("Raw practice score")}: ${summary.certificationExam.overallPointsEarned} / ${summary.certificationExam.maxPoints} (${Math.round(summary.certificationExam.overallPointsEarned / summary.certificationExam.maxPoints * 100)}%). ${t("One point per fully correct item; all other items receive zero. This is not an official scaled score or a prediction of passing.")}`
+            : `${t("Points")}: ${summary.certificationExam.overallPointsEarned} / ${summary.certificationExam.maxPoints}` }
           : certificationPractice ? { text: t(session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer") } : undefined}
         totalOccurrences={actualCount}
         unansweredCount={unansweredCount}

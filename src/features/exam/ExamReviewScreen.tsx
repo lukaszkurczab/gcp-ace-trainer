@@ -23,6 +23,7 @@ import { SessionShell } from "../coding-interview/session/SessionShell";
 import { PracticeFeedbackBlock } from "../practice/PracticeFeedbackBlock";
 import { PracticeQuestionCard } from "../practice/PracticeQuestionCard";
 import { PracticeResponseControls } from "../practice/PracticeResponseControls";
+import { ExamStatementReview } from "./ExamStatementReview";
 import { buildCertificationReviewControl, commitManualReviewAndReadback } from "./certificationPracticeReviewPresentation";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.EXAM_REVIEW>;
@@ -183,8 +184,8 @@ export function ExamReviewScreen({ navigation, route, readReview, openSource, fi
     >
       {fixtureNotice}
       <PracticeQuestionCard question={{ itemId: item.questionId, prompt: item.prompt }} />
-      <Text maxFontSizeMultiplier={2} style={[styles.result, styles[resultTone]]}>{t(isUnanswered ? "Unanswered" : item.result === "correct" ? "Correct" : item.result === "partial" ? "Partial" : "Incorrect")}</Text>
-      <PracticeResponseControls control={buildCertificationReviewControl(item)} editable={false} interactionResponse={undefined} itemId={item.questionId} onChoicePress={noop} onComplexityValuePress={noop} onOrderingMove={noop} />
+      <Text maxFontSizeMultiplier={2} style={[styles.result, styles[resultTone]]}>{t("answerState" in item && item.answerState === "incomplete" ? "Incomplete" : isUnanswered ? "Unanswered" : item.result === "correct" ? "Correct" : item.result === "partial" ? "Partial" : "Incorrect")}</Text>
+      {"statementRows" in item && item.statementRows ? <ExamStatementReview rows={item.statementRows} /> : <PracticeResponseControls control={buildCertificationReviewControl(item)} editable={false} interactionResponse={undefined} itemId={item.questionId} onChoicePress={noop} onComplexityValuePress={noop} onOrderingMove={noop} />}
       <PracticeFeedbackBlock feedback={{ details: item.details, messages: item.messages, reason: item.reason, result: item.result, sources: item.sources }} initiallyExpanded={isUnanswered} showReport={!isUnanswered} openSource={sourceOpener} item={item.item} itemId={item.questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
       <View style={styles.reviewMark}>
         {canMarkForReview && markState.kind === "ready" ? (

@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { useAppPreferences, useThemedStyles } from "../preferences";
+import { useAppPreferences, useThemedStyles } from "../preferences/appPreferencesContext";
 import { radius, spacing, typography, type AppColors } from "../theme";
 import {
   createHoldToConfirmController,

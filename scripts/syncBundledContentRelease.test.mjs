@@ -32,9 +32,10 @@ function commitProducer(root) {
   return head;
 }
 
-test("sync arguments expose only current-source sync/check", () => {
+test("sync arguments keep candidate mode explicit and separate", () => {
   assert.deepEqual(parseArgs([]), { mode: "sync" });
   assert.deepEqual(parseArgs(["check", "--content-root", "../content"]), { mode: "check", producerRoot: path.resolve("../content") });
+  assert.deepEqual(parseArgs(["candidate", "--content-root", "../content"]), { mode: "candidate", producerRoot: path.resolve("../content") });
   assert.throws(() => parseArgs(["check", "--local-reviewed-candidate", "acceptance.json"]), /Usage:/u);
 });
 
@@ -277,6 +278,31 @@ test("current-bank preparation rejects non-main or working inputs before build o
     assert.equal(await readFile(journal, "utf8"), "preserve unresolved transaction\n");
     assert.equal(git(state.producerRoot, "status", "--porcelain=v1", "--untracked-files=all"), sourceBefore);
   });
+});
+
+test("explicit candidate mode accepts dirty canonical source, pins its fingerprint, and marks output local", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await writeFile(path.join(state.producerRoot, "candidate-content.json"), "local candidate\n");
+  const nonClaudeBefore = new Map((await snapshot(state.targetDirectory)).filter(([name]) => name !== `${CLAUDE_TRACK_ID}.json` && name !== "content-lock.json" && name !== SUCCESSOR_LEDGER_FILE_NAME));
+  const result = await syncCanonicalContent({ ...state.options, mode: "candidate" });
+  assert.equal(result.currentIdentity.sourceTree, "dirty");
+  assert.match(result.currentIdentity.sourceInputFingerprint, /^[a-f0-9]{64}$/u);
+  const lock = JSON.parse(await readFile(state.targetLockFile, "utf8"));
+  assert.equal(lock.releaseId, `patternly-local-candidate-${result.currentIdentity.sourceInputFingerprint.slice(0, 20)}`);
+  assert.equal(lock.currentIdentity.sourceTree, "dirty");
+  assert.equal(lock.sourceRepositoryCommit, state.head);
+  assert.deepEqual(new Map((await snapshot(state.targetDirectory)).filter(([name]) => name !== `${CLAUDE_TRACK_ID}.json` && name !== "content-lock.json" && name !== SUCCESSOR_LEDGER_FILE_NAME)), nonClaudeBefore);
+});
+
+test("candidate mode rejects a clean source and never weakens ordinary sync", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const before = await snapshot(state.targetDirectory);
+  await assert.rejects(syncCanonicalContent({ ...state.options, mode: "candidate" }), /requires explicit uncommitted content changes/u);
+  await writeFile(path.join(state.producerRoot, "candidate-content.json"), "local candidate\n");
+  await assert.rejects(syncCanonicalContent(state.options), /has working changes/u);
+  assert.deepEqual(await snapshot(state.targetDirectory), before);
 });
 
 test("a clean detached canonical main checkout retains exact source provenance", async (t) => {

@@ -1,0 +1,23 @@
+appId: com.lkurczab.patternly
+name: 8D2 three existing recovery presentations
+# Regular DEV smoke runtime; preconfigured device locale/theme/fontScale.
+# No retry, hold, remove, continue, reset, login or training commands.
+---
+- openLink: "com.lkurczab.patternly://audit/show-encrypted-storage-recovery?presentation=base"
+- extendedWaitUntil:
+    visible:
+      id: patternly:content:encrypted-storage:removal:base
+    timeout: 15000
+- takeScreenshot: "d14-${VARIANT}"
+- openLink: "com.lkurczab.patternly://audit/show-encrypted-storage-recovery?presentation=retry-limit"
+- scrollUntilVisible:
+    element: "${LIMIT_COPY}"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: "d15-${VARIANT}"
+- openLink: "com.lkurczab.patternly://audit/show-encrypted-storage-recovery?presentation=error"
+- extendedWaitUntil:
+    visible:
+      id: patternly:content:encrypted-storage:removal:error
+    timeout: 15000
+- takeScreenshot: "d17-${VARIANT}"

@@ -56,6 +56,7 @@ export type PracticeChoiceControl = Readonly<{
   interactionType: "choice_single" | "choice_multiple";
   options: readonly Readonly<{ id: string; state: PracticeOptionState; text: string }> [];
   selectionMode: "single" | "multiple";
+  requiredSelectionCount?: number;
 }>;
 
 export type PracticeOrderingControl = Readonly<{
@@ -94,7 +95,7 @@ type PracticeOrderingControlModel = PracticeOrderingControl;
 type PracticeComplexityControlModel = PracticeComplexityControl;
 type BuiltinPracticeControlModel = PracticeChoiceControlModel | PracticeOrderingControlModel | PracticeComplexityControlModel;
 type BuiltinPracticeRendererModel =
-  | Readonly<{ kind: "choice"; options: readonly Readonly<{ id: string; selected: boolean; text: string }>[] }>
+  | Readonly<{ kind: "choice"; requiredSelectionCount?: number; options: readonly Readonly<{ id: string; selected: boolean; text: string }>[] }>
   | Readonly<{ kind: "ordering"; elements: readonly Readonly<{ id: string; text: string }>[] }>
   | Readonly<{ kind: "complexity"; dimensions: readonly Readonly<{ id: string; label?: string; selectedValues?: readonly string[]; values: readonly Readonly<{ id: string; text: string }>[] }>[] }>;
 
@@ -252,6 +253,7 @@ function projectChoiceControl(input: PracticeControlProjectionInput): PracticeCh
     kind: "choice",
     interactionType: input.renderer.interactionType as PracticeChoiceControl["interactionType"],
     selectionMode: input.choiceSelectionMode ?? "single",
+    ...(renderer.requiredSelectionCount === undefined ? {} : { requiredSelectionCount: renderer.requiredSelectionCount }),
     options: Object.freeze(renderer.options.map((option) => Object.freeze({
       id: option.id,
       text: option.text,

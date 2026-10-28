@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {inspectStartupReadyPrimary} from './startupReadyViewport.mjs';
+const hierarchy=(primary,bar='[0,779][402,874]')=>({children:[{attributes:{'resource-id':'patternly:home:primary-action',bounds:primary}},{attributes:{'resource-id':'main-tab-bar',bounds:bar}}]});
+const window={width:402,height:874};
+test('actual FR large frame inside physical window is rejected when fixed navigation occludes it',()=>{const x=inspectStartupReadyPrimary(hierarchy('[41,741][361,845]'),window);assert.equal(x.fullyVisible,false);assert.equal(x.reason,'primary_outside_unoccluded_viewport');});
+test('actual EN large action above navigation is accepted by the bounded frame screen',()=>assert.equal(inspectStartupReadyPrimary(hierarchy('[41,697][361,765]'),window).fullyVisible,true));
+test('absent/ambiguous frames and invalid geometry cannot produce a visibility claim',()=>{assert.equal(inspectStartupReadyPrimary({},window).fullyVisible,false);const duplicate=hierarchy('[41,697][361,765]');duplicate.children.push(duplicate.children[0]);assert.equal(inspectStartupReadyPrimary(duplicate,window).fullyVisible,false);assert.equal(inspectStartupReadyPrimary(hierarchy('[41,697][361,765]'),{}).fullyVisible,false);assert.equal(inspectStartupReadyPrimary(hierarchy('[41,697][420,765]'),window).fullyVisible,false);});

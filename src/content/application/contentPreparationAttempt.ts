@@ -46,7 +46,7 @@ export function createContentPreparationAttempt(options: Readonly<{
       const ids = candidate.units.map((unit) => unit.id);
       const currentCount = candidate.units.filter((unit) => unit.kind === "current_artifact").length;
       const retainedCount = candidate.units.filter((unit) => unit.kind === "retained_pair").length;
-      if (currentCount > 9 || retainedCount > 3 || currentCount + retainedCount !== ids.length
+      if (currentCount > 9 || retainedCount > 4 || currentCount + retainedCount !== ids.length
         || ids.some((id) => typeof id !== "string" || !id) || new Set(ids).size !== ids.length) return outcome();
       plan = candidate;
       declared = new Set(ids);

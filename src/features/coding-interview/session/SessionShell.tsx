@@ -225,7 +225,7 @@ function PositionSlot({ disabled, isExamLayout, isConfirmationSimulationLayout, 
   const style = [styles.topSlot, styles.positionSlot, isSimulationLayout ? styles.topSlotSimulation : null];
   const content = position ? <Text key={`position:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.topText, isSavedSimulationLayout || isConfirmationSimulationLayout ? styles.topTextLargeSimulation : null]}>{position.label}</Text> : null;
   if (onPress && position) {
-    return <Pressable accessibilityLabel={positionAccessibilityLabel ?? position.accessibilityLabel} accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[style, styles.positionButton, isExamLayout ? styles.positionButtonExam : null]} testID={positionTestID}>{isExamLayout ? <Icon color={styles.topText.color} name="grid" size={16} /> : null}{content}{isExamLayout ? <Icon color={styles.topText.color} name="chevron-down" size={14} /> : null}</Pressable>;
+    return <Pressable accessibilityLabel={positionAccessibilityLabel ?? position.accessibilityLabel} accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[style, styles.positionButton, isExamLayout ? styles.positionButtonExam : null]} testID={positionTestID}>{content}{isExamLayout ? <Icon color={styles.topText.color} name="chevron-down" size={14} /> : null}</Pressable>;
   }
   return <View accessible={Boolean(position)} accessibilityElementsHidden={!position} accessibilityLabel={position?.accessibilityLabel} importantForAccessibility={position ? "yes" : "no-hide-descendants"} style={style} testID={positionTestID}>{content}</View>;
 }

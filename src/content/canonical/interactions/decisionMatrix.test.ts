@@ -26,7 +26,10 @@ const question: DecisionMatrixQuestion = {
   },
   answer: { type: "decision_matrix", selectedValueIdsByDimension: { layers: ["safe_sink", "authorization"], policy: ["enforce"] } },
   feedback: {
-    type: "decision_matrix", reason: "The controls have distinct responsibilities.", details: "Reporting alone does not block execution.",
+    type: "decision_matrix", reason: "The controls have distinct responsibilities.", details: { statementExplanations: {
+      layers: "Safe sinks constrain rendering; authorization separately determines whether the operation is permitted.",
+      policy: "Enforcement blocks violating scripts; report-only mode records them without blocking.",
+    } },
     messages: [
       { kind: "wrong_value", targetId: "layers|csp_only", text: "CSP does not replace safe sinks or authorization." },
       { kind: "wrong_value", targetId: "policy|report", text: "Report-Only does not block execution." },
@@ -45,7 +48,10 @@ test("correct matrices have no error feedback through submit, projection, or rev
   assert.deepEqual(result.diagnostics, []);
   assert.deepEqual(result.feedback?.messages, []);
   assert.deepEqual(decisionMatrixHandler.projectFeedback(question, question.answer)?.messages, []);
-  assert.deepEqual(decisionMatrixHandler.presentReview(question, question.answer, []).diagnostics, []);
+  const review = decisionMatrixHandler.presentReview(question, question.answer, []);
+  assert.deepEqual(review.diagnostics, []);
+  assert.equal(review.statementRows?.[0]?.explanation, "Safe sinks constrain rendering; authorization separately determines whether the operation is permitted.");
+  assert.equal(review.statementRows?.[1]?.explanation, "Enforcement blocks violating scripts; report-only mode records them without blocking.");
 });
 
 test("only selected wrong values and actually missing accepted values receive diagnostics", () => {
@@ -63,4 +69,28 @@ test("incomplete and illegal matrix responses remain ineligible for submitted fe
     assert.deepEqual(targets(value), []);
     assert.equal(decisionMatrixHandler.evaluate(question, value).feedback, null);
   }
+});
+
+test("partial matrix review preserves explicit selections and row diagnostics without affecting submitted feedback", () => {
+  const partial = { type: "decision_matrix" as const, selectedValueIdsByDimension: { layers: ["csp_only"] } };
+  assert.deepEqual(decisionMatrixHandler.evaluate(question, partial).feedback, null);
+  const review = decisionMatrixHandler.presentReview(question, partial, []);
+  assert.deepEqual(review.statementRows?.map((row) => [row.dimensionId, row.label, row.selectedValueIds]), [
+    ["layers", "Required protections", ["csp_only"]],
+    ["policy", "Script policy", []],
+  ]);
+  assert.deepEqual((review.diagnostics as readonly Readonly<{ targetId: string }>[]).map((message) => message.targetId), ["layers|csp_only", "layers", "policy"]);
+  assert.equal(review.statementRows?.[0]?.explanation, "Safe sinks constrain rendering; authorization separately determines whether the operation is permitted.");
+  assert.deepEqual(review.statementRows?.[0]?.messages?.map((message) => message.targetId), ["layers|csp_only", "layers"]);
+  assert.deepEqual(review.statementRows?.[1]?.messages?.map((message) => message.targetId), ["policy"]);
+  assert.ok(review.feedback);
+});
+
+test("legacy non-CCAR-P rows may reuse authored omission text without invented explanations", () => {
+  const { statementRows } = decisionMatrixHandler.presentReview(question, question.answer, []);
+  assert.equal(statementRows?.[0]?.explanation, "Safe sinks constrain rendering; authorization separately determines whether the operation is permitted.");
+  const legacy = { ...question, feedback: { ...question.feedback, details: "Legacy overall feedback." } };
+  assert.equal(decisionMatrixHandler.presentReview(legacy, legacy.answer, []).statementRows?.[0]?.explanation, "A required protection is missing.");
+  const noAuthoredRowText = { ...question, feedback: { ...legacy.feedback, messages: [] } };
+  assert.equal(decisionMatrixHandler.presentReview(noAuthoredRowText, noAuthoredRowText.answer, []).statementRows?.[0]?.explanation, undefined);
 });

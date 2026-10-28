@@ -9,6 +9,7 @@ export function navigatorGridColumns(fontScale: number): number {
 
 export function navigatorCellLabel(position: SimulationNavigatorPosition, index: number, frozen = false): string {
   if (frozen) return `Question ${index + 1}, navigation unavailable while save recovers`;
+  if (position.incomplete) return `Question ${index + 1}, ${position.state === "current" ? "current, " : ""}incomplete, saved${position.flagged ? ", flagged" : ""}`;
   const state = position.state === "current"
     ? `current${position.answered ? ", answered and saved" : ""}`
     : position.answered ? "answered and saved" : "unanswered";
@@ -17,6 +18,7 @@ export function navigatorCellLabel(position: SimulationNavigatorPosition, index:
 
 export function navigatorStateLabel(position: SimulationNavigatorPosition, frozen = false): string {
   if (frozen) return "Frozen";
+  if (position.incomplete) return position.state === "current" ? "Current, incomplete" : "Incomplete";
   const state = position.state === "current" ? `Current${position.answered ? ", saved" : ""}` : position.answered ? "Saved" : "Unanswered";
   return position.flagged ? `${state}, flagged` : state;
 }

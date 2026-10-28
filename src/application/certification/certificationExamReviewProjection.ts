@@ -1,15 +1,18 @@
 import { resolvedContentRefsEqual, type AttemptResultKind, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
-import type { CanonicalFeedbackMessage, CanonicalSimulationProfile, JsonValue } from "../../content/canonical";
+import type { CanonicalFeedbackMessage, CanonicalSimulationProfile, CanonicalStatementReviewRow, JsonValue } from "../../content/canonical";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { allocateWeightedBlueprintQuotas } from "../../content/canonical/weightedBlueprintAllocation";
 import { projectCanonicalSourceEvidence, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { overallScoreCredit } from "../canonical/overallScoreCredit";
+import { selectCertificationExamQuestions } from "./certificationExamSelection";
+import { isValidCertificationExamDraftResponse } from "./certificationExamDraftResponse";
+import { CCARP_EXAM_SCORING_POLICY } from "./certificationExamScoringPolicy";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
 import type { TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 
 export type CertificationExamReviewItem = Readonly<{
-  answerState: "answered" | "unanswered";
+  answerState: "answered" | "incomplete" | "unanswered";
   constraints: readonly string[];
   correctOptionIds: readonly string[];
   details: JsonValue;
@@ -25,6 +28,8 @@ export type CertificationExamReviewItem = Readonly<{
   selectedOptionIds: readonly string[];
   sourceAttemptId?: string;
   selectionMode: "single" | "multiple";
+  requiredSelectionCount?: number;
+  statementRows?: readonly CanonicalStatementReviewRow[];
   sources: readonly CanonicalSourceLink[];
 }>;
 
@@ -112,11 +117,7 @@ export async function projectCertificationExamReview(input: Readonly<{
   const domainCounts = new Map<string, number>();
   for (const question of planQuestions) domainCounts.set(question.contentDomainId!, (domainCounts.get(question.contentDomainId!) ?? 0) + 1);
   if ([...expectedDomainCounts].some(([domain, count]) => domainCounts.get(domain) !== count)) return fail("Certification Exam plan does not match its weighted profile quotas.");
-  const expectedQuestionIds = quotas.flatMap((section) => [...questionsById.values()]
-    .filter((question) => question.contentDomainId === section.contentDomainId && config.nodeDomainMap[question.nodeId] === section.contentDomainId && (question.sourceRefs?.length ?? 0) > 0)
-    .sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0)
-    .slice(0, expectedDomainCounts.get(section.contentDomainId))
-    .map((question) => question.questionId));
+  const expectedQuestionIds = selectCertificationExamQuestions([...questionsById.values()], profile).map((question) => question.questionId);
   if (JSON.stringify(planQuestions.map((question) => question.questionId)) !== JSON.stringify(expectedQuestionIds)) return fail("Certification Exam item order does not match the immutable canonical configured selection.");
 
   const sessionAttempts = attempts.filter((attempt) => attempt.sessionId === session.id);
@@ -131,21 +132,39 @@ export async function projectCertificationExamReview(input: Readonly<{
   let overallPointsEarned = 0;
   let answeredMaxPoints = 0;
   const exactItems = await Promise.all(session.itemOrder.map((occurrence) => resolveItem(occurrence.item)));
+  const ccarpScoring = profile.familyConfig.examCoverage?.policy === "patternly-ccarp-v1";
+  const resultScoringPolicy = details && typeof details === "object" && !Array.isArray(details) ? details as Record<string, unknown> : {};
+  const sessionScoringPolicyPresent = session.configurationSnapshot.scoringPolicyId !== undefined || session.configurationSnapshot.scoringPolicyVersion !== undefined;
+  const resultScoringPolicyPresent = resultScoringPolicy.scoringPolicyId !== undefined || resultScoringPolicy.scoringPolicyVersion !== undefined;
+  if (ccarpScoring
+    ? session.configurationSnapshot.scoringPolicyId !== CCARP_EXAM_SCORING_POLICY.policyId || session.configurationSnapshot.scoringPolicyVersion !== CCARP_EXAM_SCORING_POLICY.policyVersion || resultScoringPolicy.scoringPolicyId !== profile.familyConfig.scoringPolicy?.policyId || resultScoringPolicy.scoringPolicyVersion !== profile.familyConfig.scoringPolicy?.policyVersion || profile.familyConfig.scoringPolicy?.method !== CCARP_EXAM_SCORING_POLICY.method || profile.familyConfig.scoringPolicy.policyId !== CCARP_EXAM_SCORING_POLICY.policyId || profile.familyConfig.scoringPolicy.policyVersion !== CCARP_EXAM_SCORING_POLICY.policyVersion
+    : sessionScoringPolicyPresent || resultScoringPolicyPresent) return fail("Certification Exam scoring policy does not match its immutable profile and result evidence.");
+  const partialResponses = details && typeof details === "object" && !Array.isArray(details) ? (details as Record<string, unknown>).partialResponsesByOccurrenceId : undefined;
+  if (partialResponses !== undefined && (!partialResponses || typeof partialResponses !== "object" || Array.isArray(partialResponses))) return fail("Certification Exam partial response evidence is malformed.");
+  const partialResponseEntries = partialResponses && typeof partialResponses === "object" ? Object.entries(partialResponses as Record<string, unknown>) : [];
+  if (partialResponseEntries.some(([id]) => !unansweredSet.has(id))) return fail("Certification Exam partial response evidence is outside its unanswered occurrence set.");
+  for (const [id, response] of partialResponseEntries) {
+    const index = occurrenceIds.indexOf(id);
+    const question = planQuestions[index];
+    const exact = exactItems[index];
+    if (!question || !exact || !isValidCertificationExamDraftResponse(question, response, exact.interactions) || exact.interactions.isComplete(question.questionId, response)) return fail("Certification Exam partial response evidence does not match its exact pinned interaction.");
+  }
   const items = await Promise.all(session.itemOrder.map(async (occurrence, index): Promise<CertificationExamReviewItem> => {
     const question = planQuestions[index]!;
     const exact = exactItems[index]!;
-    if (exact.question.questionId !== question.questionId || (question.interactionType !== "choice_single" && question.interactionType !== "choice_multiple")) return fail("Certification Exam review requires an exact choice interaction.");
+    if (exact.question.questionId !== question.questionId || !["choice_single", "choice_multiple", "decision_matrix"].includes(question.interactionType)) return fail("Certification Exam review requires an exact supported interaction.");
     const attempt = attemptByOccurrence.get(occurrence.occurrenceId);
-    let selectedOptionIds: readonly string[] = [];
+    const partialResponse = partialResponseEntries.find(([id]) => id === occurrence.occurrenceId)?.[1];
+    const response = attempt?.response ?? partialResponse ?? null;
     let resultKind: AttemptResultKind | "unanswered" = "unanswered";
-    let messages: readonly CanonicalFeedbackMessage[] | undefined;
     if (attempt) {
-      if (attempt.trackId !== session.trackId || attempt.modeId !== session.modeId || !resolvedContentRefsEqual(attempt.item, occurrence.item) || !exact.interactions.isComplete(question.questionId, attempt.response)) {
-        return fail("Certification Exam attempt does not match its immutable occurrence and canonical response.");
-      }
-      const scored = exact.interactions.evaluate(question.questionId, attempt.response).result;
-      if (!scored) return fail("Certification Exam attempt result is incomplete.");
-      if (JSON.stringify(scored) !== JSON.stringify(attempt.result)) return fail("Certification Exam attempt score does not match the canonical scorer.");
+      if (attempt.trackId !== session.trackId || attempt.modeId !== session.modeId || !resolvedContentRefsEqual(attempt.item, occurrence.item) || !exact.interactions.isComplete(question.questionId, attempt.response)) return fail("Certification Exam attempt does not match its immutable occurrence and canonical response.");
+      const canonicalScore = exact.interactions.evaluate(question.questionId, attempt.response).result;
+      if (!canonicalScore) return fail("Certification Exam attempt result is incomplete.");
+      const expectedScore = ccarpScoring
+        ? { kind: canonicalScore.kind === "correct" ? "correct" : "incorrect", earnedPoints: canonicalScore.kind === "correct" ? 1 : 0, maxPoints: 1 }
+        : canonicalScore;
+      if (JSON.stringify(expectedScore) !== JSON.stringify(attempt.result)) return fail("Certification Exam attempt score does not match its versioned scoring policy.");
       resultKind = attempt.result.kind;
       if (resultKind === "correct") correctCount += 1;
       else if (resultKind === "partial") partialCount += 1;
@@ -154,33 +173,34 @@ export async function projectCertificationExamReview(input: Readonly<{
       overallPointsEarned += overallScoreCredit(attempt.result);
       answeredMaxPoints += attempt.result.maxPoints;
     }
-    const review = exact.interactions.presentReview(question.questionId, attempt?.response ?? null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
+    const review = exact.interactions.presentReview(question.questionId, response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []);
     const feedback = review.feedback;
+    if (!feedback) return fail("Certification Exam interaction cannot provide its exact review feedback.");
+    const answerState = attempt ? "answered" : partialResponse !== undefined ? "incomplete" : "unanswered";
+    if (question.interactionType === "decision_matrix") {
+      if (!review.statementRows) return fail("Certification Exam statement rows are unavailable in review.");
+      return Object.freeze({
+        answerState, constraints: Object.freeze([...(question.constraints ?? [])]), correctOptionIds: Object.freeze([]), details: feedback.details,
+        ...(feedback.messages === undefined ? {} : { messages: feedback.messages }), item: occurrence.item, occurrenceId: occurrence.occurrenceId, options: Object.freeze([]),
+        ordinal: index + 1, prompt: question.prompt, questionId: question.questionId, reason: feedback.reason, result: resultKind, selectedOptionIds: Object.freeze([]),
+        ...(attempt ? { sourceAttemptId: attempt.id } : {}), selectionMode: "single", statementRows: review.statementRows,
+        sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback }),
+      });
+    }
     const renderer = review.model as { renderer?: { kind?: string; options?: readonly Readonly<{ id: string; text: string; selected: boolean }>[] } };
-    if (!feedback || renderer.renderer?.kind !== "choice" || !Array.isArray(renderer.renderer.options)) return fail("Certification Exam interaction cannot provide its exact review projection.");
-    selectedOptionIds = attempt ? renderer.renderer.options.filter((option) => option.selected).map((option) => option.id) : [];
-    if (attempt && selectedOptionIds.length === 0) return fail("Certification Exam answered attempt has no canonical selection.");
+    if (renderer.renderer?.kind !== "choice" || !Array.isArray(renderer.renderer.options)) return fail("Certification Exam choice review renderer is unavailable.");
+    const selectedOptionIds = response ? renderer.renderer.options.filter((option) => option.selected).map((option) => option.id) : [];
+    if (answerState !== "unanswered" && selectedOptionIds.length === 0) return fail("Certification Exam response contains no canonical selection.");
     const diagnosticEntries = Array.isArray(review.diagnostics) ? review.diagnostics as readonly Readonly<{ id: string; state: string }>[] : [];
     const correctOptionIds = diagnosticEntries.filter((entry) => entry.state === "correct" || entry.state === "omitted_correct").map((entry) => entry.id);
     if (correctOptionIds.length === 0) return fail("Certification Exam correct answer is unavailable for review.");
-    messages = feedback.messages;
     return Object.freeze({
-      answerState: attempt ? "answered" : "unanswered",
-      constraints: Object.freeze([...(question.constraints ?? [])]),
-      correctOptionIds: Object.freeze(correctOptionIds),
-      details: feedback.details,
-      ...(messages === undefined ? {} : { messages }),
-      item: occurrence.item,
-      occurrenceId: occurrence.occurrenceId,
-      options: Object.freeze(renderer.renderer.options.map((option) => Object.freeze({ optionId: option.id, text: option.text }))),
-      ordinal: index + 1,
-      prompt: question.prompt,
-      questionId: question.questionId,
-      reason: feedback.reason,
-      result: resultKind,
-      selectedOptionIds: Object.freeze([...selectedOptionIds]),
-      ...(attempt ? { sourceAttemptId: attempt.id } : {}),
-      selectionMode: question.interactionType === "choice_multiple" ? "multiple" : "single",
+      answerState, constraints: Object.freeze([...(question.constraints ?? [])]), correctOptionIds: Object.freeze(correctOptionIds), details: feedback.details,
+      ...(feedback.messages === undefined ? {} : { messages: feedback.messages }), item: occurrence.item, occurrenceId: occurrence.occurrenceId,
+      options: Object.freeze(renderer.renderer.options.map((option) => Object.freeze({ optionId: option.id, text: option.text }))), ordinal: index + 1,
+      prompt: question.prompt, questionId: question.questionId, reason: feedback.reason, result: resultKind, selectedOptionIds: Object.freeze([...selectedOptionIds]),
+      ...(attempt ? { sourceAttemptId: attempt.id } : {}), selectionMode: question.interactionType === "choice_multiple" ? "multiple" : "single",
+      ...(question.interactionType === "choice_multiple" && question.requiredSelectionCount !== undefined ? { requiredSelectionCount: question.requiredSelectionCount } : {}),
       sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback }),
     });
   }));
@@ -188,7 +208,7 @@ export async function projectCertificationExamReview(input: Readonly<{
     activeForegroundMs: session.activeForegroundMs,
     correctCount,
     incorrectCount,
-    maxPoints: answeredMaxPoints,
+    maxPoints: ccarpScoring ? targetCount : answeredMaxPoints,
     partialCount,
     pointsEarned,
     profileId: profile.profileId,
@@ -197,10 +217,10 @@ export async function projectCertificationExamReview(input: Readonly<{
   if (!details || typeof details !== "object" || Array.isArray(details) || Object.entries(expectedEvidence).some(([key, value]) => (details as Record<string, unknown>)[key] !== value)) {
     return fail("Certification Exam result totals or profile evidence do not match its canonical attempts.");
   }
-  const maxPoints = planQuestions.reduce((sum, question, index) => {
+  const maxPoints = ccarpScoring ? targetCount : planQuestions.reduce((sum, question, index) => {
     if (question.interactionType === "choice_single") return sum + 1;
     if (question.interactionType === "choice_multiple") return sum + exactItems[index]!.interactions.controlIds(question.questionId).length;
-    return fail("Certification Exam review requires choice questions.");
+    return fail("Legacy Certification Exam profile contains an unsupported interaction.");
   }, 0);
   if (!Number.isSafeInteger(maxPoints) || maxPoints <= 0 || pointsEarned > maxPoints) return fail("Certification Exam maximum points are invalid.");
   return Object.freeze({

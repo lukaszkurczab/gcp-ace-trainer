@@ -13,8 +13,11 @@ import { prepareCanonicalPlanOccurrences, buildCanonicalSessionPlan, validateCan
 import { assertCanonicalReviewSourceProofs, createCanonicalReviewSourceSnapshot, canonicalQuestionReviewEvidence, createCanonicalAttempt, limitQuestionsToReviewNeeds, reviewNeedForQuestion, sameCurrentReviewUnit, scopeAttemptsToLearningTrack, scopeReviewsToLearningTrack } from "../canonical/canonicalFamilyMechanics";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
 import { qualifyPackageAttempts } from "../../domain/learning/packageCompletionRule";
-import { allocateWeightedBlueprintQuotas } from "../../content/canonical/weightedBlueprintAllocation";
+import { selectCertificationExamQuestions } from "./certificationExamSelection";
 import type { CanonicalProductSimulationProfile } from "../../content/canonical/questionTypes";
+import { createAttemptResult } from "../../domain/learning/attemptResult";
+import { isValidCertificationExamDraftResponse } from "./certificationExamDraftResponse";
+import { CCARP_EXAM_SCORING_POLICY } from "./certificationExamScoringPolicy";
 
 const FAMILY: TrackFamilyId = "certification";
 const RELEASE = CANONICAL_TRAINING_RELEASE;
@@ -192,14 +195,24 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     if (prior.length) throw new Error("Certification simulation already has attempts and cannot be finalized twice.");
     const attempts: TrainingAttempt<unknown>[] = [];
     const reviewMutations: ReviewMutationCommand[] = [];
+    const partialResponsesByOccurrenceId: Record<string, import("../../domain/learning/trainingSessionDraft").TrainingSessionDraftResponse> = {};
     for (const occurrence of input.session.itemOrder) {
       if (!Object.hasOwn(input.draft.responsesByOccurrenceId, occurrence.occurrenceId)) continue;
       const response = input.draft.responsesByOccurrenceId[occurrence.occurrenceId];
       const question = this.catalog.getQuestion(occurrence.item.questionId);
-      if (!question) throw new Error("Certification simulation draft contains an incomplete response.");
+      if (!question || !this.isValidSimulationDraftResponse(question.questionId, response)) throw new Error("Certification simulation draft response does not match its exact interaction.");
+      if (response === undefined) throw new Error("Certification simulation response is missing.");
+      if (!this.interactions.isComplete(question.questionId, response)) {
+        partialResponsesByOccurrenceId[occurrence.occurrenceId] = response;
+        continue;
+      }
       const evaluation = this.interactions.evaluate(question.questionId, response);
-      if (!evaluation.complete || !evaluation.result) throw new Error("Certification simulation draft contains an incomplete response.");
-      const attempt = await createCanonicalAttempt({ session: input.session, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response, result: evaluation.result, reviewEvidence: evidenceFor(question, occurrence.item), answeredAt: input.draft.updatedAt, committedAt: input.now });
+      if (!evaluation.complete || !evaluation.result) throw new Error("Certification simulation complete response has no canonical score.");
+      const isCorrect = evaluation.result.kind === "correct";
+      const result = input.session.configurationSnapshot.scoringPolicyId === CCARP_EXAM_SCORING_POLICY.policyId
+        ? createAttemptResult({ kind: isCorrect ? "correct" : "incorrect", earnedPoints: isCorrect ? 1 : 0, maxPoints: 1 })
+        : evaluation.result;
+      const attempt = await createCanonicalAttempt({ session: input.session, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response, result, reviewEvidence: evidenceFor(question, occurrence.item), answeredAt: input.draft.updatedAt, committedAt: input.now });
       attempts.push(attempt);
       const matching = input.reviews.filter((entry) => entry.trackId === input.session.trackId && resolvedContentRefsEqual(entry.sourceItem, occurrence.item));
       const active = matching.find(isActiveReviewQueueEntry);
@@ -214,7 +227,7 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     const unansweredOccurrenceIds = input.session.itemOrder.filter((occurrence) => !answered.has(occurrence.occurrenceId)).map((occurrence) => occurrence.occurrenceId);
     const result = createTrainingSessionResult({ id: `${session.id}:result`, sessionId: session.id, trackId: session.trackId, totalOccurrences: session.actualLength,
       answeredOccurrenceIds, unansweredOccurrenceIds, completedAt: input.now,
-      evidence: createFamilyEnvelope({ familyId: FAMILY, details: { profileId: profile.profileId, profileVersion: profile.profileVersion, ...aggregateEvidence(session.activeForegroundMs, attempts) } }) });
+      evidence: createFamilyEnvelope({ familyId: FAMILY, details: { profileId: profile.profileId, profileVersion: profile.profileVersion, ...(input.session.configurationSnapshot.scoringPolicyId === CCARP_EXAM_SCORING_POLICY.policyId ? { scoringPolicyId: CCARP_EXAM_SCORING_POLICY.policyId, scoringPolicyVersion: CCARP_EXAM_SCORING_POLICY.policyVersion } : {}), ...(Object.keys(partialResponsesByOccurrenceId).length ? { partialResponsesByOccurrenceId } : {}), ...aggregateEvidence(session.activeForegroundMs, attempts), ...(input.session.configurationSnapshot.scoringPolicyId === CCARP_EXAM_SCORING_POLICY.policyId ? { maxPoints: session.actualLength } : {}) } }) });
     return Object.freeze({ session, result, attempts: Object.freeze(attempts), reviewMutations: Object.freeze(reviewMutations), frozenDraft: input.draft, reviewBaseline: input.reviews });
   }
 
@@ -395,8 +408,12 @@ export class CertificationTrainingRuntime implements TrainingFamilyRuntime {
     if (!draft || draft.schemaVersion !== 1 || draft.draftVersion !== 1 || draft.sessionId !== session.id || draft.trackId !== session.trackId || draft.familyId !== FAMILY || !Number.isSafeInteger(draft.revision) || draft.revision < 1 || Date.parse(draft.updatedAt) < Date.parse(session.startedAt) || (session.configurationSnapshot.timer === "absoluteDeadline" && Date.parse(draft.updatedAt) > Date.parse(deadline)) || Number.isNaN(Date.parse(draft.updatedAt))) throw new Error("Certification simulation draft identity, revision, or deadline is unavailable.");
     const ids = new Set(session.itemOrder.map((entry) => entry.occurrenceId));
     if (Object.keys(draft.responsesByOccurrenceId).some((id) => !ids.has(id)) || draft.flaggedOccurrenceIds.some((id) => !ids.has(id)) || new Set(draft.flaggedOccurrenceIds).size !== draft.flaggedOccurrenceIds.length) throw new Error("Certification simulation draft references an unknown occurrence.");
-    for (const [id, response] of Object.entries(draft.responsesByOccurrenceId)) { const occurrence = session.itemOrder.find((entry) => entry.occurrenceId === id)!; if (!this.interactions.isComplete(occurrence.item.questionId, response)) throw new Error("Certification simulation response is incomplete."); }
+    for (const [id, response] of Object.entries(draft.responsesByOccurrenceId)) { const occurrence = session.itemOrder.find((entry) => entry.occurrenceId === id)!; if (!this.isValidSimulationDraftResponse(occurrence.item.questionId, response)) throw new Error("Certification simulation response is invalid for its exact interaction."); }
   }
+  private isValidSimulationDraftResponse(questionId: string, response: unknown): boolean {
+    return this.interactions.isComplete(questionId, response) || this.interactions.isValidPartialResponse?.(questionId, response) === true;
+  }
+
 }
 
 function parseRequest(value: unknown, fallback: number): Readonly<{ requestedLength: number; feedbackTiming?: string; reviewSource?: "due_queue" | "manual_request" | "session_misses"; mentalUnitId?: string; expectedContentVersion?: string; expectedArtifactSha256?: string }> {
@@ -423,14 +440,8 @@ function assertTrack(actual: string, expected: string): void { if (actual !== ex
 function requiredUnitNodeId(catalog: TrainingCatalog, mentalUnitId: string): string | undefined { const rule = catalog.completionRule; if (rule?.ruleVersion !== 3) return undefined; const matches = rule.chapters.filter((chapter) => chapter.units.some((unit) => unit.mentalUnitId === mentalUnitId)); if (matches.length > 1) throw new Error("Canonical completion unit is ambiguous across required chapters."); return matches[0]?.nodeId; }
 function isRequiredV3Unit(catalog: TrainingCatalog, nodeId: string | undefined, mentalUnitId: string): boolean { const rule = catalog.completionRule; return rule?.ruleVersion === 3 && nodeId !== undefined && rule.chapters.some((chapter) => chapter.nodeId === nodeId && chapter.units.some((unit) => unit.mentalUnitId === mentalUnitId)); }
 function selectCertificationSimulationQuestions(catalog: TrainingCatalog, profile: CanonicalProductSimulationProfile): readonly TrainingQuestionSummary[] {
-  if (profile.familyId !== FAMILY || profile.modeId !== "certification-exam-simulation") throw new ProductModeUnavailableError("Certification simulation profile is invalid.");
-  const { blueprint, nodeDomainMap, questionCount } = profile.familyConfig; const targetCount = questionCount.minimum;
-  if (blueprint.kind !== "weighted_sections" || !Number.isSafeInteger(targetCount) || targetCount <= 0 || !Number.isSafeInteger(questionCount.maximum) || questionCount.maximum < targetCount) throw new Error("Certification simulation profile does not define a valid weighted blueprint.");
-  const quotas = allocateWeightedBlueprintQuotas(targetCount, blueprint.sections); const selected: TrainingQuestionSummary[] = [];
-  for (const section of quotas) { const pool = catalog.questions.filter((question) => question.contentDomainId === section.contentDomainId && nodeDomainMap[question.nodeId] === section.contentDomainId && (question.sourceRefs?.length ?? 0) > 0).slice().sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0); if (pool.length < section.questionCount) throw new Error(`Certification simulation source pool ${section.contentDomainId} requires ${section.questionCount} unique items but has ${pool.length}.`); selected.push(...pool.slice(0, section.questionCount)); }
-  if (selected.length !== targetCount || new Set(selected.map((question) => question.questionId)).size !== targetCount) throw new Error("Certification simulation blueprint did not produce the configured number of unique items.");
-  return Object.freeze(selected);
+  return selectCertificationExamQuestions(catalog.questions, profile);
 }
-function certificationSimulationSnapshot(profile: CanonicalProductSimulationProfile, deadline: string): TrainingSession["configurationSnapshot"] { if (profile.familyId !== FAMILY || profile.modeId !== "certification-exam-simulation") throw new ProductModeUnavailableError("Certification simulation profile is invalid."); const config = profile.familyConfig; const policy = config.interactionPolicy; return Object.freeze({ kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: policy.answerChanges === "until_final_submission" ? "untilFinalSubmission" : "none", navigation: policy.navigation, submission: "manualOrForegroundTimeout", timer: policy.timeout === "absolute_deadline" ? "absoluteDeadline" : "elapsedForeground", timerDurationMs: config.durationMinutes * 60_000, timerDeadlineAt: deadline, simulationProfileId: profile.profileId, simulationProfileVersion: profile.profileVersion, simulationPolicyId: policy.policyId, simulationPolicyVersion: policy.policyVersion, flagging: policy.flagging, navigator: policy.navigator, sectionIds: config.blueprint.sections.map((section) => section.id) }); }
+function certificationSimulationSnapshot(profile: CanonicalProductSimulationProfile, deadline: string): TrainingSession["configurationSnapshot"] { if (profile.familyId !== FAMILY || profile.modeId !== "certification-exam-simulation") throw new ProductModeUnavailableError("Certification simulation profile is invalid."); const config = profile.familyConfig; const policy = config.interactionPolicy; const ccarpScoring = config.examCoverage?.policy === "patternly-ccarp-v1"; if (ccarpScoring && (config.scoringPolicy?.policyId !== CCARP_EXAM_SCORING_POLICY.policyId || config.scoringPolicy.policyVersion !== CCARP_EXAM_SCORING_POLICY.policyVersion || config.scoringPolicy.method !== CCARP_EXAM_SCORING_POLICY.method)) throw new ProductModeUnavailableError("CCAR-P scoring policy is unavailable."); return Object.freeze({ kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: policy.answerChanges === "until_final_submission" ? "untilFinalSubmission" : "none", navigation: policy.navigation, submission: "manualOrForegroundTimeout", timer: policy.timeout === "absolute_deadline" ? "absoluteDeadline" : "elapsedForeground", timerDurationMs: config.durationMinutes * 60_000, timerDeadlineAt: deadline, simulationProfileId: profile.profileId, simulationProfileVersion: profile.profileVersion, simulationPolicyId: policy.policyId, simulationPolicyVersion: policy.policyVersion, ...(ccarpScoring ? { scoringPolicyId: config.scoringPolicy!.policyId, scoringPolicyVersion: config.scoringPolicy!.policyVersion } : {}), flagging: policy.flagging, navigator: policy.navigator, sectionIds: config.blueprint.sections.map((section) => section.id) }); }
 
 function caseSnapshot(recipe: CaseRecipe): TrainingSession["configurationSnapshot"] { return { kind: "practice", timer: "elapsedForeground", feedbackMode: "afterEachAnswer", answerChanges: "none", submission: "perItem", reinsertEnabled: false, preset: "single_case", caseId: recipe.caseId, caseVersion: recipe.version, policyVersion: recipe.policyVersion }; }

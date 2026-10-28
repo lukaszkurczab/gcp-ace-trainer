@@ -1,0 +1,10 @@
+appId: com.lkurczab.patternly
+name: 8D2 dismiss visible development warning only
+# Existing iPhone17 402x874; cross from raw hierarchy-probe bounds [10,787][392,835].
+# Not a product banner removal. Never touch recovery actions.
+---
+- takeScreenshot: before-warning-dismissal
+- tapOn:
+    point: "92%, 93%"
+- assertNotVisible: "Open debugger to view warnings."
+- takeScreenshot: after-warning-dismissal

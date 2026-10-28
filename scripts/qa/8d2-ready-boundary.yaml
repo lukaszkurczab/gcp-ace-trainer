@@ -1,0 +1,9 @@
+appId: com.lkurczab.patternly
+name: 8D2 ready handoff boundary capture only
+# Existing normal startup has reached ready, API absent. No Home action or new session.
+---
+- assertVisible:
+    id: patternly:content:ready
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: "d19-d20-${VARIANT}"

@@ -1,11 +1,11 @@
 import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
-import type { CanonicalDimension, CanonicalQuestionRelation, JsonValue, CanonicalFeedback, CanonicalFeedbackMessage, CanonicalCourseSource, CanonicalOption, CanonicalElement, CanonicalValue, CanonicalComplexityDimension } from "./interactions/shared";
+import type { CanonicalDimension, CanonicalQuestionRelation, CanonicalExamMetadata, CanonicalStatementReviewRow, JsonValue, CanonicalFeedback, CanonicalFeedbackMessage, CanonicalCourseSource, CanonicalOption, CanonicalElement, CanonicalValue, CanonicalComplexityDimension } from "./interactions/shared";
 import type { ChoiceSingleQuestion } from "./interactions/choiceSingle";
 import type { ChoiceMultipleQuestion } from "./interactions/choiceMultiple";
 import type { OrderingQuestion } from "./interactions/ordering";
 import type { ComplexityQuestion } from "./interactions/complexity";
 import type { DecisionMatrixQuestion } from "./interactions/decisionMatrix";
-export type { CanonicalDimension, CanonicalQuestionRelation, JsonValue, CanonicalFeedback, CanonicalFeedbackMessage, CanonicalCourseSource, CanonicalOption, CanonicalElement, CanonicalValue, CanonicalComplexityDimension } from "./interactions/shared";
+export type { CanonicalDimension, CanonicalQuestionRelation, CanonicalExamMetadata, CanonicalStatementReviewRow, JsonValue, CanonicalFeedback, CanonicalFeedbackMessage, CanonicalCourseSource, CanonicalOption, CanonicalElement, CanonicalValue, CanonicalComplexityDimension } from "./interactions/shared";
 export type { ChoiceSingleQuestion, ChoiceSingleResponse } from "./interactions/choiceSingle";
 export type { ChoiceMultipleQuestion, ChoiceMultipleResponse } from "./interactions/choiceMultiple";
 export type { OrderingQuestion, OrderingResponse } from "./interactions/ordering";
@@ -17,7 +17,7 @@ export type QuestionInteractionType = string;
 export type Question = ChoiceSingleQuestion | ChoiceMultipleQuestion | OrderingQuestion | ComplexityQuestion | DecisionMatrixQuestion;
 
 export type CanonicalCertificationSimulationConfig = Readonly<{
-  schemaVersion: "patternly-certification-simulation-config-v1";
+  schemaVersion: "patternly-certification-simulation-config-v1" | "patternly-certification-simulation-config-v2";
   source: Readonly<{ url: string; checkedDate: string; guideVersion: string }>;
   durationMinutes: number;
   questionCount: Readonly<{ kind: "range"; minimum: number; maximum: number }>;
@@ -35,6 +35,13 @@ export type CanonicalCertificationSimulationConfig = Readonly<{
     timeout: "absolute_deadline";
     feedbackTiming: "after_verified_finalization";
   }>;
+  examCoverage?: Readonly<{
+    policy: "patternly-ccarp-v1";
+    formatMinimums: Readonly<{ choice_single: number; choice_multiple: number; decision_matrix: number }>;
+    skillMinimums: Readonly<Record<"knowledge" | "diagnosis" | "prerequisite" | "next_action" | "contextual_choice", number>>;
+    provenance?: Readonly<{ decidedDate: string; guideAvailability: string; retainedProfileParameters: string }>;
+  }>;
+  scoringPolicy?: Readonly<{ policyId: "patternly-ccarp-complete-item-v1"; policyVersion: "1"; method: "complete_correct_item_only" }>;
   nodeDomainMap: Readonly<Record<string, string>>;
   /** Optional predecessor provenance carried by already-admitted bundles; current source uses the exact node/domain map above. */
   nodeDomainMapEvidence?: Readonly<{ artifactPath: string; contentVersion: string; itemCount: number; nodeCount: number; ambiguousNodeCount: number }>;

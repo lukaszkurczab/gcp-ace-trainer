@@ -1,0 +1,18 @@
+# Existing production proposal; own smoke actor/profile verified by passive reader.
+# Pushes the real editor. The caller reads both Maps before the separate return step.
+appId: com.lkurczab.patternly
+name: PAT-OPT-007 editor push preserves its proposal
+---
+- assertVisible:
+    id: patternly:learning-plan:proposal-identity:.*
+- scrollUntilVisible:
+    element:
+      id: patternly:learning-plan:edit-schedule
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn:
+    id: patternly:learning-plan:edit-schedule
+- assertVisible:
+    id: patternly:learning-plan:editor:root:.*
+- takeScreenshot: "${CAPTURE_PREFIX}-editor-push"

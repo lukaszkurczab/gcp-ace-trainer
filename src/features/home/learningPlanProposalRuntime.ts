@@ -11,6 +11,8 @@ export type LearningPlanProposalFixtureCounts = Readonly<Record<LearningPlanProp
 
 export type LearningPlanProposalScreenRuntime = Readonly<{
   exitFixture?(): void;
+  discardProposal(proposalId: string): void;
+  discardEditor(editorId: string): void;
   resolve(proposalId: string, trackId: TrackId): Promise<LearningPlanProposalResult>;
   create(trackId: TrackId): Promise<LearningPlanProposalResult>;
   startProposalEdit(proposalId: string, trackId: TrackId): Promise<LearningPlanEditorStartResult>;
@@ -21,6 +23,8 @@ export type LearningPlanProposalScreenRuntime = Readonly<{
 }>;
 
 export const productionLearningPlanProposalRuntime: LearningPlanProposalScreenRuntime = Object.freeze({
+  discardProposal: (proposalId) => learningPlanProposalCoordinator.remove(proposalId),
+  discardEditor: (editorId) => learningPlanEditorCoordinator.discard(editorId),
   resolve: (proposalId, trackId) => learningPlanProposalCoordinator.resolve(proposalId, trackId),
   create: (trackId) => learningPlanProposalCoordinator.create(trackId),
   startProposalEdit: (proposalId, trackId) => learningPlanEditorCoordinator.startProposalEdit(proposalId, trackId),

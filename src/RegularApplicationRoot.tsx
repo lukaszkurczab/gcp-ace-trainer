@@ -12,13 +12,10 @@ import { PatternlyAccountProvider, usePatternlyAccount } from "./application/acc
 import { ProfileStoragePreparationGate } from "./application/account/ProfileStoragePreparationGate";
 import { RetiredAccountSecretsCleanupHost } from "./application/account/RetiredAccountSecretsCleanupHost";
 import { AccountForegroundRefreshSidecar } from "./application/account/AccountForegroundRefreshSidecar";
-import { AccountProfileTransitionLoadingState } from "./application/account/AccountProfileTransitionLoadingState";
+import { ProfileTransitionSurface } from "./content/application/startupPreparationSurfaces";
 import { Q13StorageReceiptHost } from "./application/runtimeAuditability/Q13StorageReceiptHost";
 import { AndroidClockProbeHost } from "./application/runtimeAuditability/AndroidClockProbeHost";
-import { Button, Screen } from "./components";
-import { View } from "react-native";
 import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfileTransition } from "./storage/repositories/profileStorageRepository";
-import { useTranslation } from "react-i18next";
 
 export default function RegularApplicationRoot() {
   return (
@@ -55,7 +52,7 @@ function AppNavigation() {
     ? "application-session"
     : "account-entry";
 
-  if (profileTransition) return isMaterializedAccountTransition ? <MaterializedAccountTransitionSurface /> : <ProfileTransitionSurface />;
+  if (profileTransition) return isMaterializedAccountTransition ? <ProfileTransitionSurface /> : <ProfileTransitionSurface onRetry={() => { void reloadForProfileTransition().catch(() => undefined); }} />;
 
   return (
     <NavigationContainer key={sessionKey} theme={navigationTheme}>
@@ -65,18 +62,3 @@ function AppNavigation() {
   );
 }
 
-function MaterializedAccountTransitionSurface() {
-  return <Screen><AccountProfileTransitionLoadingState /></Screen>;
-}
-
-function ProfileTransitionSurface() {
-  const { t } = useTranslation("account");
-  return (
-    <Screen>
-      <View style={{ flex: 1 }} testID="profile-transition-required"><AccountProfileTransitionLoadingState /></View>
-      <Button onPress={() => { void reloadForProfileTransition().catch(() => undefined); }} testID="profile-transition-retry">
-        {t("profileTransitionRetry")}
-      </Button>
-    </Screen>
-  );
-}

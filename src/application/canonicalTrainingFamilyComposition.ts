@@ -6,6 +6,7 @@ import type { CanonicalTrackRuntime } from "../content/canonical";
 import { getTrackRegistration } from "../domain/tracks/trackRegistry";
 import type { TrainingCatalog, TrainingPresentationPort, TrainingQuestionSummary } from "./trainingLifecycle";
 import type { Question } from "../content/canonical/questionTypes";
+import { isValidCertificationExamDraftResponse } from "./certification/certificationExamDraftResponse";
 
 /** Application composition owns the explicit family-to-runtime bindings. */
 export const canonicalTrainingFamilyResolver = createTrainingFamilyRuntimeResolver([
@@ -39,6 +40,15 @@ export function createTrainingInteractionPort(track: CanonicalTrackRuntime): Tra
   return Object.freeze({
     evaluate: (questionId: string, response: unknown) => track.interactions.evaluate(question(questionId), response),
     isComplete: (questionId: string, response: unknown) => track.interactions.isComplete(question(questionId), response),
+    isValidPartialResponse: (questionId: string, response: unknown) => {
+      const exact = question(questionId);
+      const summary = { questionId, interactionType: exact.interaction.type, ...(exact.interaction.type === "choice_multiple" && exact.interaction.requiredSelectionCount !== undefined ? { requiredSelectionCount: exact.interaction.requiredSelectionCount } : {}) };
+      return isValidCertificationExamDraftResponse(summary, response, {
+        isComplete: (_id, value) => track.interactions.isComplete(exact, value),
+        controlIds: (_id) => track.interactions.controlIds(exact),
+        present: (_id, value) => track.interactions.present(exact, value),
+      } as TrainingPresentationPort);
+    },
     controlIds: (questionId: string) => track.interactions.controlIds(question(questionId)),
     randomizeControlOrder: (questionId: string) => track.interactions.randomizeControlOrder(question(questionId)),
     present: (questionId: string, response: unknown, displayOrder: readonly string[] = []) => track.interactions.present(question(questionId), response, displayOrder),
@@ -57,6 +67,8 @@ export function createTrainingCatalog(track: CanonicalTrackRuntime): TrainingCat
     mentalUnitId: question.mentalUnitId,
     prompt: question.prompt,
     interactionType: question.interaction.type,
+    ...("requiredSelectionCount" in question.interaction && typeof question.interaction.requiredSelectionCount === "number" ? { requiredSelectionCount: question.interaction.requiredSelectionCount } : {}),
+    ...(question.examMetadata ? { examMetadata: Object.freeze({ ...question.examMetadata }) } : {}),
     difficulty: question.difficulty ?? null,
     ...(question.constraints ? { constraints: question.constraints } : {}),
     ...(question.sourceRefs ? { sourceRefs: question.sourceRefs } : {}),

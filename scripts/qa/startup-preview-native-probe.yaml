@@ -1,0 +1,23 @@
+appId: com.lkurczab.patternly
+name: Startup preview inert native actions probe
+# Only valid in the early opt-in preview root. No launch/reset/data action.
+---
+- assertVisible:
+    id: patternly:content:encrypted-storage:removal:removing
+- tapOn:
+    point: "50%, 79%"
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: d16-settled
+- openLink: "com.lkurczab.patternly://audit/startup-preview?scene=recovery-success&locale=de&theme=light"
+- extendedWaitUntil:
+    visible:
+      id: patternly:content:encrypted-storage:success
+    timeout: 15000
+- tapOn:
+    id: patternly:content:encrypted-storage:continue
+- waitForAnimationToEnd:
+    timeout: 10000
+- assertVisible:
+    id: patternly:content:encrypted-storage:success
+- takeScreenshot: d18-after-inert-continue

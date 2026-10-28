@@ -1,6 +1,6 @@
 {
   "schemaVersion": "patternly-atlas-catalog-v1",
-  "date": "2026-10-24",
+  "date": "2026-10-27",
   "areas": [
     {
       "prefix": "patternly",
@@ -693,18 +693,18 @@
   ],
   "files": {
     "patternly/App.tsx": {
-      "description": "Wybiera regularną aplikację albo kontrolowane fixture przed załadowaniem providerów. Regularna ścieżka przechodzi przez EnvironmentGate.",
-      "reviewedHash": "4dad9a99a8fa4880f2e55ccd17e4e27e1f72c7106b3a61b5d0dfbce00ec8ef6f",
+      "description": "Wybiera regularną aplikację albo kontrolowane fixture przed providerami. Early startup preview wymaga dokładnej flagi1, DEV i smoke oraz braku konfliktu PERSIST13/PERF06; każda obecna błędna flaga jest odrzucana bez regularnych providerów. Regularna ścieżka zachowuje EnvironmentGate i istniejące fixture inputs.",
+      "reviewedHash": "449e58bfd0e0056b669176a690c0a5d0a6627153a55eaf997c462332d0e1efd2",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/RegularApplicationRoot.tsx": {
-      "description": "Składa safe area, preferencje, szyfrowane przygotowanie profilu, sesję konta, gotowość treści i nawigację. Zmiana profilu ma wspólną powierzchnię loading; czyszczenie wycofanego sekretu urządzenia startuje niezależnie od gotowości konta.",
-      "reviewedHash": "f6120569803f37441a28922c0b7edcee016bc8bee351075de20b644368f71189",
+      "description": "Składa safe area, trwałe preferencje, przygotowanie profilu, konto, content i nawigację. Przejścia profilu używają wspólnej czystej prezentacji; realny retry reload i cleanup wycofanych sekretów pozostają u ownera.",
+      "reviewedHash": "9496020ac6da646215956157fa5de35098b724654030637fbf645a9aa6da3b31",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/navigation/RootNavigator.tsx": {
-      "description": "Rejestruje trasy i gotowość konta/treści, wyznacza nazwany BackLink z poprzedniej trasy i przekazuje akcję ekranu do wspólnego nagłówka. Fixture/audit deep linki są dostępne tylko pod bramkami development/smoke.",
-      "reviewedHash": "ad8a0b2e5b54274bb23afdf2f9de55616d0ecb3a373cbc3a125d545778258c43",
+      "description": "Rejestruje trasy i gotowość konta/treści oraz BackLink. Istniejące DEV/smoke fixture zachowane; account restore używa współdzielonej StartupLoadingSurface bez zmiany właściciela stanu.",
+      "reviewedHash": "5c9c29e1c076670da410a240241425fcc2b10b84e980e258fb318e663954d7b1",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/constants/routes.ts": {
@@ -718,8 +718,8 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/application/bootstrap/accountBootstrap.ts": {
-      "description": "Koordynuje obserwację Firebase, dowód tożsamości, przygotowanie profilu i finalizację konta. Retry pending deletion najpierw przygotowuje odłączenie RevenueCat tego konta; błąd odłączenia pozostawia operację backendu pending.",
-      "reviewedHash": "1e8606a99938155be705178a39980e4ef028a93d65d10b5800f16628ff50bdc2",
+      "description": "Koordynuje obserwację Firebase, dowód tożsamości, przygotowanie profilu i finalizację konta. Gotowy authenticated/localOffline/guest jest publikowany w synchronicznym stateRef przed React dispatch, po istniejących kontrolach generacji i lease. Retry pending deletion najpierw przygotowuje odłączenie RevenueCat; błąd pozostawia operację pending.",
+      "reviewedHash": "ba231f401fdb0c935283ce4ddd7926ce38037b1dcaf52bc275a4295eb6c252e3",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/application/bootstrap/trainingLifecycleComposition.ts": {
@@ -728,13 +728,13 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/account/AccountSessionProvider.tsx": {
-      "description": "Właściciel sesji konta/Gościa, dowodu tożsamości, generacji i lease profilu oraz operacji konta, Premium i pending revoke/delete. Publikuje uwierzytelnienie dopiero po zgodności Firebase UID, konta backendu i trwałego powiązania profilu; obserwuje niezależne czyszczenie wycofanych sekretów urządzenia.",
-      "reviewedHash": "c5b806dcb21335af91e4ddcad2a22a0d914a29cf0879b8dc6d2e797611bd4530",
+      "description": "Właściciel sesji konta/Gościa, dowodu tożsamości, generacji, lease profilu i operacji konta. Bieżący bootstrap publikuje zakończony aktor do synchronicznych czytelników przed React dispatch, zachowując istniejące fence; równoległa naprawa ma osobny odbiór.",
+      "reviewedHash": "4ce6269be055991da7f7ba9d870cfc29ca9268251fdd3c1d3b8acb3de9652d27",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/application/account/ProfileStoragePreparationGate.tsx": {
-      "description": "Przygotowuje szyfrowany storage aktywnego profilu przed pokazaniem dzieci; udostępnia retry i jawny recovery niedostępnego storage.",
-      "reviewedHash": "824e01d52413f6994d780d6d4d6edef52e1f81c60d1b4d269bc8201b9361a3a2",
+      "description": "Przygotowuje szyfrowany profil i logout control, udostępnia realne retry i guarded hold/removal z waiterem200ms. Recovery nie pokazuje opaque code; bounded removal diagnostic ma własny dev-smoke RAM stage. Usunięto unsafe audit listener; prezentacje loading/unavailable są współdzielone z inert preview.",
+      "reviewedHash": "465d8ab4568c6673dea762001cd98fdc4448b34ef3e6ba7ed8031dc844145148",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/storage/repositories/profileStorageRepository.ts": {
@@ -758,8 +758,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/content/application/ContentPreparationGate.tsx": {
-      "description": "Przed wejściem do Home weryfikuje bieżące pakiety w bundlu, świeżo sprawdza inventory pakietów instalowanych, odzyskuje stan i wznawia sesję. Watchdog 15 s dotyczy braku nowego unikalnego postępu; przyjmuje późne pełne powodzenie tylko dla tej samej generacji, handoff i aktualnego lease profilu.",
-      "reviewedHash": "b79e261736eb340b8c97737a1df7820ff547f1c232277184a76e466fa0f99bb4",
+      "description": "Właściciel bootstrapu treści, watchdog, lease/actor fences i guarded abandonment. Używa wspólnej czystej prezentacji F01; techniczne reasons są projektowane do meaningful learnercopy z zachowaniem znanych błędów Premium. Ready przekazuje children; brak osobnego UI offline enuma.",
+      "reviewedHash": "af84dc5e37e2ed398c12ab0a2d11e21e1509ce912d3d30edf6453a19505b81ef",
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/content/application/nodePackageInstaller.ts": {
@@ -798,8 +798,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/learningMutations/commitMutation.ts": {
-      "description": "Wykonuje zapis w kolejce: journal → materializacja → weryfikacja → oznaczenie danych do sync → usunięcie journalu. Zachowuje fazę trwałości i dokładny seed retry.",
-      "reviewedHash": "d24e8f10ab9a9281c930cdfd25089ac7933fb4b448eec12fef99326a4c222e7a",
+      "description": "Wykonuje przygotowany journal w kolejce: materialize, verify, fazy, oznaczenie danych do sync, finalne verify i clear. Test-only one-shot verify_clear leży przed clear; submit_clear_next po rzeczywistym clear/przed return, poza clearcatch. Niezainstalowane hooki zwracają synchroniczne undefined bez dodatkowego await; zwykła trwałość i exact retry pozostają. Exact start hook może zatrzymać przed persistJ lub po durableJ/przed materialize; conditional await wyłącznie po zwróconym Promise. Prewrite błąd not_durable, postjournal journal_durable.",
+      "reviewedHash": "b376074a63841d86b9f0bdda8d79e6b9d928f5738e6058e56083f88ee8df7bdf",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/learningMutations/recoverPendingMutation.ts": {
@@ -863,9 +863,9 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/application/learningPlan/LearningPlanProposalCoordinator.ts": {
-      "description": "Koordynuje przygotowanie propozycji planu z danych i polityki ścieżki.",
-      "reviewedHash": "ddfb9bcf0d74d072e291adb349f7cf88402ae52144978aa52b6015ddd9496735",
-      "flow": "Cel, plan i postęp"
+      "description": "Przygotowuje propozycję planu z before/after snapshotu i policy/content pinów po kontroli aktualności. Primary next-session i legalne długości wylicza jednym paired helperem ze wspólną generic kalibracją tylko w tym wywołaniu; full-goal i case-specific pozostają osobno. Trwały accept nadal wymaga dotychczasowych resolveForCommit/fingerprint/actor/profile guardów i atomowej pary goal/plan.",
+      "flow": "Cel, plan i postęp",
+      "reviewedHash": "14b753e630675cc1cd6e460bcda3eb5c7d1ffe5b95d0953a28cb6ec93abf336f"
     },
     "patternly/src/application/learningPlan/learningEvidenceProjection.ts": {
       "description": "Jedna projekcja zapisanych prób i powtórek dla Home/planów: waliduje identyfikację, czas i duplikaty, kwalifikuje próby przez kanoniczną regułę oraz resolver katalogu, i zachowuje osobno pełne zapisane rekordy oraz kwalifikowane evidence. Nie przepisuje wyniku ani historii.",
@@ -961,8 +961,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/progress/store.ts": {
-      "description": "Firestore przechowuje postęp, batch receipts i staged adoption. Autoryzacja, lease, generacja, metadane i pełny fingerprint poprzedzają zwrot zapisanego wyniku batcha; replay pomija odczyty rekordów mutacji. Świeża próba zachowuje CAS i goal/plan counterparts. Odczyt snapshotu sprawdza scope przed/po; zamknięty read deleguje ograniczone retry całego callbacka SDK. Adoption zachowuje checkpoint/source fences i osobną retencję.",
-      "reviewedHash": "ce6127ebaa9cb83d518a07ad622cd15feed4ae3e620b91ef5a979cd3f1018b9a",
+      "description": "Firestore przechowuje postęp, batch receipts i staged adoption. Klucz v2 ma prefix dokumentu v2_ poza hashem uporządkowanej surowej tablicy JSON z wersją, rozłączny ze starym64hex; v2 wymaga dokładnej pary i fingerprintu, fallback v1 uznaje tylko dokładną legalną parę pod poprawnym starym hashem. Obca kolizja v1 nie blokuje nowej pary, nowe zapisy są wyłącznie v2. Autoryzacja, lease, generacja i metadane poprzedzają replay; per-mutation dedup/CAS i TTL pozostają bez zmian. Replay pomija odczyty mutacji i nie odnawia receipt. Snapshot sprawdza scope przed/po; closed read deleguje ograniczone retry SDK. Adoption zachowuje checkpoint/source fences i retencję.",
+      "reviewedHash": "0d487f10dfddbcc6f34df64d1cb89e340df1031ab4921e97d8870d531a08dbc8",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/modules/users/merge.ts": {
@@ -1006,13 +1006,13 @@
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-content/scripts/build.mjs": {
-      "description": "Waliduje aktualne źródła i reguły, buduje dziewięć artefaktów oraz content lock. Premium powstaje w pojedynczym lokalnym wyniku; oferta APP zmienia się dopiero z jawnym --apply-offer.",
-      "reviewedHash": "47aeb973500586ec7c67f09c1c8b52bab2fb13f7d2ba1cfdaef81d594f84549c",
-      "flow": "Treść od producenta do sesji"
+      "description": "Waliduje aktualne źródła i reguły oraz buduje9artefaktów i lock. Loader CCAR-P przenosi źródłowy profilv2, domeny, wymagane N i metadane do rzeczywistego pakietu; sprawdza rozdzielone pule formatów/umiejętności. Premium i jawne apply-offer zachowują własny kontrakt. Przebudowa v1→v2 sprawdza integralność starej pary lock/artefakt niezależnie od nowych źródeł tylko dla zastępowanych ścieżek. Pozostawione ścieżki i nowy lock pozostają zgodne z bieżącym katalogiem; obsłużone błędy staging/rename wycofują zapis.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "da558ac45794efbbbbdbb03d8f7c6ef81cc6a9107f6a8de1a8e0a07a37148211"
     },
     "patternly-content/scripts/content/question-contract.mjs": {
-      "description": "Sprawdza kontrakt pytania i relacje interakcji; wspólny kontrakt producenta i runtime aplikacji.",
-      "reviewedHash": "f0e5969449188189af20e9e9c6919253cc614172b73997de8c916d519b1da475",
+      "description": "Waliduje zamknięty kontrakt pytania i interakcji producenta/runtime. Dla CCAR-P sprawdza wymagane N, zgodność z promptem/liczbą poprawnychID i dozwolone opcjonalne metadane; nie wylicza N z klucza jako danych ucznia.",
+      "reviewedHash": "7e2a29c23485241532359e91fd89d3de7971264d98b0716cfa33ffc68ab0e1de",
       "flow": "Treść od producenta do sesji"
     },
     "patternly-content/scripts/content/track-runtime-bindings.mjs": {
@@ -1031,8 +1031,8 @@
       "flow": "Witryna, demo i panel"
     },
     "patternly-content/config/track-runtime-bindings.json": {
-      "description": "Maszynowy rejestr powiązania ścieżka–rodzina–loader.",
-      "reviewedHash": "249e22db14bc2eb1f363d784a0cd7a20e3db203728a79ceb173f88d4aedc80e1",
+      "description": "Maszynowy rejestr track–rodzina–loader; CCAR-P wskazuje claude-certification, aby źródłowy profil trafił do realnego artefaktu zamiast pozostać wyłącznie w config.",
+      "reviewedHash": "f9b3a0c55cc03673a829dc87c9752551c02356058e1005fafc008cbff6fd5911",
       "flow": "Treść od producenta do sesji"
     },
     "patternly-content/config/bundled-free-node-packages.json": {
@@ -1041,8 +1041,8 @@
       "flow": "Treść od producenta do sesji"
     },
     "patternly-content/schemas/content/question.schema.json": {
-      "description": "Schemat struktury kanonicznego pytania; walidacja schematu nie potwierdza poprawności odpowiedzi.",
-      "reviewedHash": "499299012bda4054b712a0a913ccfc3d27b5fa35d7c438438cf7f73067893091",
+      "description": "Struktura kanonicznego pytania. CCAR-P multiple wymaga autorskiego requiredSelectionCount; opcjonalne examMetadata zawiera jawną umiejętność i opcjonalną rodzinę scenariusza. Schemat nie potwierdza klucza lub merytoryki.",
+      "reviewedHash": "6ca572c67e47a5eea6c58c37ed463c2431fc1436e0a6927b1f7e4f7bb5bdf284",
       "flow": "Treść od producenta do sesji"
     },
     "patternly-web/src/main.jsx": {
@@ -1051,9 +1051,9 @@
       "flow": "Witryna, demo i panel"
     },
     "patternly-web/src/pages/PublicPage.jsx": {
-      "description": "Publiczna prezentacja produktu: katalog, demo, obrazy, FAQ i kontakt. FAQ obejmuje pierwszy pełny temat Free także w Design; pozostałe tematy i symulacje wymagają Premium. Dostępność zakupów ma osobny komunikat.",
+      "description": "Publiczna prezentacja katalogu/demo, obrazów, FAQ i kontaktu. Free obejmuje pierwszy pełny temat; symulacje i pozostałe tematy wymagają Premium. Oba wywołania scrollIntoView zachowują block:start/fokus i pozostawiają auto/smooth istniejącej polityce CSS, w tym reduced motion. Bez przenoszenia WEB-MOTION hold lub publikacji.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "3f329a653b18ac1a4627363325548b2fa767acdde081c8b0cdc44ca22948af76"
+      "reviewedHash": "75f1e30a8d32b877cf529c2108266231fef6fcf35c5c38fc5cd3a16dbb6585e7"
     },
     "patternly-web/src/pages/PublicTrackPage.jsx": {
       "description": "Publiczna strona tematyczna wybranej ścieżki z granicami oferty i odnośnikami.",
@@ -1191,13 +1191,13 @@
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/LearningPlanProposalScreen.tsx": {
-      "description": "Pokazuje propozycję planu i przekazuje akceptację istniejącemu ownerowi planu; nazwany powrót zachowuje callback ekranu.",
-      "reviewedHash": "41b6339d3f5413e17e43a65a0e6e0c274594cd8bc5cc3dc0cb73924cb194b320",
+      "description": "Przedstawia stany propozycji i istniejącą akceptację. Shortfall pokazuje jeden komunikat requested/eligible/missing pod tytułem, bez obietnicy wykonalnej sesji; primary prowadzi do praktyki. Route lifetime zwalnia własny proposal po trwających akcjach, zachowując blur; root fixture ma nazwany powrót Today.",
+      "reviewedHash": "4676c727ba104b7fe3437dc4304fbc6acac4549a6a3178251923f9f85f5cd7b6",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/GoalCadenceScreen.tsx": {
-      "description": "Zbiera cel i rytm nauki dla planu. Stały slot Screen.backAction korzysta ze wspólnego BackLink i nazywa rzeczywisty cel; własne cele akcji/fallbacki oraz powrót z lokalnego kroku konta są przekazywane jawnie. Tytuł i treść zadania pozostają poza wierszem powrotu; zmiana prezentacji nie zmienia callbacków domeny.",
-      "reviewedHash": "a0fafbf63ec27dff721ddb821f854d722d6f9745129721850c4a661d0a304338",
+      "description": "Zbiera cel i budżet jako draft do propozycji. Po usunięciu trasy późny wynik create jest zwalniany, a nie otwierany; zapis pary goal/plan pozostaje przy akceptacji.",
+      "reviewedHash": "9ba01bec647dfac2f344c5e2450a6c1a87a2d07bfb7605e1f2527ce575d75618",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/YourDataScreen.tsx": {
@@ -1206,8 +1206,8 @@
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/features/home/HomeScreen.tsx": {
-      "description": "Przedstawia wejście do nauki aktywnej ścieżki z odczytu Home związanego z aktualnym profilem i trackiem.",
-      "reviewedHash": "77aac5a8af8c306851c0daaa73e097c12edb709028ccd9e0d0a62aca04c5f5a5",
+      "description": "Prezentuje dzisiejsze wejścia dla bieżącego tracku i profilu. Własny lifetime odcina późną nawigację po usunięciu Home i zwalnia nowy proposal lub editor bez naruszania blur.",
+      "reviewedHash": "b65dd68551901d88873ccdd9e50b710e84bf941ae2692b11677adf14a629e82f",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/features/review/MistakesReviewScreen.tsx": {
@@ -1216,18 +1216,18 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/exam/ExamScreen.tsx": {
-      "description": "Prowadzi egzamin certyfikacyjny z kompaktowym SessionShell, flagami, nawigatorem i chronionym potwierdzeniem końca. Zapis, deadline, recovery i scoring pozostają u istniejących ownerów sesji.",
-      "reviewedHash": "58e777dcbffb30d9638051dd07ce37c2d243b706bd834512f6d7bdb0a9d20bab",
-      "flow": "Sesja, odpowiedź i trwały wynik"
+      "description": "Prowadzi mieszany egzamin certyfikacyjny przez kanoniczny zapis: trzy kontrolki, zachowane częściowe wybory, licznik otwierający nawigator i flaga w wierszu Question. Dla nowego CCAR-P pozwala wypróbować kontrolki przed utworzeniem sesji i deadline; feedback pozostaje po finalizacji.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "fb8ed39969bfd158471736ec3d79dd05640ea8d36a5faa675dbe86fc055364ff"
     },
     "patternly/src/features/exam/ExamReviewScreen.tsx": {
-      "description": "Odczyt zachowanych odpowiedzi egzaminu/praktyki. Nagłówek, loading i unavailable wracają do tego samego Result przez istniejące popTo.",
-      "reviewedHash": "3fe09ca29c9841cea3eb754be621fd81aeadc12a693805759d2caca764c8fdc4",
+      "description": "Odczytuje zachowane odpowiedzi i dokładne źródło sesji. Wierszowy review list stwierdzeń oddziela zapisany wybór od klucza i uzasadnienia, również dla partial/blank. Nagłówek/loading/unavailable wracają do tego samego Result przez popTo.",
+      "reviewedHash": "71436d0829464c3b042f6a3a8c476a196f7785827896f45e52b29eca97e64567",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/exam/ResultScreen.tsx": {
-      "description": "Wynik zakończonego egzaminu.",
-      "reviewedHash": "acf37c68977ba6d814873bf1cbec4d7fde08258f79e460bbd7bece87b41c20f7",
+      "description": "Przedstawia wynik zakończonej sesji. Wersjonowany CCAR-P pokazuje raw practice score x/63 i procent z jawną zasadą pełnego punktu tylko za kompletną poprawną pozycję; bez wyniku skalowanego lub przewidywania zdania. Istniejący Active time nie stanowi zweryfikowanego pomiaru dla absolutnego egzaminu.",
+      "reviewedHash": "3d880210e83143200ff12d6182cb069d5acc63f2fcf285e5e21db3be047829f5",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/account/AccountEntryScreen.tsx": {
@@ -1246,9 +1246,9 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/practice/PracticeHubScreen.tsx": {
-      "description": "Wybiera tryby aktywnej ścieżki i przejścia do setupu/sesji. Design zachowuje kontrolę przygotowanego node; wspólna polityka Premium sprawdza skonfigurowane symulacje, a ref odcina powtórne asynchroniczne admission.",
-      "reviewedHash": "f4b95321349990bc92ea21c8a38e2d2a070eb11bacd6bb16c64b495ee1e11a89",
-      "flow": "Sesja, odpowiedź i trwały wynik"
+      "description": "Prowadzi do trybów praktyki. Wejście egzaminu po Premium admission odczytuje aktywną sesję i przekazuje expectedSessionId tylko dla zgodnego track/mode; fence profilu odcina zmianę ownera po await. Nowy egzamin zachowuje demo przed zegarem.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "b0c4a56efecc5d35adf1ddc3277d884aa1e11f08cc5962299c0c88c52f30b50c"
     },
     "patternly/src/features/practice/PracticeSessionScreen.tsx": {
       "description": "Kieruje do wariantu sesji praktyki i przedstawia interakcję pytania. Stały BackLink zachowuje podany cel/callback; zapis i ocenianie należą do warstwy application.",
@@ -1351,18 +1351,18 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/infrastructure/diagnostics/startupTrace.ts": {
-      "description": "Przechowuje w RAM najwyżej512 zdarzeń startu z zamkniętego słownika dla development smoke lub jawnego prywatnego probe Android. Rejestruje etap, krawędź, monotoniczny czas i liczbowy span, bez payloadów użytkownika.",
+      "description": "Przechowuje w RAM najwyżej512 zdarzeń startu z zamkniętego słownika dla development smoke lub jawnego prywatnego probe Android. Etap, krawędź, monotoniczny czas i liczbowy span nie zawierają payloadów użytkownika. Tymczasowe kategorie actor/fence/admission zostały wycofane przez właściciela równoległej naprawy.",
       "reviewedHash": "45c937aedf168b548288f1740fafa027d98963db75aeb093e417a12d242898d3",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/content/application/contentPreparationAttempt.ts": {
-      "description": "Właściciel jednej próby przygotowania z zegarem bezczynności 15 s: plan nie odnawia limitu; odnawia go wyłącznie unikalny, zadeklarowany i zweryfikowany element danego builda (maks. 9 bieżących + 3 retained). Timeout nie anuluje walidacji. Późny sukces całego wyniku może zostać przyjęty tylko wciąż aktualnej generacji z ważnym lease; anulowanie i zmiana ownera odcinają wynik.",
-      "reviewedHash": "79a6d32328124a573b23b7a975242f0d97a6d616b2d059d9ba8f0a5bfee04d0d",
+      "description": "Właściciel próby przygotowania z zegarem bezczynności 15 s. Plan nie odnawia limitu; robi to wyłącznie unikalny zweryfikowany element właściwego builda, maksymalnie 9 bieżących i 4 retained. Timeout nie anuluje walidacji. Późny sukces całego wyniku wymaga aktualnej generacji i lease; anulowanie lub zmiana właściciela odcina wynik.",
+      "reviewedHash": "1dc1664030fe8cd28d0816739059ccacf7ff741d39d6e4fea851a79843bac748",
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/content/application/contentPreparationAttempt.test.ts": {
-      "description": "Regresje monotonicznego timeoutu, odnowienia wyłącznie unikalnym dowodem, ograniczenia budżetu 12 elementów, rozstrzygnięcia późnego wyniku całej walidacji oraz odcięcia po retry/handoff/profil/unmount. Test source nie jest dowodem wykonania ani urządzenia.",
-      "reviewedHash": "1d6d0a3048d5a9e5f0d2674a3be77d803165973f2b0ef79607b7a10355b09c68",
+      "description": "Regresje monotonicznego timeoutu, rzeczywistego planu producenta 9+4 i 13 dowodów, skończonego budżetu oraz odrzucenia nieprawidłowych, obcych i powtórzonych dowodów. Rzeczywisty błąd walidacji po częściowym postępie nie daje sukcesu. Retry, handoff, profil i unmount odcinają wynik. Testy nie zastępują urządzenia.",
+      "reviewedHash": "6b396c8f8f84259fe548f75a5c7ed64b45e6a130c336ccd767a450dfeac586ed",
       "flow": "Treść od producenta do sesji"
     },
     "patternly/scripts/candidateContentReleaseLock.mjs": {
@@ -1446,9 +1446,9 @@
       "reviewedHash": "022293753fbfc025ae406ad2c6fa85fd863c0d62ba53df5b917c00c1ba1c74d6"
     },
     "patternly/scripts/releaseGate.mjs": {
-      "description": "Sprawdza bieżącą tożsamość dziewięciu banków, czystość źródeł i wymagane dowody wydania. Dokładne dane po synchronizacji APP mają wąski wyjątek; blokady legal UNAPPROVED i zgodność renderowania pozostają.",
+      "description": "Sprawdza tożsamość9banków, źródło i wymagane dowody wydania. Jawnie odrzuca patternly-local-candidate; lokalny build/test nie staje się zgodą na publikację. Zachowuje bramki legal i pozostałe wymagania wydania.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "e1c7f5c7a8bde40c805d0a7782142145719abf38b653c1fd3d0c390b7cadbee7"
+      "reviewedHash": "7b5a2e280b14706edd18dbb12867f25d5091f3823b6557acb5e7a6dab2d4dc10"
     },
     "patternly/src/legal/legalTranslationDrafts.testOnly.ts": {
       "description": "Zbiera drafty DE/FR/ES/IT/ET jako testOnly/UNAPPROVED do porównania; nie są włączane jako zatwierdzone treści produkcyjne.",
@@ -1561,9 +1561,9 @@
       "reviewedHash": "48d291a35d32ea94912295eeb7c5f417f283a0f612aca531a624432aec1ee9f3"
     },
     "patternly/integration/contracts/content-release/release.lock.json": {
-      "description": "Bieżąca pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, dokładne hashe i rozmiary artefaktów, lineage producenta oraz wykonane kategorie kontroli. Lokalny start synchronizuje provenance do aktualnego commitu CONTENT; sama zmiana commitu bez zmiany wejść nie zmienia fingerprintu ani payloadów. Schema v4 nie nadaje semantic approval ani zgody na publikację.",
+      "description": "Pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, hashe/rozmiary i kategorie kontroli. Bieżący lokalny kandydat CCAR-P ma releaseId patternly-local-candidate, sourceTree dirty i bezpublikacyjne provenance; release gate go odrzuca. Schema v4 nie nadaje semantic approval ani zgody na wydanie.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "4fdfec74803c242199e329243ba1a787289c1ccd028ff3ed1d61a52d0b435c23"
+      "reviewedHash": "01a817b09290575a867833d651672b9559f9a4ae112c685ba1d2f5f306b7b718"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -1636,9 +1636,9 @@
       "reviewedHash": "c3a82612c3bc4334d721f7cdea10ce5a336f40635f612e65a4a6169e334db4f8"
     },
     "patternly/src/content/canonical/interactions/decisionMatrix.ts": {
-      "description": "Waliduje, punktuje i przedstawia macierz decyzji. Komunikaty dotyczą wybranych błędnych wartości lub rzeczywiście brakujących accepted values; niepełna odpowiedź nie ujawnia feedbacku submit.",
+      "description": "Waliduje i punktuje macierz decyzji. Submit wymaga kompletności; osobny review zachowuje również poprawnie zapisane częściowe wybory i zwraca wybraną/poprawną wartość, wyjaśnienie oraz trafne komunikaty każdego wiersza. Puste nie oznacza false/no; częściowa diagnostyka nie podnosi punktacji egzaminu.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "356a2c46fe72deb9e7eb612f9dc5a1d809eb0e308f113236cc6ad8206ed5d424"
+      "reviewedHash": "0fc62122e619913a3994fcda5315984770457ce3759cb7dcc8a6bb0585b1aec8"
     },
     "patternly/src/application/canonical/canonicalOrderingPracticeResume.test.ts": {
       "description": "Sprawdza zwykły plan FESD tradeoff-40: normalny submit poprawnej i błędnej kolejności, trwałą próbę, memory rebind i resume. Chroni dokładny porządek oraz komunikaty relacji; nie jest próbą natywnego urządzenia lub selektora N09.",
@@ -1901,8 +1901,8 @@
       "reviewedHash": "dc604e1f74ed2a8bcd2fc9cb296d397b7df42ae1b8fdc461b49e19d21ea23c79"
     },
     "patternly/src/content/canonical/runtimeCatalog.ts": {
-      "description": "Waliduje dziewięć bieżących artefaktów względem locków i konfiguracji trybów, successor ledger oraz dokładny hash odtworzonego treningowego poprzednika. Wystawia katalogi i obserwację unikalnego postępu walidacji; opcjonalne dostępne retained źródła wspierają wcześniejsze ukończenia. Nie klasyfikuje równoważności pytań ani nie dowodzi runtime/device PASS.",
-      "reviewedHash": "1bcd83e9ca13e5452f85c9f1abb769063bad1772975e17bf21c0c8eae6059e51",
+      "description": "Waliduje dziewięć artefaktów względem locków i konfiguracji, successor ledger oraz dokładny treningowy poprzednik. Retained pakiety obejmują dokładne aktywne Claude przed realistycznym egzaminem, zachowując historyczne piny bez podmiany bieżącym bankiem. Nie klasyfikuje równoważności ani runtime/device PASS.",
+      "reviewedHash": "1eb3351c3b057377b063e6539ff93916db621738f160e95a9b4f57404a8594fb",
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/domain/learning/mentalUnitEvidence.ts": {
@@ -1931,14 +1931,14 @@
       "reviewedHash": "be716be7352c0d218a1cd20830ddefe2f8fee647311e5962ab4a011abd33d7ab"
     },
     "patternly/src/domain/account/accountWireState.ts": {
-      "description": "Kanoniczny zamknięty kontrakt siedmiu typów rekordów konta. Strict optional legacyUnitProof zachowuje sourceItem/node/unit i piny sesji także w gałęziach warunkowych; brak pola pozostaje zgodny ze starym payloadem. Nie wykonuje migracji ani odczytu katalogu.",
+      "description": "Zamknięty kontrakt rekordów konta z optional legacyUnitProof. Zachowuje spójną parę scoringPolicyId/version CCAR-P oraz niekompletne odpowiedzi w evidence wyniku tylko dla unanswered occurrences; blokuje sprzeczne membership i obcy track. Nie migruje rekordów ani nie odczytuje katalogu.",
       "flow": "Konto, Gość i synchronizacja",
-      "reviewedHash": "0c5d4dc99f8673ae2e642408fabaeaaf87a52bc9eaa44d3e9d7c4fc00aba8346"
+      "reviewedHash": "c3971ca5920c0b5818e2f2af48922d8e62d0097a94b0d6b5b4941e69f21812a7"
     },
     "patternly-backend/src/modules/progress/accountWireState.ts": {
-      "description": "Byte-identyczna kopia kanonicznego guarda APP dla sync, merge i adoption. Przyjmuje zamknięty optional legacyUnitProof zgodny z pinem sesji; nie usuwa pola lub danych. Zgodność wdrożonych starych czytników wymaga osobnego odbioru.",
+      "description": "Byte-identyczny guard APP dla sync/merge/adoption. Zachowuje optional legacyUnitProof oraz zamknięte, spójne scoringPolicyId/version CCAR-P i partial responses wyłącznie należące do unanswered wyniku. Nie wykonuje migracji; zgodność wdrożonego backendu wymaga osobnego wydania/odbioru.",
       "flow": "Konto, Gość i synchronizacja",
-      "reviewedHash": "0c5d4dc99f8673ae2e642408fabaeaaf87a52bc9eaa44d3e9d7c4fc00aba8346"
+      "reviewedHash": "c3971ca5920c0b5818e2f2af48922d8e62d0097a94b0d6b5b4941e69f21812a7"
     },
     "patternly/src/application/learningPlan/applicationClockIntegration.test.ts": {
       "description": "Sprawdza wspólny zegar lifecycle oraz rzeczywiste zapisanie i ponowne wyliczenie ręcznych budżetów dwóch tracków przez produkcyjne coordinatory i journal/CAS. Podziały 10/10 i 7/13 zachowują własne rekordy, piny, legalne długości oraz jawny niedobór czasu; test używa profilu/routera z MemoryStorage, bez nowego globalnego allocatora lub odbioru natywnego UI.",
@@ -2003,7 +2003,7 @@
     "patternly/src/application/account/AccountProfileTransitionLoadingState.tsx": {
       "description": "Wspólna powierzchnia przygotowania profilu z logo i lokalizowanym tytułem; nie rozpoczyna operacji konta.",
       "flow": "Start aplikacji i nawigacja",
-      "reviewedHash": "8c3e0ba2d11ac536750d7ca47f1e084ab09998731413a107ce02aad406ca972f"
+      "reviewedHash": "04308932ac62b705a5c4ec680fba7c34d58cbece76fade9869a8176f6022ac5c"
     },
     "patternly/src/features/account/useSettingsRecoveryReturn.ts": {
       "description": "Wraca z Settings do Home dopiero po jawnym Retry i odzyskaniu zdrowego stanu tego samego Firebase UID oraz tego samego scope storage; odcina zmianę ownera i powtórny powrót.",
@@ -2106,14 +2106,14 @@
       "reviewedHash": "9f4e976994b5f7c567cdb31c4f628a06135a4f3dd60e4628e28ee1ab336772e2"
     },
     "patternly/scripts/syncBundledContentRelease.mjs": {
-      "description": "Jedyny synchronizator bieżącego banku APP. Przed recovery i importem producenta wymaga kanonicznego katalogu CONTENT, origin/master zgodnego z HEAD, czystego drzewa i zgodnego opcjonalnego SHA. Ponawia kontrolę źródła przed podmianą lub wynikiem check; zachowuje scoring, fingerprint freshness i transakcyjne recovery bez zmiany historii konta.",
+      "description": "Synchronizator kanonicznych artefaktów APP. Zwykły sync/check nadal wymaga czystego CONTENT z HEAD=origin/master. Jawny candidate dopuszcza lokalny WIP tylko kanonicznego checkoutu, sprawdza rzeczywisty build, świeżość fingerprintu i byte-identical pozostałych8banków; oznacza local_unpublished/dirty. Podmiana i recovery pozostają transakcyjne.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "54ffaecc7cd7c8f3e4ba4334849a95ed4506d32a0d5c11d1641c13e40bcef557"
+      "reviewedHash": "b84bafa9f3c1f424aa19790ab14029c01fa335a78e47a50dd1d2a8aa35943696"
     },
     "patternly/scripts/syncBundledContentRelease.test.mjs": {
       "description": "Regresje synchronizacji na izolowanych fixture Git/FS: czysty główny commit i detached checkout, odmowa WIP, obcego katalogu/origin/ref/SHA, zmiana źródła w trakcie, parity i proweniencja oraz atomowa podmiana/recovery z zachowaniem bajtów APP. Lista przypadków nie jest wynikiem ich wykonania.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "1e83ace8b5116aa620bec5fb6d1db6ce161468a2fc003bb0ed2d1c9893fc3b98"
+      "reviewedHash": "33688068a9d309fff82d2655e1c91fba1008c5d553820243f57a288a2f56f194"
     },
     "patternly/scripts/releaseManifest.test.mjs": {
       "description": "Regresje integralności manifestu wydania, tożsamości wejść i dowodów. Fixture synchronizacji identyfikuje własny czysty główny commit CONTENT i sprawdza, że tylko pochodne banku APP mogą pozostać niezacommitowane; nie uruchamia prawdziwego wydania.",
@@ -2126,9 +2126,9 @@
       "reviewedHash": "7f46b0efa65d3ede1fda86cf8557824e4fe21ef8426531d35159344142ca7896"
     },
     "patternly/src/features/coding-interview/session/SessionShell.tsx": {
-      "description": "Wspólna geometria ekranów praktyki, symulacji i egzaminu: semantyczne sloty czasu, trybu, pozycji i postępu oraz stopka. Duży tekst w egzaminie przenosi nazwę trybu do pełnego wiersza nad czasem i licznikiem; standardowy egzamin i warianty Simulation zachowują dotychczasowy układ. Interaktywny licznik ma wspólne minimum dotyku44×44dp; pasywne sloty pozostają bez dodatkowego minimum. Pasek metryk odtwarza natywny pomiar po zmianie fontScale, bez ponownego montowania ekranu i stanu sesji.",
-      "reviewedHash": "acef382b0a4d601a19025af72842da1141422b5ae80018e037c6aad2e52c92eb",
-      "flow": "Sesja, odpowiedź i trwały wynik"
+      "description": "Wspólna geometria praktyki, symulacji i egzaminu: semantyczne sloty czasu, opcjonalnego trybu, pozycji i postępu oraz stopka. Interaktywny licznik ma minimum44×44dp; egzamin otwiera nim nawigator bez ikony siatki. Zmiana fontScale odtwarza pomiar tekstu, bez montowania nowej sesji.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "1718ebb0f7a1dae8fffa2a631de253c9621e52bba13448c59200fa6139745606"
     },
     "patternly/src/features/simulation/SimulationSessionSurface.tsx": {
       "description": "Renderer projekcji Interview Simulation: pytanie i odpowiedzi, zapis/leave, nawigator, recovery, potwierdzenie oraz zweryfikowany wynik. Panel potwierdzenia uwzględnia dolny inset safe area; nie posiada logiki timerów, zapisu, punktacji ani finalizacji. Przy zmianie fontScale odtwarza samą kartę pytania z kontrolowanymi odpowiedziami, aby ponowić natywny pomiar promptu i opcji bez resetu projekcji sesji.",
@@ -2144,6 +2144,530 @@
       "description": "Przedstawia evidence, plan, tygodniową aktywność i historię wybranego tracka. AlgorithmsEvidenceSection posiada lokalny stan rozwinięcia diagnostyki; jego przełączenie nie uruchamia ponownie pełnych projekcji rodzica. Aktualizacja wejść nadal korzysta z bieżącego presentProgressEvidence bez cache.",
       "flow": "Start aplikacji i nawigacja",
       "reviewedHash": "18631bd18cb2713d81973fbdadfcc5196ff3d9aa3587adcaf2e8d0eaab51a7c0"
+    },
+    "patternly/src/features/exam/ExamResponseControls.tsx": {
+      "description": "Renderuje neutralne odpowiedzi egzaminu: radio z czyszczeniem, checkboxy z autorskim limitem N i listy osobnych stwierdzeń. Brak wyboru jest null lub brak pola; false/no to stabilne ID. Nie zna klucza ani nie finalizuje odpowiedzi.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "77f47c36d812e4d443b30b2c5a7155175b7f34b41d01c395e4092808c780d55b"
+    },
+    "patternly/src/features/exam/ExamFormatFamiliarization.tsx": {
+      "description": "Pomijalne przykłady trzech kontrolek przed zegarem CCAR-P; stan przykładów jest lokalny, osobny od punktowanej sesji. Parametry zasad czyta z profilu; nie uruchamia lifecycle.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "effcceaf9b33f0dbc21b9fbcd04d19dd9705009e0ae17d15b1ce09af64f4b0ea"
+    },
+    "patternly/src/features/exam/ExamStatementReview.tsx": {
+      "description": "Pokazuje osobno zapisaną wartość, poprawną wartość, wynik diagnostyczny i autorskie wyjaśnienie każdego stwierdzenia po zakończeniu. Nie przelicza punktów.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "bbf6968d8642a2f9768ae7dce5c3b6c546e80102ad9eb81efe239693b8f9cfdb"
+    },
+    "patternly/src/features/practice/CertificationStatementControls.tsx": {
+      "description": "Wiąże praktykę Certification z osobnym dropdownem każdego stwierdzenia. Po trwałej ocenie i zablokowaniu edycji pokazuje wspólny wierszowy review: wybór, klucz i uzasadnienie. Nie ujawnia klucza w aktywnej lub odroczonej odpowiedzi.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "e4d58e81945eb7ef18e1323c7f4020516f8b326567025eefd09aa5fa43ea078e"
+    },
+    "patternly/src/application/certification/certificationExamSelection.ts": {
+      "description": "Dobiera pełny CCAR-P według osobnych kwot domen, formatów i umiejętności oraz wykluczeń rodzin/relacji/caseRecipe. Precomputed rozmiary pul i pojedynczy wybór kandydata zachowują dokładne tie-breaking bez kosztownych skanów w comparatorze. Nie pomija walidacji planu przy wznowieniu lub zapisie.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "39ab0ea9838c59d1005339eda1fb3845b46816856bccde69331aa5e07a7f6d09"
+    },
+    "patternly/src/application/certification/certificationExamDraftResponse.ts": {
+      "description": "Sprawdza puste, częściowe i kompletne odpowiedzi egzaminu względem dokładnej interakcji, stabilnych ID i limitów; nie myli jawnego no/false z brakiem wartości.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "e59a13c97f7ac8c67bd23230040078e41a8e39e79a293bbf2e1eb028546db5dd"
+    },
+    "patternly/src/application/certification/certificationExamScoringPolicy.ts": {
+      "description": "Wersjonowana polityka treningowa CCAR-P: punkt wyłącznie za kompletną poprawną pozycję. Oddziela wynik egzaminu od częściowych diagnostyk canonical scorer i zachowuje starsze polityki.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "4c987eac8598b96cde863a1ab8e3f00d6f32ec26e452f49391a26177dc5f4d5f"
+    },
+    "patternly/src/application/certification/certificationCcarpLifecycle.integration.test.ts": {
+      "description": "Testuje realny profil i runtime CCAR-P: 63 pozycje, kwoty, przeplatanie, wykluczenia rodzin, częściowe wznowienie, wynik 1/0 oraz dokładny przegląd historyczny. To test runtime w pamięci, bez natywnego MMKV.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "19fe56b1d6e63f9e37ae870f3086e8a9e00444ca4ed997d98d568c656b32199f"
+    },
+    "patternly/scripts/startCcarpLocalCandidate.mjs": {
+      "description": "Jawny start lokalnego nieopublikowanego kandydata CONTENT w profilu smoke na porcie8083; przed Metro wykonuje transakcyjny candidate build. Nie zmienia zwykłego launch/sync ani uprawnień publikacji.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "17c0551fc59c30085fcf2695bd1c57be9e9a28354fabd7fc06fca181423468e1"
+    },
+    "patternly/scripts/qa/ccarpNativeStateExpression.js": {
+      "description": "Stały pasywny odczyt rzeczywistego MMKV na lokalnym smoke dla aktora testowego ui-exam-ios. Sprawdza lease i zwraca hashe konta/profilu/historycznych rekordów oraz pin, kolejność, szkic i wynik wskazanej sesji; nie ujawnia UID ani sekretów.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "fe1f6fa7dcc259bef31046cf87f860f4438cc5928293253d63f2f49ee91fe634"
+    },
+    "patternly/scripts/qa/readCcarpNativeState.mjs": {
+      "description": "Ograniczony czytnik CDP dla dokładnego lokalnego iPhone17/com.lkurczab.patternly na Metro8083. Wykonuje stały read-only expression i raportuje bezpieczną kategorię niepowodzenia; nie tworzy lub nie naprawia danych.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "b9675900e885199ecb11602b134cf929f76f708187289cef9388081bcbc4ab4a"
+    },
+    "patternly/scripts/runCcarpIosAcceptance.mjs": {
+      "description": "Orkiestruje wersjonowane Maestro demo/odpowiedzi/cold-resume-finish na jednym istniejącym iPhone17. Parametry pochodzą z realnego profilu; odczyt MMKV sprawdza zachowanie szkiców i niezmienione historyczne rekordy. Wymaga prywatnej fixture lokalnej i nie resetuje danych.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "52cc027ce1e61aef1ab9d4b64706ebb25f8d21a9636ca25702ddc073df165e1c"
+    },
+    "patternly/scripts/reportCcarpExamProfile.ts": {
+      "description": "Składa pełny niepunktowany plan kontrolny z realnego artefaktu i raportuje osobno raw/training SHA, domeny, formaty, umiejętności, słowa, wiersze i jednostki odpowiedzi, bez kluczy i trwałego lifecycle.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "fb7439f5487e79a28a1fea63fa8490babe39d4dba047de32e4d08a9255956c64"
+    },
+    "patternly-content/config/ccarp-exam-authoring-review.json": {
+      "description": "Hash-bound dedykowana recenzja CCAR-P: 972 dyspozycje oryginałów, 10 nowych pozycji, dokładne hashe aktualnej treści i 23 grupy źródeł. Nie nadaje globalnemu FCA PASS.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "f38fe463429679e79c1bbb05d6c4abbe7e221fbe2471478848461888817aa3a5"
+    },
+    "patternly/src/application/trainingLifecycle/expiredCertificationSimulationBootstrap.test.ts": {
+      "description": "Pamięciowa regresja aktualnego GCP: 50 pytań, jedna odpowiedź i flaga, niezmienny timerDeadlineAt przekroczony sterowanym zegarem. Rzeczywisty lifecycle i bootstrap finalizują własną fixture oraz tworzą jedną próbę. Nie odtwarza dokładnych bajtów dawnej sesji ani natywnego przerwania.",
+      "reviewedHash": "c01449a71847a0dc05d7256a5d6c821d7ab05dfa1a321b0b2a3698db4e16be09",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/.gitignore": {
+      "description": "Jawna allowlista wersjonowanych przepływów Maestro, w tym ui-exam-verify, pat-opt-007 oraz ui-plan-shortfall; prywatne dowody i pozostałe lokalne pliki nadal są ignorowane.",
+      "reviewedHash": "acedf10e80c071c0f5b6ec9f46902bc674b24cffbe88a6534bdddb61fa8d859d"
+    },
+    "patternly/.maestro/ui-exam-verify-entry.yaml": {
+      "description": "Capture-only wejście do bieżącego 50-pytaniowego egzaminu GCP na istniejącym, uwierzytelnionym własnym lokalnym koncie smoke; wymaga preflightu bez aktywnej sesji, resetu ani logowania. Uruchomiony przepływ rozpoczyna sesję i zapisuje widok pierwszego pytania; sam plik nie jest dowodem native.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "206d745a2c88f02188d8639ea1960f517ca18828fd2caaa9e2dc6cc3b9e9f239"
+    },
+    "patternly/.maestro/ui-exam-verify-standard.yaml": {
+      "description": "Capture-only kontynuacja dokładnej aktywnej sesji GCP, z identyfikatorami sesji, pytania i opcji odczytanymi z fixture. Zapisuje jedną odpowiedź i flagę, sprawdza nawigator oraz otwarcie i anulowanie potwierdzenia końca na pierwszej i ostatniej pozycji; nie finalizuje sesji. Wykonanie natywne i readback raportuje się osobno.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "b77ac5deac2de617f5b89a5c11c4b5919f7a5c3415196c2c677d3bd85cf07617"
+    },
+    "patternly/.maestro/ui-exam-verify-large.yaml": {
+      "description": "Capture-only kontynuacja tej samej sesji GCP przy rzeczywistej skali tekstu ustawionej i zmierzonej poza przepływem. Centruje ostatnią opcję nad stałą stopką. Obejmuje treść pierwszego i ostatniego pytania, nawigator oraz anulowanie potwierdzenia końca; nie zmienia odpowiedzi i nie finalizuje. Źródło YAML nie stanowi dowodu dużej skali ani native.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "0b0cc0a76c288de82c2cc37c14ed8e58fd2137d5f0fa6c5d50d0b940f0765d75"
+    },
+    "patternly-backend/tests/syncMutationReceipts.emulator.test.ts": {
+      "description": "Rzeczywiste testy Firestore/HTTP tożsamości receipts: pary kolidujące w v1 i między barehash v1 a JSONtuple, rozłączność prefiksu dokumentu v2_, dokładny legacy/v2 replay, reuse409, niezmieniona TTL30dni, współbieżne100mutacji i CAS, surowe Unicode oraz malformed receipt fail-closed. Każdy przypadek ma własne konta i cleanup; nie jest to Cloud lub pełny test starego binary.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "046389027e2ded44194f097eb27b7345992a8af106b38121d646f18cf747a13c"
+    },
+    "patternly-backend/tests/progressStorage.emulator.test.ts": {
+      "description": "Rzeczywisty store Firestore: canonical records, goal/plan atomowość i CAS, adoption oraz replay po późniejszej rewizji. Obserwuje faktyczne odczyty dla1/100mutacji: fresh zawiera dodatkowy legacy lookup, v2 replay kończy się po3get bez progress/syncMutations i bez TTL/snapshotScope odnowienia; chroni auth/lease/generation.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "263448041339ffb8938497fefee9cd806c1e79caca604fcd7d5eaaa63ccda29e"
+    },
+    "patternly/src/application/learningPlan/nextSessionTimeEstimate.ts": {
+      "description": "Wycenia następną sesję i legalne długości. Combined helper tworzy leniwą, lokalną bazę generic observed calibration tylko dla jednego inputu; każda długość zachowuje własną walidację, selekcję i koszt. One-shot API pozostaje zgodne z wymaganiem planu i buduje świeżą bazę; brak publicznego prepared object lub cache między propozycjami. Recipe-specific case/full-goal pozostają osobno.",
+      "flow": "Cel, plan i postęp",
+      "reviewedHash": "51b97fcfba5cb1b7cd3137cac506fee05f577c9605ee343fa0aa9ae5172efc0f"
+    },
+    "patternly/src/application/learningPlan/nextSessionTimeEstimate.test.ts": {
+      "description": "Realny nie-case Coding catalog: M2/K3, odczyty questions do generic calibration8 w starej parze API i2 w combined, identyczne pełne wyniki i świeże2 w następnym wywołaniu. Chroni też jawne unavailable dla V3 bez exact targetu. To licznik odczytów wejścia w kontrolowanym fixture, nie pomiar CPU/native latency.",
+      "flow": "Cel, plan i postęp",
+      "reviewedHash": "6d4dfdde6846bf1ca8bff31df0f7f55de2f141448b8a99328d78b58e0ad8c47a"
+    },
+    "patternly/src/features/home/learningPlanProposalRuntime.ts": {
+      "description": "Adapter ekranu do istniejących ownerów resolve/create/edit/accept/reminders oraz idempotentnego discard własnej propozycji i edytora.",
+      "reviewedHash": "4f7a326f46238acc06b9650375c30cd3889d8ee14db97c59babae2c9767ab489",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/routeLifetime.ts": {
+      "description": "Wspólny owner rzeczywistego czasu życia trasy. Idempotentnie odracza cleanup do zakończenia śledzonych akcji; rerender i utrata focus nie oznaczają usunięcia.",
+      "reviewedHash": "5743f95113536134fe3fd4a44c88e03a1d37f35a4254ed3e5310afaac4bc119c",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/routeLifetime.test.ts": {
+      "description": "Sprawdza odroczony i idempotentny cleanup po zakończeniu akcji oraz natychmiastowy cleanup bez akcji; to kontrakt helpera, bez dowodu natywnego unmount.",
+      "reviewedHash": "af31e398d6fef7f7a19d3afdd8a31cdc97f06ef12aecb24422e8ec505bd50ec3",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/learningPlanProposalFixtureRuntime.smoke.ts": {
+      "description": "Stałe domenowe przypadki smoke propozycji i liczniki akcji w pamięci; jawny discard nie ma zasobów do usunięcia i nie udaje produkcyjnego Map lub trwałego zapisu.",
+      "reviewedHash": "dd3e4001f037c4c4ff1d8748b9411680ee8a45258a2ed2c3bff10ffffe006e9f",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/learningPlanProposalFixtureRuntime.test.ts": {
+      "description": "Weryfikuje nazwane domenowe stany fixture, call counts i brak udawanego storage success, także bezskuteczny discard fixture.",
+      "reviewedHash": "d926ba00a93fee2453172e4c07f4c937f1aa2ce6b20acbeb685077817fcab938",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/features/home/learningPlanProposalPresentation.test.ts": {
+      "description": "Chroni statyczny kontrakt propozycji, czytelne stany, lokalizację, footer oraz związanie cleanupu z lifetime zamiast focus; render i timing natywny wymagają osobnego dowodu.",
+      "reviewedHash": "4114793d48d9a4af809a07bcc58a7cfb01992391338b4609535224e75879ffc0",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/application/learningPlan/LearningPlanProposalCoordinator.test.ts": {
+      "description": "Sprawdza realne propozycje i guardy. Kompozycje installed StackRouter/StackActions z rzeczywistymi koordynatorami i MemoryStorage obejmują pop/replace, blur/editor, późne wyniki i trwającą akceptację; nie dowodzą React Native unmount.",
+      "reviewedHash": "b4c525fa8a4de79f17a04ddbbc91d06b5ceafb608ec79d673f720ef5089e8354",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/scripts/qa/readLearningPlanProposalNativeState.mjs": {
+      "description": "Pasywny reader liczników i własnych ID istniejących Map w Hermes smoke na loopback. Sprawdza app/runtime, exact actor/profile, lease/fence i initialized API shape; bez payloadów lub mutacji. Shape nie dowodzi source hash ani lifecycle ekranu.",
+      "reviewedHash": "ea6a69ee1dea499f775e76d37367610b19f29a22fe56f9fa9202e2a091731176",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/.maestro/pat-opt-007-proposal.yaml": {
+      "description": "Wejście zwykłym UI do propozycji z niezapisanego draftu celu na własnym smoke profilu; przechwytuje formularz i propozycję bez akceptacji pary.",
+      "reviewedHash": "1689e621a8bddc7551480bbf80d22d8b7c699bb8c716f74cde39f7af188c1394",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/.maestro/pat-opt-007-editor.yaml": {
+      "description": "Otwiera rzeczywisty edytor z własnej propozycji i zatrzymuje próbę do pasywnego odczytu Map; nie akceptuje planu.",
+      "reviewedHash": "a85206afbc070224a45372b72b3cadf272893cb94cb1b41872a29fd8f6770634",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/.maestro/pat-opt-007-editor-return.yaml": {
+      "description": "Dla potwierdzonego editor source=proposal wykonuje Save schedule jako staging w pamięci i rzeczywisty powrót, bez trwałej akceptacji pary.",
+      "reviewedHash": "0c5988453fe7f2c0b0b5cd4156c15439ec73b6b429bed2f836c1edbc711bfcb6",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/.maestro/pat-opt-007-back.yaml": {
+      "description": "Wykonuje Back z własnej trasy propozycji oraz zrzuty przed/po; caller wiąże exact route/proposal IDs z pasywnymi odczytami i sprząta własne fixture.",
+      "reviewedHash": "158919e311d56faa2afe9b074d9ab78a2f5ac45b0cde2f441c69ee1df5154ce3",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/locales/pl/learningPlan.json": {
+      "description": "Polskie teksty planu nauki. Komunikat shortfall zachowuje requested/available/missing oraz eligibility, a zgoda z liczbą pytań unika błędnej odmiany przy 0/1/2; pozostałe locale mają osobne zasoby.",
+      "reviewedHash": "fe3078b15c057265e94f37243c74d2699fc42313be02c167fceaa41103ad0ae3",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/.maestro/ui-plan-shortfall-capture.yaml": {
+      "description": "Pobiera trzy natywne kadry jawnego shortfall fixture: orientację,10/2/8 i niedostępny target. Caller ustala locale/tekst/motyw i weryfikuje własny profil; nie zapisuje planu ani historii.",
+      "reviewedHash": "e80f94dfc1f9b3d1c6d566ac7fbf8d32269bb6162d46924412f253a0b8ef57f3",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/.maestro/ui-plan-shortfall-navigation.yaml": {
+      "description": "Sprawdza istniejące GoalCadence open/Back i PracticeHub open/iOS edge Back oraz root Today exit. Nie wykonuje Goal Review/Save, Practice Start lub accept; gotowa Practice jest powierzchnią z zakładkami.",
+      "reviewedHash": "ed8963d397c63cd17d6590d50342b3fc168102499a3da8f8a3d2b07f56609977",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/.maestro/ui-plan-shortfall-preferences.yaml": {
+      "description": "Przez zwykłe UI własnego profilu wybiera EN/PL i light/system, opuszczając ewentualny root fixture do Today. Caller przywraca pierwotne wartości oraz sprząta wyłącznie własny nowy rekord ustawień, jeśli wcześniej nie istniał.",
+      "reviewedHash": "c7ef50822c12f04fa8b31dd768e6a541862c6d7928618409db7da50764131b8c",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/.maestro/ui-plan-shortfall-warning-frame.yaml": {
+      "description": "Uzupełnia maksymalny tekst o cały komunikat niedoboru między stałymi nagłówkiem i stopką: po automatycznym centrowaniu wykonuje jeden mały powolny rzeczywisty gest. To dowód scrollowalnej prezentacji, bez mutacji nauki.",
+      "reviewedHash": "166f61ed2c319a83c012dd2f21c32c0c0e04d62270c3ea244930bf194ec551f2",
+      "flow": "Cel, plan i postęp"
+    },
+    "patternly/src/application/runtimeAuditability/Persist13ResetFixtureRoot.tsx": {
+      "description": "Izolowany DEV/smoke PERSIST-13 na dwóch raw-MMKV stores własnego UUID. Oddzielny practice_ui_next: post-ACK ready, cold feedback i trwały ui_armed przed jednym prawdziwym ekranem; advance wykonuje wyłącznie zwykły przycisk. Synchroniczny obserwator czyta canonical repositories i operation store bez checkpointu. Trzeci proces wymaga zamkniętego prekill DTO, nigdy nie montuje UI ani nie ponawia advance. Przed każdym bootstrapem sprawdza lease/brak J; każdy pełny cold snapshot porównuje z prekill poza S/T, index/pointer są exact, czas co najmniej prekill, dwa cold snapshots exact. Cleanup wyłącznie manifest-owned po wszystkich warunkach. Starsze probe/DATA/reset zachowują osobne kontrakty. start_cutpoint nie seeduje historii/resetu: po pustym izolowanym bootstrapie buduje ten sam startplan, uzbraja exact hook i wywołuje production commitTrainingSessionStart. Receipt hash-only potwierdza pustą deltę lub tylko J; callback pozostaje pending, stores zachowane, bez recover/success/cleanup. Wersja v2 start_cutpoint przygotowuje legalne10 przez runtime.prepare/validateResume. Recover przed routerem wymaga exact paused v2+full snapshot; v1 nie jest wejściem recovery. Każdy cold pass zapisuje prepared z fail-stop; production bootstrap raz na proces, expected z zapisanych physicalWrites J, drugi pełny snapshot/revisions exact. Brak drugiego Start/cleanup danych, complete jest verify-only.",
+      "reviewedHash": "c4a163379383f5182b519d03a9f140ef00716b01a85613a609bcf23726099c04",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtimeAuditability/persist13ResetFixtureProtocol.ts": {
+      "description": "Zamknięte manifesty i oddzielne hash-only sidecars PERSIST-13. Practice-ui-next v1 wiąże expected domain-advance, occurrence2, pełny S bez elapsed, zbiory A/R/innychS/results, timer identity i minima; readback ready→ui_armed poprzedza UI. Observation jest dodatkowym dowodem porównawczym, bez prawa replay. Wspólny guard odrzuca journal/obce klucze oraz zmianę index/pointer; tylko dokładny Srecord/T mogą się zmienić. Starszy index0 UIprobe i DATA schemas pozostają oddzielne. Dla start_cutpoint zamknięta capability v2 wymaga legalnego prepare10 i hash-only before/after; oddzielna recovery evidence prepared/boot1_complete/complete. Entry guard odrzuca v1,foreign/stale snapshot i oba prepared (także przed pass2); expected physical after pochodzi wyłącznie z istniejącego J,bez nowego planu.",
+      "reviewedHash": "69cd20479ca6d80017fedbf230e0eb6369af95044bdd6ddcbe10949ba1a8c1fc",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtimeAuditability/persist13ResetPauseHook.ts": {
+      "description": "Test-only one-shot pauzy przy istniejących granicach materialize/verify/clear. Osobny slot advance_materialized wymaga DEV/smoke/seed/UUID/exactscenario i advance_training_session, po materializacji/przed phasewrite; reset i submit zachowują własne gate. Hook przekazuje wyłącznie stage, cold-owner sprawdza wszystkie sloty; pre/postclear bez instalacji synchronicznie undefined. Osobny start slot wiąże exact command/plan, profile generation i run; tylko DEV/smoke/seed/start_cutpoint/exactstage. Inna operacja/identity nie zużywa authority, stale runtime/lease odmawia; callback tylko stage, one-shot przed callbackiem.",
+      "reviewedHash": "33ea4133c7f1f4d2a10273cd439f57cdf4223ec2eba39c5fdcb9167ea371e126",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtimeAuditability/persist13Entry.ts": {
+      "description": "Fail-closed wybór zwykłej aplikacji lub zamkniętych scenariuszy PERSIST-13. UUID/mode wymagane, observation tylko practice_ui_next recover. start_cutpoint seed/recover z jedną z dwóch exact startStage; niekompletne/obce wejście odmawia przed otwarciem stores. O uprawnieniu do recover decyduje dodatkowo istniejący manifest/v2 receipt przed otwarciem routera.",
+      "reviewedHash": "a2afc1c4129afab0728ce29bcf88452c27f0de660ed980fd033eaf890aed6378",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtimeAuditability/persist13FixtureErrorContext.ts": {
+      "description": "Odczytuje wyłącznie allowlisted stage/category z maksymalnie ośmiu obiektów cause, zatrzymując cykle i błędy getterów. Nie zwraca wiadomości, identyfikatorów, payloadów ani stacków; nieklasyfikowany błąd nadal odmawia i pozostaje unknown.",
+      "reviewedHash": "457e4a4b30b21322cda5aed5408fdb473af3bdd95776f4056449ac95facaa614",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/runPersist13Fixture.mjs": {
+      "description": "Lokalny launcher dziewięciu zamkniętych scenariuszy PERSIST-13 seed/recover, UUIDv4 i Metro8082. Opcja --ui-observation wyłącznie dla practice_ui_next recover: przed Expo sprawdza dokładny prywatny run-path, regularny plik0600, rozmiar i zamknięty DTO/run; usuwa odziedziczony observation env. Przekazuje tylko hash/counter DTO; ready montuje jeden ekran, ui_armed z DTO dopuszcza jedynie verify/cleanup. Dodatkowy start_cutpoint obsługuje seed/recover, wymaga --start-stage z dwóch zamkniętych wartości i czyści odziedziczone start-stage env. Recover nie uzbraja hooka ani nie tworzy nowej komendy; exact stage/run pozostają wymagane.",
+      "reviewedHash": "0bf3880060ba85a7ac3c76b53b2418003b6661d99a159069a2d91d9a797e55cb",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtimeAuditability/Persist13PracticeUiHost.tsx": {
+      "description": "Mały host prawdziwego PracticeSessionScreen nad przygotowanym profilem fixture. SafeArea i rzeczywiste preferences/i18n poprzedzają jeden native-stack; gotowe preference/commonlocale wyznaczają standardowy buildNavigationTheme i ExpoStatusBar jak w aplikacji. Bez AccountProvider lub sztucznych wartości konta/Premium; domyślnie zwinięte Details pozostaje niezmienione. Scope to recoveredfeedback/Next, nie raportowanie lub pełny RootNavigator.",
+      "reviewedHash": "64a58edd1172c18ac736fc8fd1a152c88a492469d2faea6d4f5bf923e27c9c67",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/readPersist13UiAuthState.mjs": {
+      "description": "Read-only Auth CLI zachowuje guest/ui_armed/initializedHost gates starego UIprobe. Wspólny builder inspekcji Firebase SDK używany także przez Nextreader czyta wyłącznie już zainicjalizowany registry/getProviders/isInitialized, bez inicjowania Auth. Stały localhost discovery i osobny IPv4 WebSocket Origin. Wspólny exclusive0600 output auth/next chroni dev/inode ownership podczas zapisu i cleanup. Receipts zawierają wyłącznie dozwolone stany/liczniki, bez danych konta.",
+      "reviewedHash": "a89d02099771ee675cc8d2f5031a5654d51918951991a0ca2b5a0bb00667f048",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/readPersist13UiNextState.mjs": {
+      "description": "Read-only collector obecnego Q2 w practice_ui_next: exact guest/run/ui_armed i już zainicjalizowany fixture observer, rzeczywiste synchroniczne repo/operation reads oraz wspólny SDK Auth inspector. Zapisuje zamknięty prywatny hash/counter DTO z utrwalonym czasem/revision; nie checkpointuje/nie odtwarza journalu/nie ponawia Next. Rzeczywisty bounded sampler rozpoznaje poprawny DTO bez result, ponawia tylko pending i zapisuje raz; wykryty przed pierwszym live odczytem błąd Node pętli ma regresję orchestration.",
+      "reviewedHash": "ff54701171d4ae5e9b2ba14dc6ab6e66fbfda49bb920a6386ecbdbaf70bd7e6f",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/persist13-practice-ui-next-seed.yaml": {
+      "description": "Trzy odczytowe asercje post-ACK ready/noJ nowego UUID. Nie uruchamia ponownie sesji ani submit; seed i startup należą do zamkniętego fixture.",
+      "reviewedHash": "55c85fe126cb6b1f3121eaf362c1a2b40060d39c9cbe1c3bddcb642af3613dd2",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/persist13-practice-ui-next-host.yaml": {
+      "description": "Actual feedback1/Reason/Nextenabled i collapsedDetails poprzedzają dokładnie jeden tapOn Continue z retryTapIfNoChange:false; potem counter2/question/noReason i obrazy. Timeout po możliwym tap nie upoważnia do rerun/remount/drugiego Next.",
+      "reviewedHash": "7611152b3717ae2a90b50e2fcec4a2850136ec68bca585e09a056e88a6b39de5",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/persist13-practice-ui-next-verify.yaml": {
+      "description": "Sześć odczytowych asercji ostatniego cold verify: observed/complete, bootstrapready/noJ/preservation/ownedcleanup. Nie montuje PracticeScreen i nie wywołuje advance; właściwe postconditions sprawdza Root przed cleanup.",
+      "reviewedHash": "dc7f523cc66f3cbebd15f6388719aa8b9688ac6c8c566145a24a5a5f5f744adc",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly-content/tests/content-builder.test.mjs": {
+      "description": "Testy rzeczywistego buildera: walidacja źródeł i profili, deterministyczne artefakty/lock, legalne v1→v2 z nową polityką i regułą ukończenia, ochrona pozostawionych ścieżek, uszkodzonych i niepełnych par oraz rollback/retry po błędzie stagingu lub rename podczas przejścia wersji. Opcjonalnie utrwalają syntetyczne snapshoty w nowym katalogu dowodów.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "f94e7f75c58208a6c6693f06dc5a93a43c3f53406ccdddffd040ccf5e9d37974"
+    },
+    "patternly-content/scripts/content/reproduce-content-version-transition.mjs": {
+      "description": "Izolowany reproduktor PAT-CODE-018: minimalna fixture AWS, dziewięć przypadków legalnej zmiany contentVersion, uszkodzenia starej pary i obsłużonych błędów rename. Używa produkcyjnego buildTrack/buildAll i prawdziwego filesystemu; każdy przebieg zachowuje scope, candidate i actual w nowym ignorowanym katalogu .local.",
+      "notes": "Kod zakończenia oznacza ukończenie pomiaru; werdykt zachowania jest w report.json. Nie buduje banków produktu ani nie synchronizuje APP.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "2f60b6543c97095455ed73dfaf2f8008f47007611c7d8cff34b71b346df65eaf"
+    },
+    "patternly/src/application/learningMutations/commitTrainingSessionStart.ts": {
+      "description": "Buduje jeden kanoniczny plan startu z S oraz warunkowym D/T i przekazuje go do commitMutation. Ten sam builder pozwala test-only fixture związać exact command/plan bez kopiowania listy zapisów; reguły startu i journal pozostają wspólne.",
+      "reviewedHash": "bc43cd2a22330cf4f1c1952cc3b5fff0b252a88468e39ec447b73d894728ec57",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/readPersist13StartCutpoint.mjs": {
+      "description": "Pasywny czytnik zainicjalizowanego PERSIST-13 v2 start_cutpoint albo jawnego recover: exact Hermes/DEV/guestlease/run/stores/manifest,closed capability i completed-pass evidence,pełny aktualny snapshot równy receipt. Recover generation jest aktualna,nie narzuca historycznej generation. Bez bootstrapu/prepare/checkpointu; tylko hash-only output i safe stage/category błędu.",
+      "reviewedHash": "795763dad4c7e6ed9081f0f9424090dee123774bf04a0ef02f3d00c571c755ad",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/persist13-start-cutpoint-seed.yaml": {
+      "description": "Wyłącznie widoczne asercje pending start_cutpoint, brak targetów i zachowanie baseline; bez tap/start/recovery. Osobny receipt czytnika rozróżnia prewrite od postjournal.",
+      "reviewedHash": "6093aa58a2ca59b6d3adc996b8f5ccdbff010b96fc2219b2ce543c66a2e83f73",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/persist13-start-recovery.yaml": {
+      "description": "Odczytowe widoczne asercje stage pierwszego/drugiego cold recovery,observed,brakJ,zachowany snapshot i gotowy bootstrap. Nie uruchamia startu/recovery ani nie dotyka treningu.",
+      "reviewedHash": "6f670aee213ca65ae826982e1e373d6e9e10921331231595b45a7426d73c6fd0",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/scripts/qa/8d2Presentation.mjs": {
+      "description": "Historyczny helper zamrożonego kandydata8D.2; source/flow aliases zachowane do odtworzenia tamtej wersji. Po usunięciu unsafe legacy recovery listener nie jest aktualnym capture. Bieżący RECHECK używa startupPreparationPreview/startStartupCapture i nowych flows.",
+      "reviewedHash": "0c8a199ea24f8e26f563b66b668f9792c3cce123eb796cfca669932428326462"
+    },
+    "patternly/scripts/qa/captureStartupPreparationPreview.py": {
+      "description": "Sekwencyjny capture21scenes×7locale×2theme×2text. Candidate-aware reuse, actual params/insets i hashe PNG/receipt/hierarchy; hierarchy/idle przed PNG. N/A dotyczy wyłącznie dodatkowego footer, nie paint/safearea/VO. Settledafter po potrzebnym scrollu; before/finally dla locale keys i18Documents, bez ownerów danych.",
+      "reviewedHash": "bc6f794f5820a86c577d817ba8cf4edc59a41ccd0243766f8145a23cb929ab2e",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startup-preview-hold-probe.yaml": {
+      "description": "Wspólna prezentacja lub kontrolowany capture F01; zachowuje istniejące kontrakty i nie inicjuje działań domeny.",
+      "reviewedHash": "1facd3c5eb4442b9a6ecfea307aada387669787677b883bf6890a4028a0eface",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startup-preview-native-probe.yaml": {
+      "description": "Wspólna prezentacja lub kontrolowany capture F01; zachowuje istniejące kontrakty i nie inicjuje działań domeny.",
+      "reviewedHash": "85ac8ffeb06749a5e909446fcc233fb1ac681b2ffbcf94dc2d91bd9afdcb715b",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startupPreparationPreview.mjs": {
+      "description": "Capturecontroller CDP dla istniejącego DEV-smoke preview. Zamknięte scene/read/invalid/restore, faktyczny locale/font/theme i niezainicjalizowani profile/account/MMKV ownerzy; dwa app-domain locale keys są mutowane i jawnie odtwarzane, nie RAM-only.",
+      "reviewedHash": "4341779989d3854bbbf44162114e8b341d353e2194a60a1d9c06022f112d6923",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/application/account/profileStoragePreparationGate.test.ts": {
+      "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
+      "reviewedHash": "3c5271c5cc95dc3d402ffc10192f2d5c7c644f72ddb97d56f2fe4502f017d93e"
+    },
+    "patternly/src/application/operationalDiagnostics.ts": {
+      "description": "Bounded operational/error categories i fenced diagnostyka startupu. describeOperationalFailure zachowuje domyślny kontrakt; F01 może jawnie wyłączyć appended code. Własny dev-smoke RAM stage encrypted_storage_removal nie zawiera raw error lub payload.",
+      "reviewedHash": "3c51c9b2f08b36d993e907c8f4544ed5617a1500b591b8ed3b238b58cef4037a"
+    },
+    "patternly/src/application/runtimeAuditabilitySurfaces.test.ts": {
+      "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
+      "reviewedHash": "53c4c53ac476150f5bed4331ef5efbfd35de6cf9a96716234753cffa384e8f15"
+    },
+    "patternly/src/components/HoldToConfirmButton.tsx": {
+      "description": "Wspólna prezentacja lub kontrolowany capture F01; zachowuje istniejące kontrakty i nie inicjuje działań domeny.",
+      "reviewedHash": "a82b561c926d38844167c45928c1cf5adf3e75de479e91d7ddaf313d13a09b30"
+    },
+    "patternly/src/components/LoadingState.tsx": {
+      "description": "Wspólna prezentacja lub kontrolowany capture F01; zachowuje istniejące kontrakty i nie inicjuje działań domeny.",
+      "reviewedHash": "9b82c77a5a7a1139e3f5a571a3aceded1f1ff4f1556a39003586fc8c59d051ac"
+    },
+    "patternly/src/content/application/EncryptedStorageRecoverySurface.tsx": {
+      "description": "Jedna produkcyjna prezentacja base/removing/error/success recovery. Tłumaczenia z native fallback7locale, pełne ostrzeżenia/partial failure/hold3s i callback zakończenia animacji200ms; bez learner opaque code. Nie wykonuje operacji storage.",
+      "reviewedHash": "a14a7b3c094061a4f3063a16007b8278705d5d5c267bd09a7f1df13c5643c787"
+    },
+    "patternly/src/content/application/contentPreparationRecovery.test.ts": {
+      "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
+      "reviewedHash": "1664bf4c07e75acc54d4a4a96d3c88b9c3935e07c73ade222ffe4e78484a84b3"
+    },
+    "patternly/src/content/application/recoveryDeviceLocale.test.ts": {
+      "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
+      "reviewedHash": "003aeaaac478c668cce1e0f90fde07276df55d0a9319af4585a7909451923a47"
+    },
+    "patternly/src/content/application/recoveryDeviceLocale.ts": {
+      "description": "Czysty native fallback recovery: pierwsza device language albo locale, normalizacja regionalnego separatora, wspólny7locale resolver; bez odczytu encryptedpreferences.",
+      "reviewedHash": "585e7983b8f80af243a066795e0e4d89bc75a26e821abb6041aaa985f8d007a2"
+    },
+    "patternly/src/content/application/startupFailureCopy.test.ts": {
+      "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
+      "reviewedHash": "42ebc9a4c193a2538d7195acf8127ce6af8404827613d216c869be753d4fc2a3"
+    },
+    "patternly/src/content/application/startupFailureCopy.ts": {
+      "description": "Zamknięta learner projection F01: zachowuje pięć meaningful opisów Premium, nieznany/techniczny reason zastępuje właściwym komunikatem retry. Nie zmienia bootstrap outcome contract.",
+      "reviewedHash": "6decbdf70648834139d582559985150dd1930bd6e7d72f7a58941b158e542dff"
+    },
+    "patternly/src/content/application/startupPreparationSurfaces.tsx": {
+      "description": "Jedna czysta prezentacja loading/unavailable/profile transition/unavailable active F01. Oba renderery unavailable wybierają secondary opis; produkcyjni ownerzy zachowują realne callbacki, preview podaje inert RAM actions.",
+      "reviewedHash": "daeedf0f78fb9e7c7c08269513c15fdc4ce84c48c7b67501f76d7f97dd1423c4"
+    },
+    "patternly/src/features/home/homeTabLargeText.test.ts": {
+      "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
+      "reviewedHash": "17f6d922857f97c747e079894a3bf34fff65d866732c45477dec188a13103ef6"
+    },
+    "patternly/src/features/home/tabs/HomeDecisionCard.tsx": {
+      "description": "Jedna czysta prezentacja głównej karty decyzji Home, wspólne style i resolvedcopy/testIDs/actions. HomeTab zachowuje business expressions i closures; inert D21 nie ładuje Home/store.",
+      "reviewedHash": "edde731b5fd76ee597ecc602ec7a2adaf7cd2886c07c5fce757b90c96d617fab"
+    },
+    "patternly/src/features/home/tabs/HomeTab.tsx": {
+      "description": "Oblicza rzeczywistą rekomendację i status Home, w tym exact resume reason. Główna karta używa HomeDecisionCard z dotychczasowymi closures; pozostałe sekcje i współdzielone role stylu zachowane.",
+      "reviewedHash": "109fd374c0afd04bd537824230a17a062eeb4098164c3d0f35061bd17cc2eb4a"
+    },
+    "patternly/src/locales/de/common.json": {
+      "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
+      "reviewedHash": "10c199ffb6837155ceaf2413819e44cb3b4d5e19f69ff50c1165a6594d0ced00"
+    },
+    "patternly/src/locales/en/common.json": {
+      "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
+      "reviewedHash": "f60f32048db0699c987b1cfa3fab9b4d6420a4e06e1a8c96e360fdae6a5f674e"
+    },
+    "patternly/src/locales/es/common.json": {
+      "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
+      "reviewedHash": "ee5129296aa795ad917a555e1716b938c79d93519c725fe884d5428b9f44f2f3"
+    },
+    "patternly/src/locales/et/common.json": {
+      "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
+      "reviewedHash": "164aa81a407028ec2eec3f496dc247cb6d0c42e650170ea833f5f5b3adc03682"
+    },
+    "patternly/src/locales/fr/common.json": {
+      "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
+      "reviewedHash": "b3de74424e22fa90a642a712f48a5b9142028d003c0b5c24ca2b5b3fa0681438"
+    },
+    "patternly/src/locales/it/common.json": {
+      "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
+      "reviewedHash": "1940571df3442207fb252dacc17260fe23eafef500948a25f0b33ce91f381d82"
+    },
+    "patternly/src/locales/pl/common.json": {
+      "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
+      "reviewedHash": "34c3e8181813dd75303789e325243e98e9b2c4b39072382ece1ad8610fc49d99"
+    },
+    "patternly/src/navigation/loadingStateOwnership.test.ts": {
+      "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
+      "reviewedHash": "2f395b30328e4c8d25f8f05b0f8a5e894ef5e48c5d43271b54a0dfc2882c718a"
+    },
+    "patternly/src/navigation/startupLoadingSurface.test.ts": {
+      "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
+      "reviewedHash": "92060ff2520170bd0a2febe07428856eb447568e2720b1744f0daeb1a6bf8fc6"
+    },
+    "patternly/src/testing/StartupPreparationPreviewRoot.tsx": {
+      "description": "Early isolated DEV-smoke host przed trwałymi providerami. Pure preferences i i18n renderują canonical surfaces; native app-domain locale overrides są odwracalne i wymagają cleanup. Request fence nie publikuje starej gotowości; zamknięty receipt pokazuje scenę/parametry/font/RAM actions.",
+      "reviewedHash": "6a53f7fcc4c31330093e4f8c80db290cbc442986e706537f49d2542952e08337"
+    },
+    "patternly/src/testing/startupPreparationPreview.test.ts": {
+      "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
+      "reviewedHash": "c6569c0dfe50a2e8d2f548fc1a6f33d73a76565c53f9f437e0f3d868c69da40a"
+    },
+    "patternly/src/testing/startupPreparationPreview.ts": {
+      "description": "Zamknięte21scenes i7locale ze wspólnego resolvera; strict3params URL bez legacyalias. Early flag/DEV/smoke/conflict guard, monotonic request fence invalidujący także błędne żądanie i unmount.",
+      "reviewedHash": "76f3530af43a83898a9147f2ea6cbf863800f399f0204fe1472e44355a7ef4f6"
+    },
+    "patternly/src/testing/startupPreparationPreviewReceipt.ts": {
+      "description": "Factory bez handler injection: zamknięte akcje inkrementują wyłącznie bounded RAM counters. Nie zmienia sceny ani danych domenowych.",
+      "reviewedHash": "0df2df1303873fb8517dec4fc46379ca58fa34040610896a92b3afa3d7e9c2ab"
+    },
+    "patternly/scripts/qa/captureStartupPreparationPreview.test.py": {
+      "reviewedHash": "4f1e5f8af8b54f0b51ad9f5f4250146223ccb84df0f87ff6b6807e14f74e96cf",
+      "description": "Modelowy test kompletności native frames do decyzji o dodatkowym footer i kluczy21scen w7namespace. Bounds nie dowodzą pełnego paint/occlusion/AT.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/checkStartupContrast.mjs": {
+      "reviewedHash": "6933e9ccd2e174fe64b81f5529d309a359e018286e043726a66e1772fc8b2131",
+      "description": "Kontrast ról F01 z dokładnych tokenów; opcjonalna kontrola rzeczywistych pikseli w bounds opisu z native hierarchy. Nie edytuje obrazów i nie udziela pełnego UI/AT PASS.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/checkStartupLoadingPaint.mjs": {
+      "reviewedHash": "66c35eb00c1718a89cb92e9123c9c096d812f386cf580b474c737420d8c8ce07",
+      "description": "Wąski odczyt PNG odrzucający brak statycznego koloru tytułu w natywnej ramce loading. Nie nadaje paint/occlusion/VO PASS. Blank observation dla dawnego D06 została wycofana jako niepotwierdzona.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/readStartupReadyPreservation.mjs": {
+      "reviewedHash": "a961397e705a2589afb3cf45f125bd2ba844003b020fcd7a6216596b07ab914b",
+      "description": "Odczyt istniejącego SDK: kopia readonly listy kluczy, bounded stage diagnostics i hashe logicznych rekordów wszystkich profili, nie bajtów MMKV. Restore wymaga absencji settings w baseline, tego samego profilu i wszystkich non-settings/global/foreign kategorii; przed canonical clear ponownie sprawdza lease i dane. Raw payloady nie są logowane; realny SDKprobe jest osobnym dowodem.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/readStartupReadyPreservation.test.mjs": {
+      "reviewedHash": "7092b2e6d428c7e142a47d3aaba916c0ae5f519380b54ae10b0fba6e73f46f94",
+      "description": "Modelowe testy guardu restore: wyłącznie aktywne settings mogą różnić się; inny profil, obcy postęp, nieznany rekord, globalny lub niekompletny inwentarz odrzuca. Nie jest to native SDK proof.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startStartupCapture.mjs": {
+      "reviewedHash": "6aa4aaec9b7505e0994e1ba3f8050adc48bba6521c42ef685eb09e46bc1d4ee2",
+      "description": "Uruchamia dokładnie preview albo normalny smoke root na istniejącej instalacji, przez walidator profilu i bez content sync. Odrzuca konflikt PERSIST13/PERF06; prywatny receipt własnych PID.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startup-preview-d06-paint-probe.yaml": {
+      "reviewedHash": "d6ee0e9e95e152f231c3c4e1861fe5c85328a5810ea02589b6fe47ae32222ff0",
+      "description": "Read-only native wait i oryginalny PNG kontrolowanego D06. Bez zmiany kodu/danych; wcześniejsza blank observation nie została potwierdzona dla zachowanego SHA.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startup-ready-boundary.yaml": {
+      "reviewedHash": "95f69ebc7338d4e9b6dfcb1fa2cf3a43521623ab61bfa4fc3bfc1c272d8398f1",
+      "description": "Rzeczywisty normalny API-absent bootstrap do children/ready. Współdzielenie D19/D20 wymaga zgodnego bootstrapu, parametrów i preservation; nie OS radio offline.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startup-ready-dismiss-dev-warning.yaml": {
+      "reviewedHash": "3f46d0c59483dbb66ed303cc51b98b018ef1391b404c4598706e23dd5fb426d2",
+      "description": "Jedno zamknięcie potwierdzonego wizualnie banera DEV na istniejącym iPhone17. Maestro nie adresuje jego tekstu; wymagany świeży oryginalny obraz przed użyciem i wizualny odczyt after. Nie chowa błędów produktu i nie jest automatycznym krokiem normalnego collectora.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startup-ready-return-home.yaml": {
+      "reviewedHash": "6889f2d2d810499fa0f3789347658e8fdb388db1254b3d015a25769fd80ea96d",
+      "description": "Publiczny BackLink i zakładka Home po ustawieniu języka; bez rozpoczęcia sesji.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startup-ready-select-language.yaml": {
+      "reviewedHash": "92d645d8209f41cf2b517994e5aa2be3f1eae6e8ba3e00fee0dc60cf7404dc8a",
+      "description": "Tylko publiczne ustawienie języka po zatwierdzonym actor/SDK baseline; zostawia LanguageSettings do dowodu wyboru/kontekstu. Bez konta/treningu/Premium.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/src/components/EmptyState.tsx": {
+      "reviewedHash": "9f3e3f29351b314af7f4e1f9efdc0305b82de9a2f298ff2ab5b955c2f56228b3",
+      "description": "Wycentrowany wspólny stan unavailable. Dotychczasowy muted opis jest domyślny; tylko dwa renderery F01 wybierają descriptionTone secondary dla czytelnego tekstu14pt. Bez store i działań domeny."
+    },
+    "patternly/src/content/application/startupPreparationSurfaces.test.ts": {
+      "reviewedHash": "2446533438bf23fce66d1ba7f202d757eb8d5f4315dab9b6b9a8f54d40cc9566",
+      "description": "Test lub kontrolowane narzędzie lokalnego RECHECK F01; zakres i dowody w osobnym prompcie, bez runtime/release PASS."
+    },
+    "patternly/scripts/qa/captureStartupReady.mjs": {
+      "reviewedHash": "2348c659275b306395e3dae3459e8a4cbe34b97cf035778155c310b64f2d828d",
+      "description": "Normalny ready capture ze źródłowym i SDKbaseline guardem; publiczne7locale×2theme×2text. Resume sprawdza hashe/parametry/non-settings inventory i pełny primary nad stałą nawigacją. Reset top przez istniejące tabs; tylko gdy primary zasłonięty, najwyżej2 potwierdzone gutter pans i świeży settled obraz. Finally lease-fenced restore settingsnull; sourceframe screen nie nadaje visual/VoiceOver PASS.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startupReadyViewport.mjs": {
+      "reviewedHash": "eb6edd0be7e7797ed6231be28d66c3a08ffdf0d53636388fd79e84069faae955",
+      "description": "Wąski parser prawdziwych native frames: pełny primary-action musi mieścić się nad main-tab-bar, nie tylko w fizycznym oknie. Brak/duplikat/nieprawidłowe bounds odmawia. Nie dowodzi paint, hit testing, VoiceOver ani możliwości przewijania; realny probe i oryginalny obraz osobno.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startupReadyViewport.test.mjs": {
+      "reviewedHash": "44c881970a73bd10b57e3acb83ea80fbcef20f47ccbdd9384642ec623e7f1e88",
+      "description": "Chroni konkretną lukę capture: rzeczywisty FR primary741–845 jest odrzucany przy tabbar779, EN697–765 przyjmowany; missing/ambiguous/out-of-bounds odmawia. To test modelowanego frame kontraktu, nie natywny scroll proof.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startup-ready-gutter-scroll.yaml": {
+      "reviewedHash": "5e57e111bd92b1a07afae4dfaf646b319ab1737668f804541746a54b1ed6b7bb",
+      "description": "Jeden rzeczywisty pan w świeżo potwierdzonym pustym prawym gutter istniejącego iPhone17. Nie naciska akcji nauki; settled hierarchy/original rozstrzygają efekt. Bez automatycznego UI PASS.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/startup-ready-reset-home-top.yaml": {
+      "reviewedHash": "994a87ad63ce0e937433c71304990c9c428dc23a362b4a09ab7bf9a1c6280b0e",
+      "description": "Wraca do top Home przez istniejące tabs Settings→Home; HomeScreen kluczuje Screen po activeTab. Bez zapisu preferencji, track change i akcji nauki. Source/SDK oraz obraz weryfikowane w collectorze.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/readStartupReadyBinding.mjs": {
+      "reviewedHash": "664ec4807bfb3348b4f7d660ee895da7c3bea76ac18c60da75eeae495e750251",
+      "description": "Read-only public SDK account binding on regular DEV/smoke, live lease and checkpoint digest match. Hashes profile/account/Firebase UID transiently and emits verification/revision only. No raw SecureStore slot read/write and no pre-cold baseline slot claim; diagnoses bounded control inventory difference after normal restart.",
+      "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly/scripts/qa/assembleStartupRecheck.mjs": {
+      "reviewedHash": "f0ea5d2ebd6413ea4ca88de81e6ea5aa08f6e6e7884b3eac5de06cb2262c1aef",
+      "description": "Pakuje wyłącznie istniejące frozen cells, capture receipts i zamrożony niezależny ledger. Sprawdza hashe/wiązania,588base/112subvariantrows/644bindings/616primarypaths. Zachowuje dosłowne qualified review verdicts i F03notes; nie nadaje nowych visual PASS i nie dotyka urządzenia lub domeny. Wejścia/wyjścia ograniczone do private evidence.",
+      "flow": "Start aplikacji i nawigacja"
     }
   },
   "flows": [
@@ -2156,7 +2680,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "0b29ef26771609095e2ccbde61ae0a3cfe3bab5e32a7200b9b56c3e19cc9d91b"
+      "reviewedDigest": "2634811dea3a0e3a0801068cf6272cdf092832ab7b9286cbd8b56d18666c9e92"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -2168,7 +2692,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "9319f31da39728b0cbb6850719dc872d39b1dd6cfd9fa5c7c716a8aa087c0b63"
+      "reviewedDigest": "803b25f20e19975261f54c97af4cb962ef2609ee645464f6e7d048c193abd1c6"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -2180,7 +2704,7 @@
         "patternly/scripts/syncBundledContentRelease",
         "patternly/scripts/releaseManifest.test.mjs"
       ],
-      "reviewedDigest": "c1b337d7db26a6b648ff2ed3eefde14710dbb0f0cb57b300c0dc083b3774a2e4"
+      "reviewedDigest": "9d87da656f692b46b88b81c62e4e7a1a3dc37af656f29f01691c581b95046fd0"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -2194,9 +2718,43 @@
         "patternly/src/features/simulation",
         "patternly/src/features/review",
         "patternly/native/foreground-clock/android",
-        "patternly/plugins/withAndroidForegroundClock.js"
+        "patternly/plugins/withAndroidForegroundClock.js",
+        "patternly/scripts/qa/persist13-journal-materialized-recover.yaml",
+        "patternly/scripts/qa/persist13-journal-materialized-seed.yaml",
+        "patternly/scripts/runPersist13Fixture.mjs",
+        "patternly/scripts/runPersist13Fixture.test.mjs",
+        "patternly/src/application/runtimeAuditability/Persist13ResetFixtureRoot.tsx",
+        "patternly/src/application/runtimeAuditability/persist13Entry.test.ts",
+        "patternly/src/application/runtimeAuditability/persist13Entry.ts",
+        "patternly/src/application/runtimeAuditability/persist13FixtureErrorContext.test.ts",
+        "patternly/src/application/runtimeAuditability/persist13FixtureErrorContext.ts",
+        "patternly/src/application/runtimeAuditability/persist13ResetFixtureProtocol.ts",
+        "patternly/src/application/runtimeAuditability/persist13ResetFixtureSeed.test.ts",
+        "patternly/src/application/runtimeAuditability/persist13ResetPauseHook.test.ts",
+        "patternly/src/application/runtimeAuditability/persist13ResetPauseHook.ts",
+        "patternly/scripts/qa/persist13-verify-clear-recover.yaml",
+        "patternly/scripts/qa/persist13-verify-clear-seed.yaml",
+        "patternly/src/application/learningMutations/commitMutation.ts",
+        "patternly/scripts/qa/persist13-submit-clear-next-seed.yaml",
+        "patternly/scripts/qa/persist13-submit-clear-next-recover.yaml",
+        "patternly/scripts/qa/persist13-advance-materialized-seed.yaml",
+        "patternly/scripts/qa/persist13-advance-materialized-recover.yaml",
+        "patternly/src/application/runtimeAuditability/Persist13PracticeUiHost.tsx",
+        "patternly/scripts/qa/persist13-practice-ui-probe-seed.yaml",
+        "patternly/scripts/qa/persist13-practice-ui-probe-host.yaml",
+        "patternly/scripts/qa/persist13-practice-ui-probe-verify.yaml",
+        "patternly/scripts/qa/readPersist13UiAuthState.mjs",
+        "patternly/scripts/qa/readPersist13UiAuthState.test.mjs",
+        "patternly/scripts/qa/readPersist13UiNextState.mjs",
+        "patternly/scripts/qa/readPersist13UiNextState.test.mjs",
+        "patternly/scripts/qa/persist13-practice-ui-next-seed.yaml",
+        "patternly/scripts/qa/persist13-practice-ui-next-host.yaml",
+        "patternly/scripts/qa/persist13-practice-ui-next-verify.yaml",
+        "patternly/scripts/qa/readPersist13StartCutpoint.mjs",
+        "patternly/scripts/qa/persist13-start-cutpoint-seed.yaml",
+        "patternly/scripts/qa/persist13-start-recovery.yaml"
       ],
-      "reviewedDigest": "b845d90701b2d25ecad88c63912b1d9828d981d387a490c433a18bd5a8b4a40d"
+      "reviewedDigest": "612b69d5100e02a58b36548d4cd36afef207e6a51b904894b2b65d6ac0d64a4d"
     },
     {
       "name": "Cel, plan i postęp",
@@ -2207,7 +2765,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "ef90905410c83450d7993cd3e1b24accea5a85ad130ed229aee660c29b78aea1"
+      "reviewedDigest": "879c34fdb5d78dec1786d6d0f9156b3f44ab9dfdf1a2f6fb82cb7cebf1a21915"
     },
     {
       "name": "Premium i zakup",
@@ -2240,7 +2798,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "d647af5fb4730657458479e78a8d1d34fcc2ca4896be33bca82b0090c4d45902"
+      "reviewedDigest": "9558a8bd0f87adb147f929b656e13c805e883c6ace241e3dbf3be56d9f6f1842"
     }
   ]
 }

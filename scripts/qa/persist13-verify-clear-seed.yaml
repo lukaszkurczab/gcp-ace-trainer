@@ -1,0 +1,14 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-13 — verified pending clear pause
+tags:
+  - persist13
+  - verify-clear
+---
+- extendedWaitUntil:
+    visible:
+      text: "Stage: verify_clear"
+    timeout: 60000
+- assertVisible: "PERSIST-13 verify_clear seed: pending"
+- assertVisible:
+    id: "persist13-fixture-materialized"
+    text: "Materialized targets verified: true"
