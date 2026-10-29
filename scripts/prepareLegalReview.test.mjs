@@ -55,6 +55,28 @@ test("renders complete seven-locale drafts without granting approval", () => {
   }
 });
 
+test("canonical Premium scope renders the Free node and paid boundaries in every locale", async (t) => {
+  const pack = prepareLegalReview(source);
+  const contracts = {
+    en: [/first complete node of every learning track is Free/u, /remaining nodes in every track/u, /Review requires eligible prior learning/u],
+    pl: [/Pierwszy kompletny węzeł każdej ścieżki jest Free/u, /pozostałe węzły we wszystkich ścieżkach/u, /Powtórki wymagają kwalifikujących się danych z wcześniejszej nauki/u],
+    de: [/erste vollständige Knoten jedes Lernpfads ist Free/u, /übrigen Knoten in allen Lernpfaden/u, /Wiederholungen erfordern geeignete Daten aus vorherigem Lernen/u],
+    fr: [/premier nœud complet de chaque parcours d’apprentissage est Free/u, /autres nœuds de tous les parcours/u, /révisions nécessitent des données admissibles issues d’un apprentissage antérieur/u],
+    es: [/primer nodo completo de cada ruta de aprendizaje es Free/u, /demás nodos de todas las rutas/u, /repasos requieren datos válidos de aprendizaje previo/u],
+    it: [/primo nodo completo di ogni percorso di apprendimento è Free/u, /nodi rimanenti di tutti i percorsi/u, /ripasso richiede dati idonei derivanti dall’apprendimento precedente/u],
+    et: [/Iga õpitee esimene täielik sõlm on Free/u, /kõigi õpiteede ülejäänud sõlmed/u, /Kordamine eeldab sobivaid varasema õppimise andmeid/u],
+  };
+  for (const [locale, patterns] of Object.entries(contracts)) {
+    await t.test(locale, () => {
+      const scope = source.terms.premiumServiceScope[locale];
+      for (const pattern of [...patterns, /Premium/u, /Certification Exam/u, /Coding Interview Mock/u, /Design Interview Simulation/u]) {
+        assert.match(scope, pattern);
+      }
+      assert.ok(pack.documents[locale].termsOfService.includes(scope), `${locale}: canonical scope missing from rendered terms`);
+    });
+  }
+});
+
 test("unresolved review values remain visible and cannot become approval", () => {
   const unresolvedSource = structuredClone(source);
   for (const locale of ["en", "pl", "de", "fr", "es", "it", "et"]) {

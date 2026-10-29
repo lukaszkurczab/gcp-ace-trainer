@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "efab15af9bc0ab52a5863b1b38eb0dc9a789c3fa",
+      "head": "475b1e5b101d5b15684f0e47bc529470acad39d1",
       "files": [
         {
           "path": ".easignore",
@@ -1034,8 +1034,8 @@
         },
         {
           "path": "config/public-legal.release.json",
-          "sha256": "64900ac5e124cdec4788cc4ed4c87c9cfa8ccb164def48f4ffe873e8e5dde99a",
-          "bytes": 94906,
+          "sha256": "dafa887007b567880947055a8d3d8e333eba44410a1c04c7ecae49e2408931c1",
+          "bytes": 94850,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -3042,8 +3042,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "0628d204e15c4700d2150c97cca67c7a63e15e88a164cc34220cdaf21b9ea2bf",
-          "bytes": 224815,
+          "sha256": "ecc3ea2310c319f33f21e8ac65dac22c836d8675eba2ab07b2b60b182af3fb76",
+          "bytes": 231658,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -3054,7 +3054,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 2805
+          "lines": 2864
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -4896,8 +4896,8 @@
         },
         {
           "path": "scripts/prepareLegalReview.test.mjs",
-          "sha256": "6341c3547ea58629f0302dca7e88088f9558184ec5f50d67c7677f2fb05c631a",
-          "bytes": 5948,
+          "sha256": "5564a7402960f26dd17ffb2b89977eec14f691176226cee6e6521ad230bdc0f8",
+          "bytes": 7850,
           "symbols": [],
           "imports": [
             {
@@ -4959,11 +4959,12 @@
           "testNames": [
             "private review-pack CLI writes documents, receipt and hashes every existing renderer",
             "renders complete seven-locale drafts without granting approval",
+            "canonical Premium scope renders the Free node and paid boundaries in every locale",
             "unresolved review values remain visible and cannot become approval",
             "review renderer uses the canonical source and preserves an unapproved state",
             "review comparison escapes source text and cannot target either publishable dist"
           ],
-          "lines": 107
+          "lines": 129
         },
         {
           "path": "scripts/prepareQ13LocalActor.mjs",
@@ -7095,6 +7096,51 @@
           "jsonKeys": [],
           "testNames": [],
           "lines": 75
+        },
+        {
+          "path": "scripts/qa/learningPlan8e2FrozenOracle.py",
+          "sha256": "73079a2baed7115abbbda7bdb500572f2a883bcf9059a7440ff7f44321685420",
+          "bytes": 6428,
+          "symbols": [],
+          "imports": [],
+          "jsonKeys": [],
+          "testNames": [],
+          "lines": 86
+        },
+        {
+          "path": "scripts/qa/learningPlan8e2TargetProjection.mjs",
+          "sha256": "df5ba29d79cf642da2ddc5fe0c54504e5c923c8041a5a9bb5d5cb0dd860bb7f9",
+          "bytes": 2063,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 3
+            },
+            {
+              "specifier": "node:fs",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
+              "specifier": "node:crypto",
+              "kind": "static",
+              "resolution": "external",
+              "line": 5
+            },
+            {
+              "specifier": "../../src/domain/goals/goalTargetDateSemantics.ts",
+              "kind": "static",
+              "target": "src/domain/goals/goalTargetDateSemantics.ts",
+              "line": 6
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [],
+          "lines": 29
         },
         {
           "path": "scripts/qa/measureCanonicalPlanningPolicy.mjs",
@@ -27807,8 +27853,8 @@
         },
         {
           "path": "src/application/learningPlan/learningCreditTransfer.integration.test.ts",
-          "sha256": "490d8eea7e6b0b246a210984ad2470c3e79cf8772577b4b1c86d430b64550c23",
-          "bytes": 16341,
+          "sha256": "134236022b142f75e52c125e8de9cacd8c2dd3f34d7ec3b663c2087d70f67ec2",
+          "bytes": 20757,
           "symbols": [],
           "imports": [
             {
@@ -27910,13 +27956,13 @@
           ],
           "jsonKeys": [],
           "testNames": [
-            "production discovery transfers identical retained credit and unchanged chapter completion without rewriting persisted attempts",
+            "production discovery transfers retained unit credit and unchanged chapter completion without rewriting persisted attempts",
             "changed and removed questions retain unit progress without equivalence or old artifact availability",
             "conflicting legacy node refs remain stored without contributing completion, activity or pace credit",
             "verified retained completion survives changed content, retry and owner reconstruction without storage writes",
             "Coding Progress retains unit practice and performance after replacement and an added sibling question"
           ],
-          "lines": 203
+          "lines": 253
         },
         {
           "path": "src/application/learningPlan/learningEvidenceProjection.ts",
@@ -60136,8 +60182,8 @@
         },
         {
           "path": "src/i18n/i18nLocaleParity.test.ts",
-          "sha256": "28916d48d2ed885ca7e499a109addc4e419ff53b0018755ee5a989df8fc8acc2",
-          "bytes": 7318,
+          "sha256": "82068f49ea4cee6081c1be2da6b4203449441cc7078a503018417e18a2fc9e4e",
+          "bytes": 7344,
           "symbols": [],
           "imports": [
             {
@@ -63787,8 +63833,8 @@
         },
         {
           "path": "src/legal/legalTranslationDrafts.de.testOnly.ts",
-          "sha256": "99ae62767697d5c12b3ec9ea688f0e520ebe3ceae64256142ad11d95fee6c966",
-          "bytes": 30025,
+          "sha256": "951b2a29e0949b41a510bc009658124730f9ae8cb5376468c1485ca55a785998",
+          "bytes": 30055,
           "symbols": [
             "legalTranslationDraftsDeTestOnly"
           ],
@@ -63799,8 +63845,8 @@
         },
         {
           "path": "src/legal/legalTranslationDrafts.es.testOnly.ts",
-          "sha256": "cb7878a4b9c1f0dd30c00d1014ad9373b6ce9bfad4bfe68e0a40e1200bb5210d",
-          "bytes": 29718,
+          "sha256": "94589c22a92deced7ada49bd878ada3b85d4e086d45f9cdcb2ecdcf74f1352c1",
+          "bytes": 29748,
           "symbols": [
             "legalTranslationDraftsEsTestOnly"
           ],
@@ -63811,8 +63857,8 @@
         },
         {
           "path": "src/legal/legalTranslationDrafts.et.testOnly.ts",
-          "sha256": "8e6444899ee5b45d8cc93d256d4f63497faab24d9cc6c587fd4b4ef7862b5206",
-          "bytes": 25956,
+          "sha256": "e4e8653bad55d74a2a10efaba4187ea44f7ecaccbe3b4a83cf710046df01c31e",
+          "bytes": 25986,
           "symbols": [
             "estonianLegalTranslationDraftTestOnly"
           ],
@@ -63823,8 +63869,8 @@
         },
         {
           "path": "src/legal/legalTranslationDrafts.fr.testOnly.ts",
-          "sha256": "362b11920c9b212bfd3907efe1fbdd8865cd0d7556690751778c3112b990d428",
-          "bytes": 32240,
+          "sha256": "6a58553a4e8f690afe3cc8da28701510cb85fd6e6e5004f58cada889f51a4404",
+          "bytes": 32270,
           "symbols": [
             "legalTranslationDraftsFrTestOnly"
           ],
@@ -63835,8 +63881,8 @@
         },
         {
           "path": "src/legal/legalTranslationDrafts.it.testOnly.ts",
-          "sha256": "a3d90f1aad45e848c0fda4c0b7d8e66de186d982f3403fe45700bb61df03aa27",
-          "bytes": 29671,
+          "sha256": "53a435dbf7f44413986048f4b54a267df64a15d2c823d9af3b39ccf33a116376",
+          "bytes": 29701,
           "symbols": [
             "italianLegalTranslationDraftTestOnly"
           ],
@@ -63927,8 +63973,8 @@
         },
         {
           "path": "src/legal/legalVariablesLocalFixture.ts",
-          "sha256": "0049781ad1450cbecfe4b8ab43878b235dec8b1b721e46dceb1f45592afe6121",
-          "bytes": 26097,
+          "sha256": "53a6f3acbee847db8220a7ad198b1c1b7a043148ca77bacd9ef36519ac1c2782",
+          "bytes": 26077,
           "symbols": [
             "localReportOutboxRetentionDays",
             "legalVariablesLocalFixture"
@@ -64187,8 +64233,8 @@
         },
         {
           "path": "src/legal/termsOfService.ts",
-          "sha256": "3e556c662481c492c55f85c9e8e0ca6712a9205044c21f9f300fe866bafbeb19",
-          "bytes": 29667,
+          "sha256": "96b7379fddb053ba9e9666f3684caeab2f681a748168f7178fb2119275277bef",
+          "bytes": 29741,
           "symbols": [
             "renderTermsOfService",
             "termsOfService"
@@ -64257,8 +64303,8 @@
         },
         {
           "path": "src/locales/de/common.json",
-          "sha256": "10c199ffb6837155ceaf2413819e44cb3b4d5e19f69ff50c1165a6594d0ced00",
-          "bytes": 72826,
+          "sha256": "e04ffbb9b6ddd7bc4a34f0d852c051a0a104bfffe4082938d3645b1645fe8622",
+          "bytes": 75608,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -64280,7 +64326,7 @@
             "or"
           ],
           "testNames": [],
-          "lines": 841
+          "lines": 872
         },
         {
           "path": "src/locales/de/data.json",
@@ -64671,8 +64717,8 @@
         },
         {
           "path": "src/locales/es/common.json",
-          "sha256": "ee5129296aa795ad917a555e1716b938c79d93519c725fe884d5428b9f44f2f3",
-          "bytes": 70964,
+          "sha256": "7367a29e341a57c0c561d45dc239e9f31862490289b542e6a8b829f9c9766136",
+          "bytes": 73692,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -64694,7 +64740,7 @@
             "or"
           ],
           "testNames": [],
-          "lines": 841
+          "lines": 872
         },
         {
           "path": "src/locales/es/data.json",
@@ -64878,8 +64924,8 @@
         },
         {
           "path": "src/locales/et/common.json",
-          "sha256": "164aa81a407028ec2eec3f496dc247cb6d0c42e650170ea833f5f5b3adc03682",
-          "bytes": 67480,
+          "sha256": "cbdb45bf94757d0fdc6504c3ca7009f2901ffd15b07b4a3a8e1e1486b4dc46af",
+          "bytes": 70098,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -64901,7 +64947,7 @@
             "or"
           ],
           "testNames": [],
-          "lines": 841
+          "lines": 872
         },
         {
           "path": "src/locales/et/data.json",
@@ -65085,8 +65131,8 @@
         },
         {
           "path": "src/locales/fr/common.json",
-          "sha256": "b3de74424e22fa90a642a712f48a5b9142028d003c0b5c24ca2b5b3fa0681438",
-          "bytes": 74274,
+          "sha256": "9233c982b28b46bc667617a4a9f53690e08162ce08bb689d9407b8e1502e5135",
+          "bytes": 77112,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -65108,7 +65154,7 @@
             "or"
           ],
           "testNames": [],
-          "lines": 841
+          "lines": 872
         },
         {
           "path": "src/locales/fr/data.json",
@@ -65292,8 +65338,8 @@
         },
         {
           "path": "src/locales/it/common.json",
-          "sha256": "1940571df3442207fb252dacc17260fe23eafef500948a25f0b33ce91f381d82",
-          "bytes": 72158,
+          "sha256": "a8753bcac1dc2ef891f09bd4c7671c8709df96f01177a84cadc5c880d4187d1c",
+          "bytes": 74891,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -65315,7 +65361,7 @@
             "or"
           ],
           "testNames": [],
-          "lines": 841
+          "lines": 872
         },
         {
           "path": "src/locales/it/data.json",
@@ -74220,14 +74266,6 @@
         {
           "path": "[lokalne pliki środowiska lub kluczy — nazwy ukryte]",
           "reason": "private-or-dependency-output"
-        },
-        {
-          "path": "src/application/account/storageRecoveryAuditCommand.test.ts",
-          "reason": "deleted-in-worktree"
-        },
-        {
-          "path": "src/application/account/storageRecoveryAuditCommand.ts",
-          "reason": "deleted-in-worktree"
         }
       ],
       "boundaries": [
@@ -74298,7 +74336,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "9295f75313955dad1f1e0ab0f1431da8bd6608bf",
+      "head": "a5a3bf1c1215875df9adb6007acd835209d5836e",
       "files": [
         {
           "path": ".dockerignore",
@@ -76961,8 +76999,8 @@
         },
         {
           "path": "scripts/run-cost04-tests.mjs",
-          "sha256": "459c9bc1652115d5dd77e806f577fb3a5b92d1c9cae334f0590e72be277f3656",
-          "bytes": 945,
+          "sha256": "174602476be191f2026269ab149e1e1323671b2ca560b791a32742b89288233b",
+          "bytes": 1992,
           "symbols": [],
           "imports": [
             {
@@ -76992,7 +77030,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 13
+          "lines": 28
         },
         {
           "path": "scripts/run-deleted-identity-r01-tests.mjs",
@@ -81497,8 +81535,8 @@
         },
         {
           "path": "tests/cost04Deadline.test.mjs",
-          "sha256": "6c80a8b13c85a6143520536824bfd7ed161de33eda089c4af2157673fb8f19b3",
-          "bytes": 2082,
+          "sha256": "67d41d67c4ff2b6977ba02a90d04a704b23a2d0d0313f5353cbd3108a435d839",
+          "bytes": 5826,
           "symbols": [],
           "imports": [
             {
@@ -81536,18 +81574,32 @@
               "kind": "static",
               "target": "scripts/isolated-emulator-test-runner.d.mts",
               "line": 6
+            },
+            {
+              "specifier": "node:child_process",
+              "kind": "static",
+              "resolution": "external",
+              "line": 7
+            },
+            {
+              "specifier": "node:net",
+              "kind": "dynamic",
+              "resolution": "external",
+              "line": 82
             }
           ],
           "jsonKeys": [],
           "testNames": [
-            "bounded runner kills its process group and removes temporary config on deadline"
+            "bounded runner kills its process group and removes temporary config on deadline",
+            "COST04 rejects a wrong APP pin before starting its test or HTTP",
+            "COST04 entry deadline kills its single test process and releases its listener"
           ],
-          "lines": 37
+          "lines": 90
         },
         {
           "path": "tests/cost04Local.emulator.test.mjs",
-          "sha256": "b213f976b7c9d09008034484e2d1409ee95144a88ee93387421b97d6a733bc3c",
-          "bytes": 5798,
+          "sha256": "05f503216ca327735b693f126a406b8941348315443a8576bd8b67e29b7f72c8",
+          "bytes": 3487,
           "symbols": [],
           "imports": [
             {
@@ -81557,66 +81609,47 @@
               "line": 1
             },
             {
-              "specifier": "node:crypto",
+              "specifier": "node:child_process",
               "kind": "static",
               "resolution": "external",
               "line": 2
             },
             {
-              "specifier": "node:child_process",
+              "specifier": "node:module",
               "kind": "static",
               "resolution": "external",
               "line": 3
             },
             {
-              "specifier": "node:module",
+              "specifier": "node:http",
               "kind": "static",
               "resolution": "external",
               "line": 4
             },
             {
-              "specifier": "node:http",
+              "specifier": "node:path",
               "kind": "static",
               "resolution": "external",
               "line": 5
             },
             {
-              "specifier": "node:path",
+              "specifier": "node:test",
               "kind": "static",
               "resolution": "external",
               "line": 6
             },
             {
-              "specifier": "node:util",
-              "kind": "static",
-              "resolution": "external",
-              "line": 7
-            },
-            {
-              "specifier": "node:test",
-              "kind": "static",
-              "resolution": "external",
-              "line": 8
-            },
-            {
               "specifier": "../scripts/isolated-emulator-test-runner.mjs",
               "kind": "static",
               "target": "scripts/isolated-emulator-test-runner.d.mts",
-              "line": 9
-            },
-            {
-              "specifier": "./support.ts",
-              "kind": "dynamic",
-              "target": "tests/support.ts",
-              "line": 56
+              "line": 7
             }
           ],
           "jsonKeys": [],
           "testNames": [
-            "real APP fetch preserves loopback 429 and bounded explicit retries for GET/POST",
-            "two independent processes share the production Firestore recovery rate limit"
+            "real APP fetch preserves loopback 429 and bounded explicit retries for GET/POST"
           ],
-          "lines": 86
+          "lines": 52
         },
         {
           "path": "tests/dataExport.test.ts",
@@ -85739,7 +85772,7 @@
       ]
     },
     "patternly-content": {
-      "head": "db3f7e8352dd14a5c3473b66c092f8e3576f9452",
+      "head": "718e4c1519f4d81438a6ed39e7bcfb84f3e385b1",
       "files": [
         {
           "path": ".gitattributes",
@@ -99640,6 +99673,66 @@
           "lines": 177
         },
         {
+          "path": "scripts/content/measure-build-all-preflight.mjs",
+          "sha256": "1fdb869e85642df53df6642ff8b32acb25df740474b5605f226863dbd2d76c6e",
+          "bytes": 7477,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "node:crypto",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "node:child_process",
+              "kind": "static",
+              "resolution": "external",
+              "line": 3
+            },
+            {
+              "specifier": "node:fs/promises",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
+              "specifier": "node:module",
+              "kind": "static",
+              "resolution": "external",
+              "line": 5
+            },
+            {
+              "specifier": "node:os",
+              "kind": "static",
+              "resolution": "external",
+              "line": 6
+            },
+            {
+              "specifier": "node:path",
+              "kind": "static",
+              "resolution": "external",
+              "line": 7
+            },
+            {
+              "specifier": "node:url",
+              "kind": "static",
+              "resolution": "external",
+              "line": 8
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [],
+          "lines": 128,
+          "dynamicLoads": 1
+        },
+        {
           "path": "scripts/content/planning-policy.mjs",
           "sha256": "c5744b3ebae51b47bb4410a5e3358d339afb488b2e6dedfe46d4f5b0e1295fb7",
           "bytes": 6170,
@@ -100438,8 +100531,8 @@
         },
         {
           "path": "tests/az104-repairs-20261018.test.mjs",
-          "sha256": "54308c7908344a46ae1d3f46c1a9bba088046a3147beb4e94443ea54f53d2715",
-          "bytes": 26187,
+          "sha256": "69d2ae43cab48bd3fa6d1cc7ff5bfba3891c04b4665941136dda58ce8e4666e6",
+          "bytes": 26454,
           "symbols": [],
           "imports": [
             {
@@ -100492,7 +100585,7 @@
             "October 21 nine distractors preserve false mechanisms without pre-submit self-disproof",
             "October 21 actual APP: persisted permutations, accessibility, feedback boundary, retired IDs"
           ],
-          "lines": 407
+          "lines": 414
         },
         {
           "path": "tests/besd-n02-repairs-20261011.test.mjs",
@@ -103663,7 +103756,7 @@
       ]
     },
     "patternly-web": {
-      "head": "56e876e5fb4ae1030810dfa331ab22761db0d675",
+      "head": "8dbf47fde2c49ac05231db57847c4d4294c8f87d",
       "files": [
         {
           "path": ".firebaserc",
@@ -103677,7 +103770,7 @@
         },
         {
           "path": ".github/workflows/verify.yml",
-          "sha256": "74687300890a3914069bd58128a2fe0a3cf5cb4317dba6f3c52a55035dc60366",
+          "sha256": "b8216a2453df9760681414e7da1ebd7a5b5f66778a0d0fd57ac0ee1eaf4b2e66",
           "bytes": 3866,
           "symbols": [],
           "imports": [],
@@ -105167,8 +105260,8 @@
         },
         {
           "path": "scripts/seo-content.browser.test.mjs",
-          "sha256": "9a3c6ddd79b2da2393098708e1879e47679c934d098fea7118c592cdd9eebf09",
-          "bytes": 16148,
+          "sha256": "9dd5c3269a39d3b08d2a3f578419ca305ea1efd693d273d1031e9e1a4e8dccaf",
+          "bytes": 21986,
           "symbols": [],
           "imports": [
             {
@@ -105254,9 +105347,10 @@
           "testNames": [
             "route projection excludes unavailable locales and never advertises UNAPPROVED drafts",
             "explicit test output rejects the repository, its descendants, ancestors and symlink aliases before building",
+            "exact local static build: rendered metadata, content and internal links without a browser",
             "exact local test build: Opera crawl, no-JS content, persistent locale URLs and bounded samples"
           ],
-          "lines": 249
+          "lines": 335
         },
         {
           "path": "scripts/verify-demo-bundle.mjs",
@@ -105307,8 +105401,8 @@
         },
         {
           "path": "scripts/verify-local.mjs",
-          "sha256": "e1d7a9b822cdb96c7c7b0fb3edc54e22470c66b18ab0c124567b95919d4dadf9",
-          "bytes": 12033,
+          "sha256": "a05341dd28fb34f16738b015f89c198f5234fd55973ad423bb4b958201db6ced",
+          "bytes": 12125,
           "symbols": [],
           "imports": [
             {
@@ -105368,7 +105462,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 199
+          "lines": 200
         },
         {
           "path": "scripts/verify-production.mjs",
@@ -105709,8 +105803,8 @@
         },
         {
           "path": "src/generated/demoQuestions.json",
-          "sha256": "3354d3d4b4718b2e3e46de026617bdb3de0c270afe6fadc61a111ea785fcc207",
-          "bytes": 13953,
+          "sha256": "3accacf49916fe9cce6bf5b84804df27a3bbb9fb505c41e299710153ace7b903",
+          "bytes": 13993,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -106188,15 +106282,15 @@
         },
         {
           "path": "src/publicTrackPages.js",
-          "sha256": "c355799ca0843e5f0f956b1d208e155c8e9ade84f8c8f99f919ffd2864bc7490",
-          "bytes": 11780,
+          "sha256": "f3a55352ee91b57fedf43c4df633cd0cc54ee1db26bb28bd0323b4da15bf6644",
+          "bytes": 17819,
           "symbols": [
             "publicTrackPages"
           ],
           "imports": [],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 55
+          "lines": 74
         },
         {
           "path": "styles.css",
@@ -106346,9 +106440,9 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "0628d204e15c4700d2150c97cca67c7a63e15e88a164cc34220cdaf21b9ea2bf",
+  "catalogHash": "ecc3ea2310c319f33f21e8ac65dac22c836d8675eba2ab07b2b60b182af3fb76",
   "notes": {
-    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "937fb077254c451ed9d1ffa59cfa9463a99c3a7b186d8d0c4309da8f4c492e61",
+    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "b333faca8b150c48680e68e8f694ee7b89ea3ac97183bfeafec9e4262bee6692",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "46679192f1d2d2f2fbc0a77c382422a29e8cf6c9813bec48b92c811fa03a1e5c",
     "Atlas/Struktura/patternly/~2E~github/workflows/workflows — folder aplikacja · ~2E~github.md": "98433a2d5950852fd9b2d6551e758fe701e73088548b706534cb0bac7b000e5b",
     "Atlas/Struktura/patternly/~2E~maestro/~2E~maestro — folder aplikacja.md": "7e55dcf50d50b43e575f3386b6cf1845f2636a00eb12a3c399a33a662dac1ebe",
@@ -106356,7 +106450,7 @@
     "Atlas/Struktura/patternly/assets/brand/brand — folder aplikacja · assets.md": "d7e97cee4ad17819101099af88325e13cf6b95184adcbfa0db825891f661beaf",
     "Atlas/Struktura/patternly/assets/brand/app-icon/app-icon — folder aplikacja · assets › brand.md": "8491c0292ad5a0dd4d7928d1a05c769dcfbcab99a7d9ebe861dadedf49cf0870",
     "Atlas/Struktura/patternly/assets/brand/web/web — folder aplikacja · assets › brand.md": "5479859b40ed6610fd5daaa45fbbb62eec65ac6e455e1e47fce8f9005adb835c",
-    "Atlas/Struktura/patternly/config/config — folder aplikacja.md": "e8b6bcf20b622985d18c4e4e3da86c6259479190f4de569ad4713a4cab6debb7",
+    "Atlas/Struktura/patternly/config/config — folder aplikacja.md": "4cfe296c0f4b060f21f94a2f1f4263f1477303998316227beb7f9a4be75af7ee",
     "Atlas/Struktura/patternly/docs/docs — folder aplikacja.md": "1e6e4d47220376f7e228f9dbd5ea7a6dd74a753e63b61b3c20f0f50a58f236c3",
     "Atlas/Struktura/patternly/docs/specs/specs — folder aplikacja · docs.md": "6e2cb19683c157ee276ca7d8f76604532fddce24ab55cc9c475a2660f35cfbbc",
     "Atlas/Struktura/patternly/docs/specs/business-quality/business-quality — folder aplikacja · docs › specs.md": "5d0e51ad6ceb951287540285346382c71cc55be60edbeecef21985b63cb95821",
@@ -106380,12 +106474,12 @@
     "Atlas/Struktura/patternly/plugins/plugins — folder aplikacja.md": "947d19d643e8cd0eb001ba89d3bdb1a3142e17f6e6525e6d9343c4da0d1d15de",
     "Atlas/Struktura/patternly/schemas/schemas — folder aplikacja.md": "de54e9bd7c1328f94eab9f184f24ded8fa4ad6e5f3c66a1aa4696289ac03a673",
     "Atlas/Struktura/patternly/schemas/release/release — folder aplikacja · schemas.md": "af9352e12e715127ded290b0f7e06b6b262ae3d05370364c274ab1f90bbfde45",
-    "Atlas/Struktura/patternly/scripts/scripts — folder aplikacja.md": "22599e6cae8cd56f990a0ef4f802c787037ed5ffbdb38299b7800b7c3fadc772",
+    "Atlas/Struktura/patternly/scripts/scripts — folder aplikacja.md": "fae0d1aae672f75e4c1a2bdc6f395feb8328cf670035742f211bbffa76df4120",
     "Atlas/Struktura/patternly/scripts/architecture/architecture — folder aplikacja · scripts.md": "8b180f5513386e2826c5bfc959bf8854d5902e55fc6f2f1c77e68509647292fe",
     "Atlas/Struktura/patternly/scripts/docAtlas/docAtlas — folder aplikacja · scripts.md": "0981222b286d9e83317e37b36ec2d47c1bcce71a29227be15f212cec3a9d69fa",
     "Atlas/Struktura/patternly/scripts/fixtures/fixtures — folder aplikacja · scripts.md": "9a1b2bcaa7ebaa8133a8dbb6997f629f792deb22c23d29fb871c42891014d40b",
     "Atlas/Struktura/patternly/scripts/fixtures/foregroundSchedulerProbe/foregroundSchedulerProbe — folder aplikacja · scripts › fixtures.md": "b6e8d34e91982bb78a5d56a9020fa1775dc70de543a348978cf596ee15281c3a",
-    "Atlas/Struktura/patternly/scripts/qa/qa — folder aplikacja · scripts.md": "2f4b4ed4d063e5c0c51e834f8e66611a16b665573e2347ee4e27bc2803a18766",
+    "Atlas/Struktura/patternly/scripts/qa/qa — folder aplikacja · scripts.md": "8055d5684b0a8800b8366d28485f46c59d3884d1dc0f80b7d6e817d38457120b",
     "Atlas/Struktura/patternly/scripts/qa/flows/flows — folder aplikacja · scripts › qa.md": "3083d0cb3c4c169927e1a9ea06c7bfed1550faaf7fba5f6c33af9deb63ceabe5",
     "Atlas/Struktura/patternly/scripts/qa/flows/premium18/premium18 — folder aplikacja · scripts › qa › flows.md": "cf28dc796e329cb76c8f7440c70ce967775fc9e4b9e631c9bc3bc4975d4a303c",
     "Atlas/Struktura/patternly/scripts/qa/soloHome23/soloHome23 — folder aplikacja · scripts › qa.md": "cbc3ff80563e68e498e3e403049d6504f78e4d706f843ba00b2789a5bd11c88e",
@@ -106402,7 +106496,7 @@
     "Atlas/Struktura/patternly/src/application/guest/guest — folder aplikacja · src › application.md": "2cf0eab3b029a621da0087231292e252d692d510a6083424af85d6b219650c7a",
     "Atlas/Struktura/patternly/src/application/identity/identity — folder aplikacja · src › application.md": "89420d2cf8840226c6b12ea5da35785ae6e9b3f99d509138f28a54066cc47a90",
     "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "33c33384f764b93122fc1c58e387b53f2866ee5975fb590c62ba2caabc2498f3",
-    "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "8d8cb5f78dbb34c14e2b47412ef39d152ff06acf6fa68d202f59024743a951d1",
+    "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "f3b97f74b8daecceaa8d631d5e29ee7ec495ed9619b8dbcdcd739ae8c38322b0",
     "Atlas/Struktura/patternly/src/application/practice/practice — folder aplikacja · src › application.md": "089eb48f822a4b672b2e7616e5ef927095253198d6886c6cd495cfe1bc2b7f75",
     "Atlas/Struktura/patternly/src/application/runtime/runtime — folder aplikacja · src › application.md": "ec52dd31f383e42c5ec2caed6ffea460b4da2bf1a3bf706f544d4f158a85ddbf",
     "Atlas/Struktura/patternly/src/application/runtimeAuditability/runtimeAuditability — folder aplikacja · src › application.md": "80ff2226e0cbcb4279c69de1cdd341ac9af5d0d694ac954624cb8b85782eb032",
@@ -106471,7 +106565,7 @@
     "Atlas/Struktura/patternly/src/infrastructure/runtime/runtime — folder aplikacja · src › infrastructure.md": "0fec549830dbd777712034ba649fc2bf36adb6195519ca8a835ee7ec2f3d4043",
     "Atlas/Struktura/patternly/src/infrastructure/security/security — folder aplikacja · src › infrastructure.md": "93126dfdd610cd020bba4eef28ff12ab4f3f696a95b2263e19dcedeaf6541067",
     "Atlas/Struktura/patternly/src/infrastructure/storage/storage — folder aplikacja · src › infrastructure.md": "f73e814a7c37499d3c2583beeb295ba97b062ad675ee1bbd89a9eff7fc397f52",
-    "Atlas/Struktura/patternly/src/legal/legal — folder aplikacja · src.md": "a4a371e544884b562d49870ee0e364905acc2ec3dc7d55583c8729638ab74c2d",
+    "Atlas/Struktura/patternly/src/legal/legal — folder aplikacja · src.md": "f641afbf0d7893ac879408d03154e164afc21d4924465d9b47ff7697ba6be769",
     "Atlas/Struktura/patternly/src/locales/locales — folder aplikacja · src.md": "d5198081dbc8587b2bf5026582cc14d2ce53f9a0453f615a0515148907fd91c9",
     "Atlas/Struktura/patternly/src/locales/de/de — folder aplikacja · src › locales.md": "de3f0407d89ab3ddc0a236b60001f55f99cda31138860f0cc16f5e903ad6cf8b",
     "Atlas/Struktura/patternly/src/locales/en/en — folder aplikacja · src › locales.md": "a8de12f3085ca73c262f7f527915845632a64af56d5fe986c43280111005f984",
@@ -106510,7 +106604,7 @@
     "Atlas/Struktura/patternly/~2E~maestro/_Pliki/ui-plan-shortfall-warning-frame.yaml — aplikacja · ~2E~maestro.md": "245292e0ab927c95485129117f150f5be0afacfd4a06dd4806bc27d3a4eefae3",
     "Atlas/Struktura/patternly/_Pliki/app.config.js — aplikacja.md": "71f0cadb8b82c0c5afbb2c64b6aaf59d62032ccb1fcd30b7c67584ffe02081d8",
     "Atlas/Struktura/patternly/_Pliki/App.tsx — aplikacja.md": "497c0c2ba76dcd8abe1860ac523d6da99d5f0dc44729463e227adb6db067b3e6",
-    "Atlas/Struktura/patternly/config/_Pliki/public-legal.release.json — aplikacja · config.md": "83216b5c8f95e7200beb4c8230dbc6c28d398e23dd07c2f4abdcc61670185b1c",
+    "Atlas/Struktura/patternly/config/_Pliki/public-legal.release.json — aplikacja · config.md": "07a187bf73f30aa97623963abc3f1d6bb78b7fd5986e9b88c12166c82e2fbe34",
     "Atlas/Struktura/patternly/integration/contracts/content-release/_Pliki/release.lock.json — aplikacja · integration › contracts › content-release.md": "5775b22c3ab2c81d82961e9daa65e9e2386d25356fb8a7dd2f447d8248ea8749",
     "Atlas/Struktura/patternly/_Pliki/metro.config.js — aplikacja.md": "24a555278f9e6af0a047e5d8ea995764d8b0c6c88d936df8bae43ae6eb7b32c3",
     "Atlas/Struktura/patternly/native/foreground-clock/android/_Pliki/build.gradle — aplikacja · native › foreground-clock › android.md": "d2728ea809f791617c38e4396e072e667f1e51699d9390541b04301ce6c0f98a",
@@ -106587,7 +106681,7 @@
     "Atlas/Struktura/patternly/scripts/_Pliki/prepareEasBuild.mjs — aplikacja · scripts.md": "283ee0786452b62926f8efedf9666ff8dd509f2dd703fc0927ca638804ba7dcb",
     "Atlas/Struktura/patternly/scripts/_Pliki/prepareEasBuild.test.mjs — aplikacja · scripts.md": "5e0177282bb9938e090b7e989d7d16765ced03d7b627d38c21112e01f0c4caa3",
     "Atlas/Struktura/patternly/scripts/_Pliki/prepareLegalReview.mjs — aplikacja · scripts.md": "e8d94d637617407d71bb6405ef0d46e5daea0a51dffad8711593bf93b8921208",
-    "Atlas/Struktura/patternly/scripts/_Pliki/prepareLegalReview.test.mjs — aplikacja · scripts.md": "66d24a0e0393574edde6dfce40bc46d4e8ed5eb4dab449a0016431219f30c081",
+    "Atlas/Struktura/patternly/scripts/_Pliki/prepareLegalReview.test.mjs — aplikacja · scripts.md": "8822cce86ff1766092c3c9064f37d64afdf7bd411a368d83223a7f0366ddf4b4",
     "Atlas/Struktura/patternly/scripts/_Pliki/prepareQ13LocalActor.mjs — aplikacja · scripts.md": "b100ed7f196de48d176e538fd2fe1fb53e4b3e9b2f1ca926ec6becd690b6253e",
     "Atlas/Struktura/patternly/scripts/_Pliki/prepareQ13LocalActor.test.mjs — aplikacja · scripts.md": "4682b06ecc4288abc184e138a240ecdac9527e52a68953408742e78b2fd5b0e0",
     "Atlas/Struktura/patternly/scripts/_Pliki/providerAuthFixtureMetro.test.mjs — aplikacja · scripts.md": "dcfb2c2513e03997827e80a4ce598dd3d3c9dbe368e7b8fd8919fa89d6c1af67",
@@ -106636,6 +106730,8 @@
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/goalPlanSecondClientProducer.mjs — aplikacja · scripts › qa.md": "3de218ecdf2f9a8e31003b09aca91f66f8f227650bfd5bb69c7b94711fef30b2",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/guestSignupFlowIos.mjs — aplikacja · scripts › qa.md": "416d2923cfd92a49253a4a0f1079a52648240e20c7525355b500e8e5cd4758f9",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/guestSignupTransitionMonitorIos.mjs — aplikacja · scripts › qa.md": "9ce73966c290116981a9cd84e43269d1b8524ea1150fd8dc55ee4b7d419e13c1",
+    "Atlas/Struktura/patternly/scripts/qa/_Pliki/learningPlan8e2FrozenOracle.py — aplikacja · scripts › qa.md": "8f2f466ba35584b856b343f9b844f7adc5ae8a5c49985319cc311c9df50db396",
+    "Atlas/Struktura/patternly/scripts/qa/_Pliki/learningPlan8e2TargetProjection.mjs — aplikacja · scripts › qa.md": "4d4aa286746bce78571cfc2dc64fb6a1a15a9662fea93a2dc831e5191fa22a34",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/measureCanonicalPlanningPolicy.mjs — aplikacja · scripts › qa.md": "86855818cbd234519eaf6e7f83a0a6be0bbb51a9b51669b55a7498ce5f184b26",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/measureCost02LifecycleTriggers.mjs — aplikacja · scripts › qa.md": "c42d6290f9989ec373540714ead697360685439a6d7e9e79bc1ef4f66b1fd672",
     "Atlas/Struktura/patternly/scripts/qa/_Pliki/measureHomePlanSnapshot.ts — aplikacja · scripts › qa.md": "88ca77b533c2ba1a2a88f2eba7ca40625bbfec70080189b8a4840c49cd657195",
@@ -106975,7 +107071,7 @@
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/fullGoalWorkloadProjection.ts — aplikacja · src › application › learningPlan.md": "d228c85698ca512049fdef765158f664ae5eb7c6b70096c3ffc08594822edf20",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/goalPlanLifecycle.ts — aplikacja · src › application › learningPlan.md": "f80e8c698312e1df2ea5f9ecf0a2d9c11edd26fda6658d0cf363f62b16b732d4",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/index.ts — aplikacja · src › application › learningPlan.md": "2b8ee61d92521b55dcd70abbea180ee150ef542df767808d87f1e209956314cb",
-    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningCreditTransfer.integration.test.ts — aplikacja · src › application › learningPlan.md": "770b76682b2fc98b8740e1b4d6e05844964d49b7e94c23b95fb2a13edd1cbbe5",
+    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningCreditTransfer.integration.test.ts — aplikacja · src › application › learningPlan.md": "bf4bbf53e60c5d86abff99d3c37fc8ecbe6f4a1ca59a3a4a52563a15e7547bfa",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningEvidenceProjection.ts — aplikacja · src › application › learningPlan.md": "1babbe7efa285714bf478014191465fe613698a24783a0c24aff9e3825df8c50",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/LearningPlanEditorCoordinator.freshness.test.ts — aplikacja · src › application › learningPlan.md": "69a7a55274f1ef62fe7ecf926a7503febfcc0fbf414af2c8365a100a7b1a421d",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/LearningPlanEditorCoordinator.test.ts — aplikacja · src › application › learningPlan.md": "eca7fc0de20fca6a9ab7c0e69a9c4610ccfd41e6f7baedbed80a0987e293b3ff",
@@ -107288,7 +107384,7 @@
     "Atlas/Struktura/patternly/src/domain/entitlements/_Pliki/premiumEntitlement.ts — aplikacja · src › domain › entitlements.md": "8c116bf6cb562ab323e23edae535ab357484d208a9765dbda8e0c2fc91c73e1b",
     "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalContracts.ts — aplikacja · src › domain › goals.md": "49800b695ec9d167ee3f4ee8f7a009aae47249dbe4b41899289cc25003995b18",
     "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalPolicy.ts — aplikacja · src › domain › goals.md": "4f24f097824e80d68bf8f166a93209a928368055c8861f9f7f8a1bc891701ba6",
-    "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalTargetDateSemantics.ts — aplikacja · src › domain › goals.md": "b3e811f9549aff50ccb27b4b4a6ccf23a63266a2712d133a7abca6a6ec5a7c81",
+    "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalTargetDateSemantics.ts — aplikacja · src › domain › goals.md": "cdb35f73c386f16c94a09a9e6a06af0225c565ef90692b5958697197c9b9821a",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalIdentity.ts — aplikacja · src › domain › identity.md": "eff137abefe558b9fca6fa892382fb8e3d670cfcdef0cda4c25771dd29c7d477",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalSerialization.test.ts — aplikacja · src › domain › identity.md": "2ef3e291fda2e5bf74135b7e16f8516cc87a5673b71ddd8a4ae2f85ed3f51897",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalSerialization.ts — aplikacja · src › domain › identity.md": "b073e690f4eb0e32af423e22393e066a34534fa219d042fdcb8a1b5a59dfb19f",
@@ -107581,7 +107677,7 @@
     "Atlas/Struktura/patternly/src/features/simulation/_Pliki/simulationViewModel.test.ts — aplikacja · src › features › simulation.md": "7d00306b1ccbddd3190b748c3e275fdd44d47cb14e09906f0ed6cfb87f8c125e",
     "Atlas/Struktura/patternly/src/features/simulation/_Pliki/simulationViewModel.ts — aplikacja · src › features › simulation.md": "3301663f070d7c29b11ac05e762f5b1dcd13220a69307019c2ee73e1dd2aea46",
     "Atlas/Struktura/patternly/src/_Pliki/i18n.ts — aplikacja · src.md": "d36b78093441d42975dea9879a7a2b0b8d9155cbe66f6c2390466bbabc1af2f7",
-    "Atlas/Struktura/patternly/src/i18n/_Pliki/i18nLocaleParity.test.ts — aplikacja · src › i18n.md": "ca804b28527edfb36318641e2adbe438331d1de8376ff25004710af5b946f949",
+    "Atlas/Struktura/patternly/src/i18n/_Pliki/i18nLocaleParity.test.ts — aplikacja · src › i18n.md": "7335006a1eb6cee13d169a5d1de4b5bafc58620938d305ffa33416dcac388012",
     "Atlas/Struktura/patternly/src/i18n/_Pliki/practiceCopy.test.ts — aplikacja · src › i18n.md": "5f5c27f2e3b3505569d379652a40a0ca873f81cdc2e2d1e805fe853d199f06ed",
     "Atlas/Struktura/patternly/src/infrastructure/clients/_Pliki/approvedClientRegistry.test.ts — aplikacja · src › infrastructure › clients.md": "c6acf8c63978d209b3ddd4cb01399e05634d3d3e818ea3c70d68bc04f4cada31",
     "Atlas/Struktura/patternly/src/infrastructure/clients/_Pliki/approvedClientRegistry.ts — aplikacja · src › infrastructure › clients.md": "4bcc4ed264c5de4ce30a655f9a3185cf646879f0a13c309fbac1690d2cbbeee2",
@@ -107666,23 +107762,23 @@
     "Atlas/Struktura/patternly/src/infrastructure/storage/_Pliki/profileStorageRouter.ts — aplikacja · src › infrastructure › storage.md": "62bafcb60724b84d6151b8f375de4275d59b5a1b5f18620c654c5d5eaf523235",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalDocumentMap.test.ts — aplikacja · src › legal.md": "1440a2276763f08196fa38dc51ef130acbe5722a575e83a35f4125ae1d58bcbc",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalDocumentMap.ts — aplikacja · src › legal.md": "fb459f4b46d7b72ad1610f20f48dcfb398af4f511f9c648b902279d5016ea54e",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.de.testOnly.ts — aplikacja · src › legal.md": "70432b3f7753a423f8adc3341ae1c09728f40eb23e700d2bf1841fe853405a46",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.es.testOnly.ts — aplikacja · src › legal.md": "32703a05b46f93e61b7315e24740f72397d85117bedb6004440d7712df5a03c1",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.et.testOnly.ts — aplikacja · src › legal.md": "34e1f7c8fd9c2876c64a93b39b4864ed8c4b12d106a89a45b8a3317ca84c2aa6",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.fr.testOnly.ts — aplikacja · src › legal.md": "9b83ca5e2f6514c61a832b3a83c2e82912807572331ed434d78340b55eaacb54",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.it.testOnly.ts — aplikacja · src › legal.md": "69f3623fb08eae51b13aff69cecc2fa85e9f774f6bbf445e8fc2c2b3cc33bb88",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.de.testOnly.ts — aplikacja · src › legal.md": "20f0c5f313a16c8079389c08f2914e5028c4094546f2eb27c41ce7a42ffdaf3f",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.es.testOnly.ts — aplikacja · src › legal.md": "02340dbdbab7918007c394a3ccee881cb1a6616499edb18eed019ca977636c32",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.et.testOnly.ts — aplikacja · src › legal.md": "1cbe57a943eaf081bedfe319dd8113e7e91d191e3848b246191517d91746dcd3",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.fr.testOnly.ts — aplikacja · src › legal.md": "c08ba65bf386d7ad70c7e1552b06b57aa0f6ac6a1dc064e2756f2222f162a703",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.it.testOnly.ts — aplikacja · src › legal.md": "092cad0798c4cbda66fc258d8f6f234b2cf4085bd4897f94dd8e6131c56b3119",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalTranslationDrafts.testOnly.ts — aplikacja · src › legal.md": "4302d7d44093ac91da30b757a4c9998770147f711b933e36e62f7d7efcbb337e",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariables.ts — aplikacja · src › legal.md": "bda8584c03886d7e08f03ef083da22c544541e67cb2de2956c1cfe6a52cbba75",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariablesLocalFixture.ts — aplikacja · src › legal.md": "f0f93a96e969c16dd185a2b035d021457a15e7232384109e4e7e8f25c1ae06c1",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariablesLocalFixture.ts — aplikacja · src › legal.md": "f9933d00822f2188695ce95a38f2ceeddef9af64c576a51b73ccb90c4208b9ad",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariablesSchema.test.ts — aplikacja · src › legal.md": "4291b7c001bfeea5919df7c495e4516bed7b4b230b54934cd8df9878de8b7557",
     "Atlas/Struktura/patternly/src/legal/_Pliki/legalVariablesSchema.ts — aplikacja · src › legal.md": "3a9cb979a41ca52e6fb8697d582c5829fcc797f4294cf1ed4512cfb6c0adbc9e",
     "Atlas/Struktura/patternly/src/legal/_Pliki/privacyPolicy.ts — aplikacja · src › legal.md": "1263f76e40e26b819621d2efd395d7f44afd529fffb599558e05c2a5094b2f3c",
     "Atlas/Struktura/patternly/src/legal/_Pliki/providerRegistrationDocuments.test.ts — aplikacja · src › legal.md": "8d1d4a645efe0afb39055311c4fc9717147bc5ecb5df251171c0ad0b6b8ff3d2",
     "Atlas/Struktura/patternly/src/legal/_Pliki/providerRegistrationDocuments.ts — aplikacja · src › legal.md": "99e3f298e42de94feb527ec06d28eeb11094dceff48c4eb1393ea402162bbacd",
-    "Atlas/Struktura/patternly/src/legal/_Pliki/termsOfService.ts — aplikacja · src › legal.md": "612c647c7bd8903920e67b58b1eaa77102cedf33fbc6eef2b1d89a77d8835e78",
+    "Atlas/Struktura/patternly/src/legal/_Pliki/termsOfService.ts — aplikacja · src › legal.md": "0c0bef86cd364bcef4b4180a5efba50c8e3764ef74081cd97cb8d8f7f108f86d",
     "Atlas/Struktura/patternly/src/locales/de/_Pliki/account.json — aplikacja · src › locales › de.md": "88da9e690fea627fb52d8041870289a35d9e7287542bac56ff1e47b677140c27",
     "Atlas/Struktura/patternly/src/locales/de/_Pliki/appearance.json — aplikacja · src › locales › de.md": "cd76e5a11d701a7c75eaa50f77f93feab0cd027ca26605d91fe0f12f52315f48",
-    "Atlas/Struktura/patternly/src/locales/de/_Pliki/common.json — aplikacja · src › locales › de.md": "de40a6e894d95770415f18cea2890dc8ec8b66c243f3696d068119591b40218c",
+    "Atlas/Struktura/patternly/src/locales/de/_Pliki/common.json — aplikacja · src › locales › de.md": "b65b71d5edd12a23ca428f2c863b89ecc14d5d5c2b4da788da4568fecfa65346",
     "Atlas/Struktura/patternly/src/locales/de/_Pliki/data.json — aplikacja · src › locales › de.md": "7d193617eea5cd587b0f3d542b86475ea05bbac7e940879a042ed8c69d9f2d5d",
     "Atlas/Struktura/patternly/src/locales/de/_Pliki/learningPlan.json — aplikacja · src › locales › de.md": "1357a507322230ad320a6e03e49c00af2634b0a9bd3e97842aba2e5af14f6e83",
     "Atlas/Struktura/patternly/src/locales/de/_Pliki/legal.json — aplikacja · src › locales › de.md": "389cc55c69c1226fc397e1ebc1c96d8f17ee2ad76a1d5a2c7bbb335637aa95a8",
@@ -107698,7 +107794,7 @@
     "Atlas/Struktura/patternly/src/locales/en/_Pliki/settings.json — aplikacja · src › locales › en.md": "f8d1057cdb037793173afaf59bd45e62e7c3758c5e0b7f4e4370de612ff5c58c",
     "Atlas/Struktura/patternly/src/locales/es/_Pliki/account.json — aplikacja · src › locales › es.md": "005bbcbe93b72f1205bc6b3c6ddc7db592654cfc24f0ac5786b628d4ecd17a1e",
     "Atlas/Struktura/patternly/src/locales/es/_Pliki/appearance.json — aplikacja · src › locales › es.md": "87f2dc1ba93c8225ef84d6199a3b663a9fecdb64399a9627dc10b1d2cf4213ba",
-    "Atlas/Struktura/patternly/src/locales/es/_Pliki/common.json — aplikacja · src › locales › es.md": "62dd4eba42f4f5d22c5f8e134778ff7e634a4203e452f4d3feb26cbe6e6e4cd3",
+    "Atlas/Struktura/patternly/src/locales/es/_Pliki/common.json — aplikacja · src › locales › es.md": "fc36ca3bfb2d287953c3626063b153ebc4efc79d694f02ee85423a120c9d914c",
     "Atlas/Struktura/patternly/src/locales/es/_Pliki/data.json — aplikacja · src › locales › es.md": "b0feee15d1425daafee824c80d4934a57cb96840a3684070b2749280d81471ec",
     "Atlas/Struktura/patternly/src/locales/es/_Pliki/learningPlan.json — aplikacja · src › locales › es.md": "3943b543bea194f62c0ffdd0cc00e770b16276d9e3c42f14cde20a9e4b2fd6cf",
     "Atlas/Struktura/patternly/src/locales/es/_Pliki/legal.json — aplikacja · src › locales › es.md": "075c8e6cfac21a75a6a53ac34e043c96e47ebe6c4ed184c5160686f9d2fbe4f7",
@@ -107706,7 +107802,7 @@
     "Atlas/Struktura/patternly/src/locales/es/_Pliki/settings.json — aplikacja · src › locales › es.md": "afce3382f41b5a9ee9df02bc01cfb041a7a0ab63458e83d8961272f2f6239d36",
     "Atlas/Struktura/patternly/src/locales/et/_Pliki/account.json — aplikacja · src › locales › et.md": "7150eef24738a129da77ba7b39264c0a62be003025377870cdc2aba425a6de3d",
     "Atlas/Struktura/patternly/src/locales/et/_Pliki/appearance.json — aplikacja · src › locales › et.md": "cf07861027bd97a4900c86f168e86d98adee6ae79ca26d5c63fe71d4ffccb774",
-    "Atlas/Struktura/patternly/src/locales/et/_Pliki/common.json — aplikacja · src › locales › et.md": "f119778374ff0610052570454351f1345a7290e4a29b283488472ac620157923",
+    "Atlas/Struktura/patternly/src/locales/et/_Pliki/common.json — aplikacja · src › locales › et.md": "b6e2578f8daedcbf8fb5ee350f829ddf248907ec07f6d030489480885e09557d",
     "Atlas/Struktura/patternly/src/locales/et/_Pliki/data.json — aplikacja · src › locales › et.md": "b54f975ccf945fb8e1b00489a0a70de07200fe19f6aabacf0d2fc85fa4f6c389",
     "Atlas/Struktura/patternly/src/locales/et/_Pliki/learningPlan.json — aplikacja · src › locales › et.md": "1e4eaae20b685869ceafd3cfa7c4a845cf1ac87536bb0f671e073b816a7a2f42",
     "Atlas/Struktura/patternly/src/locales/et/_Pliki/legal.json — aplikacja · src › locales › et.md": "e1ad83c97c3f62777f596c515de77d01a4cf2db4f89500946b517c5f033cbfa6",
@@ -107714,7 +107810,7 @@
     "Atlas/Struktura/patternly/src/locales/et/_Pliki/settings.json — aplikacja · src › locales › et.md": "29f99258cdcfff475cc36de47be8128fdb951a51491139b75666eb0c61ce9701",
     "Atlas/Struktura/patternly/src/locales/fr/_Pliki/account.json — aplikacja · src › locales › fr.md": "be02dfc500e891ea54ae033cb8cbd72598c8f058c415e42c3aa5ca49e47d822e",
     "Atlas/Struktura/patternly/src/locales/fr/_Pliki/appearance.json — aplikacja · src › locales › fr.md": "1717dfeb2d0cdb5b1ec097b11557330853f6c09da78817a80e5cc26b2affd711",
-    "Atlas/Struktura/patternly/src/locales/fr/_Pliki/common.json — aplikacja · src › locales › fr.md": "8864e0ed83e435ee50d350693ce459e56039a5a0ca8113d90866be4273f1a6c9",
+    "Atlas/Struktura/patternly/src/locales/fr/_Pliki/common.json — aplikacja · src › locales › fr.md": "e6998c349df899e4e4fecda6d50c088772629a4ed74d44c96f45d1dbd76a0b53",
     "Atlas/Struktura/patternly/src/locales/fr/_Pliki/data.json — aplikacja · src › locales › fr.md": "06aa41c8ebea67f71580a2b0f3a4f60ac62f912c15f97c02ddd0896f47603f0b",
     "Atlas/Struktura/patternly/src/locales/fr/_Pliki/learningPlan.json — aplikacja · src › locales › fr.md": "4f4a40515703284b377299d7e21c195e76ab49637d23c0a5d5eb6dabcc56971f",
     "Atlas/Struktura/patternly/src/locales/fr/_Pliki/legal.json — aplikacja · src › locales › fr.md": "bfdc9eb5afe766d44d451842b0023e582174390a0ba04a9109430398bc0896c2",
@@ -107722,7 +107818,7 @@
     "Atlas/Struktura/patternly/src/locales/fr/_Pliki/settings.json — aplikacja · src › locales › fr.md": "69a3739343e3d7d9a181026f36230e43ec3142ac4afc9199d07445633e54fad5",
     "Atlas/Struktura/patternly/src/locales/it/_Pliki/account.json — aplikacja · src › locales › it.md": "e74860780469f25cd9d6ae6caec6018fe8b3ff0a46e27a35d662ebb34becae41",
     "Atlas/Struktura/patternly/src/locales/it/_Pliki/appearance.json — aplikacja · src › locales › it.md": "a5ccd4db76a2d1459d158c18f6eb62dbeed7c42f1ba75cb2dd643968b53ff46c",
-    "Atlas/Struktura/patternly/src/locales/it/_Pliki/common.json — aplikacja · src › locales › it.md": "537c0d85817a55328d14768d05e8cf05d70d4f422265947f93ac7ec3f2585df6",
+    "Atlas/Struktura/patternly/src/locales/it/_Pliki/common.json — aplikacja · src › locales › it.md": "a2346ba9a9663fa6d43095895b8358670c839cd4a4046f2c0734ebafcae5d962",
     "Atlas/Struktura/patternly/src/locales/it/_Pliki/data.json — aplikacja · src › locales › it.md": "da2d7469fdad0e61ba8d13b8b1509a9c52d8a034e60b34061f083a63f65e92ab",
     "Atlas/Struktura/patternly/src/locales/it/_Pliki/learningPlan.json — aplikacja · src › locales › it.md": "c4799fbcb8f1780fbf84bc717dd36102d32a1ebc1016ec88cc2e25f6b9950681",
     "Atlas/Struktura/patternly/src/locales/it/_Pliki/legal.json — aplikacja · src › locales › it.md": "4947fd59221250aa3fa8043b292cb254661f1a3ab274de963dfbc7481ed41449",
@@ -107908,7 +108004,7 @@
     "Atlas/Struktura/patternly-backend/config/config — folder backend.md": "bdd72f9ae67dc3fa6d8f804a47eefc2a443d5ea8c999829808f7fab52139afbe",
     "Atlas/Struktura/patternly-backend/docs/docs — folder backend.md": "cc3eb136278fda7668cab75760e5d5ab0777859bf31bea3570df0863cdbee390",
     "Atlas/Struktura/patternly-backend/openapi/openapi — folder backend.md": "93bd372273da1e6eca91e06d1eee55974f86c23752a9a9f7183a669672b470e7",
-    "Atlas/Struktura/patternly-backend/scripts/scripts — folder backend.md": "b3d5f1b3946be4127ecc90d48257c4e908708b0ea57d24523f3ae2dd4c3560cb",
+    "Atlas/Struktura/patternly-backend/scripts/scripts — folder backend.md": "79f4eb3e009e351b9cad5ad978bb53d70311502347138374675a85a3ff59727c",
     "Atlas/Struktura/patternly-backend/scripts/qa/qa — folder backend · scripts.md": "9f84c9778423ffb19148131c0cf802c2d1b6c5383dc26f5bef3ea3b589d48de8",
     "Atlas/Struktura/patternly-backend/scripts/qa/backports/backports — folder backend · scripts › qa.md": "8b84b8c7847aeee244584630f96753700af60db5ba0656f0bcced553facca723",
     "Atlas/Struktura/patternly-backend/scripts/qa/cost02/cost02 — folder backend · scripts › qa.md": "2b48ce52ee0ca5c60892b1d3df63b4fc637014084960e45f8769a1c5ad39a705",
@@ -107947,7 +108043,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "811d4a3ecd0e111ab1ae61c0286067992fdd7ba4204b7fab6dafffa81a9374ef",
     "Atlas/Struktura/patternly-backend/src/modules/tracks/tracks — folder backend · src › modules.md": "56ed2ab6210f2a7dad555670f631de0c959708edd918c993f101bb0a062be690",
     "Atlas/Struktura/patternly-backend/src/modules/users/users — folder backend · src › modules.md": "e50e26f2d61077328925bc3b1b29ef96076ae80c1b73331191631886c43ec2b1",
-    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "b7dd73db5b18590aad077a96bdafcc63786f4fcfe02693ebadcd26f203debeba",
+    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "95d9fb0c042e37b32495afe35d598c2fa198d17f1219bbe4d94f085631026335",
     "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "06602af308b54d1227519fda4ef33d9ae3f457b8dabbefb1b72f93fb1c8d8449",
     "Atlas/Struktura/patternly-backend/tests/fixtures/cost02-package/cost02-package — folder backend · tests › fixtures.md": "9a72264d1d3b1f61447b5e8219d88b5428bae556bc50b70bfef14237878b7750",
     "Atlas/Struktura/patternly-backend/_Pliki/package.json — backend.md": "070c0b8d54a59e8d4f7c37f0efaea0b5a790f396c1a62b7787225e7df126f039",
@@ -108002,7 +108098,7 @@
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-content-package-tests.mjs — backend · scripts.md": "2fb45ce914ad408425ad4a231ca4313ac0eb0efe8e1cec15ff684726e9be1e06",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-cost02-client-matrix.mjs — backend · scripts.md": "d8bb2e175b5acd7fee0296df9ab40c2e62785ccf3fa465a505b34272cfe953fc",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-cost03-tests.mjs — backend · scripts.md": "d5de4e144f0e9bc12fa95481fa65fd047b1cd7a437042cc07a4d27d4dd00bed7",
-    "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-cost04-tests.mjs — backend · scripts.md": "76facbadf0ced4faaf05b5adaf9746f7b298d2932b7d1fd5820af67709a094a2",
+    "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-cost04-tests.mjs — backend · scripts.md": "d6340792878670c51f1fde31027dd9a396b82cc9834b1bf82e323846c78b3b4a",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-deleted-identity-r01-tests.mjs — backend · scripts.md": "54e3ad9dc75ee7b10c8aafff1684eec6470a7b1d6dbdfd686d6c2cad7df5d2c5",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-goal-plan-mixed-replay-tests.mjs — backend · scripts.md": "f9f55aa24499ae1e769cb9942e8d8a3f469f8b5ae38809a431de4557462976d8",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-operator-acceptance-tests.mjs — backend · scripts.md": "b63bbbdf619e4005ab4ff8d67125e06d8877502d5b29ea065de5f4ccf17264d9",
@@ -108098,8 +108194,8 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/contentPackages.test.ts — backend · tests.md": "5a06d552b37ec0c81a670957d0ec8996100d78da8165bcb9b03a0effbb6396f9",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/contentReportContracts.test.ts — backend · tests.md": "75cfc71f6759f6259b48979f2fd6a06487708d1c47b2c80bfcdaf8e5c40158a9",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/cost03Client.emulator.test.mjs — backend · tests.md": "16f4a35df1f04d78b51a2c4522a891dcd88a7b0b199dd2da7faf95070e086faf",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/cost04Deadline.test.mjs — backend · tests.md": "3eb198a131ef134fdeeef7487b673eb709366e35c43a78e7f32680d9cdbe0223",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/cost04Local.emulator.test.mjs — backend · tests.md": "82a2c67661d3136b78274b7a6dfb6eecc8c584412badff64cc231adb3303f56f",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/cost04Deadline.test.mjs — backend · tests.md": "d740c927aa331651883261077551d530b50e027c2991961f4e6b4d2a99aaaac6",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/cost04Local.emulator.test.mjs — backend · tests.md": "5ac8294bf5e061cbc91a17b869cf19cc260edc966442ca51e16cd5b0f05caba4",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/dataExport.test.ts — backend · tests.md": "044d087bd043201d0352c7a11ce1084f3430cdb2749bfc29964cbe128bca69bc",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deletedIdentityR01.emulator.ts — backend · tests.md": "ce378824e944f1c66851acdfa11a0fc1e0aafd0f90e9aa750dd1d602d0f68afa",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/deployment.test.ts — backend · tests.md": "1c5727e4ac8f1ed7ab6f3241f095a0cfcf72093a1c02d83460dd3dfd151a770b",
@@ -108162,10 +108258,10 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/securityIncidents.test.ts — backend · tests.md": "6b61f28d1181ab5e92cb9fd82b4ea49a379ebf6d7bb4907a5dc9d6aa7bef82f1",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/smtpPrivacyEmailSender.test.ts — backend · tests.md": "6988571694c50e3a3fa7a0835851a48f80c2288bc4847093ed1bf73f0675cdbc",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/stagedErasureFixtures.ts — backend · tests.md": "baf0c98f17ef953f25c614cc497bbd4dd4bc2dc08f1dde7a0536a0e9756d4eca",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/support.ts — backend · tests.md": "fc432e5dda60c1c205c277f46ec07e8d5255445327ad015c35f4827a871442bf",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/support.ts — backend · tests.md": "ee83e3652b97d7d322cb3608e07ed8147a0c9fc57c13c291ae53f52a78032f9c",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/syncMutationReceipts.emulator.test.ts — backend · tests.md": "eaf9dc52b83142c11a3e68453487f07df4b10eec8ed34e8f81aeded01badd37e",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/usersStoreLegacyDeletedIdentities.test.ts — backend · tests.md": "869b2453a08b53b6023a8cc9e6f0445418db484bf146df7d3a1db42a2573ae1d",
-    "Atlas/Struktura/patternly-content/treści — repozytorium.md": "a21aa0d600d67a6248044fd3c4d25c824d1d16d6f20cbf3fa513c3b2bc22416a",
+    "Atlas/Struktura/patternly-content/treści — repozytorium.md": "641a3e2d94a2ecf86ecdee334b94b2b6ec25ee7d7f17db536c0525cfffcce44c",
     "Atlas/Struktura/patternly-content/~2E~github/~2E~github — folder treści.md": "4524fa9747a6ef74a758ce8836ee4db868472a199bc6322a0f4ba1badaea7b2c",
     "Atlas/Struktura/patternly-content/~2E~github/workflows/workflows — folder treści · ~2E~github.md": "ba4942af8ae5445ee94134645a406a7fbc8a53e1b63346004854518cf959f305",
     "Atlas/Struktura/patternly-content/config/config — folder treści.md": "9112c8a5c0bd8ce062518742862c0fbbc24c03e1b147ec82daf83f200cd8e883",
@@ -108321,8 +108417,8 @@
     "Atlas/Struktura/patternly-content/schemas/curriculum/curriculum — folder treści · schemas.md": "002152ffc6e25440cef3123d8fcb10a454a3cd74a132b0dad77c3ab512ff1fa7",
     "Atlas/Struktura/patternly-content/schemas/product/product — folder treści · schemas.md": "e4ca617a14f063696b8f566bab91d8be2f73012cf538044f8a10113458054cef",
     "Atlas/Struktura/patternly-content/schemas/review/review — folder treści · schemas.md": "0cf6e71f9e0056e5fab8426bd5004af45483084dfd767f3ac709339c5e77b494",
-    "Atlas/Struktura/patternly-content/scripts/scripts — folder treści.md": "038a92018630968bd14e15a1f45c9a47221999bdedf981786ccb97feeb668746",
-    "Atlas/Struktura/patternly-content/scripts/content/content — folder treści · scripts.md": "ec67752b46f322d478d2785d7b2cb86c33f50239042adfb508d7ee2d454bfc93",
+    "Atlas/Struktura/patternly-content/scripts/scripts — folder treści.md": "972635023a75a4429c061e08c7afa66adbdf9933aa73bc41e57896938a513057",
+    "Atlas/Struktura/patternly-content/scripts/content/content — folder treści · scripts.md": "e2c3c9f36452e13bd33ddab03d8e9fe579a6702abfccc1065ee74db291c36a55",
     "Atlas/Struktura/patternly-content/scripts/content-audit/content-audit — folder treści · scripts.md": "1487476300e1660a796595a3f91459ee334302f07181dd81c593fb37e5ec6aa8",
     "Atlas/Struktura/patternly-content/scripts/model-evaluation/model-evaluation — folder treści · scripts.md": "1debba1580cf19dee90c6d5706fbb82b2087abf5ba741f74d4e7337256630a69",
     "Atlas/Struktura/patternly-content/scripts/model-evaluation/contracts/contracts — folder treści · scripts › model-evaluation.md": "ae867ceaee8afd90a7907e2bb6224c79ace5d0f512f1850bc3b2f9614d1227cf",
@@ -108331,7 +108427,7 @@
     "Atlas/Struktura/patternly-content/supplements/supplements — folder treści.md": "af395349a2820b725a42a00bfae898c6f925d03f275285602a335149e0b36bdb",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/claude-certified-architect-professional-certification — folder treści · supplements.md": "4c1eecd7753d902c83955a5f1ca2f57aaa75a0fae9e2477cd46da54b82216891",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/cc02-course-supplement-v1/cc02-course-supplement-v1 — folder treści · supplements › claude-certified-architect-professional-certification.md": "042ad283e5421711cfe26cdcb82822ff0ecc6c05367f35baa8c6a1c74748b9e5",
-    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "71bf2ab31b53b04308136e892731d3b81283d053e435eedab5bacf6a863f2b14",
+    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "2d7871597f433b2d08c305a3131bda42b22a0feaf56e7a6b4f38bde301c063f1",
     "Atlas/Struktura/patternly-content/tests/fixtures/fixtures — folder treści · tests.md": "e9f282942fee6766d2622c7e6977ad1dd215433b40f4072b037971ca3898dfe7",
     "Atlas/Struktura/patternly-content/tests/fixtures/model-evaluation/model-evaluation — folder treści · tests › fixtures.md": "b89db70e4c913f3e8152c2a6e44019dcb322bd7b4ebf96f0a3e87d9773a4997a",
     "Atlas/Struktura/patternly-content/tests/helpers/helpers — folder treści · tests.md": "3a2dd0a2c8e0773d3359f84e0f334f8063b69073f0d596516a81a927b2b4548c",
@@ -108346,6 +108442,7 @@
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/build-current-release.mjs — treści · scripts › content.md": "8a49d4817fcfbffa6cfcbedc16ab157a844d76369c490e0a20f3dfde109c9667",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/case-recipe.mjs — treści · scripts › content.md": "70e9950dc8edd4d07fe1fae4e2e2a4169eee23bd28d1cb7c440a0dec53970305",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/current-source-identity.mjs — treści · scripts › content.md": "e43aa9117f3c92555b321cf5d5f6e7b5272305b2e76355fe777d56312d5a281f",
+    "Atlas/Struktura/patternly-content/scripts/content/_Pliki/measure-build-all-preflight.mjs — treści · scripts › content.md": "3d79976e4d366fa44af92a4b34ba1169388335a106dd19b5f94d0396879a695c",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/planning-policy.mjs — treści · scripts › content.md": "e66ec77c3522f7353a4b7c4d05370dff0d0a5460b156ee83be22d7fd6cf34f66",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/question-contract.mjs — treści · scripts › content.md": "b281d285f0bd464e5580a7d3448bd9288b5ff227c6b4060907ce93c81901599a",
     "Atlas/Struktura/patternly-content/scripts/content/_Pliki/reproduce-content-version-transition.mjs — treści · scripts › content.md": "c688c2ab0d9e0c68f7dbcaa5c551d56584661a0aa7e85c83e74c4b17d6c35d83",
@@ -108362,7 +108459,7 @@
     "Atlas/Struktura/patternly-content/scripts/review/_Pliki/schema-validation.mjs — treści · scripts › review.md": "88dc80e11d500d1dc191f0ee6a288db647b46553534e696c40e172389881124c",
     "Atlas/Struktura/patternly-content/tests/_Pliki/ai901-20261018-repairs.test.mjs — treści · tests.md": "3eebe97a4a60557538362663f12452677d9dd535e0d9f06e5f9b0deaaa21d294",
     "Atlas/Struktura/patternly-content/tests/_Pliki/ai901-20261023-targeted-repairs.test.mjs — treści · tests.md": "d7fdc1dc43380c476c62f0fc50675973e5f482b009aa0f855ef0634a5545fa70",
-    "Atlas/Struktura/patternly-content/tests/_Pliki/az104-repairs-20261018.test.mjs — treści · tests.md": "8e7a5b1a2b225eb3355f5b5b045cdbd9cf89a2b27d7d1fe46ab21e03c2a2cf97",
+    "Atlas/Struktura/patternly-content/tests/_Pliki/az104-repairs-20261018.test.mjs — treści · tests.md": "9f8f0be33f3d03338cd622ba16bc0059ec69d8bde17ed54c0a3ec74c94f364ad",
     "Atlas/Struktura/patternly-content/tests/_Pliki/besd-n02-repairs-20261011.test.mjs — treści · tests.md": "e328e8c54ac4d5faadc0a6a6c6aba2d6303e1531e3841d724e384a0568b3d82d",
     "Atlas/Struktura/patternly-content/tests/_Pliki/besd-n03-repairs-20261018.test.mjs — treści · tests.md": "d7f038653e7465a222f81a14f5345f05cc7fbd10e57962a23193ab466c83b0ac",
     "Atlas/Struktura/patternly-content/tests/_Pliki/bizq01-ood-node-closure-16.test.mjs — treści · tests.md": "154c71e81ffca383fc27fd5df68e2f8dce20636e249dc81bb11eb40d4859b544",
@@ -108416,22 +108513,22 @@
     "Atlas/Struktura/patternly-content/tests/_Pliki/simp03-verifier.test.mjs — treści · tests.md": "5b95a2a335d59aa6956cdb719480aa5c9932adffa58f48b6d19e9ccefe25be9f",
     "Atlas/Struktura/patternly-web/witryna — repozytorium.md": "83c7f4e3506d7a265bdaca3e68ff0d2fc653114f9875ea71926cf23e06d338d5",
     "Atlas/Struktura/patternly-web/~2E~github/~2E~github — folder witryna.md": "aa364726ae59e89aa5643e14e5aa88aa47703bcd05214522be9e6d0fd21471fd",
-    "Atlas/Struktura/patternly-web/~2E~github/workflows/workflows — folder witryna · ~2E~github.md": "7a1a2a6cc75693b559a6def252655e8f2b8302416cfb25d75ba6066a6ca0f63d",
+    "Atlas/Struktura/patternly-web/~2E~github/workflows/workflows — folder witryna · ~2E~github.md": "84d9c312413c82d43cc75101b5ed2e59ca30bbe1eeff26982702a7da95e0bc47",
     "Atlas/Struktura/patternly-web/assets/assets — folder witryna.md": "096db3d3047a9e5f10347c193e01f1bdb71ef916245ad27bd7dde1a3916b8606",
     "Atlas/Struktura/patternly-web/assets/brand/brand — folder witryna · assets.md": "6a43ca0ba6080bc50709e231f287bbb631ef781b6a818b954028f2babda31df3",
     "Atlas/Struktura/patternly-web/assets/brand/mark/mark — folder witryna · assets › brand.md": "f467aa8032c16668d521332deec4632d262d73e9886aa6983af0afaca82c13ac",
     "Atlas/Struktura/patternly-web/assets/icons/icons — folder witryna · assets.md": "5eafd48c81fa8addbdf80247c444289d47823c6c81c1e48abf5ff9408c2dedb7",
     "Atlas/Struktura/patternly-web/public/public — folder witryna.md": "c33675773ec38868e689bf13d96082ee37fd32369b4caa62671ee5ba80d52c24",
     "Atlas/Struktura/patternly-web/public/app-preview/app-preview — folder witryna · public.md": "860a1f090087b6b70c1ba5044d0832ec1711a506e8572ab783401a818c078e66",
-    "Atlas/Struktura/patternly-web/scripts/scripts — folder witryna.md": "2dc9a711e642e3cad02b931cb69b47f52fab7d9226f50eceecf6ee26deabd1a8",
+    "Atlas/Struktura/patternly-web/scripts/scripts — folder witryna.md": "3eb257c6c49448dac044d1980c9d4444ab958cbf253c160e98f462dade101d01",
     "Atlas/Struktura/patternly-web/scripts/admin-behavior/admin-behavior — folder witryna · scripts.md": "254bc486923b5c7a0345fe6b17ab507cc37a2cb3de72adbf9fe36331296e2de5",
     "Atlas/Struktura/patternly-web/scripts/qa/qa — folder witryna · scripts.md": "56cdcfec3b6d0fa7c867e38aba69937d3530bcc9aaef17b334db0b7833102275",
-    "Atlas/Struktura/patternly-web/src/src — folder witryna.md": "745d6412949bd285dc6f4d92103b96f084b1155608ac0e93a77e5013b233e1be",
+    "Atlas/Struktura/patternly-web/src/src — folder witryna.md": "ce87f3995ee2b9e452ca988f2c63fe648c07e8e29d582a0f990e13eff5e7bde7",
     "Atlas/Struktura/patternly-web/src/components/components — folder witryna · src.md": "1de03eb0eb23c5414622c7af4be205de5e0674bd07b47dc39ab935e2c9969cdc",
-    "Atlas/Struktura/patternly-web/src/generated/generated — folder witryna · src.md": "dbce1b1c493f53c7ca949350879db81e7bfeaa183318ea41cb70c94add9a1525",
+    "Atlas/Struktura/patternly-web/src/generated/generated — folder witryna · src.md": "dd3fca4251d3d34ba79fe85d52eb54e83c1f483fd2e2904d78b1ac8d345e763f",
     "Atlas/Struktura/patternly-web/src/hooks/hooks — folder witryna · src.md": "ed01d899df5a68f26693574c8ca0f04858a2cb645126de9472b8bbc3a86d61b3",
     "Atlas/Struktura/patternly-web/src/pages/pages — folder witryna · src.md": "1493a713e3505bb281b3d8c21238eee02208f2ddc33e2dff33ae549858fa790b",
-    "Atlas/Struktura/patternly-web/~2E~github/workflows/_Pliki/verify.yml — witryna · ~2E~github › workflows.md": "9043ccf7d8fe6bee2b1466e7973fec2dcf5d5ff199eb6163dd518d54f29019c1",
+    "Atlas/Struktura/patternly-web/~2E~github/workflows/_Pliki/verify.yml — witryna · ~2E~github › workflows.md": "36037eee189992c93867ae84ee60fd64c0645ab9ca51c5a8db5c512a81001c70",
     "Atlas/Struktura/patternly-web/_Pliki/admin.css — witryna.md": "66fce75a70fd2ba9bb6ce7aa64c706e775d5120e8b5ade6ec29cb26e8596267b",
     "Atlas/Struktura/patternly-web/assets/brand/mark/_Pliki/patternly-mark-mint.svg — witryna · assets › brand › mark.md": "37702dd6e9cfc4f8b2525a55fd6328fe5ddb7cf4023080fd9f88b488cf47e42b",
     "Atlas/Struktura/patternly-web/assets/icons/_Pliki/cloud.svg — witryna · assets › icons.md": "3ae4b12aac72cd781502505b0eddc67901be6803b38ec7589d702fc9f68a9bfd",
@@ -108467,9 +108564,9 @@
     "Atlas/Struktura/patternly-web/scripts/_Pliki/publicLegalTestArtifact.mjs — witryna · scripts.md": "23425e4e3073d9a2939e2122773f36eb03a3b7fc357dd24e8e6e0f417209f87d",
     "Atlas/Struktura/patternly-web/scripts/qa/_Pliki/production-mobile-lab.mjs — witryna · scripts › qa.md": "64a5804b62d167ad74a21ae1c9554a3e9fccde3e06f013a00fcfd8fe3d584e99",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/record-local-acceptance.mjs — witryna · scripts.md": "ecaf4f6cf051f315498eb33481cdaee9f29bd99a439a20c233a4e03b20a8fccf",
-    "Atlas/Struktura/patternly-web/scripts/_Pliki/seo-content.browser.test.mjs — witryna · scripts.md": "6cbfa53d7123d27687cf04436de2ca60c13830a323dd55fc01285a6530cd7a36",
+    "Atlas/Struktura/patternly-web/scripts/_Pliki/seo-content.browser.test.mjs — witryna · scripts.md": "75ab8039114a47b369da4917b9f9476cbf908f4b8c5c0c925f38c47101f907aa",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/verify-demo-bundle.mjs — witryna · scripts.md": "029e93c765149c67800184dd9f2006c80d4e3523e955baa20e78d0a328e1d534",
-    "Atlas/Struktura/patternly-web/scripts/_Pliki/verify-local.mjs — witryna · scripts.md": "6762377607aee81c7534e9040ca1cb83b1442c32bb77a7e45843a9dc96c922f9",
+    "Atlas/Struktura/patternly-web/scripts/_Pliki/verify-local.mjs — witryna · scripts.md": "f6d1a48ef334163f0daf89b5c52ef453da641c698544e1da0ca538e24cce3687",
     "Atlas/Struktura/patternly-web/scripts/_Pliki/verify-production.mjs — witryna · scripts.md": "14224109b217bd9ba53cf2660256a7b9020a01fd0f76649494e8058dbc08c1ca",
     "Atlas/Struktura/patternly-web/src/_Pliki/adminConfig.js — witryna · src.md": "873a322ea4b6a3430979f4e05f04be2645d2c7c2ae6dbf63429e703d83d54e83",
     "Atlas/Struktura/patternly-web/src/_Pliki/adminMain.jsx — witryna · src.md": "859c29e5e86b8215d3e6ebb3ec37ee6924b7bd80a44fdad9fa4b8da1b3d6f53e",
@@ -108483,7 +108580,7 @@
     "Atlas/Struktura/patternly-web/src/components/_Pliki/LegalRequestsPanel.jsx — witryna · src › components.md": "55ae6049eb430560ec46f8e68b2c8855abf5c92c1c471ad2ec15e002b7bd6fd9",
     "Atlas/Struktura/patternly-web/src/components/_Pliki/PrivacyRequestsPanel.jsx — witryna · src › components.md": "8bfcc9c373184ac4c70236d4fef92b17b43bf32adf478c938753dadd70e13b5e",
     "Atlas/Struktura/patternly-web/src/components/_Pliki/SecurityIncidentsPanel.jsx — witryna · src › components.md": "fb9ec5aabfebb893bc20efac6e1d27e2f3692c0491be30aa36c35a6f0b8f7cf6",
-    "Atlas/Struktura/patternly-web/src/generated/_Pliki/demoQuestions.json — witryna · src › generated.md": "f0626058dff80e5af84fa19635210e43298edc92351cfe83ffa1af10087859b1",
+    "Atlas/Struktura/patternly-web/src/generated/_Pliki/demoQuestions.json — witryna · src › generated.md": "ec5c96b32ad5c3f8f4e00f123a873fd808fed627e4a1a43e29ecb0d8b7899c2c",
     "Atlas/Struktura/patternly-web/src/hooks/_Pliki/useClientReady.js — witryna · src › hooks.md": "61d6b5408836453207203d6c75d80d440301dd4e4691ffcd0d6dab5d6dd82947",
     "Atlas/Struktura/patternly-web/src/hooks/_Pliki/useReveal.jsx — witryna · src › hooks.md": "3bc13041185bf9ae877571dfbdd0561446d0d6bbca8010ef95454c77dcc81ee9",
     "Atlas/Struktura/patternly-web/src/_Pliki/main.jsx — witryna · src.md": "259e377ac259e2cf0c3740b4fd8574b0c7068ec1f97345970ac60aa04d3e40e4",
@@ -108495,7 +108592,7 @@
     "Atlas/Struktura/patternly-web/src/_Pliki/publicLegalLocales.js — witryna · src.md": "69bdd8358e489baefef92a1fa7e702d71158cdeccb7c724e72301cfade58576c",
     "Atlas/Struktura/patternly-web/src/_Pliki/publicLegalMain.jsx — witryna · src.md": "1d2d9485306a2a73dff72e440b97c0c16dc1d5b6b0eac07ab7e48eb1d49ae2ce",
     "Atlas/Struktura/patternly-web/src/_Pliki/publicPages.js — witryna · src.md": "4dde9b8ef479b2ac6df6cfd4f4800265967065736eb1501949d8f126f396a35e",
-    "Atlas/Struktura/patternly-web/src/_Pliki/publicTrackPages.js — witryna · src.md": "eb8c0f7d95615eb9da2232ce7316694ae29edd556179375f32ac051ab030c505",
+    "Atlas/Struktura/patternly-web/src/_Pliki/publicTrackPages.js — witryna · src.md": "2fecfa313b1376ba7266a32082e543cdb59bf5237358ebfe0ce06141576c5e75",
     "Atlas/Struktura/patternly-web/_Pliki/styles.css — witryna.md": "a3fc3ad074807ccab22ca504a793009a6bf76f00f158580b856c77cd59836312",
     "Atlas/Struktura/patternly-web/_Pliki/vite.config.js — witryna.md": "a49a91f8648f89191810fcbf28efba270fb60258fbd2f9c7aaeea75f743d9c2e"
   }

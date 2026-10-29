@@ -1061,9 +1061,9 @@
       "flow": "Witryna, demo i panel"
     },
     "patternly-web/src/publicTrackPages.js": {
-      "description": "Redakcyjna treść trzech przewodników Coding, AWS i Claude przez wspólną projekcję stron. Claude opisuje metodę rozumowania i granicę proposed/executed action; bez importu banków, nowego demo lub deklaracji gotowości egzaminacyjnej.",
+      "description": "Redakcyjna treść czterech przewodników EN Coding, Backend System Design, AWS i Claude przez wspólną projekcję stron. Backend dodaje metodę wymagania/skala/granice/kompromisy oraz dwa warunkowe wybory w przykładzie rezerwacji; aktualne Free/Premium i prawdziwy katalogowy CTA. Bez importu banków, nowego demo lub gwarancji wyniku.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "c355799ca0843e5f0f956b1d208e155c8e9ade84f8c8f99f919ffd2864bc7490"
+      "reviewedHash": "f3a55352ee91b57fedf43c4df633cd0cc54ee1db26bb28bd0323b4da15bf6644"
     },
     "patternly-web/src/publicPages.js": {
       "description": "Wspólna projekcja publicznych URL dla prerenderu, metadanych i sitemap.",
@@ -1711,19 +1711,19 @@
       "reviewedHash": "695f2a0bf0ef6bcf650935ed142857fffaf84a99a4f3d93f859472d8f77a122b"
     },
     "patternly-backend/scripts/run-cost04-tests.mjs": {
-      "description": "Ograniczona seria COST-04: sprawdza jawny HEAD aplikacji przed startem, używa jednej instancji emulatorów demo/loopback i limitu180s+5s sprzątania. Bez deployu i ruchu chmurowego.",
+      "description": "Ograniczona lokalna seria COST-04: przed startem sprawdza jawny 40-hex HEAD APP (Git do 5 s). Node 22 uruchamia zachowany realAPP fetch test w jednym obserwowanym procesie: test do 15 s, child do 20 s/SIGKILL/kod124. Fixture demo i serwer IPv4 loopback; bez startu emulatorów, deployu i ruchu chmurowego.",
       "flow": "Konto, Gość i synchronizacja",
-      "reviewedHash": "459c9bc1652115d5dd77e806f577fb3a5b92d1c9cae334f0590e72be277f3656"
+      "reviewedHash": "174602476be191f2026269ab149e1e1323671b2ca560b791a32742b89288233b"
     },
     "patternly-backend/tests/cost04Local.emulator.test.mjs": {
-      "description": "Prawdziwy klient APP przez loopback HTTP otrzymuje12kontrolowanych429 (GET/POST, JSON/plain/empty/stalled, Retry-After), bez automatycznych retry; jeden jawny GET retry po1s. Dwa procesy testują produkcyjny transakcyjny limit Firestore:4próby/2allowed/2limited/count2. Nie mierzy autoskalowania, globalnego throttlingu ani pojemności Cloud Run.",
+      "description": "Prawdziwy adapter APP z wbudowanym fetch otrzymuje 12 kontrolowanych HTTP429 przez własny IPv4 loopback. Pięć scenariuszy body/Retry-After dla GET i POST, w tym stalled body z limitem150ms, bez automatycznych retry; caller wykonuje jeden jawny GET retry po1s. Finally zamyka połączenia i listener. Dawny test limitera Recovery Codes usunięty; bez SDK/emulatorów i bez pomiaru providera.",
       "flow": "Konto, Gość i synchronizacja",
-      "reviewedHash": "b213f976b7c9d09008034484e2d1409ee95144a88ee93387421b97d6a733bc3c"
+      "reviewedHash": "05f503216ca327735b693f126a406b8941348315443a8576bd8b67e29b7f72c8"
     },
     "patternly-backend/tests/cost04Deadline.test.mjs": {
-      "description": "Rzeczywisty lokalny probe procesu CLI i upartego potomka: termin3s, grupowy TERM/KILL, kod124, brak żywego potomka i usunięta konfiguracja. Fixture procesu nie jest testem awarii Java providera.",
+      "description": "Trzy lokalne przypadki: zachowany watchdog grupy fixture CLI (3s/TERM/KILL/124 i usunięcie konfiguracji); wrong APP pin odrzucony przed HTTP; actual COST04 entry watchdog20s/124 z potwierdzeniem nieistniejącego PID i zamkniętego listenera. Fixture nie uruchamia SDK/emulatorów i nie mierzy awarii providera.",
       "flow": "Konto, Gość i synchronizacja",
-      "reviewedHash": "6c80a8b13c85a6143520536824bfd7ed161de33eda089c4af2157673fb8f19b3"
+      "reviewedHash": "67d41d67c4ff2b6977ba02a90d04a704b23a2d0d0313f5353cbd3108a435d839"
     },
     "patternly-backend/scripts/qa/cost04/model.mjs": {
       "description": "Rozszerza przyjęty kalkulator COST-02 bez zmiany produktu.48wariantów sześciu profili: tylko completion reuse0/0,5/1, pełne initial sweeps, źródła COST-03, CPU/RAM/boost/concurrency, min0/min1 i jawny scenariusz całego lifetime instance billing. Osobno marginalny koszt, gotowość i niezweryfikowana arytmetyka slotów; czasy50/500/1000ms i szerokość okna są wrażliwością założeń.",
@@ -1756,9 +1756,9 @@
       "reviewedHash": "28f04c989cd50457fdc27502b8d24efd923d82f06d716f2321a3ecb7e05ee249"
     },
     "patternly-web/.github/workflows/verify.yml": {
-      "description": "Weryfikuje WEB przy Node22.22.3 z przypiętymi zgodnymi wejściami APP6b1c23a5/CONTENT5155229. Raportuje HEAD/status, uruchamia canonical check i regresje current-source przed buildem. Testowy legal i lokalne wyniki nie oznaczają zatwierdzenia publikacji lub synchronizacji bieżącego CONTENT.",
+      "description": "Workflow WEB z przypiętymi wejściami APP475b1e5/CONTENT718e4c1 zgodnymi z odświeżoną projekcją demo. Raportuje rzeczywisteSHA/status, wykonuje dotychczasowe canonical/build/legal/admin/demo gates; aktualizacja28.10 zmienia tylko2refs, bez uruchomieniaCI lub zmian uprawnień.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "74687300890a3914069bd58128a2fe0a3cf5cb4317dba6f3c52a55035dc60366"
+      "reviewedHash": "b8216a2453df9760681414e7da1ebd7a5b5f66778a0d0fd57ac0ee1eaf4b2e66"
     },
     "patternly-web/scripts/current-demo-contract.mjs": {
       "description": "Wspólny kontrakt verifiera i recordera: uruchamia rzeczywisty createPublicDemoCatalog producenta APP i porównuje pełny katalog z projekcją zwalidowanych bieżących źródeł, locków i puli Free. Dla obrazu odczytuje bank z historycznej rewizji APP wskazanej w manifeście, sprawdza jego SHA256 i pełną zgodność wybranego pytania z aktualnym źródłem CONTENT. Nie wymaga równości historycznego i bieżącego hasha całego banku.",
@@ -1781,9 +1781,9 @@
       "reviewedHash": "bc6cc20457d5fc278731ebac5aafebe28b157c7d101badab7b610c0e02f409a7"
     },
     "patternly-web/src/generated/demoQuestions.json": {
-      "description": "Wygenerowana przez APP projekcja kanonicznego producenta dla zainstalowanego pakietu APP: dwa interaktywne pytania z Details i trzy publicSamples, w tym próbka obrazowa bez payloadu pytania. Provenance wiąże przypięte źródła zgodne z zainstalowanym pakietem APP, artefakty i releaseLock; korekta22.10 zmienia tylko pięć releaseLockSha256. Bez pełnych banków lub ręcznego admission.",
+      "description": "Wygenerowana istniejącym exporterem APP projekcja current-source dla zainstalowanego pakietu: dwa interaktywne pytania z Details i trzy publicSamples, w tym obraz bez payloadu. Odświeżenie28.10 zmienia26pól metadata/provenance; payloady pytań i Details oraz capture pozostają identyczne. To lokalna pochodna, bez publikacji lub APP sync.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "3354d3d4b4718b2e3e46de026617bdb3de0c270afe6fadc61a111ea785fcc207"
+      "reviewedHash": "3accacf49916fe9cce6bf5b84804df27a3bbb9fb505c41e299710153ace7b903"
     },
     "patternly/scripts/runLocalProfile.mjs": {
       "description": "Przygotowuje bieżący bank i zwalidowany smoke/sandbox przed Expo. Android Local wiąże token, local native tree i dokładny serial; android-local-start uruchamia wyłącznie packager localhost8081 dla istniejącego APK. Sprawdza wszystkie konflikty czterech same-port reverse przed dodaniem brakujących. Rozróżnia pełne ready od dozwolonego smoke content-only503.",
@@ -1961,14 +1961,14 @@
       "reviewedHash": "8e932ed6681c14a8291dc6bc6679b235ef2e48ba0cd488b657e2cbdba37d6b3f"
     },
     "patternly-web/scripts/verify-local.mjs": {
-      "description": "Sprawdza render lokalnego testowego legal i metadata w wybranym testowym output albo domyślnym dist, w tym cztery marketingowe URL sitemap. Korzysta z istniejącego preview tego samego outputu; testowy legal nie oznacza zatwierdzenia źródła prawnego.",
+      "description": "Sprawdza render lokalnego testowego legal i metadata w wybranym testowym output albo domyślnym dist, w tym pięć marketingowych URL sitemap z Backend System Design. Korzysta z preview tego samego outputu; testowy legal nie oznacza zatwierdzenia źródła prawnego.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "e1d7a9b822cdb96c7c7b0fb3edc54e22470c66b18ab0c124567b95919d4dadf9"
+      "reviewedHash": "a05341dd28fb34f16738b015f89c198f5234fd55973ad423bb4b958201db6ced"
     },
     "patternly-web/scripts/seo-content.browser.test.mjs": {
-      "description": "Testy rzeczywistej przeglądarki: crawl publicznych stron, trzy przewodniki, metadata, noJS, locale i brak błędów przy wybranym testowym output. Osobno sprawdzają odmowę ośmiu niebezpiecznych wariantów ścieżki output. Liczba zadeklarowanych przypadków nie jest dowodem ich wykonania.",
+      "description": "Sprawdza projekcję5marketing/19fixturestron, osiem odmów niebezpiecznego output oraz statyczne odpowiedziHTTP: SSR/metadata/locale/canonical/OG/sitemap/linki/kotwice bez przeglądarki. Osobny test Opera zachowuje crawl/noJS/JS/locale/responsive i granice czterech guide, w tym prawdziwe BackendCTA/Free/Premium/brakdemo. Zadeklarowany test nie jest dowodem wykonania Opery.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "9a3c6ddd79b2da2393098708e1879e47679c934d098fea7118c592cdd9eebf09"
+      "reviewedHash": "9dd5c3269a39d3b08d2a3f578419ca305ea1efd693d273d1031e9e1a4e8dccaf"
     },
     "patternly-backend/scripts/qa/sync-conflict-client.test.mjs": {
       "description": "Dedykowane testy kontraktu synchronizacji: rzeczywisty store/HTTP/adapter, oddzielny jawnie wstrzykiwany błąd klasyfikacji oraz pary celu/planu przez aktywowany profil Memory. Deklarują jawny wybór całej pary, legalne dwa tombstones i lokalne usunięcie, zachowanie niezależnego outbox/ACK oraz retry identycznego batcha po rzeczywistym timeout odpowiedzi po zapisie. Lista przypadków nie jest wynikiem ich wykonania lub dowodem native.",
@@ -2521,7 +2521,7 @@
     },
     "patternly/src/locales/de/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "10c199ffb6837155ceaf2413819e44cb3b4d5e19f69ff50c1165a6594d0ced00"
+      "reviewedHash": "e04ffbb9b6ddd7bc4a34f0d852c051a0a104bfffe4082938d3645b1645fe8622"
     },
     "patternly/src/locales/en/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
@@ -2529,19 +2529,19 @@
     },
     "patternly/src/locales/es/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "ee5129296aa795ad917a555e1716b938c79d93519c725fe884d5428b9f44f2f3"
+      "reviewedHash": "7367a29e341a57c0c561d45dc239e9f31862490289b542e6a8b829f9c9766136"
     },
     "patternly/src/locales/et/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "164aa81a407028ec2eec3f496dc247cb6d0c42e650170ea833f5f5b3adc03682"
+      "reviewedHash": "cbdb45bf94757d0fdc6504c3ca7009f2901ffd15b07b4a3a8e1e1486b4dc46af"
     },
     "patternly/src/locales/fr/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "b3de74424e22fa90a642a712f48a5b9142028d003c0b5c24ca2b5b3fa0681438"
+      "reviewedHash": "9233c982b28b46bc667617a4a9f53690e08162ce08bb689d9407b8e1502e5135"
     },
     "patternly/src/locales/it/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "1940571df3442207fb252dacc17260fe23eafef500948a25f0b33ce91f381d82"
+      "reviewedHash": "a8753bcac1dc2ef891f09bd4c7671c8709df96f01177a84cadc5c880d4187d1c"
     },
     "patternly/src/locales/pl/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
@@ -2668,6 +2668,65 @@
       "reviewedHash": "f0ea5d2ebd6413ea4ca88de81e6ea5aa08f6e6e7884b3eac5de06cb2262c1aef",
       "description": "Pakuje wyłącznie istniejące frozen cells, capture receipts i zamrożony niezależny ledger. Sprawdza hashe/wiązania,588base/112subvariantrows/644bindings/616primarypaths. Zachowuje dosłowne qualified review verdicts i F03notes; nie nadaje nowych visual PASS i nie dotyka urządzenia lub domeny. Wejścia/wyjścia ograniczone do private evidence.",
       "flow": "Start aplikacji i nawigacja"
+    },
+    "patternly-content/scripts/content/measure-build-all-preflight.mjs": {
+      "description": "Lokalny pomiar PAT-OPT-008.1: pojedyncze buildAll dziewięciu bieżących banków w świeżym procesie i nowym outputRoot. Tryb control uruchamia niezmieniony builder; instrument dodaje w pamięci modułu Node liczniki i inclusive wall time wspólnego preflightu, bindingów oraz walidacji tracków. Sprawdza fingerprint wejść przed/po, dokładny spis wyjść i SHA artefaktów względem locka; zachowuje prywatny sample oraz transformację.",
+      "notes": "Nie optymalizuje buildera ani nie dowodzi przyspieszenia. Czasy zagnieżdżone nie są addytywne; cache OS i obce obciążenie nie są kontrolowane. Wyniki/reporty pozostają we wskazanym ignorowanym katalogu .local, bez synchronizacji APP lub publikacji.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "1fdb869e85642df53df6642ff8b32acb25df740474b5605f226863dbd2d76c6e"
+    },
+    "patternly/scripts/qa/learningPlan8e2FrozenOracle.py": {
+      "description": "Niezależny oracle8E.2 dla zamrożonego handoffu AWS N01–N03: standardowa biblioteka Python liczy lokalne daty i nominalne minuty oraz warunkowy koszt autorskiego Focus10. Sprawdza scope/anchor/tożsamość treści. Nie importuje generatora, nie czyta profilu i nie tworzy runtime fixture; brak snapshotu pozostawia koszt pełnego celu, due actual i shortfall jako unknown.",
+      "reviewedHash": "73079a2baed7115abbbda7bdb500572f2a883bcf9059a7440ff7f44321685420"
+    },
+    "patternly/scripts/qa/learningPlan8e2TargetProjection.mjs": {
+      "description": "Wąskie porównanie8E.2: po sprawdzeniu hash zamrożonego niezależnego oracle wywołuje wyłącznie projectGoalTargetDate dla pól handoffu i porównuje deadline/inclusive. Nie tworzy propozycji ani zapisów profilu. PASS dotyczy tylko tej projekcji daty; generator, kalendarz, koszt i N01–N03 pozostają niewykonane.",
+      "reviewedHash": "df5ba29d79cf642da2ddc5fe0c54504e5c923c8041a5a9bb5d5cb0dd860bb7f9"
+    },
+    "patternly/config/public-legal.release.json": {
+      "description": "Jedno źródło publicznych danych prawnych siedmiu locale. Zakres Premium opisuje pierwszy kompletny węzeł Free każdej ścieżki, pozostałe węzły i trzy symulacje Premium oraz warunek wcześniejszej nauki dla review. Android pozostaje UNAPPROVED/null, checkout wyłączony; wartości i wersja nie stanowią odbioru faktów sklepu ani prawa.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "dafa887007b567880947055a8d3d8e333eba44410a1c04c7ecae49e2408931c1"
+    },
+    "patternly/src/legal/termsOfService.ts": {
+      "description": "Renderuje EN/PL z przekazanych zmiennych. Sekcja oferty interpoluje kanoniczne premiumServiceScope obok zamiaru miesięcznej subskrypcji bez triala i jawnie wyłączonych zakupów; źródło określa zakres, nie szablon. Nie nadaje approval ani dostępności oferty.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "96b7379fddb053ba9e9666f3684caeab2f681a748168f7178fb2119275277bef"
+    },
+    "patternly/src/legal/legalVariablesLocalFixture.ts": {
+      "description": "Istniejący niekanoniczny fixture EN/PL dla smoke/sandbox i testów. Dwa teksty premiumServiceScope odpowiadają potwierdzonemu produktowi Free/Premium; fixture pozostaje odrębny od źródła wydaniowego i nie zatwierdza go.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "53a6f3acbee847db8220a7ad198b1c1b7a043148ca77bacd9ef36519ac1c2782"
+    },
+    "patternly/scripts/prepareLegalReview.test.mjs": {
+      "description": "Testuje prywatny renderer i granice zapisu. Regresja Q04 sprawdza siedem tekstów Free/Premium/review oraz ich obecność w rzeczywistym renderze regulaminu, wykrywając zarówno stary opis, jak i nieużywane pole. Wynik testu nie oznacza R01 ani odbioru tłumaczeń prawnych.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "5564a7402960f26dd17ffb2b89977eec14f691176226cee6e6521ad230bdc0f8"
+    },
+    "patternly/src/legal/legalTranslationDrafts.de.testOnly.ts": {
+      "description": "Szablony draftów prawnych DE. Sekcja oferty regulaminu interpoluje istniejące terms.premiumServiceScope z jednego źródła, bez własnej kopii zakresu Free/Premium. Pozostałe sekcje i struktura bez zmiany; użycie produkcyjne wymaga osobnego exact approval.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "951b2a29e0949b41a510bc009658124730f9ae8cb5376468c1485ca55a785998"
+    },
+    "patternly/src/legal/legalTranslationDrafts.fr.testOnly.ts": {
+      "description": "Szablony draftów prawnych FR. Sekcja oferty regulaminu interpoluje istniejące terms.premiumServiceScope z jednego źródła, bez własnej kopii zakresu Free/Premium. Pozostałe sekcje i struktura bez zmiany; użycie produkcyjne wymaga osobnego exact approval.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "6a58553a4e8f690afe3cc8da28701510cb85fd6e6e5004f58cada889f51a4404"
+    },
+    "patternly/src/legal/legalTranslationDrafts.es.testOnly.ts": {
+      "description": "Szablony draftów prawnych ES. Sekcja oferty regulaminu interpoluje istniejące terms.premiumServiceScope z jednego źródła, bez własnej kopii zakresu Free/Premium. Pozostałe sekcje i struktura bez zmiany; użycie produkcyjne wymaga osobnego exact approval.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "94589c22a92deced7ada49bd878ada3b85d4e086d45f9cdcb2ecdcf74f1352c1"
+    },
+    "patternly/src/legal/legalTranslationDrafts.it.testOnly.ts": {
+      "description": "Szablony draftów prawnych IT. Sekcja oferty regulaminu interpoluje istniejące terms.premiumServiceScope z jednego źródła, bez własnej kopii zakresu Free/Premium. Pozostałe sekcje i struktura bez zmiany; użycie produkcyjne wymaga osobnego exact approval.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "53a435dbf7f44413986048f4b54a267df64a15d2c823d9af3b39ccf33a116376"
+    },
+    "patternly/src/legal/legalTranslationDrafts.et.testOnly.ts": {
+      "description": "Szablony draftów prawnych ET. Sekcja oferty regulaminu interpoluje istniejące terms.premiumServiceScope z jednego źródła, bez własnej kopii zakresu Free/Premium. Pozostałe sekcje i struktura bez zmiany; użycie produkcyjne wymaga osobnego exact approval.",
+      "flow": "Witryna, demo i panel",
+      "reviewedHash": "e4e8653bad55d74a2a10efaba4187ea44f7ecaccbe3b4a83cf710046df01c31e"
     }
   },
   "flows": [
@@ -2692,7 +2751,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "803b25f20e19975261f54c97af4cb962ef2609ee645464f6e7d048c193abd1c6"
+      "reviewedDigest": "68988146cbc2347158d8c40a5824de59dea17f5ecc0b498e2afa27a6ec05ed22"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -2704,7 +2763,7 @@
         "patternly/scripts/syncBundledContentRelease",
         "patternly/scripts/releaseManifest.test.mjs"
       ],
-      "reviewedDigest": "9d87da656f692b46b88b81c62e4e7a1a3dc37af656f29f01691c581b95046fd0"
+      "reviewedDigest": "6a65344b1e299f75dbfb5d7a68278b9d15b4f329fb534cfef4e64524f797208b"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -2765,7 +2824,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "879c34fdb5d78dec1786d6d0f9156b3f44ab9dfdf1a2f6fb82cb7cebf1a21915"
+      "reviewedDigest": "333af70967ec667820d65ce8f652f8d9acd09279938d27f39cc5a117a89b7c28"
     },
     {
       "name": "Premium i zakup",
@@ -2789,7 +2848,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "5a1a01fd09efeb446351717bd73cf5669ad2cb7148ced2e0d9bb43f482cc9886"
+      "reviewedDigest": "178774e111f08c7f9388e05062c5c4fa03676c7c29c5d330fe77370ad7544c28"
     },
     {
       "name": "Witryna, demo i panel",
@@ -2798,7 +2857,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "9558a8bd0f87adb147f929b656e13c805e883c6ace241e3dbf3be56d9f6f1842"
+      "reviewedDigest": "7a81f25bc51a8f66e9160c750b3c52061c16959428b391366fd6cbd0e8c64b4a"
     }
   ]
 }

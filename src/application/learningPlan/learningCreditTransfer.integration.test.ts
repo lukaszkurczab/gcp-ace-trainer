@@ -28,11 +28,16 @@ async function owner() {
   return instance;
 }
 
-test("production discovery transfers identical retained credit and unchanged chapter completion without rewriting persisted attempts", async () => {
+test("production discovery transfers retained unit credit and unchanged chapter completion without rewriting persisted attempts", async () => {
   const storage = installMemoryStorage();
   const instance = await owner();
   // Discovery alone must prepare credit; opening historical content first is unnecessary.
   const current = await instance.resolveForDiscovery(TRACK,"certification");
+  const source = current.track.completionSources?.find(candidate => candidate.trackId === pin.trackId &&
+    candidate.contentVersion === pin.contentVersion && candidate.artifactSha256 === pin.artifactSha256);
+  assert.ok(source, "discovery admits the exact retained completion source before historical resolution");
+  assert.deepEqual(source.completionRule, retained.artifact.completionRule);
+  assert.notEqual(current.track.artifactSha256, pin.artifactSha256);
   const old = await instance.resolveExactArtifact(pin);
   assert.equal(current.track.completionRule?.ruleVersion,3);
   const rule = current.track.completionRule!;
@@ -42,14 +47,34 @@ test("production discovery transfers identical retained credit and unchanged cha
   let serial=0;
   const attempts: TrainingAttempt<unknown>[] = [];
   for(const chapter of chapters) {
-    const selected = chapter.units.flatMap(unit=>retained.artifact.questions.filter((q:Question)=>q.nodeId === chapter.nodeId && q.mentalUnitId === unit.mentalUnitId && canonicalSerialize(q) === canonicalSerialize(rawById.get(q.questionId))).slice(0,4));
+    assert.deepEqual(old.track.completionRule?.chapters.find(candidate => candidate.nodeId === chapter.nodeId), chapter,
+      "retained and current chapter rules, unit inventory and coverage requirements are unchanged");
+    // Saved node/unit attribution transfers credit; editorial payload equality is not its contract.
+    const selected = chapter.units.flatMap(unit => {
+      const questions = (retained.artifact.questions as Question[]).filter(question =>
+        question.nodeId === chapter.nodeId && question.mentalUnitId === unit.mentalUnitId).slice(0,4);
+      assert.equal(questions.length, unit.requiredCorrectQuestionCount, `retained coverage for ${unit.mentalUnitId}`);
+      assert.equal(new Set(questions.map(question => question.questionId)).size, unit.requiredCorrectQuestionCount);
+      for (const question of questions) {
+        const identity = { nodeId: chapter.nodeId, mentalUnitId: unit.mentalUnitId };
+        assert.deepEqual(source.getQuestion(question.questionId), identity);
+        const exact = old.track.getQuestion(question.questionId);
+        assert.ok(exact);
+        assert.deepEqual({ nodeId: exact.nodeId, mentalUnitId: exact.mentalUnitId }, identity);
+      }
+      return questions;
+    });
     assert.equal(selected.length,chapter.units.length*4);
+    assert.equal(new Set(selected.map(question => question.questionId)).size, selected.length);
+    assert.ok(selected.some(question => canonicalSerialize(question) !== canonicalSerialize(rawById.get(question.questionId))),
+      "the fixture exercises historical credit across changed content without claiming question equivalence");
     for(let index=0;index<chapter.minimumAttemptCount;index++) {
-      const question:Question = selected[index%selected.length];
+      const question:Question = selected[index%selected.length]!;
       const item={...pin,questionId:question.questionId};
       const instant=new Date(Date.UTC(2026,9,1,0,0,serial)).toISOString();
       const evaluation=old.presentation.evaluate(question.questionId,question.answer);
       assert.ok(evaluation.result);
+      assert.equal(evaluation.result.kind,"correct","the admitted historical grader supplies the recorded result");
       const attempt=createTrainingAttempt({id:`credit-${serial}`,sessionId:"retained-credit-fixture",trackId:TRACK,modeId:"certification-focus-practice",occurrenceId:`credit-occurrence-${serial++}`,item,response:question.answer,result:evaluation.result,reviewEvidence:{sourceItem:item,taxonomyOrSkillRefs:[{axisId:"node",nodeId:question.nodeId,role:"primary"},{axisId:"mental_unit",nodeId:question.mentalUnitId,role:"primary"}]},answeredAt:instant,committedAt:instant});
       attempts.push(attempt);
       await addTrainingAttempt(attempt,admission);
@@ -57,21 +82,46 @@ test("production discovery transfers identical retained credit and unchanged cha
   }
   const before=storage.snapshot();
   const persisted=(await getTrainingAttempts(admission)).value;
+  // Storage is JSON-backed and reads newest first; compare its durable fields by record identity.
+  const byId = (records: readonly TrainingAttempt<unknown>[]) => [...records].sort((left,right) => left.id.localeCompare(right.id));
+  assert.deepEqual(byId(persisted),byId(JSON.parse(JSON.stringify(attempts))),
+    "persistence preserves every submitted durable historical field, result and pin");
   const evidence=projectLearningEvidence({profile:current.track,attempts:persisted,reviews:[],now:NOW});
+  const historical=projectLearningEvidence({profile:old.track,attempts:persisted,reviews:[],now:NOW});
   assert.equal(evidence.activityAttempts.length,attempts.length,"historical activity retains its original pin");
   assert.equal(evidence.attempts.length,attempts.length);
   assert.deepEqual(evidence.attempts,persisted,"credited records retain every historical field");
   assert.notEqual(evidence.completion.kind,"unknown");
   if(evidence.completion.kind === "unknown") throw Error("admitted retained credit is available");
+  assert.notEqual(historical.completion.kind,"unknown");
+  if(historical.completion.kind === "unknown") throw Error("the historical completion baseline is available");
   for(const chapter of chapters) {
     const chapterStatus: ChapterCompletionStatus=evidence.completion.chapters.find(c=>c.nodeId === chapter.nodeId)!;
     assert.equal(chapterStatus.status,"completed"); assert.equal(chapterStatus.coverageDeficit,0);
     assert.equal(chapterStatus.qualifyingAttemptCount,chapter.minimumAttemptCount);
     assert.equal(chapterStatus.quality,1);
+    assert.equal(chapterStatus.completionSource?.contentVersion,pin.contentVersion);
+    assert.equal(chapterStatus.completionSource?.artifactSha256,pin.artifactSha256);
+    assert.deepEqual(chapterStatus,historical.completion.chapters.find(candidate => candidate.nodeId === chapter.nodeId),
+      "discovery preserves the historical completed chapter and its provenance");
   }
-  const partial=projectLearningEvidence({profile:current.track,attempts:persisted.slice(0,10),reviews:[],now:NOW});
+  const partialAttempts=persisted.filter(attempt => attempt.reviewEvidence.taxonomyOrSkillRefs.some(ref =>
+    ref.axisId === "node" && ref.nodeId === chapters[0]!.nodeId)).sort((left,right) => left.answeredAt.localeCompare(right.answeredAt)).slice(0,10);
+  assert.equal(partialAttempts.length,10);
+  const partial=projectLearningEvidence({profile:{...current.track,completionSources:[]},attempts:partialAttempts,reviews:[],now:NOW});
   assert.equal(partial.completion.kind,"in_progress");
   assert.equal(partial.completion.qualifyingAttemptCount,10);
+  assert.deepEqual(partial.attempts,partialAttempts,"saved unit progress transfers without a historical milestone source");
+  assert.equal(partial.completion.chapters.find(chapter => chapter.nodeId === chapters[0]!.nodeId)?.coverageDeficit,
+    chapters[0]!.units.length*4-10,"ten distinct correct questions reduce current unit coverage deficits");
+  // Legacy node-only records require the exact source prepared by discovery, never a successor lookup.
+  const legacy=partialAttempts.map(attempt => ({...attempt,reviewEvidence:{...attempt.reviewEvidence,
+    taxonomyOrSkillRefs:attempt.reviewEvidence.taxonomyOrSkillRefs.filter(ref => ref.axisId !== "mental_unit")}}));
+  const legacyEvidence=projectLearningEvidence({profile:current.track,attempts:legacy,reviews:[],now:NOW});
+  assert.deepEqual(legacyEvidence.attempts,legacy,"discovery alone supplies exact legacy credit");
+  const unavailable=projectLearningEvidence({profile:{...current.track,completionSources:[]},attempts:legacy,reviews:[],now:NOW});
+  assert.deepEqual(unavailable.attempts,[],"legacy credit cannot bypass exact retained admission");
+  assert.equal(unavailable.completion.kind,"unknown");
   const practice=current.track.getMode("certification-focus-practice");
   const workload=projectFullGoalWorkload({track:current.track,policy:current.planningPolicy,planningPolicyIdentity:current.planningPolicyIdentity,completion:evidence.completion,sessions:[],attempts:evidence.attempts,reviews:[],practiceMode:practice});
   for(const chapter of chapters) assert.equal(workload.chapters.find(c=>c.nodeId === chapter.nodeId)!.requiredResponses,0);
