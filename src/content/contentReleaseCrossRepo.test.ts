@@ -7,6 +7,8 @@ import { tmpdir } from "node:os";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { loadCanonicalRuntimeCatalog } from "./canonical";
+import { isFreeApproachChallengeProblem, selectApproachChallengeProblems } from "../application/coding-interview/approachChallengeSelection";
+import type { ApproachChallengeProblem } from "./canonical/approachChallengeProblem";
 
 type CurrentProducerBuilder = Readonly<{
   buildAll(options: Readonly<{ rootDirectory: string; outputRoot: string }>): Promise<Readonly<{
@@ -16,6 +18,8 @@ type CurrentProducerBuilder = Readonly<{
         contentVersion: string;
         planningPolicy?: { policyVersion: string };
         questions: readonly { trackId: string; nodeId: string; mentalUnitId: string; questionId: string }[];
+        simulationProfiles?: readonly { familyConfig?: { eligibleQuestionIds?: readonly string[] } }[];
+        approachChallengeProblems?: readonly ApproachChallengeProblem[];
       };
     }[];
     lock: Readonly<{ tracks: readonly Readonly<{ trackId: string; contentVersion: string; questionCount: number; sha256: string }>[] }>;
@@ -71,6 +75,36 @@ test("current producer builds independently and matches every installed APP arti
     const builder = await import(pathToFileURL(join(currentContentRoot, "scripts/build.mjs")).href) as unknown as CurrentProducerBuilder;
     const built = await builder.buildAll({ rootDirectory: currentContentRoot, outputRoot });
     const catalog = await loadCanonicalRuntimeCatalog();
+    const sourceCoding = built.artifacts.find((entry) => entry.trackId === "coding-interview-dsa-problem-solving")!.artifact;
+    const runtimeCoding = catalog.getTrack("coding-interview-dsa-problem-solving");
+    const pairedProblems = sourceCoding.approachChallengeProblems ?? [];
+    assert.equal(sourceCoding.questions.length, 3404);
+    assert.equal(sourceCoding.simulationProfiles?.[0]?.familyConfig?.eligibleQuestionIds?.length, 40);
+    assert.ok(sourceCoding.simulationProfiles?.[0]?.familyConfig?.eligibleQuestionIds?.every((id) => sourceCoding.questions.some((question) => question.questionId === id)));
+    assert.equal(pairedProblems.length, 36);
+    assert.equal(runtimeCoding.questions.length, 3404);
+    assert.equal(runtimeCoding.approachChallengeProblems?.length, 36);
+    const familyIds = [...new Set(pairedProblems.flatMap((problem) => problem.requiredFamilyIds))];
+    const sources = (problems: typeof pairedProblems) => problems.map((problem) => ({ problem }));
+    const selectorBase = {
+      contentVersion: runtimeCoding.contentVersion,
+      artifactSha256: runtimeCoding.artifactSha256,
+      completion: { kind: "unknown" } as const,
+      settings: { mode: "manual" as const, selectedFamilyIds: familyIds, requestedProblemCount: 20 as const, difficulties: ["easy", "medium", "hard"] as const },
+    };
+    const freeSelection = selectApproachChallengeProblems({ ...selectorBase, sources: sources(pairedProblems), access: "free" });
+    assert.equal(freeSelection.problems.length, 6);
+    assert.ok(freeSelection.problems.every(({ problemId }) => isFreeApproachChallengeProblem(pairedProblems.find((problem) => problem.problemId === problemId)!)));
+    const premiumProblems = pairedProblems.filter((problem) => !isFreeApproachChallengeProblem(problem));
+    assert.equal(premiumProblems.length, 30);
+    const selectedPremiumIds = new Set<string>();
+    for (let offset = 0; offset < premiumProblems.length; offset += 20) {
+      const selection = selectApproachChallengeProblems({ ...selectorBase, sources: sources(premiumProblems.slice(offset, offset + 20)), access: "premium" });
+      assert.equal(selection.diagnostics.invalidCandidateCount, 0);
+      assert.deepEqual(selection.diagnostics.missingFamilyMappings, []);
+      for (const { problemId } of selection.problems) selectedPremiumIds.add(problemId);
+    }
+    assert.equal(selectedPremiumIds.size, 30, "the real Premium selector admits every accepted Premium pair across supported batch sizes");
     const generatedLock = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-lock.json"), "utf8")) as { schemaVersion: string; tracks: readonly { trackId: string; sha256: string; contentVersion: string; questionCount: number }[] };
     assert.equal(generatedLock.schemaVersion, "patternly-content-lock-v1");
     assert.deepEqual([...catalog.tracks].sort(), [...built.lock.tracks.map((track) => track.trackId)].sort());
@@ -110,7 +144,7 @@ test("current canonical producer and installed APP preserve exact training proje
         mentalUnits.add(`${question.trackId}\0${question.nodeId}\0${question.mentalUnitId}`);
       }
     }
-    assert.deepEqual({ tracks: built.artifacts.length, nodes: nodes.size, mentalUnits: mentalUnits.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 958, questions: 16_749 });
+    assert.deepEqual({ tracks: built.artifacts.length, nodes: nodes.size, mentalUnits: mentalUnits.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 958, questions: 16_759 });
 
     const aws = built.artifacts.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate")!.artifact;
     const successorLedger = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-successor-ledger.json"), "utf8")) as {

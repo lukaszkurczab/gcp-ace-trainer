@@ -65,6 +65,29 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and exa
   assert.equal(catalog.getTrack("aws-certified-solutions-architect-associate").simulationProfiles, undefined);
 });
 
+test("bank-only wording mutation changes the raw artifact pin and preserves ordinary training identity", () => {
+  const mutated = structuredClone(coding) as typeof coding & { approachChallengeProblems: Array<{ problemId: string; problemVersion: string; approachQuestion: { prompt: string } }> };
+  const first = mutated.approachChallengeProblems.find(({ problemId }) => problemId === "acm-b01-01");
+  assert.ok(first);
+  const before = { problemId: first.problemId, problemVersion: first.problemVersion };
+  first.approachQuestion.prompt += " [deterministic pin mutation]";
+  assert.deepEqual({ problemId: first.problemId, problemVersion: first.problemVersion }, before);
+  const rawHash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+  assert.notEqual(rawHash(mutated), rawHash(coding), "the exact raw ACM artifact pin changes when bank wording changes");
+  const ledger = successorLedger.tracks.find(({ trackId }) => trackId === coding.trackId);
+  assert.ok(ledger);
+  const predecessorProjection = (value: typeof mutated) => {
+    const result = structuredClone(value) as Record<string, unknown>;
+    delete result.planningPolicy;
+    delete result.approachChallengeProblems;
+    result.schemaVersion = "patternly-content-artifact-v1";
+    result.contentVersion = ledger.training.contentVersion;
+    return result;
+  };
+  assert.equal(rawHash(predecessorProjection(mutated)), ledger.training.artifactSha256);
+  assert.equal(rawHash(predecessorProjection(mutated)), rawHash(predecessorProjection(coding)), "ordinary training identity remains unchanged by an ACM-only wording edit");
+});
+
 test("all nine predecessor projections preserve exact deep-copy bytes and leave source JSON unchanged", async () => {
   const sources = [aws, backend, claude, coding, frontend, gcp, az104, ai901, objectDesign];
   const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value), "utf8").digest("hex");
@@ -83,9 +106,13 @@ test("all nine predecessor projections preserve exact deep-copy bytes and leave 
         // Independent reference for the old algorithm; production only edits the root.
         const reference = structuredClone(source) as unknown as Record<string, unknown>;
         delete reference.planningPolicy;
+        delete reference.approachChallengeProblems;
         reference.schemaVersion = "patternly-content-artifact-v1";
         reference.contentVersion = entry.training.contentVersion;
         assert.equal(serialized, JSON.stringify(reference));
+        if (source.trackId === "coding-interview-dsa-problem-solving") {
+          assert.equal(Object.hasOwn(reference, "approachChallengeProblems"), false, "paired tasks are not part of the historical ordinary-training projection");
+        }
         reconstructed.push(input.trackId);
       } else {
         assert.equal(serialized, JSON.stringify(source));
@@ -94,6 +121,7 @@ test("all nine predecessor projections preserve exact deep-copy bytes and leave 
     },
   });
   assert.deepEqual(reconstructed, sources.map((source) => source.trackId));
+  assert.equal(catalog.getTrack("coding-interview-dsa-problem-solving").approachChallengeProblems?.length, 36, "the active runtime retains the paired bank while its training predecessor omits it");
   for (const [index, source] of sources.entries()) {
     assert.equal(fingerprint(source), before[index]!.root);
     assert.equal(source.questions, before[index]!.questions);

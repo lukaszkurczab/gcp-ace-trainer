@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { loadActivityRecords, loadActivitySessionRecords, createActivityReadOwner, type ActivitySessionRecord } from "./activityReadModels";
+import { loadActivityRecords, loadActivitySessionRecords, createActivityReadOwner, projectWeeklyAnsweredActivity, projectWeeklySessionActivity, type ActivitySessionRecord } from "./activityReadModels";
 import { StorageReadError, CorruptStoredRecordError } from "../storage/errors";
 import { addTrainingAttempt, saveTrainingSession } from "../storage/repositories";
 import { createContentIdentityArchivalHistoryRecord } from "../storage/repositories/contentIdentityUnavailableRepository";
@@ -13,10 +13,10 @@ import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext"
 beforeEach(() => installMemoryStorage());
 
 test("Activity read model keeps terminal history semantics and includes completed sessions without answers", async () => {
-  const active = session("active", "active");
-  const completedWithoutAnswers = session("completed", "completed-without-answers");
-  const abandonedWithoutAnswers = session("abandoned", "abandoned-without-answers");
-  const { completedAt: _completedAt, ...abandonedWithAttempt } = session("abandoned", "abandoned-with-attempt");
+  const active = legacySessionForTest("active", "active");
+  const completedWithoutAnswers = legacySessionForTest("completed", "completed-without-answers");
+  const abandonedWithoutAnswers = legacySessionForTest("abandoned", "abandoned-without-answers");
+  const { completedAt: _completedAt, ...abandonedWithAttempt } = legacySessionForTest("abandoned", "abandoned-with-attempt");
 
   await saveTrainingSession(active, productionTrackAdmissionContext);
   await addTrainingAttempt(attempt("attempt-for-active", active.id), productionTrackAdmissionContext);
@@ -35,7 +35,7 @@ test("Activity read model keeps terminal history semantics and includes complete
 });
 
 test("Activity read model surfaces a corrupt canonical result instead of presenting an empty history", async () => {
-  const completed = session("completed", "completed-with-corrupt-result");
+  const completed = legacySessionForTest("completed", "completed-with-corrupt-result");
   const storage = installMemoryStorage();
   await saveTrainingSession(completed, productionTrackAdmissionContext);
   storage.setString(STORAGE_KEYS.trainingSessionResult(completed.id), "{");
@@ -59,7 +59,7 @@ test("Activity read model treats repository issues as an explicit storage failur
 });
 
 test("Activity read model reuses the caller's attempts read when supplied", async () => {
-  const completed = session("completed", "activity-attempt-read-reuse");
+  const completed = legacySessionForTest("completed", "activity-attempt-read-reuse");
   let attemptsReads = 0;
 
   const records = await loadActivitySessionRecords({
@@ -74,6 +74,20 @@ test("Activity read model reuses the caller's attempts read when supplied", asyn
   assert.equal(attemptsReads, 1);
   assert.equal(records[0]?.session.id, completed.id);
   assert.equal(records[0]?.attemptCount, 0);
+});
+
+test("weekly legacy activity excludes approach-challenge and unknown Coding modes", () => {
+  const legacyAttempt = { ...attempt("legacy-weekly", "legacy-session"), modeId: "coding-interview-guided-practice" };
+  const approachAttempt = { ...legacyAttempt, id: "approach-weekly", modeId: "coding-interview-approach-challenge" };
+  const unknownAttempt = { ...legacyAttempt, id: "unknown-weekly", modeId: "coding-interview-unregistered-mode" };
+  const activityContext = { trackId: legacyAttempt.trackId, now: "2026-07-15T12:00:00.000Z", timezone: "Europe/Warsaw" };
+  assert.deepEqual(projectWeeklyAnsweredActivity([legacyAttempt], activityContext), projectWeeklyAnsweredActivity([legacyAttempt, approachAttempt, unknownAttempt], activityContext));
+
+  const legacySession = legacySessionForTest("completed", "legacy-weekly-session");
+  const specialSession = { ...legacySession, id: "approach-weekly-session", modeId: "coding-interview-approach-challenge" };
+  const unknownSession = { ...legacySession, id: "unknown-weekly-session", modeId: "coding-interview-unregistered-mode" };
+  const records = [legacySession, specialSession, unknownSession].map((value) => ({ session: value, attemptCount: 0, latestAttemptAt: null, result: null, scopeRefs: [] }));
+  assert.deepEqual(projectWeeklySessionActivity([records[0]!], activityContext), projectWeeklySessionActivity(records, activityContext));
 });
 
 test("Activity full history keeps unavailable sessions as immutable summaries", async () => {
@@ -177,4 +191,8 @@ function deferred<T>() {
     reject = rejectPromise;
   });
   return { promise, reject, resolve };
+}
+
+function legacySessionForTest(status: Parameters<typeof session>[0], id: string): ReturnType<typeof session> {
+  return { ...session(status, id), modeId: "coding-interview-guided-practice" };
 }

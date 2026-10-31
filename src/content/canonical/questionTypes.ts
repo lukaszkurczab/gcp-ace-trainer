@@ -7,6 +7,7 @@ import type { ComplexityQuestion } from "./interactions/complexity";
 import type { DecisionMatrixQuestion } from "./interactions/decisionMatrix";
 export type { CanonicalDimension, CanonicalQuestionRelation, CanonicalExamMetadata, CanonicalStatementReviewRow, JsonValue, CanonicalFeedback, CanonicalFeedbackMessage, CanonicalCourseSource, CanonicalOption, CanonicalElement, CanonicalValue, CanonicalComplexityDimension } from "./interactions/shared";
 export type { ChoiceSingleQuestion, ChoiceSingleResponse } from "./interactions/choiceSingle";
+export type { ApproachChoiceQuestion, ApproachChoiceResponse, ApproachChoiceGrade, ApproachChoiceOption } from "./interactions/approachChoice";
 export type { ChoiceMultipleQuestion, ChoiceMultipleResponse } from "./interactions/choiceMultiple";
 export type { OrderingQuestion, OrderingResponse } from "./interactions/ordering";
 export type { ComplexityQuestion, ComplexityResponse } from "./interactions/complexity";
@@ -14,6 +15,7 @@ export type { DecisionMatrixQuestion, DecisionMatrixResponse } from "./interacti
 
 /** Compatibility view only. Runtime behavior is owned by the registered vertical interaction modules. */
 export type QuestionInteractionType = string;
+/** The paired approach-challenge interaction is intentionally outside ordinary canonical bank questions. */
 export type Question = ChoiceSingleQuestion | ChoiceMultipleQuestion | OrderingQuestion | ComplexityQuestion | DecisionMatrixQuestion;
 
 export type CanonicalCertificationSimulationConfig = Readonly<{
@@ -132,6 +134,8 @@ export type CanonicalArtifact = Readonly<{
   trackId: string;
   contentVersion: string;
   questions: readonly Question[];
+  /** Complete whole-task pairs, separate from the ordinary single-question bank. */
+  approachChallengeProblems?: readonly import("./approachChallengeProblem").ApproachChallengeProblem[];
   completionRule?: PackageCompletionRule;
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   planningPolicy?: unknown;

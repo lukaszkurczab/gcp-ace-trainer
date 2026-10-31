@@ -394,6 +394,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           navigation.navigate(route.name, route.params);
           return;
         }
+        if (String(session.modeId) === "coding-interview-approach-challenge") {
+          navigation.navigate(ROUTES.APPROACH_CHALLENGE);
+          return;
+        }
         navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ feedbackMode: feedbackTimingFromDurableSession(session), mode: action.modeId, source: "home", topicId: action.trackId === CODING_INTERVIEW_TRACK_ID ? "complexity_and_constraints" : "", trackId: action.trackId }));
         return;
       }

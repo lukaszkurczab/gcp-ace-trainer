@@ -1,5 +1,5 @@
 import type { ForegroundTimerLeaveReason } from "../runtime/ForegroundSessionTimer";
-import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts } from "../learningReadModels";
+import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts, loadTrainingSession } from "../learningReadModels";
 import {
   getForegroundSessionTimerFacade,
   PracticeCompletionCheckpointError,
@@ -28,6 +28,7 @@ import { isCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
 import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
 import { projectCanonicalSourceEvidence, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { overallScoreCredit } from "../canonical/overallScoreCredit";
+import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
 
@@ -179,6 +180,7 @@ function defaultAlgorithmsPracticeFacade(): AlgorithmsPracticeFacade {
 
 /** UI-facing canonical entry points delegate to the exact-owner-bound practice facade. */
 export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput): Promise<PreparedSession> {
+  if (!Object.values(ALGORITHM_MODE_IDS).includes(input.modeId)) throw new TrainingApplicationFailure("unknown_mode", "The legacy Algorithms facade does not start this mode.");
   const prepared = await startTrainingSession({
     trackId: "coding-interview-dsa-problem-solving",
     modeId: input.modeId,
@@ -254,7 +256,7 @@ export async function submitAlgorithmsPracticeInteractionResponse(response: unkn
 export async function isAlgorithmsPracticeInteractionResponseComplete(response: unknown): Promise<boolean> {
   return defaultAlgorithmsPracticeFacade().isInteractionResponseComplete(response);
 }
-export async function retryAlgorithmsPracticeResponse(): Promise<void> { await getTrainingLifecycleUseCases().retryPracticeSubmission(); }
+export async function retryAlgorithmsPracticeResponse(): Promise<void> { await requireAlgorithmsSession(); await getTrainingLifecycleUseCases().retryPracticeSubmission(); }
 
 export function toCanonicalPracticeResponse(interactionType: string, response: AlgorithmResponse): CanonicalQuestionResponse {
   if (response.kind === "choice") {
@@ -280,16 +282,23 @@ export function toCanonicalPracticeResponse(interactionType: string, response: A
 
 /** Replays the single durable practice operation that is already journaled. */
 export async function recoverAlgorithmsPracticeOperation(): Promise<void> {
+  await requireAlgorithmsSession();
   await getTrainingLifecycleUseCases().recoverActiveTrainingOperation();
 }
 
 export function subscribeAlgorithmsPracticeOperation(sessionId: string, listener: (operation: PracticeDurableOperationState) => void): () => void {
-  return getTrainingLifecycleUseCases().subscribeOperationProjection(sessionId, (operation) => {
-    if (operation.family === "practice") listener(operation);
+  let active = true;
+  const unsubscribe = getTrainingLifecycleUseCases().subscribeOperationProjection(sessionId, (operation) => {
+    if (operation.family !== "practice") return;
+    void loadTrainingSession(sessionId).then((session) => {
+      if (active && session && isLegacyAlgorithmsSession(session)) listener(operation);
+    }).catch(() => undefined);
   });
+  return () => { active = false; unsubscribe(); };
 }
 
 export async function advanceAlgorithmsPracticeSession(): Promise<TrainingSession> {
+  await requireAlgorithmsSession();
   return getTrainingLifecycleUseCases().advancePracticeSession();
 }
 
@@ -324,6 +333,7 @@ export async function retryAlgorithmsPracticeCompletionCheckpoint(expectedSessio
 }
 
 export async function recoverAlgorithmsPracticeCompletionCheckpoint(expectedSessionId: string): Promise<AlgorithmsPracticeProjection> {
+  await requireExactAlgorithmsPractice(expectedSessionId);
   const lifecycle = getTrainingLifecycleUseCases();
   const pending = await lifecycle.getExpectedSessionPendingMutation(expectedSessionId);
   if (!pending || pending.operation !== "advance_training_session") throw new TrainingApplicationFailure("resume_unavailable", `No matching final-checkpoint journal exists for ${expectedSessionId}.`);
@@ -335,7 +345,9 @@ export async function recoverAlgorithmsPracticeCompletionCheckpoint(expectedSess
 }
 
 export async function recoverAlgorithmsPracticeCompletion(expectedSessionId: string): Promise<PracticeFinalization> {
-  const finalized = await getTrainingLifecycleUseCases().recoverExpectedSessionCompletion(expectedSessionId);
+  const lifecycle = getTrainingLifecycleUseCases();
+  await requireExactLegacyPracticeCompletionRecovery(expectedSessionId, lifecycle);
+  const finalized = await lifecycle.recoverExpectedSessionCompletion(expectedSessionId);
   getForegroundSessionTimerFacade().releaseAfterVerifiedPracticeCompletion(expectedSessionId);
   return finalized;
 }
@@ -391,6 +403,8 @@ export async function getAlgorithmsSimulationScreenProjection(): Promise<Algorit
 }
 
 export async function navigateAlgorithmsSimulationTo(index: number, authorization?: SimulationCommandAuthorization): Promise<TrainingSession> {
+  const session = await requireAlgorithmsSession();
+  if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new TrainingApplicationFailure("invalid_response", "Only an Interview Simulation can navigate its session.");
   return getTrainingLifecycleUseCases().moveSimulationSessionTo(index, authorization);
 }
 
@@ -547,15 +561,18 @@ async function recoverAlgorithmsSimulationSaveAndContinueAuthorized(initialSessi
 
 /** Restores response editing only after the lifecycle proves that the failed save made no durable draft change. */
 export async function resumeAlgorithmsSimulationEditingAfterSaveFailure(): Promise<void> {
+  await requireAlgorithmsSimulationSession();
   await getTrainingLifecycleUseCases().resumeEditableSimulationAfterSaveFailure();
 }
 
 /** Retries the exact D command previously proven not applied; it never rebuilds from current storage. */
 export async function retryAlgorithmsSimulationSave(): Promise<void> {
+  await requireAlgorithmsSimulationSession();
   await getTrainingLifecycleUseCases().retrySimulationDraftSave();
 }
 
 export async function resumeAlgorithmsSimulationEditingAfterStaleConflict(): Promise<void> {
+  await requireAlgorithmsSimulationSession();
   await getTrainingLifecycleUseCases().resumeEditableSimulationAfterStaleConflict();
 }
 
@@ -599,7 +616,7 @@ export async function leaveAlgorithmsSimulationForeground(reason: ForegroundTime
 
 /** Presentation receives application-owned projection refreshes; it never runs a countdown. */
 export function subscribeAlgorithmsSimulationProjectionRefresh(listener: (event: ForegroundSessionTimerEvent) => void): () => void {
-  return getForegroundSessionTimerFacade().subscribe(listener);
+  return subscribeLegacyAlgorithmsTimerEvents(listener);
 }
 
 export async function enterAlgorithmsPracticeForeground(): Promise<ForegroundTimeProjection> {
@@ -615,7 +632,7 @@ export async function leaveAlgorithmsPracticeForeground(reason: ForegroundTimerL
 }
 
 export function subscribeAlgorithmsPracticeProjectionRefresh(listener: (event: ForegroundSessionTimerEvent) => void): () => void {
-  return getForegroundSessionTimerFacade().subscribe(listener);
+  return subscribeLegacyAlgorithmsTimerEvents(listener);
 }
 
 export async function getAlgorithmsPracticeResultProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
@@ -624,6 +641,8 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
   let result: TrainingSessionResult;
   let integrity: ValidatedCompletedResult;
   try {
+    const exactSession = await loadTrainingSession(sessionId);
+    if (!exactSession || !isLegacyAlgorithmsSession(exactSession)) throw completedResultUnavailable();
     const [loadedResult, history, attempts] = await Promise.all([
       lifecycle.loadSummary(sessionId),
       lifecycle.queryHistory(),
@@ -679,6 +698,7 @@ export async function getAlgorithmsPracticeReviewProjection(sessionId: string, o
 export async function getAlgorithmsPracticeSummaryProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
   const lifecycle = getTrainingLifecycleUseCases();
   const session = await lifecycle.loadSessionRecord(sessionId);
+  if (!isLegacyAlgorithmsSession(session)) throw new TrainingApplicationFailure("summary_unavailable", "This session is not available through the legacy Algorithms summary.");
   if (session.status === "completed") return getAlgorithmsPracticeResultProjection(sessionId);
   if (session.status !== "abandoned" || session.trackId !== "coding-interview-dsa-problem-solving" || !session.completedAt || session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
     throw new Error("Only a completed or explicitly ended Algorithms practice session has a summary.");
@@ -710,7 +730,10 @@ export async function getAlgorithmsPracticeSummaryProjection(sessionId: string):
 
 async function requireAlgorithmsSession(): Promise<TrainingSession> {
   const session = await loadActiveTrainingSession();
-  if (!session || session.trackId !== "coding-interview-dsa-problem-solving") throw new Error("No active Algorithms session is available.");
+  if (session && isApproachChallengeTrainingAttempt(session.trackId, session.modeId)) {
+    throw new TrainingApplicationFailure("resume_unavailable", "Approach Challenge sessions are unavailable through the legacy Algorithms facade.");
+  }
+  if (!session || !isLegacyAlgorithmsSession(session)) throw new Error("No active legacy Algorithms session is available.");
   return session;
 }
 
@@ -718,6 +741,47 @@ async function requireExactAlgorithmsPractice(expectedSessionId: string): Promis
   const session = await requireAlgorithmsSession();
   if (session.id !== expectedSessionId || session.configurationSnapshot.submission !== "perItem") throw new TrainingApplicationFailure("resume_unavailable", `Algorithms practice session ${expectedSessionId} is not the exact active session.`);
   return session;
+}
+
+async function requireExactLegacyPracticeCompletionRecovery(
+  expectedSessionId: string,
+  lifecycle: ReturnType<typeof getTrainingLifecycleUseCases>,
+): Promise<TrainingSession> {
+  if (!expectedSessionId.trim()) throw new TrainingApplicationFailure("invalid_response", "Completion recovery requires an expected session identity.");
+  const session = await loadTrainingSession(expectedSessionId);
+  if (!session || !isLegacyAlgorithmsSession(session) || session.configurationSnapshot.submission !== "perItem") {
+    throw new TrainingApplicationFailure("resume_unavailable", `Session ${expectedSessionId} is not an exact legacy Algorithms practice session.`);
+  }
+  const pending = await lifecycle.getExpectedSessionPendingMutation(expectedSessionId);
+  if (pending) {
+    if (pending.trackId !== session.trackId || pending.operation !== "complete_training_session" || !pending.practiceCompletion) {
+      throw new TrainingApplicationFailure("resume_unavailable", `Pending mutation does not own completion for ${expectedSessionId}.`);
+    }
+  } else if (session.status !== "completed") {
+    throw new TrainingApplicationFailure("resume_unavailable", `Session ${expectedSessionId} has no exact pending completion to recover.`);
+  }
+  return session;
+}
+
+function isLegacyAlgorithmsSession(session: TrainingSession): boolean {
+  return session.trackId === "coding-interview-dsa-problem-solving" && !isApproachChallengeTrainingAttempt(session.trackId, session.modeId) &&
+    Object.values(ALGORITHM_MODE_IDS).includes(session.modeId as AlgorithmModeId);
+}
+
+async function requireAlgorithmsSimulationSession(): Promise<TrainingSession> {
+  const session = await requireAlgorithmsSession();
+  if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new TrainingApplicationFailure("invalid_response", "This session is not an Interview Simulation.");
+  return session;
+}
+
+function subscribeLegacyAlgorithmsTimerEvents(listener: (event: ForegroundSessionTimerEvent) => void): () => void {
+  let active = true;
+  const unsubscribe = getForegroundSessionTimerFacade().subscribe((event) => {
+    void loadTrainingSession(event.sessionId).then((session) => {
+      if (active && session && isLegacyAlgorithmsSession(session)) listener(event);
+    }).catch(() => undefined);
+  });
+  return () => { active = false; unsubscribe(); };
 }
 
 async function requireSimulationDraft(sessionId: string) {

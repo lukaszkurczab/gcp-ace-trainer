@@ -1,4 +1,5 @@
 export * from "./questionTypes";
+export * from "./approachChallengeProblem";
 export * from "./planningPolicy";
 export * from "./contentSuccessorLedger";
 export * from "./questionValidation";

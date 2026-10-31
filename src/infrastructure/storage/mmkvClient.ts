@@ -58,6 +58,19 @@ export function isPersist13StorageOwnerCold(): boolean {
     && !profileStorageReadyNotified && testActiveProfileLease === null;
 }
 
+/** Read-only ACM native fixture guard before its isolated storage owner is installed. */
+export function isACMNativeFixtureStorageOwnerCold(runUUID: string): boolean {
+  return typeof __DEV__ !== "undefined" && __DEV__
+    && process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"
+    && process.env.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE === "1"
+    && process.env.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_RUN_UUID === runUUID
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(runUUID)
+    && client === null && profileRouter === null && preparedStorage === null && activePreparedStorage === null
+    && preparation === null && testPreparationFactory === null && testProfileTransitionReload === null
+    && readyListeners.size === 0 && profileTransitionListeners.size === 0 && !profileTransitionActive
+    && !profileStorageReadyNotified && testActiveProfileLease === null;
+}
+
 export type GuestRemovalPostcoldPrefixReceipt = Readonly<{
   schemaVersion: "bizq01-guest-removal-postcold-prefix-v1";
   result: "observed" | "failed";

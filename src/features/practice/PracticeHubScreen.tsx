@@ -447,6 +447,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("More ways to practice")}</Text>
           </View>
           <View style={styles.modeList}>
+            {isCodingInterviewTrack ? <ListRow leading={<IconTile iconSize={24} name="code-brackets" size={32} tone="primary" />} onPress={() => navigation.navigate(ROUTES.APPROACH_CHALLENGE)} style={styles.modeRow} testID="practice-approach-challenge" title={t("Approach Challenge")} detail={t("Choose an approach, then analyze its complexity.")} trailing={<Icon color={palette.textMuted} name="chevron-right" size={20} />} variant="grouped" /> : null}
             {secondaryModes.map((mode, index) => (
               <ListRow
                 detail={!mode.enabled && mode.unavailableReason ? t(mode.unavailableReason) : undefined}

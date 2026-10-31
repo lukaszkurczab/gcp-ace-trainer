@@ -90,7 +90,18 @@ class AppDelegate: ExpoAppDelegate {
 
   // Linking API
 }
+
+class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
+  override func bundleURL() -> URL? {
+#if DEBUG
+    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: ".expo/.virtual-metro-entry")
+#else
+    return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+#endif
+  }
+}
 `;
+  const withoutFirebase = appDelegate.replace(/    \/\/ @generated begin @react-native-firebase\/app-check[\s\S]*?    \/\/ @generated end @react-native-firebase\/app-check\n/u, "");
   const transformed = injectIosBackupPolicy(appDelegate);
 
   assert.match(transformed, /configureCanonicalStorageBackupPolicy\(\)/);
@@ -111,6 +122,61 @@ class AppDelegate: ExpoAppDelegate {
   assert.throws(() => injectIosBackupPolicy(appDelegate.replace("  // Linking API\n", "")), /anchors were not found/);
   assert.throws(() => injectIosBackupPolicy(appDelegate.replaceAll("didFinishLaunchingWithOptions", "unexpectedLaunch")), /anchors were not found/);
   assert.throws(() => injectIosBackupPolicy(appDelegate + "configureCanonicalStorageBackupPolicy"), /unsupported backup policy/);
+});
+
+test("iOS fixture policy isolates marked storage and guards generated Firebase setup idempotently", () => {
+  const pluginSource = read("plugins/withPrivacyBoundary.js");
+  assert.match(pluginSource, /nextConfig\.extra\?\.patternlyACMNativeFixture\?\.enabled === true/u);
+  const appDelegate = `import Expo
+import React
+
+class AppDelegate: ExpoAppDelegate {
+  func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+  ) -> Bool {
+    // @generated begin @react-native-firebase/app-check - expo prebuild
+    RNFBAppCheckModule.sharedInstance()
+    FirebaseApp.configure()
+    // @generated end @react-native-firebase/app-check
+    let delegate = ReactNativeDelegate()
+    let factory = ExpoReactNativeFactory(delegate: delegate)
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  // Linking API
+}
+
+class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
+  override func bundleURL() -> URL? {
+#if DEBUG
+    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: ".expo/.virtual-metro-entry")
+#else
+    return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+#endif
+  }
+}
+`;
+  const withoutFirebase = appDelegate.replace(/    \/\/ @generated begin @react-native-firebase\/app-check[\s\S]*?    \/\/ @generated end @react-native-firebase\/app-check\n/u, "");
+  const transformed = injectIosBackupPolicy(appDelegate);
+  assert.match(transformed, /PatternlyACMNativeFixture/);
+  assert.match(transformed, /PatternlyACMNativeFixtureRunUUID/);
+  assert.match(transformed, /PatternlyACMNativeFixtureOperation/);
+  assert.match(transformed, /\["PatternlyACMNativeFixture", "PatternlyACMNativeFixtureRunUUID", "PatternlyACMNativeFixtureOperation"\][\s\S]*\.contains \{ info\[\$0\] != nil \}/u);
+  assert.match(transformed, /CFGetTypeID\(markerValue\) == CFBooleanGetTypeID\(\), markerValue\.boolValue/u);
+  assert.match(transformed, /#if DEBUG\n\s+RCTBundleURLProviderAllowPackagerServerAccess\(false\)\n\s*#endif/u);
+  assert.ok(transformed.indexOf("RCTBundleURLProviderAllowPackagerServerAccess(false)") < transformed.indexOf("let factory = ExpoReactNativeFactory(delegate: delegate)"));
+  assert.match(transformed, /override func bundleURL\(\) -> URL\? \{\s*#if DEBUG\s*return RCTBundleURLProvider\.sharedSettings\(\)\.jsBundleURL\(forBundleRoot: "\.expo\/.virtual-metro-entry"\)\s*#else\s*return Bundle\.main\.url\(forResource: "main", withExtension: "jsbundle"\)/u);
+  assert.match(transformed, /appendingPathComponent\("ACMNative", isDirectory: true\)/);
+  assert.match(transformed, /@patternly-acm-native-firebase-guard-begin[\s\S]*?if !patternlyACMFixtureMarkerPresent\(\) \{[\s\S]*?FirebaseApp\.configure\(\)[\s\S]*?@patternly-acm-native-firebase-guard-end/);
+  assert.equal(transformed.split("FirebaseApp.configure()").length - 1, 1);
+  assert.equal(injectIosBackupPolicy(transformed), transformed);
+  assert.equal(injectIosBackupPolicy(transformed, { requireFirebaseGeneratedRegion: true }), transformed);
+  assert.throws(() => injectIosBackupPolicy(withoutFirebase, { requireFirebaseGeneratedRegion: true }), /generated region is missing/);
+  assert.throws(() => injectIosBackupPolicy(appDelegate.replace("RNFBAppCheckModule.sharedInstance()", "UnexpectedBootstrap()"), { requireFirebaseGeneratedRegion: true }), /unexpected ACM fixture shape/);
+  assert.throws(() => injectIosBackupPolicy(appDelegate.replace("// @generated end @react-native-firebase/app-check", ""), { requireFirebaseGeneratedRegion: true }), /generated region is missing/);
+  assert.throws(() => injectIosBackupPolicy(appDelegate.replace("FirebaseApp.configure()", "FirebaseApp.configure()\n    // @generated end @react-native-firebase/app-check")), /generated region is ambiguous/);
+  assert.doesNotThrow(() => injectIosBackupPolicy(withoutFirebase), "nonfixture builds may omit the optional Firebase generated region");
 });
 
 test("clean iOS output declares current data collection without tracking or remote notifications", () => {

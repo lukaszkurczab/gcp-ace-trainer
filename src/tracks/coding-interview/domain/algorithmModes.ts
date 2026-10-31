@@ -1,4 +1,8 @@
 
+import { CODING_INTERVIEW_TRACK_ID } from "../../../domain/tracks/trackRegistry";
+
+export const APPROACH_CHALLENGE_MODE_ID = "coding-interview-approach-challenge" as const;
+
 export const ALGORITHM_MODE_IDS = {
   learnApproach: "coding-interview-learn-approach",
   guidedPractice: "coding-interview-guided-practice",
@@ -95,6 +99,19 @@ export const ALGORITHM_MODES = Object.freeze([
 
 export function isAlgorithmModeId(modeId: string): modeId is AlgorithmModeId {
   return ALGORITHM_MODES.some((mode) => mode.id === modeId);
+}
+
+export type TrainingAttemptModeClass = "legacy" | "approach_challenge" | "unknown";
+
+export function isApproachChallengeTrainingAttempt(trackId: string, modeId: string): boolean {
+  return trackId === CODING_INTERVIEW_TRACK_ID && modeId === APPROACH_CHALLENGE_MODE_ID;
+}
+
+/** One canonical mode discriminator for legacy learning evidence boundaries. */
+export function classifyTrainingAttemptMode(trackId: string, modeId: string): TrainingAttemptModeClass {
+  if (isApproachChallengeTrainingAttempt(trackId, modeId)) return "approach_challenge";
+  if (trackId !== CODING_INTERVIEW_TRACK_ID) return "legacy";
+  return isAlgorithmModeId(modeId) ? "legacy" : "unknown";
 }
 
 export function getAlgorithmMode(modeId: string): AlgorithmModeDefinition {

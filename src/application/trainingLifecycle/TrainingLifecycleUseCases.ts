@@ -38,6 +38,9 @@ import { CanonicalWriteOutcomeError } from "../../storage/errors";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
+import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
+import { APPROACH_CHALLENGE_MANIFEST_KEY, decodeApproachChallengeManifest, resolveManifestEntryProblem } from "../coding-interview/approachChallengeSession";
+import { isFreeApproachChallengeProblem } from "../coding-interview/approachChallengeSelection";
 
 export type SimulationCommandAuthorization = Readonly<{ sessionId: string }>;
 const simulationCommandAuthorizations = new WeakSet<object>();
@@ -338,6 +341,15 @@ export class TrainingLifecycleUseCases {
     if (prior.kind === "commit_pending" || prior.kind === "commit_materialization_failed" || prior.kind === "commit_verification_failed") {
       throw new TrainingApplicationFailure("commit_verification_failed", "A durable practice command must recover before another response can be submitted.");
     }
+    if (isApproachChallengeTrainingAttempt(session.trackId, session.modeId)) {
+      const occurrence = session.itemOrder[session.currentItemIndex];
+      const existing = occurrence ? (await this.ports.repositories.getAttempts()).find((attempt) => attempt.sessionId === session.id && attempt.occurrenceId === occurrence.occurrenceId) : undefined;
+      if (existing) {
+        if (canonicalSerialize(existing.response) !== canonicalSerialize(response)) throw new TrainingApplicationFailure("invalid_response", "An accepted Approach Challenge stage is immutable; resume the exact next stage.");
+        this.operationStates.set(session.id, practice("feedback"));
+        return;
+      }
+    }
     if (session.trackId === CASE_TRACK_ID && sessionCaseStates(session).length > 0) {
       const occurrence = session.itemOrder[session.currentItemIndex];
       const attempts = await this.ports.repositories.getAttempts();
@@ -469,6 +481,14 @@ export class TrainingLifecycleUseCases {
   private async advancePracticeSessionInLane(): Promise<TrainingSession> {
     const session = await this.requireActive();
     await this.assertNoAcceptedSimulationFinalization(session.id);
+    if (isApproachChallengeTrainingAttempt(session.trackId, session.modeId)) {
+      const current = session.itemOrder[session.currentItemIndex];
+      const attempts = await this.ports.repositories.getAttempts();
+      const accepted = current ? attempts.filter((attempt) => attempt.sessionId === session.id && attempt.modeId === session.modeId && attempt.occurrenceId === current.occurrenceId) : [];
+      const operation = await this.getPracticeOperationState(session, accepted.length === 1);
+      if (operation.kind !== "feedback" && operation.kind !== "unanswered") throw new TrainingApplicationFailure("commit_verification_failed", "Approach Challenge cannot advance while its exact stage journal is unresolved.");
+      if (accepted.length !== 1) throw new TrainingApplicationFailure("invalid_response", "Approach Challenge cannot reveal or advance before the current stage is durably accepted.");
+    }
     await this.resolveRuntimeForSession(session);
     this.operationStates.set(session.id, practice("advancing"));
     const next = this.runSync("persistence_failure", () => advanceTrainingSession(session));
@@ -548,6 +568,13 @@ export class TrainingLifecycleUseCases {
     const session = await this.requireActive();
     if (session.configurationSnapshot.submission !== "perItem" || session.currentItemIndex !== session.actualLength - 1) {
       throw new TrainingApplicationFailure("invalid_response", "Only a durably submitted final practice occurrence can complete this session.");
+    }
+    if (isApproachChallengeTrainingAttempt(session.trackId, session.modeId)) {
+      const attempts = await this.ports.repositories.getAttempts();
+      const current = session.itemOrder[session.currentItemIndex];
+      const accepted = current ? attempts.some((attempt) => attempt.sessionId === session.id && attempt.modeId === session.modeId && attempt.occurrenceId === current.occurrenceId) : false;
+      const operation = await this.getPracticeOperationState(session, accepted);
+      if (!accepted || (operation.kind !== "feedback" && operation.kind !== "unanswered")) throw new TrainingApplicationFailure("commit_verification_failed", "Approach Challenge cannot finalize while its exact final-stage journal is unresolved.");
     }
     this.operationStates.publish(session.id, practice("completing"));
     try {
@@ -1130,7 +1157,7 @@ export class TrainingLifecycleUseCases {
 
   private async resolveRuntimeForSession(session: TrainingSession): Promise<TrainingFamilyRuntime> {
     const registration = this.trackRegistration(session.trackId);
-    const resolution = await this.run("resume_unavailable", () => this.ports.packages.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 }));
+    const resolution = await this.run("resume_unavailable", () => this.ports.packages.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256, modeId: session.modeId }));
     if (resolution.runtime.familyId !== registration.familyId || resolution.track.trackId !== session.trackId) {
       throw new TrainingApplicationFailure("resume_unavailable", "Exact package pin resolved outside the session track family.");
     }
@@ -1146,6 +1173,19 @@ export class TrainingLifecycleUseCases {
 
   private requiresNodePremiumAdmission(session: TrainingSession, track: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExactArtifact"]>>["track"]): boolean {
     if (requiresPremiumProductMode(session.modeId)) return false;
+    if (isApproachChallengeTrainingAttempt(session.trackId, session.modeId)) {
+      const manifest = decodeApproachChallengeManifest(session.configurationSnapshot[APPROACH_CHALLENGE_MANIFEST_KEY], session);
+      const problems = track.approachChallengeProblems;
+      if (!problems?.length || session.itemOrder.length !== manifest.actualProblemCount * 2) throw new TrainingApplicationFailure("missing_content", "The exact paired-task artifact is unavailable for Premium admission.");
+      const selected = manifest.entries.map((entry, index) => {
+        const problem = resolveManifestEntryProblem(entry, (problemId, version) => problems.find((candidate) => candidate.problemId === problemId && candidate.problemVersion === version), session);
+        const approach = session.itemOrder[index * 2]?.item.questionId;
+        const complexity = session.itemOrder[index * 2 + 1]?.item.questionId;
+        if (approach !== problem.approachQuestion.questionId || complexity !== problem.complexityQuestion.questionId) throw new TrainingApplicationFailure("missing_content", "The prepared stage order does not match its exact paired-task artifact.");
+        return problem;
+      });
+      return selected.some((problem) => !isFreeApproachChallengeProblem(problem));
+    }
     const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === session.trackId);
     if (!descriptor || session.itemOrder.length === 0) throw new TrainingApplicationFailure("missing_content", "The prepared session has no canonical Free node scope.");
     for (const occurrence of session.itemOrder) {

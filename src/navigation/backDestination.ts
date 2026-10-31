@@ -33,6 +33,7 @@ const fixedDestinations: Readonly<Record<string, BackDestinationTranslation>> = 
   [ROUTES.RESULT]: { namespace: "common", key: "Result" },
   [ROUTES.PRACTICE_SETUP]: { namespace: "common", key: "Practice setup" },
   [ROUTES.PRACTICE_SESSION]: { namespace: "common", key: "Practice Session" },
+  [ROUTES.APPROACH_CHALLENGE]: { namespace: "common", key: "Approach Challenge" },
   [ROUTES.ALGORITHMS_PRACTICE_REVIEW]: { namespace: "common", key: "Answer review" },
   [ROUTES.ALGORITHMS_PRACTICE_SUMMARY]: { namespace: "common", key: "Session result" },
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION]: { namespace: "common", key: "Interview Simulation" },

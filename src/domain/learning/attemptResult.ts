@@ -17,7 +17,7 @@ export type AttemptResult = Readonly<{
   details?: FamilyEnvelope;
 }>;
 
-export function createAttemptResult(input: AttemptResult): AttemptResult {
+export function createAttemptResult(input: AttemptResult, options: Readonly<{ allowZeroPointPartial?: boolean }> = {}): AttemptResult {
   if (!Number.isFinite(input.earnedPoints) || !Number.isFinite(input.maxPoints)) {
     throw new InvalidAttemptResultError("Attempt result points must be finite numbers.");
   }
@@ -30,7 +30,7 @@ export function createAttemptResult(input: AttemptResult): AttemptResult {
   if (input.kind === "incorrect" && input.earnedPoints !== 0) {
     throw new InvalidAttemptResultError("An incorrect result must earn zero points.");
   }
-  if (input.kind === "partial" && (input.earnedPoints === 0 || input.earnedPoints === input.maxPoints)) {
+  if (input.kind === "partial" && ((input.earnedPoints === 0 && options.allowZeroPointPartial !== true) || input.earnedPoints === input.maxPoints)) {
     throw new InvalidAttemptResultError("A partial result must earn more than zero and less than maxPoints.");
   }
   if (input.components) {

@@ -52,6 +52,7 @@ export function LanguageSettingsScreen({ navigation }: LanguageSettingsScreenPro
         title={t("language")}
       />
       {saveError ? <InfoBlock accessibilityAlert body={t("languageSaveErrorDetail")} title={t("languageSaveErrorTitle")} testID="language-save-error" tone="warning" /> : null}
+      {preferences.settingsUnavailable ? <InfoBlock accessibilityAlert body={t("preferencesUnavailableDetail")} title={t("preferencesUnavailableTitle")} testID="language-settings-unavailable" tone="warning" /> : null}
       <View accessibilityLabel={t("languageOptions")} accessibilityRole="radiogroup" style={styles.choiceGroup}>
         {LANGUAGE_SETTINGS_OPTIONS.map((option) => (
           <ChoiceRow
@@ -60,7 +61,7 @@ export function LanguageSettingsScreen({ navigation }: LanguageSettingsScreenPro
                   ? t("languageSystemUnrecognizedDetail", { lng: preferences.deviceLocale })
                   : t(option.detailKey, { lng: preferences.deviceLocale })
               : undefined}
-            disabled={savingValue !== null}
+            disabled={savingValue !== null || preferences.settingsUnavailable === true}
             key={option.value}
             loading={savingValue === option.value}
             onPress={() => { void select(option.value); }}

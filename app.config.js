@@ -180,6 +180,22 @@ function updatesConfiguration(runtimeMode) {
 function createExpoConfig(environment = process.env) {
   const runtimeMode = readRuntimeMode(environment);
   const publicEnvironment = assertRuntimeEnvironment(environment, runtimeMode);
+  const acmFixtureFlag = environment.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE;
+  if (acmFixtureFlag !== undefined && acmFixtureFlag !== "1") {
+    throw new Error("EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE must be exactly 1 when set.");
+  }
+  const acmFixtureRequested = acmFixtureFlag === "1";
+  const acmFixtureRunUUID = environment.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_RUN_UUID;
+  const acmFixtureOperation = environment.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_OPERATION;
+  if (acmFixtureRequested) {
+    if (runtimeMode !== "smoke" || environment.EAS_BUILD_PROFILE === "production"
+      || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(acmFixtureRunUUID ?? "")
+      || !["create", "resume"].includes(acmFixtureOperation ?? "")) {
+      throw new Error("ACM native fixture requires a non-production smoke build, a UUID run ID, and create or resume operation.");
+    }
+  } else if (acmFixtureRunUUID !== undefined || acmFixtureOperation !== undefined) {
+    throw new Error("ACM native fixture run ID and operation require EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE=1.");
+  }
   const localAndroidFlag = environment.PATTERNLY_ANDROID_LOCAL_APP;
   const localAndroid = localAndroidFlag === "true";
   if (localAndroidFlag && (!localAndroid || runtimeMode !== "smoke" || environment.EAS_BUILD_PLATFORM !== "android"
@@ -242,6 +258,12 @@ function createExpoConfig(environment = process.env) {
         supportsTablet: false,
         bundleIdentifier: "com.lkurczab.patternly",
         buildNumber: "1",
+        ...(acmFixtureRequested ? { infoPlist: {
+          PatternlyRuntimeMode: "smoke",
+          PatternlyACMNativeFixture: true,
+          PatternlyACMNativeFixtureRunUUID: acmFixtureRunUUID,
+          PatternlyACMNativeFixtureOperation: acmFixtureOperation,
+        } } : {}),
         ...(environment.EAS_BUILD_PLATFORM === "android" && runtimeMode === "release" ? {} : { googleServicesFile: nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.ios, runtimeMode) }),
         appleTeamId: "4KJFN6SXMH",
       },
@@ -259,9 +281,14 @@ function createExpoConfig(environment = process.env) {
       extra: {
         patternlyRuntime: runtimeMode,
         patternlyEnvironmentFingerprint: environmentIdentity.fingerprint,
+        ...(acmFixtureRequested ? { patternlyACMNativeFixture: {
+          enabled: true,
+          runUUID: acmFixtureRunUUID,
+          operation: acmFixtureOperation,
+        } } : {}),
         eas: { projectId: "204d9769-4832-4c4a-b932-6359c4ff9dab" },
       },
-      updates: localAndroid ? { enabled: false, checkAutomatically: "NEVER" } : updatesConfiguration(runtimeMode),
+      updates: localAndroid || acmFixtureRequested ? { enabled: false, checkAutomatically: "NEVER" } : updatesConfiguration(runtimeMode),
     },
   };
 }

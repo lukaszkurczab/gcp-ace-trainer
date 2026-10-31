@@ -11,6 +11,7 @@ import {
   getAlgorithmsPracticeResultProjection,
   getAlgorithmsPracticeReviewProjection,
   getAlgorithmsPracticeSummaryProjection,
+  recoverAlgorithmsPracticeCompletion,
   finalizeAlgorithmsSimulation,
   saveAlgorithmsSimulationResponseAndContinue,
   startAlgorithmsSession,
@@ -21,7 +22,12 @@ import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { STORAGE_KEYS } from "../../storage/keys";
 import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
 import type { TrainingAttempt } from "../../domain";
+import type { TrainingSession } from "../../domain";
 import type { MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { getActiveTrainingSession, getTrainingSessionResult, getTrainingSessions, saveTrainingSession } from "../../storage/repositories";
+import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { installForegroundSessionTimerFacade } from "../trainingLifecycle";
+import type { ForegroundSessionTimerFacade } from "../trainingLifecycle/ForegroundSessionTimerFacade";
 
 const dependencies = { premiumSessionAdmission: { authorize: async () => "allowed" as const } };
 const sessionId = "completed-result-integrity-practice";
@@ -44,7 +50,17 @@ function incorrectChoiceResponse(item: ResolvedInteractionItem) {
   throw new Error("The exact single-choice interaction has no incorrect option for this fixture.");
 }
 
-async function completedPractice(reinsert = false) {
+type CompletedPracticeOutput = Readonly<{
+  storage: MemoryKeyValueStorage;
+  session: TrainingSession;
+  initialSession: TrainingSession;
+  completion: Awaited<ReturnType<typeof completeAlgorithmsPracticeSession>>;
+  result: NonNullable<Awaited<ReturnType<typeof getAlgorithmsPracticeResultProjection>>>;
+}>;
+
+async function completedPractice(reinsert?: boolean): Promise<CompletedPracticeOutput>;
+async function completedPractice(reinsert: boolean, readFailure: Readonly<{ key: string; occurrence: number }>): Promise<Omit<CompletedPracticeOutput, "result"> & Readonly<{ result: null }>>;
+async function completedPractice(reinsert = false, readFailure?: Readonly<{ key: string; occurrence: number }>): Promise<CompletedPracticeOutput | (Omit<CompletedPracticeOutput, "result"> & Readonly<{ result: null }>)> {
   const storage = installMemoryStorage();
   await contentPackageRuntimeOwner.verifyBundledPackages();
   composeTrainingLifecycleUseCases({ ...dependencies, sessionIds: { create: async () => sessionId } });
@@ -61,8 +77,13 @@ async function completedPractice(reinsert = false) {
     await submitAlgorithmsPracticeResponse(response);
     if (index < prepared.session.actualLength - 1) finalSession = await advanceAlgorithmsPracticeSession();
   }
-  await completeAlgorithmsPracticeSession();
-  return { storage, session: finalSession, initialSession: prepared.session, result: await getAlgorithmsPracticeResultProjection(sessionId) };
+  if (readFailure) {
+    storage.resetCounters();
+    storage.setFailurePlan({ kind: "fail_on_key_read_occurrence", ...readFailure });
+  }
+  const completion = await completeAlgorithmsPracticeSession();
+  storage.setFailurePlan(null);
+  return { storage, session: finalSession, initialSession: prepared.session, completion, result: readFailure === undefined ? await getAlgorithmsPracticeResultProjection(sessionId) : null };
 }
 
 function restore(storage: MemoryKeyValueStorage, snapshot: ReadonlyMap<string, string>) {
@@ -102,6 +123,53 @@ test("completed Coding practice is readable and review uses the same completed p
   assert.equal(result.overallPointsEarned, result.score?.pointsEarned);
   const review = await getAlgorithmsPracticeReviewProjection(sessionId, result.feedbackItems[0]!.occurrenceId);
   assert.deepEqual(review, result);
+});
+
+test("by-ID completion recovery verifies the exact completed legacy session after the active pointer was cleared", async () => {
+  const { storage, session, completion } = await completedPractice(false, { key: STORAGE_KEYS.trainingSessionResult(sessionId), occurrence: 10 });
+  assert.equal(completion.kind, "recover_completion", "the actual result read failure is reported as recoverable completion");
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null, "materialization already cleared active ownership");
+  assert.ok(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), "the exact completion journal remains available for recovery");
+  const durableResult = await getTrainingSessionResult(session.id, productionTrackAdmissionContext);
+  assert.ok(durableResult, "the exact result was materialized before later verification failed");
+
+  const journalRaw = storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL)!;
+  const preFixtureSnapshot = storage.snapshot();
+  storage.remove(STORAGE_KEYS.ACTIVE_JOURNAL);
+  const durableSession = (await getTrainingSessions(productionTrackAdmissionContext)).value.find(({ id }) => id === session.id)!;
+  const foreignSessionId = "foreign-completed-recovery-session";
+  const foreignSession = { ...durableSession, id: foreignSessionId };
+  await saveTrainingSession(foreignSession, productionTrackAdmissionContext);
+  const wrongTrackSessionId = "wrong-track-completed-recovery-session";
+  const wrongTrackId = "google-cloud-associate-cloud-engineer";
+  const wrongTrackSession = {
+    ...durableSession,
+    id: wrongTrackSessionId,
+    trackId: wrongTrackId,
+    itemOrder: durableSession.itemOrder.map((occurrence) => ({ ...occurrence, item: { ...occurrence.item, trackId: wrongTrackId } })),
+  };
+  await saveTrainingSession(wrongTrackSession, productionTrackAdmissionContext);
+  storage.setString(STORAGE_KEYS.ACTIVE_JOURNAL, journalRaw);
+
+  let timerReleaseCalls = 0;
+  installForegroundSessionTimerFacade({ releaseAfterVerifiedPracticeCompletion() { timerReleaseCalls += 1; } } as unknown as ForegroundSessionTimerFacade);
+  const pendingSnapshot = storage.snapshot();
+  for (const [wrongId, expectedCode] of [["", "invalid_response"], ["different-completed-session-id", "resume_unavailable"], [foreignSessionId, "resume_unavailable"], [wrongTrackSessionId, "resume_unavailable"]] as const) {
+    await assert.rejects(recoverAlgorithmsPracticeCompletion(wrongId), (error: unknown) =>
+      typeof error === "object" && error !== null && "code" in error && error.code === expectedCode);
+    assert.deepEqual(storage.snapshot(), pendingSnapshot, `invalid recovery ID ${JSON.stringify(wrongId)} must leave the foreign completion journal untouched`);
+    assert.equal(timerReleaseCalls, 0, "rejected by-ID recovery cannot release a timer");
+  }
+  for (const key of storage.getAllKeys()) if (!preFixtureSnapshot.has(key)) storage.remove(key);
+  for (const [key, value] of preFixtureSnapshot) storage.setString(key, value);
+  const recovered = await recoverAlgorithmsPracticeCompletion(session.id);
+
+  assert.deepEqual(recovered.result, durableResult, "by-ID recovery returns the same durable result, not a rebuilt substitute");
+  assert.equal(recovered.session.id, session.id);
+  assert.equal(recovered.session.status, "completed");
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), undefined, "the common lifecycle verified and cleared the exact completion journal");
+  assert.equal(timerReleaseCalls, 1, "the timer is released only after exact lifecycle verification succeeds");
 });
 
 test("completed conditional-reinsert practice projects the final replaced occurrence order", async () => {

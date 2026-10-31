@@ -63,6 +63,33 @@ export async function bootstrapApplication(
   prepareLifecycle?: (observeRecoveryStep?: BootstrapRecoveryStepObserver) => Promise<void>,
   dependencies: ApplicationBootstrapDependencies = {},
 ): Promise<ApplicationBootstrapState> {
+  return bootstrapApplicationCore(prepareContentPackages, resolveActiveSession, prepareLifecycle, dependencies, "normal");
+}
+
+/** Private to the isolated native ACM fixture; shares integrity/recovery but never cleans shared export cache. */
+export async function bootstrapACMNativeFixtureApplication(
+  runUUID: string,
+  prepareContentPackages: () => Promise<unknown>,
+  resolveActiveSession: (sessionId: string) => Promise<void | ActiveSessionResumeOutcome>,
+  prepareLifecycle: (observeRecoveryStep?: BootstrapRecoveryStepObserver) => Promise<void>,
+  dependencies: ApplicationBootstrapDependencies = {},
+): Promise<ApplicationBootstrapState> {
+  if (typeof __DEV__ === "undefined" || !__DEV__ || process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE !== "smoke"
+    || process.env.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE !== "1"
+    || process.env.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_RUN_UUID !== runUUID
+    || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(runUUID)) {
+    throw new Error("acm_fixture_bootstrap_runtime_invalid");
+  }
+  return bootstrapApplicationCore(prepareContentPackages, resolveActiveSession, prepareLifecycle, dependencies, "acm_native_fixture");
+}
+
+async function bootstrapApplicationCore(
+  prepareContentPackages: () => Promise<unknown>,
+  resolveActiveSession: (sessionId: string) => Promise<void | ActiveSessionResumeOutcome>,
+  prepareLifecycle: ((observeRecoveryStep?: BootstrapRecoveryStepObserver) => Promise<void>) | undefined,
+  dependencies: ApplicationBootstrapDependencies,
+  cleanupPolicy: "normal" | "acm_native_fixture",
+): Promise<ApplicationBootstrapState> {
   let stage = ApplicationBootstrapStage.OpeningStorage;
   let currentRepositoryStep: CanonicalRepositoryBootstrapStep | undefined;
   let resumingSession: TrainingSession | null = null;
@@ -95,8 +122,10 @@ export async function bootstrapApplication(
     if (!pendingJournal) await finishCanonicalRepositories(instrumentedRepositoryDependencies);
     // Profile storage is selected while opening repositories. Clean only after
     // read-only integrity preflight so a launch never hides retained evidence.
-    try { cleanupOrphanedAccountDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
-    try { cleanupOrphanedGuestLocalDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
+    if (cleanupPolicy === "normal") {
+      try { cleanupOrphanedAccountDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
+      try { cleanupOrphanedGuestLocalDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
+    }
     currentRepositoryStep = undefined;
     stage = ApplicationBootstrapStage.RecoveringLearningState;
     if (prepareLifecycle) {

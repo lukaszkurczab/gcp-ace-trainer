@@ -164,5 +164,7 @@
   "premiumNotStartedDetail": "L’achat App Store n’a pas été lancé. La demande enregistrée doit être résolue avant un autre achat. Actualisez son statut ou contactez l’assistance.",
   "premiumScopeUnavailableDetail": "La description du service n’est pas encore confirmée. Les nouveaux achats sont indisponibles ; vous pouvez restaurer vos achats et gérer un abonnement existant.",
   "premiumRestoreCancelled": "Restauration annulée",
-  "premiumServiceScopeSummary": "Les premiers nœuds de chaque parcours sont gratuits. Premium débloque les autres nœuds."
+  "premiumServiceScopeSummary": "Les premiers nœuds de chaque parcours sont gratuits. Premium débloque les autres nœuds.",
+  "preferencesUnavailableTitle": "Préférences enregistrées indisponibles",
+  "preferencesUnavailableDetail": "Les préférences enregistrées n’ont pas pu être lues. Les choix sont désactivés jusqu’au rétablissement du stockage local."
 }

@@ -309,9 +309,9 @@ function composeProgressSnapshot(cached: ProgressSnapshotCache, request: SyncReq
   } catch { return null; }
 }
 
-function parseProgressPage(value: unknown): ProgressResponseDto & Readonly<{ snapshotToken: string; snapshotScope: string }> {
-  if (!isPlainRecord(value) || !hasExactKeys(value, ["accountRevision", "generation", "records", "nextPageToken", "snapshotToken", "snapshotScope"])) return invalidResponse();
-  if (!isSha256(value.snapshotToken) || !isSha256(value.snapshotScope)) return invalidResponse();
+function parseProgressPage(value: unknown, legacyRead = false): ProgressResponseDto & Readonly<{ snapshotToken?: string; snapshotScope?: string }> {
+  if (!isPlainRecord(value) || !hasExactKeys(value, ["accountRevision", "generation", "records", "nextPageToken", ...(legacyRead ? [] : ["snapshotToken", "snapshotScope"])])) return invalidResponse();
+  if (!legacyRead && (!isSha256(value.snapshotToken) || !isSha256(value.snapshotScope))) return invalidResponse();
   if (!isFiniteNonNegativeInteger(value.accountRevision) || !isFiniteNonNegativeInteger(value.generation) || !Array.isArray(value.records) || value.records.length > 100) return invalidResponse();
   if (!(value.nextPageToken === null || (typeof value.nextPageToken === "string" && value.nextPageToken.length > 0))) return invalidResponse();
   const records = value.records.map((record) => {
@@ -322,7 +322,7 @@ function parseProgressPage(value: unknown): ProgressResponseDto & Readonly<{ sna
     return normalized;
   });
   return { accountRevision: value.accountRevision as number, generation: value.generation as number,
-    snapshotToken: value.snapshotToken as string, snapshotScope: value.snapshotScope as string,
+    ...(legacyRead ? {} : { snapshotToken: value.snapshotToken as string, snapshotScope: value.snapshotScope as string }),
     nextPageToken: value.nextPageToken as string | null, records };
 }
 
@@ -671,6 +671,9 @@ export class PatternlyApiClientError extends Error {
   }
 }
 
+/** Only the deployed pre-conditional progress endpoint's exact rejection can negotiate its older read contract. */
+class ConditionalProgressUnsupportedError extends PatternlyApiClientError {}
+
 type FetchImplementation = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 export type PatternlyApiClient = Readonly<{
   availability: "available";
@@ -804,6 +807,11 @@ export function createPatternlyApiClient(input: Readonly<{
         }
       }
       if (!response.ok) {
+        if (method === "GET" && url.pathname === "/v1/progress" && url.searchParams.get("conditional") === "1"
+          && response.status === 400 && hasExactKeys(payload, ["error"]) && hasExactKeys(payload.error, ["code"])
+          && payload.error.code === "invalid_request") {
+          throw new ConditionalProgressUnsupportedError("server_error", response.status, "invalid_request");
+        }
         const syncConflict = path === "/v1/progress/sync" && response.status === 409 ? parseSyncConflictError(payload) : undefined;
         const serverCode = syncConflict?.code ?? (isRecord(payload) && isRecord(payload.error) && typeof payload.error.code === "string" ? payload.error.code : undefined);
         const retryAfterHeader = response.headers.get("retry-after");
@@ -915,21 +923,32 @@ export function createPatternlyApiClient(input: Readonly<{
         let generation: number | undefined;
         let snapshotToken: string | undefined;
         let snapshotScope: string | undefined;
+        let legacyRead = false;
         const serializer = createProgressSnapshotSerializer();
         for (let page = 0; page < 1_001; page += 1) {
-          const query: string = pageToken === null
+          const query: string = legacyRead
+            ? `/v1/progress?pageSize=100${pageToken === null ? "" : `&pageToken=${encodeURIComponent(pageToken)}`}`
+            : pageToken === null
             ? `/v1/progress?pageSize=100&conditional=1${!cached ? "" : cached.token !== null ? `&knownSnapshot=${cached.token}` : `&knownScope=${cached.scope}&knownRevision=${cached.revision}`}`
             : `/v1/progress?pageSize=100&conditional=1&pageToken=${encodeURIComponent(pageToken)}`;
-          const payload = await requestJson<unknown>(query, "GET");
+          let payload: unknown;
+          try { payload = await requestJson<unknown>(query, "GET"); }
+          catch (error) {
+            if (page !== 0 || !(error instanceof ConditionalProgressUnsupportedError)) throw error;
+            legacyRead = true;
+            // Restart the first page against the documented older endpoint. Never
+            // downgrade malformed successes or return cached/partial account data.
+            payload = await requestJson<unknown>("/v1/progress?pageSize=100", "GET");
+          }
           if (isPlainRecord(payload) && payload.unchanged === true) {
-            if (page !== 0 || !cached || !hasExactKeys(payload, ["accountRevision", "generation", "snapshotToken", "snapshotScope", "unchanged"])
+            if (legacyRead || page !== 0 || !cached || !hasExactKeys(payload, ["accountRevision", "generation", "snapshotToken", "snapshotScope", "unchanged"])
               || !isSha256(payload.snapshotToken) || payload.snapshotScope !== cached.scope
               || (cached.token !== null && payload.snapshotToken !== cached.token)
               || payload.accountRevision !== cached.revision || payload.generation !== cached.generation) return invalidResponse();
             if (progressSnapshot === cached) progressSnapshot = { ...cached, token: payload.snapshotToken as string };
             return JSON.parse(cached.serialized) as ProgressResponseDto;
           }
-          const response = parseProgressPage(payload);
+          const response = parseProgressPage(payload, legacyRead);
           if (accountRevision === null) {
             accountRevision = response.accountRevision;
             generation = response.generation;
@@ -938,13 +957,13 @@ export function createPatternlyApiClient(input: Readonly<{
           } else if (response.accountRevision !== accountRevision || response.generation !== generation || response.snapshotToken !== snapshotToken || response.snapshotScope !== snapshotScope) {
             throw new PatternlyApiClientError("server_error", 409, "progress_generation_conflict");
           }
-          serializer.append(response.records);
+          if (!legacyRead) serializer.append(response.records);
           records.push(...response.records);
           pageToken = response.nextPageToken ?? null;
           if (pageToken === null) {
             const result = { accountRevision: accountRevision ?? 0, records: Object.freeze(records), generation, nextPageToken: null };
-            const serialized = serializer.finish(result.accountRevision, generation!);
-            progressSnapshot = serialized === null ? null : { token: snapshotToken!, scope: snapshotScope!, revision: result.accountRevision, generation: generation!, serialized };
+            const serialized = legacyRead ? null : serializer.finish(result.accountRevision, generation!);
+            if (!legacyRead || progressSnapshot === cached) progressSnapshot = serialized === null ? null : { token: snapshotToken!, scope: snapshotScope!, revision: result.accountRevision, generation: generation!, serialized };
             return result;
           }
         }

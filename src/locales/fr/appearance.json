@@ -10,5 +10,7 @@
   "dark": "Sombre",
   "darkDetail": "Toujours utiliser le thème sombre.",
   "saveErrorTitle": "Impossible d’enregistrer l’apparence",
-  "saveErrorDetail": "Essayez de choisir à nouveau une apparence."
+  "saveErrorDetail": "Essayez de choisir à nouveau une apparence.",
+  "preferencesUnavailableTitle": "Préférences enregistrées indisponibles",
+  "preferencesUnavailableDetail": "Les préférences enregistrées n’ont pas pu être lues. Les choix sont désactivés jusqu’au rétablissement du stockage local."
 }

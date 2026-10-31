@@ -1,4 +1,4 @@
-import { completeTrainingSession, createFamilyEnvelope, createTrainingSessionDraft, createTrainingSessionResult, isActiveReviewQueueEntry, matchesReviewSourceSnapshot, manualRequestIdForEntry, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
+import { completeTrainingSession, createFamilyEnvelope, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult, isActiveReviewQueueEntry, matchesReviewSourceSnapshot, manualRequestIdForEntry, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime, FamilyPlanningModeBinding, TrainingCatalog, TrainingInteractionPort, TrainingQuestionSummary } from "../trainingLifecycle";
 import { getProductSimulationModeConfig, ProductModeUnavailableError, type ProductModeConfig } from "../../content/canonical/productModeConfig";
 import type { CanonicalProductSimulationProfile } from "../../content/canonical/questionTypes";
@@ -8,6 +8,11 @@ import { reviewEvidenceMatchesAttempt } from "../../domain/learning/mentalUnitEv
 import { assertCanonicalReviewSourceProofs, createCanonicalReviewSourceSnapshot, canonicalQuestionReviewEvidence, createCanonicalAttempt, limitQuestionsToReviewNeeds, reviewNeedForQuestion, sameCurrentReviewUnit, scopeAttemptsToLearningTrack, scopeReviewsToLearningTrack } from "../canonical/canonicalFamilyMechanics";
 import { applyCanonicalPlanReplacements, buildCanonicalSessionPlan, prepareCanonicalPlanOccurrences, validateCanonicalSessionPlan } from "../canonical/canonicalSessionPlanMechanics";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
+import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
+import { canonicalInteractionRegistry } from "../../content/canonical/interactions/registry";
+import { validateApproachChallengeProblem, validateApproachChallengeProblemRef, type ApproachChallengeProblem, type ApproachChallengeProblemRef } from "../../content/canonical/approachChallengeProblem";
+import { APPROACH_CHALLENGE_MODE_ID } from "../../tracks/coding-interview/domain/algorithmModes";
+import { approachChallengeOccurrenceRef, approachChallengeStageForOccurrence, decodeApproachChallengeManifest, encodeApproachChallengeManifest, resolveManifestEntryProblem, type ApproachChallengeManifest, type ApproachChallengeManifestEntry } from "./approachChallengeSession";
 
 const FAMILY: TrackFamilyId = "coding_interview";
 
@@ -27,6 +32,7 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
 
   async prepare(input: Parameters<TrainingFamilyRuntime["prepare"]>[0]): Promise<PreparedSession> {
     assertTrack(input.trackId, this.catalog.trackId);
+    if (input.modeId === APPROACH_CHALLENGE_MODE_ID) return this.prepareApproachChallenge(input);
     if (input.modeId === "coding-interview-simulation") {
       const request = requestRecord(input.request);
       if (request.reviewSource !== undefined || request.reviewItemRefs !== undefined) throw new Error("Coding Interview simulation does not accept review sources.");
@@ -65,6 +71,7 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
   }
 
   async validateResume(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft | null }>): Promise<void> {
+    if (input.session.modeId === APPROACH_CHALLENGE_MODE_ID) return this.validateApproachChallengeResume(input.session, input.draft);
     if (input.session.modeId === "coding-interview-simulation") return this.validateSimulationResume(input);
     if (input.draft) throw new Error("Coding Interview practice cannot contain a simulation draft.");
     const mode = this.mode(input.session.modeId);
@@ -80,6 +87,7 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
   }
 
   async submitPractice(input: Parameters<TrainingFamilyRuntime["submitPractice"]>[0]): Promise<PracticeSubmission> {
+    if (input.session.modeId === APPROACH_CHALLENGE_MODE_ID) return this.submitApproachChallenge(input);
     await this.validateResume({ session: input.session, draft: null });
     const occurrence = input.session.itemOrder[input.session.currentItemIndex]!;
     const question = this.catalog.getQuestion(occurrence.item.questionId)!;
@@ -107,6 +115,7 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
   }
 
   async finalizePractice(input: Parameters<TrainingFamilyRuntime["finalizePractice"]>[0]): Promise<PracticeFinalization> {
+    if (input.session.modeId === APPROACH_CHALLENGE_MODE_ID) return this.finalizeApproachChallenge(input);
     await this.validateResume({ session: input.session, draft: null });
     const attempts = input.attempts.filter((attempt) => attempt.sessionId === input.session.id);
     const ids = new Set(attempts.map((attempt) => attempt.occurrenceId));
@@ -159,6 +168,128 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
 
   async queryDashboard(input: Parameters<TrainingFamilyRuntime["queryDashboard"]>[0]): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); const reviews = scopeReviewsToLearningTrack(input.reviews, this.catalog); return Object.freeze({ trackId: input.trackId, activeSessionId: input.activeSession?.trackId === input.trackId && input.activeSession.artifactSha256 === this.catalog.artifactSha256 ? input.activeSession.id : undefined, attemptCount: scopeAttemptsToLearningTrack(input.attempts, this.catalog).length, dueReviewCount: reviews.filter((entry) => this.isSelectedReviewEntry(entry, "due_queue", input.now)).length, manualReviewCount: reviews.filter((entry) => this.isSelectedReviewEntry(entry, "manual_request", input.now)).length }); }
   async queryReview(input: Parameters<TrainingFamilyRuntime["queryReview"]>[0]): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); return Object.freeze({ trackId: input.trackId, due: Object.freeze(scopeReviewsToLearningTrack(input.reviews, this.catalog).filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt <= input.now)) }); }
+
+  private async prepareApproachChallenge(input: Parameters<TrainingFamilyRuntime["prepare"]>[0]): Promise<PreparedSession> {
+    const request = requestRecord(input.request);
+    const selection = request.selection;
+    if (!isRecord(selection) || selection.status !== "ready" || (selection.access !== "free" && selection.access !== "premium") ||
+      !isRequestedProblemCount(selection.requestedProblemCount) || !Number.isSafeInteger(selection.actualProblemCount) ||
+      !Array.isArray(selection.problems) || selection.problems.length !== selection.actualProblemCount || selection.actualProblemCount < 1 ||
+      selection.actualProblemCount > selection.requestedProblemCount || (selection.actualProblemCount < selection.requestedProblemCount && selection.shortenedConfirmed !== true)) {
+      throw new ProductModeUnavailableError("Approach Challenge selection is unavailable or needs explicit shortening confirmation.");
+    }
+    const sessionId = requireSessionId(input.request);
+    const entries: ApproachChallengeManifestEntry[] = [];
+    const itemOrder: TrainingSession["itemOrder"][number][] = [];
+    const optionOrderByOccurrence: Record<string, readonly string[]> = {};
+    for (const [index, selected] of selection.problems.entries()) {
+      if (!isRecord(selected) || !isRecord(selected.problemRef) || !Array.isArray(selected.requiredFamilyIds) || typeof selected.primaryFamilyId !== "string" ||
+        !("problemId" in selected.problemRef) || typeof selected.problemRef.problemId !== "string" || typeof selected.problemRef.problemVersion !== "string") throw new ProductModeUnavailableError("Approach Challenge task reference is invalid.");
+      const problem = this.resolveApproachChallengeProblem(selected.problemRef as unknown as ApproachChallengeProblemRef);
+      if (problem.primaryFamilyId !== selected.primaryFamilyId || JSON.stringify(problem.requiredFamilyIds) !== JSON.stringify(selected.requiredFamilyIds) || problem.difficulty !== selected.difficulty) throw new ProductModeUnavailableError("Approach Challenge selector metadata does not match the exact pinned task.");
+      const approachOccurrenceId = `${sessionId}:occurrence:${index * 2}`;
+      const complexityOccurrenceId = `${sessionId}:occurrence:${index * 2 + 1}`;
+      const approachRef = approachChallengeOccurrenceRef(problem.approachQuestion.questionId, this.catalog);
+      const complexityRef = approachChallengeOccurrenceRef(problem.complexityQuestion.questionId, this.catalog);
+      entries.push(Object.freeze({ problemRef: Object.freeze({ ...selected.problemRef }) as ApproachChallengeProblemRef,
+        primaryFamilyId: problem.primaryFamilyId, requiredFamilyIds: Object.freeze([...problem.requiredFamilyIds]), difficulty: problem.difficulty,
+        approachOccurrenceId, complexityOccurrenceId }));
+      itemOrder.push(Object.freeze({ occurrenceId: approachOccurrenceId, item: approachRef }), Object.freeze({ occurrenceId: complexityOccurrenceId, item: complexityRef }));
+      optionOrderByOccurrence[approachOccurrenceId] = Object.freeze(problem.approachQuestion.interaction.options.map(({ optionId }) => optionId));
+      optionOrderByOccurrence[complexityOccurrenceId] = Object.freeze(problem.complexityQuestion.interaction.options.map(({ optionId }) => optionId));
+    }
+    const manifest: ApproachChallengeManifest = Object.freeze({ schemaVersion: 1, modeId: APPROACH_CHALLENGE_MODE_ID,
+      accessAtStart: selection.access, admissionGrant: "session_start", requestedProblemCount: selection.requestedProblemCount,
+      actualProblemCount: selection.actualProblemCount, shortenedConfirmed: selection.shortenedConfirmed === true, entries: Object.freeze(entries) });
+    const manifestValue = encodeApproachChallengeManifest(manifest);
+    const configurationSnapshot = Object.freeze({ kind: "practice", timer: "elapsedForeground", feedbackMode: "afterEachAnswer", answerChanges: "none", submission: "perItem", reinsertEnabled: false, approachChallengeManifestV1: manifestValue });
+    const base = { id: sessionId, trackId: this.catalog.trackId, modeId: APPROACH_CHALLENGE_MODE_ID, configurationSnapshot,
+      requestedLength: selection.requestedProblemCount * 2, actualLength: itemOrder.length, currentItemIndex: 0, itemOrder: Object.freeze(itemOrder),
+      optionOrderByOccurrence: Object.freeze(optionOrderByOccurrence), conditionalReinsertSlots: Object.freeze([]), activeForegroundMs: 0,
+      contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256, taxonomyVersion: "canonical-content-v1", status: "active" as const, startedAt: input.now };
+    const session = createTrainingSession({ ...base, planFingerprint: await createContentSessionPlanFingerprint(base as TrainingSession & { taxonomyVersion: string }) });
+    return Object.freeze({ session, firstOccurrence: session.itemOrder[0]!.item, draft: null });
+  }
+
+  private async validateApproachChallengeResume(session: TrainingSession, draft: TrainingSessionDraft | null): Promise<void> {
+    if (draft || session.trackId !== this.catalog.trackId || session.modeId !== APPROACH_CHALLENGE_MODE_ID || session.status === "completed" && !session.completedAt) throw new ProductModeUnavailableError("Approach Challenge session state is unavailable.");
+    const manifest = decodeApproachChallengeManifest(session.configurationSnapshot.approachChallengeManifestV1, session);
+    const expectedConfig = { kind: "practice", timer: "elapsedForeground", feedbackMode: "afterEachAnswer", answerChanges: "none", submission: "perItem", reinsertEnabled: false, approachChallengeManifestV1: session.configurationSnapshot.approachChallengeManifestV1 };
+    if (JSON.stringify(session.configurationSnapshot) !== JSON.stringify(expectedConfig) || session.requestedLength !== manifest.requestedProblemCount * 2 ||
+      session.actualLength !== manifest.actualProblemCount * 2 || session.itemOrder.length !== session.actualLength || session.conditionalReinsertSlots?.length !== 0 ||
+      session.planFingerprint === undefined || !session.taxonomyVersion || await createContentSessionPlanFingerprint(session as TrainingSession & { taxonomyVersion: string }) !== session.planFingerprint) {
+      throw new ProductModeUnavailableError("Approach Challenge session manifest does not match its pinned session plan.");
+    }
+    const expectedOccurrences: string[] = [];
+    for (const [index, entry] of manifest.entries.entries()) {
+      const problem = this.resolveManifestProblem(entry, session);
+      const expected = [
+        [entry.approachOccurrenceId, problem.approachQuestion.questionId, problem.approachQuestion.interaction.options.map(({ optionId }) => optionId)],
+        [entry.complexityOccurrenceId, problem.complexityQuestion.questionId, problem.complexityQuestion.interaction.options.map(({ optionId }) => optionId)],
+      ] as const;
+      for (const [stageIndex, [occurrenceId, questionId, options]] of expected.entries()) {
+        const occurrence = session.itemOrder[index * 2 + stageIndex];
+        if (!occurrence || occurrence.occurrenceId !== occurrenceId || occurrence.item.questionId !== questionId || occurrence.item.trackId !== session.trackId ||
+          occurrence.item.contentVersion !== session.contentVersion || occurrence.item.artifactSha256 !== session.artifactSha256 ||
+          JSON.stringify(session.optionOrderByOccurrence[occurrenceId]) !== JSON.stringify(options)) throw new ProductModeUnavailableError("Approach Challenge pinned pair references are corrupt or unavailable.");
+        expectedOccurrences.push(occurrenceId);
+      }
+    }
+    if (new Set(expectedOccurrences).size !== session.itemOrder.length || session.itemOrder.some((occurrence, index) => occurrence.occurrenceId !== expectedOccurrences[index])) throw new ProductModeUnavailableError("Approach Challenge occurrence sequence is invalid.");
+  }
+
+  private async submitApproachChallenge(input: Parameters<TrainingFamilyRuntime["submitPractice"]>[0]): Promise<PracticeSubmission> {
+    await this.validateResume({ session: input.session, draft: null });
+    const manifest = decodeApproachChallengeManifest(input.session.configurationSnapshot.approachChallengeManifestV1, input.session);
+    const occurrence = input.session.itemOrder[input.session.currentItemIndex]!;
+    const stage = approachChallengeStageForOccurrence(manifest, occurrence.occurrenceId);
+    if (!stage) throw new ProductModeUnavailableError("Approach Challenge current stage is not in the pinned manifest.");
+    const currentAttempts = input.attempts.filter((attempt) => attempt.sessionId === input.session.id && attempt.modeId === APPROACH_CHALLENGE_MODE_ID);
+    const earlier = input.session.itemOrder.slice(0, input.session.currentItemIndex);
+    if (currentAttempts.length !== input.session.currentItemIndex || earlier.some((entry) => currentAttempts.filter((attempt) => attempt.occurrenceId === entry.occurrenceId).length !== 1) ||
+      currentAttempts.some((attempt) => !earlier.some((entry) => entry.occurrenceId === attempt.occurrenceId))) throw new ProductModeUnavailableError("Approach Challenge stages must be accepted in order with one durable result per prior stage.");
+    if (stage.stage === "complexity" && currentAttempts.filter((attempt) => attempt.occurrenceId === stage.entry.approachOccurrenceId).length !== 1) throw new ProductModeUnavailableError("Approach Challenge stage two requires an accepted stage one.");
+    const problem = this.resolveManifestProblem(stage.entry, input.session);
+    const question = stage.stage === "approach" ? problem.approachQuestion : problem.complexityQuestion;
+    const evaluation = canonicalInteractionRegistry.evaluate(question, input.response);
+    if (!evaluation.complete || !evaluation.result) throw new Error("Approach Challenge response is incomplete or invalid.");
+    const attempt = await createCanonicalAttempt({ session: input.session, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response: input.response, result: evaluation.result,
+      reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [{ axisId: "node", nodeId: question.nodeId, role: "primary" }, { axisId: "mental_unit", nodeId: question.mentalUnitId, role: "primary" }] }, answeredAt: input.now, committedAt: input.now });
+    return Object.freeze({ attempt, session: input.session, reviewMutations: Object.freeze([]), reviewBaseline: input.reviews });
+  }
+
+  private async finalizeApproachChallenge(input: Parameters<TrainingFamilyRuntime["finalizePractice"]>[0]): Promise<PracticeFinalization> {
+    await this.validateResume({ session: input.session, draft: null });
+    const manifest = decodeApproachChallengeManifest(input.session.configurationSnapshot.approachChallengeManifestV1, input.session);
+    const attempts = input.attempts.filter((attempt) => attempt.sessionId === input.session.id);
+    if (input.session.status !== "active" || input.session.currentItemIndex !== input.session.actualLength - 1 || attempts.length !== input.session.actualLength ||
+      new Set(attempts.map((attempt) => attempt.occurrenceId)).size !== input.session.actualLength) throw new Error("Approach Challenge finalization requires exactly one accepted result for every pinned stage.");
+    for (const occurrence of input.session.itemOrder) {
+      const attempt = attempts.find((candidate) => candidate.occurrenceId === occurrence.occurrenceId);
+      const stage = approachChallengeStageForOccurrence(manifest, occurrence.occurrenceId);
+      if (!attempt || !stage || attempt.modeId !== APPROACH_CHALLENGE_MODE_ID || attempt.trackId !== input.session.trackId || !resolvedContentRefsEqual(attempt.item, occurrence.item)) throw new Error("Approach Challenge finalization found a foreign or orphaned attempt.");
+      const problem = this.resolveManifestProblem(stage.entry, input.session);
+      const question = stage.stage === "approach" ? problem.approachQuestion : problem.complexityQuestion;
+      const scored = canonicalInteractionRegistry.evaluate(question, attempt.response).result;
+      if (!scored || scored.kind !== attempt.result.kind || scored.earnedPoints !== attempt.result.earnedPoints || scored.maxPoints !== attempt.result.maxPoints) throw new Error("Approach Challenge attempt result does not match its pinned question.");
+    }
+    const session = completeTrainingSession(input.session, input.now);
+    const details = aggregateEvidence(session.activeForegroundMs, attempts);
+    const result = createTrainingSessionResult({ id: `${session.id}:result`, sessionId: session.id, trackId: session.trackId, totalOccurrences: session.actualLength,
+      answeredOccurrenceIds: session.itemOrder.map(({ occurrenceId }) => occurrenceId), unansweredOccurrenceIds: [], completedAt: input.now,
+      evidence: createFamilyEnvelope({ familyId: FAMILY, details: { ...details, modeId: APPROACH_CHALLENGE_MODE_ID, manifestVersion: manifest.schemaVersion, problemCount: manifest.actualProblemCount } }) });
+    return Object.freeze({ session, result });
+  }
+
+  private resolveApproachChallengeProblem(ref: ApproachChallengeProblemRef): ApproachChallengeProblem {
+    const problem = this.catalog.getApproachChallengeProblem?.(ref.problemId, ref.problemVersion);
+    if (!problem || validateApproachChallengeProblem(problem).length > 0 || validateApproachChallengeProblemRef(ref, problem, this.catalog).length > 0) throw new ProductModeUnavailableError("The exact pinned Approach Challenge artifact is unavailable.");
+    return problem;
+  }
+
+  private resolveManifestProblem(entry: ApproachChallengeManifestEntry, session: TrainingSession): ApproachChallengeProblem {
+    return resolveManifestEntryProblem(entry, (problemId, version) => this.catalog.getApproachChallengeProblem?.(problemId, version), session);
+  }
 
   private mode(modeId: string): ProductModeConfig { try { return this.catalog.getMode(modeId); } catch { throw new ProductModeUnavailableError(`Coding Interview mode ${modeId} is unavailable.`); } }
   private buildReinsertionSlots(mode: ProductModeConfig, items: TrainingSession["itemOrder"], orders: TrainingSession["optionOrderByOccurrence"]): NonNullable<TrainingSession["conditionalReinsertSlots"]> {
@@ -235,6 +366,8 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
 }
 
 function requestRecord(value: unknown): Record<string, unknown> { return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {}; }
+function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
+function isRequestedProblemCount(value: unknown): value is 5 | 10 | 20 { return value === 5 || value === 10 || value === 20; }
 function parseRequest(value: unknown, fallback: number): Readonly<{ requestedLength: number; feedbackTiming?: string; reviewSource?: "due_queue" | "manual_request" | "session_misses" }> { const request = requestRecord(value); if (request.requestedLength !== undefined && (!Number.isSafeInteger(request.requestedLength) || Number(request.requestedLength) <= 0)) throw new Error("Coding Interview requestedLength is invalid."); if (request.feedbackTiming !== undefined && request.feedbackTiming !== "after_each_durable_submit" && request.feedbackTiming !== "after_session_completion") throw new Error("Coding Interview feedbackTiming is invalid."); const reviewSource = request.reviewSource; if (reviewSource !== undefined && reviewSource !== "due_queue" && reviewSource !== "manual_request" && reviewSource !== "session_misses") throw new Error("Coding Interview reviewSource is invalid."); if (request.reviewItemRefs !== undefined && reviewSource !== "session_misses") throw new Error("Coding Interview review item refs require session_misses."); return { requestedLength: typeof request.requestedLength === "number" ? request.requestedLength : fallback, feedbackTiming: typeof request.feedbackTiming === "string" ? request.feedbackTiming : undefined, reviewSource: reviewSource as "due_queue" | "manual_request" | "session_misses" | undefined }; }
 function requireSessionId(value: unknown): string { const id = requestRecord(value).sessionId; if (typeof id !== "string" || !id.trim()) throw new Error("Coding Interview preparation requires sessionId."); return id; }
 function simulationProfileId(value: unknown): string | undefined { const scope = requestRecord(value).scope; return typeof requestRecord(scope).simulationProfileId === "string" ? String(requestRecord(scope).simulationProfileId) : undefined; }

@@ -7,6 +7,7 @@ import {
 } from "../../domain/learning/packageCompletionRule";
 import type { ImmutableCompletedFacts } from "../../domain/learning/paceForecast";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
+import { classifyTrainingAttemptMode } from "../../tracks/coding-interview/domain/algorithmModes";
 
 export type LearningEvidenceProjection = Readonly<{
   identity: Readonly<{ trackId: string; contentVersion: string; artifactSha256: string }>;
@@ -37,10 +38,10 @@ export function projectLearningEvidence(input: Readonly<{
   const qualifyingIds = new Set(qualifyPackageAttempts(profile, uniqueAttempts, profile.getQuestion).map(attempt => attempt.id));
   // Preserve source evidence order for the existing proposal freshness contract;
   // the canonical evaluator owns deterministic rolling-window time/ID ordering.
-  const activityAttempts = Object.freeze(uniqueAttempts.filter(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && completionAttemptIdentity(profile, attempt, profile.getQuestion) !== undefined));
+  const activityAttempts = Object.freeze(uniqueAttempts.filter(attempt => classifyTrainingAttemptMode(attempt.trackId, attempt.modeId) === "legacy" && attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && completionAttemptIdentity(profile, attempt, profile.getQuestion) !== undefined));
   const attempts = Object.freeze(uniqueAttempts.filter(attempt => qualifyingIds.has(attempt.id)));
-  if (uniqueAttempts.some(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && attempt.item.contentVersion === profile.contentVersion && attempt.item.artifactSha256 === profile.artifactSha256 && !profile.getQuestion(attempt.item.questionId))) throw new Error("Learning evidence item is absent from its verified package.");
-  const milestoneAttempts = uniqueAttempts.filter(attempt => attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId &&
+  if (uniqueAttempts.some(attempt => classifyTrainingAttemptMode(attempt.trackId, attempt.modeId) === "legacy" && attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId && attempt.item.contentVersion === profile.contentVersion && attempt.item.artifactSha256 === profile.artifactSha256 && !profile.getQuestion(attempt.item.questionId))) throw new Error("Learning evidence item is absent from its verified package.");
+  const milestoneAttempts = uniqueAttempts.filter(attempt => classifyTrainingAttemptMode(attempt.trackId, attempt.modeId) === "legacy" && attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId &&
     profile.completionSources?.some(source => source.trackId === profile.trackId && source.contentVersion === attempt.item.contentVersion && source.artifactSha256 === attempt.item.artifactSha256));
   for (const attempt of new Set([...activityAttempts, ...attempts, ...milestoneAttempts])) {
     const answeredAtMs = Date.parse(attempt.answeredAt);

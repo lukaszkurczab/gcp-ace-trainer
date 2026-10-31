@@ -1,0 +1,68 @@
+appId: com.lkurczab.patternly
+name: ACM native fixture — create a Free active Approach Challenge session
+tags:
+  - acm-native-fixture
+  - ios
+  - create
+---
+- launchApp:
+    clearState: false
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- extendedWaitUntil:
+    visible:
+      id: "acm-native-fixture-hub"
+    timeout: 30000
+- assertVisible: "Local access: Free"
+- tapOn: "Free"
+- tapOn: "Open Approach Challenge"
+- extendedWaitUntil:
+    visible: "Selection method"
+    timeout: 15000
+- tapOn: "Manual"
+- scrollUntilVisible:
+    element: "Arrays And Strings"
+    direction: DOWN
+    centerElement: true
+- tapOn: "Arrays And Strings"
+- assertVisible: "No problems match these choices. Change your topic families or difficulty."
+- tapOn:
+    id: "patternly:navigation:back"
+- extendedWaitUntil:
+    visible:
+      id: "acm-native-fixture-hub"
+    timeout: 10000
+- tapOn: "Premium"
+- assertVisible: "Local access: Premium"
+- tapOn: "Open Approach Challenge"
+- extendedWaitUntil:
+    visible: "Selection method"
+    timeout: 15000
+- tapOn: "Medium"
+- extendedWaitUntil:
+    visible: "1 of 5 problems available"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "Start session"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "Start session"
+- assertVisible: "Start with 1 available problems?"
+- scrollUntilVisible:
+    element: "Confirm shorter session"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "Confirm shorter session"
+- extendedWaitUntil:
+    visible: "Choose an approach"
+    timeout: 15000
+- assertVisible: "Problem 1 of 1.*Step 1/2"
+- assertVisible:
+    id: "acm6-option-0"
+- stopApp

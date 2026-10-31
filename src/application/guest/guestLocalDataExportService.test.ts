@@ -210,7 +210,8 @@ test("includes user settings, reminder preferences, and report text without tran
   closeActiveProfileStorage();
   const { base } = await activateGuest(ROUTER_PROFILE_ID);
   try {
-    await saveSettings({ appearance: "dark", language: "pl" });
+    const approachChallenge = { mode: "manual" as const, requestedProblemCount: 10 as const, difficulties: ["easy", "medium"] as const, selectedFamilyIds: ["arrays_and_strings"] };
+    await saveSettings({ appearance: "dark", language: "pl", approachChallenge });
     saveDeviceReminderSettings({ schemaVersion: 1, enabled: false, identity: null, schedules: [], legacyNotificationIds: [], pending: null }, null);
     upsertContentReportOutboxEntry({
       input: {
@@ -240,7 +241,7 @@ test("includes user settings, reminder preferences, and report text without tran
     const files = fileStore();
     assert.deepEqual(await exportGuestLocalData(dependencies(files.store, async () => "sharedAction")), { kind: "handoff", disposition: "shared" });
     const document = JSON.parse(files.contents) as Record<string, any>;
-    assert.deepEqual(document.settings.application, { appearance: "dark", language: "pl" });
+    assert.deepEqual(document.settings.application, { appearance: "dark", language: "pl", approachChallenge });
     assert.deepEqual(document.settings.reminders, { kind: "device", enabled: false, schedules: [], pending: null });
     assert.equal(document.userReports.length, 1);
     assert.equal(document.userReports[0].description, "The explanation describes the wrong boundary condition.");

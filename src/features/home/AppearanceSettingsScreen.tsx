@@ -56,12 +56,13 @@ export function AppearanceSettingsScreen({ navigation }: AppearanceSettingsScree
         title={t("appearance")}
       />
       {saveError ? <InfoBlock accessibilityAlert body={t("saveErrorDetail")} title={t("saveErrorTitle")} testID="appearance-save-error" tone="warning" /> : null}
+      {preferences.settingsUnavailable ? <InfoBlock accessibilityAlert body={t("preferencesUnavailableDetail")} title={t("preferencesUnavailableTitle")} testID="appearance-settings-unavailable" tone="warning" /> : null}
       <View accessibilityLabel={t("options")} accessibilityRole="radiogroup" style={styles.choiceGroup}>
         {options.map((option) => (
           <ChoiceRow
             appearancePreview={option.value}
             detail={t(option.detailKey)}
-            disabled={savingValue !== null}
+            disabled={savingValue !== null || preferences.settingsUnavailable === true}
             key={option.value}
             loading={savingValue === option.value}
             onPress={() => { void select(option.value); }}

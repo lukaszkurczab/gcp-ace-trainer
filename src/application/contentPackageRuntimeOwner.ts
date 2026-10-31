@@ -15,6 +15,8 @@ import type { LearningPlanningPolicy } from "../content/canonical/planningPolicy
 import type { ContentPlanningPolicyIdentity } from "../content/canonical/contentSuccessorLedger";
 import { NodePackageStorageUnavailableError } from "../content/runtime/nodeContentPackage";
 import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from "../content/canonical/interactions/registry";
+import { APPROACH_CHALLENGE_MODE_ID } from "../tracks/coding-interview/domain/algorithmModes";
+import { APPROACH_CHALLENGE_TRACK_ID } from "../content/canonical/approachChallengeProblem";
 
 export type ResolvedPackageRuntime = Readonly<{ track: TrainingCatalog; runtime: TrainingFamilyRuntime; presentation: TrainingPresentationPort; planningPolicy?: LearningPlanningPolicy; planningPolicyIdentity?: ContentPlanningPolicyIdentity }>;
 export type ResolvedInteractionItem = Readonly<{ question: TrainingQuestionSummary; interactions: TrainingPresentationPort }>;
@@ -32,19 +34,27 @@ export class ContentPackageRuntimeOwner {
     private readonly offerForIdentity: (identity: VerifiedNodePackage["identity"]) => PackageOffer = findPremiumNodeOfferForIdentity,
     private readonly availableOfferForMode: typeof getAvailablePremiumNodeOfferForMode = getAvailablePremiumNodeOfferForMode,
     private readonly interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry,
+    catalogOwner?: ReturnType<typeof createCanonicalRuntimeCatalogOwner>,
   ) {
     this.loadActiveInstalledPackages = loadActiveInstalledPackages ?? ((scopeKey) => loadActiveProfileNodePackages(scopeKey, this.interactions));
-    this.catalogOwner = createCanonicalRuntimeCatalogOwner({ interactionRegistry: this.interactions });
+    this.catalogOwner = catalogOwner ?? createCanonicalRuntimeCatalogOwner({ interactionRegistry: this.interactions });
   }
   private readonly historicalExact = new Map<string, ResolvedPackageRuntime>();
   private readonly exact = new Map<string, ResolvedPackageRuntime>();
   private readonly installedExact = new Map<string, ResolvedPackageRuntime>();
   private readonly discovered = new Map<string, ResolvedPackageRuntime>();
+  private readonly modeDiscovered = new Map<string, ResolvedPackageRuntime>();
   private readonly sourceTracks = new Map<string, CanonicalTrackRuntime>();
   subscribeBundledVerification(observer: VerificationObserver): () => void { return this.catalogOwner.subscribeVerification(observer); }
   async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string; caseId?: string }>): Promise<ResolvedPackageRuntime> {
     const track = (await this.catalogOwner.load()).getTrack(input.trackId);
     assertFamily(track, input.familyId);
+    if (input.modeId === APPROACH_CHALLENGE_MODE_ID) {
+      if (input.trackId !== APPROACH_CHALLENGE_TRACK_ID || input.nodeId !== undefined || input.caseId !== undefined || !track.approachChallengeProblems?.length) throw new Error("Approach Challenge requires the current whole-track artifact.");
+      const resolved = this.materialize(track, APPROACH_CHALLENGE_MODE_ID);
+      this.modeDiscovered.set(modeDiscoveryKey(input.trackId, input.modeId), resolved);
+      return resolved;
+    }
     if (input.modeId === "certification-exam-simulation" || input.modeId === "coding-interview-simulation" || input.modeId === "design-interview-simulation") {
       if (input.nodeId !== undefined) throw new Error("Product simulations do not accept a nodeId.");
       const simulation = getProductSimulationModeConfig(track.trackId, track.simulationProfiles);
@@ -83,12 +93,19 @@ export class ContentPackageRuntimeOwner {
       return resolved;
     }
   }
-  async resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ResolvedPackageRuntime> {
+  async resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256"> & Readonly<{ modeId?: string }>): Promise<ResolvedPackageRuntime> {
     const scopeKey = this.syncInstalledScope();
     if (!isRegisteredTrackId(input.trackId) || !isCanonicalSafeIdentity(input.contentVersion) || !isArtifactSha256(input.artifactSha256)) {
       throw new Error("Exact canonical artifact identity is invalid.");
     }
     const key = runtimeKey(input.trackId, input.contentVersion, input.artifactSha256);
+    if (input.modeId === APPROACH_CHALLENGE_MODE_ID) {
+      const catalog = await this.catalogOwner.load();
+      if (!catalog.tracks.includes(input.trackId)) throw unavailable(input);
+      const source = catalog.getTrack(input.trackId);
+      if (input.trackId !== APPROACH_CHALLENGE_TRACK_ID || source.contentVersion !== input.contentVersion || source.artifactSha256 !== input.artifactSha256 || !source.approachChallengeProblems?.length) throw unavailable(input);
+      return this.materialize(source, APPROACH_CHALLENGE_MODE_ID);
+    }
     const installed = this.installedExact.get(key);
     if (installed) return installed;
     // A missing exact ref is meaningful only after the canonical catalog has
@@ -158,8 +175,8 @@ export class ContentPackageRuntimeOwner {
     }
   }
   async resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ResolvedPackageRuntime> { const track = (await this.catalogOwner.load()).getTrack(trackId); assertFamily(track, familyId); const r = this.materialize(track); this.discovered.set(trackId, r); return r; }
-  getPreparedDiscovery(trackId: TrackId): ResolvedPackageRuntime { const prepared = this.discovered.get(trackId); if (prepared) return prepared; for (const candidate of this.exact.values()) { if (candidate.track.trackId === trackId) { this.discovered.set(trackId, candidate); return candidate; } } throw new Error(`Canonical discovery is not prepared for ${trackId}.`); }
-  async verifyBundledPackages(): Promise<void> { const catalog = await this.catalogOwner.load(); for (const id of catalog.tracks) { const track = catalog.getTrack(id); const runtime = this.materialize(track); this.discovered.set(id, runtime); } }
+  getPreparedDiscovery(trackId: TrackId, modeId?: string): ResolvedPackageRuntime { if (modeId === APPROACH_CHALLENGE_MODE_ID) { const prepared = this.modeDiscovered.get(modeDiscoveryKey(trackId, modeId)); if (prepared) return prepared; throw new Error(`Canonical discovery is not prepared for ${trackId}/${modeId}.`); } const prepared = this.discovered.get(trackId); if (prepared) return prepared; for (const [key, candidate] of this.exact) { if (candidate.track.trackId === trackId && isOrdinaryRuntimeKey(key)) { this.discovered.set(trackId, candidate); return candidate; } } throw new Error(`Canonical discovery is not prepared for ${trackId}.`); }
+  async verifyBundledPackages(): Promise<void> { const catalog = await this.catalogOwner.load(); for (const id of catalog.tracks) { const track = catalog.getTrack(id); const runtime = this.materialize(track); this.discovered.set(id, runtime); if (id === APPROACH_CHALLENGE_TRACK_ID && track.approachChallengeProblems?.length) this.modeDiscovered.set(modeDiscoveryKey(id, APPROACH_CHALLENGE_MODE_ID), this.materialize(track, APPROACH_CHALLENGE_MODE_ID)); } }
   /** Fresh bootstrap check: cache hits and bundled content must not hide a corrupt installed index. */
   async verifyInstalledPackages(): Promise<void> {
     const scopeKey = this.syncInstalledScope();
@@ -215,9 +232,11 @@ export class ContentPackageRuntimeOwner {
     }
     return scopeKey;
   }
-  private materialize(sourceTrack: CanonicalTrackRuntime): ResolvedPackageRuntime {
-    const identity = sourceTrack.trainingIdentity ?? Object.freeze({ contentVersion: sourceTrack.contentVersion, artifactSha256: sourceTrack.artifactSha256 });
-    const key = runtimeKey(sourceTrack.trackId, identity.contentVersion, identity.artifactSha256);
+  private materialize(sourceTrack: CanonicalTrackRuntime, modeId?: string): ResolvedPackageRuntime {
+    const identity = modeId === APPROACH_CHALLENGE_MODE_ID
+      ? Object.freeze({ contentVersion: sourceTrack.contentVersion, artifactSha256: sourceTrack.artifactSha256 })
+      : sourceTrack.trainingIdentity ?? Object.freeze({ contentVersion: sourceTrack.contentVersion, artifactSha256: sourceTrack.artifactSha256 });
+    const key = runtimeKey(sourceTrack.trackId, identity.contentVersion, identity.artifactSha256, modeId);
     const cached = this.exact.get(key);
     if (cached) return cached;
     const { planningPolicy: _planningPolicy, planningPolicyIdentity: _planningIdentity, ...sourceWithoutPolicy } = sourceTrack;
@@ -240,7 +259,10 @@ export class ContentPackageRuntimeOwner {
     return resolved;
   }
 }
-function runtimeKey(trackId: string, contentVersion: string, artifactSha256: string): string { return JSON.stringify([trackId, contentVersion, artifactSha256]); }
+function unavailable(input: Readonly<{ trackId: string; contentVersion: string; artifactSha256: string }>): ExactContentArtifactUnavailableError { return new ExactContentArtifactUnavailableError(Object.freeze({ trackId: input.trackId, contentVersion: input.contentVersion, artifactSha256: input.artifactSha256 })); }
+function runtimeKey(trackId: string, contentVersion: string, artifactSha256: string, modeId?: string): string { return JSON.stringify([trackId, contentVersion, artifactSha256, modeId ?? null]); }
+function modeDiscoveryKey(trackId: string, modeId: string): string { return JSON.stringify([trackId, modeId]); }
+function isOrdinaryRuntimeKey(key: string): boolean { try { return JSON.parse(key)[3] === null; } catch { return false; } }
 function assertFamily(track: CanonicalTrackRuntime, familyId: TrackFamilyId): void { if (getTrackRegistration(track.trackId).familyId !== familyId) throw new Error(`Canonical family routing does not own ${track.trackId}.`); }
 export const contentPackageRuntimeOwner = new ContentPackageRuntimeOwner();
 function lifecycleResolution(resolved: ResolvedPackageRuntime): ContentPackageRuntimeResolution {

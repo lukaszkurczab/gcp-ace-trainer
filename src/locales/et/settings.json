@@ -164,5 +164,7 @@
   "premiumNotStartedDetail": "App Store’i ostu ei käivitatud. Salvestatud päring tuleb enne uut ostu lahendada. Värskenda olekut või võta ühendust klienditoega.",
   "premiumScopeUnavailableDetail": "Teenuse kirjeldus pole veel kinnitatud. Uued ostud pole saadaval; saad endiselt oste taastada ja olemasolevat tellimust hallata.",
   "premiumRestoreCancelled": "Taastamine tühistatud",
-  "premiumServiceScopeSummary": "Iga õpperaja esimesed sõlmed on tasuta. Premium avab ülejäänud sõlmed."
+  "premiumServiceScopeSummary": "Iga õpperaja esimesed sõlmed on tasuta. Premium avab ülejäänud sõlmed.",
+  "preferencesUnavailableTitle": "Salvestatud eelistused pole saadaval",
+  "preferencesUnavailableDetail": "Salvestatud eelistusi ei saanud lugeda. Valikud on keelatud, kuni kohalik salvestus on taas saadaval."
 }

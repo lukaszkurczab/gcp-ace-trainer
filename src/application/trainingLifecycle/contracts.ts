@@ -75,6 +75,9 @@ export interface TrainingCatalog {
   getQuestionsForMentalUnit(mentalUnitId: string): readonly TrainingQuestionSummary[];
   getMode(modeId: string): ProductModeConfig;
   getPool(modeId: string): readonly TrainingQuestionSummary[];
+  /** Exact-package whole-task artifacts; absent until the track package publishes the paired bank. */
+  getApproachChallengeProblem?(problemId: string, problemVersion: string): import("../../content/canonical/approachChallengeProblem").ApproachChallengeProblem | undefined;
+  readonly approachChallengeProblems?: readonly import("../../content/canonical/approachChallengeProblem").ApproachChallengeProblem[];
 }
 
 export const APPLICATION_FAILURE_CODES = [
@@ -193,7 +196,7 @@ export class ExactContentArtifactUnavailableError extends Error {
 /** Sole verified package-to-family-runtime authority for preparation, exact resume, review, and discovery. */
 export interface ContentPackageRuntimePort {
   resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string; caseId?: string }>): Promise<ContentPackageRuntimeResolution>;
-  resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ContentPackageRuntimeResolution>;
+  resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256"> & Readonly<{ modeId?: string }>): Promise<ContentPackageRuntimeResolution>;
   resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ContentPackageRuntimeResolution>;
 }
 

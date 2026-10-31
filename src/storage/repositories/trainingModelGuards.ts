@@ -2,6 +2,7 @@ import { isLegacyReviewUnitProof } from "../../domain/learning/mentalUnitEvidenc
 import { isCaseAttemptEvidence, CASE_TRACK_ID } from "../../domain/learning/caseEvidence";
 import { REVIEW_REASONS, REVIEW_CYCLE_STAGES, isManualRequestId, type ReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
 import { createAttemptResult, type AttemptResultComponent } from "../../domain/learning/attemptResult";
+import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
 import { createTrainingSession, type TrainingSession } from "../../domain/learning/trainingSession";
 import { createTrainingSessionDraft, type AcceptedSimulationFinalization, type TrainingSessionDraft, type TrainingSessionDraftResponse } from "../../domain/learning/trainingSessionDraft";
 import { createTrainingSessionResult, type TrainingSessionResult } from "../../domain/learning/sessionResult";
@@ -169,7 +170,7 @@ export function isTrainingAttempt(value: unknown, admission: TrackAdmissionConte
       earnedPoints: value.result.earnedPoints,
       maxPoints: value.result.maxPoints,
       components: value.result.components,
-    });
+    }, { allowZeroPointPartial: isApproachChallengeTrainingAttempt(value.trackId, value.modeId) });
     return value.item.trackId === value.trackId &&
       value.reviewEvidence.sourceItem.trackId === value.trackId &&
       resolvedContentRefsEqual(value.reviewEvidence.sourceItem, value.item);

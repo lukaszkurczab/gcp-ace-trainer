@@ -39,6 +39,9 @@ import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
 import { AlgorithmsScopeSelectionScreen } from "../features/practice/AlgorithmsScopeSelectionScreen";
 import { PracticeSessionScreen } from "../features/practice/PracticeSessionScreen";
+import { ApproachChallengeScreen } from "../features/practice/ApproachChallengeScreen";
+import { ApproachChallengeAccessProvider } from "../features/practice/approachChallengeAccess";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AlgorithmsPracticeReviewScreen } from "../features/practice/AlgorithmsPracticeReviewScreen";
 import { AlgorithmsPracticeSummaryScreen } from "../features/practice/AlgorithmsPracticeSummaryScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
@@ -59,6 +62,12 @@ import { handleCodingMockCountdownAuditUrl, isCodingMockCountdownAuditCommand } 
 import { clearGoalPlanAcceptanceInterruptionArm, DEVELOPMENT_INTERRUPT_GOAL_PLAN_ACCEPTANCE_URL, handleGoalPlanAcceptanceInterruptionUrl } from "../application/runtimeAuditability/goalPlanAcceptanceInterruptionCommand";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+function AccountBackedApproachChallengeScreen(props: NativeStackScreenProps<RootStackParamList, typeof ROUTES.APPROACH_CHALLENGE>) {
+  const account = usePatternlyAccount();
+  const access = useMemo(() => Object.freeze({ readCurrentPremiumAccess: account.readCurrentPremiumAccess }), [account.readCurrentPremiumAccess]);
+  return <ApproachChallengeAccessProvider value={access}><ApproachChallengeScreen {...props} /></ApproachChallengeAccessProvider>;
+}
 
 export function RootNavigator() {
   const navigationTheme = useTheme();
@@ -322,6 +331,7 @@ export function RootNavigator() {
             component={PracticeSessionScreen}
             options={{ headerShown: false, title: t("Practice Session") }}
           />
+          <Stack.Screen name={ROUTES.APPROACH_CHALLENGE} component={AccountBackedApproachChallengeScreen} options={{ headerShown: false, title: t("Approach Challenge") }} />
           <Stack.Screen
             name={ROUTES.ALGORITHMS_PRACTICE_REVIEW}
             component={AlgorithmsPracticeReviewScreen}

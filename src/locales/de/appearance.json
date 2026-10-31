@@ -10,5 +10,7 @@
   "dark": "Dunkel",
   "darkDetail": "Verwendet immer das dunkle Design.",
   "saveErrorTitle": "Darstellung konnte nicht gespeichert werden",
-  "saveErrorDetail": "Wähle die Darstellung erneut aus."
+  "saveErrorDetail": "Wähle die Darstellung erneut aus.",
+  "preferencesUnavailableTitle": "Gespeicherte Einstellungen nicht verfügbar",
+  "preferencesUnavailableDetail": "Gespeicherte Einstellungen konnten nicht gelesen werden. Die Auswahl bleibt deaktiviert, bis der lokale Speicher verfügbar ist."
 }

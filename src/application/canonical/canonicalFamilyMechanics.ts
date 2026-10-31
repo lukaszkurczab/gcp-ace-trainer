@@ -7,6 +7,7 @@ import { createReviewSourceSnapshot } from "../../domain/learning/reviewQueueEnt
 import { createAttemptId } from "../identity/trainingIdentity";
 import { createTrainingAttempt } from "../../domain/learning/trainingAttempt";
 import { createLegacyReviewUnitProof, reviewEvidenceMatchesAttempt, learningUnitIdentity, learningUnitInCurrentCatalog } from "../../domain/learning/mentalUnitEvidence";
+import { classifyTrainingAttemptMode } from "../../tracks/coding-interview/domain/algorithmModes";
 
 export async function createCanonicalAttempt(input: Readonly<{
   session: TrainingSession;
@@ -35,7 +36,7 @@ export async function createCanonicalAttempt(input: Readonly<{
 
 /** Active learning totals follow durable unit attribution across canonical content revisions. */
 export function scopeAttemptsToLearningTrack(attempts: readonly TrainingAttempt<unknown>[], catalog: TrainingCatalog): readonly TrainingAttempt<unknown>[] {
-  return attempts.filter((attempt) => attempt.trackId === catalog.trackId && attempt.item.trackId === catalog.trackId && learningUnitInCurrentCatalog(attempt.reviewEvidence, catalog) !== undefined);
+  return attempts.filter((attempt) => classifyTrainingAttemptMode(attempt.trackId, attempt.modeId) === "legacy" && attempt.trackId === catalog.trackId && attempt.item.trackId === catalog.trackId && learningUnitInCurrentCatalog(attempt.reviewEvidence, catalog) !== undefined);
 }
 
 /** Queue identity is durable; exact source content is retained for history and audit only. */

@@ -22,6 +22,10 @@ export const GENERATED_DIRECTORY = "src/content/generated/canonical-content";
 export const LOCK_FILE_NAME = "content-lock.json";
 export const SUCCESSOR_LEDGER_FILE_NAME = "content-successor-ledger.json";
 export const RELEASE_LOCK_RELATIVE_PATH = "integration/contracts/content-release/release.lock.json";
+export const ACM3_CODING_TRACK_ID = "coding-interview-dsa-problem-solving";
+export const ACM3_ACCEPTED_ARTIFACT_SHA256 = "f1f3277cc0a5a50289bc8edc921270aebed8d8bf4080ad328e9000d90c7159e1";
+const ACM3_FREE_FAMILY_ID = "complexity_and_constraints";
+const ACM3_FAMILY_COUNTS = Object.freeze({ complexity_and_constraints: 6, arrays_and_strings: 4, hash_map_and_set: 4, two_pointers: 2, sliding_window: 4, prefix_sums: 2, sorting_based: 2, stack: 2, binary_search: 2, tree_traversal: 2, intervals: 2, graph_traversal: 2, dynamic_programming_intro: 2 });
 const LOCK_SCHEMA_VERSION = "patternly-content-lock-v1";
 const ARTIFACT_SCHEMA_VERSION = "patternly-content-artifact-v2";
 const SUCCESSOR_LEDGER_SCHEMA_VERSION = "patternly-content-successor-ledger-v1";
@@ -351,6 +355,7 @@ export async function validateBuiltContent(directory, { expectedInventory = null
   const nodeIds = new Set();
   const mentalUnitIds = new Set();
   const questionIds = new Set();
+  const allQuestionIds = new Set();
   const files = new Map();
   const parsedArtifacts = new Map();
   for (const entry of lock.tracks) {
@@ -362,12 +367,12 @@ export async function validateBuiltContent(directory, { expectedInventory = null
     const artifactBytes = await inspectRegularFile(artifactPath, directory, "content artifact");
     if (sha256(artifactBytes) !== entry.sha256) fail(`SHA-256 mismatch for ${entry.trackId}`);
     const artifact = parseJson(artifactBytes, artifactPath);
-    const artifactShapes = [
-      ["schemaVersion", "trackId", "contentVersion", "questions", "planningPolicy"],
-      ["schemaVersion", "trackId", "contentVersion", "questions", "planningPolicy", "simulationProfiles"],
-      ["schemaVersion", "trackId", "contentVersion", "questions", "planningPolicy", "completionRule"],
-      ["schemaVersion", "trackId", "contentVersion", "questions", "planningPolicy", "simulationProfiles", "completionRule"],
-    ];
+    const artifactRequired = ["schemaVersion", "trackId", "contentVersion", "questions", "planningPolicy"];
+    const artifactOptional = ["simulationProfiles", "completionRule", "approachChallengeProblems"];
+    const artifactShapes = Array.from({ length: 1 << artifactOptional.length }, (_, mask) => [
+      ...artifactRequired,
+      ...artifactOptional.filter((_, index) => mask & (1 << index)),
+    ]);
     if (!isRecord(artifact) || !artifactShapes.some((keys) => exactKeys(artifact, keys))) fail(`Invalid artifact shape for ${entry.trackId}`);
     if (artifact.schemaVersion !== ARTIFACT_SCHEMA_VERSION || artifact.trackId !== entry.trackId || artifact.contentVersion !== entry.contentVersion) fail(`Artifact identity mismatch for ${entry.trackId}`);
     if (!Array.isArray(artifact.questions) || artifact.questions.length !== entry.questionCount) fail(`Question count mismatch for ${entry.trackId}`);
@@ -386,13 +391,44 @@ export async function validateBuiltContent(directory, { expectedInventory = null
     for (const question of artifact.questions) {
       if (!isRecord(question) || question.trackId !== entry.trackId) fail(`Foreign or malformed question in ${entry.trackId}`);
       for (const key of ["questionId", "nodeId", "mentalUnitId"]) if (typeof question[key] !== "string" || !question[key]) fail(`Question in ${entry.trackId} has invalid ${key}`);
-      if (questionIds.has(question.questionId)) fail(`Duplicate questionId: ${question.questionId}`);
+      if (allQuestionIds.has(question.questionId)) fail(`Duplicate questionId: ${question.questionId}`);
       if (question.contentDomainId !== undefined && !((entry.trackId === "google-cloud-associate-cloud-engineer" && knownGcpDomains.has(question.contentDomainId)) || (entry.trackId === CLAUDE_TRACK_ID && knownClaudeDomains.has(question.contentDomainId)))) fail(`Unexpected contentDomainId on question ${question.questionId}`);
       if (hasSimulationProfiles && entry.trackId === "google-cloud-associate-cloud-engineer" && !knownGcpDomains.has(question.contentDomainId)) fail(`Missing source-derived contentDomainId on question ${question.questionId}`);
       if (hasSimulationProfiles && entry.trackId === CLAUDE_TRACK_ID && !knownClaudeDomains.has(question.contentDomainId)) fail(`Missing source-derived CCAR-P domain attribution on question ${question.questionId}`);
       questionIds.add(question.questionId);
+      allQuestionIds.add(question.questionId);
       nodeIds.add(`${entry.trackId}\0${question.nodeId}`);
       mentalUnitIds.add(`${entry.trackId}\0${question.nodeId}\0${question.mentalUnitId}`);
+    }
+    if (Object.hasOwn(artifact, "approachChallengeProblems")) {
+      const problems = artifact.approachChallengeProblems;
+      if (entry.trackId !== ACM3_CODING_TRACK_ID || !Array.isArray(problems) || problems.length !== 36) fail(`Invalid approach-challenge paired bank for ${entry.trackId}`);
+      const { validateApproachChallengeProblem } = await import(pathToFileURL(path.join(path.resolve(producerRoot ?? path.resolve(scriptRoot, "../patternly-content")), "scripts/content/approach-challenge-contract.mjs")).href);
+      const problemIds = new Set();
+      const pairedQuestionIds = new Set();
+      const familyCounts = Object.fromEntries(Object.keys(ACM3_FAMILY_COUNTS).map((familyId) => [familyId, 0]));
+      for (const [index, problem] of problems.entries()) {
+        const errors = validateApproachChallengeProblem(problem);
+        if (errors.length) fail(`Invalid paired problem ${index} in ${entry.trackId}: ${errors.join("; ")}`);
+        if (!Object.hasOwn(familyCounts, problem.primaryFamilyId)) fail(`Unknown paired problem family: ${problem.primaryFamilyId}`);
+        familyCounts[problem.primaryFamilyId] += 1;
+        if (problemIds.has(problem.problemId)) fail(`Duplicate paired problemId: ${problem.problemId}`);
+        problemIds.add(problem.problemId);
+        for (const stage of [problem.approachQuestion, problem.complexityQuestion]) {
+          if (allQuestionIds.has(stage.questionId) || pairedQuestionIds.has(stage.questionId)) fail(`Duplicate ordinary or paired questionId: ${stage.questionId}`);
+          pairedQuestionIds.add(stage.questionId);
+        }
+      }
+      if (pairedQuestionIds.size !== 72 || Object.entries(ACM3_FAMILY_COUNTS).some(([familyId, expected]) => familyCounts[familyId] !== expected)) {
+        fail("Approach-challenge bank must contain 36/72 entries with the accepted exact family counts");
+      }
+      const freeProblems = problems.filter((problem) => problem.primaryFamilyId === ACM3_FREE_FAMILY_ID);
+      if (freeProblems.length !== 6 || freeProblems.some((problem) =>
+        problem.requiredFamilyIds.some((familyId) => familyId !== ACM3_FREE_FAMILY_ID) ||
+        problem.approachQuestion.nodeId !== ACM3_FREE_FAMILY_ID || problem.complexityQuestion.nodeId !== ACM3_FREE_FAMILY_ID)) {
+        fail("Exactly six Free paired problems must be wholly contained in complexity_and_constraints");
+      }
+      for (const id of pairedQuestionIds) allQuestionIds.add(id);
     }
     if (Object.hasOwn(artifact, "simulationProfiles")) validateSimulationProfiles(artifact.simulationProfiles, { trackId: entry.trackId, questions: artifact.questions, allowLegacyEvidence: allowLegacySimulationEvidence });
     files.set(`${entry.trackId}.json`, artifactBytes);
@@ -424,7 +460,7 @@ async function defaultRunBuild({ producerRoot, outputRoot }) {
   const producer = await import(pathToFileURL(path.join(producerRoot, "scripts", "build.mjs")).href);
   return producer.buildAll({ rootDirectory: producerRoot, outputRoot });
 }
-async function inspectProducerSource(producerRoot, { expectedContentCommit, previousHead, allowDirtyCandidate = false } = {}) {
+async function inspectProducerSource(producerRoot, { expectedContentCommit, previousHead, allowDirtyCandidate = false, allowAuthorizedAcm3 = false } = {}) {
   let root, head, main, remote, status;
   try {
     const git = async (...args) => (await execFileAsync("git", ["-C", producerRoot, ...args], { encoding: "utf8" })).stdout.trim();
@@ -443,7 +479,7 @@ async function inspectProducerSource(producerRoot, { expectedContentCommit, prev
   if (!/^[a-f0-9]{40}$/u.test(head) || head !== main) fail("Current content source HEAD must match origin/master; application bank unchanged");
   if (expectedContentCommit && head !== expectedContentCommit) fail("Selected content checkout HEAD differs from the expected exact SHA");
   if (previousHead && head !== previousHead) fail("Current content source commit changed during preparation; application bank unchanged");
-  if (status && !allowDirtyCandidate) fail("Current content source has working changes; preserve WIP and use clean master before preparing the application bank");
+  if (status && !allowDirtyCandidate && !allowAuthorizedAcm3) fail("Current content source has working changes; preserve WIP and use clean master before preparing the application bank");
   if (!status && allowDirtyCandidate) fail("Local candidate preparation requires explicit uncommitted content changes");
   return { head, sourceTree: status ? "dirty" : "clean" };
 }
@@ -458,6 +494,56 @@ async function compareDirectories(actualDirectory, expectedDirectory, options) {
   const [actual, expected] = await Promise.all([validateBuiltContent(actualDirectory, options), validateBuiltContent(expectedDirectory, options)]);
   for (const fileName of [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), LOCK_FILE_NAME]) if (!actual.files.get(fileName)?.equals(expected.files.get(fileName))) fail(`Canonical content parity mismatch: ${fileName}`);
   return expected;
+}
+
+function assertAuthorizedAcm3Delta(beforeFiles, stagedFiles) {
+  const codingName = `${ACM3_CODING_TRACK_ID}.json`;
+  const beforeBytes = beforeFiles.get(codingName);
+  const stagedBytes = stagedFiles.get(codingName);
+  if (!beforeBytes || !stagedBytes || sha256(stagedBytes) !== ACM3_ACCEPTED_ARTIFACT_SHA256) fail("Authorized ACM3 producer artifact does not match its accepted exact SHA-256");
+  const before = parseJson(beforeBytes, codingName);
+  const staged = parseJson(stagedBytes, codingName);
+  if (!Array.isArray(before.questions) || !Array.isArray(staged.questions) || before.questions.length !== 3404 || staged.questions.length !== 3404 ||
+    canonicalJson(before.questions) !== canonicalJson(staged.questions)) fail("Authorized ACM3 sync must preserve all 3,404 ordinary Coding questions");
+  if (!Array.isArray(before.simulationProfiles) || !Array.isArray(staged.simulationProfiles) ||
+    canonicalJson(before.simulationProfiles) !== canonicalJson(staged.simulationProfiles)) fail("Authorized ACM3 sync must preserve the existing Coding simulation profile");
+  const oldKeys = Object.keys(before).sort();
+  const newKeys = Object.keys(staged).sort();
+  if (before.approachChallengeProblems === undefined) {
+    if (canonicalJson(newKeys) !== canonicalJson([...oldKeys, "approachChallengeProblems"].sort())) fail("Authorized ACM3 bank must be the only added Coding artifact field");
+  } else if (canonicalJson(oldKeys) !== canonicalJson(newKeys)) fail("Authorized ACM3 sync changed the Coding artifact field set");
+  for (const key of oldKeys) {
+    if (key === "approachChallengeProblems") continue;
+    if (canonicalJson(before[key]) !== canonicalJson(staged[key])) fail(`Authorized ACM3 sync changed existing Coding artifact field: ${key}`);
+  }
+  for (const trackId of EXPECTED_TRACK_IDS) {
+    if (trackId === ACM3_CODING_TRACK_ID) continue;
+    const fileName = `${trackId}.json`;
+    if (!beforeFiles.get(fileName)?.equals(stagedFiles.get(fileName))) fail(`Authorized ACM3 sync changed unrelated track artifact: ${trackId}`);
+  }
+
+  const beforeLock = parseJson(beforeFiles.get(LOCK_FILE_NAME), LOCK_FILE_NAME);
+  const stagedLock = parseJson(stagedFiles.get(LOCK_FILE_NAME), LOCK_FILE_NAME);
+  for (const beforeEntry of beforeLock.tracks) {
+    const stagedEntry = stagedLock.tracks.find((entry) => entry.trackId === beforeEntry.trackId);
+    if (!stagedEntry) fail(`Authorized ACM3 sync removed content lock track ${beforeEntry.trackId}`);
+    if (beforeEntry.trackId !== ACM3_CODING_TRACK_ID && canonicalJson(beforeEntry) !== canonicalJson(stagedEntry)) fail(`Authorized ACM3 sync changed unrelated content lock entry: ${beforeEntry.trackId}`);
+    if (beforeEntry.trackId === ACM3_CODING_TRACK_ID && (stagedEntry.contentVersion !== beforeEntry.contentVersion || stagedEntry.questionCount !== 3404 || stagedEntry.sha256 !== ACM3_ACCEPTED_ARTIFACT_SHA256)) {
+      fail("Authorized ACM3 sync must update only the Coding artifact digest and preserve its ordinary question count/version");
+    }
+  }
+
+  const beforeLedgerBytes = beforeFiles.get(SUCCESSOR_LEDGER_FILE_NAME);
+  const stagedLedgerBytes = stagedFiles.get(SUCCESSOR_LEDGER_FILE_NAME);
+  if (!beforeLedgerBytes || !stagedLedgerBytes) fail("Authorized ACM3 sync requires an existing and regenerated successor ledger");
+  const beforeLedger = parseJson(beforeLedgerBytes, SUCCESSOR_LEDGER_FILE_NAME);
+  const stagedLedger = parseJson(stagedLedgerBytes, SUCCESSOR_LEDGER_FILE_NAME);
+  for (const beforeEntry of beforeLedger.tracks) {
+    const stagedEntry = stagedLedger.tracks.find((entry) => entry.trackId === beforeEntry.trackId);
+    if (!stagedEntry) fail(`Authorized ACM3 sync removed successor ledger track ${beforeEntry.trackId}`);
+    if (beforeEntry.trackId !== ACM3_CODING_TRACK_ID && canonicalJson(beforeEntry) !== canonicalJson(stagedEntry)) fail(`Authorized ACM3 sync changed unrelated successor ledger entry: ${beforeEntry.trackId}`);
+    if (beforeEntry.trackId === ACM3_CODING_TRACK_ID && canonicalJson(stagedEntry.training) !== canonicalJson(beforeEntry.training)) fail("Authorized ACM3 sync changed the existing Coding training predecessor identity");
+  }
 }
 
 function parseSuccessorLedger(value) {
@@ -478,6 +564,7 @@ function parseSuccessorLedger(value) {
 export function historicalTrainingProjection(artifact, contentVersion) {
   const projection = structuredClone(artifact);
   delete projection.planningPolicy;
+  delete projection.approachChallengeProblems;
   projection.schemaVersion = "patternly-content-artifact-v1";
   projection.contentVersion = contentVersion;
   return Buffer.from(JSON.stringify(projection));
@@ -680,9 +767,10 @@ async function replaceCurrentBank({ stagedDirectory, targetDirectory, stagedLock
   await remove(journalPath, { force: false });
 }
 async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoot, producerRoot = process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), targetLockFile = path.join(appRoot, RELEASE_LOCK_RELATIVE_PATH), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, expectedContentCommit = process.env.PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA, getCurrentIdentity, getFreshSourceFingerprint, expectedInventory = null, remove = rm, move = rename } = {}) {
-  if (mode !== "sync" && mode !== "check" && mode !== "candidate") fail(`Unknown mode: ${mode}`);
+  if (mode !== "sync" && mode !== "check" && mode !== "candidate" && mode !== "authorized-current-acm3") fail(`Unknown mode: ${mode}`);
   const candidate = mode === "candidate";
-  const buildMode = candidate ? "sync" : mode;
+  const authorizedAcm3 = mode === "authorized-current-acm3";
+  const buildMode = candidate || authorizedAcm3 ? "sync" : mode;
   const resolvedAppRoot = path.resolve(appRoot);
   const resolvedProducerRoot = path.resolve(producerRoot);
   const resolvedTarget = path.resolve(targetDirectory);
@@ -690,9 +778,9 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
   if (!isWithin(resolvedAppRoot, resolvedTarget) || resolvedTarget !== path.join(resolvedAppRoot, GENERATED_DIRECTORY)) fail(`Target must be exactly ${GENERATED_DIRECTORY} within the application root`);
   if (!isWithin(resolvedAppRoot, resolvedLockFile) || resolvedLockFile !== path.join(resolvedAppRoot, RELEASE_LOCK_RELATIVE_PATH)) fail(`Release lock target must be exactly ${RELEASE_LOCK_RELATIVE_PATH} within the application root`);
   await assertSafeTargetBoundary(resolvedAppRoot, resolvedTarget);
-  const source = await inspectProducerSource(resolvedProducerRoot, { expectedContentCommit, allowDirtyCandidate: candidate });
+  const source = await inspectProducerSource(resolvedProducerRoot, { expectedContentCommit, allowDirtyCandidate: candidate, allowAuthorizedAcm3: authorizedAcm3 });
   const { head } = source;
-  if (buildMode === "sync") await recoverCurrentBank({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile, remove, move });
+  if (buildMode === "sync" && !authorizedAcm3) await recoverCurrentBank({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile, remove, move });
   else await assertNoInterruptedTransaction({ targetDirectory: resolvedTarget, targetLockFile: resolvedLockFile });
   await assertProducerRoot(resolvedProducerRoot);
   const initialTarget = await validateBuiltContent(resolvedTarget, { expectedInventory: null, producerRoot: resolvedProducerRoot, allowLegacySimulationEvidence: true });
@@ -726,6 +814,7 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
     const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger });
     await writeFile(path.join(temporaryDirectory, SUCCESSOR_LEDGER_FILE_NAME), JSON.stringify(ledger));
     const staged = await validateBuiltContent(temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
+    if (authorizedAcm3) assertAuthorizedAcm3Delta(initialTarget.files, staged.files);
     const releaseId = `${candidate ? "patternly-local-candidate" : "patternly-current"}-${currentIdentity.sourceInputFingerprint.slice(0, 20)}`;
     const releaseLock = buildCurrentReleaseLock({ currentIdentity, head, contentLockBytes: staged.files.get(LOCK_FILE_NAME), successorLedgerBytes: staged.files.get(SUCCESSOR_LEDGER_FILE_NAME), releaseId });
     const stagedReleaseLock = Buffer.from(`${JSON.stringify(releaseLock)}\n`);
@@ -753,7 +842,7 @@ async function syncCanonicalContentUnlocked({ mode = "sync", appRoot = scriptRoo
     } finally {
       if (await pathKind(freshnessDirectory) === "directory") await remove(freshnessDirectory, { recursive: true, force: false });
     }
-    await inspectProducerSource(resolvedProducerRoot, { expectedContentCommit, previousHead: head, allowDirtyCandidate: candidate });
+    await inspectProducerSource(resolvedProducerRoot, { expectedContentCommit, previousHead: head, allowDirtyCandidate: candidate, allowAuthorizedAcm3: authorizedAcm3 });
     if (candidate) {
       const before = new Map([...initialTarget.files].filter(([name]) => name !== "content-lock.json" && name !== SUCCESSOR_LEDGER_FILE_NAME));
       for (const [fileName, bytes] of before) {
@@ -849,11 +938,12 @@ function assertBuildMatchesIdentity(files, identity) {
   if (rows.size !== EXPECTED_TRACK_IDS.length) fail("Current source identity does not contain the exact nine-track set");
 }
 
-function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <patternly-content checkout>]"; }
+function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check|candidate|sync-acm3] [--content-root <patternly-content checkout>]"; }
 export function parseArgs(argv = process.argv.slice(2)) {
   const options = { mode: "sync" };
   let index = 0;
   if (argv[0] === "sync" || argv[0] === "check" || argv[0] === "candidate") options.mode = argv[index++];
+  else if (argv[0] === "sync-acm3") { options.mode = "authorized-current-acm3"; index += 1; }
   while (index < argv.length) {
     if (argv[index] === "--content-root" && index + 1 < argv.length) { options.producerRoot = path.resolve(argv[index + 1]); index += 2; }
     else fail(usage());
@@ -865,6 +955,7 @@ async function runCli() {
   console.log(`CANONICAL_CONTENT_${result.mode.toUpperCase()}=passed`);
   console.log(`CURRENT_SOURCE_FINGERPRINT=${result.currentIdentity.sourceInputFingerprint}`);
   if (result.mode === "candidate") console.log(`CANDIDATE_PROVENANCE=local_unpublished sourceTree=${result.currentIdentity.sourceTree} sourceCommit=${result.head}`);
+  if (result.mode === "authorized-current-acm3") console.log(`AUTHORIZED_CURRENT_PROVENANCE=ACM3_FIXED_ARTIFACT_SHA256 sourceTree=${result.currentIdentity.sourceTree} sourceCommit=${result.head}`);
   console.log(`CONTENT_INVENTORY=${result.inventory.trackCount}/${result.inventory.nodeCount}/${result.inventory.mentalUnitCount}/${result.inventory.questionCount}`);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) runCli().catch((error) => { console.error(error?.stack ?? error?.message ?? error); process.exitCode = 1; });

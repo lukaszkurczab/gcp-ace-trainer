@@ -44,6 +44,8 @@ export type CanonicalTrackRuntime = Readonly<{
   getQuestionsForMentalUnit(mentalUnitId: string): readonly Question[];
   getMode(modeId: string): ProductModeConfig;
   getPool(modeId: string): readonly Question[];
+  /** Whole-task paired content is optional and must be resolved from this exact artifact. */
+  approachChallengeProblems?: readonly import("./approachChallengeProblem").ApproachChallengeProblem[];
 }>;
 
 export type CanonicalRuntimeCatalog = Readonly<{
@@ -173,6 +175,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
         // Only root fields change; nested generated JSON is read-only during serialization.
         const historical = { ...source };
         delete historical.planningPolicy;
+        delete historical.approachChallengeProblems;
         historical.schemaVersion = "patternly-content-artifact-v1";
         historical.contentVersion = entry.training.contentVersion;
         const serialized = JSON.stringify(historical);
@@ -238,6 +241,9 @@ function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly
     artifactSha256: catalog.artifactSha256,
     contentReleaseId: catalog.artifactMetadata.contentReleaseId,
     questions: catalog.questions,
+    ...(catalog.approachChallengeProblems
+      ? { approachChallengeProblems: Object.freeze([...catalog.approachChallengeProblems]) }
+      : {}),
     interactions,
     ...(catalog.completionRule ? { completionRule: catalog.completionRule } : {}),
     ...(completionSources ? { completionSources: Object.freeze(completionSources) } : {}),

@@ -164,5 +164,7 @@
   "premiumNotStartedDetail": "The store purchase was not launched. The saved request needs resolution before another purchase. Refresh its status or contact support.",
   "premiumScopeUnavailableDetail": "The service description is not confirmed yet. New purchases are unavailable; you can still restore purchases and manage an existing subscription.",
   "premiumRestoreCancelled": "Restore cancelled",
-  "premiumServiceScopeSummary": "The first nodes in each learning track are free. Premium unlocks the remaining nodes."
+  "premiumServiceScopeSummary": "The first nodes in each learning track are free. Premium unlocks the remaining nodes.",
+  "preferencesUnavailableTitle": "Saved preferences unavailable",
+  "preferencesUnavailableDetail": "Saved preferences could not be read. Choices are disabled until local storage is available."
 }

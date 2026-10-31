@@ -164,5 +164,7 @@
   "premiumNotStartedDetail": "La compra del App Store no se inició. La solicitud guardada debe resolverse antes de otra compra. Actualiza su estado o contacta con soporte.",
   "premiumScopeUnavailableDetail": "La descripción del servicio aún no está confirmada. No se permiten nuevas compras; puedes restaurar compras y gestionar una suscripción existente.",
   "premiumRestoreCancelled": "Restauración cancelada",
-  "premiumServiceScopeSummary": "Los primeros nodos de cada itinerario de aprendizaje son gratuitos. Premium desbloquea los demás nodos."
+  "premiumServiceScopeSummary": "Los primeros nodos de cada itinerario de aprendizaje son gratuitos. Premium desbloquea los demás nodos.",
+  "preferencesUnavailableTitle": "Preferencias guardadas no disponibles",
+  "preferencesUnavailableDetail": "No se pudieron leer las preferencias guardadas. Las opciones están desactivadas hasta que el almacenamiento local vuelva a estar disponible."
 }

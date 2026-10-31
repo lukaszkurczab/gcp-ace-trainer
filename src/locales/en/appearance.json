@@ -10,5 +10,7 @@
   "dark": "Dark",
   "darkDetail": "Always use the dark theme.",
   "saveErrorTitle": "Appearance could not be saved",
-  "saveErrorDetail": "Try choosing an appearance again."
+  "saveErrorDetail": "Try choosing an appearance again.",
+  "preferencesUnavailableTitle": "Saved preferences unavailable",
+  "preferencesUnavailableDetail": "Saved preferences could not be read. Choices are disabled until local storage is available."
 }

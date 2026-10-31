@@ -4,6 +4,7 @@ import test, { beforeEach } from "node:test";
 import {
   DEFAULT_APP_SETTINGS,
   loadAppSettings,
+  updateApproachChallengeSettings,
   updateAppSettings,
 } from "../application/appPreferences";
 import {
@@ -39,6 +40,26 @@ test("settings storage retains every supported manual language", async () => {
     assert.deepEqual(await getSettings(), { appearance: "dark", language });
     assert.deepEqual(await loadAppSettings(), { appearance: "dark", language });
   }
+});
+
+test("Approach Challenge setting patches preserve the legacy fields and reject unknown family ids", async () => {
+  await updateAppSettings({ appearance: "dark", language: "pl" });
+  const approachChallenge = { mode: "manual" as const, requestedProblemCount: 10 as const, difficulties: ["easy", "hard"] as const, selectedFamilyIds: ["arrays_and_strings"] };
+  await updateApproachChallengeSettings(approachChallenge);
+  assert.deepEqual(await getSettings(), { appearance: "dark", language: "pl", approachChallenge });
+  await updateAppSettings({ language: "de" });
+  assert.deepEqual(await loadAppSettings(), { appearance: "dark", language: "de", approachChallenge });
+  await assert.rejects(updateApproachChallengeSettings({ ...approachChallenge, selectedFamilyIds: ["unknown_family"] }));
+  assert.deepEqual(await loadAppSettings(), { appearance: "dark", language: "de", approachChallenge });
+});
+
+test("manual Approach Challenge preferences may persist an empty family filter until the user selects a family", async () => {
+  const auto = { mode: "auto" as const, requestedProblemCount: 5 as const, difficulties: ["easy", "medium"] as const, selectedFamilyIds: [] as const };
+  await updateApproachChallengeSettings(auto);
+  const manual = { ...auto, mode: "manual" as const };
+  await updateApproachChallengeSettings(manual);
+
+  assert.deepEqual(await getSettings(), { appearance: "system", language: "en", approachChallenge: manual });
 });
 
 test("translations resolve common UI copy through i18next", () => {

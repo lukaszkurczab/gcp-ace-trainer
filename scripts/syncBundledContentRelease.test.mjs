@@ -12,6 +12,7 @@ import {
   GENERATED_DIRECTORY,
   SUCCESSOR_LEDGER_FILE_NAME,
   RELEASE_LOCK_RELATIVE_PATH,
+  ACM3_ACCEPTED_ARTIFACT_SHA256,
   buildCurrentReleaseLock,
   historicalTrainingProjection,
   parseArgs,
@@ -36,7 +37,25 @@ test("sync arguments keep candidate mode explicit and separate", () => {
   assert.deepEqual(parseArgs([]), { mode: "sync" });
   assert.deepEqual(parseArgs(["check", "--content-root", "../content"]), { mode: "check", producerRoot: path.resolve("../content") });
   assert.deepEqual(parseArgs(["candidate", "--content-root", "../content"]), { mode: "candidate", producerRoot: path.resolve("../content") });
+  assert.deepEqual(parseArgs(["sync-acm3", "--content-root", "../content"]), { mode: "authorized-current-acm3", producerRoot: path.resolve("../content") });
   assert.throws(() => parseArgs(["check", "--local-reviewed-candidate", "acceptance.json"]), /Usage:/u);
+});
+
+test("historical training projection excludes only the independent paired bank", () => {
+  const artifact = {
+    schemaVersion: "patternly-content-artifact-v2", trackId: "coding-interview-dsa-problem-solving", contentVersion: "current-v2",
+    questions: [{ questionId: "ordinary-q", nodeId: "ordinary-node" }], simulationProfiles: [{ profileId: "legacy-40" }],
+    completionRule: { ruleVersion: 2 }, planningPolicy: { policyVersion: "current" },
+    approachChallengeProblems: [{ problemId: "paired-only" }],
+  };
+  const projection = JSON.parse(historicalTrainingProjection(artifact, "legacy-training-v1").toString("utf8"));
+  assert.equal(projection.schemaVersion, "patternly-content-artifact-v1");
+  assert.equal(projection.contentVersion, "legacy-training-v1");
+  assert.deepEqual(projection.questions, artifact.questions);
+  assert.deepEqual(projection.simulationProfiles, artifact.simulationProfiles);
+  assert.deepEqual(projection.completionRule, artifact.completionRule);
+  assert.equal(Object.hasOwn(projection, "planningPolicy"), false);
+  assert.equal(Object.hasOwn(projection, "approachChallengeProblems"), false);
 });
 
 function validGcpSimulationProfile(contentVersion, nodeId) {
@@ -303,6 +322,19 @@ test("candidate mode rejects a clean source and never weakens ordinary sync", as
   await writeFile(path.join(state.producerRoot, "candidate-content.json"), "local candidate\n");
   await assert.rejects(syncCanonicalContent(state.options), /has working changes/u);
   assert.deepEqual(await snapshot(state.targetDirectory), before);
+});
+
+test("authorized ACM3 mode fails closed on any producer artifact other than its fixed accepted hash", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await writeFile(path.join(state.producerRoot, "accepted-source-is-dirty.json"), "authorized integration probe\n");
+  const before = await snapshot(state.targetDirectory);
+  const lockBefore = await readFile(state.targetLockFile);
+  await assert.rejects(syncCanonicalContent({ ...state.options, mode: "authorized-current-acm3" }), /does not match its accepted exact SHA-256/u);
+  assert.deepEqual(await snapshot(state.targetDirectory), before);
+  assert.deepEqual(await readFile(state.targetLockFile), lockBefore);
+  assert.equal(git(state.producerRoot, "status", "--porcelain=v1", "--untracked-files=all").includes("accepted-source-is-dirty.json"), true);
+  assert.match(ACM3_ACCEPTED_ARTIFACT_SHA256, /^[a-f0-9]{64}$/u);
 });
 
 test("a clean detached canonical main checkout retains exact source provenance", async (t) => {

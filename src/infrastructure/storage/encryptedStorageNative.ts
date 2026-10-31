@@ -138,6 +138,40 @@ function wrap(instance: ReturnType<MmkvModule["createMMKV"]>, createToken: () =>
   return slot;
 }
 
+/** Fixture-only native-clock owner for an already-open, isolated ACM MMKV instance.
+ * It does not create production storage, read SecureStore, or persist a clock token. */
+export function createACMNativeFixtureForegroundClockOwner(
+  instance: ReturnType<MmkvModule["createMMKV"]>,
+  createToken: () => string,
+): Readonly<{
+  base: Readonly<{
+    getString(key: string): string | undefined;
+    setString(key: string, value: string): void;
+    remove(key: string): void;
+    contains(key: string): boolean;
+    getAllKeys(): readonly string[];
+  }>;
+  claimForegroundClock(scope: ForegroundClockScope): ForegroundClockCapability;
+  nativeForegroundClockPlatform: "ios";
+}> {
+  if (!instance.id.startsWith("patternly-acm-native-data-") || !instance.isEncrypted) {
+    throw new Error("acm_fixture_native_clock_store_invalid");
+  }
+  const slot = wrap(instance, createToken);
+  const base = Object.freeze({
+    getString: (key: string) => slot.getString(key),
+    setString: (key: string, value: string) => { slot.setString(key, value); },
+    remove: (key: string) => { slot.remove(key); },
+    contains: (key: string) => slot.getString(key) !== undefined,
+    getAllKeys: () => slot.getAllKeys(),
+  });
+  return Object.freeze({
+    base,
+    claimForegroundClock: (scope: ForegroundClockScope) => claimNativeForegroundClock(slot, scope),
+    nativeForegroundClockPlatform: "ios" as const,
+  });
+}
+
 export function createNativeEncryptedStoragePlatform(): EncryptedStoragePlatform {
   const secureStore = require("expo-secure-store") as SecureStoreModule;
   const crypto = require("expo-crypto") as typeof import("expo-crypto");

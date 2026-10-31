@@ -1167,6 +1167,45 @@ export async function openProfileStorageRouter(
   return Object.freeze(router);
 }
 
+/** Read-only ACM resume preflight. It never opens, repairs, or commits a profile router. */
+export async function inspectExistingACMNativeFixtureGuest(input: Readonly<{
+  base: KeyValueStorage;
+  control: StorageManifestStore;
+  installationId: string;
+  localDatasetId: string;
+  profileId: string;
+}>): Promise<Readonly<{ profile: StorageProfile; registryGenerations: readonly [number, number] }>> {
+  if (!uuid(input.installationId) || !uuid(input.localDatasetId) || input.installationId === input.localDatasetId
+    || input.profileId !== input.localDatasetId) throw new ProfileStorageError("profile_scope_unavailable");
+  if (await input.control.get(GUEST_REMOVAL_JOURNAL_KEY) !== null || await input.control.get(LOCAL_LOGOUT_CONTROL_KEY) !== null) {
+    throw new ProfileStorageError("profile_scope_unavailable");
+  }
+  const bindings = await readAccountBindingSlots(input.control);
+  if (bindings.envelope !== null) throw new ProfileStorageError("profile_scope_unavailable");
+  const slots = await readRegistrySlots(input.control);
+  const canonicalProfiles = JSON.stringify(slots[0]!.profiles);
+  if (slots.some((registry) => registry.legacyProfileId !== null || registry.profiles.length !== 1
+    || registry.selectedProfileId !== input.profileId || JSON.stringify(registry.profiles) !== canonicalProfiles)) {
+    throw new ProfileStorageError("profile_scope_unavailable");
+  }
+  const profile = slots[0]!.profiles[0]!;
+  if (profile.id !== input.profileId || profile.kind !== "guest" || profile.accountId !== null) {
+    throw new ProfileStorageError("profile_scope_unavailable");
+  }
+  const scoped = createProfileScopedStorage(input.base, profile);
+  const installation = storedGuestInstallation(scoped);
+  const access = input.base.getString(physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS));
+  if (!installation || installation.installationId !== input.installationId
+    || installation.localDatasetId !== input.localDatasetId || installation.bindingState !== "guest"
+    || installation.accountId !== null || !validGuestAccess(access)) {
+    throw new ProfileStorageError("profile_scope_unavailable");
+  }
+  return Object.freeze({
+    profile: Object.freeze({ ...profile }),
+    registryGenerations: Object.freeze([slots[0]!.generation, slots[1]!.generation]) as readonly [number, number],
+  });
+}
+
 export async function commitProfileSelection(control: StorageManifestStore, previous: ProfileRegistry, selectedProfileId: string): Promise<void> {
   if (!previous.profiles.some((profile) => profile.id === selectedProfileId)) throw new ProfileStorageError("profile_scope_unavailable");
   const next = withChecksum({ ...registryBody(previous, previous.generation + 1), selectedProfileId });

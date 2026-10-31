@@ -1,0 +1,22 @@
+appId: com.lkurczab.patternly
+name: ACM native fixture — cold resume the active Approach Challenge session
+tags:
+  - acm-native-fixture
+  - ios
+  - resume
+---
+- launchApp:
+    clearState: false
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- extendedWaitUntil:
+    visible: "Choose an approach"
+    timeout: 30000
+- assertVisible: "Problem 1 of 1.*Step 1/2"
+- assertVisible:
+    id: "acm6-option-0"
+- stopApp

@@ -95,5 +95,7 @@ export function createTrainingCatalog(track: CanonicalTrackRuntime): TrainingCat
     getQuestionsForMentalUnit: (unitId: string) => Object.freeze(questions.filter((question) => question.mentalUnitId === unitId)),
     getMode: (modeId: string) => track.getMode(modeId),
     getPool: (modeId: string) => Object.freeze(track.getPool(modeId).map((question) => byId.get(question.questionId)!)),
+    ...(track.approachChallengeProblems ? { approachChallengeProblems: Object.freeze([...track.approachChallengeProblems]) } : {}),
+    ...(track.approachChallengeProblems ? { getApproachChallengeProblem: (problemId: string, problemVersion: string) => track.approachChallengeProblems!.find((problem) => problem.problemId === problemId && problem.problemVersion === problemVersion) } : {}),
   });
 }

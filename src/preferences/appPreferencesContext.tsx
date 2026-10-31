@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
-import type { AppearancePreference, LanguagePreference } from "../application/appPreferences";
+import type { AppearancePreference, LanguagePreference, Settings } from "../application/appPreferences";
 import { colors, type AppColors, type ColorMode } from "../theme/tokens";
 import { resolveLocale, type AvailableLocale, type LocaleResolution } from "./localeResolver";
 
@@ -11,12 +11,15 @@ export type AppPreferencesContextValue = Readonly<{
   colors: AppColors;
   deviceLocale: AppLocale;
   language: LanguagePreference;
+  settings?: Settings;
   locale: AppLocale;
   localeResolution: LocaleResolution;
   systemLocaleResolution: LocaleResolution;
   ready: boolean;
+  settingsUnavailable?: boolean;
   setAppearance: (appearance: AppearancePreference) => Promise<void>;
   setLanguage: (language: LanguagePreference) => Promise<void>;
+  setApproachChallengeSettings?: (settings: NonNullable<Settings["approachChallenge"]>) => Promise<void>;
 }>;
 
 const AppPreferencesContext = createContext<AppPreferencesContextValue | null>(null);

@@ -515,6 +515,16 @@ export function isPersist13TimerOwnerCold(): boolean {
     && process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE !== undefined && canonicalTimerFacade === null;
 }
 
+/** Read-only ACM native fixture guard before the real timer owner is installed. */
+export function isACMNativeFixtureTimerOwnerCold(runUUID: string): boolean {
+  return typeof __DEV__ !== "undefined" && __DEV__
+    && process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"
+    && process.env.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE === "1"
+    && process.env.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_RUN_UUID === runUUID
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(runUUID)
+    && canonicalTimerFacade === null;
+}
+
 export function installForegroundSessionTimerFacade(value: ForegroundSessionTimerFacade): void {
   canonicalTimerFacade = value;
 }

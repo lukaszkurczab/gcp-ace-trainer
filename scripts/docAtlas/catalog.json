@@ -1,6 +1,6 @@
 {
   "schemaVersion": "patternly-atlas-catalog-v1",
-  "date": "2026-10-27",
+  "date": "2026-10-30",
   "areas": [
     {
       "prefix": "patternly",
@@ -689,12 +689,84 @@
     {
       "prefix": "patternly-content/tests/fixtures/model-evaluation",
       "description": "Wersjonowane syntetyczne przypadki kontraktów runnera offline; nie stanowią gold set ani odpowiedzi rzeczywistego modelu."
+    },
+    {
+      "prefix": "patternly-backend/tests/fixtures/account-wire",
+      "description": "Syntetyczne przykłady zamkniętego kontraktu rekordów account-wire; nie są danymi rzeczywistych kont."
+    },
+    {
+      "prefix": "patternly-content/config/approach-challenge-registries",
+      "description": "Registry konfiguracji osobnego, wersjonowanego banku Approach Challenge."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges",
+      "description": "Pytania ACM pogrupowane po tracku i rodzinie; Atlas opisuje bank zbiorczo zamiast tworzyć notatkę redakcyjną dla każdego pytania."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving",
+      "description": "Bank ACM coding-interview-dsa-problem-solving: rodziny i rekordy whole-problem z paired Q1/Q2."
+    },
+    {
+      "prefix": "patternly-content/tests/fixtures/approach-challenge",
+      "description": "Małe syntetyczne wejścia negatywne/pozytywne dla walidatorów banku ACM."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/arrays_and_strings",
+      "description": "Rekordy ACM dla rodziny arrays_and_strings; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/binary_search",
+      "description": "Rekordy ACM dla rodziny binary_search; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/complexity_and_constraints",
+      "description": "Rekordy ACM dla rodziny complexity_and_constraints; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/dynamic_programming_intro",
+      "description": "Rekordy ACM dla rodziny dynamic_programming_intro; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/graph_traversal",
+      "description": "Rekordy ACM dla rodziny graph_traversal; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/hash_map_and_set",
+      "description": "Rekordy ACM dla rodziny hash_map_and_set; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/intervals",
+      "description": "Rekordy ACM dla rodziny intervals; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/prefix_sums",
+      "description": "Rekordy ACM dla rodziny prefix_sums; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/sliding_window",
+      "description": "Rekordy ACM dla rodziny sliding_window; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/sorting_based",
+      "description": "Rekordy ACM dla rodziny sorting_based; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/stack",
+      "description": "Rekordy ACM dla rodziny stack; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/tree_traversal",
+      "description": "Rekordy ACM dla rodziny tree_traversal; katalog danych, walidowany zbiorczo przez loader banku."
+    },
+    {
+      "prefix": "patternly-content/content/approach-challenges/coding-interview-dsa-problem-solving/two_pointers",
+      "description": "Rekordy ACM dla rodziny two_pointers; katalog danych, walidowany zbiorczo przez loader banku."
     }
   ],
   "files": {
     "patternly/App.tsx": {
-      "description": "Wybiera regularną aplikację albo kontrolowane fixture przed providerami. Early startup preview wymaga dokładnej flagi1, DEV i smoke oraz braku konfliktu PERSIST13/PERF06; każda obecna błędna flaga jest odrzucana bez regularnych providerów. Regularna ścieżka zachowuje EnvironmentGate i istniejące fixture inputs.",
-      "reviewedHash": "449e58bfd0e0056b669176a690c0a5d0a6627153a55eaf997c462332d0e1efd2",
+      "description": "Selects the isolated native ACM fixture before regular providers load. Any requested but invalid fixture state becomes unavailable; absent markers continue through the normal application entry. This is source behavior, not native execution evidence.",
+      "reviewedHash": "8c754ba4a1eea077ec97cbc1f5a0ceb122857cc056a0b031d961b4f46301097c",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/RegularApplicationRoot.tsx": {
@@ -703,18 +775,18 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/navigation/RootNavigator.tsx": {
-      "description": "Rejestruje trasy i gotowość konta/treści oraz BackLink. Istniejące DEV/smoke fixture zachowane; account restore używa współdzielonej StartupLoadingSurface bez zmiany właściciela stanu.",
-      "reviewedHash": "5c9c29e1c076670da410a240241425fcc2b10b84e980e258fb318e663954d7b1",
+      "description": "Registers the dedicated Approach Challenge screen and route separately from legacy Practice Session while preserving existing startup and account gates. Source wiring does not establish native navigation behavior.",
+      "reviewedHash": "3a263b7504b82c02300f744c377fa6b392be58b751539adf19b7ec990829d3ef",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/constants/routes.ts": {
-      "description": "Stałe identyfikatorów tras; służą do powiązania nawigacji z ekranami.",
-      "reviewedHash": "c276eccdd188dfad6683ad1f1736daf9b537ec238e481277cd125dbd74da2d1a",
+      "description": "Stałe identyfikatorów tras, w tym dedykowana trasa Approach Challenge, odrębna od legacy Practice Session.",
+      "reviewedHash": "7e854d0e2b7a8d5b26d195481fb4377c20597bb8c84eb88ed7dcaa5863f41af6",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/application/bootstrap/applicationBootstrap.ts": {
-      "description": "Przygotowuje runtime nauki i odtwarza przerwane operacje przed oddaniem gotowego stanu interfejsowi.",
-      "reviewedHash": "521d33510f76966fa73efd88d63bb8c9ae1179e9b930c1e0d64527867a7f5e27",
+      "description": "Runs the ACM fixture through the shared integrity and recovery bootstrap with a fixture-specific cleanup policy that does not clear the shared export cache.",
+      "reviewedHash": "3d13c6a67a0373722563a5e18f0daa508c4c69df1fb16e3c35b97ea723b7113c",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/application/bootstrap/accountBootstrap.ts": {
@@ -753,8 +825,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/infrastructure/storage/mmkvClient.ts": {
-      "description": "Wybiera szyfrowany magazyn profilu, chroni zapis przez lease tożsamości i wiąże natywny zegar foreground z właścicielem sesji na Android i iOS.",
-      "reviewedHash": "bb5957cb000803857c4f0d48b497acbe5a7dd220c02cd0a4986d1487d8d84c77",
+      "description": "Selects profile storage and guards identity leases. Adds a read-only cold-owner check and isolated ACM fixture storage owner path; this source mapping does not claim native storage execution.",
+      "reviewedHash": "6f4b3b671b76ea2cf06b9344bddd21d8964b7c3eed8c0ff4e2d1d24cb824e59f",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/content/application/ContentPreparationGate.tsx": {
@@ -778,18 +850,18 @@
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/application/contentPackageRuntimeOwner.ts": {
-      "description": "Właściciel runtime rozwiązuje bieżący katalog, dokładny artefakt z pinu sesji oraz zweryfikowane pakiety instalowane w aktywnym profilu. Brak exact treści odróżnia od błędu katalogu/inwentarza; zmiana profilu unieważnia pamięć instalacyjną. Weryfikacja świeżo czyta cały aktywny inwentarz przed wznowieniem.",
-      "reviewedHash": "e861f6d946ff92969d4f80a546c74e31a8377056e75ef557482b4a69a7c4ce17",
+      "description": "Resolves ordinary modes with their existing training identity and ACM with a separate mode-aware view pinned to the raw full source artifact. ACM exact resolution requires the current track/version/source hash and never falls through to ordinary, installed or historical identity; missing exact ACM content is unavailable.",
+      "reviewedHash": "ba5f0c8772883239b3a9e8ec0c783faef66f7f530ba283a113ec2fe92d52eac0",
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/application/trainingLifecycle/TrainingLifecycleUseCases.ts": {
-      "description": "Przygotowuje nowe powtórki z bieżącego katalogu według trwałej jednostki. Brak materiału/przypisania pozostawia zapisaną potrzebę jako unavailable. Rozpoczęta sesja zachowuje exact pin i snapshot źródła kolejki; lifecycle nie podmienia jej treści.",
-      "reviewedHash": "3ca30e1957ebf0c4a3167e2e565ffd22a382932f1a22680de028c46c5308f78b",
+      "description": "Shared lifecycle prepares and persists sessions and attempts. It carries session mode through exact resume, so ACM refs resolve by the raw-source pin while ordinary modes retain training identity; durable writes, recovery and commit remain shared.",
+      "reviewedHash": "cf7fcefc5230beaea55bbc21687466280083806827b3aa528b279b686935f450",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/trainingLifecycle/ForegroundSessionTimerFacade.ts": {
-      "description": "Uzgadnia natywne T z agregatem sesji S, serializuje granice zapisu i expiry oraz ogranicza okresowe uzgadnianie do jednej oczekującej operacji; absolutny deadline pozostaje odrębnym kontraktem.",
-      "reviewedHash": "5ca8e53db36e1f1569b1bca45f2032b310d342b3a904077e80df903fac66694e",
+      "description": "Coordinates native timer state with session state and serializes write/expiry boundaries. Adds a read-only cold-owner guard for the isolated ACM fixture; that guard does not establish device timer behavior.",
+      "reviewedHash": "564be06dd1830cbc6c5f72cbd17fa40fd6df62e968a345809c8d467123427b5d",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/application/runtime/ForegroundSessionTimer.ts": {
@@ -853,8 +925,8 @@
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/domain/learning/packageCompletionRule.ts": {
-      "description": "Waliduje reguły ukończenia v2/v3 i kwalifikuje niezależne trwałe próby według zapisanej jednostki między wersjami. Legacy bez mental_unit wymaga własnego exact źródła i zgodności każdego zapisanego node ref; ten sam warunek zasila completion, tempo i coverage. Zachowuje minimum, jakość, pokrycie i pierwszy moment ukończenia, bez zmiany prób lub klasyfikowania pytań.",
-      "reviewedHash": "79308236b4e91f6776b258eded99023faab947b560100062bd2388c3b3a57e69",
+      "description": "Waliduje reguły ukończenia v2/v3 i kwalifikuje legacy trwałe próby według zapisanej jednostki. Jawnie wyłącza ACM paired-stage mode z legacy package/family completion; zachowuje minimum, pokrycie i pierwszy moment ukończenia.",
+      "reviewedHash": "7d54753ba0be2f4732feb03c76b2f0ddefb6d55b896f4f067d938279eaa5fe7a",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/domain/identity/recordFingerprint.ts": {
@@ -868,8 +940,8 @@
       "reviewedHash": "14b753e630675cc1cd6e460bcda3eb5c7d1ffe5b95d0953a28cb6ec93abf336f"
     },
     "patternly/src/application/learningPlan/learningEvidenceProjection.ts": {
-      "description": "Jedna projekcja zapisanych prób i powtórek dla Home/planów: waliduje identyfikację, czas i duplikaty, kwalifikuje próby przez kanoniczną regułę oraz resolver katalogu, i zachowuje osobno pełne zapisane rekordy oraz kwalifikowane evidence. Nie przepisuje wyniku ani historii.",
-      "reviewedHash": "47b9aac53f30cb17d40cd435b068e16389ed036b0fcd4d1291ac1ecc0dbdd923",
+      "description": "Jedna projekcja zapisanych prób i powtórek dla Home/planów: waliduje identyfikację, czas i duplikaty, kwalifikuje przez kanoniczną regułę oraz resolver katalogu. Rozpoznaje osobno ACM evidence; nie przepisuje wyniku ani historii.",
+      "reviewedHash": "b8c5bbe0273cb66da132913a4490f65f245888e4c6bb36c3078a513576d19032",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/application/account/premiumStoreMap.ts": {
@@ -1008,11 +1080,11 @@
     "patternly-content/scripts/build.mjs": {
       "description": "Waliduje aktualne źródła i reguły oraz buduje9artefaktów i lock. Loader CCAR-P przenosi źródłowy profilv2, domeny, wymagane N i metadane do rzeczywistego pakietu; sprawdza rozdzielone pule formatów/umiejętności. Premium i jawne apply-offer zachowują własny kontrakt. Przebudowa v1→v2 sprawdza integralność starej pary lock/artefakt niezależnie od nowych źródeł tylko dla zastępowanych ścieżek. Pozostawione ścieżki i nowy lock pozostają zgodne z bieżącym katalogiem; obsłużone błędy staging/rename wycofują zapis.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "da558ac45794efbbbbdbb03d8f7c6ef81cc6a9107f6a8de1a8e0a07a37148211"
+      "reviewedHash": "1f99f5dcc03d7bfc47cb3952da7e8e95871ed3fa64f8b39745c484a7fbdd4867"
     },
     "patternly-content/scripts/content/question-contract.mjs": {
       "description": "Waliduje zamknięty kontrakt pytania i interakcji producenta/runtime. Dla CCAR-P sprawdza wymagane N, zgodność z promptem/liczbą poprawnychID i dozwolone opcjonalne metadane; nie wylicza N z klucza jako danych ucznia.",
-      "reviewedHash": "7e2a29c23485241532359e91fd89d3de7971264d98b0716cfa33ffc68ab0e1de",
+      "reviewedHash": "b7b8905a31cc763cbfd179fd989f9ed4f68880c9d335da078e51c9782ad628cd",
       "flow": "Treść od producenta do sesji"
     },
     "patternly-content/scripts/content/track-runtime-bindings.mjs": {
@@ -1042,7 +1114,7 @@
     },
     "patternly-content/schemas/content/question.schema.json": {
       "description": "Struktura kanonicznego pytania. CCAR-P multiple wymaga autorskiego requiredSelectionCount; opcjonalne examMetadata zawiera jawną umiejętność i opcjonalną rodzinę scenariusza. Schemat nie potwierdza klucza lub merytoryki.",
-      "reviewedHash": "6ca572c67e47a5eea6c58c37ed463c2431fc1436e0a6927b1f7e4f7bb5bdf284",
+      "reviewedHash": "afc31f54ead48ab9115ebc77c25ddb2509bb6e4abc34bafd1ff83f391a042116",
       "flow": "Treść od producenta do sesji"
     },
     "patternly-web/src/main.jsx": {
@@ -1151,13 +1223,13 @@
       "flow": "Witryna, demo i panel"
     },
     "patternly/src/features/home/LanguageSettingsScreen.tsx": {
-      "description": "Wybór języka interfejsu.",
-      "reviewedHash": "2987a4d64d9ed3893b87b4f57c15f810779ab41e1b57e0ed772dfe5650567dfb",
+      "description": "Wybór języka interfejsu; gdy odczyt trwałych ustawień jest uszkodzony lub nieobsługiwany, pokazuje jawny stan unavailable i blokuje zapis.",
+      "reviewedHash": "5fc3d4a94f450fab6eb32b2e81ef362c2e402144584a3611e40dc14bd83ac492",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/features/home/AppearanceSettingsScreen.tsx": {
-      "description": "Wybór wyglądu aplikacji.",
-      "reviewedHash": "36b93273afb3457abee781b9a754abffe09e9c801cd55c0b2a5e029b023070ec",
+      "description": "Wybór wyglądu aplikacji; gdy odczyt trwałych ustawień jest uszkodzony lub nieobsługiwany, pokazuje jawny stan unavailable i blokuje zapis, aby nie nadpisać nieznanych pól.",
+      "reviewedHash": "a269498b23f076dee25419ec86e82bd75ed3efa18eb0920cc1f84132db5f2b8a",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/features/home/LegalRequestsScreen.tsx": {
@@ -1206,8 +1278,8 @@
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly/src/features/home/HomeScreen.tsx": {
-      "description": "Prezentuje dzisiejsze wejścia dla bieżącego tracku i profilu. Własny lifetime odcina późną nawigację po usunięciu Home i zwalnia nowy proposal lub editor bez naruszania blur.",
-      "reviewedHash": "b65dd68551901d88873ccdd9e50b710e84bf941ae2692b11677adf14a629e82f",
+      "description": "Prezentuje dzisiejsze wejścia bieżącego tracku/profilu i odrębny powrót do Approach Challenge po zweryfikowaniu identity, track i mode wznowionej sesji.",
+      "reviewedHash": "a5a7a04cd7c42b295fa1e2e5cb000de7c4012047dbcbd7c77ae841e44fdbcec2",
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly/src/features/review/MistakesReviewScreen.tsx": {
@@ -1246,9 +1318,9 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/practice/PracticeHubScreen.tsx": {
-      "description": "Prowadzi do trybów praktyki. Wejście egzaminu po Premium admission odczytuje aktywną sesję i przekazuje expectedSessionId tylko dla zgodnego track/mode; fence profilu odcina zmianę ownera po await. Nowy egzamin zachowuje demo przed zegarem.",
+      "description": "Prowadzi do trybów praktyki; udostępnia dedykowane wejście Approach Challenge, zachowując oddzielne ścieżki egzaminu, sesji praktyki i ich istniejące admission.",
       "flow": "Sesja, odpowiedź i trwały wynik",
-      "reviewedHash": "b0c4a56efecc5d35adf1ddc3277d884aa1e11f08cc5962299c0c88c52f30b50c"
+      "reviewedHash": "ffd64a5a10e91de99175215a3ab820278179d2b416f2451b69cb5c65f0f469b3"
     },
     "patternly/src/features/practice/PracticeSessionScreen.tsx": {
       "description": "Kieruje do wariantu sesji praktyki i przedstawia interakcję pytania. Stały BackLink zachowuje podany cel/callback; zapis i ocenianie należą do warstwy application.",
@@ -1376,9 +1448,9 @@
       "flow": "Treść od producenta do sesji"
     },
     "patternly/app.config.js": {
-      "description": "Konfiguruje jawne smoke/sandbox/release i tożsamość środowiska. Osobny Android Local wymaga smoke, emulatorów i lokalnego App Check; release sprawdza zatwierdzone dokładne dokumenty legal oraz zgodność publicznych linków i ma wyłączone OTA. Nie uruchamia wdrożenia.",
-      "flow": "Witryna, demo i panel",
-      "reviewedHash": "a4b55d9a0a1b231eb53ae6538cb65082e4cf23b74c9f7e3d68defc21cc842ab1"
+      "description": "Build configuration emits ACM fixture markers only for the explicit non-production smoke create/resume operation with a valid run UUID; malformed or partial fixture inputs fail closed. Ordinary builds omit the ACM markers.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "c3aec1685720749d137e9c6a479c29184657c39a93ced6b00203aee107e59c35"
     },
     "patternly/scripts/prepareLegalReview.mjs": {
       "description": "Tworzy prywatny pakiet porównawczy 14 dokumentów/7 locale, z hashami, widocznymi unresolved markers i statusem UNAPPROVED/testOnly/deployable=false; nie zatwierdza ani nie eksportuje do produkcji.",
@@ -1536,9 +1608,9 @@
       "reviewedHash": "b2ab2e1f2d2e09e1ad21d93bf25e9e269ecb3d19a12d2afbf0aad99e24d77a27"
     },
     "patternly/src/infrastructure/storage/encryptedStorageNative.ts": {
-      "description": "Otwiera oryginalny szyfrowany slot Nitro/MMKV i przekazuje ograniczoną capability czasu. Prywatny sandbox/Android UUID probe używa tego samego uchwytu, bez ujawniania tokenu, raw T lub handle; fixture fault zwraca tylko metadane i hash zapisu po zatrzaśniętym błędzie.",
+      "description": "Creates the fixture-only foreground-clock owner over the already opened, run-scoped encrypted ACM MMKV instance; it does not create regular profile storage or persist a clock token. Existing Android probe behavior remains separately guarded.",
       "flow": "Sesja, odpowiedź i trwały wynik",
-      "reviewedHash": "1ce999df55598a972577714b67a6aa3b22bff9226a0c6b43561c17a05814f26d"
+      "reviewedHash": "cf1086dcb8fb44293765d09bd72c28bd4aef4ad6c1ca9cc0f566b41b20cc686e"
     },
     "patternly/src/application/runtimeAuditability/androidClockProbeReadiness.ts": {
       "description": "Waliduje stall/read readiness i immutable session fields; sekwencyjne async odczyty mają deadline i stałe kategorie. Ślad identity musi być kompletny; adnotacja Premium zachowuje wszystkie pola uprawnień.",
@@ -1561,9 +1633,9 @@
       "reviewedHash": "48d291a35d32ea94912295eeb7c5f417f283a0f612aca531a624432aec1ee9f3"
     },
     "patternly/integration/contracts/content-release/release.lock.json": {
-      "description": "Pochodna tożsamość dziewięciu banków APP: fingerprint źródeł, hashe/rozmiary i kategorie kontroli. Bieżący lokalny kandydat CCAR-P ma releaseId patternly-local-candidate, sourceTree dirty i bezpublikacyjne provenance; release gate go odrzuca. Schema v4 nie nadaje semantic approval ani zgody na wydanie.",
+      "description": "Pochodna tożsamość dziewięciu zwykłych banków APP: fingerprint źródeł, hashe/rozmiary i kategorie kontroli. ACM przechowuje osobny, dokładnie przypięty challenge bank i nie zmienia liczby ani zakresu zwykłych banków w tym locku. Lokalny kandydat pozostaje dirty/unpublished; semantic approval, publikacja, deployment i device acceptance nie są deklarowane.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "01a817b09290575a867833d651672b9559f9a4ae112c685ba1d2f5f306b7b718"
+      "reviewedHash": "9a28ffc75441a116b3b080556b088f76c368bacfcce86bae9057917d692ed81b"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -1821,9 +1893,9 @@
       "reviewedHash": "36d25699c89c741f190b53cc953a648e0bdd6dbff92c46392cd5f10456d6afa8"
     },
     "patternly/src/navigation/backDestination.ts": {
-      "description": "Czyste mapowanie istniejących tras i parametrów na klucze faktycznych zlokalizowanych nazw ekranów. Uwzględnia aktywną zakładkę Home, stan wejścia konta, pod-ekran bezpieczeństwa i rodzaj żądania prawnego; nie nawiguje i nie zmienia historii. TopicRoadmap nazywa faktyczny ekran Choose topic. Mapowanie nie zawiera wycofanego ekranu kodów; recovery w wejściu konta oznacza reset e-mail.",
+      "description": "Czyste mapowanie istniejących tras i parametrów na zlokalizowane nazwy ekranów; obejmuje dedykowaną trasę Approach Challenge bez zmiany historii nawigacji.",
       "flow": "Start aplikacji i nawigacja",
-      "reviewedHash": "081eb49372c1863af7750695eb57a20f107bdcdc46863659572c4c104292e548"
+      "reviewedHash": "e40e287713da726dc904469f1b625c4df4e5db86724f8b767acac7e360748df6"
     },
     "patternly/src/components/AppShellHeader.tsx": {
       "description": "Wspólny nagłówek pokazuje nazwany BackLink i opcjonalną akcję ekranu; wariant marki występuje bez powrotu. Nagłówek stosu odpowiada za górną safe area. Przy zmianie systemowej skali tekstu odtwarza wyłącznie poddrzewo nagłówka, aby ponowić natywny pomiar BackLink i akcji; stan trasy pozostaje u nawigatora.",
@@ -1901,8 +1973,8 @@
       "reviewedHash": "dc604e1f74ed2a8bcd2fc9cb296d397b7df42ae1b8fdc461b49e19d21ea23c79"
     },
     "patternly/src/content/canonical/runtimeCatalog.ts": {
-      "description": "Waliduje dziewięć artefaktów względem locków i konfiguracji, successor ledger oraz dokładny treningowy poprzednik. Retained pakiety obejmują dokładne aktywne Claude przed realistycznym egzaminem, zachowując historyczne piny bez podmiany bieżącym bankiem. Nie klasyfikuje równoważności ani runtime/device PASS.",
-      "reviewedHash": "1eb3351c3b057377b063e6539ff93916db621738f160e95a9b4f57404a8594fb",
+      "description": "Waliduje zwykłe artefakty katalogu względem locków/konfiguracji, successor ledger i dokładny poprzednik. ACM jest osobnym przypiętym bankiem o własnym validatorze; ten katalog nie nadaje mu semantycznej równoważności ani runtime/device PASS.",
+      "reviewedHash": "bf9fcd74c04db5177ff8d710731c5002d8aaf154583a3c6a607010c9ac2fece2",
       "flow": "Treść od producenta do sesji"
     },
     "patternly/src/domain/learning/mentalUnitEvidence.ts": {
@@ -1911,9 +1983,9 @@
       "reviewedHash": "e16460cde1ac25deca5d89780365e54bf7c6cf388677cab78045eba75c4a47ab"
     },
     "patternly/src/application/canonical/canonicalFamilyMechanics.ts": {
-      "description": "Wspólne evidence, track-scoped odczyt i deterministyczny dobór pytania do potrzeby. Przed fingerprintem przechwytuje legacyUnitProof; przy resume waliduje obecny dowód względem exact A i B, bez dopisywania go starszym sesjom.",
+      "description": "Wspólne evidence, track-scoped odczyt i deterministyczny dobór pytania do potrzeby. Rozpoznaje jawnie ACM mode i nie kwalifikuje jego prób jako legacy family completion; zachowuje exact legacyUnitProof dla pozostałych trybów.",
       "flow": "Sesja, odpowiedź i trwały wynik",
-      "reviewedHash": "26009b6df78a33e13b3db33e152cc0a3c264536d1e03d4004b4000bdd1822edf"
+      "reviewedHash": "5de37617be7efb1f258a7b19089eb28eeb41956491a8ec40cac9a5a8a010eeae"
     },
     "patternly/src/application/reviewQueueQueries.ts": {
       "description": "Wyświetla bieżący materiał dla zapisanej jednostki. Każda budowa odkrywa katalog raz i skanuje pytania w kolejności do znalezienia pierwszego materiału dla żądanych jednostek. Nietrwały indeks zachowuje exact legacy proof, due/manual i unavailable konkretnego wiersza; historia i termin pozostają w źródłowym rekordzie.",
@@ -1921,9 +1993,9 @@
       "reviewedHash": "4fa41b5f6657afc9b6b50227cc75e933528e8961533d86f3c5edc924ea2db92b"
     },
     "patternly/src/application/coding-interview/codingProgressProjection.ts": {
-      "description": "Projektuje praktykę i skuteczność według zapisanych jednostek i node; dodanie/zastąpienie pytania w tej samej jednostce nie zeruje jej pokrycia. Nie przyznaje nowej jednostce postępu poprzedniej.",
+      "description": "Projektuje praktykę i postęp według zapisanych jednostek/node; wyłącza jawnie ACM paired-stage mode z legacy coding-family pokrycia, nie zerując przy tym istniejącej historii.",
       "flow": "Cel, plan i postęp",
-      "reviewedHash": "d784c1a19a3ffcdd7dccff68a502d63b69327296a9a8594e36be804aa1c98d24"
+      "reviewedHash": "51753a499ba9d9a87712f8ceb30da35e1fed1b9c743b49637581d44e6e4ecff5"
     },
     "patternly/src/application/identity/trainingIdentity.ts": {
       "description": "Wspólna czysta tożsamość treningu: fingerprint i identyfikator próby z kanonicznej serializacji oraz platformowego SHA-256. Nie wykonuje journalu, materializacji ani zapisu; lifecycle i mutacje współdzielą ten sam format.",
@@ -1931,14 +2003,14 @@
       "reviewedHash": "be716be7352c0d218a1cd20830ddefe2f8fee647311e5962ab4a011abd33d7ab"
     },
     "patternly/src/domain/account/accountWireState.ts": {
-      "description": "Zamknięty kontrakt rekordów konta z optional legacyUnitProof. Zachowuje spójną parę scoringPolicyId/version CCAR-P oraz niekompletne odpowiedzi w evidence wyniku tylko dla unanswered occurrences; blokuje sprzeczne membership i obcy track. Nie migruje rekordów ani nie odczytuje katalogu.",
+      "description": "Zamknięty kontrakt rekordów konta. Waliduje ACM modeId i approach_choice wyłącznie dla właściwego coding tracku, zachowując dotychczasowe kształty i zgodność pozostałych rekordów.",
       "flow": "Konto, Gość i synchronizacja",
-      "reviewedHash": "c3971ca5920c0b5818e2f2af48922d8e62d0097a94b0d6b5b4941e69f21812a7"
+      "reviewedHash": "b0d7ecf3453ef90643a853f7fb4571d745fe16bc19d0e45f877f4b833a5d70cc"
     },
     "patternly-backend/src/modules/progress/accountWireState.ts": {
       "description": "Byte-identyczny guard APP dla sync/merge/adoption. Zachowuje optional legacyUnitProof oraz zamknięte, spójne scoringPolicyId/version CCAR-P i partial responses wyłącznie należące do unanswered wyniku. Nie wykonuje migracji; zgodność wdrożonego backendu wymaga osobnego wydania/odbioru.",
       "flow": "Konto, Gość i synchronizacja",
-      "reviewedHash": "c3971ca5920c0b5818e2f2af48922d8e62d0097a94b0d6b5b4941e69f21812a7"
+      "reviewedHash": "b0d7ecf3453ef90643a853f7fb4571d745fe16bc19d0e45f877f4b833a5d70cc"
     },
     "patternly/src/application/learningPlan/applicationClockIntegration.test.ts": {
       "description": "Sprawdza wspólny zegar lifecycle oraz rzeczywiste zapisanie i ponowne wyliczenie ręcznych budżetów dwóch tracków przez produkcyjne coordinatory i journal/CAS. Podziały 10/10 i 7/13 zachowują własne rekordy, piny, legalne długości oraz jawny niedobór czasu; test używa profilu/routera z MemoryStorage, bez nowego globalnego allocatora lub odbioru natywnego UI.",
@@ -2108,12 +2180,12 @@
     "patternly/scripts/syncBundledContentRelease.mjs": {
       "description": "Synchronizator kanonicznych artefaktów APP. Zwykły sync/check nadal wymaga czystego CONTENT z HEAD=origin/master. Jawny candidate dopuszcza lokalny WIP tylko kanonicznego checkoutu, sprawdza rzeczywisty build, świeżość fingerprintu i byte-identical pozostałych8banków; oznacza local_unpublished/dirty. Podmiana i recovery pozostają transakcyjne.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "b84bafa9f3c1f424aa19790ab14029c01fa335a78e47a50dd1d2a8aa35943696"
+      "reviewedHash": "8d3515ee4dd10c249e342601703ebceeea5a7c485d427d60c5f73f28cc18818c"
     },
     "patternly/scripts/syncBundledContentRelease.test.mjs": {
       "description": "Regresje synchronizacji na izolowanych fixture Git/FS: czysty główny commit i detached checkout, odmowa WIP, obcego katalogu/origin/ref/SHA, zmiana źródła w trakcie, parity i proweniencja oraz atomowa podmiana/recovery z zachowaniem bajtów APP. Lista przypadków nie jest wynikiem ich wykonania.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "33688068a9d309fff82d2655e1c91fba1008c5d553820243f57a288a2f56f194"
+      "reviewedHash": "99a2deda5c95d387537cff503ec67f0c5038c85a3541802da0f81e19f580cb10"
     },
     "patternly/scripts/releaseManifest.test.mjs": {
       "description": "Regresje integralności manifestu wydania, tożsamości wejść i dowodów. Fixture synchronizacji identyfikuje własny czysty główny commit CONTENT i sprawdza, że tylko pochodne banku APP mogą pozostać niezacommitowane; nie uruchamia prawdziwego wydania.",
@@ -2221,8 +2293,8 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/.gitignore": {
-      "description": "Jawna allowlista wersjonowanych przepływów Maestro, w tym ui-exam-verify, pat-opt-007 oraz ui-plan-shortfall; prywatne dowody i pozostałe lokalne pliki nadal są ignorowane.",
-      "reviewedHash": "acedf10e80c071c0f5b6ec9f46902bc674b24cffbe88a6534bdddb61fa8d859d"
+      "description": "Exposes only the two ACM native fixture create/resume flows among the local Maestro files; all other unlisted flows remain ignored. Private evidence and local inputs stay excluded.",
+      "reviewedHash": "51ad18ae06e2190be9e2fc55b5d3043a91526128e850f44f717d8d4442b0aa01"
     },
     "patternly/.maestro/ui-exam-verify-entry.yaml": {
       "description": "Capture-only wejście do bieżącego 50-pytaniowego egzaminu GCP na istniejącym, uwierzytelnionym własnym lokalnym koncie smoke; wymaga preflightu bez aktywnej sesji, resetu ani logowania. Uruchomiony przepływ rozpoczyna sesję i zapisuje widok pierwszego pytania; sam plik nie jest dowodem native.",
@@ -2407,7 +2479,7 @@
     "patternly-content/tests/content-builder.test.mjs": {
       "description": "Testy rzeczywistego buildera: walidacja źródeł i profili, deterministyczne artefakty/lock, legalne v1→v2 z nową polityką i regułą ukończenia, ochrona pozostawionych ścieżek, uszkodzonych i niepełnych par oraz rollback/retry po błędzie stagingu lub rename podczas przejścia wersji. Opcjonalnie utrwalają syntetyczne snapshoty w nowym katalogu dowodów.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "f94e7f75c58208a6c6693f06dc5a93a43c3f53406ccdddffd040ccf5e9d37974"
+      "reviewedHash": "983184af0641199a35487033f57d9b050f8337a759750b6d9c679394c15fd2c4"
     },
     "patternly-content/scripts/content/reproduce-content-version-transition.mjs": {
       "description": "Izolowany reproduktor PAT-CODE-018: minimalna fixture AWS, dziewięć przypadków legalnej zmiany contentVersion, uszkodzenia starej pary i obsłużonych błędów rename. Używa produkcyjnego buildTrack/buildAll i prawdziwego filesystemu; każdy przebieg zachowuje scope, candidate i actual w nowym ignorowanym katalogu .local.",
@@ -2521,31 +2593,31 @@
     },
     "patternly/src/locales/de/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "e04ffbb9b6ddd7bc4a34f0d852c051a0a104bfffe4082938d3645b1645fe8622"
+      "reviewedHash": "bfed7f40f90b0c92b2955a89960d352c126a34221780ec349004ac0cb25f8768"
     },
     "patternly/src/locales/en/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "f60f32048db0699c987b1cfa3fab9b4d6420a4e06e1a8c96e360fdae6a5f674e"
+      "reviewedHash": "daf9948940bb4750db0a1ccf9693e12f227503100c1432eedfeee8e88992f1c7"
     },
     "patternly/src/locales/es/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "7367a29e341a57c0c561d45dc239e9f31862490289b542e6a8b829f9c9766136"
+      "reviewedHash": "a406f489af0422624f8db8be1d8498fa2d5e1e8f612e167715778f0cf021547d"
     },
     "patternly/src/locales/et/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "cbdb45bf94757d0fdc6504c3ca7009f2901ffd15b07b4a3a8e1e1486b4dc46af"
+      "reviewedHash": "3426ec3e4b27aabbd70d8578532b6c1deb78581984d2a7cfe1f6620267db9d46"
     },
     "patternly/src/locales/fr/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "9233c982b28b46bc667617a4a9f53690e08162ce08bb689d9407b8e1502e5135"
+      "reviewedHash": "f559547740d2dad2f72f9946300dcd965b67cd8625364ec6359f7593c04521e4"
     },
     "patternly/src/locales/it/common.json": {
       "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "a8753bcac1dc2ef891f09bd4c7671c8709df96f01177a84cadc5c880d4187d1c"
+      "reviewedHash": "eb8c5828a8934ed3438e2196fff506fff5b1b1e27b18c12ba380ca17b526920b"
     },
     "patternly/src/locales/pl/common.json": {
-      "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; recovery zachowuje ostrzeżenia i rozróżnione działania.",
-      "reviewedHash": "34c3e8181813dd75303789e325243e98e9b2c4b39072382ece1ad8610fc49d99"
+      "description": "Wspólne tłumaczenia interfejsu. F01 ma meaningful fallbacki i tytuł niedostępnego profilu; historia ACM używa „prawie” dla partial bez zmiany legacy etykiety „Częściowo poprawne”.",
+      "reviewedHash": "106896d94d8472d74646b9e43108e3148307dddf95755643cc7ae7bc889d46a5"
     },
     "patternly/src/navigation/loadingStateOwnership.test.ts": {
       "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
@@ -2727,6 +2799,179 @@
       "description": "Szablony draftów prawnych ET. Sekcja oferty regulaminu interpoluje istniejące terms.premiumServiceScope z jednego źródła, bez własnej kopii zakresu Free/Premium. Pozostałe sekcje i struktura bez zmiany; użycie produkcyjne wymaga osobnego exact approval.",
       "flow": "Witryna, demo i panel",
       "reviewedHash": "e4e8653bad55d74a2a10efaba4187ea44f7ecaccbe3b4a83cf710046df01c31e"
+    },
+    "patternly/src/application/coding-interview/approachChallengeSelection.ts": {
+      "description": "Wybiera whole-problem pulę ACM z przypiętego banku, dostępnych rodzin/trudności i ustawień. Pusta lista rodzin manual jest poprawnym filtrem zwracającym empty_pool; unknown ID jest odrzucany.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "514232c1bab1a728323162d838f0980d5f4c98cf15eb205bf3ea3e0a8732eb54"
+    },
+    "patternly/src/application/coding-interview/approachChallengeSelection.test.ts": {
+      "description": "Kontrakty deterministycznego wyboru ACM, dostępności, ustawień i skracania puli.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "9768cbc2c5ad196ba3af9826f1c8687cd8b7d8cdf7e3ab0b378046085cd391fc"
+    },
+    "patternly/src/application/coding-interview/approachChallengeSession.ts": {
+      "description": "Waliduje i koduje manifest ACM sesji: kolejność problemów, exact content pin, occurrence i etap Q1/Q2; projekcja odmówi przy naruszonej integralności.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "bf7aad0760bf11e184ed8dbdfa36c85fe220e05d7cd54202a342c6edbdacc951"
+    },
+    "patternly/src/application/coding-interview/approachChallengeSessionFacade.ts": {
+      "description": "ACM facade uses the mode-aware exact content view for selection, stage projection and detailed history; start, submit, retry, recovery and completion remain owned by the shared durable lifecycle.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "287ea99026bca07f0f63e9055840d178f5418d5a6d05cd167cb60d186c3b6b09"
+    },
+    "patternly/src/application/coding-interview/approachChallengeEvidence.test.ts": {
+      "description": "Testy kwalifikacji trwałego evidence ACM i granicy wobec legacy coding-family completion.",
+      "flow": "Cel, plan i postęp",
+      "reviewedHash": "379469305d3ae87f8ea966867fdd3f91941b15479540394cc509cfaf5654a43a"
+    },
+    "patternly/src/application/coding-interview/approachChallengeLifecycleJournal.test.ts": {
+      "description": "Production lifecycle tests cover paired-stage persistence, exact-pin resume/history, failed journal writes and retry boundaries. The current-bank account snapshot test proves export/import and detailed history use the ACM raw source pin; test results remain tied to their receipt.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "070b258ea3b29619f4c45f8b670b4fdfab75c1b409b57c07c3878e42cd5b96cf"
+    },
+    "patternly/src/application/coding-interview/approachChallengeTrainingRuntime.test.ts": {
+      "description": "Testy ACM adaptera wspólnego training lifecycle na exact banku i paired occurrences.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "c0942a4f7a9728ea899e792321cfd9963cee0e64e2f2417bcb26d04fb203b578"
+    },
+    "patternly/src/content/canonical/approachChallengeProblem.ts": {
+      "description": "APP kontrakt problemu ACM i jego referencji: closed shape, wersja schematu, rodzina, interakcje, identyfikatory i zgodność exact content pin.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "1afb96cab39b0b562bc476f0e594d1157fcc101b674156fc9723481302f04c2e"
+    },
+    "patternly/src/content/canonical/approachChallengeProblem.test.ts": {
+      "description": "Testy APP walidacji problemu ACM, dozwolonych pól, rodziny i referencji/pinu.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "c644d987bd70129646a2f288475634331cdf2af0ee941690e0eb075238ce8027"
+    },
+    "patternly/src/content/canonical/interactions/approachChoice.ts": {
+      "description": "Kanoniczny handler wyboru podejścia ACM: waliduje dwie opcje, interpretuje odpowiedź i produkuje wynik bez kodu uruchamialnego.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "3c97f701eef1304788a339229b0a06266431ab507e0b2caab6000ddd41f5f36c"
+    },
+    "patternly/src/content/canonical/interactions/approachChoice.test.ts": {
+      "description": "Testy validatora, kompletności i wyniku kanonicznej interakcji ACM approach_choice.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "cde47d95fa599e8c0b183426fa06521c852708e36878673d7cf4b61c828743a9"
+    },
+    "patternly/src/features/practice/ApproachChallengeScreen.tsx": {
+      "description": "Dedicated ACM setup, paired-stage session, recovery and history. Explicit session history is read-only and independent of settings hydration; saved-content failures render a safe unavailable state, and filter settings do not alter an open/resumed session. Source mapping does not claim native UI behavior.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "511e22624a0505d764facdb22c08f757c66a87690a6a2b586c758ce8c71bf02b"
+    },
+    "patternly/src/features/practice/approachChallengeNavigation.test.ts": {
+      "description": "Testy przekierowania/wznowienia ACM po sprawdzeniu identity, track i mode sesji oraz odrębnej trasy.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "7ab67c813261ef0192fb60364084e115e5edfc33042e9a1ac44fa6daf666de87"
+    },
+    "patternly-content/config/approach-challenge-registries/coding-interview-dsa-problem-solving.json": {
+      "description": "Rejestr 13 rodzin ACM wraz z regułami dostępności i oczekiwanym pokryciem dla coding-interview-dsa-problem-solving.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "0a1e53a8dbcf3f38008ca6145f1d308cd16c59af525d3251ac8c1fcde6985238"
+    },
+    "patternly-content/schemas/content/approach-challenge-problem.schema.json": {
+      "description": "JSON Schema `approach-challenge-problem-v1` dla osobnego rekordu paired-stage ACM.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "6dad505c6841f3d0c4d09fda6a51227138af5273a51f52931dbee08ad84bfea6"
+    },
+    "patternly-content/scripts/content/approach-challenge-bank.mjs": {
+      "description": "Loader banku ACM: bezpieczne ścieżki, zamknięte kształty, unikalne ID, pokrycie 13 rodzin, 36 problemów/72 pytań i exact refs.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "0f640c69ea6e5e39654d053db265421b6cf0bffd8b6e95a78fc4bd01ae7947e1"
+    },
+    "patternly-content/scripts/content/approach-challenge-blueprint.mjs": {
+      "description": "Walidator blueprintu ACM i jego spójności z rejestrem rodzin oraz przypiętym bankiem.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "a75668aa98789ad4fbf68c2798b3356ca34a0308d0042e525a55820ba84f6df8"
+    },
+    "patternly-content/scripts/content/approach-challenge-contract.mjs": {
+      "description": "CONTENT kontrakt schematu/problem refs/family folder ACM, w tym walidacja exact IDs i bezpiecznych ścieżek.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "17ebc51fef478bd8912ecda3e4a8f2f821fab1788ec38b37e5c7070419eede15"
+    },
+    "patternly-content/tests/approach-challenge-bank.test.mjs": {
+      "description": "Testy loadera banku ACM: liczebności, pokrycie, powtórzenia, nieprawidłowe lub niebezpieczne ścieżki.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "b9a7d39c1b609aac8402ed11f15f36916f5858c68adfcb6bb35a0082ba933f59"
+    },
+    "patternly-content/tests/approach-challenge-blueprint.test.mjs": {
+      "description": "Testy walidacji blueprintu ACM oraz zgodności z bankiem/registry.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "1d72718e3c897771451c41b3f929a8696b19f4fe9557fb1ca5816b98b4d31b0e"
+    },
+    "patternly-content/tests/approach-challenge-contract.test.mjs": {
+      "description": "Testy CONTENT kontraktu schematu, ref/pinu i walidacji rodzin ACM.",
+      "flow": "Treść od producenta do sesji",
+      "reviewedHash": "26af81094193972b8114f5a22c1ab79bd1fa2d08b1a9fa9cd63a6ba593c702b5"
+    },
+    "patternly-backend/tests/fixtures/account-wire/acm-actual-export.json": {
+      "description": "Synthetic APP-produced current-bank account-wire fixture: the ACM session, Q1/Q2 attempts and result carry the raw source artifact pin; ordinary training identity is recorded separately. Not a real account export.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "35588c58c39b32315da0fd8b7724421d00467235d424f49c35bcfcc448f9b82d"
+    },
+    "patternly-backend/tests/fixtures/account-wire/acm-actual-export.provenance.md": {
+      "description": "Records the exact APP producer path, current ACM source pin, distinct ordinary training identity, fixture hash and non-user provenance. It describes source evidence, not a live account or service result.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "8c4ceed16a331eb88f9e4bade4ba22e911375b49e139ea1357d36a0390c9d340"
+    },
+    "patternly/src/storage/repositories/settingsRepository.ts": {
+      "description": "Waliduje i atomowo zapisuje wygląd, język oraz ACM filters w aktywnym profilu. Manual ACM z pustym selectedFamilyIds jest poprawną, zapisywalną pustą pulą; nie wybiera rodziny automatycznie. Nieznane ID, duplikaty i błędne wartości pozostają odrzucane.",
+      "flow": "Konto, Gość i synchronizacja",
+      "reviewedHash": "5822f8a8c7c7b0379c285320931b43d2d6a73b3676c5aa49e741dc60f72dfebf"
+    },
+    "patternly/src/preferences/appPreferences.test.ts": {
+      "description": "Testuje zapis ACM ustawień wraz z legacy preferences; pusty manual family filter jest trwały, unknown family ID odrzuca patch bez naruszenia poprzednich wartości.",
+      "flow": "Start aplikacji i nawigacja",
+      "reviewedHash": "dda4fe6c12aa5ef970b22ce5a74d457c6e62102393155a0f1bd385d751a976af"
+    },
+    "patternly/src/features/practice/approachChallengeEntry.ts": {
+      "description": "Rozstrzyga wejście ACM: jawny history sessionId ma pierwszeństwo jako exact read-only detail; bez ID sprawdza aktywną ACM sesję do wznowienia, obcą sesję jako konflikt lub pusty stan jako setup.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "f97f64723c9c08edc56f4ed99be9c2256b001ed5ac0e0bbe166f5286307012b5"
+    },
+    "patternly/src/features/practice/approachChallengeEntry.test.ts": {
+      "description": "Sprawdza wyłączne exact-history read dla jawnego sessionId przy aktywnej ACM i obcej sesji oraz zachowanie resume/conflict.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "1a98d68cada7da0a3c7adc1b85ceee596be164d270bef8a77846e37965f1093e"
+    },
+    "patternly/src/application/coding-interview/codingInterviewSessionFacade.ts": {
+      "description": "Legacy Algorithms facade. Completion recovery resolves the expected stored legacy per-item session by ID, accepts only its exact completion journal or already-completed record, then releases the timer after lifecycle verification; checkpoint recovery remains active-session-bound and ACM is rejected.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "00bd34d35e17532b874e9c0f441743e179b120936d4a61362ba261550d69c211"
+    },
+    "patternly/src/application/coding-interview/codingInterviewCompletedResultIntegrity.test.ts": {
+      "description": "Completed Coding result integrity and by-ID legacy completion recovery tests. Covers exact stored-session recovery after active ownership clears, rejected foreign IDs/tracks/journal ownership without writes, same-result verification and post-verification timer release.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "d551ab9dc2499788775b54013c9fea8aa639a9f39be42889369231eec777092a"
+    },
+    "patternly/scripts/qa/acmNativeFixtureIos.mjs": {
+      "description": "Bounded iOS fixture runner fingerprints and privately stages versioned plus actual ignored iOS/Pods inputs, then gates build/install/Maestro create/resume/restore behind matching approval and coordinator token. Its plan and retained build log show the exact four Debug overrides (ONLY_ACTIVE_ARCH=YES, DEBUG_INFORMATION_FORMAT=dwarf, COMPILER_INDEX_STORE_ENABLE=NO, CLANG_ENABLE_MODULE_DEBUGGING=NO) and -jobs 2 before the build action. Fingerprint, plan and input-probe remain source-only; this runner has not executed a build or device action.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "42f28728187591e7dbb282330a2ca1ec35c9a03f60fb96b1db764e235d22c55b"
+    },
+    "patternly/.maestro/acm-native-fixture-create.yaml": {
+      "description": "Source-grounded initial flow checks Free access gating, local Premium fixture access, shortened-pool confirmation and creation of an active Q1 session. It does not cover grading outcomes or claim observed native behavior.",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/.maestro/acm-native-fixture-resume.yaml": {
+      "description": "Source-grounded initial flow relaunches without clearing state and checks the active ACM Q1 stage. It does not cover the full native matrix or claim observed device behavior.",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/native/foreground-clock/ACMNativeFixtureIdentity.mm": {
+      "description": "Exports native fixture identity and run-scoped storage inventory to JavaScript. Marker presence, valid DEBUG/smoke/run/operation metadata and storage readiness are reported separately; it does not open regular profile storage."
+    },
+    "patternly/src/application/runtimeAuditability/acmNativeFixtureProtocol.ts": {
+      "description": "Validates native ACM fixture identity and strict run-scoped store manifest/inventory before opening isolated fixture storage. Invalid or partial marker state resolves to unavailable.",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/application/runtimeAuditability/ACMNativeFixtureRoot.tsx": {
+      "description": "Mounts the production ACM screen and shared lifecycle over two isolated fixture-owned MMKV stores after preflight; fixture controls local access only and do not represent StoreKit or provider behavior.",
+      "flow": "Sesja, odpowiedź i trwały wynik"
+    },
+    "patternly/src/features/practice/approachChallengeAccess.tsx": {
+      "description": "Provides a local access-control seam for the native fixture so Free and Premium gating can be exercised without making a purchase or changing provider configuration.",
+      "flow": "Sesja, odpowiedź i trwały wynik"
     }
   },
   "flows": [
@@ -2739,7 +2984,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "2634811dea3a0e3a0801068cf6272cdf092832ab7b9286cbd8b56d18666c9e92"
+      "reviewedDigest": "d0295db80d9739bf861af4284ea3e4d48882e200d47be0ae0070587ded200a6b"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -2751,7 +2996,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "68988146cbc2347158d8c40a5824de59dea17f5ecc0b498e2afa27a6ec05ed22"
+      "reviewedDigest": "76879bdbafe3f36f75bf1a704fe3f89e82b2b215f8186d01f6641fc36fdec526"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -2763,7 +3008,7 @@
         "patternly/scripts/syncBundledContentRelease",
         "patternly/scripts/releaseManifest.test.mjs"
       ],
-      "reviewedDigest": "6a65344b1e299f75dbfb5d7a68278b9d15b4f329fb534cfef4e64524f797208b"
+      "reviewedDigest": "01a676666d42ab7605a4f4aa0308870bee1616a121935a84cbd046a1902979dc"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",
@@ -2813,7 +3058,7 @@
         "patternly/scripts/qa/persist13-start-cutpoint-seed.yaml",
         "patternly/scripts/qa/persist13-start-recovery.yaml"
       ],
-      "reviewedDigest": "612b69d5100e02a58b36548d4cd36afef207e6a51b904894b2b65d6ac0d64a4d"
+      "reviewedDigest": "651d72981794f17f4bfd7be029581cd50e89b8ae6a1e5decfafbff33a261ea50"
     },
     {
       "name": "Cel, plan i postęp",
@@ -2824,7 +3069,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "333af70967ec667820d65ce8f652f8d9acd09279938d27f39cc5a117a89b7c28"
+      "reviewedDigest": "4e627aa68b809834c5c2755bdaf8e75cbfc52152a2ddfa57460688349def18ca"
     },
     {
       "name": "Premium i zakup",
@@ -2857,7 +3102,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "7a81f25bc51a8f66e9160c750b3c52061c16959428b391366fd6cbd0e8c64b4a"
+      "reviewedDigest": "97e320d5df0d6c76f53505d48a830342a6dac0b2607c5ad65a7d5840e6f5f432"
     }
   ]
 }

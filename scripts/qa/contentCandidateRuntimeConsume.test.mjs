@@ -21,7 +21,7 @@ test("candidate consumer CLI validates the real APP runtime catalog and emits ag
   }
   assert.deepEqual((await readdir(candidateRoot)).sort(), [...artifactNames, "content-lock.json"].sort());
   const output = execFileSync(process.execPath, ["--import", "tsx", SCRIPT, "--candidate-dir", candidateRoot], { cwd: APP_ROOT, encoding: "utf8" });
-  assert.deepEqual(JSON.parse(output), { status: "consumed", trackCount: 9, questionCount: 16_749 });
+  assert.deepEqual(JSON.parse(output), { status: "consumed", trackCount: 9, questionCount: 16_759 });
   assert.doesNotMatch(output, /trackId|contentVersion|sha256|questionId/u);
 });
 

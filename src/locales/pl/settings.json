@@ -164,5 +164,7 @@
   "premiumNotStartedDetail": "Nie uruchomiono zakupu w sklepie. Zapisane żądanie wymaga wyjaśnienia przed kolejnym zakupem. Odśwież status lub skontaktuj się z pomocą.",
   "premiumScopeUnavailableDetail": "Opis usługi nie został jeszcze potwierdzony. Nowe zakupy są niedostępne; możesz nadal przywracać zakupy i zarządzać obecną subskrypcją.",
   "premiumRestoreCancelled": "Przywracanie anulowane",
-  "premiumServiceScopeSummary": "Początkowe węzły każdej ścieżki są dostępne bezpłatnie. Premium odblokowuje pozostałe węzły."
+  "premiumServiceScopeSummary": "Początkowe węzły każdej ścieżki są dostępne bezpłatnie. Premium odblokowuje pozostałe węzły.",
+  "preferencesUnavailableTitle": "Zapisane preferencje niedostępne",
+  "preferencesUnavailableDetail": "Nie udało się odczytać zapisanych preferencji. Wybory są wyłączone do czasu przywrócenia lokalnego zapisu."
 }

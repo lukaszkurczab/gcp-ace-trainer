@@ -1,4 +1,4 @@
-const { IOSConfig, withAndroidManifest, withDangerousMod, withFinalizedMod, withXcodeProject } = require("expo/config-plugins");
+const { IOSConfig, withAndroidManifest, withAppDelegate, withDangerousMod, withFinalizedMod, withXcodeProject } = require("expo/config-plugins");
 const { default: plist } = require("@expo/plist");
 const { existsSync, mkdirSync, readFileSync, writeFileSync } = require("node:fs");
 const { join } = require("node:path");
@@ -204,22 +204,84 @@ function iosBackupPolicySwift() {
 `;
 }
 
-function injectIosBackupPolicy(source) {
+function injectIosBackupPolicy(source, { requireFirebaseGeneratedRegion = false } = {}) {
   // Replace our previous generated helper rather than silently retaining stale policy.
   let next = source.replace(/  private func configureCanonicalStorageBackupPolicy\(\) \{[\s\S]*?\n  \}\n\n/g, "")
     .replace(/  private func applyPatternlyStorageBackupPolicy\(documents: URL, library: URL, bundleIdentifier: String\) throws \{[\s\S]*?\n  \}\n\n/g, "")
+    .replace(/  \/\/ @patternly-acm-native-fixture-helper-begin\n[\s\S]*?  \/\/ @patternly-acm-native-fixture-helper-end\n/g, "")
+    .replace(/    if patternlyACMFixtureMarkerPresent\(\) \{\n#if DEBUG\n      RCTBundleURLProviderAllowPackagerServerAccess\(false\)\n#endif\n      preparePatternlyACMFixtureStorage\(\)\n    \} else \{\n      configureCanonicalStorageBackupPolicy\(\)\n    \}\n\n/g, "")
+    .replace(/    if patternlyACMFixtureMarkerPresent\(\) \{\n      preparePatternlyACMFixtureStorage\(\)\n    \} else \{\n      configureCanonicalStorageBackupPolicy\(\)\n    \}\n\n/g, "")
     .replace(/    configureCanonicalStorageBackupPolicy\(\)\n\n/g, "");
+  const firebaseGuardStart = "    // @patternly-acm-native-firebase-guard-begin\n";
+  const firebaseGuardEnd = "    // @patternly-acm-native-firebase-guard-end\n";
+  const oldGuardStart = next.indexOf(firebaseGuardStart);
+  const oldGuardEnd = next.indexOf(firebaseGuardEnd);
+  if (oldGuardStart >= 0 || oldGuardEnd >= 0) {
+    if (oldGuardStart < 0 || oldGuardEnd < oldGuardStart) throw new Error("Patternly AppDelegate Firebase fixture guard is incomplete.");
+    const guardedBlock = next.slice(oldGuardStart, oldGuardEnd);
+    const innerStartText = "    if !patternlyACMFixtureMarkerPresent() {\n";
+    const innerEndText = "    } // Patternly ACM native fixture Firebase guard\n";
+    const innerStart = guardedBlock.indexOf(innerStartText);
+    const innerEnd = guardedBlock.lastIndexOf(innerEndText);
+    if (innerStart < 0 || innerEnd < innerStart) throw new Error("Patternly AppDelegate Firebase fixture guard is malformed.");
+    const generatedRegion = guardedBlock.slice(innerStart + innerStartText.length, innerEnd).trim();
+    const beforeGuard = next.slice(0, oldGuardStart).replace(/[ \t]*\n*$/, "\n");
+    const afterGuard = next.slice(oldGuardEnd + firebaseGuardEnd.length).replace(/^\n(?:[ \t]*\n)*/, "\n");
+    next = `${beforeGuard}${generatedRegion}\n${afterGuard}`;
+  }
   if (next.includes("configureCanonicalStorageBackupPolicy") || next.includes("applyPatternlyStorageBackupPolicy")) {
     throw new Error("Patternly AppDelegate contains an unsupported backup policy helper.");
   }
   if (!next.includes("import Foundation")) next = `import Foundation\n${next}`;
+  if (!next.includes("import CoreFoundation")) next = `import CoreFoundation\n${next}`;
   const launchStart = "  ) -> Bool {\n";
   const launchMethodIndex = next.indexOf("didFinishLaunchingWithOptions");
   const launchIndex = next.indexOf(launchStart, launchMethodIndex);
   if (launchMethodIndex < 0 || launchIndex < 0 || next.split("  // Linking API\n").length !== 2) {
     throw new Error("Patternly AppDelegate backup policy anchors were not found.");
   }
-  const helper = `  private func configureCanonicalStorageBackupPolicy() {
+  const helper = `  // @patternly-acm-native-fixture-helper-begin
+  private func patternlyACMFixtureMarkerPresent() -> Bool {
+    let info = Bundle.main.infoDictionary ?? [:]
+    return ["PatternlyACMNativeFixture", "PatternlyACMNativeFixtureRunUUID", "PatternlyACMNativeFixtureOperation"]
+      .contains { info[$0] != nil }
+  }
+
+  private func patternlyACMFixtureIsValid() -> Bool {
+#if DEBUG
+    guard let markerValue = Bundle.main.object(forInfoDictionaryKey: "PatternlyACMNativeFixture") as? NSNumber,
+          CFGetTypeID(markerValue) == CFBooleanGetTypeID(), markerValue.boolValue,
+          Bundle.main.object(forInfoDictionaryKey: "PatternlyRuntimeMode") as? String == "smoke",
+          let runUUID = Bundle.main.object(forInfoDictionaryKey: "PatternlyACMNativeFixtureRunUUID") as? String,
+          let operation = Bundle.main.object(forInfoDictionaryKey: "PatternlyACMNativeFixtureOperation") as? String,
+          ["create", "resume"].contains(operation) else { return false }
+    let pattern = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    return UUID(uuidString: runUUID) != nil && runUUID.range(of: pattern, options: .regularExpression) != nil
+#else
+    return false
+#endif
+  }
+
+  private func preparePatternlyACMFixtureStorage() {
+    guard patternlyACMFixtureIsValid(),
+          let runUUID = Bundle.main.object(forInfoDictionaryKey: "PatternlyACMNativeFixtureRunUUID") as? String,
+          let library = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
+    let directory = library.appendingPathComponent("Patternly", isDirectory: true)
+      .appendingPathComponent("ACMNative", isDirectory: true)
+      .appendingPathComponent(runUUID.lowercased(), isDirectory: true)
+      .appendingPathComponent("mmkv", isDirectory: true)
+    do {
+      try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+      var values = URLResourceValues()
+      values.isExcludedFromBackup = true
+      var target = directory
+      try target.setResourceValues(values)
+      target.removeAllCachedResourceValues()
+      guard try target.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup == true else { return }
+    } catch { return }
+  }
+
+  private func configureCanonicalStorageBackupPolicy() {
     guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first,
           let library = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first,
           let bundleIdentifier = Bundle.main.bundleIdentifier else {
@@ -232,9 +294,43 @@ function injectIosBackupPolicy(source) {
     }
   }
 
-` + iosBackupPolicySwift();
-  const withLaunchCall = `${next.slice(0, launchIndex + launchStart.length)}    configureCanonicalStorageBackupPolicy()\n\n${next.slice(launchIndex + launchStart.length)}`;
-  return withLaunchCall.replace("  // Linking API\n", `${helper}  // Linking API\n`);
+` + iosBackupPolicySwift() + "  // @patternly-acm-native-fixture-helper-end\n";
+  const withLaunchCall = `${next.slice(0, launchIndex + launchStart.length)}    if patternlyACMFixtureMarkerPresent() {
+#if DEBUG
+      RCTBundleURLProviderAllowPackagerServerAccess(false)
+#endif
+      preparePatternlyACMFixtureStorage()
+    } else {
+      configureCanonicalStorageBackupPolicy()
+    }
+
+${next.slice(launchIndex + launchStart.length)}`;
+  let transformed = withLaunchCall.replace("  // Linking API\n", `${helper}  // Linking API\n`);
+  const firebaseBegin = "// @generated begin @react-native-firebase/app-check - expo prebuild";
+  const firebaseEnd = "// @generated end @react-native-firebase/app-check";
+  const beginIndex = transformed.indexOf(firebaseBegin);
+  const endIndex = transformed.indexOf(firebaseEnd);
+  if (requireFirebaseGeneratedRegion && (beginIndex < 0 || endIndex < 0)) {
+    throw new Error("Patternly AppDelegate Firebase generated region is missing for the ACM native fixture.");
+  }
+  if (beginIndex >= 0 || endIndex >= 0) {
+    if (beginIndex < 0 || endIndex < beginIndex || transformed.indexOf(firebaseBegin, beginIndex + firebaseBegin.length) >= 0
+      || transformed.indexOf(firebaseEnd, endIndex + firebaseEnd.length) >= 0) {
+      throw new Error("Patternly AppDelegate Firebase generated region is ambiguous.");
+    }
+    const lineStart = transformed.lastIndexOf("\n", beginIndex) + 1;
+    const indentation = transformed.slice(lineStart, beginIndex) || "    ";
+    const generatedRegion = transformed.slice(beginIndex, endIndex + firebaseEnd.length);
+    if (requireFirebaseGeneratedRegion
+      && (!/\bRNFBAppCheckModule\.sharedInstance\(\)/u.test(generatedRegion)
+        || !/\bFirebaseApp\.configure\(\)/u.test(generatedRegion))) {
+      throw new Error("Patternly AppDelegate Firebase generated region has an unexpected ACM fixture shape.");
+    }
+    const guardOpen = `${indentation}// @patternly-acm-native-firebase-guard-begin\n${indentation}if !patternlyACMFixtureMarkerPresent() {\n`;
+    const guardClose = `\n${indentation}} // Patternly ACM native fixture Firebase guard\n${indentation}// @patternly-acm-native-firebase-guard-end`;
+    transformed = `${transformed.slice(0, lineStart)}${guardOpen}${generatedRegion}${guardClose}${transformed.slice(endIndex + firebaseEnd.length)}`;
+  }
+  return transformed;
 }
 
 function withPrivacyBoundary(config) {
@@ -247,11 +343,11 @@ function withPrivacyBoundary(config) {
     writeFileSync(join(xmlDirectory, "data_extraction_rules.xml"), rules.extraction);
     return nextConfig;
   }]);
-  config = withDangerousMod(config, ["ios", async (nextConfig) => {
-    const appDelegatePath = join(nextConfig.modRequest.platformProjectRoot, "Patternly", "AppDelegate.swift");
-    writeFileSync(appDelegatePath, injectIosBackupPolicy(readFileSync(appDelegatePath, "utf8")));
+  config = withAppDelegate(config, (nextConfig) => {
+    const requireFirebaseGeneratedRegion = nextConfig.extra?.patternlyACMNativeFixture?.enabled === true;
+    nextConfig.modResults.contents = injectIosBackupPolicy(nextConfig.modResults.contents, { requireFirebaseGeneratedRegion });
     return nextConfig;
-  }]);
+  });
   config = withIosPrivacyManifestResource(config);
   return withFinalizedMod(config, ["ios", finalizeIosPrivacyBoundary]);
 }

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRuleV2, createPackageCompletionRuleV3, evaluatePackageCompletion, minimumAttemptsForMentalUnits, type TrainingAttempt } from "..";
 import { completionAttemptIdentity, qualifyPackageAttempts, type VerifiedPackageCompletionProfile } from "./packageCompletionRule";
+import { projectLearningEvidence } from "../../application/learningPlan/learningEvidenceProjection";
 
 const artifactSha256 = "a".repeat(64);
 const rule = createPackageCompletionRuleV2({ ruleVersion: 2, chapters: [
@@ -148,6 +149,35 @@ test("exact package identity, retry deduplication, conflict detection, and unres
   assert.throws(() => evaluate([valid, { ...valid, result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 } }]), /Conflicting/);
   assert.deepEqual(evaluate([attempt("unresolved", "not-in-artifact", 2)]), {kind:"unknown"});
   assert.throws(() => evaluate([attempt("bad-time", "question-a", 0, "correct", { answeredAt: "not-a-date" })]), /invalid/);
+});
+
+test("approach-challenge and unknown Coding modes cannot enter or poison legacy completion evidence", () => {
+  const codingProfile = { ...profile, trackId: "coding-interview-dsa-problem-solving" };
+  const codingAttempt = (modeId: string, id: string) => {
+    const item = { ...attempt(id, "approach-question", 2).item, trackId: codingProfile.trackId };
+    return {
+      ...attempt(id, "approach-question", 2), trackId: codingProfile.trackId, modeId, item,
+      result: modeId === "coding-interview-approach-challenge" ? { kind: "partial" as const, earnedPoints: 0, maxPoints: 1 } : { kind: "incorrect" as const, earnedPoints: 0, maxPoints: 1 },
+      reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] },
+    } as TrainingAttempt<unknown>;
+  };
+  const baseline = projectLearningEvidence({
+    profile: { ...codingProfile, getQuestion: ((questionId: string) => questionById.get(questionId)) as never },
+    attempts: [], reviews: [], now: "2026-01-01T00:01:00.000Z",
+  });
+  for (const modeId of ["coding-interview-approach-challenge", "coding-interview-unregistered-mode"]) {
+    const candidate = codingAttempt(modeId, `isolated-${modeId}`);
+    assert.equal(completionAttemptIdentity(codingProfile, candidate, (id) => questionById.get(id)), undefined);
+    assert.deepEqual(qualifyPackageAttempts(codingProfile, [candidate], (id) => questionById.get(id)), []);
+    const projected = projectLearningEvidence({
+      profile: { ...codingProfile, getQuestion: ((questionId: string) => questionById.get(questionId)) as never },
+      attempts: [candidate], reviews: [], now: "2026-01-01T00:01:00.000Z",
+    });
+    assert.deepEqual(projected.activityAttempts, baseline.activityAttempts);
+    assert.deepEqual(projected.attempts, baseline.attempts);
+    assert.deepEqual(projected.completedFacts, baseline.completedFacts);
+    assert.deepEqual(projected.completion, baseline.completion);
+  }
 });
 
 const v3Rule = createPackageCompletionRuleV3({ ruleVersion: 3, chapters: [

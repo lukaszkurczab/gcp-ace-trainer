@@ -1,6 +1,6 @@
 import {
   getSettings,
-  saveSettings,
+  patchSettings,
   type AppearancePreference,
   type LanguagePreference,
   type Settings,
@@ -19,6 +19,9 @@ export async function loadAppSettings(): Promise<Settings> {
   return stored;
 }
 
-export async function updateAppSettings(settings: Settings): Promise<void> {
-  await saveSettings(settings);
+export async function updateAppSettings(settings: Partial<Settings>): Promise<Settings> {
+  return patchSettings(settings);
+}
+export async function updateApproachChallengeSettings(settings: NonNullable<Settings["approachChallenge"]>): Promise<Settings> {
+  return patchSettings({ approachChallenge: settings });
 }

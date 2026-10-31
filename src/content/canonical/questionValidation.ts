@@ -3,6 +3,7 @@ import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRul
 import { hasCanonicalEdgeWhitespace, isCanonicalSafeIdentity } from "../../domain/identity/canonicalIdentity";
 import type { CanonicalArtifact, CanonicalContentLockRecord, Question } from "./questionTypes";
 import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from "./interactions/registry";
+import { validateApproachChallengeProblem } from "./approachChallengeProblem";
 
 const WHITESPACE = "\\u0009-\\u000D\\u001C-\\u001F\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF";
 const HAS_CONTENT = new RegExp(`[^${WHITESPACE}]`, "u");
@@ -85,7 +86,7 @@ export function validateQuestionRelations(questions: readonly unknown[]): readon
 
 export function validateCanonicalArtifact(value: unknown, lock: CanonicalContentLockRecord, expectedTrackId: string, registry: CanonicalInteractionRegistry = canonicalInteractionRegistry): CanonicalArtifact {
   const errors: string[] = [];
-  if (!exact(value, ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles", "completionRule", "planningPolicy"], ["schemaVersion", "trackId", "contentVersion", "questions"], "artifact", errors)) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
+  if (!exact(value, ["schemaVersion", "trackId", "contentVersion", "questions", "approachChallengeProblems", "simulationProfiles", "completionRule", "planningPolicy"], ["schemaVersion", "trackId", "contentVersion", "questions"], "artifact", errors)) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
   if (value.schemaVersion !== "patternly-content-artifact-v1" && value.schemaVersion !== "patternly-content-artifact-v2") errors.push("artifact.schemaVersion: invalid version");
   if (value.schemaVersion === "patternly-content-artifact-v2" && !Object.hasOwn(value, "planningPolicy")) errors.push("artifact.planningPolicy: required for v2 artifacts");
   if (value.schemaVersion === "patternly-content-artifact-v1" && Object.hasOwn(value, "planningPolicy")) errors.push("artifact.planningPolicy: requires artifact v2");
@@ -105,6 +106,7 @@ export function validateCanonicalArtifact(value: unknown, lock: CanonicalContent
       const child = validateQuestion(question, registry);
       errors.push(...child.map((x) => `artifact.questions[${i}].${x.replace(/^question\.?/, "")}`));
       if (!record(question)) continue;
+      if (record(question.interaction) && question.interaction.type === "approach_choice") errors.push(`artifact.questions[${i}].interaction.type: approach_choice is reserved for paired approach-challenge sources`);
       if (question.trackId !== expectedTrackId) errors.push(`artifact.questions[${i}].trackId: foreign track`);
       if (typeof question.questionId === "string") {
         if (ids.has(question.questionId)) errors.push(`artifact.questions[${i}].questionId: duplicate identity`);
@@ -123,6 +125,27 @@ export function validateCanonicalArtifact(value: unknown, lock: CanonicalContent
     catch { errors.push("artifact.completionRule: invalid versioned completion rule"); }
   }
   if (Object.hasOwn(value, "simulationProfiles")) validateSimulationProfiles(value.simulationProfiles, Array.isArray(value.questions) ? value.questions : [], value.trackId, value.contentVersion, errors);
+  if (Object.hasOwn(value, "approachChallengeProblems")) {
+    if (value.trackId !== "coding-interview-dsa-problem-solving" || !Array.isArray(value.approachChallengeProblems) || value.approachChallengeProblems.length === 0) errors.push("artifact.approachChallengeProblems: non-empty Coding Interview paired-task list required");
+    else {
+      const problemIds = new Set<string>();
+      const stageIds = new Set(Array.isArray(value.questions) ? value.questions.flatMap((question) => record(question) && typeof question.questionId === "string" ? [question.questionId] : []) : []);
+      for (const [index, problem] of value.approachChallengeProblems.entries()) {
+        const child = validateApproachChallengeProblem(problem);
+        errors.push(...child.map((message) => `artifact.approachChallengeProblems[${index}].${message.replace(/^problem\.?/u, "")}`));
+        if (!record(problem)) continue;
+        if (typeof problem.problemId === "string") {
+          if (problemIds.has(problem.problemId)) errors.push(`artifact.approachChallengeProblems[${index}].problemId: duplicate identity`);
+          problemIds.add(problem.problemId);
+        }
+        for (const question of [problem.approachQuestion, problem.complexityQuestion]) {
+          if (!record(question) || typeof question.questionId !== "string") continue;
+          if (stageIds.has(question.questionId)) errors.push(`artifact.approachChallengeProblems[${index}].questionId: duplicate across canonical questions or paired stages`);
+          stageIds.add(question.questionId);
+        }
+      }
+    }
+  }
   if (errors.length) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
   return deepFreeze(value as CanonicalArtifact);
 }

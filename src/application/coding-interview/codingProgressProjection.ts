@@ -4,6 +4,7 @@ import { CODING_INTERVIEW_TRACK_ID, isActiveReviewQueueEntry, manualRequestIdFor
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId } from "../../tracks/coding-interview";
 import type { TrainingCatalog, TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 import { overallScoreCredit } from "../canonical/overallScoreCredit";
+import { classifyTrainingAttemptMode } from "../../tracks/coding-interview/domain/algorithmModes";
 import type { LearningEvidenceProjection } from "../learningPlan/learningEvidenceProjection";
 import type { ProgressEvidenceModel, AlgorithmsProgressScreenModel, AlgorithmProgressEvidenceState, LearningPriorityModel, CurrentFocusModel, RoadmapSummaryNodeModel, ProgressAction } from "../learningPlan/progressProjectionContracts";
 type LearningTone = "danger" | "warning" | "info" | "success" | "muted";
@@ -14,7 +15,7 @@ export function projectCodingProgress(
   now: string,
 ): Omit<ProgressEvidenceModel, "identity" | "capturedAt" | "hasRecordedActivity" | "emptyState"> {
   const packageItems = track.questions;
-  const currentAttempts = evidence.attempts;
+  const currentAttempts = evidence.attempts.filter((attempt) => classifyTrainingAttemptMode(attempt.trackId, attempt.modeId) === "legacy");
   const algorithmsReviewItems = evidence.reviews;
   const dueReviewItems = evidence.dueReviews;
   const dueReviewCount = dueReviewItems.length;

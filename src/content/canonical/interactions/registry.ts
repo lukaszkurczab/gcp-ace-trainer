@@ -1,6 +1,7 @@
 import type { AttemptResult } from "../../../domain/learning/attemptResult";
 import type { CanonicalFeedbackProjection, InteractionEvaluation, InteractionHandler, ReviewInteractionPresentation } from "./shared";
 import { choiceSingleHandler } from "./choiceSingle";
+import { approachChoiceHandler } from "./approachChoice";
 import { choiceMultipleHandler } from "./choiceMultiple";
 import { orderingHandler } from "./ordering";
 import { complexityHandler } from "./complexity";
@@ -101,6 +102,7 @@ function eraseHandler<Q>(handler: InteractionHandler<Q>): ErasedHandler {
 }
 
 export const canonicalInteractionRegistry = createCanonicalInteractionRegistry([
+  approachChoiceHandler,
   choiceSingleHandler,
   choiceMultipleHandler,
   orderingHandler,

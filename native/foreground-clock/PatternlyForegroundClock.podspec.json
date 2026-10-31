@@ -11,6 +11,6 @@
   "private_header_files": "*.hpp",
   "frameworks": ["Foundation", "UIKit"],
   "requires_arc": true,
-  "dependencies": { "NitroModules": ["0.36.1"], "NitroMmkv": ["4.3.2"] },
+  "dependencies": { "NitroModules": ["0.36.1"], "NitroMmkv": ["4.3.2"], "React-Core": [] },
   "pod_target_xcconfig": { "CLANG_CXX_LANGUAGE_STANDARD": "c++20", "DEFINES_MODULE": "YES" }
 }

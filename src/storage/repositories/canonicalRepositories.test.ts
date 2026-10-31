@@ -256,6 +256,9 @@ test("strict guards accept resolved identities and reject mismatches, tombstones
   assert.equal(isTrainingSession(canonicalSession, productionTrackAdmissionContext), true);
   assert.equal(isTrainingSession({ ...canonicalSession, artifactSha256: ARTIFACT_SHA256.toUpperCase() }, productionTrackAdmissionContext), false);
   assert.equal(isTrainingAttempt(canonicalAttempt, productionTrackAdmissionContext), true);
+  const zeroPointPartial = { ...canonicalAttempt, modeId: "coding-interview-approach-challenge", result: { kind: "partial" as const, earnedPoints: 0, maxPoints: 1 } };
+  assert.equal(isTrainingAttempt(zeroPointPartial, productionTrackAdmissionContext), true);
+  assert.equal(isTrainingAttempt({ ...zeroPointPartial, modeId: "coding-interview-guided-practice" }, productionTrackAdmissionContext), false);
   assert.equal(isTrainingAttempt({ ...canonicalAttempt, item: ref("i", { contentVersion: "other" }) }, productionTrackAdmissionContext), false);
   assert.equal(isReviewQueueEntry(canonicalReview, productionTrackAdmissionContext), true);
   assert.equal(isReviewQueueEntry({ ...canonicalReview, sourceItem: { ...canonicalReview.sourceItem, artifactSha256: "b".repeat(64) } }, productionTrackAdmissionContext), true);

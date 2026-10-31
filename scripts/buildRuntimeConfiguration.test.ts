@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 
 const require = createRequire(import.meta.url);
-const { createExpoConfig, validateReleasePublicLegalLinks } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { name: string; scheme: string; android: { package: string; googleServicesFile?: string }; extra: { patternlyRuntime: string }; ios: { googleServicesFile: string }; plugins: unknown[]; updates: { enabled?: boolean; checkAutomatically?: string } } }; validateReleasePublicLegalLinks: (legalVariables: unknown, publicEnvironment: unknown) => void };
+const { createExpoConfig, validateReleasePublicLegalLinks } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { name: string; scheme: string; android: { package: string; googleServicesFile?: string }; extra: { patternlyRuntime: string; patternlyACMNativeFixture?: { enabled: boolean; runUUID: string; operation: "create" | "resume" } }; ios: { googleServicesFile: string; infoPlist: Record<string, unknown> }; plugins: unknown[]; updates: { enabled?: boolean; checkAutomatically?: string } } }; validateReleasePublicLegalLinks: (legalVariables: unknown, publicEnvironment: unknown) => void };
 const releaseLegalVariables = require("../config/public-legal.release.json");
 
 const base = {
@@ -82,6 +82,34 @@ test("smoke is explicit, locally bound, and permits debug App Check", () => {
   assert.throws(() => createExpoConfig({}), /requires PATTERNLY_RUNTIME_MODE/);
   assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox" }), /must equal/);
   assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_API_ORIGIN: "https:\/\/sandbox.patternly.test" }), /127\.0\.0\.1/);
+});
+
+test("ACM native fixture config requires explicit smoke UUID/operation and disables updates", () => {
+  const runUUID = "123e4567-e89b-42d3-a456-426614174000";
+  const normal = createExpoConfig(smoke).expo;
+  assert.equal(normal.ios.infoPlist?.PatternlyACMNativeFixture, undefined);
+  assert.equal(normal.ios.infoPlist?.PatternlyACMNativeFixtureRunUUID, undefined);
+  assert.equal(normal.ios.infoPlist?.PatternlyACMNativeFixtureOperation, undefined);
+  assert.equal(normal.extra.patternlyACMNativeFixture, undefined);
+  const fixture = createExpoConfig({
+    ...smoke,
+    EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE: "1",
+    EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_RUN_UUID: runUUID,
+    EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_OPERATION: "create",
+  }).expo;
+  assert.deepEqual(fixture.ios.infoPlist, {
+    PatternlyRuntimeMode: "smoke",
+    PatternlyACMNativeFixture: true,
+    PatternlyACMNativeFixtureRunUUID: runUUID,
+    PatternlyACMNativeFixtureOperation: "create",
+  });
+  assert.deepEqual(fixture.extra.patternlyACMNativeFixture, { enabled: true, runUUID, operation: "create" });
+  assert.deepEqual(fixture.updates, { enabled: false, checkAutomatically: "NEVER" });
+  assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_RUN_UUID: runUUID }), /require EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE/);
+  assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE: "0" }), /must be exactly 1 when set/);
+  assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE: "false" }), /must be exactly 1 when set/);
+  assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE: "1", EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_RUN_UUID: runUUID, EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_OPERATION: "seed" }), /UUID run ID/);
+  assert.throws(() => createExpoConfig({ ...smoke, EAS_BUILD_PROFILE: "production", EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE: "1", EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_RUN_UUID: runUUID, EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_OPERATION: "resume" }), /non-production smoke/);
 });
 
 test("separate local Android identity requires explicit emulator-only configuration", () => {

@@ -102,7 +102,8 @@ test("all current actual items preserve control membership, ID answers and non-c
       assert.deepEqual(model.accessibility.controls.map((control) => control.id), order);
     }
   }
-  assert.deepEqual([...interactionCounts.keys()].sort(), [...canonicalInteractionRegistry.interactionTypes].sort());
+  assert.deepEqual([...interactionCounts.keys()].sort(), ["choice_multiple", "choice_single", "complexity", "decision_matrix", "ordering"]);
+  assert.equal(canonicalInteractionRegistry.has("approach_choice"), true, "paired approach challenges have a handler outside ordinary canonical pools");
   for (const [interactionType, count] of interactionCounts) assert.ok(count > 0, `${interactionType} has current items`);
   assert.equal(observedQuestionCount, catalog.tracks.reduce((total, trackId) => total + catalog.getTrack(trackId).questions.length, 0));
 });
@@ -131,7 +132,7 @@ test("all real 29 practice modes and canonical simulation profiles prepare valid
       simulations += 1;
     }
   }
-  assert.deepEqual({ modes, simulations }, { modes: 29, simulations: 5 });
+  assert.deepEqual({ modes, simulations }, { modes: 29, simulations: 6 });
 });
 
 test("legacy source orders remain valid; malformed orders, stale pins and unstored permutation changes fail resume", async () => {

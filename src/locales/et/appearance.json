@@ -10,5 +10,7 @@
   "dark": "Tume",
   "darkDetail": "Kasuta alati tumedat kujundust.",
   "saveErrorTitle": "Välimust ei õnnestunud salvestada",
-  "saveErrorDetail": "Proovi välimus uuesti valida."
+  "saveErrorDetail": "Proovi välimus uuesti valida.",
+  "preferencesUnavailableTitle": "Salvestatud eelistused pole saadaval",
+  "preferencesUnavailableDetail": "Salvestatud eelistusi ei saanud lugeda. Valikud on keelatud, kuni kohalik salvestus on taas saadaval."
 }

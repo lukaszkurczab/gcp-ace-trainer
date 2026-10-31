@@ -5,6 +5,7 @@ import { createTrainingAttempt } from "./trainingAttempt";
 import { createAttemptResult } from "./attemptResult";
 import { createArtifactSha256 } from "./contentItemRef";
 import { isResolvedContentRef, type ResolvedContentRef } from "./resolvedContentRef";
+import { classifyTrainingAttemptMode, isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
 
 export type ChapterCompletionRequirementV2 = Readonly<{
   nodeId: string;
@@ -260,7 +261,7 @@ export function evaluatePackageCompletion(
   const common = { chapters: Object.freeze(chapters), completedChapterCount, requiredChapterCount, qualifyingAttemptCount, requiredAttemptCount, coverageDeficit, minimumAdditionalAttemptCount };
   // A record without saved attribution can use its exact available source only.
   // Missing historical evidence never resets known progress or invents a unit.
-  const unavailableHistory = attempts.some(attempt => isIndependentCaseAttempt(attempt) && attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId &&
+  const unavailableHistory = attempts.some(attempt => classifyTrainingAttemptMode(attempt.trackId, attempt.modeId) === "legacy" && isIndependentCaseAttempt(attempt) && attempt.trackId === profile.trackId && attempt.item.trackId === profile.trackId &&
     !completionAttemptIdentity(profile, attempt, resolveQuestion));
   if (completedChapterCount !== requiredChapterCount && unavailableHistory) return Object.freeze({ kind: "unknown" });
   return completedChapterCount === requiredChapterCount
@@ -345,6 +346,7 @@ export function qualifyPackageAttempts(
 
 /** Exact legacy lookup is allowed only against the record's own available package. */
 export function completionAttemptIdentity(profile: VerifiedPackageCompletionProfile, attempt: TrainingAttempt<unknown>, resolveQuestion: (questionId: string) => CompletionQuestionIdentity | undefined): CompletionQuestionIdentity | undefined {
+  if (classifyTrainingAttemptMode(attempt.trackId, attempt.modeId) !== "legacy") return undefined;
   const saved = learningUnitIdentity(attempt.reviewEvidence);
   if (saved) return saved;
   // Conflicting or incomplete saved attribution must not be replaced by a lookup.
@@ -360,7 +362,11 @@ function matchesPackage(profile: VerifiedPackageCompletionProfile, item: Resolve
 
 function assertDurableAttempt(attempt: TrainingAttempt<unknown>): void {
   if (!attempt || typeof attempt.id !== "string" || !attempt.id.trim() || typeof attempt.sessionId !== "string" || !attempt.sessionId.trim() || typeof attempt.modeId !== "string" || !attempt.modeId.trim() || typeof attempt.occurrenceId !== "string" || !attempt.occurrenceId.trim() || typeof attempt.trackId !== "string" || !attempt.trackId.trim() || !isResolvedContentRef(attempt.item) || !validIsoInstant(attempt.answeredAt) || !validIsoInstant(attempt.committedAt) || !attempt.result) throw new Error("Durable training attempt is invalid for completion evaluation.");
-  try { createArtifactSha256(attempt.item.artifactSha256); createAttemptResult(attempt.result); createTrainingAttempt(attempt); } catch { throw new Error("Durable training attempt is invalid for completion evaluation."); }
+  try {
+    createArtifactSha256(attempt.item.artifactSha256);
+    createAttemptResult(attempt.result, { allowZeroPointPartial: isApproachChallengeTrainingAttempt(attempt.trackId, attempt.modeId) });
+    createTrainingAttempt(attempt);
+  } catch { throw new Error("Durable training attempt is invalid for completion evaluation."); }
 }
 
 function validIsoInstant(value: unknown): value is string { if (typeof value !== "string") return false; const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$/u.exec(value); if (!match) return false; const year = Number(match[1]); const month = Number(match[2]); const day = Number(match[3]); const hour = Number(match[4]); const minute = Number(match[5]); const second = Number(match[6]); const millisecond = Number(match[7]); const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond)); return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day && date.getUTCHours() === hour && date.getUTCMinutes() === minute && date.getUTCSeconds() === second && date.getUTCMilliseconds() === millisecond; }

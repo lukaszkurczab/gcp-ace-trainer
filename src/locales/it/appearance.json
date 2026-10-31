@@ -10,5 +10,7 @@
   "dark": "Scuro",
   "darkDetail": "Usa sempre il tema scuro.",
   "saveErrorTitle": "Impossibile salvare l’aspetto",
-  "saveErrorDetail": "Prova a scegliere di nuovo l’aspetto."
+  "saveErrorDetail": "Prova a scegliere di nuovo l’aspetto.",
+  "preferencesUnavailableTitle": "Preferenze salvate non disponibili",
+  "preferencesUnavailableDetail": "Impossibile leggere le preferenze salvate. Le scelte sono disattivate finché lo spazio locale non sarà disponibile."
 }

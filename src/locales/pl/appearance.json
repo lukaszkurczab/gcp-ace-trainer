@@ -10,5 +10,7 @@
   "dark": "Ciemny",
   "darkDetail": "Zawsze używaj ciemnego motywu.",
   "saveErrorTitle": "Nie udało się zapisać wyglądu",
-  "saveErrorDetail": "Spróbuj ponownie wybrać wygląd."
+  "saveErrorDetail": "Spróbuj ponownie wybrać wygląd.",
+  "preferencesUnavailableTitle": "Zapisane preferencje niedostępne",
+  "preferencesUnavailableDetail": "Nie udało się odczytać zapisanych preferencji. Wybory są wyłączone do czasu przywrócenia lokalnego zapisu."
 }

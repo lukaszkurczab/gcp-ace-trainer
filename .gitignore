@@ -10,6 +10,8 @@ web-build/
 .maestro
 !.maestro/
 .maestro/*
+!.maestro/acm-native-fixture-create.yaml
+!.maestro/acm-native-fixture-resume.yaml
 !.maestro/local-ui-track.yaml
 !.maestro/local-ui-practice-entry.yaml
 !.maestro/back-navigation-consistency.yaml

@@ -164,5 +164,7 @@
   "premiumNotStartedDetail": "Der App Store-Kauf wurde nicht gestartet. Die gespeicherte Anfrage muss vor einem weiteren Kauf geklärt werden. Aktualisiere den Status oder kontaktiere den Support.",
   "premiumScopeUnavailableDetail": "Die Leistungsbeschreibung ist noch nicht bestätigt. Neue Käufe sind nicht verfügbar; Käufe können weiterhin wiederhergestellt und bestehende Abonnements verwaltet werden.",
   "premiumRestoreCancelled": "Wiederherstellung abgebrochen",
-  "premiumServiceScopeSummary": "Die ersten Knoten jedes Lernpfads sind kostenlos. Premium schaltet die übrigen Knoten frei."
+  "premiumServiceScopeSummary": "Die ersten Knoten jedes Lernpfads sind kostenlos. Premium schaltet die übrigen Knoten frei.",
+  "preferencesUnavailableTitle": "Gespeicherte Einstellungen nicht verfügbar",
+  "preferencesUnavailableDetail": "Gespeicherte Einstellungen konnten nicht gelesen werden. Die Auswahl bleibt deaktiviert, bis der lokale Speicher verfügbar ist."
 }

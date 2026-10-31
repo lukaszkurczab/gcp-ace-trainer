@@ -164,5 +164,7 @@
   "premiumNotStartedDetail": "L’acquisto App Store non è stato avviato. La richiesta salvata deve essere risolta prima di un altro acquisto. Aggiorna lo stato o contatta l’assistenza.",
   "premiumScopeUnavailableDetail": "La descrizione del servizio non è ancora confermata. I nuovi acquisti non sono disponibili; puoi ripristinare gli acquisti e gestire un abbonamento esistente.",
   "premiumRestoreCancelled": "Ripristino annullato",
-  "premiumServiceScopeSummary": "I primi nodi di ogni percorso di apprendimento sono gratuiti. Premium sblocca i nodi rimanenti."
+  "premiumServiceScopeSummary": "I primi nodi di ogni percorso di apprendimento sono gratuiti. Premium sblocca i nodi rimanenti.",
+  "preferencesUnavailableTitle": "Preferenze salvate non disponibili",
+  "preferencesUnavailableDetail": "Impossibile leggere le preferenze salvate. Le scelte sono disattivate finché lo spazio locale non sarà disponibile."
 }

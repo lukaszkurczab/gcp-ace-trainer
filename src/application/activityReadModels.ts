@@ -6,6 +6,7 @@ import { captureProfileReadFence } from "./profileReadFence";
 import { StorageReadError } from "../storage/errors";
 import type { StorageRepositoryResult } from "../storage/repositories/result";
 import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
+import { classifyTrainingAttemptMode } from "../tracks/coding-interview/domain/algorithmModes";
 
 export type ActivitySessionRecord = Readonly<{
   attemptCount: number;
@@ -50,7 +51,7 @@ export function projectWeeklyAnsweredActivity(attempts: readonly TrainingAttempt
         continue;
       }
       identities.set(attempt.id, serialized);
-      if (attempt.trackId !== context.trackId || attempt.sessionId === context.activeSessionId) continue;
+      if (classifyTrainingAttemptMode(attempt.trackId, attempt.modeId) !== "legacy" || attempt.trackId !== context.trackId || attempt.sessionId === context.activeSessionId) continue;
       const answeredAt = new Date(attempt.answeredAt);
       const answeredWeek = calendar.weekKey(answeredAt);
       if (answeredAt.getTime() <= now.getTime() && answeredWeek === weekKey) answeredCount += 1;
@@ -78,7 +79,7 @@ export function projectWeeklySessionActivity(records: readonly ActivitySessionRe
         continue;
       }
       sessions.set(session.id, serialized);
-      if (session.trackId !== context.trackId || session.status !== "completed") continue;
+      if (classifyTrainingAttemptMode(session.trackId, session.modeId) !== "legacy" || session.trackId !== context.trackId || session.status !== "completed") continue;
       if (typeof session.completedAt !== "string") throw new Error("Missing completion instant.");
       const completedAt = new Date(session.completedAt);
       const completedWeek = calendar.weekKey(completedAt);
@@ -150,6 +151,7 @@ export async function loadActivitySessionRecords(
   assertNoActivityReadIssues(sessionsResult, attemptsResult);
   const attemptsBySession = groupAttemptsBySession(attemptsResult.value);
   const terminalSessions = sessionsResult.value.filter((session) => {
+    if (classifyTrainingAttemptMode(session.trackId, session.modeId) !== "legacy") return false;
     if (session.status === "active") return false;
     return session.status === "completed" || (attemptsBySession.get(session.id)?.length ?? 0) > 0;
   });
@@ -186,7 +188,10 @@ export async function loadActivityRecords(
   if (archivalResult.issues && archivalResult.issues.length > 0) {
     throw new StorageReadError("activity archival history", archivalResult.issues);
   }
-  const archivalRecords = archivalResult.value.map(toActivityUnavailableRecord);
+  const archivalRecords = archivalResult.value.filter((record) => {
+    const session = isRecord(record.session) ? record.session : null;
+    return !session || classifyTrainingAttemptMode(String(session.trackId ?? "unknown"), String(session.modeId ?? "unknown")) === "legacy";
+  }).map(toActivityUnavailableRecord);
   const archivalIds = new Set(archivalRecords.map((record) => record.sessionId));
   assertCurrentProfile();
   return Object.freeze([

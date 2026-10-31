@@ -699,6 +699,75 @@ test("conditional reads reject tokenless full pages instead of downgrading the c
   await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
+test("deployed pre-conditional endpoint negotiates complete validated pages and clears snapshot cache", async () => {
+  const records = [conditionalProgressRecord(), conditionalProgressRecord("backend-system-design-interview")];
+  const calls: Array<{ url: string; headers: Headers; body?: unknown }> = [];
+  const opaque = "older/+?=cursor";
+  const client = createTestClient({ fetchImplementation: async (url, init) => {
+    calls.push({ url: String(url), headers: new Headers(init?.headers), body: init?.body ? JSON.parse(String(init.body)) : undefined });
+    if (calls.length === 1) return jsonResponse({ accountRevision: 1, generation: 3, snapshotToken: FINGERPRINT, snapshotScope: FINGERPRINT, records: [], nextPageToken: null });
+    if (calls.length === 2) return Response.json({ error: { code: "invalid_request" } }, { status: 400 });
+    if (calls.length === 3) return jsonResponse({ accountRevision: 2, generation: 3, records: [records[0]], nextPageToken: opaque });
+    if (calls.length === 4) return jsonResponse({ accountRevision: 2, generation: 3, records: [records[1]], nextPageToken: null });
+    return jsonResponse({ accountRevision: 3, applied: [], duplicates: [], conflicts: [] });
+  } });
+  await client.getProgress();
+  assert.deepEqual(await client.getProgress(), { accountRevision: 2, generation: 3, records, nextPageToken: null });
+  const request = canonicalSyncRequest();
+  await client.syncProgress(request);
+  assert.deepEqual(calls.map((call) => call.url), [
+    `${API_ORIGIN}/v1/progress?pageSize=100&conditional=1`,
+    `${API_ORIGIN}/v1/progress?pageSize=100&conditional=1&knownSnapshot=${FINGERPRINT}`,
+    `${API_ORIGIN}/v1/progress?pageSize=100`,
+    `${API_ORIGIN}/v1/progress?pageSize=100&pageToken=${encodeURIComponent(opaque)}`,
+    `${API_ORIGIN}/v1/progress/sync`,
+  ]);
+  for (const call of calls) {
+    assert.equal(call.headers.get("authorization"), "Bearer id-token");
+    assert.equal(call.headers.get("x-firebase-appcheck"), "app-check-token");
+  }
+  assert.equal(calls[4]!.headers.has("x-patternly-progress-cache"), false);
+  assert.deepEqual(calls[4]!.body, request);
+});
+
+test("progress compatibility never retries unrelated or malformed error responses", async () => {
+  for (const [status, payload] of [
+    [400, { error: { code: "progress_pagination_token_invalid" } }],
+    [401, { error: { code: "invalid_request" } }],
+    [503, { error: { code: "invalid_request" } }],
+    [400, { error: { code: "invalid_request", unexpected: true } }],
+    [400, { error: { code: "invalid_request" }, unexpected: true }],
+    [400, {}],
+  ] as const) {
+    let calls = 0;
+    const client = createTestClient({ fetchImplementation: async () => { calls++; return Response.json(payload, { status }); } });
+    await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.status === status);
+    assert.equal(calls, 1);
+  }
+});
+
+test("legacy progress sweep still rejects inconsistent pages, invalid records and later failures", async () => {
+  for (const scenario of ["revision", "generation", "identity", "shape", "unchanged", "serverConflict", "laterInvalidRequest"] as const) {
+    let calls = 0;
+    const client = createTestClient({ fetchImplementation: async () => {
+      calls++;
+      if (calls === 1 || calls === 3 && scenario === "laterInvalidRequest") return Response.json({ error: { code: "invalid_request" } }, { status: 400 });
+      if (calls === 3 && scenario === "serverConflict") return Response.json({ error: { code: "progress_generation_conflict" } }, { status: 409 });
+      const record = conditionalProgressRecord();
+      return jsonResponse({
+        accountRevision: calls === 3 && scenario === "revision" ? 2 : 1,
+        generation: calls === 3 && scenario === "generation" ? 1 : 0,
+        records: calls === 3 && scenario === "identity" ? [{ ...record, state: { ...record.state, packagePin: {} } }] : [],
+        nextPageToken: calls === 2 ? "older-next-page" : null,
+        ...(calls === 3 && scenario === "shape" ? { snapshotToken: FINGERPRINT, snapshotScope: FINGERPRINT } : {}),
+        ...(calls === 3 && scenario === "unchanged" ? { unchanged: true } : {}),
+      });
+    } });
+    await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError);
+    assert.equal(calls, 3);
+  }
+});
+
 test("oversize cache and serialization failure preserve a complete validated read without seeding cache", async () => {
   for (const failure of ["oversize", "serialization"] as const) {
     const record = conditionalProgressRecord(failure === "oversize" ? "x".repeat(1024) : undefined);

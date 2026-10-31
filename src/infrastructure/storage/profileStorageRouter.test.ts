@@ -3,7 +3,7 @@ import test from "node:test";
 
 import type { StorageManifestStore } from "./encryptedStorageBootstrap";
 import { MemoryKeyValueStorage } from "./mmkvClient";
-import { openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError } from "./profileStorageRouter";
+import { commitProfileSelection, inspectExistingACMNativeFixtureGuest, openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError } from "./profileStorageRouter";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../../storage/keys";
 import { sha256Utf8 } from "../identity/sha256";
 
@@ -1023,4 +1023,33 @@ test("Guest removal keeps cleanup monotonic across repeated interruption after o
   assert.deepEqual(fixture.globalKeys.map((key) => [key, fixture.base.getString(key)]), globalBefore);
   assert.equal(fixture.control.values.get("patternly.local-logout-control.v2"), logoutBefore);
   assert.equal(first.stage, "recovery_failed");
+});
+
+test("ACM native resume inspector validates both guest registry slots without writes or profile repair", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  const installationId = "00000000-0000-4000-8000-000000000091";
+  const profileId = "00000000-0000-4000-8000-000000000092";
+  const router = await openProfileStorageRouter(base, control, {
+    identity: { async create() { return { installationId, localDatasetId: profileId }; } },
+  });
+  await router.selectExistingGuest(profileId);
+  await commitProfileSelection(control, router.registry, profileId);
+  const controlSnapshot = new Map(control.values);
+  const baseSnapshot = base.snapshot();
+  base.resetCounters();
+
+  const inspected = await inspectExistingACMNativeFixtureGuest({ base, control, installationId, localDatasetId: profileId, profileId });
+
+  assert.deepEqual(inspected.profile, { id: profileId, kind: "guest", accountId: null });
+  assert.deepEqual([...inspected.registryGenerations].sort((left, right) => left - right), [1, 2]);
+  assert.deepEqual(control.values, controlSnapshot);
+  assert.deepEqual(base.snapshot(), baseSnapshot);
+  assert.deepEqual(base.operations.filter(({ kind }) => kind !== "read"), []);
+
+  control.values.set("patternly.profile-root.v1.a", "corrupt");
+  const corruptSnapshot = new Map(control.values);
+  await assert.rejects(inspectExistingACMNativeFixtureGuest({ base, control, installationId, localDatasetId: profileId, profileId }),
+    (error) => error instanceof ProfileStorageError && error.code === "profile_registry_corrupt");
+  assert.deepEqual(control.values, corruptSnapshot, "a failed read-only resume check must not repair the damaged registry slot");
 });
