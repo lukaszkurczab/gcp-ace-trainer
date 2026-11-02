@@ -1,6 +1,5 @@
 import { validateCaseRecipe, CLAUDE_CASE_TRACK } from "../caseRecipe";
 import { hasCanonicalEdgeWhitespace, isCanonicalSafeIdentity } from "../../../domain/identity/canonicalIdentity";
-import type { CanonicalQuestionRelation } from "./shared";
 
 const whitespace = new RegExp("[^\\u0009-\\u000D\\u001C-\\u001F\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF]", "u");
 export type ValidationDimension = Readonly<{ dimensionId: string; values: readonly string[]; accepted: readonly string[]; aliases?: Readonly<Record<string, string>> }>;

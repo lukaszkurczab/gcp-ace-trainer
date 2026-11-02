@@ -29,20 +29,22 @@ import {
   type DraftStorageLeaseHandle,
   type PendingMutationProjection,
   type DraftWriteReceipt,
+  type PracticeResponseCheckpoint,
+  type TrainingMutationGuard,
+  type PracticeProfileLeaseHandle,
 } from "./contracts";
 import { MutationCommitFailure, type MutationCommandProof } from "../mutationBoundary";
 import type { DurableOperationError, DurableOperationState, PracticeDurableOperationState, SimulationDurableOperationState } from "./durableOperationState";
 import { OperationProjectionStore } from "./operationProjectionStore";
-import { requiresPremiumProductMode } from "./premiumProductModePolicy";
+import { requiresPremiumForSessionContinuation, requiresPremiumProductMode } from "./premiumProductModePolicy";
 import { CanonicalWriteOutcomeError } from "../../storage/errors";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
 import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
-import { APPROACH_CHALLENGE_MANIFEST_KEY, decodeApproachChallengeManifest, resolveManifestEntryProblem } from "../coding-interview/approachChallengeSession";
-import { isFreeApproachChallengeProblem } from "../coding-interview/approachChallengeSelection";
 
 export type SimulationCommandAuthorization = Readonly<{ sessionId: string }>;
+type SessionOperationOwner = Readonly<{ sessionId: string; assertCurrent?: () => void }>;
 const simulationCommandAuthorizations = new WeakSet<object>();
 const scopedSimulationCommandAuthorizations = new WeakSet<object>();
 
@@ -84,9 +86,12 @@ export class TrainingLifecycleUseCases {
       return retained;
     }
     const currentOccurrence = session.itemOrder[session.currentItemIndex];
-    const hasMaterializedCurrentPracticeAttempt = !pending && !simulationSession && currentOccurrence
-      ? (await this.ports.repositories.getAttempts()).some((attempt) => attempt.sessionId === session.id && attempt.occurrenceId === currentOccurrence.occurrenceId)
-      : false;
+    let hasMaterializedCurrentPracticeAttempt = false;
+    if (!pending && !simulationSession && currentOccurrence) {
+      const attempts = (await this.ports.repositories.getAttempts()).filter(attempt => attempt.sessionId === session.id && attempt.occurrenceId === currentOccurrence.occurrenceId);
+      if (attempts.length > 1 || attempts.some(attempt => attempt.trackId !== session.trackId || attempt.modeId !== session.modeId || resolvedContentRefKey(attempt.item) !== resolvedContentRefKey(currentOccurrence.item))) throw new TrainingApplicationFailure("verification_failure", "The saved response does not uniquely belong to the current exact occurrence.");
+      hasMaterializedCurrentPracticeAttempt = attempts.length === 1;
+    }
     const durableDraft = await this.ports.repositories.getDraftStateProof?.();
     if (durableDraft?.state && "kind" in durableDraft.state && durableDraft.state.kind === "accepted_simulation_finalization" && durableDraft.state.acceptance.sessionId === session.id) {
       this.operationStates.reconstruct({ sessionId: session.id, state: simulation("frozen") });
@@ -99,12 +104,15 @@ export class TrainingLifecycleUseCases {
   }
 
   /** The only recovery retry replays the exact existing immutable journal plan. */
-  async recoverActiveTrainingOperation(authorization?: SimulationCommandAuthorization): Promise<void> {
+  async recoverActiveTrainingOperation(authorization?: SimulationCommandAuthorization, expected?: SessionOperationOwner): Promise<void> {
+    expected?.assertCurrent?.();
     const active = await this.requireActive();
+    if (expected) this.assertSessionOperationOwner(active, expected);
     if (authorization) this.consumeSimulationAuthorization(authorization, active);
-    else await this.authorizePremiumProductMode(active.modeId);
+    else await this.authorizePremiumSessionContinuation(active.modeId);
     await this.resolveRuntimeForSession(active);
     return this.serializeSessionMutation(active.id, async () => {
+      if (expected) this.assertSessionOperationOwner(await this.requireActive(), expected);
       if (this.retryableMutationCommands.has(active.id)) throw new TrainingApplicationFailure("resume_unavailable", "Retry the same frozen command before recovery can continue.");
       const proof = this.uncertainMutationCommands.get(active.id);
       const priorOperation = this.operationStates.get(active.id);
@@ -115,9 +123,11 @@ export class TrainingLifecycleUseCases {
         const reconciled = await this.ports.repositories.reconcilePendingMutationWrite?.(proof) ?? "unknown";
         if (reconciled !== "verified") throw new TrainingApplicationFailure("resume_unavailable", "The exact pending command could not be confirmed; no recovery was applied.");
       }
-      const pending = await this.pendingFor(active.id);
+      await this.getExpectedSessionPendingMutation(active.id);
       await this.reconstructOperationProjection(active);
+      if (expected) this.assertSessionOperationOwner(await this.requireActive(), expected);
       await this.ports.mutations.recover();
+      expected?.assertCurrent?.();
       const accepted = this.uncertainAcceptedCommands.get(active.id) ?? await this.readAcceptedFinalizationForSession(active.id) ?? null;
       if (accepted) {
         await this.finalizeSimulationSnapshot(active, accepted.acceptance.trigger);
@@ -130,8 +140,10 @@ export class TrainingLifecycleUseCases {
         return;
       }
       this.uncertainMutationCommands.delete(active.id);
-      const simulationSession = verified.configurationSnapshot.submission === "manualOrForegroundTimeout";
-      this.operationStates.publish(verified.id, simulationSession ? simulation("editable") : pending?.operation === "submit_training_outcome" ? practice("feedback") : practice("unanswered"));
+      if (verified.id !== active.id) throw new TrainingApplicationFailure("active_session_conflict", "Recovery no longer belongs to the original active session.");
+      // A second recovery may have no pending journal. Re-read canonical evidence
+      // instead of overwriting an already durable answer with an unanswered UI.
+      await this.reconstructOperationProjection(verified);
     }, true);
   }
 
@@ -259,7 +271,7 @@ export class TrainingLifecycleUseCases {
     if (active.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
       throw new TrainingApplicationFailure("invalid_response", "Only an Interview Simulation can resume editing after a failed save.");
     }
-    await this.authorizePremiumProductMode(active.modeId);
+    await this.authorizePremiumSessionContinuation(active.modeId);
     await this.resolveRuntimeForSession(active);
     const operation = await this.getSimulationOperationState(active);
     if (operation.kind !== "save_failed" || operation.error.allowedAction !== "retry_same_command") {
@@ -273,7 +285,7 @@ export class TrainingLifecycleUseCases {
   async resumeEditableSimulationAfterStaleConflict(): Promise<void> {
     const active = await this.requireActive();
     if (active.configurationSnapshot.submission !== "manualOrForegroundTimeout") throw new TrainingApplicationFailure("invalid_response", "Only an Interview Simulation can resolve a stale draft conflict.");
-    await this.authorizePremiumProductMode(active.modeId);
+    await this.authorizePremiumSessionContinuation(active.modeId);
     await this.resolveRuntimeForSession(active);
     const operation = await this.getSimulationOperationState(active);
     if (operation.kind !== "stale_revision") throw new TrainingApplicationFailure("invalid_response", "There is no stale simulation draft conflict to resolve.");
@@ -284,7 +296,7 @@ export class TrainingLifecycleUseCases {
   async startSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
     const existing = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
     if (existing) throw new TrainingApplicationFailure("active_session_conflict", `Active session ${existing.id} must be resumed or abandoned first.`);
-    await this.authorizePremiumProductMode(input.modeId);
+    if (requiresPremiumProductMode(input.modeId)) await this.authorizePremiumSession();
     const sessionId = await this.run("persistence_failure", () => this.ports.sessionIds.create({ trackId: input.trackId, modeId: input.modeId }));
     if (typeof sessionId !== "string" || !sessionId.trim()) throw new TrainingApplicationFailure("persistence_failure", "Training session identity generation returned an invalid identity.");
     const request = input.request && typeof input.request === "object" && !Array.isArray(input.request)
@@ -325,14 +337,41 @@ export class TrainingLifecycleUseCases {
     return { ...prepared, session: verified };
   }
 
-  async submitPracticeResponse(response: unknown): Promise<void> {
-    const initial = await this.requireActive();
-    return this.serializeSessionMutation(initial.id, () => this.submitPracticeResponseInLane(response));
+  capturePracticeProfileLease(): PracticeProfileLeaseHandle {
+    const lease = this.ports.repositories.capturePracticeProfileLease?.();
+    if (!lease) throw new TrainingApplicationFailure("active_session_conflict", "The practice profile lease is unavailable.");
+    this.assertPracticeProfileLeaseCurrent(lease);
+    return lease;
   }
 
-  private async submitPracticeResponseInLane(response: unknown): Promise<void> {
-    const session = await this.requireActive();
+  assertPracticeProfileLeaseCurrent(lease: PracticeProfileLeaseHandle): void {
+    if (!this.ports.repositories.isPracticeProfileLeaseCurrent?.(lease)) throw new TrainingApplicationFailure("active_session_conflict", "The response no longer belongs to the original profile.");
+  }
+
+  async submitPracticeResponse(response: unknown, checkpoint?: PracticeResponseCheckpoint): Promise<void> {
+    checkpoint?.assertCurrent();
+    const initial = await this.requireActive();
+    if (checkpoint) this.assertPracticeCheckpoint(initial, checkpoint);
+    return this.serializeSessionMutation(initial.id, () => this.submitPracticeResponseInLane(response, checkpoint));
+  }
+
+  /** Adapter validation used to happen after T→S. Retain that durable time on rejection. */
+  async rejectPracticeResponseAtCheckpoint(checkpoint: PracticeResponseCheckpoint, cause: unknown): Promise<void> {
+    checkpoint.assertCurrent();
+    const initial = await this.requireActive();
+    this.assertPracticeCheckpoint(initial, checkpoint);
+    return this.serializeSessionMutation(initial.id, () => this.submitPracticeResponseInLane(undefined, checkpoint, new TrainingApplicationFailure("invalid_response", "The exact practice response is invalid.", cause)));
+  }
+
+  private async submitPracticeResponseInLane(response: unknown, checkpoint?: PracticeResponseCheckpoint, rejection?: TrainingApplicationFailure): Promise<void> {
+    const storedSession = await this.requireActive();
+    if (checkpoint) this.assertPracticeCheckpoint(storedSession, checkpoint);
+    const session = checkpoint ? createTrainingSession({ ...storedSession, activeForegroundMs: Math.max(storedSession.activeForegroundMs, checkpoint.cumulativeT) }) : storedSession;
     const prior = await this.getPracticeOperationState(session, false);
+    if (checkpoint) {
+      this.assertPracticeCheckpoint(await this.requireActive(), checkpoint);
+      if (prior.kind !== "unanswered" && !(prior.kind === "submit_journal_failed" && prior.error.allowedAction === "submit_again")) throw new TrainingApplicationFailure("invalid_response", "The current occurrence already has an accepted or unresolved response.");
+    }
     if (prior.kind === "submit_journal_failed" && prior.error.allowedAction !== "submit_again") {
       throw new TrainingApplicationFailure("submit_journal_failed", prior.error.allowedAction === "retry_same_command"
         ? "Retry the saved response command before submitting or editing this answer."
@@ -341,9 +380,14 @@ export class TrainingLifecycleUseCases {
     if (prior.kind === "commit_pending" || prior.kind === "commit_materialization_failed" || prior.kind === "commit_verification_failed") {
       throw new TrainingApplicationFailure("commit_verification_failed", "A durable practice command must recover before another response can be submitted.");
     }
-    if (isApproachChallengeTrainingAttempt(session.trackId, session.modeId)) {
+    const approachChallenge = isApproachChallengeTrainingAttempt(session.trackId, session.modeId);
+    // Take the reusable evidence snapshot after asynchronous exact-pin resolution.
+    const approachRuntime = approachChallenge ? await this.resolveRuntimeForSession(session) : null;
+    let attemptsForSubmission: Awaited<ReturnType<TrainingLifecyclePorts["repositories"]["getAttempts"]>> | undefined;
+    if (approachChallenge) {
       const occurrence = session.itemOrder[session.currentItemIndex];
-      const existing = occurrence ? (await this.ports.repositories.getAttempts()).find((attempt) => attempt.sessionId === session.id && attempt.occurrenceId === occurrence.occurrenceId) : undefined;
+      attemptsForSubmission = await this.ports.repositories.getAttempts();
+      const existing = occurrence ? attemptsForSubmission.find((attempt) => attempt.sessionId === session.id && attempt.occurrenceId === occurrence.occurrenceId) : undefined;
       if (existing) {
         if (canonicalSerialize(existing.response) !== canonicalSerialize(response)) throw new TrainingApplicationFailure("invalid_response", "An accepted Approach Challenge stage is immutable; resume the exact next stage.");
         this.operationStates.set(session.id, practice("feedback"));
@@ -360,18 +404,30 @@ export class TrainingLifecycleUseCases {
       }
     }
     this.operationStates.set(session.id, practice("submitting_before_journal"));
-    const runtime = await this.resolveRuntimeForSession(session);
+    if (rejection && checkpoint) {
+      await this.persistRejectedPracticeCheckpoint(checkpoint);
+      this.operationStates.set(session.id, practice("unanswered"));
+      throw rejection;
+    }
+    const runtime = approachRuntime ?? await this.resolveRuntimeForSession(session);
     let outcome;
     try {
-      const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-      outcome = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts: this.forResolvedContent(attempts, session), reviews: this.reviewsForSession(reviews, session), now: this.ports.clock.now() }));
+      const [attempts, reviews] = await Promise.all([attemptsForSubmission ?? this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
+      const reviewBaseline = this.reviewBaselineForSession(reviews, session);
+      const scored = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts: this.forResolvedContent(attempts, session), reviews: this.reviewsForSession(reviewBaseline, session), now: this.ports.clock.now() }));
+      // Qualification remains exact-pin/source scoped; concurrency also covers
+      // retained versions of the same learning unit from this pre-scoring read.
+      outcome = Object.freeze({ ...scored, reviewBaseline });
     } catch (error) {
+      if (checkpoint && error instanceof TrainingApplicationFailure && error.code === "invalid_response") await this.persistRejectedPracticeCheckpoint(checkpoint);
       this.operationStates.set(session.id, error instanceof TrainingApplicationFailure && error.code === "invalid_response" ? practice("unanswered") : practiceRecovery("submit_journal_failed"));
       throw error;
     }
     if (outcome.session.id !== session.id) throw new TrainingApplicationFailure("persistence_failure", "Practice outcome changed its active session identity.");
+    if (checkpoint && outcome.session.activeForegroundMs !== session.activeForegroundMs) throw new TrainingApplicationFailure("persistence_failure", "Practice outcome changed its checkpointed foreground time.");
     try {
-      const reviewConflict = await this.ports.mutations.submitPractice(outcome);
+      const reviewConflict = await this.ports.mutations.submitPractice(outcome, checkpoint ? this.practiceCheckpointGuard(storedSession, checkpoint) : undefined);
+      checkpoint?.assertCurrent();
       this.operationStates.set(session.id, practice("feedback", undefined, reviewConflict || outcome.reviewSnapshotConflict === true));
     } catch (error) {
       const state = practiceStateForMutationFailure(error);
@@ -515,7 +571,7 @@ export class TrainingLifecycleUseCases {
       throw new TrainingApplicationFailure("invalid_response", "Only a free-navigation simulation can change its active occurrence.");
     }
     if (authorization) this.consumeSimulationAuthorization(authorization, session);
-    else await this.authorizePremiumProductMode(session.modeId);
+    else await this.authorizePremiumSessionContinuation(session.modeId);
     await this.resolveRuntimeForSession(session);
     const next = this.runSync("invalid_response", () => moveTrainingSessionToIndex(session, index));
     this.operationStates.set(session.id, simulation("navigating"));
@@ -534,20 +590,62 @@ export class TrainingLifecycleUseCases {
 
   async checkpointForegroundTime(activeForegroundMs: number): Promise<TrainingSession> {
     const initial = await this.requireActive();
-    return this.serializeSessionMutation(initial.id, async () => {
+    return this.serializeSessionMutation(initial.id, () => this.checkpointForegroundTimeInLane(activeForegroundMs));
+  }
+
+  private async checkpointForegroundTimeInLane(activeForegroundMs: number, checkpoint?: PracticeResponseCheckpoint): Promise<TrainingSession> {
     const session = await this.requireActive();
+    if (checkpoint) {
+      this.assertPracticeCheckpoint(session, checkpoint);
+      activeForegroundMs = Math.max(activeForegroundMs, session.activeForegroundMs);
+    }
     await this.assertNoAcceptedSimulationFinalization(session.id);
     if ((session.configurationSnapshot.timer !== "countdownForeground" && session.configurationSnapshot.timer !== "elapsedForeground") || !Number.isSafeInteger(activeForegroundMs) || activeForegroundMs < session.activeForegroundMs) {
       throw new TrainingApplicationFailure("invalid_response", "Session foreground timer checkpoint is invalid.");
     }
+    const getPending = this.ports.repositories.getPendingMutation;
+    if (activeForegroundMs === session.activeForegroundMs && getPending) {
+      const pending = await this.run("persistence_failure", () => getPending.call(this.ports.repositories));
+      if (!pending) {
+        const current = await this.requireActive();
+        if (checkpoint) this.assertPracticeCheckpoint(current, checkpoint);
+        if (current.id !== session.id || current.activeForegroundMs !== activeForegroundMs) throw new TrainingApplicationFailure("verification_failure", "The active session changed during its unchanged timer checkpoint.");
+        return current;
+      }
+    }
     const next = createTrainingSession({ ...session, activeForegroundMs });
-    await this.run("persistence_failure", () => this.ports.mutations.advance(next));
+    await this.run("persistence_failure", () => this.ports.mutations.advance(next, checkpoint ? this.practiceCheckpointGuard(session, checkpoint) : undefined));
     const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
+    checkpoint?.assertCurrent();
     if (!verified || verified.id !== next.id || verified.activeForegroundMs !== activeForegroundMs) {
       throw new TrainingApplicationFailure("verification_failure", "Session foreground time was not durably verified.");
     }
     return verified;
-    });
+  }
+
+  private async persistRejectedPracticeCheckpoint(checkpoint: PracticeResponseCheckpoint): Promise<void> {
+    try { await this.checkpointForegroundTimeInLane(checkpoint.cumulativeT, checkpoint); }
+    catch (error) {
+      const failure = mutationCommitFailureFrom(error);
+      this.operationStates.set(checkpoint.sessionId, practice("recovery_required", operationError("practice_resume", failure?.durableState ?? "not_durable", failure?.durableState === "unknown" ? "reconcile" : "recover")));
+      throw error;
+    }
+  }
+
+  private assertPracticeCheckpoint(session: TrainingSession, checkpoint: PracticeResponseCheckpoint): void {
+    checkpoint.assertCurrent();
+    this.assertPracticeProfileLeaseCurrent(checkpoint.originalProfileLease);
+    const occurrence = session.itemOrder[session.currentItemIndex];
+    if (session.status !== "active" || session.id !== checkpoint.sessionId || session.modeId !== checkpoint.modeId || session.configurationSnapshot.timer !== "elapsedForeground" || !occurrence || occurrence.occurrenceId !== checkpoint.occurrenceId || resolvedContentRefKey(occurrence.item) !== resolvedContentRefKey(checkpoint.item) || !Number.isSafeInteger(checkpoint.cumulativeT) || checkpoint.cumulativeT < 0 || !Number.isSafeInteger(checkpoint.checkpointRevision) || checkpoint.checkpointRevision < 1) throw new TrainingApplicationFailure("active_session_conflict", "The response checkpoint no longer belongs to its original profile and occurrence.");
+  }
+
+  private practiceCheckpointGuard(before: TrainingSession, checkpoint: PracticeResponseCheckpoint): TrainingMutationGuard {
+    return Object.freeze({ expectedLease: checkpoint.originalProfileLease, preflight: async () => {
+      checkpoint.assertCurrent();
+      const current = await this.requireActive();
+      this.assertPracticeCheckpoint(current, checkpoint);
+      if (!sameSessionSnapshot(current, before)) throw new TrainingApplicationFailure("active_session_conflict", "The session changed before the checkpointed response could be saved.");
+    } });
   }
 
   async completeActivePracticeSession(expectedSessionId: string): Promise<PracticeFinalization> {
@@ -674,7 +772,7 @@ export class TrainingLifecycleUseCases {
     if (session.id !== sessionId || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
       throw new TrainingApplicationFailure("resume_unavailable", "Simulation authorization requires the exact active simulation session.");
     }
-    await this.authorizePremiumProductMode(session.modeId);
+    await this.authorizePremiumSessionContinuation(session.modeId);
     const authorization = Object.freeze({ sessionId });
     simulationCommandAuthorizations.add(authorization);
     return authorization;
@@ -685,7 +783,7 @@ export class TrainingLifecycleUseCases {
     if (session.id !== sessionId || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
       throw new TrainingApplicationFailure("resume_unavailable", "Simulation authorization requires the exact active simulation session.");
     }
-    await this.authorizePremiumProductMode(session.modeId);
+    await this.authorizePremiumSessionContinuation(session.modeId);
     const authorization = Object.freeze({ sessionId });
     scopedSimulationCommandAuthorizations.add(authorization);
     try { return await operation(authorization); }
@@ -695,7 +793,7 @@ export class TrainingLifecycleUseCases {
   async finalizeSimulation(authorization?: SimulationCommandAuthorization, cause: "manual" | "expiry" = "manual"): Promise<void> {
     const session = await this.requireActive();
     if (authorization) this.consumeSimulationAuthorization(authorization, session);
-    else await this.authorizePremiumProductMode(session.modeId);
+    else await this.authorizePremiumSessionContinuation(session.modeId);
     await this.finalizeSimulationFor(session, cause === "expiry" ? "countdown-expiry" : "manual");
   }
 
@@ -712,7 +810,7 @@ export class TrainingLifecycleUseCases {
       throw new TrainingApplicationFailure("resume_unavailable", "An absolute-deadline simulation has no valid immutable deadline.");
     }
     if (Date.parse(this.ports.clock.now()) < Date.parse(deadline)) return null;
-    await this.authorizePremiumProductMode(session.modeId);
+    await this.authorizePremiumSessionContinuation(session.modeId);
     await this.finalizeSimulationFor(session, "absolute-deadline");
     return session.id;
   }
@@ -797,7 +895,7 @@ export class TrainingLifecycleUseCases {
     }
     try {
       this.operationStates.set(session.id, simulation("finalization_journal_pending", operationError("simulation_finalization", "not_durable", "retry_same_command")));
-      const reviewConflict = await this.ports.mutations.finalize(outcome, accepted, lease);
+      const reviewConflict = await this.ports.mutations.finalize(Object.freeze({ ...outcome, reviewBaseline: source.reviewBaseline }), accepted, lease);
       await this.requireVerifiedSummary(session.id);
       this.operationStates.set(session.id, simulation("completed", undefined, reviewConflict));
     } catch (error) {
@@ -859,7 +957,7 @@ export class TrainingLifecycleUseCases {
   }
 
   private async verifyAcceptedFinalizationInputs(session: TrainingSession, accepted: AcceptedSimulationFinalization, sameCallRuntime?: TrainingFamilyRuntime, lease?: DraftStorageLeaseHandle | null): Promise<Readonly<{
-    session: TrainingSession; runtime: TrainingFamilyRuntime; attempts: readonly import("../../domain").TrainingAttempt<unknown>[]; reviews: readonly import("../../domain").ReviewQueueEntry[];
+    session: TrainingSession; runtime: TrainingFamilyRuntime; attempts: readonly import("../../domain").TrainingAttempt<unknown>[]; reviews: readonly import("../../domain").ReviewQueueEntry[]; reviewBaseline: readonly import("../../domain").ReviewQueueEntry[];
   }>> {
     const repositories = this.ports.repositories;
     if (!repositories.getDraftStateProof || !repositories.getSessionEnvelopeProof || !repositories.getFinalizationReviews || !repositories.verifyAcceptedFinalizationProof ||
@@ -901,7 +999,8 @@ export class TrainingLifecycleUseCases {
     }
     const runtime = sameCallRuntime ?? await this.resolveRuntimeForSession(session);
     await runtime.validateResume({ session, draft: accepted.responseDraft });
-    return Object.freeze({ session: sessionProof.session, runtime, attempts, reviews: reviewState.entries });
+    return Object.freeze({ session: sessionProof.session, runtime, attempts, reviews: reviewState.entries,
+      reviewBaseline: this.reviewBaselineForSession(reviewState.reviewBaseline, session) });
   }
 
   private async assertNoAcceptedSimulationFinalization(sessionId: string): Promise<void> {
@@ -927,7 +1026,7 @@ export class TrainingLifecycleUseCases {
     try { session = await this.requireActive(); }
     catch (error) { throw error; }
     if (authorization) this.consumeSimulationAuthorization(authorization, session);
-    else await this.authorizePremiumProductMode(session.modeId);
+    else await this.authorizePremiumSessionContinuation(session.modeId);
     const runtime = await this.resolveRuntimeForSession(session);
     const draft = await this.run("persistence_failure", () => this.ports.repositories.getDraft(session.id));
     try { await this.run("resume_unavailable", () => runtime.validateResume({ session, draft })); }
@@ -941,9 +1040,12 @@ export class TrainingLifecycleUseCases {
     return session;
   }
 
-  async abandonActiveSession(): Promise<TrainingSession> {
+  async abandonActiveSession(expected?: SessionOperationOwner): Promise<TrainingSession> {
+    expected?.assertCurrent?.();
     const initial = await this.requireActive();
-    return this.serializeSessionMutation(initial.id, () => this.abandonActiveSessionInLane());
+    const owner = expected ?? { sessionId: initial.id };
+    this.assertSessionOperationOwner(initial, owner);
+    return this.serializeSessionMutation(initial.id, () => this.abandonActiveSessionInLane(owner));
   }
 
   /** Explicitly ends one active session only after its exact verified artifact is still absent. */
@@ -959,7 +1061,7 @@ export class TrainingLifecycleUseCases {
     await this.assertNoAcceptedSimulationFinalization(active.id);
     assertUnavailableSessionIdentity(active, input.sessionId, input.identity);
     if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
-    await this.authorizePremiumProductMode(active.modeId);
+    await this.authorizePremiumSessionContinuation(active.modeId);
     await this.assertNoPendingMutation();
     await this.assertExactArtifactStillUnavailable(active, input.identity);
     if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
@@ -972,7 +1074,7 @@ export class TrainingLifecycleUseCases {
         assertUnavailableSessionIdentity(fresh, input.sessionId, input.identity);
         if (!sameSessionSnapshot(fresh, active)) throw new TrainingApplicationFailure("active_session_conflict", "The frozen abandonment no longer matches the exact active session.");
         if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
-        await this.authorizePremiumProductMode(fresh.modeId);
+        await this.authorizePremiumSessionContinuation(fresh.modeId);
         await this.assertNoPendingMutation();
         await this.assertExactArtifactStillUnavailable(fresh, input.identity);
         const afterResolution = await this.requireActive();
@@ -1013,30 +1115,35 @@ export class TrainingLifecycleUseCases {
     if (pending) throw new TrainingApplicationFailure("resume_unavailable", "A pending canonical mutation must be recovered before ending this session.");
   }
 
-  private async abandonActiveSessionInLane(): Promise<TrainingSession> {
+  private async abandonActiveSessionInLane(owner: SessionOperationOwner): Promise<TrainingSession> {
     const active = await this.requireActive();
+    this.assertSessionOperationOwner(active, owner);
     await this.assertNoAcceptedSimulationFinalization(active.id);
     const prior = this.operationStates.get(active.id);
     if (prior?.kind === "abandonment_failed_before_journal" && "error" in prior && prior.error.allowedAction === "none") {
       this.retryableMutationCommands.delete(active.id);
     }
-    await this.authorizePremiumProductMode(active.modeId);
+    await this.authorizePremiumSessionContinuation(active.modeId);
     await this.resolveRuntimeForSession(active);
+    this.assertSessionOperationOwner(active, owner);
     const abandoned = this.runSync("persistence_failure", () => abandonTrainingSession(active, this.ports.clock.now()));
     const isSimulation = active.configurationSnapshot.submission === "manualOrForegroundTimeout";
     this.operationStates.set(active.id, isSimulation ? simulation("abandoning") : practice("abandoning"));
     const preflight = async (): Promise<void> => {
       const fresh = await this.requireActive();
+      this.assertSessionOperationOwner(fresh, owner);
       if (!sameSessionSnapshot(fresh, active)) throw new TrainingApplicationFailure("active_session_conflict", "The frozen abandonment no longer matches the exact active session.");
-      await this.authorizePremiumProductMode(fresh.modeId);
+      await this.authorizePremiumSessionContinuation(fresh.modeId);
       await this.resolveRuntimeForSession(fresh);
       await this.assertNoPendingMutation();
       const afterResolution = await this.requireActive();
+      this.assertSessionOperationOwner(afterResolution, owner);
       if (!sameSessionSnapshot(afterResolution, active)) throw new TrainingApplicationFailure("active_session_conflict", "The frozen abandonment changed during eligibility checks.");
     };
     try {
       await this.run("persistence_failure", () => this.ports.mutations.abandon(abandoned, preflight));
       const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
+      owner.assertCurrent?.();
       if (verified) throw new TrainingApplicationFailure("verification_failure", "Abandoned session remains resumable.");
       this.operationStates.set(active.id, isSimulation ? simulation("abandoned") : practice("abandoned"));
       this.operationStates.clear(active.id);
@@ -1045,6 +1152,11 @@ export class TrainingLifecycleUseCases {
       this.publishAbandonmentFailure(active, isSimulation, error);
       throw error;
     }
+  }
+
+  private assertSessionOperationOwner(session: TrainingSession, owner: SessionOperationOwner): void {
+    owner.assertCurrent?.();
+    if (session.id !== owner.sessionId) throw new TrainingApplicationFailure("active_session_conflict", "The confirmed session is no longer the active session.");
   }
 
   private publishAbandonmentFailure(active: TrainingSession, isSimulation: boolean, error: unknown): void {
@@ -1173,19 +1285,6 @@ export class TrainingLifecycleUseCases {
 
   private requiresNodePremiumAdmission(session: TrainingSession, track: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExactArtifact"]>>["track"]): boolean {
     if (requiresPremiumProductMode(session.modeId)) return false;
-    if (isApproachChallengeTrainingAttempt(session.trackId, session.modeId)) {
-      const manifest = decodeApproachChallengeManifest(session.configurationSnapshot[APPROACH_CHALLENGE_MANIFEST_KEY], session);
-      const problems = track.approachChallengeProblems;
-      if (!problems?.length || session.itemOrder.length !== manifest.actualProblemCount * 2) throw new TrainingApplicationFailure("missing_content", "The exact paired-task artifact is unavailable for Premium admission.");
-      const selected = manifest.entries.map((entry, index) => {
-        const problem = resolveManifestEntryProblem(entry, (problemId, version) => problems.find((candidate) => candidate.problemId === problemId && candidate.problemVersion === version), session);
-        const approach = session.itemOrder[index * 2]?.item.questionId;
-        const complexity = session.itemOrder[index * 2 + 1]?.item.questionId;
-        if (approach !== problem.approachQuestion.questionId || complexity !== problem.complexityQuestion.questionId) throw new TrainingApplicationFailure("missing_content", "The prepared stage order does not match its exact paired-task artifact.");
-        return problem;
-      });
-      return selected.some((problem) => !isFreeApproachChallengeProblem(problem));
-    }
     const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === session.trackId);
     if (!descriptor || session.itemOrder.length === 0) throw new TrainingApplicationFailure("missing_content", "The prepared session has no canonical Free node scope.");
     for (const occurrence of session.itemOrder) {
@@ -1197,8 +1296,8 @@ export class TrainingLifecycleUseCases {
     return false;
   }
 
-  private async authorizePremiumProductMode(modeId: string): Promise<void> {
-    if (!requiresPremiumProductMode(modeId)) return;
+  private async authorizePremiumSessionContinuation(modeId: string): Promise<void> {
+    if (!requiresPremiumForSessionContinuation(modeId)) return;
     await this.authorizePremiumSession();
   }
 
@@ -1228,9 +1327,13 @@ export class TrainingLifecycleUseCases {
 
   private reviewsForSession(records: readonly import("../../domain").ReviewQueueEntry[], session: TrainingSession): readonly import("../../domain").ReviewQueueEntry[] {
     if (session.itemOrder.some((occurrence) => occurrence.reviewSourceSnapshot !== undefined)) {
-      return records.filter((entry) => entry.trackId === session.trackId && entry.sourceItem.trackId === session.trackId);
+      return this.reviewBaselineForSession(records, session);
     }
     return this.forResolvedContent(records, session);
+  }
+
+  private reviewBaselineForSession(records: readonly import("../../domain").ReviewQueueEntry[], session: TrainingSession): readonly import("../../domain").ReviewQueueEntry[] {
+    return records.filter((entry) => entry.trackId === session.trackId && entry.sourceItem.trackId === session.trackId);
   }
 
   private serializeSessionMutation<T>(sessionId: string, operation: () => Promise<T>, allowUncertain = false): Promise<T> {

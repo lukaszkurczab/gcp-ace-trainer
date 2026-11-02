@@ -1,10 +1,11 @@
 import type { Question } from "../../content/canonical/questionTypes";
+import type { ApproachChoiceQuestion } from "../../content/canonical/interactions/approachChoice";
 import type { ResolvedContentRef } from "../../domain";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { canonicalInteractionRegistry, type InteractionQuestionLike } from "../../content/canonical/interactions/registry";
 import type { TrainingInteractionPort, TrainingQuestionSummary } from "../trainingLifecycle/contracts";
 
-type QuestionLike = Question | TrainingQuestionSummary;
+type QuestionLike = Question | ApproachChoiceQuestion | TrainingQuestionSummary;
 function controlIds(question: QuestionLike, interactions?: TrainingInteractionPort): readonly string[] {
   return interactions ? interactions.controlIds(question.questionId) : canonicalInteractionRegistry.controlIds(question as InteractionQuestionLike);
 }

@@ -11,6 +11,17 @@ const codingTrack = "coding-interview-dsa-problem-solving";
 const cloudTrack = "google-cloud-associate-cloud-engineer";
 const now = new Date("2026-08-23T12:00:00.000Z");
 
+test("shared ACM rows open exact ACM detail rather than the legacy Coding summary", () => {
+  const model = buildActivityModel(["completed", "abandoned"].map(status => record({ id: `acm-${status}`, modeId: "coding-interview-approach-challenge", trackId: codingTrack,
+    status: status as "completed" | "abandoned", completedAt: "2026-08-23T11:00:00.000Z", totalOccurrences: 10, answered: 1, noResult: true })), ALL_ACTIVITY_TRACKS, now);
+  assert.equal(model.items.length, 2);
+  for (const item of model.items) {
+    assert.deepEqual(item.interaction, { destination: "approach_challenge_detail", kind: "open_result" });
+    assert.equal(item.modeTitle, "Approach Challenge");
+    assert.equal(item.totalCount, 10, "shared history counts answer occurrences, not paired problems");
+  }
+});
+
 test("Activity groups durable terminal sessions and keeps the row projection truthful", () => {
   const model = buildActivityModel([
     record({ id: "today", modeId: "coding-interview-guided-practice", trackId: codingTrack, status: "completed", completedAt: "2026-08-23T11:42:00.000Z", totalOccurrences: 20, answered: 20, scopeRefs: [{ axisId: "roadmap_node", nodeId: "complexity_and_constraints", role: "primary" }] }),

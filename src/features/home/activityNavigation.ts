@@ -7,11 +7,13 @@ import type { ActivityItem } from "./tabs/activityModel";
 type ActivityItemReference = Pick<ActivityItem, "interaction" | "sessionId">;
 
 export type ActivityResultRoute =
+  | Readonly<{ name: typeof ROUTES.APPROACH_CHALLENGE; params: RootStackParamList[typeof ROUTES.APPROACH_CHALLENGE] }>
   | Readonly<{ name: typeof ROUTES.ALGORITHMS_PRACTICE_SUMMARY; params: RootStackParamList[typeof ROUTES.ALGORITHMS_PRACTICE_SUMMARY] }>
   | Readonly<{ name: typeof ROUTES.RESULT; params: RootStackParamList[typeof ROUTES.RESULT] }>;
 
 export function buildActivityResultRoute(item: ActivityItemReference): ActivityResultRoute {
   if (item.interaction.kind !== "open_result") throw new Error("Activity item has no available result route.");
+  if (item.interaction.destination === "approach_challenge_detail") return { name: ROUTES.APPROACH_CHALLENGE, params: { sessionId: item.sessionId } };
   if (item.interaction.destination === "algorithms_practice_summary") {
     return {
       name: ROUTES.ALGORITHMS_PRACTICE_SUMMARY,
@@ -31,6 +33,10 @@ export function navigateToActivityResult(
 ): void {
   const route = buildActivityResultRoute(item);
   if (route.name === ROUTES.ALGORITHMS_PRACTICE_SUMMARY) {
+    navigation.navigate(route.name, route.params);
+    return;
+  }
+  if (route.name === ROUTES.APPROACH_CHALLENGE) {
     navigation.navigate(route.name, route.params);
     return;
   }

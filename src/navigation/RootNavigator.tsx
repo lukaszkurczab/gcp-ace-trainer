@@ -42,6 +42,7 @@ import { PracticeSessionScreen } from "../features/practice/PracticeSessionScree
 import { ApproachChallengeScreen } from "../features/practice/ApproachChallengeScreen";
 import { ApproachChallengeAccessProvider } from "../features/practice/approachChallengeAccess";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { ApproachChallengeReviewScreen } from "../features/practice/ApproachChallengeReviewScreen";
 import { AlgorithmsPracticeReviewScreen } from "../features/practice/AlgorithmsPracticeReviewScreen";
 import { AlgorithmsPracticeSummaryScreen } from "../features/practice/AlgorithmsPracticeSummaryScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
@@ -332,6 +333,7 @@ export function RootNavigator() {
             options={{ headerShown: false, title: t("Practice Session") }}
           />
           <Stack.Screen name={ROUTES.APPROACH_CHALLENGE} component={AccountBackedApproachChallengeScreen} options={{ headerShown: false, title: t("Approach Challenge") }} />
+          <Stack.Screen name={ROUTES.APPROACH_CHALLENGE_REVIEW} component={ApproachChallengeReviewScreen} options={{ headerShown: false, title: t("Answer review") }} />
           <Stack.Screen
             name={ROUTES.ALGORITHMS_PRACTICE_REVIEW}
             component={AlgorithmsPracticeReviewScreen}

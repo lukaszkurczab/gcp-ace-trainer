@@ -14,6 +14,7 @@ import { projectLearningEvidence } from "./learningEvidenceProjection";
 import { projectFullGoalWorkload } from "./fullGoalWorkloadProjection";
 import { completionCopy, targetCopy } from "../../features/home/homePlanUiContract";
 import type { ChapterCompletionStatus } from "../../domain/learning/packageCompletionRule";
+import { ALGORITHM_MODE_IDS } from "../../tracks/coding-interview/domain/algorithmModes";
 
 const TRACK = "claude-certified-architect-professional-certification";
 const NOW = "2026-10-21T12:00:00.000Z";
@@ -238,7 +239,7 @@ test("Coding Progress retains unit practice and performance after replacement an
   const {track}=await instance.resolveForDiscovery("coding-interview-dsa-problem-solving","coding_interview");
   const question=track.questions[0]!;
   const item={trackId:track.trackId,questionId:"removed-coding-A",contentVersion:"absent-old-bank",artifactSha256:"d".repeat(64)};
-  const attempts=[createTrainingAttempt({id:"coding-unit-attempt",sessionId:"coding-old",trackId:track.trackId,modeId:"algorithms-topic-practice",occurrenceId:"coding-old-occurrence",item,response:{},result:{kind:"correct",earnedPoints:1,maxPoints:1},reviewEvidence:{sourceItem:item,taxonomyOrSkillRefs:[{axisId:"node",nodeId:question.nodeId},{axisId:"mental_unit",nodeId:question.mentalUnitId}]},answeredAt:"2026-10-01T00:00:00.000Z",committedAt:"2026-10-01T00:00:00.000Z"})];
+  const attempts=[createTrainingAttempt({id:"coding-unit-attempt",sessionId:"coding-old",trackId:track.trackId,modeId:ALGORITHM_MODE_IDS.guidedPractice,occurrenceId:"coding-old-occurrence",item,response:{},result:{kind:"correct",earnedPoints:1,maxPoints:1},reviewEvidence:{sourceItem:item,taxonomyOrSkillRefs:[{axisId:"node",nodeId:question.nodeId},{axisId:"mental_unit",nodeId:question.mentalUnitId}]},answeredAt:"2026-10-01T00:00:00.000Z",committedAt:"2026-10-01T00:00:00.000Z"})];
   const profile={...track,completionSources:[]};
   const evidence=projectLearningEvidence({profile,attempts,reviews:[],now:NOW});
   const before=projectCodingProgress(profile,evidence,NOW);

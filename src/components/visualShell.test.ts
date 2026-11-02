@@ -391,6 +391,7 @@ test("simulation active shell uses the Figma question and action-footer variant"
 
 test("Practice setup keeps one canonical back action and recovery copy names learner-visible consequences", () => {
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
+  const setupControls = source("src/features/practice/PracticeSetupControls.tsx");
   const session = source("src/features/practice/PracticeSessionScreen.tsx");
   const choiceRow = source("src/components/ChoiceRow.tsx");
   const screen = source("src/components/Screen.tsx");
@@ -402,10 +403,11 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   assert.match(setup, /footerVariant=\{compactCodingPractice \|\| focusPractice \? "sticky" : "default"\}/);
   assert.match(setup, /<ScreenHeader[\s\S]*variant="practiceSetup"/);
   assert.match(setup, /<ChoiceRow[\s\S]*density="compact"/);
-  assert.match(setup, /compactLengthGrid:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?minHeight:\s*54[\s\S]*?padding:\s*spacing\.xs/);
-  assert.match(setup, /compactLengthOption:[\s\S]*?borderRadius:\s*10[\s\S]*?minHeight:\s*44/);
-  assert.match(setup, /compactSelectedMeta:\s*\{\s*color:\s*palette\.onPrimary\s*,?\s*\}/);
-  assert.match(setup, /compactSectionTitle:[\s\S]*?textTransform:\s*"uppercase"/);
+  assert.match(setup, /compactCodingPractice \? PracticeSetupSegmentGroup : View/);
+  assert.match(setupControls, /group:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?minHeight:\s*54[\s\S]*?padding:\s*spacing\.xs/);
+  assert.match(setupControls, /option:[\s\S]*?borderRadius:\s*10[\s\S]*?minHeight:\s*44/);
+  assert.match(setupControls, /selectedText:\s*\{\s*color:\s*palette\.onPrimary\s*,?\s*\}/);
+  assert.match(setupControls, /title\.toUpperCase\(\)/);
   assert.match(choiceRow, /density\?:\s*"comfortable" \| "compact"/);
   assert.match(choiceRow, /compactRow:\s*\{[\s\S]*?minHeight:\s*48/);
   assert.match(screen, /footerVariant\?:\s*"default" \| "review" \| "session" \| "simulation" \| "sticky"/);

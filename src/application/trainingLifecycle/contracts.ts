@@ -18,6 +18,25 @@ import type { ProductModeConfig } from "../../content/canonical/productModeConfi
 import type { LearningPlanningPolicy } from "../../content/canonical/planningPolicy";
 import type { CanonicalExamMetadata, CanonicalFeedbackProjection, InteractionEvaluation, ReviewInteractionPresentation } from "../../content/canonical/interactions/shared";
 import type { RetryMutationCommandHandle, RetryableMutationOperation } from "../mutationBoundary";
+export type PracticeProfileLeaseHandle = Readonly<{ kind: "practice_profile_lease" }>;
+
+/** Process-local handoff from the durable clock; never serialized into a journal. */
+export type PracticeResponseCheckpoint = Readonly<{
+  sessionId: string;
+  modeId: string;
+  occurrenceId: string;
+  item: ResolvedContentRef;
+  checkpointRevision: number;
+  cumulativeT: number;
+  originalProfileLease: PracticeProfileLeaseHandle;
+  assertCurrent(): void;
+}>;
+
+/** Retained with the exact journal retry, including the command's original owner. */
+export type TrainingMutationGuard = Readonly<{
+  expectedLease: PracticeProfileLeaseHandle;
+  preflight(): Promise<void>;
+}>;
 
 /** Opaque application handles. The canonical repository adapter validates each handle by identity. */
 export type DraftStorageLeaseHandle = Readonly<{ kind: "draft_storage_lease" }>;
@@ -201,6 +220,8 @@ export interface ContentPackageRuntimePort {
 }
 
 export interface TrainingLifecycleRepositoryPort {
+  capturePracticeProfileLease?(): PracticeProfileLeaseHandle | null;
+  isPracticeProfileLeaseCurrent?(lease: PracticeProfileLeaseHandle): boolean;
   getActiveSession(): Promise<TrainingSession | null>;
   getSession(sessionId: string): Promise<TrainingSession | null>;
   getHistory(): Promise<readonly TrainingSession[]>;
@@ -209,7 +230,8 @@ export interface TrainingLifecycleRepositoryPort {
   getDraft(sessionId: string): Promise<TrainingSessionDraft | null>;
   getDraftStateProof?(): Promise<Readonly<{ state: TrainingSessionDraft | AcceptedSimulationFinalization; revision: number; digest: string }> | null>;
   getSessionEnvelopeProof?(sessionId: string): Promise<Readonly<{ session: TrainingSession; revision: number; digest: string }> | null>;
-  getFinalizationReviews?(refs: readonly ResolvedContentRef[]): Promise<Readonly<{ entries: readonly ReviewQueueEntry[]; proofs: AcceptedSimulationFinalization["acceptance"]["reviewProofs"] }>>;
+  /** Exact qualification evidence and complete same-track concurrency baseline from one snapshot. */
+  getFinalizationReviews?(refs: readonly ResolvedContentRef[]): Promise<Readonly<{ entries: readonly ReviewQueueEntry[]; reviewBaseline: readonly ReviewQueueEntry[]; proofs: AcceptedSimulationFinalization["acceptance"]["reviewProofs"] }>>;
   acceptFinalization?(accepted: AcceptedSimulationFinalization, expected: Readonly<{ revision: number; digest: string }>, lease: DraftStorageLeaseHandle | null, reviewRefs: readonly ResolvedContentRef[]): Promise<"verified" | "conflict" | "unknown" | "not_applied">;
   reconcileAcceptedFinalization?(accepted: AcceptedSimulationFinalization): Promise<"verified" | "not_applied" | "conflict" | "unknown">;
   verifyAcceptedFinalizationProof?(accepted: AcceptedSimulationFinalization, proof: Readonly<{ state: TrainingSessionDraft | AcceptedSimulationFinalization; revision: number; digest: string }>): boolean;
@@ -243,9 +265,9 @@ export type PendingMutationProjection = Readonly<{
 /** The only application dependency allowed to mutate canonical records. */
 export interface TrainingMutationCoordinatorPort {
   start(input: PreparedSession): Promise<void>;
-  submitPractice(input: PracticeSubmission): Promise<boolean>;
+  submitPractice(input: PracticeSubmission, guard?: TrainingMutationGuard): Promise<boolean>;
   retryMutationCommand(command: RetryMutationCommandHandle, expectedOperation: RetryableMutationOperation): Promise<void>;
-  advance(session: TrainingSession): Promise<void>;
+  advance(session: TrainingSession, guard?: TrainingMutationGuard): Promise<void>;
   completeWithResult(input: PracticeFinalization): Promise<void>;
   finalize(input: SimulationFinalization, acceptedFinalization?: AcceptedSimulationFinalization, lease?: DraftStorageLeaseHandle | null): Promise<boolean>;
   abandon(session: TrainingSession, preflight?: () => Promise<void>): Promise<void>;

@@ -12,6 +12,30 @@ import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext"
 
 beforeEach(() => installMemoryStorage());
 
+test("shared history includes ACM terminal sessions and archives while unknown Coding modes stay excluded", async () => {
+  const acmMode = "coding-interview-approach-challenge";
+  const completed = { ...legacySessionForTest("completed", "acm-completed"), modeId: acmMode };
+  const abandoned = { ...legacySessionForTest("abandoned", "acm-abandoned"), modeId: acmMode };
+  const empty = { ...abandoned, id: "acm-empty" };
+  const active = { ...completed, id: "acm-active", status: "active" as const };
+  const unknown = { ...completed, id: "unknown", modeId: "coding-interview-unregistered-mode" };
+  const archived = (id: string, modeId: string) => createContentIdentityArchivalHistoryRecord({
+    schemaVersion: 1, kind: "archival_history", sessionId: id,
+    session: { id, modeId, trackId: completed.trackId, status: "completed", startedAt: completed.startedAt, completedAt: "2026-08-20T10:00:00.000Z",
+      itemOrder: [{ occurrenceId: `${id}:0`, item: { kind: "archival_history", sessionId: id, trackId: completed.trackId, questionId: "archived-question", contentVersion: "v0", reason: "unknown_artifact_hash" } }] },
+    attempts: [], results: [],
+  });
+  const archive = archived("acm-archive", acmMode);
+  const unknownArchive = archived("unknown-archive", unknown.modeId);
+  const records = await loadActivityRecords({
+    getSessions: async () => ({ ok: true, value: [completed, abandoned, empty, active, unknown] }),
+    getAttempts: async () => ({ ok: true, value: [{ ...attempt("acm-attempt", abandoned.id), modeId: acmMode }] }),
+    getResult: async () => null,
+    getArchivalHistory: async () => ({ ok: true, value: [archive, unknownArchive] }),
+  });
+  assert.deepEqual(records.map(row => "session" in row ? row.session.id : row.sessionId).sort(), ["acm-abandoned", "acm-archive", "acm-completed"]);
+});
+
 test("Activity read model keeps terminal history semantics and includes completed sessions without answers", async () => {
   const active = legacySessionForTest("active", "active");
   const completedWithoutAnswers = legacySessionForTest("completed", "completed-without-answers");

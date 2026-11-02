@@ -220,7 +220,7 @@ function CompletingNotice() {
   return <LoadingState description={t("Preparing your summary.")} title={t("Finishing this session…")} />;
 }
 
-function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
+export function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
   const { t } = useTranslation("common");
@@ -229,7 +229,10 @@ function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
   return <View accessible accessibilityLabel={message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, operationFailure ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>{operationFailure ? <Icon color={palette.warning} name="alert-triangle" size={20} /> : null}<Text maxFontSizeMultiplier={2} style={[styles.noticeText, operationFailure ? styles.noticeErrorText : null]}>{message}</Text></View>;
 }
 
-function ActionBar(props: PracticeSessionSurfaceProps) {
+type PracticeActionBarProps = Pick<PracticeSessionSurfaceProps, "exit" | "phase" | "primaryAction" | "onPrimaryAction" | "onRetry" | "retryLabel" | "retryVariant" | "allowLeave" | "onRequestLeave">
+  & Readonly<{ runtimeIdentity?: Pick<PracticeRuntimeIdentity, "sessionId" | "itemId"> }>;
+
+export function ActionBar(props: PracticeActionBarProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   if (props.exit.kind !== "none") return null;
@@ -254,14 +257,14 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
   );
 }
 
-function primaryActionTestID(props: PracticeSessionSurfaceProps): string | undefined {
+function primaryActionTestID(props: PracticeActionBarProps): string | undefined {
   if (!props.runtimeIdentity || !props.primaryAction) return undefined;
   return props.phase === "unanswered" || props.phase === "submit_journal_failed"
     ? runtimeSelectors.session.submit(props.runtimeIdentity.itemId)
     : runtimeSelectors.session.continue(props.runtimeIdentity.itemId);
 }
 
-function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void; sessionId?: string; trackId?: TrackId }>) {
+export function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void; sessionId?: string; trackId?: TrackId }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const insets = useSafeAreaInsets();

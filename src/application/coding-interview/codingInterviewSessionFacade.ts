@@ -29,6 +29,7 @@ import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../
 import { projectCanonicalSourceEvidence, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { overallScoreCredit } from "../canonical/overallScoreCredit";
 import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
+import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
 
@@ -145,24 +146,40 @@ function toCanonicalAlgorithmsStartRequest(input: StartAlgorithmsSessionInput): 
 
 /** One canonical implementation for Coding practice; the exact content owner is a required dependency. */
 export function createAlgorithmsPracticeFacade(owner: ContentPackageRuntimeOwner): AlgorithmsPracticeFacade {
+  async function submitCheckpointed(response: unknown, builtin: boolean): Promise<void> {
+    const lifecycle = getTrainingLifecycleUseCases();
+    const lease = lifecycle.capturePracticeProfileLease();
+    const assertOwner = () => lifecycle.assertPracticeProfileLeaseCurrent(lease);
+    assertOwner();
+    // Copy the caller-owned response before any await; exact retry retains this command.
+    let captured: unknown;
+    let invalid: Readonly<{ cause: unknown }> | null = null;
+    try { captured = freezePracticeResponse(JSON.parse(canonicalSerialize(response))); }
+    catch (cause) { invalid = { cause }; }
+    const session = await requireAlgorithmsSession();
+    assertOwner();
+    const occurrence = session.itemOrder[session.currentItemIndex];
+    if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
+    const exactItem = await owner.resolveItem(occurrence.item);
+    assertOwner();
+    if (!builtin) {
+      // Extension completeness has always been a pre-checkpoint rejection boundary.
+      if (invalid || !exactItem.interactions.isComplete(exactItem.question.questionId, captured)) throw new TrainingApplicationFailure("invalid_response", "The exact interaction response is incomplete or invalid.");
+    } else if (!invalid) {
+      try { captured = toCanonicalPracticeResponse(exactItem.question.interactionType, captured as AlgorithmResponse); }
+      catch (cause) { invalid = { cause }; }
+    }
+    const checkpoint = await getForegroundSessionTimerFacade().capturePracticeResponseCheckpoint(session, lease);
+    if (invalid) return getTrainingLifecycleUseCases().rejectPracticeResponseAtCheckpoint(checkpoint, invalid.cause);
+    return getTrainingLifecycleUseCases().submitPracticeResponse(captured, checkpoint);
+  }
   return Object.freeze({
     getProjection: () => projectAlgorithmsPractice(owner, getTrainingLifecycleUseCases(), getForegroundSessionTimerFacade()),
     async submitResponse(response) {
-      const session = await requireAlgorithmsSession();
-      const occurrence = session.itemOrder[session.currentItemIndex];
-      if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
-      const exactItem = await owner.resolveItem(occurrence.item);
-      await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
-      await getTrainingLifecycleUseCases().submitPracticeResponse(toCanonicalPracticeResponse(exactItem.question.interactionType, response));
+      return submitCheckpointed(response, true);
     },
     async submitInteractionResponse(response) {
-      const session = await requireAlgorithmsSession();
-      const occurrence = session.itemOrder[session.currentItemIndex];
-      if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
-      const exactItem = await owner.resolveItem(occurrence.item);
-      if (!exactItem.interactions.isComplete(exactItem.question.questionId, response)) throw new TrainingApplicationFailure("invalid_response", "The exact interaction response is incomplete or invalid.");
-      await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
-      await getTrainingLifecycleUseCases().submitPracticeResponse(response);
+      return submitCheckpointed(response, false);
     },
     async isInteractionResponseComplete(response) {
       const session = await requireAlgorithmsSession();
@@ -172,6 +189,14 @@ export function createAlgorithmsPracticeFacade(owner: ContentPackageRuntimeOwner
       return exactItem.interactions.isComplete(exactItem.question.questionId, response);
     },
   });
+}
+
+function freezePracticeResponse(value: unknown): unknown {
+  if (value && typeof value === "object") {
+    for (const child of Object.values(value)) freezePracticeResponse(child);
+    Object.freeze(value);
+  }
+  return value;
 }
 
 function defaultAlgorithmsPracticeFacade(): AlgorithmsPracticeFacade {
@@ -639,7 +664,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
   const lifecycle = getTrainingLifecycleUseCases();
   let session: TrainingSession;
   let result: TrainingSessionResult;
-  let integrity: ValidatedCompletedResult;
+  let integrity: ValidatedCodingAttempts;
   try {
     const exactSession = await loadTrainingSession(sessionId);
     if (!exactSession || !isLegacyAlgorithmsSession(exactSession)) throw completedResultUnavailable();
@@ -648,6 +673,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
       lifecycle.queryHistory(),
       loadTrainingAttempts(),
     ]);
+    if (attempts.issues?.length) throw completedResultUnavailable();
     result = loadedResult;
     const found = history.find((candidate) => candidate.id === sessionId);
     if (!found) throw completedResultUnavailable();
@@ -703,9 +729,22 @@ export async function getAlgorithmsPracticeSummaryProjection(sessionId: string):
   if (session.status !== "abandoned" || session.trackId !== "coding-interview-dsa-problem-solving" || !session.completedAt || session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
     throw new Error("Only a completed or explicitly ended Algorithms practice session has a summary.");
   }
-  const attempts = (await loadTrainingAttempts()).value.filter((attempt) => attempt.sessionId === session.id);
+  let integrity: ValidatedCodingAttempts;
+  try {
+    const attempts = await loadTrainingAttempts();
+    if (attempts.issues?.length || session.configurationSnapshot.kind !== "practice" || session.configurationSnapshot.submission !== "perItem") throw completedResultUnavailable();
+    integrity = await validateCodingSessionAttempts(session, attempts.value);
+    // Per-item sessions advance only after a durable answer; a missing prior
+    // occurrence is incomplete evidence, rather than a lower score.
+    if (session.itemOrder.some((occurrence, index) => index < session.currentItemIndex
+      ? !integrity.attemptsByOccurrenceId.has(occurrence.occurrenceId)
+      : index > session.currentItemIndex && integrity.attemptsByOccurrenceId.has(occurrence.occurrenceId))) throw completedResultUnavailable();
+  } catch (error) {
+    throw completedResultUnavailable(error);
+  }
+  const verifiedAttempts = [...integrity.attemptsByOccurrenceId.values()];
   const answeredOccurrenceIds = session.itemOrder
-    .filter((occurrence) => attempts.some((attempt) => attempt.occurrenceId === occurrence.occurrenceId))
+    .filter((occurrence) => integrity.attemptsByOccurrenceId.has(occurrence.occurrenceId))
     .map((occurrence) => occurrence.occurrenceId);
   const answered = new Set(answeredOccurrenceIds);
   return Object.freeze({
@@ -723,8 +762,8 @@ export async function getAlgorithmsPracticeSummaryProjection(sessionId: string):
       requestedLength: session.requestedLength,
     }),
     feedbackItems: Object.freeze([]),
-    score: null,
-    overallPointsEarned: null,
+    score: verifiedAttempts.length > 0 ? aggregateCodingAttemptScore(verifiedAttempts) : null,
+    overallPointsEarned: verifiedAttempts.length > 0 ? verifiedAttempts.reduce((sum, attempt) => sum + overallScoreCredit(attempt.result), 0) : null,
   });
 }
 
@@ -817,20 +856,20 @@ function feedbackTimingFromSession(session: TrainingSession): "afterEachAnswer" 
   throw new Error("Algorithms session is missing its canonical feedback timing.");
 }
 
-type ValidatedCompletedResult = Readonly<{
+type ValidatedCodingAttempts = Readonly<{
   items: readonly ResolvedInteractionItem[];
   attemptsByOccurrenceId: ReadonlyMap<string, TrainingAttempt<unknown>>;
 }>;
 
 function completedResultUnavailable(cause?: unknown): TrainingApplicationFailure {
-  return new TrainingApplicationFailure("summary_unavailable", "Completed Coding result does not match its saved session plan and committed attempts.", cause);
+  return new TrainingApplicationFailure("summary_unavailable", "Coding result does not match its saved session plan and committed attempts.", cause);
 }
 
 async function validateCompletedCodingResult(
   session: TrainingSession,
   result: TrainingSessionResult,
   allAttempts: readonly TrainingAttempt<unknown>[],
-): Promise<ValidatedCompletedResult> {
+): Promise<ValidatedCodingAttempts> {
   const trackId = "coding-interview-dsa-problem-solving";
   const details = result.evidence?.details as Record<string, unknown> | undefined;
   const occurrenceIds = session.itemOrder.map((occurrence) => occurrence.occurrenceId);
@@ -853,6 +892,31 @@ async function validateCompletedCodingResult(
     throw completedResultUnavailable();
   }
 
+  const integrity = await validateCodingSessionAttempts(session, allAttempts);
+  const { attemptsByOccurrenceId } = integrity;
+  const expectedAnswered = occurrenceIds.filter((id) => attemptsByOccurrenceId.has(id));
+  const expectedUnanswered = occurrenceIds.filter((id) => !attemptsByOccurrenceId.has(id));
+  if (JSON.stringify(expectedAnswered) !== JSON.stringify(result.answeredOccurrenceIds) ||
+    JSON.stringify(expectedUnanswered) !== JSON.stringify(result.unansweredOccurrenceIds)) throw completedResultUnavailable();
+
+  const totals = aggregateCodingAttemptScore([...attemptsByOccurrenceId.values()]);
+  if (Object.entries(totals).some(([key, value]) => details[key] !== value)) throw completedResultUnavailable();
+
+  if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) await validateCodingSimulationResult(session, result);
+  else if (session.configurationSnapshot.kind !== "practice" || session.configurationSnapshot.submission !== "perItem" ||
+    !Object.values(ALGORITHM_MODE_IDS).includes(session.modeId as AlgorithmModeId)) throw completedResultUnavailable();
+
+  return integrity;
+}
+
+/** Exact saved-content and attempt validation shared by completed and early-ended results. */
+async function validateCodingSessionAttempts(session: TrainingSession, allAttempts: readonly TrainingAttempt<unknown>[]): Promise<ValidatedCodingAttempts> {
+  const trackId = "coding-interview-dsa-problem-solving";
+  const occurrenceIds = session.itemOrder.map((occurrence) => occurrence.occurrenceId);
+  if (!isLegacyAlgorithmsSession(session) || !session.completedAt || !Number.isFinite(Date.parse(session.completedAt)) ||
+    !Number.isInteger(session.actualLength) || session.actualLength !== occurrenceIds.length || occurrenceIds.length === 0 ||
+    new Set(occurrenceIds).size !== occurrenceIds.length) throw completedResultUnavailable();
+  feedbackTimingFromSession(session);
   if (session.planFingerprint !== undefined) {
     if (!session.taxonomyVersion || await createContentSessionPlanFingerprint(session as TrainingSession & { taxonomyVersion: string }) !== session.planFingerprint) throw completedResultUnavailable();
   }
@@ -888,28 +952,17 @@ async function validateCompletedCodingResult(
     attemptsByOccurrenceId.set(attempt.occurrenceId, attempt);
   }
 
-  const expectedAnswered = occurrenceIds.filter((id) => attemptsByOccurrenceId.has(id));
-  const expectedUnanswered = occurrenceIds.filter((id) => !attemptsByOccurrenceId.has(id));
-  if (JSON.stringify(expectedAnswered) !== JSON.stringify(result.answeredOccurrenceIds) ||
-    JSON.stringify(expectedUnanswered) !== JSON.stringify(result.unansweredOccurrenceIds)) throw completedResultUnavailable();
+  return Object.freeze({ items: Object.freeze(items), attemptsByOccurrenceId });
+}
 
-  const totals = [...attemptsByOccurrenceId.values()].reduce((current, attempt) => ({
+function aggregateCodingAttemptScore(attempts: readonly TrainingAttempt<unknown>[]) {
+  return attempts.reduce((current, attempt) => ({
     correctCount: current.correctCount + Number(attempt.result.kind === "correct"),
     partialCount: current.partialCount + Number(attempt.result.kind === "partial"),
     incorrectCount: current.incorrectCount + Number(attempt.result.kind === "incorrect"),
     pointsEarned: current.pointsEarned + attempt.result.earnedPoints,
     maxPoints: current.maxPoints + attempt.result.maxPoints,
   }), { correctCount: 0, partialCount: 0, incorrectCount: 0, pointsEarned: 0, maxPoints: 0 });
-  if (Object.entries(totals).some(([key, value]) => details[key] !== value)) throw completedResultUnavailable();
-
-  if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) await validateCodingSimulationResult(session, result);
-  else if (session.configurationSnapshot.kind !== "practice" || session.configurationSnapshot.submission !== "perItem" ||
-    !Object.values(ALGORITHM_MODE_IDS).includes(session.modeId as AlgorithmModeId)) throw completedResultUnavailable();
-
-  try { feedbackTimingFromSession(session); }
-  catch { throw completedResultUnavailable(); }
-
-  return Object.freeze({ items: Object.freeze(items), attemptsByOccurrenceId });
 }
 
 function completedFeedbackItems(

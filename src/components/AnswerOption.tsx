@@ -6,7 +6,7 @@ import { radius, spacing, typography } from "../theme";
 import type { AppColors } from "../theme";
 import { createOneTimeTextMinimumHeight, textMeasurementKey } from "./textLayoutHeight";
 
-export type AnswerOptionState = "default" | "selected" | "correct" | "incorrect" | "omitted_correct" | "not_selected";
+export type AnswerOptionState = "default" | "selected" | "correct" | "partial" | "incorrect" | "omitted_correct" | "not_selected";
 
 type AnswerOptionProps = Readonly<{
   accessibilityLabel: string;
@@ -16,6 +16,7 @@ type AnswerOptionProps = Readonly<{
   disabled?: boolean;
   letter: string;
   onPress: () => void;
+  resultLabel?: string;
   state: AnswerOptionState;
   testID?: string;
   text: string;
@@ -30,14 +31,17 @@ export function AnswerOption({
   disabled = false,
   letter,
   onPress,
+  resultLabel,
   state,
   testID,
   text,
 }: AnswerOptionProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale, scale: physicalScale, width: windowWidth } = useWindowDimensions();
-  const selected = state === "selected" || state === "correct" || state === "incorrect";
-  const correctness = state === "correct" || state === "omitted_correct" ? styles.letterCorrect : state === "incorrect" ? styles.letterIncorrect : state === "selected" ? styles.letterSelected : null;
+  const selected = state === "selected" || state === "correct" || state === "partial" || state === "incorrect";
+  const correctness = state === "correct" || state === "omitted_correct" ? styles.letterCorrect : state === "partial" ? styles.letterPartial : state === "incorrect" ? styles.letterIncorrect : state === "selected" ? styles.letterSelected : null;
+  const reviewBorder = state === "correct" || state === "omitted_correct" || state === "partial" || state === "incorrect";
+  const optionText = <OptionTextLayout key={JSON.stringify([textMeasurementKey(text, windowWidth, fontScale, physicalScale), letter, reviewBorder])} physicalScale={physicalScale} style={resultLabel ? [styles.text, styles.labeledOptionText] : styles.text} text={text} />;
 
   return (
     <Pressable
@@ -53,7 +57,10 @@ export function AnswerOption({
       <View style={styles.letterBadge}>
         <Text key={`letter:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.letterText, correctness]}>{letter}</Text>
       </View>
-      <OptionTextLayout key={JSON.stringify([textMeasurementKey(text, windowWidth, fontScale, physicalScale), letter, state])} physicalScale={physicalScale} style={styles.text} text={text} />
+      {resultLabel ? <View style={styles.labeledText}>
+        <Text maxFontSizeMultiplier={2} style={[styles.resultLabel, correctness]}>{resultLabel}</Text>
+        {optionText}
+      </View> : optionText}
     </Pressable>
   );
 }
@@ -75,6 +82,7 @@ function stateStyle(state: AnswerOptionState, styles: ReturnType<typeof createSt
   if (state === "correct") return styles.correct;
   if (state === "omitted_correct") return styles.omittedCorrect;
   if (state === "incorrect") return styles.incorrect;
+  if (state === "partial") return styles.partial;
   if (state === "selected") return styles.selected;
   if (state === "not_selected") return styles.notSelected;
   return styles.default;
@@ -84,16 +92,21 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   correct: { backgroundColor: palette.successSoft, borderColor: palette.success, borderWidth: 2 },
   default: { backgroundColor: palette.elevatedSurface, borderColor: palette.border },
   incorrect: { backgroundColor: palette.dangerSoft, borderColor: palette.danger, borderWidth: 2 },
+  partial: { backgroundColor: palette.warningSoft, borderColor: palette.warning, borderWidth: 2 },
+  labeledText: { flex: 1, gap: spacing.xs },
+  labeledOptionText: { flex: 0 },
   letterBadge: { alignItems: "center", backgroundColor: palette.border, borderRadius: radius.sm, justifyContent: "center", minHeight: 24, minWidth: 24, padding: spacing.xs },
   letterCorrect: { color: palette.success },
   letterIncorrect: { color: palette.danger },
+  letterPartial: { color: palette.warning },
   letterSelected: { color: palette.primary },
   letterText: { color: palette.textMuted, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   locked: { opacity: 0.9 },
   notSelected: { backgroundColor: palette.elevatedSurface, borderColor: palette.borderStrong },
-  omittedCorrect: { backgroundColor: palette.surface, borderColor: palette.success, borderStyle: "dashed", borderWidth: 2 },
+  omittedCorrect: { backgroundColor: palette.surface, borderColor: palette.success, borderStyle: "solid", borderWidth: 2 },
   option: { alignItems: "center", borderRadius: radius.lg, borderWidth: 1.5, flexDirection: "row", gap: 14, minHeight: 54, padding: spacing.lg },
   pressed: { opacity: 0.82 },
+  resultLabel: { ...typography.caption, fontWeight: "600" },
   selected: { backgroundColor: palette.surface, borderColor: palette.primary },
   text: { ...typography.body, color: palette.textPrimary, flex: 1 },
 });

@@ -31,8 +31,8 @@ export type ApproachChallengeBlueprint = Readonly<{
   manualRule: "all_required_families_selected";
   deduplicateBy: "problemId";
   freeNodeId: "complexity_and_constraints";
-  freeProblemCount: 6;
-  premiumProblemCount: 30;
+  freeProblemCount: 16;
+  premiumProblemCount: 456;
   emptyPool: "unavailable";
   shortening: "explicit_confirmation";
   resumeAccessPolicy: "session_scoped_start_grant_exact_pins";
@@ -56,8 +56,8 @@ export const APPROACH_CHALLENGE_BLUEPRINT: ApproachChallengeBlueprint = Object.f
   manualRule: "all_required_families_selected",
   deduplicateBy: "problemId",
   freeNodeId: "complexity_and_constraints",
-  freeProblemCount: 6,
-  premiumProblemCount: 30,
+  freeProblemCount: 16,
+  premiumProblemCount: 456,
   emptyPool: "unavailable",
   shortening: "explicit_confirmation",
   resumeAccessPolicy: "session_scoped_start_grant_exact_pins",

@@ -14,13 +14,22 @@ test("Approach Challenge is an independently registered route with direct hub an
 
   assert.match(routes, /APPROACH_CHALLENGE:\s*"ApproachChallenge"/u);
   assert.match(types, /\[ROUTES\.APPROACH_CHALLENGE\]:\s*\{ sessionId\?: string \} \| undefined/u);
-  assert.match(navigator, /name=\{ROUTES\.APPROACH_CHALLENGE\}\s+component=\{ApproachChallengeScreen\}/u);
+  assert.match(navigator, /name=\{ROUTES\.APPROACH_CHALLENGE\}\s+component=\{AccountBackedApproachChallengeScreen\}/u);
   assert.match(hub, /navigation\.navigate\(ROUTES\.APPROACH_CHALLENGE\)/u);
   assert.ok(home.includes("session.modeId !== action.modeId"), "Home confirms the resumed durable mode matches its recommendation");
-  assert.ok(home.includes('String(session.modeId) === "coding-interview-approach-challenge"'), "Home recognizes the ACM lifecycle mode");
+  assert.ok(home.includes('action.modeId === "coding-interview-approach-challenge"'), "Home recognizes the ACM lifecycle mode");
   assert.ok(home.includes("navigation.navigate(ROUTES.APPROACH_CHALLENGE)"), "Home continues ACM through its dedicated route");
   assert.match(screen, /resolveApproachChallengeEntry\(\{[\s\S]*?requestedSessionId: sessionId[\s\S]*?getExactHistory: getApproachChallengeDetailedHistory/u);
   assert.match(screen, /route\.params\?\.sessionId\s*\|\|\s*entryKindRef\.current !== "setup"/u);
   assert.match(screen, /entryKindRef\.current === "setup"/u);
-  assert.match(screen, /disabled=\{busy \|\| \(selection\.status !== "ready" && selection\.status !== "confirmation_required"\)\}/u);
+  assert.match(screen, /disabled=\{busy \|\| noFamilies \|\| \(selection\.status !== "ready" && selection\.status !== "confirmation_required"\)\}/u);
+});
+
+
+test("ACM exact review has an independent typed route and a history-only reader", () => {
+  assert.match(source("../../constants/routes.ts"), /APPROACH_CHALLENGE_REVIEW: "ApproachChallengeReview"/u);
+  assert.match(source("../../navigation/types.ts"), /APPROACH_CHALLENGE_REVIEW\]: \{ sessionId: string; approachOccurrenceId: string \}/u);
+  const review = source("./ApproachChallengeReviewScreen.tsx");
+  assert.ok(review.includes("getApproachChallengeDetailedHistory(sessionId)"));
+  assert.doesNotMatch(review, /loadActiveTrainingSession|resumeActiveTrainingSession|startApproachChallengeSession|submitApproachChallengeStage/u);
 });

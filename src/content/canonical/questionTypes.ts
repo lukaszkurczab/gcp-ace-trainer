@@ -1,5 +1,4 @@
 import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
-import type { CanonicalDimension, CanonicalQuestionRelation, CanonicalExamMetadata, CanonicalStatementReviewRow, JsonValue, CanonicalFeedback, CanonicalFeedbackMessage, CanonicalCourseSource, CanonicalOption, CanonicalElement, CanonicalValue, CanonicalComplexityDimension } from "./interactions/shared";
 import type { ChoiceSingleQuestion } from "./interactions/choiceSingle";
 import type { ChoiceMultipleQuestion } from "./interactions/choiceMultiple";
 import type { OrderingQuestion } from "./interactions/ordering";

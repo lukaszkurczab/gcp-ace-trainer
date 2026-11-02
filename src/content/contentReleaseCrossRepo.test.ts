@@ -81,9 +81,9 @@ test("current producer builds independently and matches every installed APP arti
     assert.equal(sourceCoding.questions.length, 3404);
     assert.equal(sourceCoding.simulationProfiles?.[0]?.familyConfig?.eligibleQuestionIds?.length, 40);
     assert.ok(sourceCoding.simulationProfiles?.[0]?.familyConfig?.eligibleQuestionIds?.every((id) => sourceCoding.questions.some((question) => question.questionId === id)));
-    assert.equal(pairedProblems.length, 36);
+    assert.equal(pairedProblems.length, 472);
     assert.equal(runtimeCoding.questions.length, 3404);
-    assert.equal(runtimeCoding.approachChallengeProblems?.length, 36);
+    assert.equal(runtimeCoding.approachChallengeProblems?.length, 472);
     const familyIds = [...new Set(pairedProblems.flatMap((problem) => problem.requiredFamilyIds))];
     const sources = (problems: typeof pairedProblems) => problems.map((problem) => ({ problem }));
     const selectorBase = {
@@ -93,10 +93,10 @@ test("current producer builds independently and matches every installed APP arti
       settings: { mode: "manual" as const, selectedFamilyIds: familyIds, requestedProblemCount: 20 as const, difficulties: ["easy", "medium", "hard"] as const },
     };
     const freeSelection = selectApproachChallengeProblems({ ...selectorBase, sources: sources(pairedProblems), access: "free" });
-    assert.equal(freeSelection.problems.length, 6);
+    assert.equal(freeSelection.problems.length, 16);
     assert.ok(freeSelection.problems.every(({ problemId }) => isFreeApproachChallengeProblem(pairedProblems.find((problem) => problem.problemId === problemId)!)));
     const premiumProblems = pairedProblems.filter((problem) => !isFreeApproachChallengeProblem(problem));
-    assert.equal(premiumProblems.length, 30);
+    assert.equal(premiumProblems.length, 456);
     const selectedPremiumIds = new Set<string>();
     for (let offset = 0; offset < premiumProblems.length; offset += 20) {
       const selection = selectApproachChallengeProblems({ ...selectorBase, sources: sources(premiumProblems.slice(offset, offset + 20)), access: "premium" });
@@ -104,7 +104,7 @@ test("current producer builds independently and matches every installed APP arti
       assert.deepEqual(selection.diagnostics.missingFamilyMappings, []);
       for (const { problemId } of selection.problems) selectedPremiumIds.add(problemId);
     }
-    assert.equal(selectedPremiumIds.size, 30, "the real Premium selector admits every accepted Premium pair across supported batch sizes");
+    assert.equal(selectedPremiumIds.size, 456, "the real Premium selector admits every accepted Premium pair across supported batch sizes");
     const generatedLock = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-lock.json"), "utf8")) as { schemaVersion: string; tracks: readonly { trackId: string; sha256: string; contentVersion: string; questionCount: number }[] };
     assert.equal(generatedLock.schemaVersion, "patternly-content-lock-v1");
     assert.deepEqual([...catalog.tracks].sort(), [...built.lock.tracks.map((track) => track.trackId)].sort());

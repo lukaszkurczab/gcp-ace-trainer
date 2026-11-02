@@ -3,12 +3,14 @@ import { learningUnitIdentity } from "../../domain/learning/mentalUnitEvidence";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { JournalWriteError } from "../../storage/errors";
 import { getReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
-import { StaleMutationRevisionError } from "../../storage/repositories/mutationJournalRepository";
+import { StaleMutationRevisionError, type ActiveProfileStorageLease } from "../../storage/repositories/mutationJournalRepository";
 import { MutationCommitFailure } from "../mutationBoundary";
 import { buildMutationJournal } from "./mutationJournalBuilder";
-import { commitMutationAfterPreflight } from "./commitMutation";
+import { commitMutationAfterPreflight, retainMutationRetryPreflight } from "./commitMutation";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { reviewConcurrencyKey } from "../canonical/canonicalFamilyMechanics";
+
+export type LocalTrainingMutationGuard = Readonly<{ expectedLease: ActiveProfileStorageLease; preflight(): Promise<void> }>;
 
 export async function commitTrainingOutcome(input: {
   attempt: TrainingAttempt<unknown>;
@@ -18,9 +20,11 @@ export async function commitTrainingOutcome(input: {
   reviewBaseline?: readonly ReviewQueueEntry[];
   reviewSnapshotConflict?: boolean;
   createdAt: string;
+  guard?: LocalTrainingMutationGuard;
 }): Promise<boolean> {
   let conflict = input.reviewSnapshotConflict === true;
   const execute = (includeReviewWrites: boolean) => commitMutationAfterPreflight(async () => {
+    if (input.guard) await input.guard.preflight();
     const snapshot = await getReviewQueueSnapshot(productionTrackAdmissionContext);
     const reviewWrites = includeReviewWrites ? input.reviews : [];
     const resolvedReviews = includeReviewWrites ? input.resolvedReviews ?? [] : [];
@@ -55,18 +59,19 @@ export async function commitTrainingOutcome(input: {
       createdAt: input.createdAt,
       expectedRevisionOverrides,
     });
-  });
+  }, input.guard?.preflight, undefined, input.guard?.expectedLease);
 
   try {
     await execute(true);
   } catch (error) {
     const stale = staleReviewRevisionFrom(error);
-    if (!stale) throw error;
+    if (!stale) throw retainMutationRetryPreflight(error, input.guard?.preflight);
     // The expected review revision changed after the exact read used to build the
     // journal. Preserve the graded attempt and session exactly once, without
     // applying a review transition based on stale evidence.
     conflict = true;
-    await execute(false);
+    try { await execute(false); }
+    catch (retryError) { throw retainMutationRetryPreflight(retryError, input.guard?.preflight); }
   }
   return conflict;
 }

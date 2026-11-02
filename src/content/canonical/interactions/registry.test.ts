@@ -186,9 +186,9 @@ test("an additional registered handler validates a complete exact-hash artifact 
   let timerCheckpointCalls = 0;
   const timerWithCheckpointCount = new Proxy(timer, {
     get(target, property) {
-      if (property === "checkpointForResponseSave") return async (...args: Parameters<typeof target.checkpointForResponseSave>) => {
+      if (property === "capturePracticeResponseCheckpoint") return async (...args: Parameters<typeof target.capturePracticeResponseCheckpoint>) => {
         timerCheckpointCalls += 1;
-        return target.checkpointForResponseSave(...args);
+        return target.capturePracticeResponseCheckpoint(...args);
       };
       const value = Reflect.get(target, property, target) as unknown;
       return typeof value === "function" ? value.bind(target) : value;

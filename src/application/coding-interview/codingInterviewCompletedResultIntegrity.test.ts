@@ -215,8 +215,8 @@ test("abandoned Coding summary keeps its separate existing projection and perfor
   assert.deepEqual(summary.answeredOccurrenceIds, [prepared.session.itemOrder[0]!.occurrenceId]);
   assert.deepEqual(summary.unansweredOccurrenceIds, prepared.session.itemOrder.slice(1).map((item) => item.occurrenceId));
   assert.deepEqual(summary.feedbackItems, []);
-  assert.equal(summary.score, null);
-  assert.equal(summary.overallPointsEarned, null);
+  assert.deepEqual(summary.score, { correctCount: 1, partialCount: 0, incorrectCount: 0, pointsEarned: 1, maxPoints: 1 });
+  assert.equal(summary.overallPointsEarned, 1);
   assert.deepEqual(storage.snapshot(), stableSnapshot);
 });
 

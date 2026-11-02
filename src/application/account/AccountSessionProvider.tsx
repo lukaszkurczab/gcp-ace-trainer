@@ -11,6 +11,7 @@ import type { PremiumPurchaseActor } from "./premiumPurchaseCoordinator";
 import { prepareRevenueCatAccountDeletion } from "../../infrastructure/purchases";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
+import { readAccountPremiumTestingAccess, readGuestPremiumTestingAccess } from "./premiumTestingAccess";
 import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
 import { getRetiredAccountSecretsCleanup, type RetiredAccountSecretsCleanupState } from "../../infrastructure/security/retiredAccountSecrets";
@@ -1670,16 +1671,23 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
 
   const authorizePremiumSessionStart = useCallback(async () => {
     const current = stateRef.current;
+    if (current.kind === "guest") {
+      const testing = readGuestPremiumTestingAccess(() => stateRef.current === current);
+      if (testing !== null) return testing;
+    }
     if (current.kind !== "authenticated" && current.kind !== "localOffline") { markStartup("premium:actor_denied"); return "denied" as const; }
     const accountId = current.kind === "authenticated" ? current.backendUser.id : current.accountId;
     const accountUid = current.user.uid;
-    const identity = premiumIdentityForAccount(accountId);
-    if (!identity) { markStartup("premium:scope_unavailable"); return "unavailable" as const; }
     if (current.kind === "localOffline") {
       let initialFence: VerifiedAccountIdentityFence | null = null;
       try { initialFence = readVerifiedAccountIdentityFence(await readActiveAccountIdentityBinding(current.profileLease), current.profileLease, current.accountId, current.user.uid); }
       catch { return "unavailable" as const; }
       if (!initialFence || initialFence.verificationRevision !== current.bindingRevision || !isCurrentLocalOfflineActor(current)) return "unavailable" as const;
+      const testing = readAccountPremiumTestingAccess(current.accountData.status);
+      if (testing !== null) return stateRef.current === current && isCurrentLocalOfflineActor(current)
+        && !isAccountIdentityProofInFlightForActor(accountIdentityProofInFlightRef.current, current.user.uid, current.accountId) ? testing : "unavailable" as const;
+      const identity = premiumIdentityForAccount(accountId);
+      if (!identity) { markStartup("premium:scope_unavailable"); return "unavailable" as const; }
       let confirmedOffline = false;
       try { confirmedOffline = (await (await import("@react-native-community/netinfo")).default.fetch()).isInternetReachable === false; }
       catch { return "unavailable" as const; }
@@ -1708,6 +1716,11 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     try { initialFence = readVerifiedAccountIdentityFence(await readActiveAccountIdentityBinding(lease), lease, accountId, accountUid); }
     catch { return "unavailable" as const; }
     if (!actorIsCurrent() || !initialFence) return "unavailable" as const;
+    const testing = readAccountPremiumTestingAccess(current.accountData.status);
+    if (testing !== null) return stateRef.current === current && actorIsCurrent()
+      && !isAccountIdentityProofInFlightForActor(accountIdentityProofInFlightRef.current, accountUid, accountId) ? testing : "unavailable" as const;
+    const identity = premiumIdentityForAccount(accountId);
+    if (!identity) { markStartup("premium:scope_unavailable"); return "unavailable" as const; }
     let offlineFenceCurrent = false;
     const admission = await resolvePremiumSessionAdmission({
       isConfirmedOffline: async () => {
@@ -1737,14 +1750,18 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
 
   const readCurrentPremiumAccess = useCallback(() => {
     const current = stateRef.current;
+    if (current.kind === "guest") {
+      const testing = readGuestPremiumTestingAccess(() => stateRef.current === current);
+      if (testing !== null) return testing;
+    }
     if (current.kind === "guest" || current.kind === "signedOut") return "denied" as const;
     if (current.kind === "localOffline") {
       if (isAccountIdentityProofInFlightForActor(accountIdentityProofInFlightRef.current, current.user.uid, current.accountId)) return "unavailable" as const;
       if (!authClient || !isCurrentLocalOfflineActor(current)) return "unavailable" as const;
-      const identity = premiumIdentityForAccount(current.accountId);
-      if (!identity) return "unavailable" as const;
-      const result = readCachedPremiumAccess(identity, Date.now());
-      return isCurrentLocalOfflineActor(current) ? result : "unavailable" as const;
+      const testing = readAccountPremiumTestingAccess(current.accountData.status);
+      const identity = testing === null ? premiumIdentityForAccount(current.accountId) : null;
+      const result = testing ?? (identity ? readCachedPremiumAccess(identity, Date.now()) : "unavailable" as const);
+      return (testing === null || stateRef.current === current) && isCurrentLocalOfflineActor(current) ? result : "unavailable" as const;
     }
     if (current.kind !== "authenticated" || !authClient || authClient.getSnapshot()?.uid !== current.user.uid) return "unavailable" as const;
     const accountId = current.backendUser.id;
@@ -1753,9 +1770,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     if (isAccountIdentityProofInFlightForActor(accountIdentityProofInFlightRef.current, uid, accountId)) return "unavailable" as const;
     const profile = getActiveStorageProfileOrNull();
     if (!generation || !profile || profile.kind !== "account" || profile.accountId !== accountId) return "unavailable" as const;
-    const identity = premiumIdentityForAccount(accountId);
-    if (!identity) return "unavailable" as const;
-    const result = readCachedPremiumAccess(identity, Date.now());
+    const testing = readAccountPremiumTestingAccess(current.accountData.status);
+    const identity = testing === null ? premiumIdentityForAccount(accountId) : null;
+    const result = testing ?? (identity ? readCachedPremiumAccess(identity, Date.now()) : "unavailable" as const);
     const latest = stateRef.current;
     const latestProfile = getActiveStorageProfileOrNull();
     const sameProfile = latestProfile !== null && latestProfile.id === profile.id && latestProfile.kind === profile.kind && latestProfile.accountId === profile.accountId;

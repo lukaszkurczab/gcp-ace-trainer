@@ -48,8 +48,8 @@ async function runHome(
 ) {
   const outcome: { published: { trainingAttempts: readonly TrainingAttempt[] } | null; readError: string | null } = { published: null, readError: null };
   const context = {
-    isActive: true, accountRef: { current: { state: { kind: "guest" }, readCurrentPremiumAccess: () => "denied" } },
-    getActiveTrackId: reads.loadActiveTrackId, getAttempts: reads.loadExamSummaries, getPracticeHistory: reads.loadPracticeHistory,
+    isActive: true, shellReadReady: { current: false }, accountRef: { current: { state: { kind: "guest" }, readCurrentPremiumAccess: () => "denied" } },
+    getActiveTrackId: reads.loadLocalActiveTrackId, getAttempts: reads.loadExamSummaries, getPracticeHistory: reads.loadPracticeHistory,
     loadActiveTrainingSession: reads.loadActiveTrainingSession,
     getReviewQueueItems: reads.loadReviewQueueItems, getTrainingAttempts: reads.loadTrainingAttempts,
     loadActivitySessionRecords, homePlanSnapshotReader, captureProfileReadFence, captureHomeShellReadFence, projectProgressEvidence, projectHomePractice, isLocalLearningProjectionFailure, requireHomePlanReadIntegrity,

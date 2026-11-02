@@ -5,6 +5,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import type { PackageCompletionState } from "../../domain/learning/packageCompletionRule";
 import type { ApproachChallengeProblem } from "../../content/canonical/approachChallengeProblem";
+import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { requiresPremiumProductMode } from "../trainingLifecycle/premiumProductModePolicy";
 import {
   APPROACH_CHALLENGE_BLUEPRINT,
@@ -93,7 +94,7 @@ test("APP selector blueprint is the registered CONTENT blueprint and keeps legac
   assert.equal(APPROACH_CHALLENGE_BLUEPRINT.defaultSelectionMode, "auto");
   assert.equal(getApproachChallengeBlueprint(APPROACH_CHALLENGE_BLUEPRINT.modeId), APPROACH_CHALLENGE_BLUEPRINT);
   assert.equal(getApproachChallengeBlueprint("coding-interview-guided-practice"), undefined);
-  assert.equal(requiresPremiumProductMode(APPROACH_CHALLENGE_BLUEPRINT.modeId), false);
+  assert.equal(requiresPremiumProductMode(APPROACH_CHALLENGE_BLUEPRINT.modeId), true);
 });
 
 test("auto selection uses only explicitly mapped completed chapters and pins complete unique pairs", () => {
@@ -220,6 +221,70 @@ test("manual family mapping is explicit; automatic selection refuses an unmapped
   assert.deepEqual(missingCompletionChapter.diagnostics.missingFamilyMappings, ["arrays_and_strings"]);
 });
 
+test("all eight added families remain manually selectable with default Easy and Medium filters", () => {
+  const addedFamilies = ["monotonic_stack", "linked_list", "recursion_basics", "heap_priority_queue", "backtracking", "greedy_intro", "bit_manipulation", "math_and_geometry"];
+  for (const familyId of addedFamilies) {
+    const candidate = syntheticFamilyPool(1, familyId)[0]!;
+    const manual = select([candidate], {
+      access: "premium",
+      settings: { mode: "manual", selectedFamilyIds: [familyId] },
+    });
+    assert.ok(manual.status === "ready" || manual.status === "confirmation_required", `${familyId} should be available in the default Easy+Medium Premium pool`);
+    assert.equal(manual.actualProblemCount, 1, familyId);
+    assert.equal(manual.problems[0]?.primaryFamilyId, familyId);
+  }
+});
+
+test("expanded canonical data keeps all added families manually selectable and only seven direct mappings automatic", async () => {
+  const track = (await loadCanonicalRuntimeCatalog()).getTrack("coding-interview-dsa-problem-solving");
+  const actualSources = (track.approachChallengeProblems ?? []).map((problem) => ({ problem }));
+  const addedFamilies = ["monotonic_stack", "linked_list", "recursion_basics", "heap_priority_queue", "backtracking", "greedy_intro", "bit_manipulation", "math_and_geometry"];
+
+  for (const familyId of addedFamilies) {
+    const selected = selectApproachChallengeProblems({
+      sources: actualSources,
+      contentVersion: track.contentVersion,
+      artifactSha256: track.artifactSha256,
+      completion: completion(),
+      access: "premium",
+      settings: { mode: "manual", requestedProblemCount: 5, difficulties: ["easy", "medium"], selectedFamilyIds: [familyId] },
+    });
+    assert.notEqual(selected.status, "unavailable", `${familyId} should be selectable`);
+    const eligibleCount = actualSources.filter(({ problem }) => problem.primaryFamilyId === familyId && ["easy", "medium"].includes(problem.difficulty)).length;
+    assert.equal(selected.actualProblemCount, Math.min(5, eligibleCount), `${familyId} should fill the requested count from its Easy+Medium pool`);
+    assert.ok(selected.problems.every(({ primaryFamilyId, difficulty }) => primaryFamilyId === familyId && ["easy", "medium"].includes(difficulty)));
+  }
+
+  const directlyMappedFamilies = APPROACH_CHALLENGE_FAMILY_COMPLETION_MAPPINGS
+    .map(({ familyId }) => familyId)
+    .filter((familyId) => addedFamilies.includes(familyId));
+  assert.equal(directlyMappedFamilies.length, 7);
+  const auto = selectApproachChallengeProblems({
+    sources: actualSources,
+    contentVersion: track.contentVersion,
+    artifactSha256: track.artifactSha256,
+    completion: completion([...APPROACH_CHALLENGE_FAMILY_COMPLETION_MAPPINGS.map(({ nodeId }) => nodeId), "completed"]),
+    access: "premium",
+    settings: { mode: "auto", requestedProblemCount: 20, difficulties: ["easy", "medium", "hard"] },
+  });
+  assert.notEqual(auto.status, "unavailable");
+  const autoSelectedFamilies = [...new Set(auto.problems.map(({ primaryFamilyId }) => primaryFamilyId))].sort();
+  const directlyMappedFamilyIds = new Set(APPROACH_CHALLENGE_FAMILY_COMPLETION_MAPPINGS.map(({ familyId }) => familyId));
+  assert.ok(autoSelectedFamilies.every((familyId) => directlyMappedFamilyIds.has(familyId)));
+  assert.ok(auto.problems.every(({ requiredFamilyIds }) => requiredFamilyIds.every((familyId) => APPROACH_CHALLENGE_FAMILY_COMPLETION_MAPPINGS.some((mapping) => mapping.familyId === familyId))));
+
+  const stackOnly = selectApproachChallengeProblems({
+    sources: actualSources,
+    contentVersion: track.contentVersion,
+    artifactSha256: track.artifactSha256,
+    completion: completion(["stack"], "completed"),
+    access: "premium",
+    settings: { mode: "auto", requestedProblemCount: 20, difficulties: ["easy", "medium", "hard"] },
+  });
+  assert.ok(stackOnly.problems.every(({ primaryFamilyId }) => primaryFamilyId !== "monotonic_stack"),
+    "ordinary Stack completion does not auto-admit the manual-only monotonic-stack specialization");
+});
+
 test("empty/unknown completion, duplicate identities and malformed pairs fail closed", () => {
   assert.equal(select([], {}).reason, "empty_pool");
   assert.equal(select(base, { completion: { kind: "unknown" } }).reason, "completion_unknown");
@@ -233,15 +298,15 @@ test("empty/unknown completion, duplicate identities and malformed pairs fail cl
   assert.equal(unknownAccess.access, "unknown");
 });
 
-test("Free admission is exact to the six Free family tasks; Premium retains the remaining pool", () => {
+test("Free admission is exact to the 16 fully-contained Free tasks; Premium retains the remaining pool", () => {
   const freeProblems = syntheticFreePool(APPROACH_CHALLENGE_BLUEPRINT.freeProblemCount);
   const free = select(freeProblems, {
     access: "free",
-    settings: { mode: "manual", selectedFamilyIds: ["complexity_and_constraints"], requestedProblemCount: 10 },
+    settings: { mode: "manual", selectedFamilyIds: ["complexity_and_constraints"], requestedProblemCount: 20 },
   });
   assert.equal(free.status, "confirmation_required");
-  assert.equal(free.actualProblemCount, 6);
-  assert.equal(free.occurrenceCount, 12);
+  assert.equal(free.actualProblemCount, 16);
+  assert.equal(free.occurrenceCount, 32);
   assert.ok(free.problems.every(({ primaryFamilyId, requiredFamilyIds }) => primaryFamilyId === "complexity_and_constraints" && requiredFamilyIds.every((id) => id === "complexity_and_constraints")));
 
   const retaggedPaidStages = {
@@ -263,5 +328,7 @@ test("Free admission is exact to the six Free family tasks; Premium retains the 
     settings: { mode: "manual", selectedFamilyIds: ["arrays_and_strings"] },
   });
   assert.equal(freeDenied.reason, "empty_pool");
-  assert.equal(APPROACH_CHALLENGE_BLUEPRINT.freeProblemCount + APPROACH_CHALLENGE_BLUEPRINT.premiumProblemCount, 36);
+  assert.equal(APPROACH_CHALLENGE_BLUEPRINT.freeProblemCount, 16);
+  assert.equal(APPROACH_CHALLENGE_BLUEPRINT.premiumProblemCount, 456);
+  assert.equal(APPROACH_CHALLENGE_BLUEPRINT.freeProblemCount + APPROACH_CHALLENGE_BLUEPRINT.premiumProblemCount, 472);
 });

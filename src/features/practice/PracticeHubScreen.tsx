@@ -141,6 +141,9 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const codingAdmissionPendingRef = useRef(false);
   const [codingAdmissionPending, setCodingAdmissionPending] = useState(false);
   const [codingAccessUnavailable, setCodingAccessUnavailable] = useState(false);
+  const approachAdmissionPendingRef = useRef(false);
+  const [approachAdmissionPending, setApproachAdmissionPending] = useState(false);
+  const [approachEntryError, setApproachEntryError] = useState<"access" | "practice" | null>(null);
   const designAdmissionPendingRef = useRef(false);
   const [designAdmissionPending, setDesignAdmissionPending] = useState(false);
   const [designAccessUnavailable, setDesignAccessUnavailable] = useState(false);
@@ -215,6 +218,33 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const primaryMode = modes[0]!;
   const secondaryModes = modes.filter((mode) => mode.mode !== primaryMode.mode && mode.mode !== ALGORITHM_MODE_IDS.customPractice);
   const topicDetail = formatPracticeTopicDetail(topic.detail, t);
+  async function openApproachChallenge() {
+    if (approachAdmissionPendingRef.current) return;
+    approachAdmissionPendingRef.current = true;
+    setApproachAdmissionPending(true);
+    setApproachEntryError(null);
+    try {
+      const assertProfile = captureProfileReadFence();
+      const active = await loadActiveTrainingSession();
+      assertProfile();
+      // The existing entry resolver owns exact resume and conflicting sessions.
+      // Only a new setup needs a fresh entitlement decision before navigation.
+      if (!active) {
+        let access;
+        try { access = await account.authorizePremiumSessionStart(); }
+        catch { setApproachEntryError("access"); return; }
+        assertProfile();
+        if (access === "unavailable") { setApproachEntryError("access"); return; }
+        if (access === "denied") { navigation.navigate(ROUTES.PREMIUM_PURCHASE); return; }
+      }
+      navigation.navigate(ROUTES.APPROACH_CHALLENGE);
+    } catch {
+      setApproachEntryError("practice");
+    } finally {
+      approachAdmissionPendingRef.current = false;
+      setApproachAdmissionPending(false);
+    }
+  }
   function startSession(mode?: CanonicalPracticeModeId | CertificationModeId, source: "practiceHub" | "modeShortcut" = mode === undefined ? "practiceHub" : "modeShortcut", target: "session" | "setup" = mode === undefined ? "session" : "setup") {
     const resolvedMode = mode ?? primaryMode.mode;
     if (isCodingInterviewTrack && resolvedMode === ALGORITHM_MODE_IDS.customPractice) {
@@ -447,7 +477,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("More ways to practice")}</Text>
           </View>
           <View style={styles.modeList}>
-            {isCodingInterviewTrack ? <ListRow leading={<IconTile iconSize={24} name="code-brackets" size={32} tone="primary" />} onPress={() => navigation.navigate(ROUTES.APPROACH_CHALLENGE)} style={styles.modeRow} testID="practice-approach-challenge" title={t("Approach Challenge")} detail={t("Choose an approach, then analyze its complexity.")} trailing={<Icon color={palette.textMuted} name="chevron-right" size={20} />} variant="grouped" /> : null}
+            {isCodingInterviewTrack ? <ListRow leading={<IconTile iconSize={24} name="code-brackets" size={32} tone="primary" />} onPress={() => void openApproachChallenge()} disabled={approachAdmissionPending} style={styles.modeRow} testID="practice-approach-challenge" title={t("Approach Challenge")} detail={t("Choose an approach, then analyze its complexity.")} trailing={<View style={styles.examModeTrailing}><Badge label={t("Premium")} tone="info" />{approachAdmissionPending ? <ActivityIndicator accessibilityLabel={t("Checking Premium access…")} size="small" color={palette.textMuted} /> : <Icon color={palette.textMuted} name="chevron-right" size={20} />}</View>} variant="grouped" /> : null}
             {secondaryModes.map((mode, index) => (
               <ListRow
                 detail={!mode.enabled && mode.unavailableReason ? t(mode.unavailableReason) : undefined}
@@ -479,6 +509,10 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               />
             ))}
           </View>
+          {approachEntryError ? <View style={styles.examAccessError}>
+            <InfoBlock accessibilityAlert body={t(approachEntryError === "access" ? "We couldn't verify Premium access. Check your connection and try again." : "We couldn’t load your practice options.")} testID="practice-approach-challenge-access-error" title={t(approachEntryError === "access" ? "Premium access unavailable" : "Practice data is unavailable.")} tone="warning" />
+            <Button onPress={() => void openApproachChallenge()} variant="ghost">{t("Try again")}</Button>
+          </View> : null}
           {examAccessUnavailable ? (
             <View style={styles.examAccessError}>
               <InfoBlock

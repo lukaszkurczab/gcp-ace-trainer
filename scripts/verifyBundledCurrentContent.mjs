@@ -3,13 +3,11 @@ import { lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { EXPECTED_TRACK_IDS, GENERATED_DIRECTORY, LOCK_FILE_NAME, RELEASE_LOCK_RELATIVE_PATH, SUCCESSOR_LEDGER_FILE_NAME } from "./syncBundledContentRelease.mjs";
+import { APPROACH_CHALLENGE_BANK_CONTRACT, APPROACH_CHALLENGE_TRACK_ID, EXPECTED_TRACK_IDS, GENERATED_DIRECTORY, LOCK_FILE_NAME, RELEASE_LOCK_RELATIVE_PATH, SUCCESSOR_LEDGER_FILE_NAME } from "./syncBundledContentRelease.mjs";
 
 const appRoot = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const CODING_TRACK_ID = "coding-interview-dsa-problem-solving";
-const FREE_FAMILY_ID = "complexity_and_constraints";
-const FAMILY_COUNTS = Object.freeze({ complexity_and_constraints: 6, arrays_and_strings: 4, hash_map_and_set: 4, two_pointers: 2, sliding_window: 4, prefix_sums: 2, sorting_based: 2, stack: 2, binary_search: 2, tree_traversal: 2, intervals: 2, graph_traversal: 2, dynamic_programming_intro: 2 });
+const { freeFamilyId: FREE_FAMILY_ID, familyCounts: FAMILY_COUNTS } = APPROACH_CHALLENGE_BANK_CONTRACT;
 const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const failApproachBank = (reason) => { throw new Error(`Bundled current content approach-challenge bank is invalid: ${reason}.`); };
 const exactKeys = (value, keys) => value !== null && typeof value === "object" && !Array.isArray(value)
@@ -39,7 +37,7 @@ function historicalTrainingProjection(artifact, contentVersion) {
 export function validateBundledApproachChallengeBank(artifact, ordinaryQuestionIds = new Set(), bankQuestionIds = new Set()) {
   if (!Object.hasOwn(artifact, "approachChallengeProblems")) return { problemCount: 0, stageCount: 0, freeCount: 0, premiumCount: 0 };
   const problems = artifact.approachChallengeProblems;
-  if (artifact.trackId !== CODING_TRACK_ID || !Array.isArray(problems) || problems.length !== 36) failApproachBank("expected 36 Coding Interview problem pairs");
+  if (artifact.trackId !== APPROACH_CHALLENGE_TRACK_ID || !Array.isArray(problems) || problems.length !== APPROACH_CHALLENGE_BANK_CONTRACT.problemCount) failApproachBank(`expected ${APPROACH_CHALLENGE_BANK_CONTRACT.problemCount} Coding Interview problem pairs`);
   const expectedProblemKeys = ["schemaVersion", "problemId", "problemVersion", "trackId", "primaryFamilyId", "requiredFamilyIds", "difficulty", "approachQuestion", "complexityQuestion", "analyzedApproachId", "methodReveal"];
   const ids = new Set();
   const questionIds = new Set(ordinaryQuestionIds);
@@ -47,7 +45,7 @@ export function validateBundledApproachChallengeBank(artifact, ordinaryQuestionI
   const validId = (value) => typeof value === "string" && value.trim() === value && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u.test(value);
   for (const [index, problem] of problems.entries()) {
     if (!isRecord(problem) || !exactKeys(problem, expectedProblemKeys)) failApproachBank(`problem ${index} has an invalid shape`);
-    if (problem.schemaVersion !== "approach-challenge-problem-v1" || !validId(problem.problemId) || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u.test(problem.problemVersion ?? "") || problem.trackId !== CODING_TRACK_ID) failApproachBank(`problem ${index} has invalid or foreign identity`);
+    if (problem.schemaVersion !== "approach-challenge-problem-v1" || !validId(problem.problemId) || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u.test(problem.problemVersion ?? "") || problem.trackId !== APPROACH_CHALLENGE_TRACK_ID) failApproachBank(`problem ${index} has invalid or foreign identity`);
     if (!Object.hasOwn(familyCounts, problem.primaryFamilyId) || !Array.isArray(problem.requiredFamilyIds) || problem.requiredFamilyIds.length === 0 ||
       problem.requiredFamilyIds.some((familyId) => !Object.hasOwn(familyCounts, familyId)) || !problem.requiredFamilyIds.includes(problem.primaryFamilyId) ||
       new Set(problem.requiredFamilyIds).size !== problem.requiredFamilyIds.length || !["easy", "medium", "hard"].includes(problem.difficulty)) failApproachBank(`problem ${index} has invalid family or difficulty metadata`);
@@ -56,7 +54,7 @@ export function validateBundledApproachChallengeBank(artifact, ordinaryQuestionI
     familyCounts[problem.primaryFamilyId] += 1;
     for (const [stageKey, expectedInteraction] of [["approachQuestion", "approach_choice"], ["complexityQuestion", "choice_single"]]) {
       const stage = problem[stageKey];
-      if (!isRecord(stage) || !validId(stage.questionId) || stage.trackId !== CODING_TRACK_ID || !validId(stage.nodeId) || !validId(stage.mentalUnitId) ||
+      if (!isRecord(stage) || !validId(stage.questionId) || stage.trackId !== APPROACH_CHALLENGE_TRACK_ID || !validId(stage.nodeId) || !validId(stage.mentalUnitId) ||
         stage.difficulty !== problem.difficulty || typeof stage.prompt !== "string" || !stage.prompt.trim() ||
         (stage.constraints !== undefined && (!Array.isArray(stage.constraints) || stage.constraints.some((constraint) => typeof constraint !== "string"))) ||
         !isRecord(stage.interaction) || stage.interaction.type !== expectedInteraction || !Array.isArray(stage.interaction.options) ||
@@ -73,11 +71,15 @@ export function validateBundledApproachChallengeBank(artifact, ordinaryQuestionI
       !isRecord(problem.methodReveal) || typeof problem.methodReveal.title !== "string" || !problem.methodReveal.title.trim() ||
       typeof problem.methodReveal.description !== "string" || !problem.methodReveal.description.trim()) failApproachBank(`problem ${index} has inconsistent paired stages or reveal`);
   }
-  if (Object.entries(FAMILY_COUNTS).some(([familyId, count]) => familyCounts[familyId] !== count)) failApproachBank("family counts do not match the accepted 36-problem inventory");
-  const freeProblems = problems.filter((problem) => problem.primaryFamilyId === FREE_FAMILY_ID);
-  if (freeProblems.length !== 6 || freeProblems.some((problem) => problem.requiredFamilyIds.some((familyId) => familyId !== FREE_FAMILY_ID) ||
-    problem.approachQuestion.nodeId !== FREE_FAMILY_ID || problem.complexityQuestion.nodeId !== FREE_FAMILY_ID)) failApproachBank("Free pairs are not exactly the six fully contained complexity-and-constraints problems");
-  return { problemCount: problems.length, stageCount: problems.length * 2, freeCount: freeProblems.length, premiumCount: problems.length - freeProblems.length };
+  if (Object.entries(FAMILY_COUNTS).some(([familyId, count]) => familyCounts[familyId] !== count)) failApproachBank("family counts do not match the accepted current bank contract");
+  const freeProblems = problems.filter((problem) => problem.primaryFamilyId === FREE_FAMILY_ID &&
+    problem.requiredFamilyIds.every((familyId) => familyId === FREE_FAMILY_ID) &&
+    problem.approachQuestion.nodeId === FREE_FAMILY_ID && problem.complexityQuestion.nodeId === FREE_FAMILY_ID);
+  if (freeProblems.length !== APPROACH_CHALLENGE_BANK_CONTRACT.freeProblemCount) failApproachBank("Free pair count differs from the accepted per-problem classification");
+  const stageCount = problems.length * 2;
+  const premiumCount = problems.length - freeProblems.length;
+  if (stageCount !== APPROACH_CHALLENGE_BANK_CONTRACT.questionCount || premiumCount !== APPROACH_CHALLENGE_BANK_CONTRACT.premiumProblemCount) failApproachBank("stage or access-tier totals do not match the accepted current bank contract");
+  return { problemCount: problems.length, stageCount, freeCount: freeProblems.length, premiumCount };
 }
 
 async function readCurrentPayload(root) {

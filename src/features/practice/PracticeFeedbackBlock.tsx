@@ -1,6 +1,6 @@
 import { Linking, Pressable, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type TextStyle } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { DetailsDisclosure } from "../../components";
 import { openCanonicalSourceLink } from "../../application/canonical/canonicalSourceLinks";
@@ -31,12 +31,12 @@ function FeedbackTextLayout({ physicalScale, style, text }: Readonly<{ physicalS
   >{text}</Text>;
 }
 
-export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, initiallyExpanded = false, showReport = true, openSource = (url) => Linking.openURL(url) }: Readonly<{ feedback: PracticeFeedback; item: ResolvedContentRef; itemId: string; reportSurface: ContentReportSurfaceContext; initiallyExpanded?: boolean; showReport?: boolean; openSource?: (url: string) => Promise<unknown> }>) {
+/** Shared answer explanation; account/content reporting remains in the owning wrapper. */
+export function PracticeFeedbackContent({ feedback, itemId, initiallyExpanded = false, children }: Readonly<{ feedback: Pick<PracticeFeedback, "details" | "messages" | "reason" | "result">; itemId: string; initiallyExpanded?: boolean; children?: ReactNode }>) {
   const styles = useThemedStyles(createStyles);
   const { fontScale, scale: windowScale, width: windowWidth } = useWindowDimensions();
   const { t } = useTranslation("common");
   const [detailsOpen, setDetailsOpen] = useState(initiallyExpanded);
-  const [sourceError, setSourceError] = useState(false);
   const detailsDisclosure = <DetailsDisclosure expanded={detailsOpen} onPress={() => setDetailsOpen((current) => !current)} testID={runtimeSelectors.session.detailsToggle(itemId)} />;
   return (
     <View style={styles.feedbackCard} testID={runtimeSelectors.session.feedback(itemId)}>
@@ -53,13 +53,26 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, i
           physicalScale={windowScale}
           style={styles.detailText}
           text={message.text}
-        />)}{detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)).map((line, index) => <FeedbackText
+        />)}{detailLines(feedback.details).map((line, index) => <FeedbackText
           key={`detail:${index}`}
           contextKey={textMeasurementKey(line, windowWidth, fontScale, windowScale)}
           physicalScale={windowScale}
           style={styles.detailText}
           text={line}
-        />)}<View style={styles.sources}><FeedbackText contextKey={textMeasurementKey(t("Source"), windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceLabel} text={t("Source")} />{feedback.sources?.length ? feedback.sources.map((source, index) => {
+        />)}{children}</View> : null}
+      </View>
+    </View>
+  );
+}
+
+export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, initiallyExpanded = false, showReport = true, openSource = (url) => Linking.openURL(url) }: Readonly<{ feedback: PracticeFeedback; item: ResolvedContentRef; itemId: string; reportSurface: ContentReportSurfaceContext; initiallyExpanded?: boolean; showReport?: boolean; openSource?: (url: string) => Promise<unknown> }>) {
+  const styles = useThemedStyles(createStyles);
+  const { fontScale, scale: windowScale, width: windowWidth } = useWindowDimensions();
+  const { t } = useTranslation("common");
+  const [sourceError, setSourceError] = useState(false);
+  const contentFeedback = { ...feedback, details: detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)) };
+  return <PracticeFeedbackContent feedback={contentFeedback} itemId={itemId} initiallyExpanded={initiallyExpanded}>
+    <View style={styles.sources}><FeedbackText contextKey={textMeasurementKey(t("Source"), windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceLabel} text={t("Source")} />{feedback.sources?.length ? feedback.sources.map((source, index) => {
           return <View key={`${source.role}:${source.url}`} style={styles.sourceItem} testID={`question-source-item-${itemId}-${index}`}>
             <Text maxFontSizeMultiplier={2} style={styles.sourceItemLabel}>{source.role === "course" ? t("Course module") : t("Documentation")}</Text>
             <Pressable accessibilityLabel={[t("Open source"), source.role === "course" ? t("Course module") : t("Documentation"), source.title ?? source.host, source.section, source.requiresAccount ? t("Requires an Anthropic Partner Academy account") : undefined].filter(Boolean).join(" ")} accessibilityRole="link" onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, openSource).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}>
@@ -68,17 +81,15 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, i
             {source.section ? <FeedbackText contextKey={textMeasurementKey(source.section, windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceMetadata} text={source.section} /> : null}
             {source.requiresAccount ? <Text maxFontSizeMultiplier={2} style={styles.sourceMetadata}>{t("Requires an Anthropic Partner Academy account")}</Text> : null}
           </View>;
-        }) : <FeedbackText contextKey={textMeasurementKey(t("Source unavailable"), windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceUnavailable} text={t("Source unavailable")} />}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View>{showReport ? <ContentReportSheet item={item} surface={reportSurface} /> : null}</View> : null}
-      </View>
-    </View>
-  );
+        }) : <FeedbackText contextKey={textMeasurementKey(t("Source unavailable"), windowWidth, fontScale, windowScale)} physicalScale={windowScale} style={styles.sourceUnavailable} text={t("Source unavailable")} />}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View>{showReport ? <ContentReportSheet item={item} surface={reportSurface} /> : null}
+  </PracticeFeedbackContent>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   details: { gap: spacing.md, paddingTop: spacing.xs },
   detailText: { ...typography.body, color: palette.textSecondary },
   detailsDivider: { backgroundColor: palette.border, height: StyleSheet.hairlineWidth, width: "100%" },
-  detailsSection: { gap: spacing.md },
+  detailsSection: { gap: spacing.xs },
   feedbackCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xl, borderWidth: 1, gap: spacing.md, padding: spacing.lg },
   reason: { ...typography.body, color: palette.textSecondary },
   reasonLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },

@@ -5,6 +5,7 @@ import { activityTimestamp } from "../../../application/activityReadModels";
 import { calendarDayDifference, isSameCalendarWeek, modeLabel, type ActivityDateLabel } from "./activityPresentation";
 import { findTrackDescriptor, resolveTrackDomainMetadata } from "../../../domain/tracks/trackAdmission";
 import { getTrackRoadmapCatalog } from "../../practice/trackRoadmapCatalog";
+import { isApproachChallengeTrainingAttempt } from "../../../tracks/coding-interview/domain/algorithmModes";
 
 import { ALL_ACTIVITY_TRACKS } from "./activityPresentation";
 export { ALL_ACTIVITY_TRACKS } from "./activityPresentation";
@@ -19,7 +20,7 @@ export type ActivityItem = Readonly<{
   icon: IconName;
   id: string;
   interaction:
-    | Readonly<{ destination: "algorithms_practice_summary" | "canonical_result"; kind: "open_result" }>
+    | Readonly<{ destination: "algorithms_practice_summary" | "canonical_result" | "approach_challenge_detail"; kind: "open_result" }>
     | Readonly<{ kind: "toggle_session_details" }>
     | Readonly<{ kind: "toggle_unavailable_details" }>;
   kind: "canonical" | "unavailable";
@@ -114,6 +115,7 @@ function toUnavailableActivityItem(record: ActivityUnavailableSessionRecord, now
 
 function activityInteraction(record: ActivitySessionRecord, trackFamily: string): ActivityItem["interaction"] {
   const { session, result } = record;
+  if (isApproachChallengeTrainingAttempt(session.trackId, session.modeId)) return { destination: "approach_challenge_detail", kind: "open_result" };
   if (trackFamily === "coding_interview" && session.modeId !== "coding-interview-simulation") {
     if (session.status === "abandoned" && record.attemptCount > 0) {
       return { destination: "algorithms_practice_summary", kind: "open_result" };

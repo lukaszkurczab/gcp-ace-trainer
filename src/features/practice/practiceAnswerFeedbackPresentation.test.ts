@@ -11,7 +11,7 @@ const reviewSource = readFileSync(new URL("../exam/ExamReviewScreen.tsx", import
 
 test("answer cards show state through the card and letter without a redundant status row", () => {
   assert.doesNotMatch(answerOptionSource, /statusLabel|statusBadge|statusIcon|statusText|statusCorrect|statusIncorrect|statusNeutral|statusSelected/u);
-  assert.match(answerOptionSource, /omittedCorrect: \{[^}]*borderStyle: "dashed"/u);
+  assert.match(answerOptionSource, /omittedCorrect: \{[^}]*borderColor: palette\.success[^}]*borderStyle: "solid"[^}]*borderWidth: 2/u);
   assert.match(answerOptionSource, /notSelected: \{[^}]*borderColor: palette\.borderStrong/u);
   assert.match(answerOptionSource, /correct: \{[^}]*borderColor: palette\.success[^}]*borderWidth: 2/u);
   assert.match(answerOptionSource, /incorrect: \{[^}]*borderColor: palette\.danger[^}]*borderWidth: 2/u);

@@ -5,3 +5,4 @@ export * from "./codingInterviewPreparationRequest";
 export * from "./approachChallengeSelection";
 export * from "./approachChallengeSession";
 export * from "./approachChallengeSessionFacade";
+export * from "./approachChallengeSessionExit";

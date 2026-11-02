@@ -23,16 +23,20 @@ import { buildPracticeSessionConfig, getGeneralPracticeReviewSource } from "./se
 const source = readFileSync(new URL("./PracticeHubScreen.tsx", import.meta.url), "utf8");
 const ast = ts.createSourceFile("PracticeHubScreen.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 let command: ts.FunctionDeclaration | undefined;
+let approachCommand: ts.FunctionDeclaration | undefined;
+let approach: ts.Expression | undefined;
 let start: ts.Expression | undefined;
 let settings: ts.Expression | undefined;
 let retry: ts.ArrowFunction | undefined;
 function inspect(node: ts.Node) {
   if (ts.isFunctionDeclaration(node) && node.name?.text === "startSession") command = node;
+  if (ts.isFunctionDeclaration(node) && node.name?.text === "openApproachChallenge") approachCommand = node;
   if (ts.isArrowFunction(node) && node.getText(ast).includes("designAdmissionRequest && startSession")) retry = node;
   if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
     const attr = (name: string) => node.attributes.properties.find((property): property is ts.JsxAttribute => ts.isJsxAttribute(property) && property.name.getText(ast) === name)?.initializer;
     const id = attr("testID");
     const handler = attr("onPress");
+    if (id && ts.isStringLiteral(id) && id.text === "practice-approach-challenge" && handler && ts.isJsxExpression(handler)) approach = handler.expression;
     if (id && handler && ts.isJsxExpression(id) && ts.isJsxExpression(handler)) {
       if (id.expression?.getText(ast) === "runtimeSelectors.practice.startSession()") start = handler.expression;
       if (id.expression?.getText(ast) === "runtimeSelectors.practice.openSetup()") settings = handler.expression;
@@ -41,8 +45,8 @@ function inspect(node: ts.Node) {
   ts.forEachChild(node, inspect);
 }
 inspect(ast);
-assert.ok(command && start && settings && retry, "production entry points must remain wired");
-const compiled = ts.transpileModule(`${command.getText(ast)}\nconst startAction = ${start.getText(ast)};\nconst settingsAction = ${settings.getText(ast)};\nconst retryAction = ${retry.getText(ast)};`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+assert.ok(command && start && settings && retry && approachCommand && approach, "production entry points must remain wired");
+const compiled = ts.transpileModule(`${command.getText(ast)}\n${approachCommand.getText(ast)}\nconst approachAction = ${approach.getText(ast)};\nconst startAction = ${start.getText(ast)};\nconst settingsAction = ${settings.getText(ast)};\nconst retryAction = ${retry.getText(ast)};`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 
 before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); });
 const settle = () => new Promise<void>((resolve) => setImmediate(resolve));
@@ -54,6 +58,7 @@ function harness(trackId: TrackId, admit: () => Promise<PremiumSessionAdmission>
   const routes: RouteCall[] = [];
   const busy: boolean[] = [];
   let unavailable = false;
+  let approachError: "access" | "practice" | null = null;
   const context: Record<string, unknown> = {
     activeTrack, primaryMode, modes: buildPracticeModes(activeTrack), topic, canonicalNodeId: topic.id,
     isCodingInterviewTrack: trackId === CODING_INTERVIEW_TRACK_ID,
@@ -61,6 +66,8 @@ function harness(trackId: TrackId, admit: () => Promise<PremiumSessionAdmission>
     readState: { kind: "ready", reviewSource: "due_queue" },
     navigation: { navigate: (route: string, params?: Record<string, unknown>) => routes.push({ route, params: params && structuredClone(params) }) },
     account: { authorizePremiumSessionStart: admit },
+    approachAdmissionPendingRef: { current: false },
+    setApproachAdmissionPending: (value: boolean) => busy.push(value), setApproachEntryError: (value: typeof approachError) => { approachError = value; unavailable = value !== null; },
     designAdmissionPendingRef: { current: false }, examAdmissionPendingRef: { current: false }, codingAdmissionPendingRef: { current: false },
     setDesignAdmissionPending: (value: boolean) => busy.push(value),
     setDesignAccessUnavailable: (value: boolean) => { unavailable = value; },
@@ -74,7 +81,8 @@ function harness(trackId: TrackId, admit: () => Promise<PremiumSessionAdmission>
   };
   const runtime = vm.createContext(context);
   vm.runInContext(compiled, runtime);
-  return { activeTrack, primaryMode, topic, routes, busy, unavailable: () => unavailable,
+  return { activeTrack, primaryMode, topic, routes, busy, unavailable: () => unavailable, approachError: () => approachError,
+    approach: () => vm.runInContext("approachAction()", runtime),
     start: () => vm.runInContext("startAction()", runtime), settings: () => vm.runInContext("settingsAction()", runtime),
     retry: () => vm.runInContext("retryAction()", runtime),
     shortcut: (mode: string) => vm.runInContext(`startSession(${JSON.stringify(mode)})`, runtime) };
@@ -194,4 +202,40 @@ test("exam entry resumes only the matching durable session and rejects a changed
   stale.shortcut('certification-exam-simulation');
   await settle();
   assert.deepEqual(stale.routes, []);
+});
+
+
+test("Approach Challenge waits before new setup entry and deduplicates pending presses", async () => {
+  let resolve!: (value: PremiumSessionAdmission) => void, requests = 0;
+  const subject = harness(CODING_INTERVIEW_TRACK_ID, () => { requests++; return new Promise(accept => { resolve = accept; }); });
+  subject.approach(); subject.approach(); await settle();
+  assert.equal(requests, 1); assert.deepEqual(subject.routes, []);
+  resolve("allowed"); await settle();
+  assert.deepEqual(subject.routes, [{ route: ROUTES.APPROACH_CHALLENGE, params: undefined }]);
+  assert.deepEqual(subject.busy, [true, false]);
+});
+
+test("Approach Challenge sends Free users to purchase before setup and keeps unknown access retryable", async () => {
+  for (const initial of ["denied", "unavailable", "reject"] as const) {
+    let result: PremiumSessionAdmission | "reject" = initial;
+    const subject = harness(CODING_INTERVIEW_TRACK_ID, async () => { if (result === "reject") throw Error("offline"); return result; });
+    subject.approach(); await settle();
+    assert.deepEqual(subject.routes, initial === "denied" ? [{ route: ROUTES.PREMIUM_PURCHASE, params: undefined }] : []);
+    assert.equal(subject.unavailable(), initial !== "denied");
+    assert.equal(subject.approachError(), initial === "denied" ? null : "access");
+    if (initial !== "denied") {
+      result = "allowed"; subject.approach(); await settle();
+      assert.equal(subject.routes[0]?.route, ROUTES.APPROACH_CHALLENGE); assert.equal(subject.unavailable(), false);
+    }
+  }
+});
+
+test("Approach Challenge resume/conflict stays with its resolver and profile cutover prevents navigation", async () => {
+  let requests = 0;
+  const resume = harness(CODING_INTERVIEW_TRACK_ID, async () => { requests++; return "unavailable"; }, { id: "saved-acm", modeId: "coding-interview-approach-challenge" });
+  resume.approach(); await settle();
+  assert.equal(requests, 0); assert.equal(resume.routes[0]?.route, ROUTES.APPROACH_CHALLENGE);
+  const stale = harness(CODING_INTERVIEW_TRACK_ID, async () => "allowed", null, false);
+  stale.approach(); await settle(); assert.deepEqual(stale.routes, []);
+  assert.equal(stale.approachError(), "practice", "a profile transition must not be presented as a Premium failure");
 });

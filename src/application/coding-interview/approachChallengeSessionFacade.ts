@@ -1,3 +1,5 @@
+import { beginStartupSpan } from "../../infrastructure/diagnostics/startupTrace";
+import type { CanonicalFeedback } from "../../content/canonical/interactions/shared";
 import { canonicalInteractionRegistry } from "../../content/canonical/interactions/registry";
 import { APPROACH_CHALLENGE_MODE_ID } from "../../tracks/coding-interview/domain/algorithmModes";
 import { APPROACH_CHALLENGE_TRACK_ID, type ApproachChallengeProblem } from "../../content/canonical/approachChallengeProblem";
@@ -18,12 +20,17 @@ import {
   approachChallengeStageForOccurrence,
   decodeApproachChallengeManifest,
   isApproachChallengeStageOperationResolved,
-  projectApproachChallengeManifestIntegrity,
   projectApproachChallengeMethodReveal,
   resolveManifestEntryProblem,
 } from "./approachChallengeSession";
 
 export type ApproachChallengeUnavailable = Readonly<{ kind: "unavailable"; reason: "artifact_unavailable" | "operation_unresolved" | "selection_unavailable" | "session_unavailable" }>;
+export type ApproachChallengeFeedbackProjection = Readonly<{
+  reason: string;
+  details: CanonicalFeedback["details"];
+  messages?: CanonicalFeedback["messages"];
+  approachExplanation: Readonly<{ reason: string; options: readonly Readonly<{ id: string; text: string; reason: string }>[] }> | null;
+}>;
 export type ApproachChallengeStageProjection = Readonly<{
   kind: "ready";
   sessionId: string;
@@ -38,23 +45,9 @@ export type ApproachChallengeStageProjection = Readonly<{
   interaction: Readonly<{ interactionType: string; model: unknown }>;
   accepted: boolean;
   result: Readonly<{ kind: "correct" | "partial" | "incorrect"; earnedPoints: number; maxPoints: number }> | null;
-  feedback: Readonly<{ reason: string; details: unknown }> | null;
+  feedback: ApproachChallengeFeedbackProjection | null;
   analyzedApproachId: string | null;
   methodReveal: ApproachChallengeProblem["methodReveal"] | null;
-}>;
-export type ApproachChallengeHistoryEntry = Readonly<{
-  sessionId: string;
-  status: TrainingSession["status"];
-  startedAt: string;
-  completedAt?: string;
-  problemCount: number | null;
-  manifestIntegrity: "verified" | "unavailable";
-  answeredStageCount: number;
-  correctCount: number;
-  partialCount: number;
-  incorrectCount: number;
-  pointsEarned: number;
-  maxPoints: number;
 }>;
 export type ApproachChallengeDetailedStage = Readonly<{
   stage: "approach" | "complexity";
@@ -65,7 +58,7 @@ export type ApproachChallengeDetailedStage = Readonly<{
   interaction: Readonly<{ interactionType: string; model: unknown }>;
   response: unknown | null;
   result: Readonly<{ kind: "correct" | "partial" | "incorrect"; earnedPoints: number; maxPoints: number }> | null;
-  feedback: Readonly<{ reason: string; details: unknown }> | null;
+  feedback: ApproachChallengeFeedbackProjection | null;
 }>;
 export type ApproachChallengeDetailedProblem = Readonly<{
   problemId: string;
@@ -88,6 +81,15 @@ export type ApproachChallengeDetailedHistory = Readonly<{
   contentVersion: string;
   artifactSha256: string;
   problems: readonly ApproachChallengeDetailedProblem[];
+  summary: Readonly<{
+    elapsedForegroundMs: number;
+    requestedLength: number;
+    totalOccurrences: number;
+    answeredCount: number;
+    unansweredCount: number;
+    score: Readonly<{ correctCount: number; partialCount: number; incorrectCount: number }> | null;
+    points: Readonly<{ earned: number; max: number }> | null;
+  }>;
 }>;
 
 export function selectCurrentApproachChallengeProblems(input: Readonly<{
@@ -116,6 +118,12 @@ export async function startApproachChallengeSession(selection: ApproachChallenge
 
 /** Returns feedback only after the matching stage attempt is durable in the existing attempt repository. */
 export async function getApproachChallengeStageProjection(): Promise<ApproachChallengeStageProjection | ApproachChallengeUnavailable> {
+  const end = beginStartupSpan("practice_command_projection");
+  try { return await readApproachChallengeStageProjection(); }
+  finally { end(); }
+}
+
+async function readApproachChallengeStageProjection(): Promise<ApproachChallengeStageProjection | ApproachChallengeUnavailable> {
   const session = await loadActiveTrainingSession();
   if (!session || session.trackId !== APPROACH_CHALLENGE_TRACK_ID || session.modeId !== APPROACH_CHALLENGE_MODE_ID) return unavailable("session_unavailable");
   try {
@@ -148,9 +156,11 @@ export async function getApproachChallengeStageProjection(): Promise<ApproachCha
     return Object.freeze({ kind: "ready", sessionId: session.id, occurrenceId: occurrence.occurrenceId, problemId: stageInfo.entry.problemRef.problemId,
       problemIndex: stageInfo.problemIndex + 1, problemCount: manifest.actualProblemCount, stage: stageInfo.stage, questionId: question.questionId,
       prompt: question.prompt, constraints: Object.freeze([...(question.constraints ?? [])]),
-      interaction: canonicalInteractionRegistry.present(question, attempt?.response ?? null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
+      interaction: Object.freeze({ interactionType: question.interaction.type, model: attempt
+        ? canonicalInteractionRegistry.presentReview(question, attempt.response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? [])
+        : canonicalInteractionRegistry.present(question, null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []) }),
       accepted: Boolean(attempt), result: attempt ? Object.freeze({ kind: attempt.result.kind, earnedPoints: attempt.result.earnedPoints, maxPoints: attempt.result.maxPoints }) : null,
-      feedback: attempt && evaluation?.feedback ? Object.freeze({ reason: evaluation.feedback.reason, details: evaluation.feedback.details }) : null,
+      feedback: attempt && evaluation?.feedback ? projectStageFeedback(problem, stageInfo.stage, evaluation.feedback) : null,
       analyzedApproachId: reveal?.analyzedApproachId ?? null, methodReveal: reveal?.methodReveal ?? null });
   } catch {
     return unavailable("artifact_unavailable");
@@ -159,14 +169,20 @@ export async function getApproachChallengeStageProjection(): Promise<ApproachCha
 
 export async function submitApproachChallengeStage(response: unknown): Promise<void> {
   const session = requireActiveApproachChallenge(await loadActiveTrainingSession());
-  await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
-  await getTrainingLifecycleUseCases().submitPracticeResponse(response);
+  const endCheckpoint = beginStartupSpan("practice_response_checkpoint");
+  try { await getForegroundSessionTimerFacade().checkpointForResponseSave(session); }
+  finally { endCheckpoint(); }
+  const endCommand = beginStartupSpan("practice_answer_command");
+  try { await getTrainingLifecycleUseCases().submitPracticeResponse(response); }
+  finally { endCommand(); }
   if (session.modeId !== APPROACH_CHALLENGE_MODE_ID) throw new TrainingApplicationFailure("resume_unavailable", "Active session changed during Approach Challenge submission.");
 }
 
 export async function advanceApproachChallengeStage(): Promise<TrainingSession> {
   requireActiveApproachChallenge(await loadActiveTrainingSession());
-  return getTrainingLifecycleUseCases().advancePracticeSession();
+  const end = beginStartupSpan("practice_advance_command");
+  try { return await getTrainingLifecycleUseCases().advancePracticeSession(); }
+  finally { end(); }
 }
 
 export async function retryApproachChallengeStageSubmission(): Promise<void> {
@@ -179,32 +195,10 @@ export async function recoverApproachChallengeOperation(): Promise<void> {
   return getTrainingLifecycleUseCases().recoverActiveTrainingOperation();
 }
 
-export async function completeApproachChallengeSession(): Promise<void> {
+export async function completeApproachChallengeSession(expectedSessionId?: string): Promise<void> {
   const session = requireActiveApproachChallenge(await loadActiveTrainingSession());
+  if (expectedSessionId !== undefined && session.id !== expectedSessionId) throw new TrainingApplicationFailure("no_active_session", "The displayed Approach Challenge session is no longer active.");
   await getForegroundSessionTimerFacade().completePracticeAfterCheckpoint(session, () => getTrainingLifecycleUseCases().completeActivePracticeSession(session.id));
-}
-
-export async function getApproachChallengeHistory(): Promise<readonly ApproachChallengeHistoryEntry[]> {
-  const [sessions, attempts] = await Promise.all([getTrainingLifecycleUseCases().queryHistory(), loadTrainingAttempts()]);
-  return Object.freeze(sessions.filter((session) => session.trackId === APPROACH_CHALLENGE_TRACK_ID && session.modeId === APPROACH_CHALLENGE_MODE_ID)
-    .map((session) => projectHistoryEntry(session, attempts.value)).sort((left, right) => right.startedAt.localeCompare(left.startedAt)));
-}
-
-export async function getApproachChallengeSummary(sessionId: string): Promise<ApproachChallengeHistoryEntry | ApproachChallengeUnavailable> {
-  const session = await loadTrainingSession(sessionId);
-  if (!session || session.trackId !== APPROACH_CHALLENGE_TRACK_ID || session.modeId !== APPROACH_CHALLENGE_MODE_ID) return unavailable("session_unavailable");
-  try {
-    const manifest = decodeApproachChallengeManifest(session.configurationSnapshot[APPROACH_CHALLENGE_MANIFEST_KEY], session);
-    if (session.status === "completed") {
-      const result = await loadTrainingSessionResult(session.id);
-      const details = result?.evidence.details;
-      if (!result || !isRecord(details) || result.sessionId !== session.id || result.trackId !== session.trackId || result.totalOccurrences !== session.actualLength || details.modeId !== APPROACH_CHALLENGE_MODE_ID || details.problemCount !== manifest.actualProblemCount) throw new Error("Completed result does not match the pinned Approach Challenge session.");
-    }
-    const attempts = await loadTrainingAttempts();
-    return projectHistoryEntry(session, attempts.value);
-  } catch {
-    return unavailable("artifact_unavailable");
-  }
 }
 
 /** Rebuilds both historical stages from the exact saved artifact and durable attempts; no legacy review API is involved. */
@@ -216,7 +210,7 @@ export async function getApproachChallengeDetailedHistory(sessionId: string): Pr
     const manifest = decodeApproachChallengeManifest(session.configurationSnapshot[APPROACH_CHALLENGE_MANIFEST_KEY], session);
     const exact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256, modeId: session.modeId });
     if (exact.track.contentVersion !== session.contentVersion || exact.track.artifactSha256 !== session.artifactSha256 || !exact.track.approachChallengeProblems) throw new Error("The exact historical paired-task artifact is unavailable.");
-    if (session.itemOrder.length !== manifest.actualProblemCount * 2 || (session.conditionalReinsertSlots?.length ?? 0) !== 0) throw new Error("Historical stage order does not match its manifest.");
+    if (session.actualLength !== session.itemOrder.length || session.itemOrder.length !== manifest.actualProblemCount * 2 || (session.conditionalReinsertSlots?.length ?? 0) !== 0) throw new Error("Historical stage order does not match its manifest.");
     const attempts = (await loadTrainingAttempts()).value.filter((attempt) => attempt.sessionId === session.id);
     const byOccurrence = new Map<string, TrainingAttempt<unknown>>();
     for (const attempt of attempts) {
@@ -233,6 +227,14 @@ export async function getApproachChallengeDetailedHistory(sessionId: string): Pr
       if (index % 2 === 1 && attempt && !byOccurrence.has(session.itemOrder[index - 1]!.occurrenceId)) throw new Error("Historical complexity answer has no accepted approach stage.");
       if (attempt && (attempt.item.trackId !== occurrence.item.trackId || attempt.item.questionId !== occurrence.item.questionId || attempt.item.contentVersion !== session.contentVersion || attempt.item.artifactSha256 !== session.artifactSha256)) throw new Error("Historical attempt is outside its exact pinned stage.");
     }
+    // These are sums of validated durable results, never a new evaluation or stored summary.
+    const totals = Object.freeze({
+      correctCount: attempts.filter(({ result }) => result.kind === "correct").length,
+      partialCount: attempts.filter(({ result }) => result.kind === "partial").length,
+      incorrectCount: attempts.filter(({ result }) => result.kind === "incorrect").length,
+      pointsEarned: attempts.reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0),
+      maxPoints: attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0),
+    });
     let result = null;
     if (session.status === "completed") {
       result = await loadTrainingSessionResult(session.id);
@@ -240,9 +242,7 @@ export async function getApproachChallengeDetailedHistory(sessionId: string): Pr
       if (!result || !isRecord(details) || result.sessionId !== session.id || result.trackId !== session.trackId || result.totalOccurrences !== session.actualLength ||
         result.answeredOccurrenceIds.length !== session.actualLength || result.unansweredOccurrenceIds.length !== 0 ||
         new Set(result.answeredOccurrenceIds).size !== session.actualLength || session.itemOrder.some(({ occurrenceId }) => !result!.answeredOccurrenceIds.includes(occurrenceId)) || details.modeId !== APPROACH_CHALLENGE_MODE_ID ||
-        details.problemCount !== manifest.actualProblemCount || details.correctCount !== attempts.filter(({ result: value }) => value.kind === "correct").length ||
-        details.partialCount !== attempts.filter(({ result: value }) => value.kind === "partial").length || details.incorrectCount !== attempts.filter(({ result: value }) => value.kind === "incorrect").length ||
-        details.pointsEarned !== attempts.reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0) || details.maxPoints !== attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0)) throw new Error("Historical completed result does not match its durable attempts.");
+        details.problemCount !== manifest.actualProblemCount || Object.entries(totals).some(([field, value]) => details[field] !== value)) throw new Error("Historical completed result does not match its durable attempts.");
     }
     const problems = manifest.entries.map((entry, problemIndex): ApproachChallengeDetailedProblem => {
       const problem = resolveManifestEntryProblem(entry, (problemId, version) => exact.track.approachChallengeProblems!.find((candidate) => candidate.problemId === problemId && candidate.problemVersion === version), session);
@@ -252,13 +252,14 @@ export async function getApproachChallengeDetailedHistory(sessionId: string): Pr
         if (occurrence.item.questionId !== question.questionId) throw new Error("Historical question identity does not match the exact paired problem.");
         const attempt = byOccurrence.get(occurrence.occurrenceId);
         if (!attempt) return Object.freeze({ stage, occurrenceId: occurrence.occurrenceId, questionId: question.questionId, prompt: question.prompt,
-          constraints: Object.freeze([...(question.constraints ?? [])]), interaction: canonicalInteractionRegistry.present(question, null), response: null, result: null, feedback: null });
+          constraints: Object.freeze([...(question.constraints ?? [])]), interaction: canonicalInteractionRegistry.present(question, null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []), response: null, result: null, feedback: null });
         const evaluation = canonicalInteractionRegistry.evaluate(question, attempt.response);
         if (!evaluation.complete || !evaluation.result || evaluation.result.kind !== attempt.result.kind || evaluation.result.earnedPoints !== attempt.result.earnedPoints || evaluation.result.maxPoints !== attempt.result.maxPoints) throw new Error("Historical response no longer matches its pinned result.");
         return Object.freeze({ stage, occurrenceId: occurrence.occurrenceId, questionId: question.questionId, prompt: question.prompt,
-          constraints: Object.freeze([...(question.constraints ?? [])]), interaction: canonicalInteractionRegistry.present(question, attempt.response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
+          constraints: Object.freeze([...(question.constraints ?? [])]), interaction: Object.freeze({ interactionType: question.interaction.type,
+            model: canonicalInteractionRegistry.presentReview(question, attempt.response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []) }),
           response: attempt.response, result: Object.freeze({ kind: attempt.result.kind, earnedPoints: attempt.result.earnedPoints, maxPoints: attempt.result.maxPoints }),
-          feedback: evaluation.feedback ? Object.freeze({ reason: evaluation.feedback.reason, details: evaluation.feedback.details }) : null });
+          feedback: evaluation.feedback ? projectStageFeedback(problem, stage, evaluation.feedback) : null });
       }) as [ApproachChallengeDetailedStage, ApproachChallengeDetailedStage];
       const approachAccepted = byOccurrence.has(entry.approachOccurrenceId);
       return Object.freeze({ problemId: problem.problemId, problemVersion: problem.problemVersion, contentVersion: entry.problemRef.contentVersion,
@@ -267,22 +268,30 @@ export async function getApproachChallengeDetailedHistory(sessionId: string): Pr
         methodReveal: approachAccepted ? problem.methodReveal : null, stages: Object.freeze(stageRows) as readonly [ApproachChallengeDetailedStage, ApproachChallengeDetailedStage] });
     });
     return Object.freeze({ kind: "ready", sessionId: session.id, status: session.status, startedAt: session.startedAt, completedAt: session.completedAt,
-      contentVersion: session.contentVersion, artifactSha256: session.artifactSha256, problems: Object.freeze(problems) });
+      contentVersion: session.contentVersion, artifactSha256: session.artifactSha256, problems: Object.freeze(problems),
+      summary: Object.freeze({ elapsedForegroundMs: session.activeForegroundMs, requestedLength: session.requestedLength,
+        totalOccurrences: session.actualLength, answeredCount: attempts.length, unansweredCount: session.actualLength - attempts.length,
+        score: attempts.length ? Object.freeze({ correctCount: totals.correctCount, partialCount: totals.partialCount, incorrectCount: totals.incorrectCount }) : null,
+        points: attempts.length ? Object.freeze({ earned: totals.pointsEarned, max: totals.maxPoints }) : null }) });
   } catch {
     return unavailable("artifact_unavailable");
   }
 }
 
-function projectHistoryEntry(session: TrainingSession, attempts: readonly TrainingAttempt<unknown>[]): ApproachChallengeHistoryEntry {
-  const own = attempts.filter((attempt) => attempt.sessionId === session.id && attempt.trackId === APPROACH_CHALLENGE_TRACK_ID && attempt.modeId === APPROACH_CHALLENGE_MODE_ID);
-  const counts = own.reduce((result, attempt) => ({ correctCount: result.correctCount + Number(attempt.result.kind === "correct"),
-    partialCount: result.partialCount + Number(attempt.result.kind === "partial"), incorrectCount: result.incorrectCount + Number(attempt.result.kind === "incorrect"),
-    pointsEarned: result.pointsEarned + attempt.result.earnedPoints, maxPoints: result.maxPoints + attempt.result.maxPoints }),
-  { correctCount: 0, partialCount: 0, incorrectCount: 0, pointsEarned: 0, maxPoints: 0 });
-  const { problemCount, manifestIntegrity } = projectApproachChallengeManifestIntegrity(session.configurationSnapshot[APPROACH_CHALLENGE_MANIFEST_KEY], session);
-  return Object.freeze({ sessionId: session.id, status: session.status, startedAt: session.startedAt, ...(session.completedAt ? { completedAt: session.completedAt } : {}),
-    problemCount, manifestIntegrity, answeredStageCount: own.length, correctCount: counts.correctCount, partialCount: counts.partialCount, incorrectCount: counts.incorrectCount,
-    pointsEarned: counts.pointsEarned, maxPoints: counts.maxPoints });
+/** Presentation only: callers have already resolved and verified the exact pinned problem. */
+function projectStageFeedback(problem: ApproachChallengeProblem, stage: "approach" | "complexity", feedback: CanonicalFeedback): ApproachChallengeFeedbackProjection {
+  return Object.freeze({ reason: feedback.reason, details: stage === "approach" ? authoredApproachDetails(problem.approachQuestion.feedback.details) : feedback.details,
+    ...(feedback.messages === undefined ? {} : { messages: feedback.messages }),
+    approachExplanation: stage === "approach" ? Object.freeze({ reason: problem.approachQuestion.feedback.reason,
+      options: Object.freeze(problem.approachQuestion.interaction.options.filter((option) => option.grade === "correct")
+        .map((option) => Object.freeze({ id: option.optionId, text: option.text, reason: option.feedback }))) }) : null });
+}
+
+/** The original authoring schema used this internal identity instead of teaching text. */
+function authoredApproachDetails(details: CanonicalFeedback["details"]): CanonicalFeedback["details"] {
+  if (typeof details !== "object" || details === null || Array.isArray(details)) return details;
+  const { expectedApproachId: _legacyIdentity, ...authored } = details as Readonly<Record<string, CanonicalFeedback["details"]>>;
+  return Object.freeze(authored);
 }
 
 function requireActiveApproachChallenge(session: TrainingSession | null): TrainingSession {

@@ -35,6 +35,7 @@ import type { CanonicalPracticeModeId } from "../../application/practice/practic
 import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { PracticeSetupSectionHeader, PracticeSetupSegment, PracticeSetupSegmentGroup } from "./PracticeSetupControls";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import type { ProductModeConfig } from "../../content/canonical";
@@ -361,6 +362,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     ? getAlgorithmMode(selectedMode)
     : null;
   const compactCodingPractice = algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice;
+  const LengthOptions = compactCodingPractice ? PracticeSetupSegmentGroup : View;
   const configuredSessionLength = resolvePracticeSessionLength(sessionLength, selectedPackageMode);
   const selectableFeedback = selectedPackageMode.feedbackTiming.kind === "learner_selectable";
   const designMode = isDesignInterviewModeId(selectedMode);
@@ -516,7 +518,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
         {quickReview ? <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-quick-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Quick Review")}</Text><Text key={`practice-setup-quick-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Review questions that are ready to revisit.")}</Text></View></Card> : !diagnosticBaseline ? <View style={[styles.section, compactCodingPractice ? styles.compactSection : null, focusPractice ? styles.focusSection : null]}>
           {focusPractice ? <Text maxFontSizeMultiplier={2} style={styles.focusSectionLabel}>{t("Session length")}</Text> : compactCodingPractice ? <PracticeSetupSectionHeader title={t("Session length")} subtitle={t("Number of questions in this session.")} /> : <SectionHeader title={t("Session length")} tight />}
-          <View accessibilityLabel={focusPractice ? t("Session length") : undefined} accessibilityRole={focusPractice ? "radiogroup" : undefined} style={[styles.lengthGrid, compactCodingPractice ? styles.compactLengthGrid : null, focusPractice ? styles.focusLengthGrid : null]}>
+          <LengthOptions accessibilityLabel={compactCodingPractice || focusPractice ? t("Session length") : undefined} accessibilityRole={compactCodingPractice || focusPractice ? "radiogroup" : undefined} style={compactCodingPractice ? undefined : [styles.lengthGrid, focusPractice ? styles.focusLengthGrid : null]}>
             {selectedPackageMode.requestedLengths.map((length) => (
               <SelectableOption
                 variant={focusPractice ? "focus" : compactCodingPractice ? "compact" : "default"}
@@ -528,7 +530,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
                 testID={runtimeSelectors.practice.sessionLength(length)}
               />
             ))}
-          </View>
+          </LengthOptions>
         </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-diagnostic-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Knowledge Check")}</Text><Text key={`practice-setup-diagnostic-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("40 questions on this topic. No time limit. Explanations after each answer.")}</Text></View></Card>}
 
         {designMode ? <Text key={`design-feedback-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Feedback is shown after each answer.")}</Text> : null}
@@ -607,6 +609,7 @@ function SelectableOption({ variant = "default", label, meta, onPress, selected,
   const { fontScale } = useWindowDimensions();
   const compact = variant === "compact";
   const focus = variant === "focus";
+  if (compact) return <PracticeSetupSegment label={label} meta={meta} accessibilityLabel={`${label} ${meta ?? t("Questions")}`} onPress={onPress} selected={selected} testID={testID} />;
   return (
     <Pressable
       accessibilityRole={focus ? "radio" : "button"}
@@ -615,16 +618,15 @@ function SelectableOption({ variant = "default", label, meta, onPress, selected,
       onPress={onPress}
       style={({ pressed }) => [
         styles.lengthOption,
-        compact ? styles.compactLengthOption : null,
         focus ? styles.focusLengthOption : null,
-        selected ? (compact ? styles.compactSelectedLengthOption : styles.selectedOption) : null,
+        selected ? styles.selectedOption : null,
         selected && focus ? styles.focusSelectedLengthOption : null,
         pressed ? styles.pressed : null,
       ]}
       testID={testID}
     >
-      <Text key={`practice-setup-session-length-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.lengthValue, compact ? styles.compactLengthValue : null, focus ? styles.focusLengthValue : null, selected ? (compact ? styles.compactSelectedText : styles.selectedText) : null]}>{label}</Text>
-      {meta ? <Text key={`practice-setup-session-length-meta-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.optionMeta, compact ? styles.compactOptionMeta : null, selected && compact ? styles.compactSelectedMeta : null]}>{meta}</Text> : null}
+      <Text key={`practice-setup-session-length-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.lengthValue, focus ? styles.focusLengthValue : null, selected ? styles.selectedText : null]}>{label}</Text>
+      {meta ? <Text key={`practice-setup-session-length-meta-${fontScale}`} maxFontSizeMultiplier={2} style={styles.optionMeta}>{meta}</Text> : null}
     </Pressable>
   );
 }
@@ -923,21 +925,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     marginBottom: spacing.xs,
     gap: spacing.sm,
   },
-  compactSectionHeader: {
-    gap: spacing.xs,
-  },
-  compactSectionTitle: {
-    color: palette.textPrimary,
-    fontSize: 13,
-    fontWeight: "700",
-    lineHeight: 16,
-    textTransform: "uppercase",
-  },
-  compactSectionSubtitle: {
-    color: palette.textMuted,
-    fontSize: 12.5,
-    lineHeight: 15,
-  },
   lengthGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -945,17 +932,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   focusLengthGrid: {
     gap: spacing.lg,
-  },
-  compactLengthGrid: {
-    backgroundColor: palette.surfaceInput,
-    borderColor: palette.border,
-    borderRadius: radius.button,
-    borderWidth: 1,
-    flexDirection: "row",
-    flexWrap: "nowrap",
-    gap: spacing.xs,
-    minHeight: 54,
-    padding: spacing.xs,
   },
   lengthOption: {
     alignItems: "center",
@@ -971,18 +947,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     paddingHorizontal: spacing.xs,
     paddingVertical: spacing.md,
   },
-  compactLengthOption: {
-    backgroundColor: "transparent",
-    borderColor: "transparent",
-    borderRadius: 10,
-    borderWidth: 1,
-    flex: 1,
-    gap: 0,
-    minHeight: 44,
-    minWidth: 0,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.xs,
-  },
   focusLengthOption: {
     borderRadius: radius.lg,
     minHeight: 56,
@@ -991,10 +955,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   focusSelectedLengthOption: {
     borderWidth: 2,
-  },
-  compactSelectedLengthOption: {
-    backgroundColor: palette.primary,
-    borderColor: palette.primary,
   },
   selectedOption: {
     backgroundColor: palette.primarySoft,
@@ -1008,10 +968,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textSecondary,
     fontVariant: ["tabular-nums"],
   },
-  compactLengthValue: {
-    fontSize: 15,
-    lineHeight: 18,
-  },
   focusLengthValue: {
     fontSize: 16,
     lineHeight: 22,
@@ -1020,21 +976,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   selectedText: {
     color: palette.textPrimary,
   },
-  compactSelectedText: {
-    color: palette.onPrimary,
-  },
-  compactSelectedMeta: {
-    color: palette.onPrimary,
-  },
   optionMeta: {
     ...typography.caption,
     color: palette.textMuted,
     textTransform: "uppercase",
-  },
-  compactOptionMeta: {
-    fontSize: 11,
-    lineHeight: 15,
-    textTransform: "none",
   },
   panel: {
     alignItems: "center",
@@ -1115,9 +1060,3 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.md,
   },
 });
-
-function PracticeSetupSectionHeader({ title, subtitle }: Readonly<{ title: string; subtitle: string }>) {
-  const styles = useThemedStyles(createStyles);
-  const { fontScale } = useWindowDimensions();
-  return <View style={styles.compactSectionHeader}><Text key={`practice-setup-section-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.compactSectionTitle}>{title.toUpperCase()}</Text><Text key={`practice-setup-section-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.compactSectionSubtitle}>{subtitle}</Text></View>;
-}

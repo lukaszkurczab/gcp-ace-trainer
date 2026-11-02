@@ -7,11 +7,12 @@ import { spacing, typography, type AppColors } from "../theme";
 
 type DetailsDisclosureProps = {
   expanded: boolean;
+  label?: string;
   onPress: () => void;
   testID?: string;
 };
 
-export function DetailsDisclosure({ expanded, onPress, testID }: DetailsDisclosureProps) {
+export function DetailsDisclosure({ expanded, label, onPress, testID }: DetailsDisclosureProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
   const { t } = useTranslation("common");
@@ -24,7 +25,7 @@ export function DetailsDisclosure({ expanded, onPress, testID }: DetailsDisclosu
       style={styles.toggle}
       testID={testID}
     >
-      <Text key={`details:${fontScale}`} maxFontSizeMultiplier={2} style={styles.label}>{t("Details")}</Text>
+      <Text key={`details:${fontScale}`} maxFontSizeMultiplier={2} style={styles.label}>{label ?? t("Details")}</Text>
       <Icon color={styles.icon.color} name={expanded ? "chevron-up" : "chevron-down"} size={18} />
     </Pressable>
   );

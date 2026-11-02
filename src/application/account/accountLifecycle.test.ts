@@ -5,7 +5,7 @@ import test, { beforeEach } from "node:test";
 import { createPatternlyApiClient, PatternlyApiClientError, type AdoptionPreviewResponseDto, type PatternlyApiClient, type ProgressMutationDto, type ProgressRecordDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { clearAccountDeletionOwnedLocalData, clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount as deleteBoundAccountService, dismissAccountLearningPlanRecovery, inspectAccountSyncConflict, loadAccountDataSession, readLocalAccountDataSession, resolveAccountSyncConflict, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion as retryPendingAccountDeletionService } from "./accountDataService";
+import { commitActiveTrackSelection, clearAccountDeletionOwnedLocalData, clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount as deleteBoundAccountService, dismissAccountLearningPlanRecovery, inspectAccountSyncConflict, loadAccountDataSession, readLocalAccountDataSession, resolveAccountSyncConflict, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion as retryPendingAccountDeletionService } from "./accountDataService";
 import { activatePreparedProfile, captureActiveProfileStorageLease, closeActiveProfileStorage, MemoryKeyValueStorage, prepareProfileStorage, selectPreparedAccountProfile, setProfileStoragePreparationFactoryForTests, installKeyValueStorageForTests, writeActiveAccountIdentityBinding } from "../../infrastructure/storage/mmkvClient";
 import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
@@ -17,6 +17,9 @@ import {
   markAccountDeletionComplete,
 } from "../../storage/repositories/accountLifecycleRepository";
 import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInstallation, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
+
+import { loadLocalActiveTrackId } from "../learningReadModels";
+import { loadPracticeReadData } from "../practiceReadModels";
 
 const accountId = "55555555-5555-4555-8555-555555555555";
 const uid = "firebase-fixture-uid";
@@ -2716,4 +2719,31 @@ test("unreadable mutation journal blocks discard before deleting guest data", as
   assert.equal(reads, 0);
   assert.equal(await getActiveTrackId(), guestTrack);
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true);
+});
+
+
+test("selection metadata and Practice remain readable while the account operation lane waits for upload", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  await prepareBoundSyncedAccount();
+  const selected = "object-oriented-design-interview";
+  await commitActiveTrackSelection(selected);
+  let releaseUpload!: () => void, signalUpload!: () => void;
+  const waiting = new Promise<void>(resolve => { releaseUpload = resolve; });
+  const started = new Promise<void>(resolve => { signalUpload = resolve; });
+  const sync = retryPendingAccountDataSync(api({ syncProgress: async () => {
+    signalUpload(); await waiting; throw new PatternlyApiClientError("transport_failed");
+  } }), accountId);
+  await started;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const [value, practice] = await Promise.race([
+      Promise.all([loadLocalActiveTrackId(), loadPracticeReadData({ includeReviews: true })]),
+      new Promise<never>((_resolve, reject) => { timeout = setTimeout(() => reject(Error("selection waited for account network work")), 1000); }),
+    ]);
+    assert.equal(value, selected);
+    assert.equal(practice.activeTrackId, selected);
+  } finally {
+    clearTimeout(timeout);
+    releaseUpload(); await sync;
+  }
 });

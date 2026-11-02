@@ -4,6 +4,7 @@ import test from "node:test";
 import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
 import { buildProgressTabModel } from "./progressTabModel";
+import { ALGORITHM_MODE_IDS } from "../../../tracks/coding-interview/domain/algorithmModes";
 
 function attempt(trackId: string, contentVersion: string, artifactSha256: string, questionId: string, index: number, kind: "correct" | "partial"): TrainingAttempt {
   const item = { trackId, contentVersion, artifactSha256, questionId };
@@ -13,7 +14,7 @@ function attempt(trackId: string, contentVersion: string, artifactSha256: string
     id: `overall-credit:${trackId}:${index}`,
     sessionId: `overall-credit-session:${trackId}`,
     trackId: trackId as TrainingAttempt["trackId"],
-    modeId: "practice",
+    modeId: trackId === "coding-interview-dsa-problem-solving" ? ALGORITHM_MODE_IDS.guidedPractice : "practice",
     occurrenceId: `overall-credit-occurrence:${index}`,
     item,
     response: {},

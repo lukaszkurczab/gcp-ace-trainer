@@ -151,7 +151,7 @@ export async function loadActivitySessionRecords(
   assertNoActivityReadIssues(sessionsResult, attemptsResult);
   const attemptsBySession = groupAttemptsBySession(attemptsResult.value);
   const terminalSessions = sessionsResult.value.filter((session) => {
-    if (classifyTrainingAttemptMode(session.trackId, session.modeId) !== "legacy") return false;
+    if (classifyTrainingAttemptMode(session.trackId, session.modeId) === "unknown") return false;
     if (session.status === "active") return false;
     return session.status === "completed" || (attemptsBySession.get(session.id)?.length ?? 0) > 0;
   });
@@ -190,7 +190,7 @@ export async function loadActivityRecords(
   }
   const archivalRecords = archivalResult.value.filter((record) => {
     const session = isRecord(record.session) ? record.session : null;
-    return !session || classifyTrainingAttemptMode(String(session.trackId ?? "unknown"), String(session.modeId ?? "unknown")) === "legacy";
+    return !session || classifyTrainingAttemptMode(String(session.trackId ?? "unknown"), String(session.modeId ?? "unknown")) !== "unknown";
   }).map(toActivityUnavailableRecord);
   const archivalIds = new Set(archivalRecords.map((record) => record.sessionId));
   assertCurrentProfile();

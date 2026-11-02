@@ -37,7 +37,7 @@ test("option text applies the observed iOS boundary correction once without grow
 });
 
 
-test("option text remounts for badge or answer geometry while preserving the accessible control", () => {
+test("selection keeps measured text mounted; badge or review border geometry still remeasures", () => {
   const source = readFileSync(new URL("./AnswerOption.tsx", import.meta.url), "utf8");
   const file = ts.createSourceFile("AnswerOption.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declaration = file.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "AnswerOption");
@@ -55,13 +55,27 @@ test("option text remounts for badge or answer geometry while preserving the acc
   const original = renderOption(props);
   const repeated = renderOption(props);
   const evaluated = renderOption({ ...props, state: "correct" });
+  const selected = renderOption({ ...props, state: "selected" });
+  const partial = renderOption({ ...props, state: "partial", resultLabel: "Almost" });
+  const omitted = renderOption({ ...props, state: "omitted_correct", resultLabel: "Correct answer", accessibilityState: { checked: false } });
   const differentBadge = renderOption({ ...props, letter: "W" });
   const [originalText, repeatedText, evaluatedText, differentBadgeText] = [original, repeated, evaluated, differentBadge].map(control => control.children[1]);
   assert.ok(originalText && repeatedText && evaluatedText && differentBadgeText);
   assert.equal(originalText.type, "OptionTextLayout");
   assert.equal(originalText.props.key, repeatedText.props.key);
+  assert.equal(originalText.props.key, selected.children[1]?.props.key, "selection changes color without remounting text or repeating native layout correction");
   assert.notEqual(originalText.props.key, evaluatedText.props.key);
   assert.notEqual(originalText.props.key, differentBadgeText.props.key);
+  assert.equal((partial.props.accessibilityState as { checked: boolean }).checked, true, "partial remains the selected radio option");
+  assert.equal((omitted.props.accessibilityState as { checked: boolean }).checked, false, "a disclosed correct option is not selected");
+  for (const [control, label] of [[partial, "Almost"], [omitted, "Correct answer"]] as const) {
+    const copy = control.children[1]!;
+    assert.equal(copy.type, "View");
+    assert.equal(copy.children[0]?.type, "Text");
+    assert.equal(copy.children[0]?.children[0], label, "result labels are visible text, not only accessibility copy or color");
+    assert.equal(copy.children[1]?.type, "OptionTextLayout");
+    assert.equal(copy.children[1]?.props.text, props.text, "adding a label preserves the complete answer text");
+  }
   for (const control of [original, evaluated, differentBadge]) {
     assert.equal(control.type, "Pressable");
     assert.equal(control.props.key, undefined);

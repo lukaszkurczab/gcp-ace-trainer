@@ -121,7 +121,7 @@ test("all nine predecessor projections preserve exact deep-copy bytes and leave 
     },
   });
   assert.deepEqual(reconstructed, sources.map((source) => source.trackId));
-  assert.equal(catalog.getTrack("coding-interview-dsa-problem-solving").approachChallengeProblems?.length, 36, "the active runtime retains the paired bank while its training predecessor omits it");
+  assert.equal(catalog.getTrack("coding-interview-dsa-problem-solving").approachChallengeProblems?.length, 472, "the active runtime retains the paired bank while its training predecessor omits it");
   for (const [index, source] of sources.entries()) {
     assert.equal(fingerprint(source), before[index]!.root);
     assert.equal(source.questions, before[index]!.questions);

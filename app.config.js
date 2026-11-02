@@ -270,7 +270,7 @@ function createExpoConfig(environment = process.env) {
       android: {
         package: localAndroid ? "com.lkurczab.patternly.local" : "com.lkurczab.patternly",
         ...(localAndroid || environment.EAS_BUILD_PLATFORM === "ios" && runtimeMode === "release" ? {} : { googleServicesFile: nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.android, runtimeMode) }),
-        versionCode: 2,
+        versionCode: 3,
         adaptiveIcon: {
           foregroundImage: "./assets/brand/app-icon/patternly-app-icon-foreground.png",
           backgroundColor: "#0C1324",

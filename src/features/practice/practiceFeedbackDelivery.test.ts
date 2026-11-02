@@ -78,12 +78,12 @@ test("Details JSX gates authored messages on expansion and keeps their text scal
   const runtimeSelectors = { session: { details: (id: string) => `details-${id}` } };
   const detailLines = () => [];
   const evaluate = (detailsOpen: boolean) => new Function(
-    "detailsOpen", "jsx", "View", "Text", "Pressable", "FeedbackText", "textMeasurementKey", "windowWidth", "fontScale", "windowScale", "styles", "runtimeSelectors", "itemId", "feedback", "detailLines", "sourceError", "t", "openCanonicalSourceLink", "openSource", "showReport", "ContentReportSheet", "item", "reportSurface", "setSourceError",
+    "detailsOpen", "jsx", "View", "Text", "Pressable", "FeedbackText", "textMeasurementKey", "windowWidth", "fontScale", "windowScale", "styles", "runtimeSelectors", "itemId", "feedback", "detailLines", "sourceError", "t", "openCanonicalSourceLink", "openSource", "showReport", "ContentReportSheet", "item", "reportSurface", "setSourceError", "children",
     javascript,
   )(
     detailsOpen, hostJsx, "View", "Text", "Pressable", "FeedbackText", textMeasurementKey, 328, 3.571, 3, { details: "details-style", sources: "sources-style", sourceLabel: "label-style", sourceUnavailable: "unavailable-style", detailText: "message-style" },
     runtimeSelectors, "item-1", { details: "details", messages: [{ kind: "wrong_option", targetId: "wrong", text: "Authored explanation." }], sources: [] },
-    detailLines, false, (value: string) => value, () => "opened", async () => "opened", false, "ContentReportSheet", "item", "report", () => undefined,
+    detailLines, false, (value: string) => value, () => "opened", async () => "opened", false, "ContentReportSheet", "item", "report", () => undefined, undefined,
   );
   const collapsed = evaluate(false);
   assert.equal(collapsed, null);

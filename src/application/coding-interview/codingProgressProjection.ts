@@ -90,21 +90,28 @@ function buildCanonicalProgressFacts(
 ): CanonicalProgressFacts {
   const current = attempts;
   const practicedIds = new Set(current.flatMap(attempt => { const unit = attemptUnit(attempt); return unit ? [`${unit.nodeId}\0${unit.mentalUnitId}`] : []; }));
-  const dueByNode = new Map<string, number>();
+  const reviewsByNode = new Map<string, { due: number; remediation: number; criticalRemediation: number }>();
+  const nowMs = Date.parse(now);
   for (const review of reviews) {
-    if (!isActiveReviewQueueEntry(review) || review.dueAt === undefined || Date.parse(review.dueAt) > Date.parse(now)) continue;
     const nodeId = reviewUnit(review)?.nodeId;
-    if (nodeId !== undefined) dueByNode.set(nodeId, (dueByNode.get(nodeId) ?? 0) + 1);
+    if (nodeId === undefined) continue;
+    const counts = reviewsByNode.get(nodeId) ?? { due: 0, remediation: 0, criticalRemediation: 0 };
+    if (isActiveReviewQueueEntry(review) && review.dueAt !== undefined && !(Date.parse(review.dueAt) > nowMs)) counts.due++;
+    if (review.persistent) {
+      counts.remediation++;
+      if (review.reasons.includes("repeated_mistake")) counts.criticalRemediation++;
+    }
+    reviewsByNode.set(nodeId, counts);
   }
   const byNode = new Map<string, TrainingQuestionSummary[]>();
   for (const question of questions) (byNode.get(question.nodeId) ?? (byNode.set(question.nodeId, []), byNode.get(question.nodeId)!)).push(question);
   const nodeProgress = [...byNode].map(([nodeId, nodeQuestions]) => {
     const units = new Set(nodeQuestions.map(question => question.mentalUnitId));
     const practiced = [...units].filter(unit => practicedIds.has(`${nodeId}\0${unit}`)).length;
-    const nodeReviews = reviews.filter(review => reviewUnit(review)?.nodeId === nodeId);
-    const remediationDueCount = nodeReviews.filter(review => review.persistent).length;
-    const criticalRemediationDueCount = nodeReviews.filter(review => review.persistent && review.reasons.includes("repeated_mistake")).length;
-    const due = dueByNode.get(nodeId) ?? 0;
+    const counts = reviewsByNode.get(nodeId);
+    const remediationDueCount = counts?.remediation ?? 0;
+    const criticalRemediationDueCount = counts?.criticalRemediation ?? 0;
+    const due = counts?.due ?? 0;
     const status: CanonicalNodeProgress["status"] = due > 0 ? "review_due" : practiced > 0 ? "practicing" : "not_started";
     return { uniquePracticedItemCount: practiced, itemCount: units.size, label: nodeId, nodeId, status, itemCoveragePercent: units.size ? Math.round(practiced / units.size * 100) : 0, dueReviewCount: due, remediationDueCount, criticalRemediationDueCount };
   });

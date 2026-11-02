@@ -66,7 +66,9 @@ function reviewForRef(id: string, item: Readonly<{ trackId: string; questionId: 
   return { ...testReview(id, `prior-${id}`), trackId: item.trackId as TrackId, sourceSessionId, sourceItem: item };
 }
 
-test("real composition retains its opaque D receipt for exact readback reconciliation and isolates it from another lifecycle", async () => {
+test("real composition retains its opaque D receipt for exact readback reconciliation and isolates it from another lifecycle", async (context) => {
+  let monotonicMs = 1_000;
+  context.mock.method(globalThis.performance, "now", () => monotonicMs);
   const storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
   setActiveProfileLeaseForTests(PROFILE_A);
@@ -79,7 +81,10 @@ test("real composition retains its opaque D receipt for exact readback reconcili
     modeId: "coding-interview-simulation",
     request: { scope: { simulationProfileId: SIMULATION_PROFILE_ID } },
   });
-  await getForegroundSessionTimerFacade().initialize(prepared.session);
+  const timer = getForegroundSessionTimerFacade();
+  context.after(() => timer.runLocalLearningReset(async () => {}));
+  await timer.initialize(prepared.session);
+  await timer.enterForeground(prepared.session);
   let savedDraft = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
   assert.ok(savedDraft);
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK_ID);
@@ -137,6 +142,7 @@ test("real composition retains its opaque D receipt for exact readback reconcili
     }
   };
   armPrewriteFaultAfterTimerCheckpoint = true;
+  monotonicMs += 1_000; // The fault requires a real changed-time checkpoint; equal values intentionally skip the journal.
   await assert.rejects(lifecycle.saveSimulationDraft({ draft: retryDraft, expectedPreviousRevision: savedDraft.revision }), /before it changed/u);
   assert.equal(timerCheckpointJournalCleared, true, "prewrite fault is armed only after the actual timer-checkpoint journal is cleared");
   assert.equal(prewriteFaultOccurred, true, "the injected failure is the next D read before the response draft is written");

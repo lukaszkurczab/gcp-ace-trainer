@@ -46,6 +46,7 @@ export type RootStackParamList = {
   [ROUTES.PRACTICE_SETUP]: PracticeSetupRouteDraft | undefined;
   [ROUTES.PRACTICE_SESSION]: PracticeSessionRouteParams;
   [ROUTES.APPROACH_CHALLENGE]: { sessionId?: string } | undefined;
+  [ROUTES.APPROACH_CHALLENGE_REVIEW]: { sessionId: string; approachOccurrenceId: string };
   [ROUTES.ALGORITHMS_PRACTICE_REVIEW]: { sessionId: string; occurrenceId: string };
   [ROUTES.ALGORITHMS_PRACTICE_SUMMARY]: { sessionId: string };
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION]: { profileId: string };

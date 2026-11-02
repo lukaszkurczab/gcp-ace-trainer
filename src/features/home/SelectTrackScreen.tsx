@@ -15,7 +15,9 @@ import {
 } from "../../domain";
 import { goBackOrHome } from "../../navigation/goBackOrHome";
 import type { RootStackParamList } from "../../navigation/types";
-import { loadActiveTrackId as getActiveTrackId, selectActiveTrack as saveActiveTrackId } from "../../application/learningReadModels";
+import { loadLocalActiveTrackId as getActiveTrackId, readActiveTrackId, selectActiveTrack as saveActiveTrackId } from "../../application/learningReadModels";
+import { captureProfileReadFence } from "../../application/profileReadFence";
+import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
 import { colorWithOpacity, spacing, typography } from "../../theme";
 import type { AppColors } from "../../theme";
 import { reconcileDeviceReminder, reminderNeedsAttention, useAppPreferences, useThemedStyles } from "../../preferences";
@@ -37,16 +39,33 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   const { t: tNotifications } = useTranslation("notifications");
   const reminderCopy = useMemo(() => ({ body: tNotifications("notificationBody"), title: tNotifications("notificationTitle") }), [tNotifications]);
   const largeText = fontScale >= 1.3;
-  const [selectedTrackId, setSelectedTrackId] = useState<TrackId>(CODING_INTERVIEW_TRACK_ID);
-  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
+  const account = usePatternlyAccount();
+  const lastSuccessfulSyncAt = account.state.kind === "authenticated" ? account.state.accountData.lastSuccessfulSyncAt : null;
+  const [initialSelection] = useState<{ trackId: TrackId | null; error: string | null }>(() => {
+    try {
+      const assertCurrentProfile = captureProfileReadFence();
+      const trackId = readActiveTrackId();
+      assertCurrentProfile();
+      return { trackId, error: null };
+    } catch {
+      return { trackId: null, error: "We couldn't load your saved track. Try again." };
+    }
+  });
+  const [selectedTrackId, setSelectedTrackId] = useState<TrackId | null>(initialSelection.trackId);
+  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(initialSelection.trackId);
   const [loaded, setLoaded] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(initialSelection.error);
   const [loadRevision, setLoadRevision] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [reminderErrorKind, setReminderErrorKind] = useState<LearningPlanReminderFailure | null>(null);
   const commitLock = useRef(false);
   const screenFocused = useRef(false);
+  const selectionEdited = useRef(false);
+
+  useFocusEffect(useCallback(() => {
+    selectionEdited.current = false;
+  }, []));
 
   useFocusEffect(
     useCallback(() => {
@@ -58,16 +77,16 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
         .then((trackId) => {
           if (!active) return;
           setActiveTrackId(trackId ?? null);
-          setSelectedTrackId(trackId ?? CODING_INTERVIEW_TRACK_ID);
+          if (!selectionEdited.current) setSelectedTrackId(trackId ?? (onboarding ? CODING_INTERVIEW_TRACK_ID : null));
           setLoaded(true);
         })
         .catch(() => {
           if (!active) return;
-          setLoadError("We couldn't load your saved track. Check your connection and try again.");
+          setLoadError("We couldn't load your saved track. Try again.");
           setLoaded(true);
         });
       return () => { active = false; screenFocused.current = false; };
-    }, [loadRevision]),
+    }, [loadRevision, lastSuccessfulSyncAt, onboarding]),
   );
 
   async function commitSelection() {
@@ -119,7 +138,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
           <View style={[styles.footerContent, largeText ? styles.actionsLargeText : null]}>
             {saveError ? <View testID="patternly:home:select-track:save-error"><Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.saveError} testID={reminderErrorKind ? runtimeSelectors.notifications.error(reminderErrorKind) : undefined}>{t(saveError)}</Text></View> : null}
             <Button
-              disabled={!loaded || isSaving || (!onboarding && selectedTrackId === activeTrackId)}
+              disabled={!loaded || isSaving || selectedTrackId === null || (!onboarding && selectedTrackId === activeTrackId)}
               loading={isSaving}
               onPress={() => { void commitSelection(); }}
               style={[styles.actionButton, largeText ? styles.actionButtonLargeText : null]}
@@ -159,8 +178,10 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
                 <TrackChoiceCard
                   key={track.id}
                   largeText={largeText}
-                  disabled={isSaving}
+                  disabled={!loaded || isSaving}
                   onPress={() => {
+                    if (!loaded || isSaving) return;
+                    selectionEdited.current = true;
                     setSelectedTrackId(track.id);
                     setSaveError(null);
                     setReminderErrorKind(null);

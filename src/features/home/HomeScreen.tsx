@@ -21,7 +21,7 @@ import {
 } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import {
-  loadActiveTrackId as getActiveTrackId,
+  loadLocalActiveTrackId as getActiveTrackId,
   loadActiveTrainingSession,
   loadCodingInterviewDashboard,
   loadGoal,
@@ -114,6 +114,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const homeResumeContext = useHomeResumeUnavailable();
   const accountRef = useRef(account);
   accountRef.current = account;
+  const lastSuccessfulSyncAt = account.state.kind === "authenticated" ? account.state.accountData.lastSuccessfulSyncAt : null;
+  const previousSuccessfulSyncAt = useRef(lastSuccessfulSyncAt);
   const settingsAccount = getSettingsAccountPresentation(account.state);
   const learningPlanRecovery = account.state.kind === "authenticated" || account.state.kind === "localOffline"
     ? account.state.accountData.learningPlanRecovery
@@ -125,6 +127,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);
   const [shellReload, setShellReload] = useState(0);
   const [shellReadError, setShellReadError] = useState<string | null>(null);
+  const shellReadReady = useRef(false);
   const [data, setData] = useState<ShellData>({
     activityRecords: [],
     algorithmsDashboard: null,
@@ -148,19 +151,18 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     }
   }, [route.params?.initialTab]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (activeTab !== "home" || (initialRouteTabRef.current !== null && initialRouteTabRef.current !== "home")) return undefined;
-      const accountState = accountRef.current.state;
-      if (accountState.kind !== "authenticated" || accountState.accountData.status === "resumeRequired") return undefined;
-      void accountRef.current.retryPendingAccountSync();
-      return undefined;
-    }, [activeTab]),
-  );
+  useEffect(() => {
+    if (previousSuccessfulSyncAt.current === lastSuccessfulSyncAt) return;
+    previousSuccessfulSyncAt.current = lastSuccessfulSyncAt;
+    // Background sync can materialize newer progress or a different track.
+    // Reload only on successful sync, never on failed/no-op account updates.
+    if (lastSuccessfulSyncAt !== null) setShellReload((reload) => reload + 1);
+  }, [lastSuccessfulSyncAt]);
 
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
+      shellReadReady.current = false;
       // Keep the last committed projection visible while this same mounted
       // profile refreshes. Profile/actor changes replace the authenticated
       // navigator, so this cache cannot cross an account boundary.
@@ -247,6 +249,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               homePlan,
             });
             setHasLoadedActiveTrack(true);
+            shellReadReady.current = true;
           }
         } catch (error) {
           if (isActive) {
@@ -260,8 +263,27 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
 
       return () => {
         isActive = false;
+        shellReadReady.current = false;
       };
     }, [shellReload]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      // The active-track read shares the account operation lane with sync.
+      // Start ordinary sync only after this focus's local shell has committed,
+      // otherwise a slow network request holds Home behind that same lane.
+      if (!shellReadReady.current || activeTab !== "home" || (initialRouteTabRef.current !== null && initialRouteTabRef.current !== "home")) return undefined;
+      const accountState = accountRef.current.state;
+      if (accountState.kind !== "authenticated" || accountState.accountData.status === "resumeRequired") return undefined;
+      const idleTask = requestIdleCallback(() => {
+        if (!shellReadReady.current) return;
+        const accountState = accountRef.current.state;
+        if (accountState.kind !== "authenticated" || accountState.accountData.status === "resumeRequired") return;
+        void accountRef.current.retryPendingAccountSync();
+      });
+      return () => cancelIdleCallback(idleTask);
+    }, [activeTab, data]),
   );
 
   useEffect(() => {
@@ -394,7 +416,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           navigation.navigate(route.name, route.params);
           return;
         }
-        if (String(session.modeId) === "coding-interview-approach-challenge") {
+        if (action.modeId === "coding-interview-approach-challenge") {
           navigation.navigate(ROUTES.APPROACH_CHALLENGE);
           return;
         }

@@ -30,7 +30,7 @@ test("EAS release configuration has explicit version, runtime, and channel polic
   assert.equal(app.version, "0.1.1");
   assert.deepEqual(app.runtimeVersion, { policy: "appVersion" });
   assert.equal(app.ios?.buildNumber, "1");
-  assert.equal(app.android?.versionCode, 2);
+  assert.equal(app.android?.versionCode, 3);
   assert.equal(eas.cli.appVersionSource, "local");
   assert.equal(eas.cli.requireCommit, true);
   assert.match(eas.cli.version, /^>= /u);

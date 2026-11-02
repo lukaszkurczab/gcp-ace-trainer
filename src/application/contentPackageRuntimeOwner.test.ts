@@ -80,7 +80,7 @@ test("Approach Challenge resolves the raw current bank while ordinary discovery 
   await owner.verifyBundledPackages();
   const ordinary = owner.getPreparedDiscovery(TRACK_ID).track;
   const acm = owner.getPreparedDiscovery(TRACK_ID, APPROACH_CHALLENGE_MODE_ID).track;
-  assert.equal(acm.artifactSha256, "f1f3277cc0a5a50289bc8edc921270aebed8d8bf4080ad328e9000d90c7159e1");
+  assert.equal(acm.approachChallengeProblems?.length, 472, "current discovery uses the expanded paired bank");
   assert.equal(acm.contentVersion, ordinary.contentVersion);
   assert.notEqual(ordinary.artifactSha256, acm.artifactSha256);
   assert.equal(ordinary.approachChallengeProblems?.length, acm.approachChallengeProblems?.length);

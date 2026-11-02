@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createRequire } from 'node:module';
-import { subject, controlledHooks, nodes, settle } from './soloUi22TestHarness.mjs';
+import { subject, controlledHooks, nodes, settle, deferred } from './soloUi22TestHarness.mjs';
 const require = createRequire(import.meta.url);
+const { createRouteLifetime } = require('./routeLifetime.ts');
 const { ROUTES } = require('../../constants/routes.ts');
 const { getTrackDisplay } = require('../../domain/index.ts');
 const { getSettingsAccountPresentation } = require('./tabs/settingsAccountPresentation.ts');
@@ -12,11 +13,14 @@ const { runtimeSelectors } = require('../../testing/runtimeSelectors.ts');
 
 function shell(overrides = {}) {
   const hooks = controlledHooks();
+  let focused = true;
   const shellStorageScope = {};
   const shellTrackId = overrides.shellTrackId ?? 'aws-certified-solutions-architect-associate';
   const bindings = {
     ...Object.fromEntries(['View', 'Screen', 'EmptyState', 'AppShellHeader', 'AppBottomNavigation', 'HomeLoadingSkeleton', 'ProgressLoadingSkeleton', 'SettingsLoadingSkeleton', 'HomeTab', 'ProgressTab', 'SettingsTab'].map(name => [name, name])),
-    ...hooks.bindings, useRef: current => ({ current }),
+    useRouteLifetime: () => hooks.bindings.useMemo(() => createRouteLifetime(), []),
+    ...hooks.bindings, useRef: current => hooks.bindings.useMemo(() => ({ current }), []),
+    useFocusEffect: callback => hooks.bindings.useEffect(() => focused ? callback() : undefined, [callback, focused]),
     usePatternlyAccount: () => ({ state: { kind: 'guest' }, readCurrentPremiumAccess: () => ({ kind: 'free' }) }),
     useHomeResumeUnavailable: () => null, useThemedStyles: () => ({}), createStyles: () => ({}),
     useTranslation: () => ({ t: key => key }), markStartup: () => {},
@@ -37,8 +41,8 @@ function shell(overrides = {}) {
     ...overrides,
   };
   const screen = subject('src/features/home/HomeScreen.tsx', 'HomeScreen', bindings);
-  const render = initialTab => hooks.render(screen, { route: { params: { initialTab } }, navigation: { navigate() {} } });
-  return { render };
+  const render = initialTab => hooks.render(screen, { route: { params: { initialTab } }, navigation: { navigate() {}, setParams() {} } });
+  return { render, setFocused: value => { focused = value; }, unmount: () => hooks.unmount() };
 }
 
 test('Home shell retains global read error and Retry recovery', async () => {
@@ -145,4 +149,168 @@ test('Home shell supplies the same captured durable arrays and clock to Home and
   assert.equal(captured.length, 4);
   for (const read of captured) assert.equal(read.now, '2026-10-15T10:00:00Z');
   for (const read of captured.slice(1)) { assert.equal(read.attempts, attempts); assert.equal(read.reviews, reviews); }
+});
+
+
+function idleScheduler() {
+  let next = 0;
+  const tasks = new Map();
+  return {
+    bindings: {
+      requestIdleCallback(callback) { tasks.set(++next, callback); return next; },
+      cancelIdleCallback(id) { tasks.delete(id); },
+    },
+    get size() { return tasks.size; },
+    run() { for (const [id, callback] of tasks) { tasks.delete(id); callback(); } },
+  };
+}
+
+const authenticated = (status = 'offlinePending') => ({ kind: 'authenticated', user: { email: null, providers: [] }, accountData: { status, lastSuccessfulSyncAt: '2026-10-15T08:00:00Z', lastFailureCode: null, pendingMutationCount: 1, blockingConflictCode: null } });
+
+test('Home publishes the selected track before a slow pending sync can occupy the shared account lane', async () => {
+  const idle = idleScheduler(), network = deferred();
+  let accountLane = Promise.resolve(), syncCalls = 0, trackReads = 0;
+  const account = {
+    state: authenticated(), readCurrentPremiumAccess: () => 'allowed',
+    retryPendingAccountSync() {
+      syncCalls++;
+      accountLane = accountLane.then(() => network.promise);
+      return accountLane;
+    },
+  };
+  const ui = shell({ ...idle.bindings, usePatternlyAccount: () => account,
+    getActiveTrackId: () => accountLane.then(() => { trackReads++; return 'aws-certified-solutions-architect-associate'; }),
+  });
+  ui.render('home');
+  assert.equal(syncCalls, 0);
+  assert.equal(idle.size, 0, 'no sync is scheduled from the previous/unloaded shell');
+  await settle();
+  const tree = nodes(ui.render('home'));
+  assert.equal(trackReads, 1);
+  assert.ok(tree.some(node => node.type === 'HomeTab'));
+  assert.equal(syncCalls, 0, 'React shell publication precedes the background retry');
+  assert.equal(idle.size, 1);
+  idle.run();
+  assert.equal(syncCalls, 1);
+  assert.ok(nodes(ui.render('home')).some(node => node.type === 'HomeTab'), 'Home stays visible while network remains unresolved');
+  network.resolve();
+  await settle();
+  ui.unmount();
+});
+
+test('leaving Home or removing its route cancels the pending sync callback', async () => {
+  for (const leave of ['tab', 'blur', 'unmount']) {
+    const idle = idleScheduler();
+    let syncCalls = 0;
+    const account = { state: authenticated(), readCurrentPremiumAccess: () => 'allowed', retryPendingAccountSync: async () => { syncCalls++; } };
+    const ui = shell({ ...idle.bindings, usePatternlyAccount: () => account });
+    ui.render('home'); await settle(); ui.render('home');
+    assert.equal(idle.size, 1);
+    if (leave === 'tab') {
+      nodes(ui.render('home')).find(node => node.type === 'AppBottomNavigation').props.onHomeTabChange('settings');
+      ui.render('settings');
+    } else if (leave === 'blur') { ui.setFocused(false); ui.render('home'); }
+    else ui.unmount();
+    assert.equal(idle.size, 0);
+    idle.run();
+    assert.equal(syncCalls, 0);
+    if (leave !== 'unmount') ui.unmount();
+  }
+});
+
+test('an idle Home retry rechecks the current actor and resume-required status', async () => {
+  for (const state of [{ kind: 'guest' }, authenticated('resumeRequired')]) {
+    const idle = idleScheduler();
+    let syncCalls = 0;
+    const account = { state: authenticated(), readCurrentPremiumAccess: () => 'allowed', retryPendingAccountSync: async () => { syncCalls++; } };
+    const ui = shell({ ...idle.bindings, usePatternlyAccount: () => account });
+    ui.render('home'); await settle(); ui.render('home');
+    assert.equal(idle.size, 1);
+    account.state = state;
+    ui.render('home');
+    idle.run();
+    assert.equal(syncCalls, 0);
+    ui.unmount();
+  }
+});
+
+test('resume-required recovery still finishes before reading and publishing Home', async () => {
+  const idle = idleScheduler(), recovery = deferred(), calls = [];
+  const account = { state: authenticated('resumeRequired'),
+    readCurrentPremiumAccess: () => 'unavailable',
+    retryAccountSync: () => { calls.push('recover'); return recovery.promise; },
+    retryPendingAccountSync: async () => { calls.push('pending'); },
+  };
+  const ui = shell({ ...idle.bindings, usePatternlyAccount: () => account,
+    getActiveTrackId: async () => { calls.push('track'); return 'aws-certified-solutions-architect-associate'; },
+  });
+  ui.render('home'); await settle();
+  assert.deepEqual(calls, ['recover']);
+  assert.ok(!nodes(ui.render('home')).some(node => node.type === 'HomeTab'));
+  recovery.resolve(); await settle();
+  assert.ok(nodes(ui.render('home')).some(node => node.type === 'HomeTab'));
+  assert.deepEqual(calls, ['recover', 'track']);
+  assert.equal(idle.size, 0);
+  ui.unmount();
+});
+
+
+test('refocusing Home does not start sync from its previous committed projection', async () => {
+  const idle = idleScheduler(), nextTrack = deferred();
+  let reads = 0, syncCalls = 0;
+  const trackId = 'aws-certified-solutions-architect-associate';
+  const account = { state: authenticated(), readCurrentPremiumAccess: () => 'allowed', retryPendingAccountSync: async () => { syncCalls++; } };
+  const ui = shell({ ...idle.bindings, usePatternlyAccount: () => account,
+    getActiveTrackId: () => ++reads === 1 ? Promise.resolve(trackId) : nextTrack.promise,
+  });
+  ui.render('home'); await settle(); ui.render('home');
+  assert.equal(idle.size, 1);
+  ui.setFocused(false); ui.render('home');
+  assert.equal(idle.size, 0);
+  ui.setFocused(true); ui.render('home'); await settle();
+  assert.equal(reads, 2);
+  assert.equal(idle.size, 0, 'old data cannot put sync ahead of the new track read');
+  idle.run(); assert.equal(syncCalls, 0);
+  nextTrack.resolve(trackId); await settle(); ui.render('home');
+  assert.equal(idle.size, 1);
+  idle.run(); assert.equal(syncCalls, 1);
+  ui.unmount();
+});
+
+
+test('successful background materialization refreshes Home; failures and unchanged timestamps do not reload it', async () => {
+  const idle = idleScheduler();
+  let trackId = 'aws-certified-solutions-architect-associate', reads = 0, retryCalls = 0, networkCalls = 0;
+  let attempts = [];
+  const account = {
+    state: authenticated('synced'), readCurrentPremiumAccess: () => 'allowed',
+    retryPendingAccountSync: async () => { retryCalls++; if (networkCalls === 0) networkCalls++; },
+  };
+  const ui = shell({ ...idle.bindings, usePatternlyAccount: () => account,
+    getActiveTrackId: async () => { reads++; return trackId; },
+    readActiveTrackId: () => trackId,
+    getTrainingAttempts: async () => ({ ok: true, value: attempts }),
+  });
+  ui.render('home'); await settle(); ui.render('home'); idle.run();
+  assert.equal(reads, 1, 'initial sync timestamp causes no duplicate local read');
+  assert.equal(retryCalls, 1);
+  const previousSyncAt = account.state.accountData.lastSuccessfulSyncAt;
+  account.state = authenticated('offlinePending');
+  ui.render('home'); await settle(); ui.render('home');
+  assert.equal(reads, 1, 'a failed sync/account status change cannot trigger a retry loop');
+  trackId = 'google-cloud-associate-cloud-engineer';
+  attempts = [{ id: 'remote-answer', trackId }];
+  account.state = authenticated('synced');
+  account.state.accountData.lastSuccessfulSyncAt = '2026-10-15T09:00:00Z';
+  assert.notEqual(account.state.accountData.lastSuccessfulSyncAt, previousSyncAt);
+  ui.render('home'); ui.render('home'); await settle();
+  const home = nodes(ui.render('home')).find(node => node.type === 'HomeTab');
+  assert.ok(home, 'Home must recover from the old track owner after remote materialization');
+  assert.equal(home.props.activeTrack.id, trackId);
+  assert.equal(home.props.trainingAttempts, attempts);
+  assert.equal(reads, 2);
+  idle.run(); await settle(); ui.render('home');
+  assert.equal(networkCalls, 1, 'the settled follow-up pending check does not start another network sync');
+  assert.equal(reads, 2, 'a no-op retry cannot cause another reload');
+  ui.unmount();
 });

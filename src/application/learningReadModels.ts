@@ -28,6 +28,8 @@ import type { StorageIssue } from "../storage/repositories/result";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 import { transitionGoalPlanStatus } from "./learningPlan/goalPlanLifecycle";
 import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
+import { withLocalLearningWriteOperation } from "./learningMutations/localLearningWriteOperation";
+import { captureProfileReadFence } from "./profileReadFence";
 
 /** Application-owned read ports consumed by presentation. */
 export type { StorageIssue };
@@ -36,6 +38,16 @@ export type { StorageIssue };
 export function readLearningPlanStorageScope(): object { return readLearningPlanStorageScopeFromStorage(); }
 export function readActiveTrackId(): TrackId | null { return readActiveTrackIdFromStorage(); }
 export async function loadActiveTrackId() { return loadSettledActiveTrackSelection(); }
+/** Selection metadata waits for local materialization, not account network work. */
+export async function loadLocalActiveTrackId(): Promise<TrackId | null> {
+  const assertCurrentProfile = captureProfileReadFence();
+  return withLocalLearningWriteOperation(async () => {
+    assertCurrentProfile();
+    const trackId = readActiveTrackIdFromStorage();
+    assertCurrentProfile();
+    return trackId;
+  });
+}
 export async function selectActiveTrack(trackId: TrackId) { await commitActiveTrackSelection(trackId); }
 export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId, requireGoalPolicy(trackId)); }
 export async function persistGoalPlanStatus(trackId: TrackId) { return transitionGoalPlanStatus(trackId); }

@@ -4,11 +4,12 @@ import test from "node:test";
 import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
 import { createFamilyEnvelope, createTrainingAttempt, type ReviewQueueEntry, type TrainingAttempt } from "../../../domain";
 import { buildProgressTabModel } from "./progressTabModel";
+import { ALGORITHM_MODE_IDS } from "../../../tracks/coding-interview/domain/algorithmModes";
 
 type Track = ReturnType<typeof contentPackageRuntimeOwner.getPreparedDiscovery>["track"];
 function attempt(track: Track, questionId: string, index: number, kind: "correct" | "partial" | "incorrect" = "correct"): TrainingAttempt {
   const item = { trackId: track.trackId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256, questionId };
-  return createTrainingAttempt({ id: `projection:${String(index).padStart(4, "0")}`, sessionId: "projection-session", trackId: track.trackId as TrainingAttempt["trackId"], modeId: "practice", occurrenceId: `projection-occurrence:${index}`, item, response: {}, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-01-01T00:00:00.000Z", committedAt: "2026-01-01T00:00:00.000Z" });
+  return createTrainingAttempt({ id: `projection:${String(index).padStart(4, "0")}`, sessionId: "projection-session", trackId: track.trackId as TrainingAttempt["trackId"], modeId: track.trackId === "coding-interview-dsa-problem-solving" ? ALGORITHM_MODE_IDS.guidedPractice : "practice", occurrenceId: `projection-occurrence:${index}`, item, response: {}, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-01-01T00:00:00.000Z", committedAt: "2026-01-01T00:00:00.000Z" });
 }
 function build(track: Track, trainingAttempts: readonly TrainingAttempt[]) {
   return buildProgressTabModel({ activeTrackId: track.trackId, activityRecords: [], trainingAttempts, reviewQueueItems: [], now: "2026-01-15T00:00:00.000Z", timezone: "UTC" });

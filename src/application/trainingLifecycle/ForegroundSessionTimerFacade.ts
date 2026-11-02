@@ -4,7 +4,8 @@ import {
 } from "../../domain";
 import type { ForegroundSessionClock, ForegroundTimerLeaveReason } from "../runtime/ForegroundSessionTimer";
 import type { ForegroundTimerRepositoryPort } from "../runtime/ForegroundTimerRepositoryPort";
-import { TrainingApplicationFailure, type TrackRegistryPort } from "./contracts";
+import { TrainingApplicationFailure, type TrackRegistryPort, type PracticeResponseCheckpoint, type PracticeProfileLeaseHandle } from "./contracts";
+import { resolvedContentRefsEqual } from "../../domain";
 import type { SimulationCommandAuthorization, TrainingLifecycleUseCases } from "./TrainingLifecycleUseCases";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 
@@ -173,6 +174,41 @@ export class ForegroundSessionTimerFacade {
     });
   }
 
+  /** Checkpoint T only. The timer lane is released before the answer enters its lifecycle lane. */
+  async capturePracticeResponseCheckpoint(session: TrainingSession, originalProfileLease: PracticeProfileLeaseHandle): Promise<PracticeResponseCheckpoint> {
+    const generation = this.generation;
+    const occurrence = session.itemOrder[session.currentItemIndex];
+    const assertOwner = () => {
+      this.dependencies.lifecycle.assertPracticeProfileLeaseCurrent(originalProfileLease);
+      if (this.generation !== generation) throw new ForegroundSessionTimerRecoveryError("The response checkpoint no longer belongs to the original profile.");
+    };
+    assertOwner();
+    return this.serialize(session.id, async () => {
+      assertOwner();
+      const current = await this.dependencies.getActiveSession?.();
+      assertOwner();
+      const currentOccurrence = current?.itemOrder[current.currentItemIndex];
+      if (!occurrence || !current || current.id !== session.id || current.status !== "active" || current.modeId !== session.modeId || current.configurationSnapshot.timer !== "elapsedForeground" || !currentOccurrence || currentOccurrence.occurrenceId !== occurrence.occurrenceId || !resolvedContentRefsEqual(currentOccurrence.item, occurrence.item)) throw new ForegroundSessionTimerRecoveryError("The response checkpoint no longer belongs to the current practice occurrence.");
+      const operation = await this.dependencies.lifecycle.getPracticeOperationState(current, false);
+      assertOwner();
+      if (operation.kind !== "unanswered" && !(operation.kind === "submit_journal_failed" && operation.error.allowedAction === "submit_again")) throw new ForegroundSessionTimerRecoveryError("Restore the current response before checkpointing another answer.");
+      // Cold clock restoration also leaves T→S to the answer journal here.
+      const timer = await this.requireTimer(current, false);
+      assertOwner();
+      let state: ForegroundTimerState;
+      try { state = await timer.checkpointForDraftSave(); }
+      catch (error) { throw this.fail(session.id, error, "Session timer checkpoint failed before response save."); }
+      assertOwner();
+      const assertCurrent = () => {
+        assertOwner();
+        const latest = timer.getState();
+        if (latest.sessionId !== current.id || latest.trackId !== current.trackId || latest.checkpointRevision < state.checkpointRevision || latest.accumulatedForegroundMs < state.accumulatedForegroundMs) throw new ForegroundSessionTimerRecoveryError("The durable response clock checkpoint is unavailable.");
+      };
+      assertCurrent();
+      return Object.freeze({ sessionId: current.id, modeId: current.modeId, occurrenceId: occurrence.occurrenceId, item: Object.freeze({ ...occurrence.item }), checkpointRevision: state.checkpointRevision, cumulativeT: state.accumulatedForegroundMs, originalProfileLease, assertCurrent });
+    });
+  }
+
   async saveDraftAtResponseBoundary(session: TrainingSession, authorization: SimulationCommandAuthorization, commit: () => Promise<void>): Promise<boolean> {
     return this.serialize(session.id, async () => {
       const terminal = this.terminalProjection(session);
@@ -216,6 +252,10 @@ export class ForegroundSessionTimerFacade {
   }
 
   releaseAfterVerifiedPracticeCompletion(sessionId: string): void {
+    this.releaseAfterTerminalSuccess(sessionId);
+  }
+
+  releaseAfterVerifiedSessionEnd(sessionId: string): void {
     this.releaseAfterTerminalSuccess(sessionId);
   }
 
@@ -268,7 +308,7 @@ export class ForegroundSessionTimerFacade {
     });
   }
 
-  private async restore(session: TrainingSession): Promise<ForegroundSessionClock> {
+  private async restore(session: TrainingSession, synchronize = true): Promise<ForegroundSessionClock> {
     const familyId = this.dependencies.tracks.getTrackRegistration(session.trackId).familyId;
     const cached = this.timers.get(session.id);
     if (cached) {
@@ -293,18 +333,20 @@ export class ForegroundSessionTimerFacade {
     }
     // A missing diagnostic receipt fails its runner, never normal recovery.
     try { this.dependencies.observeRestoreBeforeSync?.(state, session); } catch { /* non-authoritative observation */ }
-    if (state.accumulatedForegroundMs > session.activeForegroundMs) await this.sync(state);
-    else this.synchronizedTimerRevisions.set(state.sessionId, state.checkpointRevision);
+    if (synchronize) {
+      if (state.accumulatedForegroundMs > session.activeForegroundMs) await this.sync(state);
+      else this.synchronizedTimerRevisions.set(state.sessionId, state.checkpointRevision);
+    }
     const timer = this.dependencies.createTimer(state, session);
     this.timers.set(session.id, timer);
     return timer;
   }
 
-  private async requireTimer(session: TrainingSession): Promise<ForegroundSessionClock> {
+  private async requireTimer(session: TrainingSession, synchronize = true): Promise<ForegroundSessionClock> {
     const fault = this.faults.get(session.id);
     if (fault) throw fault;
     assertForegroundTimedSession(session);
-    return this.restore(session);
+    return this.restore(session, synchronize);
   }
 
   private async leaveForegroundInLane(session: TrainingSession, reason: ForegroundTimerLeaveReason = "session_exit"): Promise<ForegroundTimeProjection> {

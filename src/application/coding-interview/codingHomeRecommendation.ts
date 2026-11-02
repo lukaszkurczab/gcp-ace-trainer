@@ -1,6 +1,7 @@
 import type { TrackDisplay, TrainingSession } from "../../domain";
 import type { CodingInterviewDashboard } from "./codingInterviewContracts";
 import { ALGORITHM_MODE_IDS, isAlgorithmModeId } from "../../tracks/coding-interview/domain";
+import { APPROACH_CHALLENGE_MODE_ID, isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
 import type { HomeRecommendationProjection as HomeRecommendationModel } from "../homePracticeProjection";
 
 export function projectCodingHomeRecommendation(input: Readonly<{ activeTrack: TrackDisplay; activeSession?: TrainingSession | null; algorithmsDashboard: CodingInterviewDashboard | null; dashboardError: string | null }>, currentNodeId: string): HomeRecommendationModel[] {
@@ -12,9 +13,13 @@ export function projectCodingHomeRecommendation(input: Readonly<{ activeTrack: T
   if (!dashboard) return [];
   const active = input.activeSession;
   if (active?.status === "active" && active.trackId === input.activeTrack.id) {
-    if (dashboard.activeSessionId !== active.id || !isAlgorithmModeId(active.modeId)) return [unavailableCodingResumeRecommendation()];
+    const approachChallenge = isApproachChallengeTrainingAttempt(active.trackId, active.modeId);
+    const modeId = approachChallenge ? APPROACH_CHALLENGE_MODE_ID : isAlgorithmModeId(active.modeId) ? active.modeId : null;
+    // The ordinary dashboard has a different artifact pin from the paired ACM bank.
+    // The resume command validates ACM's exact pin before navigation.
+    if ((!approachChallenge && dashboard.activeSessionId !== active.id) || !modeId) return [unavailableCodingResumeRecommendation()];
     return [{
-      action: { kind: "resume_active_practice", sessionId: active.id, trackId: input.activeTrack.id, modeId: active.modeId },
+      action: { kind: "resume_active_practice", sessionId: active.id, trackId: input.activeTrack.id, modeId },
       detail: "Resume the saved Coding Interview session at its current question.",
       enabled: true, icon: "play", label: "Continue", primaryLabel: "Continue session", title: "Continue active session", tone: "primary",
     }];

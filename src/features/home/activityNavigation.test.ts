@@ -8,10 +8,12 @@ import { buildActivityResultRoute, navigateToActivityResult } from "./activityNa
 
 const algorithms = { interaction: { destination: "algorithms_practice_summary", kind: "open_result" } as const, sessionId: "practice-1" };
 const canonical = { interaction: { destination: "canonical_result", kind: "open_result" } as const, sessionId: "certification-1" };
+const acm = { interaction: { destination: "approach_challenge_detail", kind: "open_result" } as const, sessionId: "acm-1" };
 
 test("Activity opens only resolver-owned result destinations", () => {
   assert.deepEqual(buildActivityResultRoute(algorithms), { name: ROUTES.ALGORITHMS_PRACTICE_SUMMARY, params: { sessionId: "practice-1" } });
   assert.deepEqual(buildActivityResultRoute(canonical), { name: ROUTES.RESULT, params: { sessionId: "certification-1" } });
+  assert.deepEqual(buildActivityResultRoute(acm), { name: ROUTES.APPROACH_CHALLENGE, params: { sessionId: "acm-1" } });
 });
 
 test("Activity result routing fails closed for inline-only records", () => {
@@ -24,8 +26,10 @@ test("Activity navigation preserves the original session identity", () => {
   const navigation = { navigate: (...args: unknown[]) => calls.push(args) } as unknown as NavigationProp<RootStackParamList>;
   navigateToActivityResult(navigation, algorithms);
   navigateToActivityResult(navigation, canonical);
+  navigateToActivityResult(navigation, acm);
   assert.deepEqual(calls, [
     [ROUTES.ALGORITHMS_PRACTICE_SUMMARY, { sessionId: "practice-1" }],
     [ROUTES.RESULT, { sessionId: "certification-1" }],
+    [ROUTES.APPROACH_CHALLENGE, { sessionId: "acm-1" }],
   ]);
 });

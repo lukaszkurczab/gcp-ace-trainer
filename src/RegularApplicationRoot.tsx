@@ -1,3 +1,4 @@
+import "./infrastructure/identity/installNativeSha256";
 import { NavigationContainer } from "@react-navigation/native";
 import { useSyncExternalStore } from "react";
 import { StatusBar } from "expo-status-bar";

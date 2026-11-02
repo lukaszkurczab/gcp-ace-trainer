@@ -7,13 +7,17 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+  describeCodingExplanationDelta,
+  prepareCodingExplanationsManifest,
   EXPECTED_TRACK_IDS,
   CLAUDE_TRACK_ID,
   GENERATED_DIRECTORY,
   SUCCESSOR_LEDGER_FILE_NAME,
   RELEASE_LOCK_RELATIVE_PATH,
-  ACM3_ACCEPTED_ARTIFACT_SHA256,
+  APPROACH_CHALLENGE_BANK_CONTRACT,
+  APPROACH_CHALLENGE_TRACK_ID,
   buildCurrentReleaseLock,
+  deriveAcceptedApproachChallengeContract,
   historicalTrainingProjection,
   parseArgs,
   syncCanonicalContent,
@@ -37,7 +41,7 @@ test("sync arguments keep candidate mode explicit and separate", () => {
   assert.deepEqual(parseArgs([]), { mode: "sync" });
   assert.deepEqual(parseArgs(["check", "--content-root", "../content"]), { mode: "check", producerRoot: path.resolve("../content") });
   assert.deepEqual(parseArgs(["candidate", "--content-root", "../content"]), { mode: "candidate", producerRoot: path.resolve("../content") });
-  assert.deepEqual(parseArgs(["sync-acm3", "--content-root", "../content"]), { mode: "authorized-current-acm3", producerRoot: path.resolve("../content") });
+  assert.deepEqual(parseArgs(["sync-current-approach-challenge", "--content-root", "../content"]), { mode: "authorized-current-approach-challenge", producerRoot: path.resolve("../content") });
   assert.throws(() => parseArgs(["check", "--local-reviewed-candidate", "acceptance.json"]), /Usage:/u);
 });
 
@@ -324,17 +328,62 @@ test("candidate mode rejects a clean source and never weakens ordinary sync", as
   assert.deepEqual(await snapshot(state.targetDirectory), before);
 });
 
-test("authorized ACM3 mode fails closed on any producer artifact other than its fixed accepted hash", async (t) => {
+test("authorized current-bank sync fails closed without a source-derived accepted bank manifest", async (t) => {
   const state = await fixture();
   t.after(() => rm(state.root, { recursive: true, force: true }));
   await writeFile(path.join(state.producerRoot, "accepted-source-is-dirty.json"), "authorized integration probe\n");
   const before = await snapshot(state.targetDirectory);
   const lockBefore = await readFile(state.targetLockFile);
-  await assert.rejects(syncCanonicalContent({ ...state.options, mode: "authorized-current-acm3" }), /does not match its accepted exact SHA-256/u);
+  await assert.rejects(syncCanonicalContent({ ...state.options, mode: "authorized-current-approach-challenge" }), /source manifest differs from the accepted/u);
   assert.deepEqual(await snapshot(state.targetDirectory), before);
   assert.deepEqual(await readFile(state.targetLockFile), lockBefore);
   assert.equal(git(state.producerRoot, "status", "--porcelain=v1", "--untracked-files=all").includes("accepted-source-is-dirty.json"), true);
-  assert.match(ACM3_ACCEPTED_ARTIFACT_SHA256, /^[a-f0-9]{64}$/u);
+});
+
+test("accepted bank contract binds exact source entries to the source-derived artifact SHA", () => {
+  const problems = [];
+  const familyCounts = {};
+  for (const [familyId, count] of Object.entries(APPROACH_CHALLENGE_BANK_CONTRACT.familyCounts)) {
+    familyCounts[familyId] = count;
+    for (let index = 1; index <= count; index += 1) {
+      const problemId = `contract-${familyId}-${String(index).padStart(2, "0")}`;
+      problems.push({
+        problemId, problemVersion: "1", primaryFamilyId: familyId,
+        approachQuestion: { questionId: `${problemId}-q1` },
+        complexityQuestion: { questionId: `${problemId}-q2` },
+      });
+    }
+  }
+  const sourceEntries = problems.map((problem, index) => ({
+    familyId: problem.primaryFamilyId,
+    problemId: problem.problemId,
+    problemVersion: problem.problemVersion,
+    sourcePath: `content/${problem.primaryFamilyId}/${problem.problemId}.json`,
+    sourceSha256: sha256(Buffer.from(`source:${index}:${problem.problemId}`)),
+    questionIds: [problem.approachQuestion.questionId, problem.complexityQuestion.questionId],
+  }));
+  const sourceManifest = {
+    registryVersion: "test-current-bank-v2",
+    problemCount: APPROACH_CHALLENGE_BANK_CONTRACT.problemCount,
+    questionCount: APPROACH_CHALLENGE_BANK_CONTRACT.questionCount,
+    freeProblemCount: APPROACH_CHALLENGE_BANK_CONTRACT.freeProblemCount,
+    premiumProblemCount: APPROACH_CHALLENGE_BANK_CONTRACT.premiumProblemCount,
+    familyCounts,
+    sourceEntries,
+  };
+  const artifactBytes = Buffer.from(JSON.stringify({ trackId: APPROACH_CHALLENGE_TRACK_ID, approachChallengeProblems: problems }));
+  const artifactSha256 = sha256(artifactBytes);
+  const currentIdentity = { tracks: [{ trackId: APPROACH_CHALLENGE_TRACK_ID, artifactSha256 }] };
+  const contract = deriveAcceptedApproachChallengeContract(sourceManifest, artifactBytes, currentIdentity);
+  assert.equal(contract.registryVersion, sourceManifest.registryVersion);
+  assert.equal(contract.artifactSha256, artifactSha256);
+  assert.equal(contract.sourceEntries.length, 472);
+  assert.throws(() => deriveAcceptedApproachChallengeContract(sourceManifest, artifactBytes, {
+    tracks: [{ trackId: APPROACH_CHALLENGE_TRACK_ID, artifactSha256: "f".repeat(64) }],
+  }), /does not bind the actual paired-bank artifact hash/u);
+  const mismatched = structuredClone(sourceManifest);
+  mismatched.sourceEntries[0].sourceSha256 = "bad";
+  assert.throws(() => deriveAcceptedApproachChallengeContract(mismatched, artifactBytes, currentIdentity), /invalid or duplicate source entry/u);
 });
 
 test("a clean detached canonical main checkout retains exact source provenance", async (t) => {
@@ -1010,4 +1059,228 @@ test("check rejects a temporary root inside appRoot before any app-tree write", 
   assert.equal(buildCalled, false);
   assert.deepEqual((await readdir(state.appRoot, { recursive: true })).sort(), before);
   assert.equal(await lstat(unsafeTemporaryRoot).then(() => true, () => false), false);
+});
+
+const REAL_CONTENT_ROOT = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(import.meta.dirname, "../../patternly-content"));
+const REAL_GENERATED = path.resolve(REAL_CONTENT_ROOT, "../patternly", GENERATED_DIRECTORY);
+const codingBaseline = JSON.parse(await readFile(path.join(REAL_GENERATED, `${APPROACH_CHALLENGE_TRACK_ID}.json`), "utf8"));
+// Exercise the exact reviewed predecessor prompts even after the current APP advances.
+for (const [id, prompt] of Object.entries({
+  "alg-hms-choose-015-distinct-membership": "Which state is sufficient when the output asks for the number of distinct values only?",
+  "alg-tp-dup-13-both-sides": "Why may both pointers need duplicate skipping after a successful pair match?",
+})) codingBaseline.questions.find((q) => q.questionId === id).prompt = prompt;
+const promptSuccessors = {
+  "alg-hms-choose-015-distinct-membership": "Which minimal hash-based state is sufficient when the output asks only for the number of distinct values?",
+  "alg-tp-dup-13-both-sides": "After emitting a unique value pair from a sorted array, which symmetric policy skips repetitions of both just-used boundary values before the next comparison?",
+};
+function explanationSuccessor() {
+  const result = structuredClone(codingBaseline);
+  result.questions.find((q) => q.questionId === "alg-complexity-output-001").feedback.reason += " Producing k records incurs k output actions.";
+  for (const [id, prompt] of Object.entries(promptSuccessors)) result.questions.find((q) => q.questionId === id).prompt = prompt;
+  const p = result.approachChallengeProblems[0];
+  p.approachQuestion.feedback.details = { blocks: [{ type: "paragraph", text: "Visit each requested index once and accumulate its contribution without preprocessing the rest of the array." }] };
+  p.approachQuestion.feedback.reason += " Compare the requested range with the whole input workload.";
+  p.approachQuestion.interaction.options[0].feedback += " The inclusive endpoints determine exactly which entries are accumulated.";
+  p.methodReveal.title += " for this query";
+  p.problemVersion = String(Number(p.problemVersion) + 1);
+  const second = result.approachChallengeProblems[1];
+  result.questions.find((q) => q.questionId === "alg-complexity-output-001").feedback.messages[0].text += " Count each required output action before comparing the candidate bounds.";
+  second.complexityQuestion.feedback.reason += " Count the stated preparation and query work under the same cost model.";
+  second.problemVersion = String(Number(second.problemVersion) + 1);
+  return result;
+}
+
+test("explanations delta admits text and only the two exact prompt exceptions", () => {
+  const after = explanationSuccessor();
+  const items = describeCodingExplanationDelta(codingBaseline, after);
+  assert.equal(items.filter((item) => item.kind === "ordinary").length, 3);
+  assert.equal(items.filter((item) => item.kind === "acm").length, 2);
+  assert.deepEqual(items.filter((item) => item.kind === "ordinary").map((item) => item.itemId).sort(), ["alg-complexity-output-001", ...Object.keys(promptSuccessors)].sort());
+  for (const item of items) assert.ok(item.changes.length);
+  assert.notEqual(sha256(historicalTrainingProjection(codingBaseline, codingBaseline.contentVersion)), sha256(historicalTrainingProjection(after, after.contentVersion)));
+});
+
+test("explanations version guard accepts one numeric or semantic patch step, never a jump", () => {
+  const before = structuredClone(codingBaseline), after = structuredClone(codingBaseline);
+  const p = after.approachChallengeProblems.find((problem) => /^[0-9]+\.[0-9]+\.[0-9]+$/u.test(problem.problemVersion));
+  assert.ok(p, "the current Coding bank contains semantic-version ACM sources");
+  p.approachQuestion.feedback.reason += " State the output obligation explicitly.";
+  const old = p.problemVersion, parts = old.split("."); parts[2] = String(Number(parts[2]) + 1); p.problemVersion = parts.join(".");
+  assert.equal(describeCodingExplanationDelta(before, after).length, 1);
+  p.problemVersion = `${parts[0]}.${Number(parts[1]) + 1}.0`;
+  assert.throws(() => describeCodingExplanationDelta(before, after), /coding_explanations_version/u);
+  p.problemVersion = `${parts[0]}.${parts[1]}.${Number(parts[2]) + 1}`;
+  assert.throws(() => describeCodingExplanationDelta(before, after), /coding_explanations_version/u);
+});
+
+test("explanations delta rejects protected changes even if a manifest writer tried to approve them", async (t) => {
+  const cases = [
+    ["ordinary answer", (x) => { x.questions[0].answer.optionId = "other"; }],
+    ["ordinary option text", (x) => { x.questions[0].interaction.options[0].text += " changed"; }],
+    ["ordinary prompt", (x) => { x.questions[0].prompt += " changed"; }],
+    ["exception wording", (x) => { x.questions.find((q) => q.questionId === Object.keys(promptSuccessors)[0]).prompt += " changed"; }],
+    ["exception preimage", (x, b) => { b.questions.find((q) => q.questionId === Object.keys(promptSuccessors)[0]).prompt += " changed"; }],
+    ["constraints", (x) => { x.questions[0].constraints = ["changed"]; }],
+    ["mental objective", (x) => { x.questions[0].mentalUnitId += "-changed"; }],
+    ["scoring", (x) => { x.questions[0].interaction.scoringMethod = "changed"; }],
+    ["ordinary order", (x) => { [x.questions[0], x.questions[1]] = [x.questions[1], x.questions[0]]; }],
+    ["ordinary inventory", (x) => { x.questions.pop(); }],
+    ["ACM order", (x) => { x.approachChallengeProblems.reverse(); }],
+    ["ACM inventory", (x) => { x.approachChallengeProblems.pop(); }],
+    ["ACM grade", (x) => { x.approachChallengeProblems[0].approachQuestion.interaction.options[0].grade = "incorrect"; }],
+    ["ACM option text", (x) => { x.approachChallengeProblems[0].approachQuestion.interaction.options[0].text += " changed"; }],
+    ["ACM option identity", (x) => { x.approachChallengeProblems[0].approachQuestion.interaction.options[0].optionId += "-changed"; }],
+    ["ACM option order", (x) => { x.approachChallengeProblems[0].approachQuestion.interaction.options.reverse(); }],
+    ["ACM stage identity", (x) => { x.approachChallengeProblems[0].complexityQuestion.questionId += "-changed"; }],
+    ["ACM analyzed approach", (x) => { x.approachChallengeProblems[0].analyzedApproachId += "-changed"; }],
+    ["ACM prompt", (x) => { x.approachChallengeProblems[0].approachQuestion.prompt += " changed"; }],
+    ["version without text", (x) => { x.approachChallengeProblems[2].problemVersion = String(Number(x.approachChallengeProblems[2].problemVersion) + 1); }],
+    ["missing successor version", (x) => { x.approachChallengeProblems[0].problemVersion = codingBaseline.approachChallengeProblems[0].problemVersion; }],
+    ["version jump", (x) => { x.approachChallengeProblems[0].problemVersion = "99"; }],
+    ["message target", (x) => { const q = x.questions.find((q) => q.feedback.messages?.length); q.feedback.messages[0].targetId += "-changed"; }],
+    ["message kind", (x) => { const q = x.questions.find((q) => q.feedback.messages?.length); q.feedback.messages[0].kind = "changed"; }],
+    ["message removal", (x) => { const q = x.questions.find((q) => q.feedback.messages?.length); q.feedback.messages.pop(); }],
+    ["new message array", (x) => { const p = x.approachChallengeProblems.find((p) => p.complexityQuestion.feedback.messages === undefined); const q = p.complexityQuestion; q.feedback.messages = [{kind:"wrong_option",targetId:q.interaction.options.find((o)=>o.optionId!==q.answer.optionId).optionId,text:"A newly introduced message is outside this authorization."}]; }],
+    ["new message in existing array", (x) => { const q = x.questions.find((q) => q.feedback.messages?.length); q.feedback.messages.push({...q.feedback.messages[0],text:"An additional message is not a text-only edit."}); }],
+    ["message order", (x) => { const q = x.questions.find((q) => q.feedback.messages?.length > 1); q.feedback.messages.reverse(); }],
+    ["message array removal", (x) => { const q = x.questions.find((q) => q.feedback.messages?.length); delete q.feedback.messages; }],
+    ["new hidden field", (x) => { x.questions[0].feedback.hidden = "changed"; }],
+    ["simulation profile", (x) => { x.simulationProfiles[0].profileVersion = "999"; }],
+    ["planning policy", (x) => { x.planningPolicy.policyVersion += "-changed"; }],
+    ["content version", (x) => { x.contentVersion += "-changed"; }],
+    ["schema", (x) => { x.schemaVersion += "-changed"; }],
+  ];
+  for (const [name, change] of cases) await t.test(name, () => {
+    const before = structuredClone(codingBaseline), after = explanationSuccessor(); change(after, before);
+    assert.throws(() => describeCodingExplanationDelta(before, after), /coding_explanations_/u);
+  });
+  assert.throws(() => describeCodingExplanationDelta(codingBaseline, structuredClone(codingBaseline)), /coding_explanations_empty/u);
+});
+
+async function explanationFixture(t) {
+  const state = await fixture(); t.after(() => rm(state.root, { recursive: true, force: true }));
+  await cp(path.join(REAL_CONTENT_ROOT, "scripts/content/approach-challenge-contract.mjs"), path.join(state.producerRoot, "scripts/content/approach-challenge-contract.mjs"));
+  // Full Coding contracts; the other eight tracks are small, immutable canaries.
+  const baselineBytes = Buffer.from(JSON.stringify(codingBaseline));
+  await writeFile(path.join(state.targetDirectory, `${APPROACH_CHALLENGE_TRACK_ID}.json`), baselineBytes);
+  const baselineLockFile = path.join(state.targetDirectory, "content-lock.json");
+  const baselineLock = JSON.parse(await readFile(baselineLockFile, "utf8"));
+  Object.assign(baselineLock.tracks.find((row) => row.trackId === APPROACH_CHALLENGE_TRACK_ID), { contentVersion: codingBaseline.contentVersion, questionCount: 3404, sha256: sha256(baselineBytes) });
+  await writeFile(baselineLockFile, JSON.stringify(baselineLock));
+  const baselineLedger = { schemaVersion: "patternly-content-successor-ledger-v1", tracks: [] };
+  for (const row of baselineLock.tracks) {
+    const a = JSON.parse(await readFile(path.join(state.targetDirectory, `${row.trackId}.json`), "utf8"));
+    baselineLedger.tracks.push({ trackId: row.trackId, training: { contentVersion: row.contentVersion, artifactSha256: sha256(historicalTrainingProjection(a, row.contentVersion)), questionCount: row.questionCount }, planningPolicy: { contentVersion: row.contentVersion, artifactSha256: row.sha256, policyVersion: a.planningPolicy.policyVersion } });
+  }
+  await writeFile(path.join(state.targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), JSON.stringify(baselineLedger));
+  const oldRelease = await readFile(state.targetLockFile);
+  const after = explanationSuccessor();
+  const sourceFile = path.join(state.producerRoot, "content", APPROACH_CHALLENGE_TRACK_ID, "fixture.json");
+  await mkdir(path.dirname(sourceFile), { recursive: true }); await writeFile(sourceFile, JSON.stringify(after.questions));
+  const sourceEntries = [], sourceWrites = [];
+  const sourceDirectories = new Set(after.approachChallengeProblems.map((problem) => path.join(state.producerRoot, "content/approach-challenges", APPROACH_CHALLENGE_TRACK_ID, problem.primaryFamilyId)));
+  await Promise.all([...sourceDirectories].map((directory) => mkdir(directory, { recursive: true })));
+  for (const problem of after.approachChallengeProblems) {
+    const relative = `content/approach-challenges/${APPROACH_CHALLENGE_TRACK_ID}/${problem.primaryFamilyId}/${problem.problemId}.json`;
+    const bytes = Buffer.from(JSON.stringify(problem)); const file = path.join(state.producerRoot, relative);
+    sourceWrites.push([file, bytes]);
+    sourceEntries.push({ familyId: problem.primaryFamilyId, problemId: problem.problemId, problemVersion: problem.problemVersion, sourcePath: relative, sourceSha256: sha256(bytes), questionIds: [problem.approachQuestion.questionId, problem.complexityQuestion.questionId] });
+  }
+  for (let i = 0; i < sourceWrites.length; i += 32) await Promise.all(sourceWrites.slice(i, i + 32).map(([file, bytes]) => writeFile(file, bytes)));
+  sourceEntries.sort((a, b) => a.problemId.localeCompare(b.problemId));
+  const sourceManifest = { registryVersion: "fixture-reviewed", ...APPROACH_CHALLENGE_BANK_CONTRACT, sourceEntries };
+  delete sourceManifest.freeFamilyId;
+  const registryPath = path.join(state.producerRoot, "config/approach-challenge-registries", `${APPROACH_CHALLENGE_TRACK_ID}.json`);
+  await mkdir(path.dirname(registryPath), { recursive: true }); await writeFile(registryPath, JSON.stringify(sourceManifest));
+  await rm(state.producerOutput, { recursive: true }); await mkdir(state.producerOutput);
+  for (const name of await readdir(state.targetDirectory)) if (name !== SUCCESSOR_LEDGER_FILE_NAME) await cp(path.join(state.targetDirectory, name), path.join(state.producerOutput, name));
+  const codingFile = path.join(state.producerOutput, `${APPROACH_CHALLENGE_TRACK_ID}.json`);
+  const bytes = Buffer.from(JSON.stringify(after)); await writeFile(codingFile, bytes);
+  const lockFile = path.join(state.producerOutput, "content-lock.json"), lock = JSON.parse(await readFile(lockFile, "utf8"));
+  lock.tracks.find((entry) => entry.trackId === APPROACH_CHALLENGE_TRACK_ID).sha256 = sha256(bytes); await writeFile(lockFile, JSON.stringify(lock));
+  const runBuildBase = state.options.runBuild, identityBase = state.options.getCurrentIdentity;
+  state.options.runBuild = async (args) => {
+    const built = await runBuildBase(args); built.lockPath = path.join(args.outputRoot, "content-lock.json");
+    const coding = built.artifacts.find((entry) => entry.trackId === APPROACH_CHALLENGE_TRACK_ID);
+    coding.sourceFiles = [sourceFile]; coding.approachChallengeManifest = structuredClone(sourceManifest); return built;
+  };
+  state.options.getCurrentIdentity = async (args) => ({ ...await identityBase(args), sourceTree: "dirty" });
+  state.options.expectedInventory = null;
+  const before = await validateBuiltContent(state.targetDirectory, { producerRoot: state.producerRoot, allowLegacySimulationEvidence: true });
+  const prepareRoot = path.join(state.root, "prepare"); await mkdir(prepareRoot);
+  const built = await state.options.runBuild({ outputRoot: prepareRoot });
+  const currentIdentity = await state.options.getCurrentIdentity({ built });
+  const manifest = await prepareCodingExplanationsManifest({ beforeFiles: before.files, beforeReleaseLock: oldRelease, built, currentIdentity, producerRoot: state.producerRoot });
+  const manifestPath = path.join(state.root, "reviewed.json"), manifestBytes = Buffer.from(JSON.stringify(manifest)); await writeFile(manifestPath, manifestBytes);
+  Object.assign(state.options, { mode: "coding-explanations", explanationsManifestPath: manifestPath, expectedManifestSha256: sha256(manifestBytes) });
+  return { ...state, manifest, sourceFile, sourceManifest };
+}
+
+test("reviewed explanations install only their exact source-bound delta and derive a new ordinary training hash", async (t) => {
+  const state = await explanationFixture(t);
+  const beforeLedger = JSON.parse(await readFile(path.join(state.targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"));
+  const sourceStatus = git(state.producerRoot, "status", "--porcelain=v1", "--untracked-files=all");
+  const result = await syncCanonicalContent(state.options);
+  assert.equal(result.explanationReceipt.changedOrdinary, 3); assert.equal(result.explanationReceipt.changedAcm, 2);
+  const coding = result.ledger.tracks.find((row) => row.trackId === APPROACH_CHALLENGE_TRACK_ID);
+  assert.notEqual(coding.training.artifactSha256, beforeLedger.tracks.find((row) => row.trackId === APPROACH_CHALLENGE_TRACK_ID).training.artifactSha256);
+  for (const id of EXPECTED_TRACK_IDS.filter((id) => id !== APPROACH_CHALLENGE_TRACK_ID)) assert.deepEqual(result.ledger.tracks.find((row) => row.trackId === id), beforeLedger.tracks.find((row) => row.trackId === id));
+  assert.equal(git(state.producerRoot, "status", "--porcelain=v1", "--untracked-files=all"), sourceStatus);
+  assert.equal(result.currentIdentity.sourceTree, "dirty");
+});
+
+test("reviewed explanations reject manifest, source, baseline, and race drift without replacing APP", async (t) => {
+  const cases = [
+    ["missing expected SHA", async (s) => { delete s.options.expectedManifestSha256; }],
+    ["manifest bytes", async (s) => { await writeFile(s.options.explanationsManifestPath, JSON.stringify({ ...s.manifest, items: [] })); }],
+    ["unreviewed IDs", async (s) => { s.manifest.items[0].itemId += "-other"; await writeFile(s.options.explanationsManifestPath, JSON.stringify(s.manifest)); s.options.expectedManifestSha256 = sha256(await readFile(s.options.explanationsManifestPath)); }],
+    ["missing approved delta", async (s) => { s.manifest.items.pop(); await writeFile(s.options.explanationsManifestPath, JSON.stringify(s.manifest)); s.options.expectedManifestSha256 = sha256(await readFile(s.options.explanationsManifestPath)); }],
+    ["ordinary source record", async (s) => { const q = JSON.parse(await readFile(s.sourceFile, "utf8")); q.find((q) => q.questionId === "alg-complexity-output-001").feedback.reason += " unbuilt"; await writeFile(s.sourceFile, JSON.stringify(q)); }],
+    ["ACM source bytes", async (s) => { const file = path.join(s.producerRoot, s.sourceManifest.sourceEntries[0].sourcePath); await writeFile(file, (await readFile(file, "utf8")) + "\n"); }],
+    ["source fingerprint", async (s) => { s.options.getFreshSourceFingerprint = async () => "f".repeat(64); }],
+    ["false clean provenance", async (s) => { const base = s.options.getCurrentIdentity; s.options.getCurrentIdentity = async args => ({ ...await base(args), sourceTree: "clean" }); }],
+    ["registry bytes", async (s) => { const p = path.join(s.producerRoot, "config/approach-challenge-registries", `${APPROACH_CHALLENGE_TRACK_ID}.json`); await writeFile(p, (await readFile(p, "utf8")) + "\n"); }],
+    ["release baseline", async (s) => { await writeFile(s.targetLockFile, "changed baseline"); }],
+    ["stale registry", async (s) => { const base = s.options.runBuild; s.options.runBuild = async args => { const built = await base(args); built.artifacts.find(x => x.trackId === APPROACH_CHALLENGE_TRACK_ID).approachChallengeManifest.sourceEntries[0].sourceSha256 = "f".repeat(64); return built; }; }],
+    ["interrupted transaction", async (s) => { await writeFile(`${s.targetDirectory}.transaction.json`, "preserve me"); }],
+    ["unrelated artifact", async (s) => { const file = path.join(s.producerOutput, `${EXPECTED_TRACK_IDS[0]}.json`); const a = JSON.parse(await readFile(file, "utf8")); a.contentVersion += "-other"; const b = Buffer.from(JSON.stringify(a)); await writeFile(file, b); const lf = path.join(s.producerOutput, "content-lock.json"); const lock = JSON.parse(await readFile(lf, "utf8")); Object.assign(lock.tracks.find(x=>x.trackId===EXPECTED_TRACK_IDS[0]), {contentVersion:a.contentVersion,sha256:sha256(b)}); await writeFile(lf,JSON.stringify(lock)); }],
+  ];
+  const state = await explanationFixture(t), originalOptions = { ...state.options }, originalManifest = structuredClone(state.manifest);
+  const restorable = [state.options.explanationsManifestPath, state.sourceFile, path.join(state.producerRoot, state.sourceManifest.sourceEntries[0].sourcePath), state.targetLockFile, path.join(state.producerOutput, `${EXPECTED_TRACK_IDS[0]}.json`), path.join(state.producerOutput, "content-lock.json"), path.join(state.producerRoot, "config/approach-challenge-registries", `${APPROACH_CHALLENGE_TRACK_ID}.json`)];
+  const originalBytes = await Promise.all(restorable.map((file) => readFile(file)));
+  for (const [name, change] of cases) await t.test(name, async () => {
+    state.options = { ...originalOptions }; state.manifest = structuredClone(originalManifest);
+    await change(state);
+    const before = await snapshot(state.targetDirectory), release = await readFile(state.targetLockFile);
+    const category = name === "source fingerprint" ? /Canonical source changed/u : name === "interrupted transaction" ? /transaction/iu : /coding_explanations_/u;
+    try {
+      await assert.rejects(syncCanonicalContent(state.options), category);
+      assert.deepEqual(await snapshot(state.targetDirectory), before); assert.deepEqual(await readFile(state.targetLockFile), release);
+    } finally {
+      await Promise.all(restorable.map((file, i) => writeFile(file, originalBytes[i])));
+      await rm(`${state.targetDirectory}.transaction.json`, { force: true });
+    }
+  });
+});
+
+test("reviewed explanations preserve a concurrent APP release-lock edit", async (t) => {
+  const state = await explanationFixture(t), build = state.options.runBuild;
+  const concurrent = Buffer.from("concurrent APP metadata must survive");
+  state.options.runBuild = async (args) => { const built = await build(args); await writeFile(state.targetLockFile, concurrent); return built; };
+  const before = await snapshot(state.targetDirectory);
+  await assert.rejects(syncCanonicalContent(state.options), /Installed content changed/u);
+  assert.deepEqual(await snapshot(state.targetDirectory), before);
+  assert.deepEqual(await readFile(state.targetLockFile), concurrent);
+});
+
+test("coding explanations CLI requires a separately supplied digest and leaves old modes closed", () => {
+  assert.deepEqual(parseArgs(["sync-coding-explanations", "--explanations-manifest", "/tmp/review.json", "--expected-manifest-sha256", "a".repeat(64)]), { mode: "coding-explanations", explanationsManifestPath: "/tmp/review.json", expectedManifestSha256: "a".repeat(64) });
+  assert.throws(() => parseArgs(["sync-coding-explanations"]), /Usage:/u);
+  assert.throws(() => parseArgs(["sync", "--explanations-manifest", "/tmp/review.json"]), /Usage:/u);
+});
+
+
+test("explanations preparation refuses missing commit or full producer fingerprint", async () => {
+  await assert.rejects(prepareCodingExplanationsManifest({ currentIdentity: { sourceInputFingerprint: "a".repeat(64) } }), /coding_explanations_identity/u);
+  await assert.rejects(prepareCodingExplanationsManifest({ currentIdentity: { sourceRepositoryCommit: "a".repeat(40) } }), /coding_explanations_identity/u);
 });

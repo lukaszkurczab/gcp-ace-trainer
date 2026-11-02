@@ -6,6 +6,7 @@ import { advanceTrainingSession } from "../../domain";
 import { APPROACH_CHALLENGE_MODE_ID } from "../../tracks/coding-interview/domain/algorithmModes";
 import type { ApproachChallengeProblem } from "../../content/canonical/approachChallengeProblem";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
+import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { createTrainingCatalog, createTrainingInteractionPort } from "../canonicalTrainingFamilyComposition";
 import { CodingInterviewTrainingRuntime } from "./codingInterviewTrainingRuntime";
 import { confirmApproachChallengeShortening, selectApproachChallengeProblems, type ApproachChallengeSelection } from "./approachChallengeSelection";
@@ -75,6 +76,12 @@ test("exact artifact absence fails closed without legacy question fallback", asy
   const base = createTrainingCatalog(track);
   const noApproachSource = new CodingInterviewTrainingRuntime(base, createTrainingInteractionPort(track));
   await assert.rejects(noApproachSource.validateResume({ session: prepared.session, draft: null }), /exact pinned|unavailable/u);
+  await assert.rejects(() => contentPackageRuntimeOwner.resolveExactArtifact({
+    trackId: track.trackId,
+    contentVersion: track.contentVersion,
+    artifactSha256: "f1f3277cc0a5a50289bc8edc921270aebed8d8bf4080ad328e9000d90c7159e1",
+    modeId: APPROACH_CHALLENGE_MODE_ID,
+  }), /unavailable/u, "the previous ACM bank pin must not alias the expanded current artifact");
 });
 
 test("the analyzed method stays hidden until durable Q1 and remains visible on cold Q2 resume", () => {

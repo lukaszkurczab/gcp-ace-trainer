@@ -6,14 +6,14 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { RELEASE_LOCK_RELATIVE_PATH, GENERATED_DIRECTORY } from "./syncBundledContentRelease.mjs";
+import { APPROACH_CHALLENGE_BANK_CONTRACT, RELEASE_LOCK_RELATIVE_PATH, GENERATED_DIRECTORY } from "./syncBundledContentRelease.mjs";
 import { validateBundledApproachChallengeBank, verifyBundledCurrentContent } from "./verifyBundledCurrentContent.mjs";
 
 const root = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 
 test("standalone verifier accepts the real paired bank and rejects malformed or foreign pairs without CONTENT runtime imports", async () => {
   const contentRoot = path.resolve(root, "../patternly-content");
-  const familyCounts = { complexity_and_constraints: 6, arrays_and_strings: 4, hash_map_and_set: 4, two_pointers: 2, sliding_window: 4, prefix_sums: 2, sorting_based: 2, stack: 2, binary_search: 2, tree_traversal: 2, intervals: 2, graph_traversal: 2, dynamic_programming_intro: 2 };
+  const familyCounts = APPROACH_CHALLENGE_BANK_CONTRACT.familyCounts;
   const problems = [];
   for (const [familyIndex, [familyId, count]] of Object.entries(familyCounts).entries()) {
     for (let index = 1; index <= count; index += 1) {
@@ -22,7 +22,7 @@ test("standalone verifier accepts the real paired bank and rejects malformed or 
     }
   }
   const artifact = { trackId: "coding-interview-dsa-problem-solving", approachChallengeProblems: problems };
-  assert.deepEqual(validateBundledApproachChallengeBank(artifact), { problemCount: 36, stageCount: 72, freeCount: 6, premiumCount: 30 });
+  assert.deepEqual(validateBundledApproachChallengeBank(artifact), { problemCount: 472, stageCount: 944, freeCount: 16, premiumCount: 456 });
 
   const malformed = structuredClone(artifact);
   delete malformed.approachChallengeProblems[0].complexityQuestion.answer;

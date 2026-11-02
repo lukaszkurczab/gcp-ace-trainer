@@ -18,8 +18,10 @@ export function readReviewQueueSnapshot(admission: TrackAdmissionContext): Stora
   return { ok: true, value: Object.freeze({ entries: Object.freeze(entries), revisions, indexRevision }) };
 }
 
-export function readReviewQueueFinalizationProofs(refs: readonly ResolvedContentRef[], admission: TrackAdmissionContext): Readonly<{ entries: readonly ReviewQueueEntry[]; proofs: readonly Readonly<{ id: string; revision: number; digest: string }>[] }> {
+export function readReviewQueueFinalizationProofs(refs: readonly ResolvedContentRef[], admission: TrackAdmissionContext): Readonly<{ entries: readonly ReviewQueueEntry[]; reviewBaseline: readonly ReviewQueueEntry[]; proofs: readonly Readonly<{ id: string; revision: number; digest: string }>[] }> {
   const snapshot = readReviewQueueSnapshot(admission).value;
+  const trackIds = new Set(refs.map(ref => ref.trackId));
+  const reviewBaseline = snapshot.entries.filter(entry => trackIds.has(entry.trackId) && entry.sourceItem.trackId === entry.trackId);
   const selected = snapshot.entries.filter((entry) => refs.some((ref) => resolvedContentRefsEqual(ref, entry.sourceItem)));
   const proofs = selected.map((entry) => {
     const proof = readCanonicalEnvelopeProof(STORAGE_KEYS.reviewEntry(entry.id), (value): value is ReviewQueueEntry => isReviewQueueEntry(value, admission));
@@ -27,7 +29,7 @@ export function readReviewQueueFinalizationProofs(refs: readonly ResolvedContent
       JSON.stringify(proof.envelope.payload) !== JSON.stringify(entry)) throw new Error("The exact review evidence changed while its finalization baseline was captured.");
     return Object.freeze({ id: entry.id, revision: proof.envelope.revision, digest: proof.digest });
   }).sort((left, right) => left.id.localeCompare(right.id));
-  return Object.freeze({ entries: Object.freeze(selected), proofs: Object.freeze(proofs) });
+  return Object.freeze({ entries: Object.freeze(selected), reviewBaseline: Object.freeze(reviewBaseline), proofs: Object.freeze(proofs) });
 }
 export function readReviewQueueItems(admission: TrackAdmissionContext): StorageRepositoryResult<ReviewQueueEntry[]> { return { ok: true, value: [...readReviewQueueSnapshot(admission).value.entries] }; }
 export async function getReviewQueueItems(admission: TrackAdmissionContext): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { return readReviewQueueItems(admission); }

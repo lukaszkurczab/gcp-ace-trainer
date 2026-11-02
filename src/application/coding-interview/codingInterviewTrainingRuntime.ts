@@ -8,6 +8,7 @@ import { reviewEvidenceMatchesAttempt } from "../../domain/learning/mentalUnitEv
 import { assertCanonicalReviewSourceProofs, createCanonicalReviewSourceSnapshot, canonicalQuestionReviewEvidence, createCanonicalAttempt, limitQuestionsToReviewNeeds, reviewNeedForQuestion, sameCurrentReviewUnit, scopeAttemptsToLearningTrack, scopeReviewsToLearningTrack } from "../canonical/canonicalFamilyMechanics";
 import { applyCanonicalPlanReplacements, buildCanonicalSessionPlan, prepareCanonicalPlanOccurrences, validateCanonicalSessionPlan } from "../canonical/canonicalSessionPlanMechanics";
 import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
+import { isCanonicalOptionOrder, prepareCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { canonicalInteractionRegistry } from "../../content/canonical/interactions/registry";
 import { validateApproachChallengeProblem, validateApproachChallengeProblemRef, type ApproachChallengeProblem, type ApproachChallengeProblemRef } from "../../content/canonical/approachChallengeProblem";
@@ -195,8 +196,8 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
         primaryFamilyId: problem.primaryFamilyId, requiredFamilyIds: Object.freeze([...problem.requiredFamilyIds]), difficulty: problem.difficulty,
         approachOccurrenceId, complexityOccurrenceId }));
       itemOrder.push(Object.freeze({ occurrenceId: approachOccurrenceId, item: approachRef }), Object.freeze({ occurrenceId: complexityOccurrenceId, item: complexityRef }));
-      optionOrderByOccurrence[approachOccurrenceId] = Object.freeze(problem.approachQuestion.interaction.options.map(({ optionId }) => optionId));
-      optionOrderByOccurrence[complexityOccurrenceId] = Object.freeze(problem.complexityQuestion.interaction.options.map(({ optionId }) => optionId));
+      optionOrderByOccurrence[approachOccurrenceId] = prepareCanonicalOptionOrder(problem.approachQuestion, approachOccurrenceId, approachRef);
+      optionOrderByOccurrence[complexityOccurrenceId] = prepareCanonicalOptionOrder(problem.complexityQuestion, complexityOccurrenceId, complexityRef);
     }
     const manifest: ApproachChallengeManifest = Object.freeze({ schemaVersion: 1, modeId: APPROACH_CHALLENGE_MODE_ID,
       accessAtStart: selection.access, admissionGrant: "session_start", requestedProblemCount: selection.requestedProblemCount,
@@ -224,14 +225,14 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
     for (const [index, entry] of manifest.entries.entries()) {
       const problem = this.resolveManifestProblem(entry, session);
       const expected = [
-        [entry.approachOccurrenceId, problem.approachQuestion.questionId, problem.approachQuestion.interaction.options.map(({ optionId }) => optionId)],
-        [entry.complexityOccurrenceId, problem.complexityQuestion.questionId, problem.complexityQuestion.interaction.options.map(({ optionId }) => optionId)],
+        [entry.approachOccurrenceId, problem.approachQuestion],
+        [entry.complexityOccurrenceId, problem.complexityQuestion],
       ] as const;
-      for (const [stageIndex, [occurrenceId, questionId, options]] of expected.entries()) {
+      for (const [stageIndex, [occurrenceId, question]] of expected.entries()) {
         const occurrence = session.itemOrder[index * 2 + stageIndex];
-        if (!occurrence || occurrence.occurrenceId !== occurrenceId || occurrence.item.questionId !== questionId || occurrence.item.trackId !== session.trackId ||
+        if (!occurrence || occurrence.occurrenceId !== occurrenceId || occurrence.item.questionId !== question.questionId || occurrence.item.trackId !== session.trackId ||
           occurrence.item.contentVersion !== session.contentVersion || occurrence.item.artifactSha256 !== session.artifactSha256 ||
-          JSON.stringify(session.optionOrderByOccurrence[occurrenceId]) !== JSON.stringify(options)) throw new ProductModeUnavailableError("Approach Challenge pinned pair references are corrupt or unavailable.");
+          !isCanonicalOptionOrder(question, session.optionOrderByOccurrence[occurrenceId])) throw new ProductModeUnavailableError("Approach Challenge pinned pair references are corrupt or unavailable.");
         expectedOccurrences.push(occurrenceId);
       }
     }

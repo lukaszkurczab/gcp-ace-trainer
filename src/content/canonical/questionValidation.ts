@@ -28,27 +28,6 @@ function id(value: unknown, path: string, errors: string[]): value is string {
 }
 function safeIdentity(value: unknown, path: string, errors: string[]): value is string { if (!id(value, path, errors)) return false; if (!isCanonicalSafeIdentity(value)) { errors.push(`${path}: must not contain unsafe path segments`); return false; } return true; }
 function text(value: unknown, path: string, errors: string[]): value is string { if (typeof value !== "string" || !HAS_CONTENT.test(value)) { errors.push(`${path}: must contain a non-whitespace character`); return false; } return true; }
-function uniqueIds(value: unknown, path: string, errors: string[], min: number): string[] {
-  if (!Array.isArray(value)) { errors.push(`${path}: must be an array`); return []; }
-  if (value.length < min) errors.push(`${path}: must contain at least ${min} item(s)`);
-  const result: string[] = [];
-  value.forEach((entry, index) => { if (id(entry, `${path}[${index}]`, errors)) result.push(entry); });
-  if (new Set(result).size !== result.length) errors.push(`${path}: must not contain duplicates`);
-  return result;
-}
-function json(value: unknown, path: string, errors: string[]): void {
-  if (value === null || typeof value === "boolean") return;
-  if (typeof value === "string") { text(value, path, errors); return; }
-  if (typeof value === "number") { if (!Number.isFinite(value)) errors.push(`${path}: must be a finite JSON number`); return; }
-  if (Array.isArray(value)) { value.forEach((entry, index) => json(entry, `${path}[${index}]`, errors)); return; }
-  if (record(value)) { Object.entries(value).forEach(([key, entry]) => json(entry, `${path}.${key}`, errors)); return; }
-  errors.push(`${path}: must be a JSON value`);
-}
-function exactSet(actual: readonly string[], expected: readonly string[], path: string, errors: string[]): void {
-  const a = new Set(actual), e = new Set(expected);
-  if (actual.length !== expected.length || [...a].some((x) => !e.has(x)) || [...e].some((x) => !a.has(x))) errors.push(`${path}: must contain exactly the expected identities`);
-}
-
 export function validateQuestion(value: unknown, registry: CanonicalInteractionRegistry = canonicalInteractionRegistry): readonly string[] {
   return registry.validate(value);
 }

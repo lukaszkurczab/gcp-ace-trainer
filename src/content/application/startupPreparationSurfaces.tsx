@@ -22,7 +22,7 @@ export function ProfileTransitionSurface({ onRetry }: Readonly<{ onRetry?: () =>
 }
 export function UnavailableActiveSurface({ error, confirming, pending, onCancel, onConfirm, onAsk, onRetry }: Readonly<{ error?: string; confirming: boolean; pending: boolean; onCancel: () => void; onConfirm: () => void; onAsk: () => void; onRetry: () => void }>) {
   const { t } = useTranslation("common");
-  return <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailableActive()}><Screen>
+  return <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailableActive()}><Screen edges={["top", "bottom"]} style={{ justifyContent: "center" }}>
     <EmptyState descriptionTone="secondary" description={error ?? t("An active session uses content that is no longer available. Abandon it to keep its saved facts and start a new session.")} title={t("Active session needs attention")} />
     {confirming ? <View style={{ gap: 12 }}>
       <Button onPress={onCancel} testID={runtimeSelectors.content.unavailableActiveCancel()} variant="secondary">{t("Cancel")}</Button>

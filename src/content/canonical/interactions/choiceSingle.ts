@@ -1,7 +1,7 @@
 import { createAttemptResult, type AttemptResult } from "../../../domain/learning/attemptResult";
 import type { CanonicalFeedback, InteractionEvaluation, InteractionHandler, QuestionBase } from "./shared";
 import { canonicalEvaluation, exactResponse } from "./utils";
-import { exact, id, uniqueIds, validateChoiceOptions, validateFeedback, validateQuestionBase } from "./validation";
+import { exact, id, validateChoiceOptions, validateFeedback, validateQuestionBase } from "./validation";
 
 export type ChoiceSingleQuestion = QuestionBase<"choice_single"> & Readonly<{
   interaction: Readonly<{ type: "choice_single"; scoringMethod: "exact_selected_set"; options: readonly Readonly<{ optionId: string; text: string; explanation?: string }>[] }>;

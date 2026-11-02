@@ -18,20 +18,183 @@ import type { AlgorithmResponse } from "../../tracks/coding-interview/domain";
 import type { ResolvedInteractionItem } from "../contentPackageRuntimeOwner";
 import { createCanonicalTrainingFamilyComposition } from "../canonicalTrainingFamilyComposition";
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
+import { loadActivitySessionRecords } from "../activityReadModels";
 import { APPROACH_CHALLENGE_MODE_ID } from "../../tracks/coding-interview/domain/algorithmModes";
 import { ALGORITHM_MODE_IDS, classifyTrainingAttemptMode, type AlgorithmModeId } from "../../tracks/coding-interview/domain/algorithmModes";
 import { advanceApproachChallengeStage, completeApproachChallengeSession, getApproachChallengeDetailedHistory, getApproachChallengeStageProjection, recoverApproachChallengeOperation, retryApproachChallengeStageSubmission, startApproachChallengeSession, submitApproachChallengeStage } from "./approachChallengeSessionFacade";
 import { confirmApproachChallengeShortening, selectApproachChallengeProblems } from "./approachChallengeSelection";
-import { isApproachChallengeStageOperationResolved, projectApproachChallengeMethodReveal } from "./approachChallengeSession";
+import { APPROACH_CHALLENGE_MANIFEST_KEY, decodeApproachChallengeManifest, validateApproachChallengeManifest, isApproachChallengeStageOperationResolved, projectApproachChallengeMethodReveal } from "./approachChallengeSession";
 import * as LegacyAlgorithms from "./codingInterviewSessionFacade";
+import { endApproachChallengeSession, pauseApproachChallengeSession } from "./approachChallengeSessionExit";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import { installForegroundSessionTimerFacade, installTrainingLifecycleUseCases, TrainingApplicationFailure, type ForegroundSessionTimerFacade } from "../trainingLifecycle";
+import { getForegroundSessionTimerFacade, installForegroundSessionTimerFacade, installTrainingLifecycleUseCases, TrainingApplicationFailure, type ForegroundSessionTimerFacade, type TrainingLifecyclePorts } from "../trainingLifecycle";
 
 const fixturePath = path.resolve(process.cwd(), "../patternly-content/tests/fixtures/approach-challenge/W01.json");
 const accountWireFixturePath = path.resolve(process.cwd(), ".agent/private/acm5-20261030/account-wire-fixture.json");
 const currentBankAccountWireFixturePath = path.resolve(process.cwd(), "../.agent/private/acm-close-contract-20261030/current-bank-account-wire-fixture.json");
 const problem = JSON.parse(readFileSync(fixturePath, "utf8")) as ApproachChallengeProblem;
 const now = "2026-10-30T12:00:00.000Z";
+
+test("ACM submit reads one attempt snapshot and duplicate or changed answers never reload reviews or write", async () => {
+  const { lifecycle, problem, storage } = await startActualProductionBankSession("acm-read-snapshot");
+  const repositories = (lifecycle as unknown as { ports: TrainingLifecyclePorts }).ports.repositories;
+  const getAttempts = repositories.getAttempts.bind(repositories), getReviews = repositories.getReviews.bind(repositories);
+  let attemptReads = 0, reviewReads = 0;
+  repositories.getAttempts = async () => { attemptReads++; return getAttempts(); };
+  repositories.getReviews = async () => { reviewReads++; return getReviews(); };
+  const optionId = problem.approachQuestion.interaction.options[0]!.optionId;
+  const response = { type: "approach_choice", optionId };
+  await lifecycle.submitPracticeResponse(response);
+  assert.equal(attemptReads, 1); assert.equal(reviewReads, 1);
+  const durable = storage.snapshot();
+  attemptReads = reviewReads = 0;
+  await lifecycle.submitPracticeResponse(response);
+  assert.equal(attemptReads, 1); assert.equal(reviewReads, 0);
+  assert.deepEqual(storage.snapshot(), durable);
+  attemptReads = reviewReads = 0;
+  await assert.rejects(lifecycle.submitPracticeResponse({ ...response, optionId: problem.approachQuestion.interaction.options[1]!.optionId }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "invalid_response");
+  assert.equal(attemptReads, 1); assert.equal(reviewReads, 0);
+  assert.deepEqual(storage.snapshot(), durable);
+  attemptReads = reviewReads = 0;
+  (lifecycle as unknown as { ports: TrainingLifecyclePorts }).ports.packages.resolveExactArtifact = async () => { throw new Error("Exact artifact unavailable"); };
+  await assert.rejects(lifecycle.submitPracticeResponse(response), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "resume_unavailable");
+  assert.equal(attemptReads, 0, "exact-pin validation precedes the reusable evidence snapshot");
+  assert.equal(reviewReads, 0);
+  assert.deepEqual(storage.snapshot(), durable, "artifact loss is explicit and cannot rewrite the accepted answer");
+});
+
+test("confirmed abandonment rejects a changed session inside its queued lane without writing", async () => {
+  const { lifecycle, storage, prepared } = await startActualProductionBankSession("acm-confirmed-end-race");
+  const internal = lifecycle as unknown as { ports: TrainingLifecyclePorts; serializeSessionMutation: (id: string, operation: () => Promise<void>) => Promise<void> };
+  let unblock!: () => void, readInitial!: () => void;
+  const gate = new Promise<void>((resolve) => { unblock = resolve; });
+  const initialRead = new Promise<void>((resolve) => { readInitial = resolve; });
+  const blocked = internal.serializeSessionMutation(prepared.session.id, () => gate);
+  let visible = prepared.session;
+  internal.ports.repositories.getActiveSession = async () => { readInitial(); return visible; };
+  const before = storage.snapshot();
+  const rejected = assert.rejects(lifecycle.abandonActiveSession({ sessionId: prepared.session.id }),
+    (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "active_session_conflict");
+  await initialRead;
+  visible = { ...prepared.session, id: "another-active-session" };
+  unblock();
+  await Promise.all([blocked, rejected]);
+  assert.equal(visible.status, "active");
+  assert.deepEqual(storage.snapshot(), before, "neither session nor attempts nor a new journal may change");
+});
+
+test("confirmed abandonment checks its profile fence after asynchronous exact resolution", async () => {
+  const { lifecycle, storage, prepared } = await startActualProductionBankSession("acm-confirmed-profile-race");
+  const ports = (lifecycle as unknown as { ports: TrainingLifecyclePorts }).ports;
+  const resolve = ports.packages.resolveExactArtifact.bind(ports.packages);
+  let current = true;
+  ports.packages.resolveExactArtifact = async (identity) => { const result = await resolve(identity); current = false; return result; };
+  const before = storage.snapshot();
+  await assert.rejects(lifecycle.abandonActiveSession({ sessionId: prepared.session.id, assertCurrent: () => { if (!current) throw Error("profile_changed"); } }), /profile_changed/);
+  assert.deepEqual(storage.snapshot(), before);
+});
+
+test("expected checkpoint recovery rejects an active-session change before its queued recovery can run", async () => {
+  const { lifecycle, storage, prepared } = await startActualProductionBankSession("acm-end-checkpoint-recovery-race");
+  const internal = lifecycle as unknown as { ports: TrainingLifecyclePorts; serializeSessionMutation: (id: string, operation: () => Promise<void>) => Promise<void> };
+  let unblock!: () => void, resolved!: () => void;
+  const gate = new Promise<void>((resolve) => { unblock = resolve; });
+  const resolution = new Promise<void>((resolve) => { resolved = resolve; });
+  const blocked = internal.serializeSessionMutation(prepared.session.id, () => gate);
+  const originalResolve = internal.ports.packages.resolveExactArtifact.bind(internal.ports.packages);
+  internal.ports.packages.resolveExactArtifact = async (identity) => { const result = await originalResolve(identity); resolved(); return result; };
+  let visible = prepared.session;
+  internal.ports.repositories.getActiveSession = async () => visible;
+  let recoveries = 0;
+  internal.ports.mutations.recover = async () => { recoveries++; };
+  const before = storage.snapshot();
+  const rejected = assert.rejects(lifecycle.recoverActiveTrainingOperation(undefined, { sessionId: prepared.session.id }),
+    (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "active_session_conflict");
+  await resolution;
+  visible = { ...prepared.session, id: "another-recovery-owner" };
+  unblock();
+  await Promise.all([blocked, rejected]);
+  assert.equal(recoveries, 0, "cannot recover a global journal after the confirmed owner changed");
+  assert.deepEqual(storage.snapshot(), before);
+});
+
+test("early end preserves an exact partial pair in Activity and permits an empty end without fabricating a result", async () => {
+  for (const answered of [false, true]) {
+    const { lifecycle, problem, prepared } = await startActualProductionBankSession(`acm-early-end-${answered}`);
+    if (answered) {
+      const option = problem.approachQuestion.interaction.options.find(({ grade }) => grade === "partial")!;
+      await submitApproachChallengeStage({ type: "approach_choice", optionId: option.optionId });
+      await lifecycle.advancePracticeSession();
+    }
+    const attempts = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
+    const timerCalls: string[] = [];
+    installForegroundSessionTimerFacade({ async leaveForeground() { timerCalls.push("checkpoint"); }, releaseAfterVerifiedSessionEnd(id: string) { assert.equal(id, prepared.session.id); timerCalls.push("release"); } } as unknown as ForegroundSessionTimerFacade);
+    const result = await endApproachChallengeSession(prepared.session.id);
+    assert.equal(result.kind, "ended");
+    assert.deepEqual(timerCalls, ["checkpoint", "release"]);
+    assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+    assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, attempts);
+    assert.equal(await getTrainingSessionResult(prepared.session.id, productionTrackAdmissionContext), null, "early ending does not fabricate a completed score");
+    const records = await loadActivitySessionRecords();
+    assert.equal(records.some(({ session }) => session.id === prepared.session.id), answered, "only answered ended sessions belong in Activity");
+    const detail = await getApproachChallengeDetailedHistory(prepared.session.id);
+    assert.equal(detail.kind, "ready");
+    if (detail.kind === "ready") {
+      assert.equal(detail.status, "abandoned");
+      assert.equal(detail.artifactSha256, prepared.session.artifactSha256);
+      assert.equal(detail.problems[0]!.stages[0].result?.kind ?? null, answered ? "partial" : null);
+      assert.equal(detail.problems[0]!.stages[1].response, null, "unfinished Q2 remains unanswered");
+    }
+  }
+});
+
+test("pause retains the exact active ACM session and its durable answer for ordinary resume", async () => {
+  const { lifecycle, problem, prepared } = await startActualProductionBankSession("acm-shared-quiz-pause");
+  await submitApproachChallengeStage({ type: "approach_choice", optionId: problem.approachQuestion.interaction.options[0]!.optionId });
+  await lifecycle.advancePracticeSession();
+  const sessionBefore = await getActiveTrainingSession(productionTrackAdmissionContext);
+  const attemptsBefore = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
+  let checkpoints = 0;
+  installForegroundSessionTimerFacade({ async leaveForeground() { checkpoints++; }, releaseAfterVerifiedSessionEnd() { throw Error("pause_must_not_release_terminal_state"); } } as unknown as ForegroundSessionTimerFacade);
+  assert.equal((await pauseApproachChallengeSession(prepared.session.id)).kind, "paused");
+  assert.equal(checkpoints, 1);
+  assert.deepEqual(await getActiveTrainingSession(productionTrackAdmissionContext), sessionBefore);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, attemptsBefore);
+  assert.equal(await getTrainingSessionResult(prepared.session.id, productionTrackAdmissionContext), null);
+  const resumed = await getApproachChallengeStageProjection();
+  assert.equal(resumed.kind, "ready");
+  if (resumed.kind === "ready") {
+    assert.equal(resumed.stage, "complexity");
+    assert.equal(resumed.sessionId, prepared.session.id);
+    assert.equal(resumed.accepted, false);
+  }
+});
+
+test("a lost actual abandonment journal readback recovers without issuing another abandon command", async () => {
+  const { lifecycle, storage, prepared } = await startActualProductionBankSession("acm-early-end-readback");
+  installForegroundSessionTimerFacade({ async leaveForeground() {}, releaseAfterVerifiedSessionEnd() {} } as unknown as ForegroundSessionTimerFacade);
+  const ports = (lifecycle as unknown as { ports: TrainingLifecyclePorts }).ports;
+  const originalAbandon = ports.mutations.abandon.bind(ports.mutations);
+  let commands = 0;
+  ports.mutations.abandon = async (...args) => { commands++; return originalAbandon(...args); };
+  const originalSet = storage.setString.bind(storage), originalGet = storage.getString.bind(storage);
+  let awaitingReadback = false;
+  storage.setString = (key, value) => { originalSet(key, value); if (key === STORAGE_KEYS.ACTIVE_JOURNAL) awaitingReadback = true; };
+  storage.getString = (key) => {
+    if (key === STORAGE_KEYS.ACTIVE_JOURNAL && awaitingReadback) { awaitingReadback = false; throw Error("injected_end_readback_failure"); }
+    return originalGet(key);
+  };
+  const result = await endApproachChallengeSession(prepared.session.id);
+  storage.setString = originalSet;
+  storage.getString = originalGet;
+  assert.equal(result.kind, "not_ended");
+  if (result.kind !== "not_ended") throw Error("unverified_end_was_not_blocked");
+  assert.equal(result.nextAction, "recover_abandonment");
+  assert.equal(commands, 1);
+  assert.equal((await endApproachChallengeSession(prepared.session.id, result.nextAction)).kind, "ended");
+  assert.equal(commands, 1, "recovery reuses the actual immutable journal");
+  assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+});
 
 test("paired stages persist through the existing lifecycle journal, resume exact pins, and finalize without review writes", async () => {
   const storage = installMemoryStorage();
@@ -183,6 +346,7 @@ test("production consumer composes the actual bank pair, durable feedback, compl
   assert.ok(problem, "the current prepared bank contains the expected W01 production pair");
   let productionSessionId = 0;
   const lifecycle = composeTrainingLifecycleUseCases({
+    premiumSessionAdmission: { authorize: async () => "allowed" },
     wallClock: { now: () => now }, sessionIds: { create: async () => `acm6-production-${++productionSessionId}` },
     packages: { async resolveForPreparation() { return resolved; }, async resolveForDiscovery() { return resolved; }, async resolveExactArtifact() { return resolved; } },
   });
@@ -194,12 +358,26 @@ test("production consumer composes the actual bank pair, durable feedback, compl
   const prepared = await startApproachChallengeSession(confirmApproachChallengeShortening(selection, true));
   if ("kind" in prepared && prepared.kind === "unavailable") throw new Error("the production bank selection should start");
   if (!("session" in prepared)) throw new Error("the production bank selection should create a session");
+  let stage = await getApproachChallengeStageProjection();
+  assert.equal(stage.kind, "ready");
+  if (stage.kind !== "ready") throw new Error("production Q1 prompt is unavailable");
+  assert.equal((stage.interaction.model as any).diagnostics, undefined, "unanswered canonical projection contains no option grades");
+  assert.equal(stage.feedback, null, "unanswered projection also withholds the best-approach explanation");
+  assert.ok((stage.interaction.model as any).model.renderer.options.every((option: any) => !option.correct && !option.grade), "unanswered controls reveal no answer key");
   const partialOption = problem.approachQuestion.interaction.options.find(({ grade }) => grade === "partial")!;
   await submitApproachChallengeStage({ type: "approach_choice", optionId: partialOption.optionId });
-  let stage = await getApproachChallengeStageProjection();
+  stage = await getApproachChallengeStageProjection();
   assert.equal(stage.kind, "ready");
   if (stage.kind !== "ready") throw new Error("production Q1 feedback is unavailable");
   assert.equal(stage.result?.kind, "partial");
+  assert.equal(stage.feedback?.reason, partialOption.feedback, "Almost retains feedback about the selected approach");
+  assert.deepEqual(stage.feedback?.approachExplanation, {
+    reason: problem.approachQuestion.feedback.reason,
+    options: problem.approachQuestion.interaction.options.filter(({ grade }) => grade === "correct")
+      .map((option) => ({ id: option.optionId, text: option.text, reason: option.feedback })),
+  }, "durable Almost also carries the exact pinned rationale for every optimal approach");
+  assert.equal(((stage.interaction.model as any).diagnostics as readonly { id: string; state: string }[]).filter(({ state }) => state === "correct").length,
+    problem.approachQuestion.interaction.options.filter(({ grade }) => grade === "correct").length, "durably saved Q1 reveals all equivalent correct approaches");
   assert.deepEqual(stage.methodReveal, problem.methodReveal);
   await lifecycle.advancePracticeSession();
   await submitApproachChallengeStage(problem.complexityQuestion.answer);
@@ -208,6 +386,7 @@ test("production consumer composes the actual bank pair, durable feedback, compl
   if (stage.kind !== "ready") throw new Error("production Q2 feedback is unavailable");
   assert.equal(stage.result?.kind, "correct");
   assert.ok(stage.feedback?.details, "the full canonical Q2 explanation is durable before it is shown");
+  assert.equal(stage.feedback?.approachExplanation, null, "Q2 keeps its own complexity explanation");
   await completeApproachChallengeSession();
   const detailed = await getApproachChallengeDetailedHistory(prepared.session.id);
   assert.equal(detailed.kind, "ready");
@@ -216,7 +395,15 @@ test("production consumer composes the actual bank pair, durable feedback, compl
     assert.equal(pair.contentVersion, track.contentVersion);
     assert.equal(pair.artifactSha256, track.artifactSha256);
     assert.deepEqual(pair.stages.map(({ stage, result }) => [stage, result?.kind]), [["approach", "partial"], ["complexity", "correct"]]);
-    const answers = pair.stages.map(({ interaction }) => (interaction.model as any).renderer.options.find((option: any) => option.selected)?.text);
+    assert.equal(pair.stages[0].feedback?.reason, partialOption.feedback);
+    assert.deepEqual(pair.stages[0].feedback?.approachExplanation, {
+      reason: problem.approachQuestion.feedback.reason,
+      options: problem.approachQuestion.interaction.options.filter(({ grade }) => grade === "correct")
+        .map((option) => ({ id: option.optionId, text: option.text, reason: option.feedback })),
+    }, "history gets full Q1 explanation only from its already verified exact problem");
+    assert.equal(pair.stages[1].feedback?.approachExplanation, null);
+    assert.deepEqual(pair.stages[1].feedback?.details, problem.complexityQuestion.feedback.details);
+    const answers = pair.stages.map(({ interaction }) => ((interaction.model as any).model ?? interaction.model).renderer.options.find((option: any) => option.selected)?.text);
     assert.deepEqual(answers, [problem.approachQuestion.interaction.options.find(({ optionId }) => optionId === partialOption.optionId)?.text, problem.complexityQuestion.interaction.options.find(({ optionId }) => optionId === problem.complexityQuestion.answer.optionId)?.text]);
   }
   const abandoned = await lifecycle.startSession({ trackId: track.trackId, modeId: APPROACH_CHALLENGE_MODE_ID, source: "approachChallenge", request: { selection: confirmApproachChallengeShortening(selection, true) } });
@@ -224,10 +411,16 @@ test("production consumer composes the actual bank pair, durable feedback, compl
   await lifecycle.abandonActiveSession();
   const abandonedDetail = await getApproachChallengeDetailedHistory(abandoned.session.id);
   assert.equal(abandonedDetail.kind, "ready");
+  const sharedHistory = await loadActivitySessionRecords();
+  assert.ok(sharedHistory.some(({ session }) => session.id === prepared.session.id), "completed ACM appears in common Activity history");
+  assert.ok(sharedHistory.some(({ session }) => session.id === abandoned.session.id), "abandoned ACM with a committed answer appears in common Activity history");
   if (abandonedDetail.kind === "ready") {
     const stages = abandonedDetail.problems[0]!.stages;
     assert.deepEqual(stages.map((row) => row.stage), ["approach", "complexity"]);
     assert.equal(stages[0]?.result?.kind, "partial");
+    assert.equal(stages[0]?.feedback?.reason, partialOption.feedback);
+    assert.equal(stages[0]?.feedback?.approachExplanation?.reason, problem.approachQuestion.feedback.reason);
+    assert.equal(stages[1]?.feedback, null, "unanswered Q2 never gains explanation through history enrichment");
     assert.notEqual(stages[0]?.response, null);
     assert.deepEqual(abandonedDetail.problems[0]?.methodReveal, problem.methodReveal);
     assert.equal(stages[1]?.response, null);
@@ -460,8 +653,7 @@ test("ACM Q2 lost journal readback recovers the exact durable command through a 
   assert.equal(await getActiveMutationJournal(productionLearningDataAdmissionContext), null);
 });
 
-test("the exact six-task Free family can start without a blanket Premium mode gate", async () => {
-  installMemoryStorage();
+test("whole-mode Premium guards even former-Free ACM tasks before preparation and keeps admitted sessions usable", async () => {
   const base = (await loadCanonicalRuntimeCatalog()).getTrack("coding-interview-dsa-problem-solving");
   const freeProblem: ApproachChallengeProblem = Object.freeze({
     ...problem,
@@ -474,21 +666,48 @@ test("the exact six-task Free family can start without a blanket Premium mode ga
   const track = Object.freeze({ ...base, approachChallengeProblems: Object.freeze([freeProblem]) });
   const composition = createCanonicalTrainingFamilyComposition(track);
   const resolution = Object.freeze({ track: composition.catalog, runtime: composition.runtime });
-  const lifecycle = composeTrainingLifecycleUseCases({
-    wallClock: { now: () => now }, sessionIds: { create: async () => "acm-free-session" },
-    packages: {
-      async resolveForPreparation() { return resolution; },
-      async resolveForDiscovery() { return resolution; },
-      async resolveExactArtifact() { return resolution; },
-    },
-  });
   const selection = selectApproachChallengeProblems({
     sources: [{ problem: freeProblem }], contentVersion: track.contentVersion, artifactSha256: track.artifactSha256,
     completion: { kind: "in_progress", chapters: [] } as unknown as PackageCompletionState, access: "free",
     settings: { mode: "manual", requestedProblemCount: 5, difficulties: ["easy", "medium", "hard"], selectedFamilyIds: ["complexity_and_constraints"] },
   });
-  const prepared = await lifecycle.startSession({ trackId: track.trackId, modeId: APPROACH_CHALLENGE_MODE_ID, request: { selection: confirmApproachChallengeShortening(selection, true) } });
-  assert.equal(prepared.session.actualLength, 2);
+  for (const decision of ["denied", "unavailable", "missing", "allowed"] as const) {
+    const storage = installMemoryStorage();
+    let ids = 0, preparations = 0, authorizations = 0;
+    let currentAccess: "allowed" | "denied" | "unavailable" = decision === "missing" ? "unavailable" : decision;
+    const dependencies = {
+      wallClock: { now: () => now }, sessionIds: { create: async () => { ids++; return "acm-premium-session"; } },
+      packages: {
+        async resolveForPreparation() { preparations++; return resolution; },
+        async resolveForDiscovery() { return resolution; },
+        async resolveExactArtifact() { return resolution; },
+      },
+      ...(decision === "missing" ? {} : { premiumSessionAdmission: { authorize: async () => { authorizations++; return currentAccess; } } }),
+    };
+    const lifecycle = composeTrainingLifecycleUseCases(dependencies);
+    const input = { trackId: track.trackId, modeId: APPROACH_CHALLENGE_MODE_ID, request: { selection: confirmApproachChallengeShortening(selection, true) } };
+    const before = storage.snapshot();
+    if (decision !== "allowed") {
+      await assert.rejects(lifecycle.startSession(input), (error: unknown) => error instanceof TrainingApplicationFailure
+        && error.code === (decision === "denied" ? "premium_entitlement_denied" : "premium_entitlement_unavailable"));
+      assert.equal(ids, 0); assert.equal(preparations, 0);
+      assert.deepEqual(storage.snapshot(), before, "denied starts cannot write sessions, attempts or journals");
+      continue;
+    }
+    const prepared = await lifecycle.startSession(input);
+    assert.equal(prepared.session.actualLength, 2);
+    assert.equal(ids, 1); assert.equal(preparations, 1); assert.equal(authorizations, 1);
+    currentAccess = "denied";
+    const cold = composeTrainingLifecycleUseCases(dependencies);
+    assert.equal((await cold.resumeActiveSession()).id, prepared.session.id);
+    await cold.submitPracticeResponse({ type: "approach_choice", optionId: freeProblem.approachQuestion.interaction.options.find(({ grade }) => grade === "correct")!.optionId });
+    await cold.advancePracticeSession();
+    currentAccess = "unavailable";
+    assert.equal((await cold.resumeActiveSession()).currentItemIndex, 1);
+    await cold.abandonActiveSession();
+    assert.equal(await getActiveTrainingSession(productionTrackAdmissionContext), null);
+    assert.equal(authorizations, 1, "durable ACM sessions retain their original admission for continuation and abandonment");
+  }
 });
 
 test("legacy per-item mode guards and practice subscriptions retain the remaining registered product modes", async () => {
@@ -532,7 +751,9 @@ test("legacy per-item mode guards and practice subscriptions retain the remainin
     const sessionId = `acm5-legacy-mode-${index}`;
     const lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => now }, sessionIds: { create: async () => sessionId } });
     installTrainingLifecycleUseCases(lifecycle);
+    const realTimer = getForegroundSessionTimerFacade();
     installForegroundSessionTimerFacade({
+      capturePracticeResponseCheckpoint: realTimer.capturePracticeResponseCheckpoint.bind(realTimer),
       subscribe(listener: (event: { kind: "projection_refresh" | "expired"; sessionId: string }) => void) { timerListeners.push(listener); return () => {}; },
       async initialize() {},
       async projection() { return { elapsedForegroundMs: 0 }; },
@@ -558,6 +779,7 @@ test("legacy per-item mode guards and practice subscriptions retain the remainin
     assert.deepEqual(refreshEvents, [{ kind: "projection_refresh", sessionId }],
       `${modeId} practice timer refresh must pass the legacy session guard`);
     assert.equal(storage.snapshot().size > 0, true, "the positive control uses the existing durable APP session path");
+    await realTimer.runLocalLearningReset(async () => {});
   }
 });
 
@@ -661,6 +883,7 @@ async function startActualProductionBankSession(sessionId: string) {
   const problem = resolved.track.approachChallengeProblems?.find((candidate) => candidate.problemId === "acm-b01-01");
   assert.ok(problem, "the actual canonical bank must contain the ACM.B01 W01 pair");
   const lifecycle = composeTrainingLifecycleUseCases({
+    premiumSessionAdmission: { authorize: async () => "allowed" },
     wallClock: { now: () => now }, sessionIds: { create: async () => sessionId },
     packages: { async resolveForPreparation() { return resolved; }, async resolveForDiscovery() { return resolved; }, async resolveExactArtifact() { return resolved; } },
   });
@@ -677,7 +900,7 @@ async function startActualProductionBankSession(sessionId: string) {
 test("current canonical ACM.B01 bank exports and restores exact pinned account-wire records", async () => {
   const { problem, lifecycle, prepared, track } = await startActualProductionBankSession("acm-current-bank-account-wire");
   const canonicalSourceTrack = (await loadCanonicalRuntimeCatalog()).getTrack(track.trackId);
-  assert.equal(canonicalSourceTrack.artifactSha256, "f1f3277cc0a5a50289bc8edc921270aebed8d8bf4080ad328e9000d90c7159e1", "the fixture producer must use the accepted current canonical bank artifact");
+  assert.equal(canonicalSourceTrack.approachChallengeProblems?.length, 472, "the fixture producer must use the expanded canonical bank");
   assert.equal(track.artifactSha256, canonicalSourceTrack.artifactSha256, "ACM session records use the exact current raw bank artifact");
   assert.notEqual(track.artifactSha256, canonicalSourceTrack.trainingIdentity?.artifactSha256, "the ACM bank artifact remains separate from ordinary training identity");
   assert.equal(canonicalSourceTrack.contentVersion, track.contentVersion);
@@ -751,7 +974,7 @@ test("current canonical ACM.B01 bank exports and restores exact pinned account-w
   assert.equal((restoredResult?.evidence.details as Record<string, unknown>).modeId, APPROACH_CHALLENGE_MODE_ID);
   const restoredExact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: track.trackId, contentVersion: track.contentVersion,
     artifactSha256: track.artifactSha256, modeId: APPROACH_CHALLENGE_MODE_ID });
-  assert.equal(restoredExact.track.artifactSha256, "f1f3277cc0a5a50289bc8edc921270aebed8d8bf4080ad328e9000d90c7159e1");
+  assert.equal(restoredExact.track.artifactSha256, track.artifactSha256, "exact resolution returns the artifact pinned by this session");
   const detailed = await getApproachChallengeDetailedHistory(prepared.session.id);
   assert.equal(detailed.kind, "ready");
   if (detailed.kind !== "ready") throw new Error("imported current-bank ACM history is unavailable");
@@ -799,3 +1022,84 @@ async function assertLegacyByIdReadsReject(sessionId: string, status: "completed
   assert.equal(timerReleases, 0, `${status} ACM completion recovery cannot release a timer`);
   assert.deepEqual(storage.snapshot(), before, `${status} by-ID legacy reads must not mutate or synthesize ACM history`);
 }
+
+test("exact ACM history metadata and authored Q1 details stay read-only across live, completed and early-ended reads", async () => {
+  const { storage, problem, lifecycle, prepared } = await startActualProductionBankSession("acm-summary-projection");
+  const manifest = decodeApproachChallengeManifest(prepared.session.configurationSnapshot[APPROACH_CHALLENGE_MANIFEST_KEY], prepared.session);
+  const entry = manifest.entries[0]!;
+  assert.throws(() => validateApproachChallengeManifest({ ...manifest, actualProblemCount: 2,
+    entries: [entry, { ...entry, approachOccurrenceId: "duplicate-problem-approach", complexityOccurrenceId: "duplicate-problem-complexity" }] }, prepared.session), /duplicate task or occurrence IDs/u,
+    "production manifests reject duplicate problem identity even with distinct occurrences");
+  const beforeWrongCompletion = storage.snapshot();
+  await assert.rejects(completeApproachChallengeSession("different-session"), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "no_active_session");
+  assert.deepEqual(storage.snapshot(), beforeWrongCompletion);
+  const selected = problem.approachQuestion.interaction.options.find(option => option.grade === "partial")!;
+  await submitApproachChallengeStage({ type: "approach_choice", optionId: selected.optionId });
+  const resolve = contentPackageRuntimeOwner.resolveExactArtifact.bind(contentPackageRuntimeOwner);
+  let authored: any = "An authored lesson with option-like literal ID acm-example-01.";
+  // The provider is modeled here to vary only teaching text, never the pinned scoring contract.
+  contentPackageRuntimeOwner.resolveExactArtifact = async (input) => {
+    const exact = await resolve(input);
+    return { ...exact, track: { ...exact.track, approachChallengeProblems: exact.track.approachChallengeProblems!.map(candidate => candidate.problemId === problem.problemId
+      ? { ...candidate, approachQuestion: { ...candidate.approachQuestion, feedback: { ...candidate.approachQuestion.feedback, details: authored } } }
+      : candidate) } };
+  };
+  try {
+    for (const details of ["String lesson", ["First lesson", "Second lesson"], { expectedApproachId: "legacy-internal-id", blocks: [{ type: "paragraph", text: "Object lesson acm-literal-01" }] }, {}, { expectedApproachId: "legacy-internal-id" }]) {
+      authored = details;
+      const before = storage.snapshot();
+      const live = await getApproachChallengeStageProjection();
+      assert.equal(live.kind, "ready");
+      if (live.kind !== "ready") throw Error("live projection unavailable");
+      const expected = typeof details === "object" && !Array.isArray(details) ? Object.fromEntries(Object.entries(details).filter(([key]) => key !== "expectedApproachId")) : details;
+      assert.deepEqual(live.feedback?.details, expected);
+      assert.equal(live.feedback?.reason, selected.feedback, "selected partial Reason stays independent of authored Details");
+      assert.deepEqual(storage.snapshot(), before);
+    }
+    authored = { text: "Historical authored lesson" };
+    await lifecycle.advancePracticeSession();
+    await submitApproachChallengeStage(problem.complexityQuestion.answer);
+    await completeApproachChallengeSession();
+    const before = storage.snapshot();
+    const completed = await getApproachChallengeDetailedHistory(prepared.session.id);
+    assert.equal(completed.kind, "ready");
+    if (completed.kind !== "ready") throw Error("completed projection unavailable");
+    assert.deepEqual(completed.problems[0]!.stages[0].feedback?.details, authored);
+    assert.deepEqual(completed.problems[0]!.stages[1].feedback?.details, problem.complexityQuestion.feedback.details);
+    assert.deepEqual(completed.summary.score, { correctCount: 1, partialCount: 1, incorrectCount: 0 });
+    assert.equal(completed.summary.answeredCount, 2);
+    assert.equal(completed.summary.unansweredCount, 0);
+    assert.equal(completed.summary.totalOccurrences, 2);
+    assert.equal(completed.summary.requestedLength, prepared.session.requestedLength);
+    assert.deepEqual(storage.snapshot(), before);
+    const active = await startActualProductionBankSession("acm-summary-early");
+    await submitApproachChallengeStage({ type: "approach_choice", optionId: selected.optionId });
+    await active.lifecycle.abandonActiveSession();
+    const earlyBefore = active.storage.snapshot();
+    const early = await getApproachChallengeDetailedHistory(active.prepared.session.id);
+    assert.equal(early.kind, "ready");
+    if (early.kind !== "ready") throw Error("early projection unavailable");
+    assert.equal(early.summary.answeredCount, 1);
+    assert.equal(early.summary.unansweredCount, 1);
+    assert.deepEqual(early.problems[0]!.stages[0].feedback?.details, authored);
+    assert.equal(early.problems[0]!.stages[1].response, null);
+    const unansweredStage = early.problems[0]!.stages[1];
+    assert.deepEqual((unansweredStage.interaction.model as any).renderer.options.map((option: any) => option.id),
+      active.prepared.session.optionOrderByOccurrence[unansweredStage.occurrenceId], "neutral unanswered controls keep the exact saved option order");
+    assert.ok((unansweredStage.interaction.model as any).renderer.options.every((option: any) => !option.selected));
+    assert.deepEqual(active.storage.snapshot(), earlyBefore);
+    const empty = await startActualProductionBankSession("acm-summary-empty");
+    await empty.lifecycle.abandonActiveSession();
+    const emptyDetail = await getApproachChallengeDetailedHistory(empty.prepared.session.id);
+    assert.equal(emptyDetail.kind, "ready");
+    if (emptyDetail.kind !== "ready") throw Error("empty projection unavailable");
+    assert.equal(emptyDetail.summary.answeredCount, 0);
+    assert.equal(emptyDetail.summary.unansweredCount, 2);
+    assert.equal(emptyDetail.summary.score, null);
+    assert.equal(emptyDetail.summary.points, null);
+    const missingBefore = empty.storage.snapshot();
+    contentPackageRuntimeOwner.resolveExactArtifact = async () => { throw Error("modeled_exact_artifact_missing"); };
+    assert.deepEqual(await getApproachChallengeDetailedHistory(empty.prepared.session.id), { kind: "unavailable", reason: "artifact_unavailable" });
+    assert.deepEqual(empty.storage.snapshot(), missingBefore);
+  } finally { contentPackageRuntimeOwner.resolveExactArtifact = resolve; }
+});

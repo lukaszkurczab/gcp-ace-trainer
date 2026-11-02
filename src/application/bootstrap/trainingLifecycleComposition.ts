@@ -52,13 +52,14 @@ import {
 } from "../../storage/repositories";
 import type { CanonicalWriteAttempt } from "../../storage/repositories/canonicalRecordCodec";
 import type { ActiveProfileStorageLease, MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
-import { assertValidMutationJournal, isMutationJournalLeaseCurrent } from "../../storage/repositories/mutationJournalRepository";
+import { assertValidMutationJournal, captureMutationJournalLease, isMutationJournalLeaseCurrent } from "../../storage/repositories/mutationJournalRepository";
 import { isTrainingSessionDraft } from "../../storage/repositories/trainingModelGuards";
 import { isTrainingSessionDraftLeaseCurrent } from "../../storage/repositories/trainingSessionDraftRepository";
 import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { trainingSessionIdentity } from "../../infrastructure/identity/trainingSessionIdentity";
 import { MutationCommitFailure, type RetryMutationCommandHandle, type RetryableMutationOperation } from "../mutationBoundary";
-import type { DraftStorageLeaseHandle, DraftWriteReceipt } from "../trainingLifecycle/contracts";
+import type { DraftStorageLeaseHandle, DraftWriteReceipt, PracticeProfileLeaseHandle, TrainingMutationGuard } from "../trainingLifecycle/contracts";
+import type { LocalTrainingMutationGuard } from "../learningMutations/commitTrainingOutcome";
 import { STORAGE_KEYS } from "../../storage/keys";
 
 export type WallClock = Readonly<{ now(): string }>;
@@ -110,6 +111,13 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   const monotonicNow = () => (globalThis.performance?.now?.() ?? Date.now()) + monotonicAuditOffsetMs;
   const sessionIds = dependencies.sessionIds ?? (developmentAuditability ? developmentAuditSessionIdentity : trainingSessionIdentity);
   const draftLeaseByHandle = new WeakMap<object, ActiveProfileStorageLease>();
+  const practiceLeaseByHandle = new WeakMap<object, ActiveProfileStorageLease>();
+  const resolvePracticeGuard = (guard: TrainingMutationGuard | undefined): LocalTrainingMutationGuard | undefined => {
+    if (!guard) return undefined;
+    const lease = practiceLeaseByHandle.get(guard.expectedLease);
+    if (!lease || !isMutationJournalLeaseCurrent(lease)) throw new Error("The original practice profile lease is unavailable or stale.");
+    return Object.freeze({ expectedLease: lease, preflight: guard.preflight });
+  };
   const draftAttemptByReceipt = new WeakMap<object, CanonicalWriteAttempt<TrainingSessionDraft>>();
   const finalizationAttemptByCommand = new WeakMap<object, CanonicalWriteAttempt<TrainingSessionDraftState>>();
   const retryCommandByHandle = new WeakMap<object, ExactMutationRetrySeed>();
@@ -156,6 +164,17 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     packages: dependencies.packages ?? contentPackageRuntimePort,
     premiumSessionAdmission: dependencies.premiumSessionAdmission,
     repositories: {
+      capturePracticeProfileLease() {
+        const lease = captureMutationJournalLease();
+        if (!lease) return null;
+        const handle: PracticeProfileLeaseHandle = Object.freeze({ kind: "practice_profile_lease" });
+        practiceLeaseByHandle.set(handle, lease);
+        return handle;
+      },
+      isPracticeProfileLeaseCurrent(handle) {
+        const lease = practiceLeaseByHandle.get(handle);
+        return lease !== undefined && isMutationJournalLeaseCurrent(lease);
+      },
       async getActiveSession() { return getActiveTrainingSession(productionTrackAdmissionContext); },
       async getSession(sessionId) { return (await getTrainingSessions(productionTrackAdmissionContext)).value.find((session) => session.id === sessionId) ?? null; },
       async getHistory() { return (await getTrainingSessions(productionTrackAdmissionContext)).value; },
@@ -232,11 +251,11 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     },
     mutations: {
       async start(input) { await commitTrainingSessionStart({ session: input.session, draft: input.draft, createdAt: input.session.startedAt }); },
-      async submitPractice(input) {
+      async submitPractice(input, guard) {
         const reviews = input.reviewMutations.filter((mutation) => mutation.kind === "upsert").map((mutation) => mutation.entry);
         const resolvedReviews = input.reviewMutations.filter((mutation) => mutation.kind === "remove").map((mutation) => mutation.entry);
         try {
-          return await commitTrainingOutcome({ attempt: input.attempt, session: input.session, reviews, resolvedReviews, reviewBaseline: input.reviewBaseline, reviewSnapshotConflict: input.reviewSnapshotConflict, createdAt: input.attempt.committedAt });
+          return await commitTrainingOutcome({ attempt: input.attempt, session: input.session, reviews, resolvedReviews, reviewBaseline: input.reviewBaseline, reviewSnapshotConflict: input.reviewSnapshotConflict, createdAt: input.attempt.committedAt, guard: resolvePracticeGuard(guard) });
         } catch (error) { throw projectRetryableFailure(error); }
       },
       async retryMutationCommand(command, expectedOperation) {
@@ -248,7 +267,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
         }
         catch (error) { throw projectRetryableFailure(error); }
       },
-      async advance(session) { await commitTrainingSessionAdvance(session, wallClock.now()); },
+      async advance(session, guard) { await commitTrainingSessionAdvance(session, wallClock.now(), resolvePracticeGuard(guard)); },
       async completeWithResult(input) { await commitSessionCompletion(input.session, input.result, input.session.completedAt ?? wallClock.now()); },
       async finalize(input, accepted, handle) {
         const resolved = resolveDraftLease(handle ?? null);
