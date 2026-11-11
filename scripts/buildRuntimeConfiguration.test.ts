@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 
 const require = createRequire(import.meta.url);
-const { createExpoConfig, validateReleasePublicLegalLinks } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { name: string; scheme: string; android: { package: string; googleServicesFile?: string }; extra: { patternlyRuntime: string; patternlyACMNativeFixture?: { enabled: boolean; runUUID: string; operation: "create" | "resume" } }; ios: { googleServicesFile: string; infoPlist: Record<string, unknown> }; plugins: unknown[]; updates: { enabled?: boolean; checkAutomatically?: string } } }; validateReleasePublicLegalLinks: (legalVariables: unknown, publicEnvironment: unknown) => void };
+const { createExpoConfig, validateReleasePublicLegalLinks } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { name: string; scheme: string; android: { package: string; googleServicesFile?: string }; extra: { patternlyRuntime: string; patternlyPerfBuild?: boolean; patternlyACMNativeFixture?: { enabled: boolean; runUUID: string; operation: "create" | "resume" } }; ios: { googleServicesFile: string; infoPlist: Record<string, unknown> }; plugins: unknown[]; updates: { enabled?: boolean; checkAutomatically?: string } } }; validateReleasePublicLegalLinks: (legalVariables: unknown, publicEnvironment: unknown) => void };
 const releaseLegalVariables = require("../config/public-legal.release.json");
 
 const base = {
@@ -296,4 +296,25 @@ test("explicit iOS and Android builds always require shared Firebase public conf
     const missing = { ...environment, EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY: "" };
     assert.throws(() => createExpoConfig(missing), /requires EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY/, `${platform} must require the shared Firebase API key`);
   }
+});
+
+test("perf build flag is accepted only for local loopback smoke builds and never contacts updates", () => {
+  const perf = { ...smoke, EXPO_PUBLIC_PATTERNLY_PERF_BUILD: "1", EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug" };
+  const config = createExpoConfig(perf);
+  assert.equal(config.expo.extra.patternlyRuntime, "smoke");
+  assert.equal(config.expo.extra.patternlyPerfBuild, true);
+  assert.equal(config.expo.updates.enabled, false);
+  assert.equal(config.expo.updates.checkAutomatically, "NEVER");
+  const plain = createExpoConfig({ ...smoke });
+  assert.equal(plain.expo.extra.patternlyPerfBuild, undefined);
+  assert.equal(plain.expo.updates.enabled, undefined);
+  assert.throws(() => createExpoConfig({ ...perf, EXPO_PUBLIC_PATTERNLY_PERF_BUILD: "true" }), /exactly 1/);
+  assert.throws(() => createExpoConfig({ ...perf, EAS_BUILD: "true" }), /only in local smoke builds/);
+  assert.throws(() => createExpoConfig({ ...perf, EAS_BUILD_PROFILE: "production" }), /only in local smoke builds/);
+  assert.throws(() => createExpoConfig({ ...perf, EXPO_PUBLIC_PATTERNLY_API_ORIGIN: "https://api.sandbox.patternly.test" }), /127\.0\.0\.1/);
+  const sandbox = { ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
+  assert.doesNotThrow(() => createExpoConfig(sandbox));
+  assert.throws(() => createExpoConfig({ ...sandbox, EXPO_PUBLIC_PATTERNLY_PERF_BUILD: "1" }), /only in local smoke builds/);
+  const release = { ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
+  assert.throws(() => createExpoConfig({ ...release, EXPO_PUBLIC_PATTERNLY_PERF_BUILD: "1" }), /only in local smoke builds/);
 });

@@ -1,4 +1,5 @@
 import { developmentLoopbackHost } from "../developmentEndpoints";
+import { isPatternlyPerfBuild } from "../runtime/runtimeMode";
 
 /** Local integration fixture, never a Firebase attestation or a release credential. */
 export function localSmokeAppCheckToken(input: {
@@ -28,7 +29,8 @@ export function localSmokeAppCheckToken(input: {
 
 export function readLocalSmokeAppCheckToken(): string | null {
   return localSmokeAppCheckToken({
-    development: typeof __DEV__ !== "undefined" && __DEV__,
+    // The local perf build (T0.1) is the only non-development build allowed here.
+    development: (typeof __DEV__ !== "undefined" && __DEV__) || isPatternlyPerfBuild(),
     mode: process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE,
     enabled: process.env.EXPO_PUBLIC_PATTERNLY_BACKEND_E2E,
     apiOrigin: process.env.EXPO_PUBLIC_PATTERNLY_API_ORIGIN,

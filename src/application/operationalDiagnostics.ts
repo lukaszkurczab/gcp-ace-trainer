@@ -2,7 +2,7 @@ import { markStartup } from "../infrastructure/diagnostics/startupTrace";
 import { ContentError } from "../content/errors";
 import { CorruptStoredRecordError, JournalMaterializationError, JournalVerificationError, JournalWriteError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../storage/errors";
 import { CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER, type CanonicalRepositoryBootstrapStep as CanonicalRepositoryBootstrapStepCode } from "../storage/repositories/canonicalRepositories";
-import { isPatternlySmokeRuntime, readPatternlyRuntimeMode } from "../infrastructure/runtime/runtimeMode";
+import { isPatternlyPerfBuild, isPatternlySmokeRuntime, readPatternlyRuntimeMode } from "../infrastructure/runtime/runtimeMode";
 import { encryptedStorageFailureCode, type EncryptedStorageFailureCode } from "../infrastructure/storage/encryptedStorageBootstrap";
 import type { LocalLogoutControlError } from "../infrastructure/storage/localLogoutControl";
 import type { ProfileStorageError } from "../infrastructure/storage/profileStorageRouter";
@@ -117,7 +117,8 @@ function developmentSmokeDiagnosticsEnabled(): boolean {
 }
 
 function accountStartupDiagnosticsEnabled(): boolean {
-  return readPatternlyRuntimeMode() === "sandbox" || developmentSmokeDiagnosticsEnabled();
+  // The Release perf build (T0.1) needs the `account:*` stages in its trace file.
+  return readPatternlyRuntimeMode() === "sandbox" || developmentSmokeDiagnosticsEnabled() || isPatternlyPerfBuild();
 }
 
 const ACCOUNT_ERROR_CATEGORIES = ["auth_generation_invalid", "auth_network", "auth_token_expired", "auth_user_disabled", "auth_other", "api_invalid_response", "api_transport", "api_timeout", "api_unauthorized", "api_rate_limited", "api_server", "api_other"] as const;

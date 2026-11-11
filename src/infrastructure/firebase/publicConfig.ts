@@ -1,6 +1,6 @@
 import type { ConfiguredPublicEnvironment, PublicEnvironment } from "../clients/publicEnvironment";
 import { developmentLoopbackHost } from "../developmentEndpoints";
-import { isPatternlySmokeRuntime, parsePatternlyRuntimeMode } from "../runtime/runtimeMode";
+import { isPatternlyPerfBuild, isPatternlySmokeRuntime, parsePatternlyRuntimeMode } from "../runtime/runtimeMode";
 
 export type PublicLegalLinks = Readonly<Pick<ConfiguredPublicEnvironment, "privacyUrl" | "termsUrl" | "supportUrl">>;
 
@@ -114,7 +114,14 @@ export function parseDevelopmentFirebaseAuthEmulatorOrigin(
 }
 
 export function readDevelopmentFirebaseAuthEmulatorOrigin(): string | undefined {
-  return parseDevelopmentFirebaseAuthEmulatorOrigin();
+  if (!isPatternlyPerfBuild()) return parseDevelopmentFirebaseAuthEmulatorOrigin();
+  // Release perf build (T0.1): direct reads, because production bundles inline only those.
+  return parseDevelopmentFirebaseAuthEmulatorOrigin({
+    ...process.env,
+    EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE,
+    EXPO_PUBLIC_PATTERNLY_BACKEND_E2E: process.env.EXPO_PUBLIC_PATTERNLY_BACKEND_E2E,
+    EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN: process.env.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN,
+  }, true);
 }
 
 export function readPublicLegalLinksFromRuntime(): PublicLegalLinksResult {

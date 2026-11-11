@@ -172,6 +172,23 @@ function validateReleasePublicLegalLinks(legalVariables, publicEnvironment) {
   }
 }
 
+/**
+ * Local Release "perf" build (Plan T0.1): Release JS against the local smoke
+ * backend with the startup trace written to a file. The bundle carries E2E test
+ * data, so the flag is accepted only for local smoke builds bound to loopback
+ * (checked by assertLocalAuthProfile), never on EAS and never for production.
+ */
+function readPerfBuild(environment, runtimeMode) {
+  const flag = environment.EXPO_PUBLIC_PATTERNLY_PERF_BUILD;
+  if (flag === undefined || flag === "") return false;
+  if (flag !== "1") throw new Error("EXPO_PUBLIC_PATTERNLY_PERF_BUILD must be exactly 1 when set.");
+  if (runtimeMode !== "smoke" || (environment.EAS_BUILD !== undefined && environment.EAS_BUILD !== "")
+    || environment.EAS_BUILD_PROFILE === "production") {
+    throw new Error("EXPO_PUBLIC_PATTERNLY_PERF_BUILD is allowed only in local smoke builds, never on EAS or for production.");
+  }
+  return true;
+}
+
 function updatesConfiguration(runtimeMode) {
   const url = "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab";
   return runtimeMode === "release" ? { url, enabled: false, checkAutomatically: "NEVER" } : { url };
@@ -180,6 +197,7 @@ function updatesConfiguration(runtimeMode) {
 function createExpoConfig(environment = process.env) {
   const runtimeMode = readRuntimeMode(environment);
   const publicEnvironment = assertRuntimeEnvironment(environment, runtimeMode);
+  const perfBuild = readPerfBuild(environment, runtimeMode);
   const acmFixtureFlag = environment.EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE;
   if (acmFixtureFlag !== undefined && acmFixtureFlag !== "1") {
     throw new Error("EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE must be exactly 1 when set.");
@@ -280,6 +298,7 @@ function createExpoConfig(environment = process.env) {
       web: { favicon: "./assets/brand/web/favicon.png", themeColor: "#0C1324", backgroundColor: "#F6F8FB" },
       extra: {
         patternlyRuntime: runtimeMode,
+        ...(perfBuild ? { patternlyPerfBuild: true } : {}),
         patternlyEnvironmentFingerprint: environmentIdentity.fingerprint,
         ...(acmFixtureRequested ? { patternlyACMNativeFixture: {
           enabled: true,
@@ -288,7 +307,8 @@ function createExpoConfig(environment = process.env) {
         } } : {}),
         eas: { projectId: "204d9769-4832-4c4a-b932-6359c4ff9dab" },
       },
-      updates: localAndroid || acmFixtureRequested ? { enabled: false, checkAutomatically: "NEVER" } : updatesConfiguration(runtimeMode),
+      // The perf build mirrors the production updates configuration and never contacts the update service.
+      updates: localAndroid || acmFixtureRequested ? { enabled: false, checkAutomatically: "NEVER" } : updatesConfiguration(perfBuild ? "release" : runtimeMode),
     },
   };
 }
@@ -302,3 +322,4 @@ module.exports.LOCAL_E2E_KEYS = LOCAL_E2E_KEYS;
 module.exports.isLoopbackHttpOrigin = isLoopbackHttpOrigin;
 module.exports.validateReleasePublicLegalLinks = validateReleasePublicLegalLinks;
 module.exports.updatesConfiguration = updatesConfiguration;
+module.exports.readPerfBuild = readPerfBuild;
