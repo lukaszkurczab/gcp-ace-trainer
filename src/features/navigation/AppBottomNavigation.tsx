@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ROUTES } from "../../constants/routes";
 import { MAIN_TAB_ITEMS } from "../home/shellModel";
 import type { ShellTab } from "../home/types";
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 
 type BottomNavigationTarget = {
   navigate: (name: string, params?: object) => void;
@@ -32,6 +33,8 @@ export function AppBottomNavigation({
       return;
     }
 
+    // S4-T (T0.2b): a Home tab press that returns to the Home route, which refocuses Today.
+    if (tab === "home") markStartup("home_tab_press");
     navigation.popTo(ROUTES.HOME, { initialTab: tab });
   }
 

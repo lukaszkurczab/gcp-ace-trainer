@@ -1,7 +1,7 @@
 import { captureProfileReadFence } from "../../application/profileReadFence";
 import { loadActiveTrainingSession } from "../../application/learningReadModels";
 import { getTrackIconName } from "../../components/trackIcon";
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
@@ -49,6 +49,10 @@ import {
   resolvePracticeTopic,
 } from "./practiceFlowModel";
 import { usePracticeReadModel } from "./usePracticeReadModel";
+import { markInteractiveAfterFrame, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
+
+// S4 (T0.2b): the quiz exit destination; recorded only where the startup trace is on.
+const SLA_TRACE = startupTraceEnabled();
 import {
   formatPracticeTopicDetail,
   formatPracticeTopicTitle,
@@ -153,6 +157,9 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     includeReviews: true,
     requestedTrackId: route.params?.trackId,
   });
+  // Each focus re-reads the hub; its committed ready read is the interactive destination.
+  const slaHubReady = SLA_TRACE && ownerMatches && readState.requestKey === requestKey && readState.kind === "ready" ? readState : null;
+  useLayoutEffect(() => { if (slaHubReady) markInteractiveAfterFrame("practice_hub_interactive"); }, [slaHubReady]);
 
   function renderUnavailable(
     description: string,

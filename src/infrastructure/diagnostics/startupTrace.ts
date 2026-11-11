@@ -27,6 +27,8 @@ export type StartupTraceStage =
   | "continue_press" | "question_visible" | "quiz_command"
   | "summary_exit_press" | "session_finalized" | "today_visible" | "today_interactive"
   | "sync_start" | "sync_end" | "js_loop_probe"
+  // T0.2b: S4 ends on the quiz exit destination; S4-T is the Home tab switch.
+  | "practice_hub_interactive" | "home_tab_press"
   | `recovery:${BootstrapRecoveryPendingStep | "idle"}`
   | `repository:${CanonicalRepositoryBootstrapStep}`
   | `account:${AccountStartupDiagnosticStage}`
@@ -116,6 +118,14 @@ export function markVisible(stage: StartupTraceStage, onMarked?: () => void): vo
 /** `visible` (double rAF), then `interactive` at the first idle JS loop probe after it (Plan §1). */
 export function markVisibleThenInteractive(visible: StartupTraceStage, interactive: StartupTraceStage): void {
   markVisible(visible, () => markInteractive(interactive));
+}
+
+/** "interactive" without its own visible marker: double rAF after the commit, then the loop probe. */
+export function markInteractiveAfterFrame(interactive: StartupTraceStage): void {
+  if (!enabled()) return;
+  try {
+    globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => markInteractive(interactive)));
+  } catch { /* Optional diagnostics never change rendering. */ }
 }
 
 let firstUsableFrameMarked = false;
