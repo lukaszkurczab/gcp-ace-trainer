@@ -15,7 +15,8 @@ test("account startup diagnostic observes existing setup, guest, auth, and compl
   assert.ok(/await inspectPreparedProfileState\(\);/u.test(provider));
   assert.ok(/await prepareGuestProfileScope\(/u.test(provider));
   assert.ok(/await prepareAuthenticatedProfileScope\(/u.test(bootstrap));
-  assert.ok(/if \(profilePreparationRef\.current === attempt\) \{\s*setState\(result\.kind === "success"[\s\S]{0,180}?attempt\.startupDiagnostic\?\.ready\("guest"\)/u.test(bootstrap));
+  // 475b1e5b: a successful guest completion publishes through publishCompletedAccountState; the guest ready edge is unchanged.
+  assert.ok(/if \(profilePreparationRef\.current === attempt\) \{\s*const nextState: AccountState = result\.kind === "success"[\s\S]{0,240}?attempt\.startupDiagnostic\?\.ready\("guest"\)/u.test(bootstrap));
   assert.ok(/if \(profilePreparationRef\.current === attempt\) \{\s*const completedStateKind =/u.test(bootstrap));
   assert.ok(/attempt\.startupDiagnostic\?\.ready\(completedStateKind\)/u.test(bootstrap));
   assert.ok(/startupDiagnostic\.dispose\(\)/u.test(provider));

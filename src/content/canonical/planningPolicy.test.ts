@@ -7,7 +7,10 @@ import { PRODUCT_MODE_CONFIGS, validateProductModeConfigsAgainstArtifacts, type 
 const root = "src/content/generated/canonical-content/";
 const lock = JSON.parse(readFileSync(`${root}content-lock.json`, "utf8"));
 const artifacts = lock.tracks.map(({ trackId }: { trackId: string }) => JSON.parse(readFileSync(`${root}${trackId}.json`, "utf8")));
-const modes = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, artifacts);
+// The runtime catalog validates product modes against question projections without the
+// Approach Challenge bank (runtimeCatalog.ts); the bundled coding artifact carries it since 4357860d.
+const withoutApproachChallengeBank = ({ approachChallengeProblems: _bank, ...artifact }: Record<string, unknown>) => artifact;
+const modes = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, artifacts.map(withoutApproachChallengeBank));
 const invalid = /Canonical learning planning policy is invalid/;
 const questions = [{ questionId: "q1", nodeId: "node1", mentalUnitId: "unit1" }, { questionId: "q2", nodeId: "node1", mentalUnitId: "unit2" }];
 const mode: ProductModeConfig = { ...PRODUCT_MODE_CONFIGS[0]!, modeId: "test-mode", selection: { kind: "node", nodeId: "node1" } };

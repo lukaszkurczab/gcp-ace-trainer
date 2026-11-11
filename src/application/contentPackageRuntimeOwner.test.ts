@@ -123,7 +123,8 @@ test("a bank-only source mutation resolves only the new ACM pin and leaves the o
   assert.equal(resumed.track.artifactSha256, f2);
   assert.equal(resumed.track.trainingIdentity?.artifactSha256, f2);
   await owner.verifyBundledPackages();
-  assert.equal(owner.getPreparedDiscovery(mutated.trackId).track.artifactSha256, "a85fb2ca9f57315d76f34627c109aa8ebc25536c4b4684356d97236a09145a2d");
+  // Coding training predecessor in the bundled successor ledger (regenerated in fddccc63).
+  assert.equal(owner.getPreparedDiscovery(mutated.trackId).track.artifactSha256, "e3798263ab07f88f1b96bfa8b9b9204391889aac598f9b3448b60710e7977478");
 });
 
 test("family admission and runtime catalog pins cannot be substituted independently", async () => {

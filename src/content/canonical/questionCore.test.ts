@@ -100,9 +100,11 @@ test("all interactions expose completeness and immutable AttemptResult semantics
 });
 
 test("dimension scoring ignores inherited selections exactly like the producer oracle", async () => {
+  // The producer scores source questions before it decorates them with contentDomainId (patternly-content build.mjs artifactQuestions),
+  // so the oracle receives the undecorated question; the app scorer receives the bundled one.
   const oracle = await import(pathToFileURL(path.join(contentRoot, "scripts/content/question-contract.mjs")).href) as Oracle;
   const questions = inputs.flatMap(({ artifact }) => (artifact as { questions: Question[] }).questions).filter((question) => question.interaction.type === "complexity" || question.interaction.type === "decision_matrix").slice(0, 12);
-  for (const question of questions) { const dimension = question.interaction.type === "complexity" || question.interaction.type === "decision_matrix" ? question.interaction.dimensions[0]! : undefined; assert.ok(dimension); const inherited = Object.create({ [dimension.dimensionId]: [...dimension.acceptedValueIds] }) as Record<string, readonly string[]>; const response = { type: question.interaction.type, selectedValueIdsByDimension: inherited }; const expected = oracle.scoreQuestion(question, response); const actual = scoreCanonicalQuestion(question, response); assert.deepEqual({ status: actual.kind, earnedPoints: actual.earnedPoints, maxPoints: actual.maxPoints }, { status: expected.status, earnedPoints: expected.earnedPoints, maxPoints: expected.maxPoints }); }
+  for (const question of questions) { const dimension = question.interaction.type === "complexity" || question.interaction.type === "decision_matrix" ? question.interaction.dimensions[0]! : undefined; assert.ok(dimension); const inherited = Object.create({ [dimension.dimensionId]: [...dimension.acceptedValueIds] }) as Record<string, readonly string[]>; const response = { type: question.interaction.type, selectedValueIdsByDimension: inherited }; const { contentDomainId: _domain, ...producerQuestion } = question as Question & { contentDomainId?: string }; const expected = oracle.scoreQuestion(producerQuestion, response); const actual = scoreCanonicalQuestion(question, response); assert.deepEqual({ status: actual.kind, earnedPoints: actual.earnedPoints, maxPoints: actual.maxPoints }, { status: expected.status, earnedPoints: expected.earnedPoints, maxPoints: expected.maxPoints }); }
 });
 
 test("dimension responses reject sparse arrays and alias-normalization collisions", () => {

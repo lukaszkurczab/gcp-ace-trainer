@@ -793,8 +793,9 @@ test("startup waits for persisted auth resolution before choosing the entry scre
 
   assert.match(authClient, /onUserChanged: \(listener\) => onAuthStateChanged\(auth, \(user\) => \{\s*current = user;\s*listener\(user \? snapshot\(user\) : null\);/);
   assert.doesNotMatch(authClient, /onUserChanged:[^\n]*listener\(current \? snapshot\(current\) : null\)/);
-  assert.match(rootNavigator, /state\.kind === "loading" \|\| state\.kind === "profilePreparing"[\s\S]*?<AccountProfileTransitionLoadingState \/>/);
-  assert.match(rootNavigator, /import \{ AccountProfileTransitionLoadingState \} from "\.\.\/application\/account\/AccountProfileTransitionLoadingState"/);
+  // 475b1e5b: the shared startup surface owns the restore/profile-preparing wait (see loadingStateOwnership.test.ts).
+  assert.match(rootNavigator, /state\.kind === "loading" \|\| state\.kind === "profilePreparing"[\s\S]*?<StartupLoadingSurface center testID="account-session-restore-loading" \/>/);
+  assert.match(rootNavigator, /import \{ StartupLoadingSurface \} from "\.\.\/content\/application\/startupPreparationSurfaces"/);
   assert.match(rootNavigator, /applicationSessionReady = state\.kind === "guest" \|\| state\.kind === "localOffline" \|\| state\.kind === "signingOut" \|\| state\.kind === "deleting" \|\| \(state\.kind === "authenticated" && state\.accountData\.status === "synced"\)/);
   assert.match(rootNavigator, /initialRouteName=\{applicationSessionReady \? ROUTES\.HOME : ROUTES\.ACCOUNT_ENTRY\}/);
   assert.match(rootNavigator, /key=\{applicationSessionReady \? "application" : "account"\}/);

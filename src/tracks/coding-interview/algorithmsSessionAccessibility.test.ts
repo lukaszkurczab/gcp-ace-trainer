@@ -250,8 +250,11 @@ test("Practice Question Shell keeps the Figma prompt-to-answer rhythm", () => {
 
 test("compact certification exam keeps flag, navigator and guarded footer actions accessible", () => {
   const exam = source("src/features/exam/ExamScreen.tsx");
-  const headerStart = exam.indexOf("headerRight: headerProjection");
-  const header = exam.slice(headerStart, exam.indexOf("if (readState.requestKey !== requestKey", headerStart));
+  // 475b1e5b moved the flag from the navigation header into the question card label action.
+  const headerStart = exam.indexOf("const flagAction = headerProjection ? <Pressable");
+  assert.ok(headerStart >= 0);
+  const header = exam.slice(headerStart, exam.indexOf("</Pressable> : null;", headerStart));
+  assert.match(exam, /<PracticeQuestionCard [^\n]*questionLabelAction=\{flagAction\}/);
   assert.match(header, /accessibilityLabel=\{t\(headerFlagged \? "Remove flag" : "Flag question"\)\}/);
   assert.match(header, /accessibilityRole="button"/);
   assert.match(header, /accessibilityState=\{\{ selected: headerFlagged, disabled: headerFlagDisabled \}\}/);

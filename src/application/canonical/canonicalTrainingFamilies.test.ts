@@ -31,7 +31,7 @@ afterEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 const responseFor = (question: Question): CanonicalQuestionResponse => question.answer;
 const wrongResponse = (question: Question): CanonicalQuestionResponse => {
   if (question.interaction.type === "choice_single") { const q = question as Extract<Question, { interaction: { type: "choice_single" } }>; return { type: "choice_single", optionId: q.interaction.options.find((x) => x.optionId !== q.answer.optionId)!.optionId }; }
-  if (question.interaction.type === "choice_multiple") { const q = question as Extract<Question, { interaction: { type: "choice_multiple" } }>; return { type: "choice_multiple", optionIds: [q.interaction.options.find((x) => !q.answer.optionIds.includes(x.optionId))!.optionId] }; }
+  if (question.interaction.type === "choice_multiple") { const q = question as Extract<Question, { interaction: { type: "choice_multiple" } }>; const wrong = q.interaction.options.find((x) => !q.answer.optionIds.includes(x.optionId))!.optionId; return { type: "choice_multiple", optionIds: q.interaction.requiredSelectionCount === undefined ? [wrong] : [...q.answer.optionIds.slice(1), wrong] }; } // "choose N" items need exactly N selections (475b1e5b)
   if (question.interaction.type === "ordering") { const q = question as Extract<Question, { interaction: { type: "ordering" } }>; return { type: "ordering", orderedElementIds: [...q.answer.orderedElementIds].reverse() }; }
   return { type: question.interaction.type, selectedValueIdsByDimension: Object.fromEntries(question.interaction.dimensions.map((d) => [d.dimensionId, [d.values[0]!.valueId]])) };
 };
@@ -920,7 +920,7 @@ test("GCP simulation finalization scores only complete responses and partitions 
   };
   const draft = createTrainingSessionDraft({ sessionId: prepared.session.id, trackId: track.trackId, familyId: "certification", revision: 2, responsesByOccurrenceId: responses, flaggedOccurrenceIds: [prepared.session.itemOrder[2]!.occurrenceId], updatedAt: "2026-01-01T01:00:00.000Z" });
   const malformedDraft = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: { ...responses, [answeredOccurrences[0]!.occurrenceId]: {} } });
-  await assert.rejects(runtime.finalizeSimulation({ session: prepared.session, draft: malformedDraft, attempts: [], reviews: [], now: "2026-01-01T01:30:00.000Z" }), /response is incomplete/);
+  await assert.rejects(runtime.finalizeSimulation({ session: prepared.session, draft: malformedDraft, attempts: [], reviews: [], now: "2026-01-01T01:30:00.000Z" }), /response is invalid for its exact interaction/); // 475b1e5b: resume validation rejects a malformed draft response before scoring (partial responses are now kept)
   const priorReview = reviewFor(answeredOccurrences[0]!.item, NOW);
   const finalized = await runtime.finalizeSimulation({ session: prepared.session, draft, attempts: [], reviews: [priorReview], now: "2026-01-01T01:30:00.000Z" });
   assert.equal(finalized.session.status, "completed");
@@ -1181,7 +1181,8 @@ test("legacy due lifecycle submits its pinned A/B proof after discovery rebind a
   const lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW }, sessionIds: { create: async () => "legacy-rebind-session" }, premiumSessionAdmission: { authorize: async () => "allowed" }, packages: {
     async resolveForDiscovery() { discoveries++; assert.equal(rebound, false, "submission and recovery must not select the rebound catalog"); return pinned; },
     async resolveForPreparation() { preparations++; throw new Error("Due admission must use discovery once."); },
-    async resolveExactArtifact(identity) { exactResolutions++; assert.deepEqual(identity, { trackId: track.trackId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 }); return pinned; },
+    // 4357860d: exact resolution is mode-aware (TrainingLifecycleUseCases passes the session modeId).
+    async resolveExactArtifact(identity) { exactResolutions++; assert.deepEqual(identity, { trackId: track.trackId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256, modeId: mode.modeId }); return pinned; },
   } });
   const prepared = await lifecycle.startSession({ trackId: track.trackId, modeId: mode.modeId, request: { requestedLength: mode.requestedLengths[0]!, reviewSource: "due_queue" } });
   assert.notEqual(prepared.session.itemOrder[0]!.item.questionId, original.sourceItem.questionId);

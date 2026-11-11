@@ -42,7 +42,9 @@ test("all current actual multiple-choice items reject every wrong-containing sub
       const producer = oracle.scoreQuestion(producerQuestion, response);
       assert.deepEqual([producer.status, producer.earnedPoints, producer.maxPoints], [kind, earnedPoints, optionIds.length]);
       assert.deepEqual(scoreCanonicalQuestion(question, { ...response, optionIds: [...selected].reverse() }), score);
-      assert.equal(isCanonicalResponseComplete(question, response), selected.length > 0);
+      // 475b1e5b: a "choose N" item (interaction.requiredSelectionCount) is complete only with exactly N selections.
+      const required = question.interaction.requiredSelectionCount;
+      assert.equal(isCanonicalResponseComplete(question, response), selected.length > 0 && (required === undefined || selected.length === required));
     }
     for (const optionIds of [[question.answer.optionIds[0]!, question.answer.optionIds[0]!], ["unknown"]]) {
       const response = { type: "choice_multiple", optionIds };
@@ -51,7 +53,8 @@ test("all current actual multiple-choice items reject every wrong-containing sub
       assert.equal(oracle.scoreQuestion(producerQuestionWithoutDomain(question), response).earnedPoints, 0);
     }
   }
-  assert.deepEqual({ items, subsets }, { items: 445, subsets: 9056 });
+  // Counts follow the bundled content lock at fddccc63 (one more 5-option item since d042aa1c).
+  assert.deepEqual({ items, subsets }, { items: 446, subsets: 9088 });
 });
 
 function producerQuestionWithoutDomain(question: ChoiceMultipleQuestion) {
@@ -79,7 +82,8 @@ test("actual practice runtime writes zero-point incorrect attempt/review, surviv
   await runtime.validateResume({ session, draft: null });
   await commitTrainingSessionStart({ session, draft: null, createdAt: NOW });
   const wrong = question.interaction.options.find((option) => !question.answer.optionIds.includes(option.optionId))!.optionId;
-  const response = { type: "choice_multiple" as const, optionIds: [...question.answer.optionIds, wrong] };
+  // Keep the response complete for "choose N" items (475b1e5b): replace one correct option with a wrong one.
+  const response = { type: "choice_multiple" as const, optionIds: question.interaction.requiredSelectionCount === undefined ? [...question.answer.optionIds, wrong] : [...question.answer.optionIds.slice(1), wrong] };
   const outcome = await runtime.submitPractice({ session, response, attempts: [], reviews: [], now: NOW });
   const reviews = outcome.reviewMutations.filter((mutation) => mutation.kind === "upsert").map((mutation) => mutation.entry);
   const commit = () => commitTrainingOutcome({ attempt: outcome.attempt, session: outcome.session, reviews, createdAt: NOW });

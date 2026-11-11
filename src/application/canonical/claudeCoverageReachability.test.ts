@@ -44,7 +44,9 @@ function buildArtifactFromCoverageFixture(): CanonicalArtifact {
   const original = sourceArtifact(TRACK_ID) as CanonicalArtifact;
   const template = original.questions[0];
   assert.ok(template, "bundled Claude artifact must provide a canonical question template");
-  const { questionRelation: _questionRelation, ...templateWithoutRelation } = structuredClone(template);
+  // contentDomainId is valid only with a Certification simulation profile (475b1e5b); the synthetic
+  // candidate has no profile, so the bundled template's domain is dropped like its relation.
+  const { questionRelation: _questionRelation, contentDomainId: _contentDomainId, ...templateWithoutRelation } = structuredClone(template) as typeof template & { contentDomainId?: string };
   const identities = [...(coverageData.questions as readonly FixtureIdentity[])];
   // The existing Focus product mode still advertises a 40-question node pool.
   // Add one reachable item to four D01 units while retaining the four-question

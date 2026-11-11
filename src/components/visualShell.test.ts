@@ -281,8 +281,11 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(home, /activeTab === "progress" \? styles\.progressScreenContent/);
   assert.match(home, /homeScreenContent:\s*\{[\s\S]*?gap:\s*18[\s\S]*?paddingTop:\s*12/);
   assert.match(home, /progressScreenContent:\s*\{[\s\S]*?paddingTop:\s*16/);
-  assert.match(homeTab, /decisionCard:[\s\S]*?gap:\s*spacing\.lg[\s\S]*?overflow:\s*"hidden"/);
-  assert.match(homeTab, /decisionTitle:[\s\S]*?letterSpacing:\s*-0\.3/);
+  // 475b1e5b extracted the Home decision card (and its styles) into HomeDecisionCard.tsx.
+  assert.match(homeTab, /<HomeDecisionCard/);
+  const decisionCard = source("src/features/home/tabs/HomeDecisionCard.tsx");
+  assert.match(decisionCard, /decisionCard:[\s\S]*?gap:\s*spacing\.lg[\s\S]*?overflow:\s*"hidden"/);
+  assert.match(decisionCard, /decisionTitle:[\s\S]*?letterSpacing:\s*-0\.3/);
   assert.match(homeTab, /sectionLabel:[\s\S]*?fontSize:\s*13/);
   assert.match(homeTab, /overviewValue:\s*\{[\s\S]*\.\.\.typography\.bodyStrong/);
   assert.match(homeTab, /currentFocusTitle:[\s\S]*?fontSize:\s*15[\s\S]*?fontWeight:\s*"500"[\s\S]*?lineHeight:\s*18/);
@@ -290,7 +293,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.doesNotMatch(homeTab, /activityList/);
   assert.match(homeTab, /activityRow:\s*\{[\s\S]*?justifyContent:\s*"space-between"[\s\S]*?minHeight:\s*44/);
   assert.match(homeTab, /activityAction:\s*\{[\s\S]*?flexShrink:\s*0[\s\S]*?minHeight:\s*44/);
-  assert.match(homeTab, /secondaryActionText:[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);
+  assert.match(decisionCard, /secondaryActionText:[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);
   assert.match(homeTab, /activityActionText:[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);
   assert.match(button, /labelStyle\?: StyleProp<TextStyle>/);
   assert.match(button, /label:\s*\{[\s\S]*\.\.\.typography\.button/);

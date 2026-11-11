@@ -27,7 +27,10 @@ import type { CanonicalCodingInterviewSimulationProfile, CanonicalSimulationProf
 
 const coding = "coding-interview-dsa-problem-solving";
 const gcp = "google-cloud-associate-cloud-engineer";
-const artifacts = [codingArtifact, backendDesignArtifact, objectDesignArtifact, frontendDesignArtifact, gcpArtifact, awsArtifact, az104Artifact, ai901Artifact, claudeArtifact] as readonly ProductModeArtifact[];
+// Product modes are validated against artifacts without the Approach Challenge bank, as the
+// runtime catalog projects them (runtimeCatalog.ts); the coding artifact carries the bank since 4357860d.
+const withoutApproachChallengeBank = ({ approachChallengeProblems: _bank, ...artifact }: Record<string, unknown>) => artifact;
+const artifacts = [codingArtifact, backendDesignArtifact, objectDesignArtifact, frontendDesignArtifact, gcpArtifact, awsArtifact, az104Artifact, ai901Artifact, claudeArtifact].map((artifact) => withoutApproachChallengeBank(artifact as unknown as Record<string, unknown>)) as unknown as readonly ProductModeArtifact[];
 
 test("question-scan observation cannot change validation success or mask its failure", () => {
   const edges: string[] = [];
@@ -234,7 +237,7 @@ test("selection pools are non-empty, local, and large enough for every requested
     [coding, 158], ["backend-system-design-interview", 145], ["object-oriented-design-interview", 136],
     ["frontend-system-design-interview", 150], [gcp, 136], ["aws-certified-solutions-architect-associate", 40],
     ["microsoft-azure-administrator-associate-az-104", 132], ["microsoft-azure-ai-fundamentals-ai-901", 144],
-    ["claude-certified-architect-professional-certification", 168],
+    ["claude-certified-architect-professional-certification", 172], // ccarp-2026.10.26-realistic-exam-v1 (475b1e5b)
   ]);
   for (const entry of PRODUCT_MODE_CONFIGS) {
     const artifact = artifactByTrack.get(entry.trackId)!;

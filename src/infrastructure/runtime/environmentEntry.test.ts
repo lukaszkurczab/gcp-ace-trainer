@@ -45,9 +45,13 @@ function entry(rawMarker: string | null, configMatches = true) {
   }).default;
   const app = compile(new URL("../../../App.tsx", import.meta.url), (name) => {
     if (name === "react/jsx-runtime") return { jsx, jsxs: jsx };
+    // Fixture entries added to App.tsx in 475b1e5b/4357860d resolve to the regular path without their flags.
+    if (name === "react-native") return { NativeModules: {} };
+    if (name === "./src/application/runtimeAuditability/acmNativeFixtureProtocol") return { resolveACMNativeFixtureEntry: () => ({ kind: "regular" }) };
+    if (name === "./src/testing/startupPreparationPreview") return { resolveStartupPreviewEntry: () => ({ kind: "regular" }) };
     if (name === "./src/testing/perf06Entry") return { resolvePerf06Entry: () => ({ kind: "regular" }) };
     if (name === "./src/application/runtimeAuditability/persist13Entry") return { resolvePersist13Entry: () => ({ kind: "regular" }) };
-    if (name === "./src/infrastructure/diagnostics/startupTrace") return { markStartup() {} };
+    if (name === "./src/infrastructure/diagnostics/startupTrace") return { markStartup() {}, markRnStartupEnd() {} };
     if (name === "./src/infrastructure/runtime/EnvironmentGate") return { default: gate };
     if (name === "./src/RegularApplicationRoot") { rootLoads++; return { default: "regular" }; }
     return assert.fail(`Unexpected app dependency: ${name}`);

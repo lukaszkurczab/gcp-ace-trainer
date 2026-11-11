@@ -307,7 +307,7 @@ test("standard scoped Focus persists complete case blocks and atomic deferred ex
     const h = await harness(); let lifecycle = h.compose();
     const prepared = await lifecycle.startSession({ trackId: TRACK, modeId: "certification-focus-practice", request: { requestedLength: 40, mentalUnitId: "CCARP-D01-O01", feedbackTiming } });
     assert.equal(prepared.session.requestedLength, 40);
-    assert.equal(prepared.session.actualLength, 23);
+    assert.equal(prepared.session.actualLength, 25); // CCARP-D01-O01 has 25 items in ccarp-2026.10.26-realistic-exam-v1 (was 23)
     assert.equal(prepared.session.caseState, undefined);
     assert.equal(prepared.session.caseStates?.length, 1);
     const recipe = indexCaseRecipes(h.track.questions).find(candidate => candidate.caseId.includes("policy"))!;
@@ -341,7 +341,7 @@ test("standard scoped Focus persists complete case blocks and atomic deferred ex
     assert.equal(completion.session.caseStates![0]!.solutionExposedStepIds.length, 3);
     assert.equal(await getActiveTrainingSession(admission), null);
     const attempts = (await getTrainingAttempts(admission)).value;
-    assert.equal(attempts.length, 23);
+    assert.equal(attempts.length, 25);
     for (const [index, step] of recipe.steps.entries()) {
       const evidence = attempts.find(attempt => attempt.item.questionId === step.questionId)!.reviewEvidence.evidence!.details;
       assert.ok(isCaseAttemptEvidence(evidence));
@@ -353,7 +353,7 @@ test("standard scoped Focus persists complete case blocks and atomic deferred ex
     assert.equal(review.caseSummary, undefined);
     assert.equal(review.caseSummaries?.length, 1);
     assert.equal(review.caseSummaries![0]!.steps.length, 3);
-    assert.equal(review.items.length, 23);
+    assert.equal(review.items.length, 25);
   }
 });
 
