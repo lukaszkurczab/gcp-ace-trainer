@@ -307,7 +307,8 @@ test("perf build flag is accepted only for local loopback smoke builds and never
   assert.equal(config.expo.updates.checkAutomatically, "NEVER");
   const plain = createExpoConfig({ ...smoke });
   assert.equal(plain.expo.extra.patternlyPerfBuild, undefined);
-  assert.equal(plain.expo.updates.enabled, undefined);
+  assert.equal(plain.expo.updates.enabled, false);
+  assert.equal(plain.expo.updates.checkAutomatically, "NEVER");
   assert.throws(() => createExpoConfig({ ...perf, EXPO_PUBLIC_PATTERNLY_PERF_BUILD: "true" }), /exactly 1/);
   assert.throws(() => createExpoConfig({ ...perf, EAS_BUILD: "true" }), /only in local smoke builds/);
   assert.throws(() => createExpoConfig({ ...perf, EAS_BUILD_PROFILE: "production" }), /only in local smoke builds/);

@@ -191,7 +191,8 @@ function readPerfBuild(environment, runtimeMode) {
 
 function updatesConfiguration(runtimeMode) {
   const url = "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab";
-  return runtimeMode === "release" ? { url, enabled: false, checkAutomatically: "NEVER" } : { url };
+  // Local smoke builds (Debug and the Release perf build) never contact EAS Update (Plan R0, §W.1.3).
+  return runtimeMode === "release" || runtimeMode === "smoke" ? { url, enabled: false, checkAutomatically: "NEVER" } : { url };
 }
 
 function createExpoConfig(environment = process.env) {
@@ -307,8 +308,7 @@ function createExpoConfig(environment = process.env) {
         } } : {}),
         eas: { projectId: "204d9769-4832-4c4a-b932-6359c4ff9dab" },
       },
-      // The perf build mirrors the production updates configuration and never contacts the update service.
-      updates: localAndroid || acmFixtureRequested ? { enabled: false, checkAutomatically: "NEVER" } : updatesConfiguration(perfBuild ? "release" : runtimeMode),
+      updates: localAndroid || acmFixtureRequested ? { enabled: false, checkAutomatically: "NEVER" } : updatesConfiguration(runtimeMode),
     },
   };
 }

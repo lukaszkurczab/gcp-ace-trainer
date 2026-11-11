@@ -51,6 +51,8 @@ test("EAS release configuration has explicit version, runtime, and channel polic
   });
   assert.deepEqual(updatesConfiguration("release"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab", enabled: false, checkAutomatically: "NEVER" });
   assert.deepEqual(updatesConfiguration("sandbox"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab" });
+  // R0: local smoke builds (Debug and Release perf) never contact EAS Update.
+  assert.deepEqual(updatesConfiguration("smoke"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab", enabled: false, checkAutomatically: "NEVER" });
 });
 
 test("EAS source archives exclude generated native output, artifacts, and credentials", () => {
