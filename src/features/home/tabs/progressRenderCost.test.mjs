@@ -68,7 +68,8 @@ function records(count, trackId = coding) {
 function evidence(trackId = coding, capturedAt = now, activityRecords = []) {
   const track = contentPackageRuntimeOwner.getPreparedDiscovery(trackId).track, question = track.questions[0];
   const item = { trackId, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
-  const attempt = createTrainingAttempt({ id: 'render-attempt', sessionId: 'render-session', trackId, modeId: 'practice', occurrenceId: 'render-occurrence', item,
+  // 4357860d: coding progress counts only attempts of declared Algorithms modes (classifyTrainingAttemptMode).
+  const attempt = createTrainingAttempt({ id: 'render-attempt', sessionId: 'render-session', trackId, modeId: 'coding-interview-guided-practice', occurrenceId: 'render-occurrence', item,
     response: {}, result: { kind: 'correct', earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt: now, committedAt: now });
   return projectProgressEvidence({ activeTrackId: trackId, activityRecords, trainingAttempts: [attempt], reviewQueueItems: [], now: capturedAt });
 }

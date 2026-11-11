@@ -16,7 +16,8 @@ test("Practice Hub keeps the exam offer visible and routes each admission outcom
   assert.match(hub, /usePatternlyAccount\(\)/);
   assert.match(hub, /authorizePremiumSessionStart\(\)/);
   assert.match(hub, /resolveCertificationExamAccess\(admission\)/);
-  assert.match(hub, /case "startExam":\s*navigation\.navigate\(ROUTES\.EXAM, \{ trackId: activeTrack\.id \}\)/);
+  // 475b1e5b: admission resumes an active exam of this track via expectedSessionId (asserted behaviourally in practiceHubNavigation.test).
+  assert.match(hub, /case "startExam":\s*\{\s*const active = await loadActiveTrainingSession\(\);\s*assertProfile\(\);[\s\S]*?navigation\.navigate\(ROUTES\.EXAM, \{ trackId: activeTrack\.id, \.\.\.\(expectedSessionId \? \{ expectedSessionId \} : \{\}\) \}\)/);
   assert.match(hub, /case "purchasePremium":\s*navigation\.navigate\(ROUTES\.PREMIUM_PURCHASE\)/);
   assert.match(hub, /case "retryAdmission":\s*setExamAccessUnavailable\(true\)/);
   assert.match(hub, /examAdmissionPendingRef\.current/);

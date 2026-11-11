@@ -12,6 +12,7 @@ const domain = require('../../domain/index.ts');
 const policies = require('../../domain/tracks/trackGoalPolicies.ts');
 const { homePlanPlacement } = require('./tabs/homeTabModel.ts');
 const { presentTargetDateGuidance } = require('../../application/learningPlan/targetDateGuidancePresentation.ts');
+const { createRouteLifetime } = require('./routeLifetime.ts');
 const trackId = 'aws-certified-solutions-architect-associate';
 const track = domain.getTrackDisplay(trackId);
 const goal = domain.createDefaultGoal(policies.requireGoalPolicy(trackId));
@@ -21,7 +22,8 @@ const guidance = {
   progress: { primary: { kind: 'start_next_session', destination: 'Practice' }, secondary: null },
   facts: { requiredPace: { kind: 'numeric', value: 4, unit: 'questions_per_week' }, actualPace: { kind: 'numeric', value: 5, unit: 'questions_per_week' }, forecast: { kind: 'date', value: '2026-11-10' }, target: { kind: 'date', value: '2026-11-15' } },
 };
-const tags = Object.fromEntries(['Fragment','View','Text','Pressable','Button','Card','Icon','Screen','EmptyState','IconButton','KeyboardAvoidingView','SettingsBottomSheet','CreateGoalForm','ActiveGoalSummary','GoalLoadingSkeleton','MistakesReviewView','MistakesLoadingSkeleton','SectionList','SectionHeader','Badge','ReviewQueueDetail','ReviewPresentationRow'].map(name => [name, name]));
+// 475b1e5b: HomeTab renders its decision panel through HomeDecisionCard (title/detail props).
+const tags = Object.fromEntries(['HomeDecisionCard','Fragment','View','Text','Pressable','Button','Card','Icon','Screen','EmptyState','IconButton','KeyboardAvoidingView','SettingsBottomSheet','CreateGoalForm','ActiveGoalSummary','GoalLoadingSkeleton','MistakesReviewView','MistakesLoadingSkeleton','SectionList','SectionHeader','Badge','ReviewQueueDetail','ReviewPresentationRow'].map(name => [name, name]));
 const common = {
   ...tags, runtimeSelectors, createStyles: () => ({}), useThemedStyles: () => ({}),
   useRef: current => ({ current }), markStartup: () => {},
@@ -63,7 +65,7 @@ for (const locale of TARGET_LOCALES) for (const panel of ['primary', 'secondary'
     assert.equal(calls.length, 1);
     assert.equal(calls[0].locale, locale);
     const expected = presentTargetDateGuidance({ guidance, locale, timezone: homePlan.plan.timezone });
-    assert.ok(nodes(element).some(node => node.props.children === expected.stateLabel));
+    assert.ok(nodes(element).some(node => node.props.children === expected.stateLabel || (node.type === 'HomeDecisionCard' && node.props.title === expected.stateLabel)));
   });
 }
 
@@ -75,7 +77,9 @@ function screen(kind, ports = {}) {
     buildReviewQueueScreenModel: value => ({ ...value, dueRows: [], upcomingRows: [], unavailableRows: [] }),
     loadGoal: async () => goal, loadLearningPlan: async () => null,
     ...domain, ...policies, useNotificationSettings: () => ({ loading: false, trackId, status: 'disabled' }),
-    ROUTES: { HOME: 'Home' }, Platform: { OS: 'ios' }, ...ports,
+    ROUTES: { HOME: 'Home' }, Platform: { OS: 'ios' },
+    // 475b1e5b: screens own an actual route lifetime (removed in an effect cleanup on unmount).
+    useRouteLifetime: identity => hooks.bindings.useMemo(() => createRouteLifetime(), [identity]), ...ports,
   };
   const fn = kind === 'review'
     ? subject('src/features/review/MistakesReviewScreen.tsx', 'MistakesReviewScreen', bindings)

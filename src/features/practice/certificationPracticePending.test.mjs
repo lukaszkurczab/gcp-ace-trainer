@@ -43,8 +43,11 @@ function fixture(initial = projection()) {
     if (name === '../../domain') return { getTrackRegistration: () => ({ familyId: 'certification' }) };
     if (name === './practiceSessionPresentation') return presentation;
     if (name === './PracticeSessionSurface') return { PracticeSessionSurface: 'Surface', PracticeSessionLoadingSkeleton: 'Skeleton' };
-    if (name === './canonicalQuestionViewModel') return { toCanonicalQuestionViewModel: () => ({ itemId: 'item', prompt: '', interaction: { interactionType: 'choice_single', model: { renderer: { kind: 'choice', options: [{ id: 'a', text: 'A' }, { id: 'b', text: 'B' }] } } } }) };
+    if (name === './canonicalQuestionViewModel') return { toCertificationQuestionViewModel: () => ({ itemId: 'item', prompt: '', interaction: { interactionType: 'choice_single', model: { renderer: { kind: 'choice', options: [{ id: 'a', text: 'A' }, { id: 'b', text: 'B' }] } } } }) };
     if (name === './sessionConfig') return { buildCertificationPracticeTarget: () => ({}) };
+    // 475b1e5b: response renderers and decision-matrix controls are bound by the screen; the surface is a host stub here.
+    if (name === './PracticeResponseControls') return { builtinPracticeResponseRenderers: new Map() };
+    if (name === './CertificationStatementControls') return { CertificationStatementControls: 'CertificationStatementControls' };
     return require(name);
   } });
   let tree, route = { key: 'route', params: { mode: 'certification-focus-practice', trackId: 'aws' } };
