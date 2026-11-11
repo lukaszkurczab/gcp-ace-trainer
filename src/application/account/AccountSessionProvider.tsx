@@ -12,7 +12,7 @@ import { prepareRevenueCatAccountDeletion } from "../../infrastructure/purchases
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
 import { readAccountPremiumTestingAccess, readGuestPremiumTestingAccess } from "./premiumTestingAccess";
-import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
+import { markStartup, markStartupAt, startupTraceNow } from "../../infrastructure/diagnostics/startupTrace";
 import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
 import { getRetiredAccountSecretsCleanup, type RetiredAccountSecretsCleanupState } from "../../infrastructure/security/retiredAccountSecrets";
 import { SessionRevocationExpiredError, createPendingSessionRevocationDrain } from "./pendingSessionRevocation";
@@ -452,6 +452,17 @@ export function createGuestTransitionLock(): Readonly<{ tryAcquire: () => (() =>
       };
     },
   });
+}
+
+/**
+ * S4-sync (Plan §1): `sync_start` → `sync_end` for a sync that reached the
+ * server ACK. The start is recorded afterwards at its original time, so a Home
+ * focus with nothing to upload, or a failed attempt, leaves no unmatched edge.
+ */
+function markAccountSync(startedAt: number | null, next: AccountDataSession | null): void {
+  if (startedAt === null || next?.status !== "synced") return;
+  markStartupAt("sync_start", startedAt);
+  markStartup("sync_end");
 }
 
 export async function runWithGuestTransitionLock<T>(lock: ReturnType<typeof createGuestTransitionLock>, denied: T, operation: () => Promise<T>): Promise<T> {
@@ -2581,7 +2592,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const current = auth.getSnapshot();
       if (!current || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
       const generation = sessionCoordinator.restart(current.uid);
+      const syncStartedAt = startupTraceNow();
       const next = await retryAccountDataSync(api, state.backendUser.id);
+      markAccountSync(syncStartedAt, next);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       const activeProfile = getActiveStorageProfileOrNull();
       if (next.status === "synced" && (activeProfile?.kind !== "account" || activeProfile.accountId !== state.backendUser.id)) {
@@ -2596,7 +2609,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const current = auth.getSnapshot();
       if (!current || state.kind !== "authenticated" || state.user.uid !== current.uid) return { kind: "failure", failure: "providerUnavailable" };
       const generation = sessionCoordinator.restart(current.uid);
+      const syncStartedAt = startupTraceNow();
       const next = await retryPendingAccountDataSync(api, state.backendUser.id);
+      markAccountSync(syncStartedAt, next);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       if (!next) return { kind: "success", next: "authenticated" };
       const activeProfile = getActiveStorageProfileOrNull();

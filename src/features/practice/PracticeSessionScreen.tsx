@@ -2,7 +2,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { usePreventRemove, type NavigationAction } from "@react-navigation/native";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Alert, AppState, StyleSheet } from "react-native";
 
 import {
@@ -61,6 +61,10 @@ import type { AppColors } from "../../theme";
 import { CertificationPracticeSessionScreen } from "./CertificationPracticeSessionScreen";
 import { DesignInterviewPracticeScreen } from "./DesignInterviewPracticeScreen";
 import { canonicalResponseToPracticeLocalResponse } from "./canonicalQuestionViewModel";
+import { markStartup, markVisible, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
+
+// SLA markers (Plan §1 S2/S3a/S3b) are recorded only where the startup trace is on.
+const SLA_TRACE = startupTraceEnabled();
 
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION> & Readonly<{ additionalResponseRendererBindings?: ReadonlyMap<string, PracticeResponseRenderer> }>;
@@ -94,6 +98,8 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   const interactionResponseValidation = useRef(0);
   const interactionResponseOwner = useRef<string | null>(null);
   const [pendingPhase, setPendingPhase] = useState<PracticeSurfacePhase | null>(null);
+  // SLA trace only: which user press waits for its `*_visible` frame.
+  const slaPending = useRef<Readonly<{ kind: "option" } | { kind: "submit" } | { kind: "continue"; from: string }> | null>(null);
 
   usePreventRemove(!permitRouteExit.current && state?.kind === "session", ({ data }) => {
     if (permitRouteExit.current) {
@@ -180,6 +186,26 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, pendingPhase, completionFailure, submissionError]);
 
+  const slaProjection = SLA_TRACE && state?.kind === "session" ? state.projection : null;
+  const slaPhase = slaProjection ? completionOperation ? toPracticeSurfacePhase(completionOperation.kind) : pendingPhase ?? toPracticeSurfacePhase(slaProjection.operation.kind) : null;
+  const slaOwner = slaProjection ? practiceResponseOwner(slaProjection) : null;
+  const slaOperation = slaProjection?.operation.kind ?? null;
+  // The surface shows feedback and the next question as soon as the projection
+  // has them, even while `pendingPhase` still reports the command (verified
+  // against simctl video in T0.2), so the projection decides "visible".
+  useLayoutEffect(() => {
+    const pending = slaPending.current;
+    if (!pending) return;
+    if (pending.kind === "option") { slaPending.current = null; markVisible("option_visible"); return; }
+    if (pending.kind === "submit") {
+      if (slaOperation === "feedback") { slaPending.current = null; markVisible("feedback_visible"); }
+      else if (slaPhase && slaPhase !== "submitting_before_journal") slaPending.current = null; // failed: nothing shown
+      return;
+    }
+    if (slaOwner !== null && slaOwner !== pending.from) { slaPending.current = null; markVisible("question_visible"); }
+    else if (slaPhase === "advance_failed") slaPending.current = null;
+  }, [localResponse, slaPhase, slaOwner, slaOperation]);
+
   if (!algorithmsMode) {
     return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Certification Practice unavailable")} description={t(certificationUnavailableDescription)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
@@ -256,6 +282,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
 
   async function submit() {
     if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || (builtinControl ? !effectiveLocalResponse : !interactionResponseComplete) || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
+    if (SLA_TRACE) { markStartup("submit_press"); slaPending.current = { kind: "submit" }; }
     actionPending.current = true;
     setPendingPhase("submitting_before_journal");
     setSubmissionError(null);
@@ -273,8 +300,10 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
     }
   }
 
-  async function advanceOrFinish() {
+  async function advanceOrFinish(userPress = false) {
     if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || (projection.operation.kind !== "feedback" && projection.operation.kind !== "advance_failed")) return;
+    // S2 covers only a user's continue to the next question, not the final step to the summary.
+    if (SLA_TRACE && userPress && projection.position.current !== projection.position.total) { markStartup("continue_press"); slaPending.current = { kind: "continue", from: practiceResponseOwner(projection) }; }
     actionPending.current = true;
     setSubmissionError(null);
     setPendingPhase(projection.position.current === projection.position.total ? "completing" : "advancing");
@@ -404,12 +433,12 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
       modeLabel={t(getAlgorithmMode(algorithmsMode).title)}
       notice={notice}
       onAbandon={() => void abandon()}
-      onChoicePress={(optionId) => { if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || !allowsPracticeResponseEditing(phase) || frozenPracticeResponse) return; setSubmissionError(null); setLocalResponse((current) => toggleChoice(current, optionId, practiceChoiceSelectionMode(responseControl) ?? "single")); }}
-      onComplexityValuePress={(dimensionId, value) => { if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || !allowsPracticeResponseEditing(phase) || frozenPracticeResponse) return; setSubmissionError(null); setLocalResponse((current) => setComplexityValue(current, dimensionId, value)); }}
+      onChoicePress={(optionId) => { if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || !allowsPracticeResponseEditing(phase) || frozenPracticeResponse) return; if (SLA_TRACE) { markStartup("option_press"); slaPending.current = { kind: "option" }; } setSubmissionError(null); setLocalResponse((current) => toggleChoice(current, optionId, practiceChoiceSelectionMode(responseControl) ?? "single")); }}
+      onComplexityValuePress={(dimensionId, value) => { if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || !allowsPracticeResponseEditing(phase) || frozenPracticeResponse) return; if (SLA_TRACE) { markStartup("option_press"); slaPending.current = { kind: "option" }; } setSubmissionError(null); setLocalResponse((current) => setComplexityValue(current, dimensionId, value)); }}
       onConfirmLeave={leave}
       onDismissExit={() => { pendingRouteAction.current = null; setExit("none"); }}
       onOrderingMove={(elementId, direction) => { if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || !allowsPracticeResponseEditing(phase) || frozenPracticeResponse) return; setSubmissionError(null); setLocalResponse((current) => moveOrderingElement(current, elementId, direction, responseControl)); }}
-      onPrimaryAction={() => void (retryFrozenResponse ? submit() : frozenPracticeResponse ? undefined : (phase === "unanswered" || phase === "submit_journal_failed") ? submit() : advanceOrFinish())}
+      onPrimaryAction={() => void (retryFrozenResponse ? submit() : frozenPracticeResponse ? undefined : (phase === "unanswered" || phase === "submit_journal_failed") ? submit() : advanceOrFinish(true))}
       onRequestLeave={() => { pendingRouteAction.current = null; setExit("leave"); }}
       onRetry={completionFailure ? () => void retryOrRecoverCompletion() : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? () => void recover() : undefined}
       phase={phase}

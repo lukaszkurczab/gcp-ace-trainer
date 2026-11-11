@@ -1,8 +1,12 @@
-import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
+import { isEpochFromThisLaunch, markFirstUsableFrame, markStartup, markVisible, markVisibleThenInteractive, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
+
+// SLA markers (Plan §1 S1a/S1b/S4) are recorded only where the startup trace is on.
+const SLA_TRACE = startupTraceEnabled();
+let homeFreshCommitMarked = false;
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
 import {
@@ -128,6 +132,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [shellReload, setShellReload] = useState(0);
   const [shellReadError, setShellReadError] = useState<string | null>(null);
   const shellReadReady = useRef(false);
+  // SLA trace only: Today must be marked visible after this focus's own shell read.
+  const slaTodayPending = useRef(false);
+  // SLA trace only: this focus's shell read started after a backend sync of this launch.
+  const slaShellReadFresh = useRef(false);
   const [data, setData] = useState<ShellData>({
     activityRecords: [],
     algorithmsDashboard: null,
@@ -163,6 +171,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     useCallback(() => {
       let isActive = true;
       shellReadReady.current = false;
+      if (SLA_TRACE) {
+        slaTodayPending.current = true;
+        // Same tick as the shell read below: it starts after a backend sync of this launch or not.
+        slaShellReadFresh.current = isFreshBackendAccountData(accountRef.current.state);
+      }
       // Keep the last committed projection visible while this same mounted
       // profile refreshes. Profile/actor changes replace the authenticated
       // navigator, so this cache cannot cross an account boundary.
@@ -289,6 +302,21 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   useEffect(() => {
     if (hasLoadedActiveTrack && !shellReadError) markStartup("home_data_commit");
   }, [hasLoadedActiveTrack, shellReadError]);
+
+  // S1a/S1b/S4 (Plan §1): the frame that shows Today with this focus's committed shell read.
+  useLayoutEffect(() => {
+    if (!SLA_TRACE || !slaTodayPending.current || !shellReadReady.current || activeTab !== "home" || !hasLoadedActiveTrack || shellReadError || !activeTrackId || !loadedOwner) return;
+    try {
+      if (!isHomeSnapshotOwnerCurrent(loadedOwner, readLearningPlanStorageScope(), readActiveTrackId())) return;
+    } catch { return; }
+    slaTodayPending.current = false;
+    markFirstUsableFrame();
+    markVisibleThenInteractive("today_visible", "today_interactive");
+    if (slaShellReadFresh.current && !homeFreshCommitMarked) {
+      homeFreshCommitMarked = true;
+      markVisible("home_fresh_commit");
+    }
+  }, [activeTab, activeTrackId, data, hasLoadedActiveTrack, loadedOwner, shellReadError]);
 
   useEffect(() => {
     const unavailable = homeResumeContext?.unavailable;
@@ -676,3 +704,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: 8,
   },
 });
+
+/** S1b (Plan §1): account data was synced with the backend during this launch, not restored from a previous one. */
+function isFreshBackendAccountData(state: ReturnType<typeof usePatternlyAccount>["state"]): boolean {
+  if (state.kind !== "authenticated" || state.accountData.status !== "synced" || !state.accountData.lastSuccessfulSyncAt) return false;
+  return isEpochFromThisLaunch(Date.parse(state.accountData.lastSuccessfulSyncAt));
+}

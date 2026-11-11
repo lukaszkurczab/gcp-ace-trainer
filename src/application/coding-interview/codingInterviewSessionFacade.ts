@@ -30,6 +30,21 @@ import { projectCanonicalSourceEvidence, type CanonicalSourceLink } from "../can
 import { overallScoreCredit } from "../canonical/overallScoreCredit";
 import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
+import { beginStartupSpan, markStartup, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
+
+/**
+ * Q-CPU (Plan §1): one `quiz_command` span per practice command, from the
+ * screen handing it over until its persistence and journal verification
+ * settle. Returns the command's own promise, so behaviour and timing for the
+ * caller are unchanged; without the trace it is a direct call.
+ */
+function traceQuizCommand<T>(command: () => Promise<T>): Promise<T> {
+  if (!startupTraceEnabled()) return command();
+  const end = beginStartupSpan("quiz_command");
+  const result = command();
+  void result.then(end, end);
+  return result;
+}
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
 
@@ -272,16 +287,16 @@ async function projectAlgorithmsPractice(
 }
 
 export async function submitAlgorithmsPracticeResponse(response: AlgorithmResponse): Promise<void> {
-  return defaultAlgorithmsPracticeFacade().submitResponse(response);
+  return traceQuizCommand(() => defaultAlgorithmsPracticeFacade().submitResponse(response));
 }
 /** Extension responses stay opaque through the feature facade and exact family runtime. */
 export async function submitAlgorithmsPracticeInteractionResponse(response: unknown): Promise<void> {
-  return defaultAlgorithmsPracticeFacade().submitInteractionResponse(response);
+  return traceQuizCommand(() => defaultAlgorithmsPracticeFacade().submitInteractionResponse(response));
 }
 export async function isAlgorithmsPracticeInteractionResponseComplete(response: unknown): Promise<boolean> {
   return defaultAlgorithmsPracticeFacade().isInteractionResponseComplete(response);
 }
-export async function retryAlgorithmsPracticeResponse(): Promise<void> { await requireAlgorithmsSession(); await getTrainingLifecycleUseCases().retryPracticeSubmission(); }
+export async function retryAlgorithmsPracticeResponse(): Promise<void> { return traceQuizCommand(async () => { await requireAlgorithmsSession(); await getTrainingLifecycleUseCases().retryPracticeSubmission(); }); }
 
 export function toCanonicalPracticeResponse(interactionType: string, response: AlgorithmResponse): CanonicalQuestionResponse {
   if (response.kind === "choice") {
@@ -323,16 +338,24 @@ export function subscribeAlgorithmsPracticeOperation(sessionId: string, listener
 }
 
 export async function advanceAlgorithmsPracticeSession(): Promise<TrainingSession> {
-  await requireAlgorithmsSession();
-  return getTrainingLifecycleUseCases().advancePracticeSession();
+  return traceQuizCommand(async () => {
+    await requireAlgorithmsSession();
+    return getTrainingLifecycleUseCases().advancePracticeSession();
+  });
 }
 
 export async function completeAlgorithmsPracticeSession(): Promise<PracticeCompletionCommandResult<PracticeFinalization>> {
+  return traceQuizCommand(completeAlgorithmsPracticeSessionCommand);
+}
+
+async function completeAlgorithmsPracticeSessionCommand(): Promise<PracticeCompletionCommandResult<PracticeFinalization>> {
   const session = await requireAlgorithmsSession();
   const lifecycle = getTrainingLifecycleUseCases();
   const timer = getForegroundSessionTimerFacade();
   try {
     const finalized = await timer.completePracticeAfterCheckpoint(session, () => lifecycle.completeActivePracticeSession(session.id));
+    // The one finalization point for S4/T1.3: the result is persisted and verified.
+    markStartup("session_finalized");
     return Object.freeze({ kind: "verified", value: finalized });
   } catch (cause) {
     if (cause instanceof PracticeCompletionCheckpointError) {
@@ -374,6 +397,7 @@ export async function recoverAlgorithmsPracticeCompletion(expectedSessionId: str
   await requireExactLegacyPracticeCompletionRecovery(expectedSessionId, lifecycle);
   const finalized = await lifecycle.recoverExpectedSessionCompletion(expectedSessionId);
   getForegroundSessionTimerFacade().releaseAfterVerifiedPracticeCompletion(expectedSessionId);
+  markStartup("session_finalized");
   return finalized;
 }
 

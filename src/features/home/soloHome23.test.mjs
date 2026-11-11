@@ -24,6 +24,8 @@ function shell(overrides = {}) {
     usePatternlyAccount: () => ({ state: { kind: 'guest' }, readCurrentPremiumAccess: () => ({ kind: 'free' }) }),
     useHomeResumeUnavailable: () => null, useThemedStyles: () => ({}), createStyles: () => ({}),
     useTranslation: () => ({ t: key => key }), markStartup: () => {},
+    // T0.2 SLA markers: off outside the perf trace, as in production.
+    useLayoutEffect: hooks.bindings.useEffect, SLA_TRACE: false,
     getSettingsAccountPresentation, getTrackDisplay, isHomeSnapshotOwnerCurrent, runtimeSelectors, ROUTES,
     CODING_INTERVIEW_TRACK_ID: 'coding-interview-dsa-problem-solving',
     getActiveTrackId: async () => shellTrackId,

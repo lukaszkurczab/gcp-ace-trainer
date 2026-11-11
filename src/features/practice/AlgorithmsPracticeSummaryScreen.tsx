@@ -17,6 +17,7 @@ import { radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { getAlgorithmMode } from "../../tracks/coding-interview/domain";
 import { normalizeSessionResultDetails } from "../exam/sessionResultPresentation";
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_PRACTICE_SUMMARY>;
 type SummaryReadState =
@@ -97,7 +98,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
         completion={result.completionKind === "completed" ? "completed" : "endedEarly"}
         configurationTestID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}
         context={{ modeLabel: t(getAlgorithmMode(result.modeId).title), trackLabel: t("Coding Interview") }}
-        onBack={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
+        onBack={() => { markStartup("summary_exit_press"); navigation.navigate(ROUTES.PRACTICE_HUB); }}
         points={result.completionKind === "completed" && result.overallPointsEarned !== null && normalizedDetails.points
           ? { earned: result.overallPointsEarned, max: normalizedDetails.points.max }
           : undefined}

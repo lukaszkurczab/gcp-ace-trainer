@@ -62,14 +62,39 @@ function enabled(): boolean {
   } catch { return false; }
 }
 
+/** True only where markers record (perf build, opted-in smoke trace, Android clock probe). */
+export function startupTraceEnabled(): boolean {
+  return enabled();
+}
+
+/** Monotonic trace clock (`atMs` base), or null when tracing is off so callers skip all work. */
+export function startupTraceNow(): number | null {
+  if (!enabled()) return null;
+  try {
+    const atMs = globalThis.performance.now();
+    return Number.isFinite(atMs) && atMs >= 0 ? atMs : null;
+  } catch { return null; }
+}
+
 /** RAM-only observation; failure must never affect the operation being measured. */
 export function markStartup(stage: StartupTraceStage, edge: StartupTraceEvent["edge"] = "event", span?: number): void {
+  markStartupAt(stage, null, edge, span);
+}
+
+/**
+ * Records `stage` at an earlier monotonic time `atMs` (same base as
+ * `performance.now()`), e.g. a start edge that is known only once the work
+ * turns out to be measurable. `epochMs` is shifted by the same amount.
+ */
+export function markStartupAt(stage: StartupTraceStage, at: number | null, edge: StartupTraceEvent["edge"] = "event", span?: number): void {
   if (!enabled()) return;
   try {
     if (events.length >= MAX_EVENTS && !sink) { truncated = true; return; }
-    const atMs = globalThis.performance.now();
-    if (!Number.isFinite(atMs) || atMs < 0) return;
-    const event = Object.freeze({ stage, edge, atMs, epochMs: Date.now(), ...(span === undefined ? {} : { span }) });
+    const nowMs = globalThis.performance.now();
+    const epochNow = Date.now();
+    const atMs = at ?? nowMs;
+    if (!Number.isFinite(atMs) || atMs < 0 || atMs > nowMs) return;
+    const event = Object.freeze({ stage, edge, atMs, epochMs: Math.round(epochNow - (nowMs - atMs)), ...(span === undefined ? {} : { span }) });
     // The file sink keeps every event; the RAM snapshot stays capped for the inspector.
     sink?.push(event);
     if (events.length >= MAX_EVENTS) { truncated = true; return; }
@@ -78,11 +103,64 @@ export function markStartup(stage: StartupTraceStage, edge: StartupTraceEvent["e
 }
 
 /** "visible" (Plan §1): call from `useLayoutEffect`; marks after a double requestAnimationFrame. */
-export function markVisible(stage: StartupTraceStage): void {
+export function markVisible(stage: StartupTraceStage, onMarked?: () => void): void {
   if (!enabled()) return;
   try {
-    globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => markStartup(stage)));
+    globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => {
+      markStartup(stage);
+      onMarked?.();
+    }));
   } catch { /* Optional diagnostics never change rendering. */ }
+}
+
+/** `visible` (double rAF), then `interactive` at the first idle JS loop probe after it (Plan §1). */
+export function markVisibleThenInteractive(visible: StartupTraceStage, interactive: StartupTraceStage): void {
+  markVisible(visible, () => markInteractive(interactive));
+}
+
+let firstUsableFrameMarked = false;
+/**
+ * S1a end marker (Plan §1): the first frame of a screen the user can work on
+ * (Today from local state or the sign-in entry). Only the first call per JS
+ * runtime records; call it from `useLayoutEffect` of that screen.
+ */
+export function markFirstUsableFrame(): void {
+  if (firstUsableFrameMarked || !enabled()) return;
+  firstUsableFrameMarked = true;
+  markVisible("first_usable_frame");
+}
+
+// Wall clock at the trace clock's origin; later epochs are from this JS runtime.
+let traceOriginEpochMs: number | null = null;
+/** True when `epochMs` is not earlier than this JS runtime's start (e.g. a sync done in this launch). */
+export function isEpochFromThisLaunch(epochMs: number): boolean {
+  if (!enabled()) return false;
+  try {
+    traceOriginEpochMs ??= Date.now() - globalThis.performance.now();
+    return Number.isFinite(epochMs) && epochMs >= traceOriginEpochMs;
+  } catch { return false; }
+}
+
+const RN_STARTUP_POLL_MS = 100;
+const RN_STARTUP_MAX_POLLS = 100;
+let rnStartupEndRequested = false;
+/**
+ * JS-start (Plan §1): records `rn_startup_end` at
+ * `performance.rnStartupTiming.endTime` once React Native publishes it.
+ * Polls off the critical path; nothing is recorded if it never appears.
+ */
+export function markRnStartupEnd(): void {
+  if (rnStartupEndRequested || !enabled()) return;
+  rnStartupEndRequested = true;
+  let polls = 0;
+  const poll = () => {
+    try {
+      const endTime = (globalThis.performance as { rnStartupTiming?: { endTime?: unknown } }).rnStartupTiming?.endTime;
+      if (typeof endTime === "number" && Number.isFinite(endTime) && endTime > 0) { markStartupAt("rn_startup_end", endTime); return; }
+      if (++polls < RN_STARTUP_MAX_POLLS) setTimeout(poll, RN_STARTUP_POLL_MS);
+    } catch { /* Optional diagnostics never change startup. */ }
+  };
+  setTimeout(poll, 0);
 }
 
 /**

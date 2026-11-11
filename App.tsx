@@ -1,6 +1,6 @@
 import { resolveStartupPreviewEntry, type StartupPreviewEntry } from "./src/testing/startupPreparationPreview";
 import { resolvePerf06Entry, type Perf06Entry } from "./src/testing/perf06Entry";
-import { markStartup } from "./src/infrastructure/diagnostics/startupTrace";
+import { markRnStartupEnd, markStartup } from "./src/infrastructure/diagnostics/startupTrace";
 import { resolvePersist13Entry, type Persist13Entry } from "./src/application/runtimeAuditability/persist13Entry";
 import { resolveACMNativeFixtureEntry, type ACMNativeFixtureNativeIdentity } from "./src/application/runtimeAuditability/acmNativeFixtureProtocol";
 import type { ReactElement } from "react";
@@ -50,6 +50,8 @@ export default function App() {
   if (entry.kind === "regular") {
     const EnvironmentGate = (require("./src/infrastructure/runtime/EnvironmentGate") as { default: (props: Readonly<{ loadApplication: () => ReactElement }>) => ReactElement }).default;
     return <EnvironmentGate loadApplication={() => {
+      // JS-start (Plan §1); a no-op unless the startup trace is on.
+      markRnStartupEnd();
       markStartup("regular_root_module", "begin");
       const RegularApplicationRoot = (require("./src/RegularApplicationRoot") as { default: () => ReactElement }).default;
       markStartup("regular_root_module", "end");

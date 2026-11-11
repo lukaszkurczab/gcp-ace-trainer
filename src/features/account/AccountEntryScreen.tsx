@@ -1,5 +1,5 @@
 import { readAccountStartupFailureTestID } from "../../application/operationalDiagnostics";
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useIsFocused, useNavigationState, usePreventRemove } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import accountCopy from "../../locales/en/account.json";
@@ -61,6 +61,7 @@ import { useAccountCommand } from "./useAccountCommand";
 import { accountSyncAutomaticRetryAllowed, getAccountSyncConflictPresentation } from "./accountSyncConflictPresentation";
 import { useSettingsRecoveryReturn } from "./useSettingsRecoveryReturn";
 import { readLearningPlanStorageScope } from "../../application/learningReadModels";
+import { markFirstUsableFrame, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
 
 type AccountEntryProps = NativeStackScreenProps<
   RootStackParamList,
@@ -82,6 +83,9 @@ type AccountCopy = Record<Exclude<keyof typeof accountCopy,
 > | "invalidEmail", string>;
 type AccountContext = ReturnType<typeof usePatternlyAccount>;
 type AccountContextRef = Readonly<{ current: AccountContext }>;
+
+// S1a-out (Plan §1): the signed-out entry is the first usable frame; recorded only where the startup trace is on.
+const SLA_TRACE = startupTraceEnabled();
 
 function AuthText({ maxFontSizeMultiplier = 2, ...props }: TextProps) {
   const { fontScale } = useWindowDimensions();
@@ -361,6 +365,11 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     );
     return () => subscription.remove();
   }, []);
+
+  // The welcome and sign-in branches below render the usable signed-out entry.
+  const slaUsableEntry = SLA_TRACE && ((account.state.kind === "signedOut" && (mode === "entry" || mode === "signIn"))
+    || (account.state.kind === "guestAccessBlocked" && mode === "signIn"));
+  useLayoutEffect(() => { if (slaUsableEntry) markFirstUsableFrame(); }, [slaUsableEntry]);
 
   const screenEdges: Edge[] = ["top", "bottom"];
   if (account.state.kind === "providerRegistrationRequired") return (
