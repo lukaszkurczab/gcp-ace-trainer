@@ -8,7 +8,7 @@ const resultScreenSource = readFileSync("src/features/exam/ResultScreen.tsx", "u
 const feedback = readFileSync("src/features/practice/PracticeFeedbackBlock.tsx", "utf8");
 
 test("Exam Review has one local header owner and returns to the exact result session", () => {
-  const route = /name=\{ROUTES\.EXAM_REVIEW\}[\s\S]*?component=\{ExamReviewScreen\}[\s\S]*?options=\{\{([^}]+)\}\}/.exec(navigator)?.[1];
+  const route = /name=\{ROUTES\.EXAM_REVIEW\}[\s\S]*?(?:component=\{ExamReviewScreen\}|getComponent=\{getExamReviewScreen\})[\s\S]*?options=\{\{([^}]+)\}\}/.exec(navigator)?.[1];
   assert.ok(route);
   assert.match(route, /headerShown: false/);
   assert.match(review, /navigation\.popTo\(ROUTES\.RESULT, \{ sessionId: requestKey \}\)/);

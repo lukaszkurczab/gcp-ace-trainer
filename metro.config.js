@@ -15,9 +15,16 @@ const buildOnlyModules = new Map([
   ["../../infrastructure/firebase/providerAuthFixtureRuntime", smokeRuntime ? "src/infrastructure/firebase/providerAuthFixtureRuntime.smoke.ts" : "src/infrastructure/firebase/providerAuthFixtureRuntime.disabled.ts"],
 ]);
 
+const expoGetTransformOptions = config.transformer.getTransformOptions;
 config.transformer = {
   ...config.transformer,
   babelTransformerPath: require.resolve("react-native-svg-transformer/expo"),
+  // T1.5: modules evaluate on first use instead of at bundle load. Bare imports
+  // (`import "./i18n"`, `installNativeSha256`) stay eager and keep their order.
+  async getTransformOptions(...args) {
+    const options = await expoGetTransformOptions(...args);
+    return { ...options, transform: { ...options.transform, inlineRequires: true } };
+  },
 };
 config.resolver = {
   ...config.resolver,

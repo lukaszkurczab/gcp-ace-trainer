@@ -8,24 +8,20 @@ import { AppShellHeader } from "../components";
 import { usePatternlyAccount } from "../application/account/AccountSessionProvider";
 import { StartupLoadingSurface } from "../content/application/startupPreparationSurfaces";
 import { ROUTES } from "../constants/routes";
-import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { CertificationExamReviewFixtureNavigator } from "../features/exam/certificationExamReviewFixtureNavigator";
 import { createCertificationExamReviewFixtureRuntime } from "../features/exam/certificationExamReviewFixtureRuntime";
 import { nextCertificationExamReviewFixtureLaunch, parseCertificationExamReviewFixtureUrl, type CertificationExamReviewFixtureLaunch } from "../features/exam/certificationExamReviewFixtureCommand";
-import { ExamScreen } from "../features/exam/ExamScreen";
 import { HomeScreen } from "../features/home/HomeScreen";
 import { ActivityScreen } from "../features/home/ActivityScreen";
 import { AppearanceSettingsScreen } from "../features/home/AppearanceSettingsScreen";
 import { LanguageSettingsScreen } from "../features/home/LanguageSettingsScreen";
 import { LegalInformationScreen } from "../features/home/LegalInformationScreen";
 import { PrivacyPolicyScreen } from "../features/home/PrivacyPolicyScreen";
-import { PremiumPurchaseScreen } from "../features/premium/PremiumPurchaseScreen";
 import { TermsOfServiceScreen } from "../features/home/TermsOfServiceScreen";
 import { NotificationSettingsScreen } from "../features/home/NotificationSettingsScreen";
 import { YourDataScreen } from "../features/home/YourDataScreen";
 import { PrivacyRequestsScreen } from "../features/home/PrivacyRequestsScreen";
 import { LegalRequestsScreen } from "../features/home/LegalRequestsScreen";
-import { BackendDiagnosticsScreen } from "../features/home/BackendDiagnosticsScreen";
 import { AccountSecurityScreen } from "../features/account/AccountSecurityScreen";
 import { AccountEmailChangePendingScreen } from "../features/account/AccountEmailChangePendingScreen";
 import { AccountEntryScreen } from "../features/account/AccountEntryScreen";
@@ -46,13 +42,11 @@ import { ApproachChallengeReviewScreen } from "../features/practice/ApproachChal
 import { AlgorithmsPracticeReviewScreen } from "../features/practice/AlgorithmsPracticeReviewScreen";
 import { AlgorithmsPracticeSummaryScreen } from "../features/practice/AlgorithmsPracticeSummaryScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
-import { ResultScreen } from "../features/exam/ResultScreen";
 import {
   AlgorithmsInterviewSimulationReviewScreen,
   AlgorithmsInterviewSimulationSummaryScreen,
 } from "../features/simulation/AlgorithmsInterviewSimulationResultScreen";
 import { AlgorithmsInterviewSimulationScreen } from "../features/simulation/AlgorithmsInterviewSimulationScreen";
-import { DesignInterviewSimulationReviewScreen, DesignInterviewSimulationResultScreen, DesignInterviewSimulationScreen } from "../features/simulation/DesignInterviewSimulationScreens";
 import { TopicRoadmapScreen } from "../features/practice/TopicRoadmapScreen";
 import { useAppPreferences } from "../preferences";
 import type { RootStackParamList } from "./types";
@@ -61,6 +55,29 @@ import { isPatternlySmokeRuntime } from "../infrastructure/runtime/runtimeMode";
 import { isLanguageSettingsAuditCommand } from "./languageSettingsAuditCommand";
 import { handleCodingMockCountdownAuditUrl, isCodingMockCountdownAuditCommand } from "../application/runtimeAuditability/codingMockCountdownCommand";
 import { clearGoalPlanAcceptanceInterruptionArm, DEVELOPMENT_INTERRUPT_GOAL_PLAN_ACCEPTANCE_URL, handleGoalPlanAcceptanceInterruptionUrl } from "../application/runtimeAuditability/goalPlanAcceptanceInterruptionCommand";
+// T1.5: with Metro `inlineRequires` these modules would first evaluate on first use.
+// Keep their module-level effects at startup: the foreground notification handler and
+// the release legal-approval guard (fail fast instead of on the first legal screen).
+import "../infrastructure/notifications/expoNotificationPlatform";
+import "../legal/legalVariables";
+
+// T1.5: screens off the start path load on first navigation (explicit `require`, so this
+// does not depend on the Metro flag). Exam, design interview, purchases, diagnostics.
+type ExamScreenModule = typeof import("../features/exam/ExamScreen");
+type ExamReviewScreenModule = typeof import("../features/exam/ExamReviewScreen");
+type ResultScreenModule = typeof import("../features/exam/ResultScreen");
+type PremiumPurchaseScreenModule = typeof import("../features/premium/PremiumPurchaseScreen");
+type BackendDiagnosticsScreenModule = typeof import("../features/home/BackendDiagnosticsScreen");
+type DesignInterviewScreensModule = typeof import("../features/simulation/DesignInterviewSimulationScreens");
+const getExamScreen = () => (require("../features/exam/ExamScreen") as ExamScreenModule).ExamScreen;
+const getExamReviewScreen = () => (require("../features/exam/ExamReviewScreen") as ExamReviewScreenModule).ExamReviewScreen;
+const getResultScreen = () => (require("../features/exam/ResultScreen") as ResultScreenModule).ResultScreen;
+const getPremiumPurchaseScreen = () => (require("../features/premium/PremiumPurchaseScreen") as PremiumPurchaseScreenModule).PremiumPurchaseScreen;
+const getBackendDiagnosticsScreen = () => (require("../features/home/BackendDiagnosticsScreen") as BackendDiagnosticsScreenModule).BackendDiagnosticsScreen;
+const getDesignInterviewScreens = () => require("../features/simulation/DesignInterviewSimulationScreens") as DesignInterviewScreensModule;
+const getDesignInterviewSimulationScreen = () => getDesignInterviewScreens().DesignInterviewSimulationScreen;
+const getDesignInterviewSimulationResultScreen = () => getDesignInterviewScreens().DesignInterviewSimulationResultScreen;
+const getDesignInterviewSimulationReviewScreen = () => getDesignInterviewScreens().DesignInterviewSimulationReviewScreen;
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -258,7 +275,7 @@ export function RootNavigator() {
           <Stack.Screen name={ROUTES.LEGAL_REQUESTS} component={LegalRequestsScreen} options={{ headerShown: false, title: t("Legal requests") }} />
           <Stack.Screen
             name={ROUTES.BACKEND_DIAGNOSTICS}
-            component={BackendDiagnosticsScreen}
+            getComponent={getBackendDiagnosticsScreen}
             options={{ title: "Backend diagnostics" }}
           />
           <Stack.Screen
@@ -266,7 +283,7 @@ export function RootNavigator() {
             component={LegalInformationScreen}
             options={{ headerShown: false, title: t("Legal information") }}
           />
-          <Stack.Screen name={ROUTES.PREMIUM_PURCHASE} component={PremiumPurchaseScreen} options={{ headerShown: false, title: t("Premium") }} />
+          <Stack.Screen name={ROUTES.PREMIUM_PURCHASE} getComponent={getPremiumPurchaseScreen} options={{ headerShown: false, title: t("Premium") }} />
           <Stack.Screen
             name={ROUTES.NOTIFICATION_SETTINGS}
             component={NotificationSettingsScreen}
@@ -309,17 +326,17 @@ export function RootNavigator() {
           />
           <Stack.Screen
             name={ROUTES.EXAM}
-            component={ExamScreen}
+            getComponent={getExamScreen}
             options={{ title: t("Exam") }}
           />
           <Stack.Screen
             name={ROUTES.EXAM_REVIEW}
-            component={ExamReviewScreen}
+            getComponent={getExamReviewScreen}
             options={{ headerShown: false, title: t("Exam Review") }}
           />
           <Stack.Screen
             name={ROUTES.RESULT}
-            component={ResultScreen}
+            getComponent={getResultScreen}
             options={{ title: t("Result") }}
           />
           <Stack.Screen
@@ -359,9 +376,9 @@ export function RootNavigator() {
             component={AlgorithmsInterviewSimulationReviewScreen}
             options={{ headerShown: false, title: t("Simulation review") }}
           />
-          <Stack.Screen name={ROUTES.DESIGN_INTERVIEW_SIMULATION} component={DesignInterviewSimulationScreen} options={{ headerShown: false, title: t("Design Interview Simulation") }} />
-          <Stack.Screen name={ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT} component={DesignInterviewSimulationResultScreen} options={{ headerShown: false, title: t("Simulation result") }} />
-          <Stack.Screen name={ROUTES.DESIGN_INTERVIEW_SIMULATION_REVIEW} component={DesignInterviewSimulationReviewScreen} options={{ headerShown: false, title: t("Simulation review") }} />
+          <Stack.Screen name={ROUTES.DESIGN_INTERVIEW_SIMULATION} getComponent={getDesignInterviewSimulationScreen} options={{ headerShown: false, title: t("Design Interview Simulation") }} />
+          <Stack.Screen name={ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT} getComponent={getDesignInterviewSimulationResultScreen} options={{ headerShown: false, title: t("Simulation result") }} />
+          <Stack.Screen name={ROUTES.DESIGN_INTERVIEW_SIMULATION_REVIEW} getComponent={getDesignInterviewSimulationReviewScreen} options={{ headerShown: false, title: t("Simulation review") }} />
           <Stack.Screen
             name={ROUTES.MISTAKES_REVIEW}
             component={MistakesReviewScreen}
