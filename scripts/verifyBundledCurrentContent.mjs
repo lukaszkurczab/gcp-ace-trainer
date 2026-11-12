@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
-import { lstat, readFile, readdir } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { lstat, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 
 import { APPROACH_CHALLENGE_BANK_CONTRACT, APPROACH_CHALLENGE_TRACK_ID, EXPECTED_TRACK_IDS, GENERATED_DIRECTORY, LOCK_FILE_NAME, RELEASE_LOCK_RELATIVE_PATH, SUCCESSOR_LEDGER_FILE_NAME } from "./syncBundledContentRelease.mjs";
 
@@ -199,9 +201,82 @@ export async function verifyBundledCurrentContent({ root = appRoot } = {}) {
   return { releaseId: lock.releaseId, sourceInputFingerprint: lock.sourceInputFingerprint, sourceRepositoryCommit: lock.sourceRepositoryCommit, trackCount: lock.artifacts.length, inventory: built.inventory, artifactDigests: lock.artifacts.map(({ trackId, checksumSha256, artifactBytes }) => ({ trackId, sha256: checksumSha256, bytes: artifactBytes })) };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+export const CONTENT_TRUST_MANIFEST_RELATIVE_PATH = "src/content/generated/content-trust-manifest.json";
+export const RETAINED_CONTENT_RELATIVE_DIRECTORY = "src/content/generated/retained-content";
+const RETAINED_TRUST_IDS = Object.freeze(["claude-pre-qle-v2.json", "claude-qle-v2-first-cases.json", "claude-qle-v2-before-identity.json", "claude-qle-v2-active-before-exam.json"]);
+const jsonBindingSha = (bytes, label) => sha256(Buffer.from(JSON.stringify(parseJson(bytes, label))));
+
+/**
+ * Dependency-free binding check (runs in the EAS pre-install hook, before node_modules exist): the trust manifest
+ * must name exactly the bundled lock, successor ledger, artifact digests and retained identities. Proof that this
+ * content passes the runtime validators comes from `trust-manifest write|check`, which runs the TS verifier.
+ */
+export async function verifyContentTrustManifestBinding({ root = appRoot, built } = {}) {
+  const payload = built ?? await readCurrentPayload(root);
+  const manifest = parseJson(await readRegularFile(path.join(root, CONTENT_TRUST_MANIFEST_RELATIVE_PATH)), CONTENT_TRUST_MANIFEST_RELATIVE_PATH);
+  const fail = (reason) => { throw new Error(`Bundled content trust manifest is stale or invalid: ${reason}; run npm run sync:content-release or node scripts/verifyBundledCurrentContent.mjs trust-manifest write.`); };
+  if (!exactKeys(manifest, ["schemaVersion", "lockSha", "ledgerSha", "artifacts", "retained"]) || manifest.schemaVersion !== "patternly-content-trust-manifest-v1") fail("shape");
+  if (manifest.lockSha !== jsonBindingSha(payload.lockBytes, LOCK_FILE_NAME)) fail("content lock");
+  if (manifest.ledgerSha !== jsonBindingSha(payload.ledgerBytes, SUCCESSOR_LEDGER_FILE_NAME)) fail("successor ledger");
+  if (!Array.isArray(manifest.artifacts) || manifest.artifacts.length !== EXPECTED_TRACK_IDS.length
+    || JSON.stringify(manifest.artifacts.map((row) => row?.trackId).toSorted()) !== JSON.stringify(EXPECTED_TRACK_IDS.toSorted())) fail("artifact inventory");
+  for (const row of manifest.artifacts) {
+    const bundled = payload.artifacts.find((item) => item.trackId === row.trackId);
+    if (!exactKeys(row, ["trackId", "sha"]) || !bundled || row.sha !== bundled.row.sha256 || row.sha !== sha256(bundled.bytes)) fail(`artifact ${row?.trackId}`);
+  }
+  if (!Array.isArray(manifest.retained)) fail("retained inventory");
+  for (const row of manifest.retained) {
+    const fileName = typeof row?.id === "string" ? row.id.replace(/^retained:/u, "") : "";
+    if (!exactKeys(row, ["id", "sha"]) || !RETAINED_TRUST_IDS.includes(fileName)) fail("retained identity");
+    const retained = parseJson(await readRegularFile(path.join(root, RETAINED_CONTENT_RELATIVE_DIRECTORY, fileName)), fileName);
+    if (sha256(Buffer.from(JSON.stringify({ lock: retained.lock, ledger: retained.ledger }))) !== row.sha) fail(`retained ${fileName}`);
+  }
+  return { artifactCount: manifest.artifacts.length, retainedCount: manifest.retained.length };
+}
+
+/** Runs the complete runtime verification (TS validators via tsx) once and renders the manifest bytes. */
+export async function renderContentTrustManifest({ deriveManifest } = {}) {
+  let derive = deriveManifest;
+  if (!derive) derive = async () => {
+    // The verifier is the app's own TS runtime code (same validators as a full start), executed under tsx.
+    const runtimeUrl = pathToFileURL(path.join(appRoot, "src/content/canonical/runtimeCatalog.ts")).href;
+    const program = `const ns = await import(${JSON.stringify(runtimeUrl)}); const m = ns.deriveBundledContentTrustManifest ? ns : ns.default; process.stdout.write(JSON.stringify(await m.deriveBundledContentTrustManifest()));`;
+    const { stdout } = await promisify(execFile)(process.execPath, ["--import", "tsx", "--input-type=module", "--eval", program], { cwd: appRoot, maxBuffer: 1 << 20 });
+    return JSON.parse(stdout);
+  };
+  return Buffer.from(`${JSON.stringify(await derive(), null, 2)}\n`);
+}
+
+export async function writeContentTrustManifest({ root = appRoot, deriveManifest } = {}) {
+  const bytes = await renderContentTrustManifest({ deriveManifest });
+  await writeFile(path.join(root, CONTENT_TRUST_MANIFEST_RELATIVE_PATH), bytes);
+  await verifyContentTrustManifestBinding({ root });
+  return bytes;
+}
+
+export async function checkContentTrustManifest({ root = appRoot, deriveManifest } = {}) {
+  const expected = await renderContentTrustManifest({ deriveManifest });
+  const actual = await readRegularFile(path.join(root, CONTENT_TRUST_MANIFEST_RELATIVE_PATH)).catch(() => Buffer.alloc(0));
+  if (!actual.equals(expected)) throw new Error("Bundled content trust manifest differs from a fresh full verification; run node scripts/verifyBundledCurrentContent.mjs trust-manifest write.");
+  await verifyContentTrustManifestBinding({ root });
+  return expected;
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url) && process.argv[2] === "trust-manifest") {
+  try {
+    const action = process.argv[3];
+    if (action !== "write" && action !== "check") throw new Error("Usage: node scripts/verifyBundledCurrentContent.mjs trust-manifest write|check");
+    await (action === "write" ? writeContentTrustManifest() : checkContentTrustManifest());
+    process.stdout.write(`CONTENT_TRUST_MANIFEST_${action.toUpperCase()}=passed\n`);
+  } catch (error) {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  }
+} else if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const result = await verifyBundledCurrentContent();
+    const trust = await verifyContentTrustManifestBinding();
+    process.stdout.write(`CONTENT_TRUST_MANIFEST_BINDING=passed artifacts=${trust.artifactCount} retained=${trust.retainedCount}\n`);
     process.stdout.write(`BUNDLED_CURRENT_CONTENT=passed sourceCommit=${result.sourceRepositoryCommit} fingerprint=${result.sourceInputFingerprint} releaseId=${result.releaseId} tracks=${result.trackCount}\n`);
     for (const artifact of result.artifactDigests) process.stdout.write(`CONTENT_ARTIFACT=${artifact.trackId} sha256=${artifact.sha256} bytes=${artifact.bytes}\n`);
   } catch (error) {

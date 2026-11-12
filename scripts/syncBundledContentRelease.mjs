@@ -1245,6 +1245,11 @@ export function parseArgs(argv = process.argv.slice(2)) {
 async function runCli() {
   const result = await syncCanonicalContent(parseArgs());
   console.log(`CANONICAL_CONTENT_${result.mode.toUpperCase()}=passed`);
+  // T1.4: full runtime verification once per bundled bank; the app trusts the resulting manifest at start.
+  const trustManifest = await import("./verifyBundledCurrentContent.mjs");
+  if (result.mode === "check") await trustManifest.checkContentTrustManifest();
+  else await trustManifest.writeContentTrustManifest();
+  console.log(`CONTENT_TRUST_MANIFEST_${result.mode === "check" ? "CHECK" : "WRITE"}=passed`);
   console.log(`CURRENT_SOURCE_FINGERPRINT=${result.currentIdentity.sourceInputFingerprint}`);
   if (result.mode === "candidate") console.log(`CANDIDATE_PROVENANCE=local_unpublished sourceTree=${result.currentIdentity.sourceTree} sourceCommit=${result.head}`);
   if (result.mode === "authorized-current-approach-challenge") console.log(`AUTHORIZED_CURRENT_PROVENANCE=source_derived_paired_bank_contract sourceTree=${result.currentIdentity.sourceTree} sourceCommit=${result.head}`);

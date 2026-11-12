@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "patternly-content-trust-manifest-v1",
+  "lockSha": "d32586c23347cf0d6156637c28d13a28d8dc685072c5f96f9b6048c0dddbc2ac",
+  "ledgerSha": "b17a862b44b7f18cb204d8a578d4f631b87c7578e02bbb9a16db4507a962343d",
+  "artifacts": [
+    {
+      "trackId": "aws-certified-solutions-architect-associate",
+      "sha": "04d823fc82d4cb52d685bbc03d5619bbb8ba1330208e3bf0aacea795c808794e"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sha": "c7137b9e137e40fbfc32becccc54557dfb293704df04a2f4d37f4ea78e0f802e"
+    },
+    {
+      "trackId": "claude-certified-architect-professional-certification",
+      "sha": "f952fd4eca54bed80c0f321903bf4f97a4616eb6d6680a3549f00928591c03dd"
+    },
+    {
+      "trackId": "coding-interview-dsa-problem-solving",
+      "sha": "6251d0b87e5e59e9a6c5eb35a967b18d8e672efbd85d006e7070c0dafb468241"
+    },
+    {
+      "trackId": "frontend-system-design-interview",
+      "sha": "17d6fd9cef712fc4b5185ada13cce9db96819aadada0ef27d761593ace9c04f7"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "sha": "366ee785fafc600a4f573bdb56ba7ef26e463fbafece55f2cd119d7ab2977b9e"
+    },
+    {
+      "trackId": "microsoft-azure-administrator-associate-az-104",
+      "sha": "9a9c26955e7290ce8a0eeaff9c09b6e8719fdb09a0d81ca3eb7196f7cebf66c4"
+    },
+    {
+      "trackId": "microsoft-azure-ai-fundamentals-ai-901",
+      "sha": "11f67d04e4b31dd71e867e771985e6f577ea04df1cfb475698b85389833c7604"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sha": "b6f047df404864096eebae24a424955228184c6ce9b8e18c8a255a23c343bfcb"
+    }
+  ],
+  "retained": [
+    {
+      "id": "retained:claude-pre-qle-v2.json",
+      "sha": "54fce3740cc604e33395cf5f0e459969304a6b31236e3b1f75373f4dd9bf1eb7"
+    },
+    {
+      "id": "retained:claude-qle-v2-first-cases.json",
+      "sha": "2b4d7bb495f0c8a6749e423ab81a034db6c4b59f7f1eae441528fbb2bf5801cc"
+    },
+    {
+      "id": "retained:claude-qle-v2-before-identity.json",
+      "sha": "0cb9a9d0cdf775d4a52b25ae0b079e2cdd8e3a702c59e0d4bc8f6b89611eae0c"
+    },
+    {
+      "id": "retained:claude-qle-v2-active-before-exam.json",
+      "sha": "bcd826ad8c67dbbe9d25bdd089d894240dd359813f7a636428097a08f1968625"
+    }
+  ]
+}
