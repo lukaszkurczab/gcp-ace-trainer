@@ -1,0 +1,16 @@
+{
+  "name": "PatternlyCore",
+  "version": "1.0.0",
+  "summary": "Patternly B0 data primitives (canonical serializers, record fingerprints, SHA-256, envelope validation) in C++ behind a thin Nitro adapter",
+  "homepage": "https://github.com/lukaszkurczab/gcp-ace-trainer",
+  "license": { "type": "Proprietary" },
+  "authors": "Patternly",
+  "source": { "git": "https://github.com/lukaszkurczab/gcp-ace-trainer.git" },
+  "platforms": { "ios": "16.4" },
+  "source_files": ["cpp/*.{hpp,cpp}", "apple/*.{hpp,cpp}", "nitro/*.mm"],
+  "private_header_files": ["cpp/*.hpp", "apple/*.hpp"],
+  "frameworks": ["Foundation", "CoreFoundation"],
+  "requires_arc": true,
+  "dependencies": { "NitroModules": ["0.36.1"], "React-Core": [] },
+  "pod_target_xcconfig": { "CLANG_CXX_LANGUAGE_STANDARD": "c++20", "DEFINES_MODULE": "YES" }
+}

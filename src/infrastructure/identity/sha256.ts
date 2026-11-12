@@ -1,4 +1,4 @@
-import { sha256Utf8 as referenceSha256 } from "../../domain/identity/sha256";
+import { isSha256Utf8Accelerated, referenceSha256Utf8 as referenceSha256, sha256Utf8 as domainSha256Utf8 } from "../../domain/identity/sha256";
 
 type Sha256Accelerator = (value: string) => unknown;
 let accelerator: Sha256Accelerator | null = null;
@@ -6,7 +6,7 @@ const HEX_DIGEST = /^[a-f0-9]{64}$/u;
 // iPhone 17 probes show native overhead dominates tiny IDs; accelerate record-sized inputs.
 const NATIVE_MINIMUM_CHARACTERS = 1024;
 
-/** Optional platform capability. The domain implementation remains the byte-contract authority. */
+/** Optional platform capability (Expo Crypto); used only while the B0 core is not installed. The domain implementation remains the byte-contract authority. */
 export function installSha256Accelerator(candidate: Sha256Accelerator | null): boolean {
   accelerator = null;
   if (!candidate) return false;
@@ -23,6 +23,8 @@ export function installSha256Accelerator(candidate: Sha256Accelerator | null): b
 }
 
 export function sha256Utf8(value: string): string {
+  // B0 core (installNativeCore.ts): exact digest of every input, no surrogate scan in JS.
+  if (isSha256Utf8Accelerated()) return domainSha256Utf8(value);
   if (!accelerator || value.length < NATIVE_MINIMUM_CHARACTERS || hasUnpairedSurrogate(value)) return referenceSha256(value);
   try {
     const result = accelerator(value);

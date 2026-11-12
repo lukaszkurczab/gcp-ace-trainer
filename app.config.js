@@ -264,6 +264,7 @@ function createExpoConfig(environment = process.env) {
               { name: "GoogleUtilities", modular_headers: true },
               { name: "RecaptchaInterop", modular_headers: true },
               { name: "PatternlyForegroundClock", path: "../native/foreground-clock" },
+              { name: "PatternlyCore", path: "../native/patternly-core" },
             ],
           },
           android: { minSdkVersion: 28, targetSdkVersion: 36, compileSdkVersion: 36 },

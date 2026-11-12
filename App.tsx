@@ -4,6 +4,11 @@ import { markRnStartupEnd, markStartup } from "./src/infrastructure/diagnostics/
 import { resolvePersist13Entry, type Persist13Entry } from "./src/application/runtimeAuditability/persist13Entry";
 import { resolveACMNativeFixtureEntry, type ACMNativeFixtureNativeIdentity } from "./src/application/runtimeAuditability/acmNativeFixtureProtocol";
 import type { ReactElement } from "react";
+import { installNativeCore } from "./src/infrastructure/identity/installNativeCore";
+
+// B0 (Plan T1.1): native identity primitives, installed before any domain code
+// hashes or serializes. No-op off iOS and with EXPO_PUBLIC_PATTERNLY_PERF_OPT_NATIVE_CORE=0.
+installNativeCore();
 
 declare const require: (path: string) => unknown;
 

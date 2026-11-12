@@ -37,6 +37,7 @@ test("Expo platform configuration declares the supported phone-only native matri
       { name: "GoogleUtilities", modular_headers: true },
       { name: "RecaptchaInterop", modular_headers: true },
       { name: "PatternlyForegroundClock", path: "../native/foreground-clock" },
+      { name: "PatternlyCore", path: "../native/patternly-core" },
     ],
   });
   assert.deepEqual(properties.android, {

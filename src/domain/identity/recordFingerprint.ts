@@ -16,6 +16,11 @@ export type RecordFingerprintInput = Readonly<{
  * Other protocol digests have their own serializers.
  */
 export function recordFingerprintPayload(record: RecordFingerprintInput): string {
+  return accelerated("payload", record) ?? referenceRecordFingerprintPayload(record);
+}
+
+/** The byte-contract oracle (unchanged logic). */
+export function referenceRecordFingerprintPayload(record: RecordFingerprintInput): string {
   const ancestors = new Set<object>();
   const serialize = (value: unknown): string => {
     if (value === null || typeof value === "string" || typeof value === "boolean") return JSON.stringify(value);
@@ -41,5 +46,49 @@ export function recordFingerprintPayload(record: RecordFingerprintInput): string
 
 /** Canonical account record identity, shared by persistence and application diagnostics. */
 export function accountDataRecordFingerprint(record: AccountDataRecordFingerprintInput): string {
-  return sha256Utf8(recordFingerprintPayload(record));
+  return accelerated("fingerprint", record) ?? sha256Utf8(recordFingerprintPayload(record));
+}
+
+/**
+ * Optional accelerator (B0, Plan T1.1): `payload` returns the exact
+ * `recordFingerprintPayload` bytes, `fingerprint` the SHA-256 hex of them, or
+ * `undefined` to let the reference run. A throw removes it. Never installed in Node tests.
+ */
+export type RecordFingerprintAccelerator = (kind: "payload" | "fingerprint", record: RecordFingerprintInput) => string | undefined;
+let accelerator: RecordFingerprintAccelerator | null = null;
+const PROBES: readonly RecordFingerprintInput[] = Object.freeze([
+  { recordId: "r", recordType: "training_session_result", trackId: "t", state: {} },
+  { recordId: "r\ud800", recordType: "x", trackId: "\u2028", state: { b: [1, 0.5, -0, 1e21, null, true], a: { "\ue000": "é", "\ud83d\ude00": "e\u0301" }, "10": "2", "2": 1 } },
+]);
+
+/** Installs `candidate` only when every probe it answers equals the reference; `null` removes it. */
+export function installRecordFingerprintAccelerator(candidate: RecordFingerprintAccelerator | null): boolean {
+  accelerator = null;
+  if (!candidate) return false;
+  try {
+    for (const probe of PROBES) {
+      const payload = referenceRecordFingerprintPayload(probe);
+      const fingerprint = sha256Utf8(payload);
+      const actualPayload = candidate("payload", probe);
+      const actualFingerprint = candidate("fingerprint", probe);
+      if (actualPayload !== undefined && actualPayload !== payload) return false;
+      if (actualFingerprint !== undefined && actualFingerprint !== fingerprint) return false;
+    }
+  } catch { return false; }
+  accelerator = candidate;
+  return true;
+}
+
+export function isRecordFingerprintAccelerated(): boolean {
+  return accelerator !== null;
+}
+
+function accelerated(kind: "payload" | "fingerprint", record: RecordFingerprintInput): string | undefined {
+  if (!accelerator) return undefined;
+  try {
+    return accelerator(kind, record);
+  } catch {
+    accelerator = null;
+    return undefined;
+  }
 }
