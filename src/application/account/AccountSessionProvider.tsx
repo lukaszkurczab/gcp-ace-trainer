@@ -13,6 +13,7 @@ import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
 import { readAccountPremiumTestingAccess, readGuestPremiumTestingAccess } from "./premiumTestingAccess";
 import { markStartup, markStartupAt, startupTraceNow } from "../../infrastructure/diagnostics/startupTrace";
+import { ACCOUNT_SYNC_INDICATOR_DELAY_MS, createAccountSyncScheduler, deferAccountSyncUntilIdle, isSyncOnFinalizeEnabled, registerAccountSyncScheduler, setAccountSyncActivity, subscribeAppBackground } from "./accountSyncSchedule";
 import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
 import { getRetiredAccountSecretsCleanup, type RetiredAccountSecretsCleanupState } from "../../infrastructure/security/retiredAccountSecrets";
 import { SessionRevocationExpiredError, createPendingSessionRevocationDrain } from "./pendingSessionRevocation";
@@ -3066,6 +3067,33 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     profilePreparationHandoffToken,
     state,
   }), [retiredDeviceSecretsCleanup, accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, readCurrentPremiumAccess, captureCurrentAuthenticatedActorFence, capturePremiumPurchaseActor, captureHomeResumeActorFence, inspectQ13ActorFence, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, completeMaterializedAccountProfile, materializedAccountTransitionOwner, profilePreparationHandoffToken, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, registerProviderIdentity, cancelProviderRegistration, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runProviderFirstUse, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
+
+  // T1.3: background sync right after a finalized session and on app background.
+  // The scheduler calls the latest `retryPendingAccountSync`, which shares the
+  // account operation lane and its per-account deduplication with Today's sync.
+  const retryPendingAccountSyncRef = useRef(value.retryPendingAccountSync);
+  retryPendingAccountSyncRef.current = value.retryPendingAccountSync;
+  useEffect(() => {
+    const scheduler = createAccountSyncScheduler({
+      enabled: isSyncOnFinalizeEnabled,
+      defer: deferAccountSyncUntilIdle,
+      run: async () => {
+        const live = stateRef.current;
+        if (live.kind !== "authenticated" || live.accountData.status === "resumeRequired") return;
+        const indicator = setTimeout(() => setAccountSyncActivity(true), ACCOUNT_SYNC_INDICATOR_DELAY_MS);
+        try { await retryPendingAccountSyncRef.current(); }
+        finally { clearTimeout(indicator); setAccountSyncActivity(false); }
+      },
+    });
+    const unregister = registerAccountSyncScheduler(scheduler.schedule);
+    const unsubscribeBackground = subscribeAppBackground(() => scheduler.schedule("app_background"));
+    return () => {
+      unregister();
+      unsubscribeBackground();
+      scheduler.dispose();
+      setAccountSyncActivity(false);
+    };
+  }, []);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }

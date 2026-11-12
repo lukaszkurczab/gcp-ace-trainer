@@ -31,6 +31,7 @@ import { overallScoreCredit } from "../canonical/overallScoreCredit";
 import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { beginStartupSpan, markStartup, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
+import { requestAccountSync } from "../account/accountSyncSchedule";
 
 /**
  * Q-CPU (Plan §1): one `quiz_command` span per practice command, from the
@@ -44,6 +45,12 @@ function traceQuizCommand<T>(command: () => Promise<T>): Promise<T> {
   const result = command();
   void result.then(end, end);
   return result;
+}
+
+/** The one finalization point for S4/T1.3: the result is persisted and verified. */
+function notifySessionFinalized(): void {
+  markStartup("session_finalized");
+  requestAccountSync("session_finalized");
 }
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
@@ -355,7 +362,7 @@ async function completeAlgorithmsPracticeSessionCommand(): Promise<PracticeCompl
   try {
     const finalized = await timer.completePracticeAfterCheckpoint(session, () => lifecycle.completeActivePracticeSession(session.id));
     // The one finalization point for S4/T1.3: the result is persisted and verified.
-    markStartup("session_finalized");
+    notifySessionFinalized();
     return Object.freeze({ kind: "verified", value: finalized });
   } catch (cause) {
     if (cause instanceof PracticeCompletionCheckpointError) {
@@ -397,7 +404,7 @@ export async function recoverAlgorithmsPracticeCompletion(expectedSessionId: str
   await requireExactLegacyPracticeCompletionRecovery(expectedSessionId, lifecycle);
   const finalized = await lifecycle.recoverExpectedSessionCompletion(expectedSessionId);
   getForegroundSessionTimerFacade().releaseAfterVerifiedPracticeCompletion(expectedSessionId);
-  markStartup("session_finalized");
+  notifySessionFinalized();
   return finalized;
 }
 

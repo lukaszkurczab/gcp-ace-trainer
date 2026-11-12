@@ -7,7 +7,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 
 import {
   AppShellHeader,
@@ -17,6 +17,7 @@ import {
   Screen,
 } from "../../components";
 import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
+import { useAccountSyncActivity } from "../../application/account/accountSyncSchedule";
 import { ROUTES } from "../../constants/routes";
 import {
   CODING_INTERVIEW_TRACK_ID,
@@ -115,6 +116,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   useEffect(() => () => lifetime.remove(), [lifetime]);
   const { t: tAccount } = useTranslation("account");
   const account = usePatternlyAccount();
+  // T1.3: Today renders from local state; a background account sync only adds this indicator.
+  const accountSyncActive = useAccountSyncActivity();
   const homeResumeContext = useHomeResumeUnavailable();
   const accountRef = useRef(account);
   accountRef.current = account;
@@ -286,6 +289,9 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       // The active-track read shares the account operation lane with sync.
       // Start ordinary sync only after this focus's local shell has committed,
       // otherwise a slow network request holds Home behind that same lane.
+      // T1.3: sync normally starts at session finalization or app background;
+      // this idle-time attempt is the fallback and joins one already running
+      // (per-account deduplication in the account data service).
       if (!shellReadReady.current || activeTab !== "home" || (initialRouteTabRef.current !== null && initialRouteTabRef.current !== "home")) return undefined;
       const accountState = accountRef.current.state;
       if (accountState.kind !== "authenticated" || accountState.accountData.status === "resumeRequired") return undefined;
@@ -583,6 +589,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       >
         {activeTab === "home" ? (
           <>
+            {accountSyncActive ? (
+              <View pointerEvents="none" style={styles.syncIndicator} testID="patternly:home:account-sync">
+                <ActivityIndicator accessibilityLabel={tAccount("syncing")} size="small" />
+              </View>
+            ) : null}
             {learningPlanRecovery && !learningPlanRecovery.dismissed && learningPlanRecovery.trackId === activeTrackId ? (
               <View style={styles.recoveryNotice} testID={runtimeSelectors.home.learningPlanRecovery()}>
                 <InfoBlock
@@ -697,6 +708,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   recoveryNotice: {
     gap: 8,
+  },
+  syncIndicator: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    zIndex: 1,
   },
   recoveryActions: {
     flexDirection: "row",

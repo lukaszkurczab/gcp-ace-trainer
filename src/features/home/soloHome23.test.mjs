@@ -26,6 +26,8 @@ function shell(overrides = {}) {
     useTranslation: () => ({ t: key => key }), markStartup: () => {},
     // T0.2 SLA markers: off outside the perf trace, as in production.
     useLayoutEffect: hooks.bindings.useEffect, SLA_TRACE: false,
+    // T1.3 sync indicator: no background sync in these shell tests.
+    useAccountSyncActivity: () => false,
     getSettingsAccountPresentation, getTrackDisplay, isHomeSnapshotOwnerCurrent, runtimeSelectors, ROUTES,
     CODING_INTERVIEW_TRACK_ID: 'coding-interview-dsa-problem-solving',
     getActiveTrackId: async () => shellTrackId,
