@@ -241,6 +241,17 @@ test("optional GCP simulation profile is strict, complete, immutable and covered
   assert.doesNotThrow(() => validateCanonicalArtifact(legacy, inputs.find(({ entry }) => entry.trackId !== gcp.entry.trackId)!.entry, inputs.find(({ entry }) => entry.trackId !== gcp.entry.trackId)!.entry.trackId));
 });
 
+test("D21: a GCP certification simulation config cannot claim the CCAR-P v2 schema", () => {
+  const gcp = inputs.find(({ entry }) => entry.trackId === "google-cloud-associate-cloud-engineer")!;
+  assert.doesNotThrow(() => validateCanonicalArtifact(clone(gcp.artifact), gcp.entry, gcp.entry.trackId));
+  const copy = clone(gcp.artifact) as { simulationProfiles: Array<{ familyConfig: Record<string, unknown> }> };
+  copy.simulationProfiles[0]!.familyConfig.schemaVersion = "patternly-certification-simulation-config-v2";
+  assert.throws(() => validateCanonicalArtifact(copy, gcp.entry, gcp.entry.trackId), (error: unknown) =>
+    Array.isArray((error as { errors?: unknown }).errors) && (error as { errors: string[] }).errors.some((message) => message.endsWith("familyConfig.schemaVersion: v2 is reserved for CCAR-P")));
+  const claude = inputs.find(({ entry }) => entry.trackId === "claude-certified-architect-professional-certification")!;
+  assert.doesNotThrow(() => validateCanonicalArtifact(clone(claude.artifact), claude.entry, claude.entry.trackId));
+});
+
 test("Coding Mock profile validation requires its strict declared ordered 40-question pool", () => {
   const coding = inputs.find(({ entry }) => entry.trackId === "coding-interview-dsa-problem-solving");
   assert.ok(coding);

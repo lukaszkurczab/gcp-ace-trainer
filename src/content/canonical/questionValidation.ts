@@ -264,6 +264,8 @@ function validateCertificationSimulationConfig(value: unknown, questions: readon
   const ccarp = trackId === "claude-certified-architect-professional-certification";
   if (ccarp && (value.schemaVersion !== "patternly-certification-simulation-config-v2" || !Object.hasOwn(value, "examCoverage") || !Object.hasOwn(value, "scoringPolicy"))) errors.push(`${configPath}: CCAR-P requires the v2 exam and scoring policies`);
   if (!ccarp && (Object.hasOwn(value, "examCoverage") || Object.hasOwn(value, "scoringPolicy"))) errors.push(`${configPath}: CCAR-P exam policies are unavailable for this track`);
+  // D21: v2 carries the CCAR-P exam and scoring policies; every other certification simulation stays on v1 (the producer emits v1 for GCP).
+  if (!ccarp && value.schemaVersion !== "patternly-certification-simulation-config-v1") errors.push(`${configPath}.schemaVersion: v2 is reserved for CCAR-P`);
   if (!exact(value.source, ["url", "checkedDate", "guideVersion"], ["url", "checkedDate", "guideVersion"], `${configPath}.source`, errors)) return;
   text(value.source.url, `${configPath}.source.url`, errors); id(value.source.checkedDate, `${configPath}.source.checkedDate`, errors); text(value.source.guideVersion, `${configPath}.source.guideVersion`, errors);
   if (!Number.isSafeInteger(value.durationMinutes) || Number(value.durationMinutes) <= 0 || !Number.isSafeInteger(Number(value.durationMinutes) * 60_000)) errors.push(`${configPath}.durationMinutes: must be a positive safe duration`);
