@@ -9,8 +9,9 @@ import { matchesReviewSourceSnapshot } from "../../domain/learning/reviewQueueEn
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
-import { canonicalPhysicalWriteRelation, captureCanonicalPhysicalWrite, isCanonicalWriteAttemptCurrent, readCanonicalEnvelope, readCanonicalJson, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalPhysicalAfter, type CanonicalPhysicalState, type CanonicalPhysicalWrite, type CanonicalRecordEnvelope, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
-import { CanonicalWriteOutcomeError, JournalWriteError } from "../errors";
+import { canonicalPhysicalWriteRelation, captureCanonicalPhysicalWrite, isCanonicalWriteAttemptCurrent, parseCanonicalRecordEnvelope, readCanonicalEnvelope, readCanonicalJson, readCanonicalRawValue, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalPhysicalAfter, type CanonicalPhysicalState, type CanonicalPhysicalWrite, type CanonicalRecordEnvelope, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
+import { CanonicalWriteOutcomeError, JournalWriteError, UnsupportedStoredRecordError } from "../errors";
+import { getNativeCore, getNativeCoreStatus, NATIVE_CORE_PROFILE } from "../../infrastructure/identity/installNativeCore";
 import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { isAcceptedSimulationFinalization, isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionDraft, isTrainingSessionDraftState, isTrainingSessionResult } from "./trainingModelGuards";
 import { isForegroundTimerState } from "./trainingModelGuards";
@@ -720,8 +721,90 @@ function draftPayload(record: TrainingSessionDraftState, admission: TrackAdmissi
 }
 
 export function createMutationPlanFingerprint(plan: MutationJournalPlan): string {
+  // B0 parses the JSON text with `JSON.parse` semantics, so the plan's own
+  // `JSON.stringify` text is the exact input the reference clone produced
+  // (T2.1: no JS clone). Any native refusal keeps the reference path.
+  if (journalCacheEnabled() && getNativeCoreStatus().serialization) {
+    const native = getNativeCore();
+    const json = JSON.stringify(plan);
+    if (native && typeof json === "string") {
+      try {
+        const digest = native.fingerprint(NATIVE_CORE_PROFILE.canonicalFingerprintPayload, json);
+        if (typeof digest === "string" && PLAN_FINGERPRINT.test(digest)) return digest;
+      } catch { /* reference path below */ }
+    }
+  }
   const serialized = canonicalFingerprintPayload(JSON.parse(JSON.stringify(plan)));
   return sha256Utf8(serialized);
+}
+
+/**
+ * T2.1 journal cache (D5: verification at write, full revalidation on a cold
+ * read). A journal object is "proven" only after the full validator accepted
+ * it for a context and the object was deep-frozen, so it cannot change after
+ * the proof. The active-journal read is memoized by the exact stored bytes and
+ * the storage owner: any other bytes (another writer, recovery, a new launch)
+ * take the full parse and validation path. Track admission is re-evaluated on
+ * every hit because it is the only live input of the validators.
+ *
+ * Kill-switch: EXPO_PUBLIC_PATTERNLY_PERF_OPT_JOURNAL_CACHE=0 restores full
+ * validation on every call and the reference plan fingerprint.
+ */
+const JOURNAL_CACHE_ENABLED_BY_ENV = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_JOURNAL_CACHE !== "0";
+let journalCacheOverride: boolean | null = null;
+function journalCacheEnabled(): boolean { return journalCacheOverride ?? JOURNAL_CACHE_ENABLED_BY_ENV; }
+type ProofLevel = "integrity" | "plan";
+const provenJournals = new WeakMap<object, Map<LearningDataAdmissionContext, ProofLevel>>();
+type ActiveJournalMemo = Readonly<{ storage: object; raw: string; context: LearningDataAdmissionContext; record: MutationJournalRecord }>;
+let activeJournalMemo: ActiveJournalMemo | null = null;
+const journalCacheCounters = { fullValidations: 0, memoHits: 0, activeReadHits: 0, activeReadMisses: 0 };
+
+/** Tests only. `null` returns to the environment setting. */
+export function setMutationJournalCacheEnabledForTests(enabled: boolean | null): void { journalCacheOverride = enabled; activeJournalMemo = null; }
+export function readMutationJournalCacheCountersForTests(): Readonly<typeof journalCacheCounters> { return { ...journalCacheCounters }; }
+export function resetMutationJournalCacheCountersForTests(): void { for (const key of Object.keys(journalCacheCounters) as (keyof typeof journalCacheCounters)[]) journalCacheCounters[key] = 0; }
+
+function deepFreeze<T>(value: T): T {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const child of Object.values(value)) deepFreeze(child);
+  }
+  return value;
+}
+function isDeepFrozen(value: unknown): boolean {
+  if (!value || typeof value !== "object") return true;
+  if (!Object.isFrozen(value)) return false;
+  for (const child of Object.values(value)) if (!isDeepFrozen(child)) return false;
+  return true;
+}
+function provenLevel(value: unknown, context: LearningDataAdmissionContext): ProofLevel | null {
+  if (!journalCacheEnabled() || !value || typeof value !== "object") return null;
+  const level = provenJournals.get(value)?.get(context) ?? null;
+  if (level === null) return null;
+  const trackId = (value as { trackId?: unknown }).trackId;
+  return typeof trackId === "string" && isTrackAdmitted(context.trackAdmission, trackId) ? level : null;
+}
+/** Records a proof for an object this module froze itself (never a caller's live object). */
+function recordProof(record: MutationJournalRecord, context: LearningDataAdmissionContext, level: ProofLevel): void {
+  if (!journalCacheEnabled()) return;
+  let levels = provenJournals.get(record);
+  if (!levels) { levels = new Map(); provenJournals.set(record, levels); }
+  if (levels.get(context) !== "plan") levels.set(context, level);
+}
+/** Marks a validated object proven only when it is already deep-frozen (structurally immutable). */
+function rememberIfImmutable(value: unknown, context: LearningDataAdmissionContext, level: ProofLevel): void {
+  if (journalCacheEnabled() && value && typeof value === "object" && isDeepFrozen(value)) recordProof(value as MutationJournalRecord, context, level);
+}
+/** A frozen, fully validated copy of the exact stored journal bytes. */
+function provenJournalFromRaw(storage: object, raw: string, context: LearningDataAdmissionContext): MutationJournalRecord | null {
+  const envelope = parseCanonicalRecordEnvelope(raw, STORAGE_KEYS.ACTIVE_JOURNAL);
+  if (!envelope) return null;
+  const payload = deepFreeze(envelope.payload);
+  if (!hasValidMutationJournalIntegrityUncached(payload, context)) throw new UnsupportedStoredRecordError(STORAGE_KEYS.ACTIVE_JOURNAL);
+  if (!hasValidOperationPlan(payload, context)) throw new Error("Mutation journal record is unsupported.");
+  recordProof(payload, context, "plan");
+  activeJournalMemo = Object.freeze({ storage, raw, context, record: payload });
+  return payload;
 }
 
 function persistedPlan(record: MutationJournalRecord): MutationJournalPlan {
@@ -730,6 +813,14 @@ function persistedPlan(record: MutationJournalRecord): MutationJournalPlan {
 }
 
 export function hasValidMutationJournalIntegrity(value: unknown, context: LearningDataAdmissionContext): value is MutationJournalRecord {
+  if (provenLevel(value, context) !== null) { journalCacheCounters.memoHits += 1; return true; }
+  const valid = hasValidMutationJournalIntegrityUncached(value, context);
+  if (valid) rememberIfImmutable(value, context, "integrity");
+  return valid;
+}
+
+function hasValidMutationJournalIntegrityUncached(value: unknown, context: LearningDataAdmissionContext): value is MutationJournalRecord {
+  journalCacheCounters.fullValidations += 1;
   if (!isRecord(value) || !isNonEmptyString(value.operation)) return false;
   const expectedKeys = value.operation === "accept_goal_plan"
     ? ["journalId", "operation", "status", "createdAt", "proposalId", "trackId", "artifactSha256", "commandIdentity", "expectedRevisions", "physicalWrites", "planFingerprint", "writes"]
@@ -749,7 +840,10 @@ export function hasValidMutationJournalIntegrity(value: unknown, context: Learni
 }
 
 export function isMutationJournalRecord(value: unknown, context: LearningDataAdmissionContext): value is MutationJournalRecord {
-  return hasValidMutationJournalIntegrity(value, context) && hasValidOperationPlan(value, context);
+  if (provenLevel(value, context) === "plan") { journalCacheCounters.memoHits += 1; return true; }
+  const valid = hasValidMutationJournalIntegrity(value, context) && hasValidOperationPlan(value, context);
+  if (valid) rememberIfImmutable(value, context, "plan");
+  return valid;
 }
 
 export function assertMutationJournalIntegrity(value: unknown, context: LearningDataAdmissionContext): asserts value is MutationJournalRecord { if (!hasValidMutationJournalIntegrity(value, context)) throw new Error("Mutation journal record is unsupported."); }
@@ -757,6 +851,19 @@ export function assertValidMutationJournal(value: unknown, context: LearningData
 /** Presence-only gate. It intentionally exposes no unvalidated journal payload. */
 export function hasPendingMutationJournal(): boolean { return getKeyValueStorage().getString(STORAGE_KEYS.ACTIVE_JOURNAL) !== undefined; }
 export function getActiveMutationJournal(context: LearningDataAdmissionContext): MutationJournalRecord | null {
+  if (journalCacheEnabled()) {
+    const storage = getKeyValueStorage();
+    const raw = readCanonicalRawValue(STORAGE_KEYS.ACTIVE_JOURNAL);
+    if (raw === undefined) { activeJournalMemo = null; return null; }
+    const memo = activeJournalMemo;
+    if (memo && memo.storage === storage && memo.context === context && memo.raw === raw && provenLevel(memo.record, context) === "plan") {
+      journalCacheCounters.activeReadHits += 1;
+      return memo.record;
+    }
+    journalCacheCounters.activeReadMisses += 1;
+    activeJournalMemo = null;
+    return provenJournalFromRaw(storage, raw, context);
+  }
   const record = readCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, (value) => hasValidMutationJournalIntegrity(value, context));
   if (record !== null && !hasValidOperationPlan(record, context)) throw new Error("Mutation journal record is unsupported.");
   return record;
@@ -871,6 +978,9 @@ export async function persistMutationJournal(record: MutationJournalRecord, cont
     }
     const outcome = writeCanonicalJsonWithOutcome(STORAGE_KEYS.ACTIVE_JOURNAL, record, null, expectedLease);
     if (outcome.kind !== "verified") throw new JournalWriteError(new CanonicalWriteOutcomeError(STORAGE_KEYS.ACTIVE_JOURNAL, outcome));
+    // The verified bytes are exactly what recovery would read: hand the caller
+    // the frozen, validated copy of those bytes so later phases reuse its proof.
+    if (journalCacheEnabled()) return provenJournalFromRaw(outcome.attempt.storage, outcome.attempt.afterRaw, context) ?? outcome.envelope.payload;
     return outcome.envelope.payload;
   } catch (error) {
     if (error instanceof JournalWriteError) throw error;
@@ -902,7 +1012,15 @@ export async function updateMutationJournalPhase(record: MutationJournalRecord, 
     const to = phases.indexOf(status);
     if (from < 0 || to !== from + 1) throw new JournalWriteError(new Error("Mutation journal phase transition is not monotonic."));
     const updated = { ...current, status } as MutationJournalRecord;
-    writeCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, updated);
+    const envelope = writeCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, updated);
+    if (journalCacheEnabled() && provenLevel(current, context) === "plan") {
+      // Status is outside the plan fingerprint and the operation plan; with a
+      // monotonic legal status the proof of `current` carries to `updated`.
+      const frozen = Object.freeze(updated);
+      recordProof(frozen, context, "plan");
+      activeJournalMemo = Object.freeze({ storage: getKeyValueStorage(), raw: JSON.stringify(envelope), context, record: frozen });
+      return frozen;
+    }
     return updated;
   });
 }
@@ -919,5 +1037,6 @@ export async function clearMutationJournal(context: LearningDataAdmissionContext
       throw new JournalWriteError(new Error("Mutation journal ownership changed before clear."), "Mutation journal ownership changed before clear.");
     }
     removeCanonicalValue(STORAGE_KEYS.ACTIVE_JOURNAL);
+    activeJournalMemo = null;
   });
 }

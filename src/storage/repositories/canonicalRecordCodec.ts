@@ -227,6 +227,14 @@ function samePhysicalStates(before: CanonicalPhysicalState, after: CanonicalPhys
   return false;
 }
 
+/**
+ * Exact stored bytes for one key, for owners which memoize a validated parse
+ * keyed by those bytes (T2.1). Equal bytes are the only cache-hit condition.
+ */
+export function readCanonicalRawValue(key: string): string | undefined {
+  try { return getKeyValueStorage().getString(key); } catch (error) { throw new StorageReadError(key, error); }
+}
+
 export function readCanonicalJson<T>(key: string, guard: StorageValueGuard<T>): T | null {
   return readCanonicalEnvelope(key, guard)?.payload ?? null;
 }
