@@ -1,6 +1,7 @@
 import { installCanonicalSerializationAccelerator, type CanonicalSerializationProfile } from "../../domain/identity/canonicalSerialization";
 import { installRecordFingerprintAccelerator, type RecordFingerprintInput } from "../../domain/identity/recordFingerprint";
 import { installSha256Utf8Accelerator } from "../../domain/identity/sha256";
+import { isPatternlyPerfBuild } from "../runtime/runtimeMode";
 import type { HybridObject } from "react-native-nitro-modules";
 
 /**
@@ -147,8 +148,10 @@ export function installNativeCore(load: () => NativeCore | null = loadCore, now:
       : native.fingerprint(NATIVE_CORE_PROFILE.recordFingerprintPayload, json);
   });
   core = native;
-  // Release perf build only (Plan T1.1 verification); direct flag reads let other bundles drop the module.
-  if (process.env.EXPO_PUBLIC_PATTERNLY_PERF_BUILD === "1" && process.env.EXPO_PUBLIC_PATTERNLY_PERF_NATIVE_CORE_DIAG === "1") {
+  // Release perf build only (Plan T1.1 verification). The direct diagnostic flag read is the
+  // compile-time gate that lets other bundles drop the module; the perf build itself is
+  // checked through runtimeMode, the owner of the perf flag (T1.1b).
+  if (process.env.EXPO_PUBLIC_PATTERNLY_PERF_NATIVE_CORE_DIAG === "1" && isPatternlyPerfBuild()) {
     setTimeout(() => {
       try { (require("../diagnostics/nativeCoreDiagnostics") as typeof import("../diagnostics/nativeCoreDiagnostics")).runNativeCoreDiagnostics(); } catch { /* diagnostics only */ }
     }, 4000);

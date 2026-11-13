@@ -1,9 +1,9 @@
 /**
  * B0 native core verification in the Release perf build (Plan T1.1 "done" 1 and 3).
  *
- * Runs only when the bundle is built with EXPO_PUBLIC_PATTERNLY_PERF_BUILD=1 and
- * EXPO_PUBLIC_PATTERNLY_PERF_NATIVE_CORE_DIAG=1 (installNativeCore.ts schedules
- * it; other bundles drop this module and the vector file). It:
+ * Runs only in the Release perf build bundled with the native-core diagnostic
+ * flag (installNativeCore.ts schedules it behind a compile-time gate; other
+ * bundles drop this module and the vector file). It:
  *  1. replays every applicable T1.0 vector through the native object and through
  *     the accelerated domain functions;
  *  2. compares 10 000 random structures: accelerated domain path vs the TS
@@ -73,8 +73,20 @@ function runVectors(native: NativeCore) {
   return { checked, failed: failures.length, failures };
 }
 
+// Identity-domain failures carry a closed set of code messages (canonicalSerialization.ts,
+// recordFingerprint.ts). Only those are written to the report; any other failure is
+// reduced to its name plus a digest, which keeps exact-equality comparison without
+// writing raw operational text (validate:runtime-privacy-boundary, T1.1b).
+const IDENTITY_FAILURE_CODE = /^(?:(?:canonical_json|record_fingerprint)_[a-z_]+|Canonical values cannot contain (?:non-finite numbers|unsupported values)\.)$/u;
+
+function failureOutcome(thrown: unknown): string {
+  if (!(thrown instanceof Error)) return `error:${typeof thrown}:${referenceSha256Utf8(String(thrown)).slice(0, 16)}`;
+  const text = thrown.message;
+  return IDENTITY_FAILURE_CODE.test(text) ? `error:${text}` : `error:${thrown.name}:${referenceSha256Utf8(text).slice(0, 16)}`;
+}
+
 function outcome(run: () => string): string {
-  try { return `ok:${run()}`; } catch (error) { return `error:${error instanceof Error ? error.message : String(error)}`; }
+  try { return `ok:${run()}`; } catch (thrown) { return failureOutcome(thrown); }
 }
 
 function runFuzz(cases: number) {
