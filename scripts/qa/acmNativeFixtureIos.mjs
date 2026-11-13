@@ -22,6 +22,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveCocoaPodsRuntime } from "./acmNativeFixtureCocoaPods.mjs";
 import { assertRemotePodLockUnchanged, canonicalJson } from "./acmNativeFixturePodLock.mjs";
+import { assertNoExpoUpdatesInApp, assertNoExpoUpdatesPods } from "./acmNativeFixtureOta.mjs";
 import { applyExpoDebugSocketPatch } from "./acmNativeFixtureExpoDebugSocketPatch.mjs";
 import {
   PINNED_NATIVE_BASE,
@@ -777,6 +778,7 @@ async function executePhase(options, approval) {
     logPath: path.join(logDirectory, `pods-${options.phase}.log`),
   });
   assertRemotePodLockUnchanged(lockBefore, readFileSync(lockPath, "utf8"));
+  assertNoExpoUpdatesPods(readFileSync(lockPath, "utf8"));
   artifact = await prepareArtifactVariant({
     workspaceRoot: workspace,
     sourceRoot: ROOT,
@@ -1116,11 +1118,18 @@ function validateGeneratedFixtureMetadata(workspace, runUUID, operation, expecte
     || info.PatternlyACMNativeFixtureOperation !== operation || info.PatternlyRuntimeMode !== "smoke") {
     throw new Error("Generated Info.plist does not contain the exact fixture identity requested.");
   }
+  // OTA is off by construction since R2 (owner, 2026-11-11; T1.6): expo-updates is not a dependency,
+  // so no module reads EXUpdates* keys. Prebuild may still write EXUpdatesEnabled/CheckOnLaunch/
+  // RuntimeVersion from the runtimeVersion policy; those are ignored. What must hold is that no
+  // update source is configured and no expo-updates code can enter the build (checked again on
+  // Podfile.lock after pod install and on the candidate .app before install).
+  void expectedRuntimeVersion;
   const expoPlistPath = path.join(workspace, "ios/Patternly/Supporting/Expo.plist");
-  const expoPlist = plist.parse(readFileSync(expoPlistPath, "utf8"));
-  if (expoPlist.EXUpdatesEnabled !== false || expoPlist.EXUpdatesCheckOnLaunch !== "NEVER"
-    || expoPlist.EXUpdatesRuntimeVersion !== expectedRuntimeVersion || Object.hasOwn(expoPlist, "EXUpdatesURL")) {
-    throw new Error("Generated Expo.plist does not match the resolved fixture OTA settings and runtime version.");
+  const expoPlist = existsSync(expoPlistPath) ? plist.parse(readFileSync(expoPlistPath, "utf8")) : {};
+  const workspacePackage = JSON.parse(readFileSync(path.join(workspace, "package.json"), "utf8"));
+  if (Object.hasOwn(expoPlist, "EXUpdatesURL") || workspacePackage.dependencies?.["expo-updates"] !== undefined
+    || workspacePackage.devDependencies?.["expo-updates"] !== undefined) {
+    throw new Error("Generated fixture workspace configures OTA updates (EXUpdatesURL or the expo-updates dependency).");
   }
   const appDelegate = readFileSync(path.join(workspace, "ios/Patternly/AppDelegate.swift"), "utf8");
   for (const marker of ["PatternlyACMNativeFixture", "PatternlyACMNativeFixtureRunUUID", "PatternlyACMNativeFixtureOperation",
@@ -1210,6 +1219,7 @@ function minimalProcessEnvironment() {
 }
 
 function installInPlace(udid, candidate, logPath) {
+  assertNoExpoUpdatesInApp(candidate);
   runLogged("simctl install", "xcrun", ["simctl", "install", udid, candidate], { cwd: ROOT, env: minimalProcessEnvironment(), logPath });
 }
 
