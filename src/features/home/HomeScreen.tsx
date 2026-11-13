@@ -108,6 +108,8 @@ type ShellData = {
 
 type HomeShellTab = Exclude<ShellTab, "practice">;
 
+const yieldToEventLoop = () => new Promise<void>((resolve) => { setTimeout(resolve, 0); });
+
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
@@ -214,6 +216,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: readNow, premiumAccess: accountRef.current.readCurrentPremiumAccess() }) : Promise.resolve(null),
           ]);
           requireHomePlanReadIntegrity(homePlan);
+          // T2.0: projections over a large history are split by event-loop
+          // yields so no single stretch blocks the JS thread; the profile and
+          // source fences below are re-checked before the result is committed.
+          await yieldToEventLoop();
           const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
           let goalOnboardingDismissed = true;
           if (savedTrackId) {
@@ -230,11 +236,13 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             }
           }
 
+          await yieldToEventLoop();
           let homePractice: HomePracticeProjection | null = null;
           if (savedTrackId) {
             try { homePractice = projectHomePractice({ trackId: savedTrackId, attempts: trainingAttemptsResult.value, reviews: reviewQueueItemsResult.value, activeSession, homePlan, now: readNow }); }
             catch (error) { if (!isLocalLearningProjectionFailure(error)) throw error; homePractice = { kind: "unavailable" }; }
           }
+          await yieldToEventLoop();
           let progressEvidence: ProgressEvidenceModel | null = null;
           let progressEvidenceError: string | null = null;
           if (savedTrackId) {
