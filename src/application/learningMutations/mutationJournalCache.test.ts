@@ -199,7 +199,7 @@ test("a crash at every storage write of a commit recovers to the uninterrupted s
   const reference = await run(false, null, false);
   storage.resetCounters();
   await run(true, null, false);
-  const writes = storage.writes;
+  const writes = storage.operations.filter((operation) => operation.kind === "write").length;
   assert.ok(writes >= 5, `writes ${writes}`);
   for (const enabled of [true, false]) {
     for (const coldRestart of [true, false]) {
