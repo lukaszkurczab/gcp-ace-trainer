@@ -9,3 +9,15 @@ const PREMIUM_FAILURE_COPY = [
 export function startupFailureCopy(reason: unknown, fallback = "Application bootstrap failed."): string {
   return typeof reason === "string" && (PREMIUM_FAILURE_COPY as readonly string[]).includes(reason) ? reason : fallback;
 }
+
+/**
+ * The diagnostic cause behind a blocked start, kept separate from the learner
+ * copy: an operational code from `describeOperationalFailure` ("[CODE]" suffix)
+ * or a preparation timeout with its phase. Codes carry no record data.
+ */
+export function startupFailureDiagnosticCode(reason: unknown, timeoutPhase?: string): string | null {
+  if (timeoutPhase) return `TIMEOUT:${timeoutPhase}`;
+  if (typeof reason !== "string") return null;
+  const match = /\[([A-Z][A-Z0-9_]*)\]$/u.exec(reason);
+  return match ? match[1]! : null;
+}

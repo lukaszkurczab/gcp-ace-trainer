@@ -941,5 +941,6 @@
   "Select all": "Vali kõik",
   "Unselect all": "Tühista kõik valikud",
   "Input": "Sisend",
-  "Output": "Väljund"
+  "Output": "Väljund",
+  "Diagnostic code": "Diagnostikakood"
 }

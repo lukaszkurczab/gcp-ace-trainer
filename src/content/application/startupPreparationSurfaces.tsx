@@ -12,9 +12,12 @@ export function ContentBootstrapLoadingSkeleton() {
 export function StartupLoadingSurface({ testID, contentSkeleton = false, center = false }: Readonly<{ testID?: string; contentSkeleton?: boolean; center?: boolean }>) {
   return <Screen edges={["top", "bottom"]} style={center ? { justifyContent: "center" } : undefined}><View style={{ flex: 1 }} testID={testID}>{contentSkeleton ? <ContentBootstrapLoadingSkeleton /> : <AccountProfileTransitionLoadingState />}</View></Screen>;
 }
-export function StartupUnavailableSurface({ title, description, onRetry, testID }: Readonly<{ title: string; description: string; onRetry: () => void; testID?: string }>) {
+export function StartupUnavailableSurface({ title, description, diagnosticCode, onRetry, testID }: Readonly<{ title: string; description: string; diagnosticCode?: string | null; onRetry: () => void; testID?: string }>) {
   const { t } = useTranslation("common");
-  return <View style={{ flex: 1 }} testID={testID}><Screen><EmptyState descriptionTone="secondary" actionLabel={t("Try again")} description={description} onActionPress={onRetry} title={title} /></Screen></View>;
+  // The cause code is diagnostic only (no record data); it stays visible so a
+  // timeout and a storage failure are distinguishable in reports.
+  const shown = diagnosticCode ? `${description}\n\n${t("Diagnostic code")}: ${diagnosticCode}` : description;
+  return <View style={{ flex: 1 }} testID={testID} accessibilityHint={diagnosticCode ?? undefined}><Screen><EmptyState descriptionTone="secondary" actionLabel={t("Try again")} description={shown} onActionPress={onRetry} title={title} /></Screen></View>;
 }
 export function ProfileTransitionSurface({ onRetry }: Readonly<{ onRetry?: () => void }>) {
   const { t } = useTranslation("account");

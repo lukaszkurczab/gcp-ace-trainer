@@ -941,5 +941,6 @@
   "Select all": "Zaznacz wszystkie",
   "Unselect all": "Odznacz wszystkie",
   "Input": "Dane wejściowe",
-  "Output": "Wynik"
+  "Output": "Wynik",
+  "Diagnostic code": "Kod diagnostyczny"
 }

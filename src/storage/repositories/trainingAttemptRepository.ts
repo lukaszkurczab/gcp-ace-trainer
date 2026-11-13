@@ -17,4 +17,24 @@ export function materializeTrainingAttemptBatch(attempts: readonly TrainingAttem
   for (const write of physicalWrites) applyCanonicalPhysicalWrite(write);
 }
 async function writeTrainingAttempt(attempt: TrainingAttempt<unknown>, admission: TrackAdmissionContext): Promise<StorageRepositoryResult<TrainingAttempt<unknown>>> { if (!isTrainingAttempt(attempt, admission)) throw new Error("Training attempt is invalid."); readTrainingAttemptsStrict(admission); const old = readCanonicalJson(STORAGE_KEYS.trainingAttempt(attempt.id), (value): value is TrainingAttempt<unknown> => isTrainingAttempt(value, admission)); if (old && JSON.stringify(old) !== JSON.stringify(attempt)) throw new Error(`Attempt ${attempt.id} is immutable.`); if (!old) writeCanonicalJson(STORAGE_KEYS.trainingAttempt(attempt.id), attempt); const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, isIds) ?? []; if (!ids.includes(attempt.id)) writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, [attempt.id, ...ids]); return { ok: true, value: old ?? attempt }; }
+/**
+ * Account materialization: writes many attempts with one family read and one
+ * index write. The resulting records and index order equal calling
+ * `addTrainingAttempt` for each attempt in order (each new id is prepended).
+ */
+export async function addTrainingAttemptsBatch(attempts: readonly TrainingAttempt<unknown>[], admission: TrackAdmissionContext): Promise<void> {
+  if (!attempts.every((attempt) => isTrainingAttempt(attempt, admission))) throw new Error("Training attempt is invalid.");
+  readTrainingAttemptsStrict(admission);
+  const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, isIds) ?? [];
+  const indexed = new Set(ids);
+  const written = new Map<string, TrainingAttempt<unknown>>();
+  const prepended: string[] = [];
+  for (const attempt of attempts) {
+    const old = written.get(attempt.id) ?? readCanonicalJson(STORAGE_KEYS.trainingAttempt(attempt.id), (value): value is TrainingAttempt<unknown> => isTrainingAttempt(value, admission));
+    if (old && JSON.stringify(old) !== JSON.stringify(attempt)) throw new Error(`Attempt ${attempt.id} is immutable.`);
+    if (!old) { writeCanonicalJson(STORAGE_KEYS.trainingAttempt(attempt.id), attempt); written.set(attempt.id, attempt); }
+    if (!indexed.has(attempt.id)) { indexed.add(attempt.id); prepended.push(attempt.id); }
+  }
+  if (prepended.length > 0) writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, [...prepended.reverse(), ...ids]);
+}
 export async function clearTrainingAttempts(admission: TrackAdmissionContext): Promise<void> { const ids = readTrainingAttemptsStrict(admission).value.map((attempt) => attempt.id); ids.forEach((id) => removeCanonicalValue(STORAGE_KEYS.trainingAttempt(id))); removeCanonicalValue(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX); }

@@ -30,6 +30,10 @@ export type StartupTraceStage =
   // T0.2b: S4 ends on the quiz exit destination; S4-T is the Home tab switch.
   | "practice_hub_interactive" | "home_tab_press"
   | `recovery:${BootstrapRecoveryPendingStep | "idle"}`
+  // T2.0: why the content gate blocked (diagnostic code or TIMEOUT:<phase>).
+  | `blocking_cause:${string}`
+  | "repository:interrupted_materialization_recovered"
+  | "account_sync:unchanged" | "account_sync:applied"
   | `repository:${CanonicalRepositoryBootstrapStep}`
   | `account:${AccountStartupDiagnosticStage}`
   | `profile_storage:${ProfileStoragePreparationDiagnosticStage}`;

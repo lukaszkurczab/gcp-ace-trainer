@@ -55,6 +55,30 @@ async function writeTrainingSession(session: TrainingSession, admission: TrackAd
   else if (active?.id === session.id) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
 }
 
+/**
+ * Account materialization of terminal sessions: one family read and one index
+ * write. Equivalent to `saveTrainingSession` for each session in order when no
+ * session exists yet and no active pointer is set; otherwise it falls back to
+ * the per-session path so every immutability rule still applies.
+ */
+export async function saveTerminalTrainingSessionsBatch(sessions: readonly TrainingSession[], admission: TrackAdmissionContext): Promise<void> {
+  if (sessions.length === 0) return;
+  if (!sessions.every((session) => isTrainingSession(session, admission) && session.status !== "active")) throw new Error("Training session is invalid.");
+  assertNoAcceptedSimulationFinalization(admission);
+  readTrainingSessionsStrict(admission);
+  const uniqueIds = new Set(sessions.map((session) => session.id));
+  const hasExisting = sessions.some((session) => readCanonicalJson(STORAGE_KEYS.trainingSession(session.id), (value): value is TrainingSession => isTrainingSession(value, admission)) !== null);
+  if (await getActiveTrainingSessionId() || hasExisting || uniqueIds.size !== sessions.length) {
+    for (const session of sessions) await writeTrainingSession(session, admission);
+    return;
+  }
+  for (const session of sessions) writeCanonicalJson(STORAGE_KEYS.trainingSession(session.id), session);
+  const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, isIds) ?? [];
+  const indexed = new Set(ids);
+  const prepended = sessions.map((session) => session.id).filter((id) => !indexed.has(id));
+  if (prepended.length > 0) writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [...prepended.reverse(), ...ids]);
+}
+
 function assertNoAcceptedSimulationFinalization(admission: TrackAdmissionContext): void {
   const state = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, (value): value is TrainingSessionDraftState => isTrainingSessionDraftState(value, admission));
   if (state && isAcceptedSimulationFinalization(state, admission)) throw new Error("An accepted simulation finalization owns the active session until its exact journal is applied.");

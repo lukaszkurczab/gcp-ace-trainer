@@ -27,6 +27,10 @@ import {
   parseGoalCloudState as parseGoalCloudStateWithPolicy,
   parseLearningPlanCloudState,
   isDeletedAccountDataRecord,
+  isRemoteAccountDataMaterialized,
+  readAccountDataSyncGuardFlags as readAccountDataSyncGuardFlagsWithPolicy,
+  isRemoteApplyMaterialization,
+  markAccountRemoteApplyPending as markAccountRemoteApplyPendingWithPolicy,
   markAccountDataPending as markAccountDataPendingWithPolicy,
   markAccountResetPending as markAccountResetPendingWithPolicy,
   markAccountResetRemoteRestorePending as markAccountResetRemoteRestorePendingWithPolicy,
@@ -68,6 +72,7 @@ import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 import { commitLearningStateReset, preflightLearningStateReset, LearningStateResetPreflightError } from "../learningMutations";
 import type { TrackId } from "../../domain";
@@ -105,6 +110,10 @@ const markAccountResetRemoteRestorePending = (accountId: string, operationId: st
 const markAccountMaterializationPending = (operationId: string, previewFingerprint: string, accountId: string) => markAccountMaterializationPendingWithPolicy(operationId, previewFingerprint, accountId, productionLearningDataAdmissionContext);
 const markGuestDiscardMaterializationPending = (accountId: string, installationId: string, backup: Parameters<typeof markGuestDiscardMaterializationPendingWithPolicy>[2]) => markGuestDiscardMaterializationPendingWithPolicy(accountId, installationId, backup, productionLearningDataAdmissionContext);
 const markGuestDiscardMaterializationApplying = (accountId: string) => markGuestDiscardMaterializationApplyingWithPolicy(accountId, productionLearningDataAdmissionContext);
+const readAccountDataSyncGuardFlags = () => readAccountDataSyncGuardFlagsWithPolicy(productionLearningDataAdmissionContext);
+const markAccountRemoteApplyPending = (accountId: string) => markAccountRemoteApplyPendingWithPolicy(accountId, productionLearningDataAdmissionContext);
+/** Lets timers, rendering and the startup gate run between the linear phases of a sync. */
+const yieldToEventLoop = () => new Promise<void>((resolve) => { setTimeout(resolve, 0); });
 const applyRemoteAccountData = (records: readonly AccountDataRecord[], options?: Readonly<{ preserveLocalContext?: boolean }>) => applyRemoteAccountDataWithPolicy(records, productionLearningDataAdmissionContext, options);
 const finishAccountMaterialization = (records: readonly AccountDataRecord[], accountId: string, remoteRevision: number, syncedAt: string, recovery?: LearningPlanRecoveryIncident | null) => finishAccountMaterializationWithPolicy(records, accountId, remoteRevision, syncedAt, productionLearningDataAdmissionContext, recovery);
 function assertValidAccountDataRecords(records: unknown): asserts records is readonly AccountDataRecord[] { assertValidAccountDataRecordsWithPolicy(records, productionLearningDataAdmissionContext); }
@@ -1297,8 +1306,11 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
     if (postUploadCheck.kind === "scope_changed") return failureSession(state, false);
     if (postUploadCheck.kind === "local_changed") return postUploadCheck.session;
     postUploadDatasetVersion = postUploadCheck.localDatasetVersion;
+    await yieldToEventLoop();
     const remote = await api.getProgress();
+    await yieldToEventLoop();
     const partition = await partitionRemoteAccountDataForRecovery({ accountId, generation: remote.generation ?? 0, records: remote.records });
+    await yieldToEventLoop();
     const materialized = await withLocalLearningWriteOperation(async () => {
       if (!isBoundStorageScopeCurrent(baseline!)) return Object.freeze({ kind: "scope_changed" as const });
       const downloadGuard = await readBoundSyncGuard(accountId);
@@ -1344,9 +1356,20 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         const pending = saveAccountSyncState({ ...latestState, status: "offlinePending", blockingConflictCode: null, lastFailureCode: "local_dataset_changed_during_sync" });
         return Object.freeze({ kind: "local_changed" as const, session: failureSession(pending, false) });
       }
-      await assertBoundSyncIdentity(baseline!);
-      await applyRemoteAccountData(partition.records);
-      await assertBoundSyncIdentity(baseline!);
+      // Local evidence already equals the account copy: acknowledge it without
+      // replacing storage, so an unchanged account is not re-materialized on
+      // every start. Otherwise mark the apply durably first; an interrupted
+      // apply is then recovered from the account copy on the next start.
+      const unchanged = partition.incident === null && isRemoteAccountDataMaterialized(partition.records, latestSnapshot);
+      markStartup(unchanged ? "account_sync:unchanged" : "account_sync:applied");
+      if (!unchanged) {
+        await assertBoundSyncIdentity(baseline!);
+        await markAccountRemoteApplyPending(accountId);
+        await yieldToEventLoop();
+        await assertBoundSyncIdentity(baseline!);
+        await applyRemoteAccountData(partition.records);
+        await assertBoundSyncIdentity(baseline!);
+      }
       const stateBeforeFinish = await getAccountSyncState();
       if (stateBeforeFinish.accountId !== accountId || stateBeforeFinish.localDatasetVersion !== materializationDatasetVersion) {
         return Object.freeze({ kind: "scope_changed" as const });
@@ -1366,9 +1389,11 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
       const guard = await readBoundSyncGuard(accountId);
       if (guard) return preservePendingSyncGuard(accountId, guard);
     }
+    // A failure after the remote-apply marker keeps the marker, so the next
+    // load re-pulls the account copy instead of trusting a partial apply.
     const failed = confirmedConflict
       ? await persistConfirmedSyncConflict(accountId, confirmedConflict)
-      : await recordFailure(state, failure);
+      : await recordFailure(latest?.accountId === accountId && isRemoteApplyMaterialization(latest.materialization) ? latest : state, failure);
     return failureSession(failed, failure === "offline");
   }
 }
@@ -1468,11 +1493,10 @@ async function readBoundSyncGuard(accountId: string): Promise<AccountDataSession
   if (state.resetGuard) return explicitFailureSession(state, "local_reset_pending", false);
   if (state.materialization) return explicitFailureSession(state, "account_materialization_in_progress", false);
   if (state.pendingConfirmation !== null) return explicitFailureSession(state, "account_adoption_pending", false);
-  const snapshot = await buildAccountDataSnapshot();
-  return learningSyncGuardSession(state, snapshot, true, accountId);
+  return learningSyncGuardSession(state, await readAccountDataSyncGuardFlags(), true, accountId);
 }
 
-function learningSyncGuardSession(state: AccountSyncState, snapshot: AccountDataSnapshot, allowResume: boolean, boundAccountId?: string): AccountDataSession | null {
+function learningSyncGuardSession(state: AccountSyncState, snapshot: Pick<AccountDataSnapshot, "activeSession" | "pendingJournal">, allowResume: boolean, boundAccountId?: string): AccountDataSession | null {
   if (snapshot.pendingJournal) return explicitFailureSession(state, "journal_recovery_required", snapshot.activeSession);
   if (snapshot.activeSession) {
     if (allowResume && state.accountId !== boundAccountId) return explicitFailureSession(state, "account_binding_mismatch", true);

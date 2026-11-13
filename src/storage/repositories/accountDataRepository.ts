@@ -15,10 +15,10 @@ import { getActiveMutationJournal } from "./mutationJournalRepository";
 import { getActiveTrackId } from "./activeTrackRepository";
 import { clearActiveTrackId, saveActiveTrackId } from "./activeTrackRepository";
 import { addReviewQueueItems, clearReviewQueueItems, getReviewQueueItems } from "./reviewQueueRepository";
-import { clearTrainingAttempts, getTrainingAttempts, addTrainingAttempt } from "./trainingAttemptRepository";
+import { clearTrainingAttempts, getTrainingAttempts, addTrainingAttemptsBatch } from "./trainingAttemptRepository";
 import { getTrainingSessionResult, saveTrainingSessionResult } from "./trainingSessionResultRepository";
 import { assertTrainingEvidenceIntegrity } from "./trainingEvidenceIntegrityRepository";
-import { clearTrainingSessions, getActiveTrainingSessionId, getTrainingSessions, saveTrainingSession } from "./trainingSessionRepository";
+import { clearTrainingSessions, getActiveTrainingSessionId, getTrainingSessions, saveTerminalTrainingSessionsBatch } from "./trainingSessionRepository";
 import { isForegroundTimerState, isReviewQueueEntry, isTrainingAttempt, isTrainingSessionResult } from "./trainingModelGuards";
 import { AccountDataFailure, StorageReadError } from "../errors";
 import { acceptedTargetFromGoal } from "../../domain/learning/learningPlan";
@@ -345,7 +345,9 @@ function assertCanonicalContentIdentityState(value: unknown): void {
       if (!isContentIdentityResolution(candidate)) throw new AccountDataFailure("content_identity_schema_conflict");
       return;
     }
-    if (isResolvedContentRef(candidate) || isContentIdentityTombstone(candidate)) return;
+    // Both identity shapes require an own `questionId` key; checking it first
+    // avoids throwing and catching a validator error for every nested object.
+    if (Object.hasOwn(candidate, "questionId") && (isResolvedContentRef(candidate) || isContentIdentityTombstone(candidate))) return;
     if (keys.includes("questionId") && (keys.includes("contentVersion") || keys.includes("artifactSha256"))) {
       throw new AccountDataFailure("content_identity_schema_conflict");
     }
@@ -547,8 +549,27 @@ type AccountDataRecordIdentity = Pick<AccountDataRecord, "recordType" | "recordI
 
 /** Collision-safe, canonical key for one logical account record. */
 export function accountDataRecordKey(record: AccountDataRecordIdentity): string {
-  return canonicalJsonV1({ recordId: record.recordId, recordType: record.recordType, trackId: record.trackId });
+  const { recordId, recordType, trackId } = record;
+  // The key is a pure function of three strings; memoize it so per-record
+  // loops, sorts and validations do not re-canonicalize the same identity.
+  if (typeof recordId !== "string" || typeof recordType !== "string" || typeof trackId !== "string") {
+    return canonicalJsonV1({ recordId, recordType, trackId });
+  }
+  let byTrack = recordKeyMemo.get(recordType);
+  if (!byTrack) { byTrack = new Map(); recordKeyMemo.set(recordType, byTrack); }
+  let byId = byTrack.get(trackId);
+  if (!byId) { byId = new Map(); byTrack.set(trackId, byId); }
+  const cached = byId.get(recordId);
+  if (cached !== undefined) return cached;
+  if (recordKeyMemoSize >= RECORD_KEY_MEMO_LIMIT) { recordKeyMemo.clear(); recordKeyMemoSize = 0; return accountDataRecordKey(record); }
+  const key = canonicalJsonV1({ recordId, recordType, trackId });
+  byId.set(recordId, key);
+  recordKeyMemoSize += 1;
+  return key;
 }
+const RECORD_KEY_MEMO_LIMIT = 50_000;
+const recordKeyMemo = new Map<string, Map<string, Map<string, string>>>();
+let recordKeyMemoSize = 0;
 export function isDeletedAccountDataRecord(record: Pick<AccountDataRecord, "state">): boolean { return record.state.deleted === true; }
 
 function accountMutationId(accountId: string, record: Pick<AccountDataRecord, "recordType" | "recordId" | "trackId" | "fingerprint">, expectedVersion: number | null): string {
@@ -929,6 +950,22 @@ export async function buildAccountDataSnapshot(context: LearningDataAdmissionCon
   return createAccountDataSnapshot(nextVersion, installation.installationId, records, activeSession, pendingJournal);
 }
 
+/**
+ * The guard part of `buildAccountDataSnapshot` (same integrity and journal
+ * checks, same failures) without projecting and fingerprinting every record.
+ * Sync guards only need these two flags.
+ */
+export async function readAccountDataSyncGuardFlags(context: LearningDataAdmissionContext): Promise<Readonly<{ activeSession: boolean; pendingJournal: boolean }>> {
+  assertTrainingEvidenceIntegrity(context.trackAdmission);
+  const installation = await getGuestInstallation();
+  if (!installation) throw new AccountDataFailure("guest_installation_required");
+  await getAccountSyncState(context);
+  const activeSession = (await getTrainingSessions(context.trackAdmission)).value.some((session) => session.status === "active");
+  const activeJournal = await getActiveMutationJournal(context);
+  if (activeJournal?.operation === "accept_goal_plan" || activeJournal?.operation === "resolve_account_sync_conflict") throw new AccountDataFailure("journal_recovery_required");
+  return Object.freeze({ activeSession, pendingJournal: activeJournal !== null });
+}
+
 function createAccountDataSnapshot(guestSnapshotVersion: number, guestUserId: string, records: readonly AccountDataRecord[], activeSession: boolean, pendingJournal: boolean): AccountDataSnapshot {
   return Object.freeze({ guestSnapshotVersion, guestUserId, records: Object.freeze(records), activeSession, pendingJournal });
 }
@@ -963,12 +1000,26 @@ async function readLocalAccountDataRecords(state: AccountSyncState, context: Lea
     }
     assertGoalPlanRecordBundles(records, context.goalPolicyResolver);
   }
+  // Linear in history size: one key set for local records and one for deleted
+  // outbox entries instead of a scan of both lists per acknowledged record.
+  const localKeys = new Set(records.map(accountDataRecordKey));
+  const deletedOutboxKeys = new Set(state.outbox.filter(isDeletedAccountDataRecord).map(accountDataRecordKey));
   for (const tombstone of Object.values(state.acknowledged)) {
-    if (!records.some((record) => accountDataRecordKey(record) === accountDataRecordKey(tombstone)) && state.outbox.some((entry) => accountDataRecordKey(entry) === accountDataRecordKey(tombstone) && isDeletedAccountDataRecord(entry))) {
+    const key = accountDataRecordKey(tombstone);
+    if (!localKeys.has(key) && deletedOutboxKeys.has(key)) {
       records.push(makeRecord(tombstone.recordType, tombstone.recordId, tombstone.trackId, { deleted: true }, state));
+      localKeys.add(key);
     }
   }
-  return Object.freeze(records.sort((left, right) => accountDataRecordKey(left).localeCompare(accountDataRecordKey(right))));
+  return Object.freeze(sortByRecordKey(records));
+}
+
+/** Same order as comparing `accountDataRecordKey(...).localeCompare(...)`, with each key computed once. */
+function sortByRecordKey<T extends AccountDataRecordIdentity>(records: T[]): T[] {
+  const keyed = records.map((record) => [accountDataRecordKey(record), record] as const);
+  keyed.sort(([left], [right]) => left.localeCompare(right));
+  for (let index = 0; index < keyed.length; index += 1) records[index] = keyed[index]![1];
+  return records;
 }
 
 function makeRecord(recordType: SyncableRecordType, recordId: string, trackId: string, state: Readonly<Record<string, unknown>>, syncState: AccountSyncState): AccountDataRecord {
@@ -1024,6 +1075,9 @@ export async function ensureAccountOutboxFromLocalDataset(context: LearningDataA
   const outbox = [...state.outbox];
   let outboxSequence = state.outboxSequence;
   const byKey = new Map(outbox.map((entry) => [accountDataRecordKey(entry), entry]));
+  // First index per key, matching the former `findIndex` lookup.
+  const outboxIndexByKey = new Map<string, number>();
+  outbox.forEach((entry, index) => { const key = accountDataRecordKey(entry); if (!outboxIndexByKey.has(key)) outboxIndexByKey.set(key, index); });
   for (const record of snapshot.records) {
     const key = accountDataRecordKey(record);
     const acknowledged = state.acknowledged[key];
@@ -1031,9 +1085,9 @@ export async function ensureAccountOutboxFromLocalDataset(context: LearningDataA
     const expectedVersion = acknowledged?.remoteVersion ?? null;
     const existing = byKey.get(key);
     const entry: AccountOutboxEntry = Object.freeze({ ...record, mutationId: accountMutationId(boundAccountId, record, expectedVersion), expectedVersion, attemptCount: existing?.attemptCount ?? 0, lastErrorCode: null, status: "pending", sequence: existing?.sequence ?? ++outboxSequence });
-    const existingIndex = outbox.findIndex((candidate) => accountDataRecordKey(candidate) === key);
-    if (existingIndex >= 0) outbox[existingIndex] = entry;
-    else outbox.push(entry);
+    const existingIndex = outboxIndexByKey.get(key);
+    if (existingIndex !== undefined) outbox[existingIndex] = entry;
+    else { outboxIndexByKey.set(key, outbox.length); outbox.push(entry); }
     byKey.set(key, entry);
   }
   // Goal and plan records are an atomic server-side bundle. When a newly
@@ -1361,6 +1415,11 @@ export async function applyRemoteAccountData(records: readonly AccountDataRecord
   await clearTrainingSessions(context.trackAdmission);
   await clearTrainingAttempts(context.trackAdmission);
   await clearReviewQueueItems(context.trackAdmission);
+  // Families are written in bulk (one family read and one index write each),
+  // so materialization stays linear in history size.
+  const sessions: TrainingSession[] = [];
+  const results: TrainingSessionResult[] = [];
+  const attempts: TrainingAttempt<unknown>[] = [];
   for (const record of records.filter((candidate) => !isDeletedAccountDataRecord(candidate) && (!preserveLocalContext || ["training_session_summary", "training_session_result", "training_attempt", "review_queue_entry"].includes(candidate.recordType)))) {
     if (record.recordType === "active_track") {
       const trackId = record.state.trackId;
@@ -1370,17 +1429,20 @@ export async function applyRemoteAccountData(records: readonly AccountDataRecord
     if (record.recordType === "training_session_summary") {
       const session = materializeTerminalSession(record.state, context.trackAdmission);
       if (!session) throw new AccountDataFailure("account_data_session_invalid");
-      await saveTrainingSession(session, context.trackAdmission);
+      sessions.push(session);
     }
     if (record.recordType === "training_session_result") {
       if (!isTrainingSessionResult(record.state, context.trackAdmission)) throw new AccountDataFailure("account_data_result_invalid");
-      await saveTrainingSessionResult(record.state, context.trackAdmission);
+      results.push(record.state);
     }
     if (record.recordType === "training_attempt") {
       if (!isTrainingAttempt(record.state, context.trackAdmission)) throw new AccountDataFailure("account_data_attempt_invalid");
-      await addTrainingAttempt(record.state, context.trackAdmission);
+      attempts.push(record.state);
     }
   }
+  await saveTerminalTrainingSessionsBatch(sessions, context.trackAdmission);
+  for (const result of results) await saveTrainingSessionResult(result, context.trackAdmission);
+  if (attempts.length > 0) await addTrainingAttemptsBatch(attempts, context.trackAdmission);
   const reviews: ReviewQueueEntry[] = [];
   for (const record of records.filter((candidate) => candidate.recordType === "review_queue_entry" && !isDeletedAccountDataRecord(candidate))) {
     if (!isReviewQueueEntry(record.state, context.trackAdmission)) throw new AccountDataFailure("account_data_review_invalid");
@@ -1510,4 +1572,103 @@ export async function clearAccountDeletionOwnedLocalData(): Promise<void> {
   // to the whole canonical namespace: settings, installation, journal, and
   // lifecycle markers have different ownership and recovery semantics.
   clearCanonicalLearningNamespace(true);
+}
+
+/**
+ * Durable marker written immediately before a sync replaces local learning
+ * records with the account copy. It reuses the canonical materialization shape,
+ * so an interrupted apply resumes through the existing "materialization
+ * pending" path, which pulls the account copy again.
+ */
+const REMOTE_APPLY_OPERATION_PREFIX = "remote-apply:";
+const REMOTE_APPLY_FINGERPRINT = "remote-apply-v1";
+
+export function isRemoteApplyMaterialization(materialization: AccountMaterialization | null): boolean {
+  return materialization !== null && !("kind" in materialization)
+    && materialization.operationId.startsWith(REMOTE_APPLY_OPERATION_PREFIX) && materialization.previewFingerprint === REMOTE_APPLY_FINGERPRINT;
+}
+
+export async function markAccountRemoteApplyPending(accountId: string, context: LearningDataAdmissionContext): Promise<AccountSyncState> {
+  const current = await getAccountSyncState(context);
+  if (current.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+  if (current.materialization && !isRemoteApplyMaterialization(current.materialization)) throw new AccountDataFailure("account_materialization_in_progress");
+  if (current.pendingConfirmation !== null) throw new AccountDataFailure("account_adoption_pending");
+  return saveAccountSyncState({ ...current, status: "syncing", materialization: { operationId: `${REMOTE_APPLY_OPERATION_PREFIX}${accountId}`, previewFingerprint: REMOTE_APPLY_FINGERPRINT } }, context);
+}
+
+const CONTENT_IDENTITY_FIXED_KEYS: readonly string[] = [STORAGE_KEYS.ARCHIVAL_HISTORY_INDEX, STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX, STORAGE_KEYS.UNAVAILABLE_REVIEW_INDEX];
+const CONTENT_IDENTITY_PREFIXES: readonly string[] = [`${STORAGE_NAMESPACE}archival-history:`, `${STORAGE_NAMESPACE}unavailable-active:`, `${STORAGE_NAMESPACE}unavailable-review:`];
+
+/**
+ * True when `applyRemoteAccountData(records)` would only rewrite the local
+ * learning records that are already present with the same identity and
+ * fingerprint, and would clear nothing else. A sync can then acknowledge the
+ * account copy without replacing local storage on every start.
+ */
+export function isRemoteAccountDataMaterialized(records: readonly AccountDataRecord[], snapshot: AccountDataSnapshot): boolean {
+  if (snapshot.activeSession || snapshot.pendingJournal) return false;
+  const local = new Map<string, string>();
+  for (const record of snapshot.records) {
+    if (!isDeletedAccountDataRecord(record)) local.set(accountDataRecordKey(record), record.fingerprint);
+  }
+  let remoteLive = 0;
+  for (const record of records) {
+    if (isDeletedAccountDataRecord(record)) continue;
+    remoteLive += 1;
+    if (local.get(accountDataRecordKey(record)) !== record.fingerprint) return false;
+  }
+  if (remoteLive !== local.size) return false;
+  // The apply path also drops content-identity bookkeeping; keep that behavior.
+  return !getKeyValueStorage().getAllKeys().some((key) => CONTENT_IDENTITY_FIXED_KEYS.includes(key) || CONTENT_IDENTITY_PREFIXES.some((prefix) => key.startsWith(prefix)));
+}
+
+/** Learning evidence that the account copy fully restores (what `applyRemoteAccountData` clears and rewrites). */
+const ACCOUNT_RESTORABLE_FIXED_KEYS: readonly string[] = [
+  STORAGE_KEYS.TRAINING_SESSION_INDEX, STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, STORAGE_KEYS.REVIEW_INDEX, ...CONTENT_IDENTITY_FIXED_KEYS,
+];
+const ACCOUNT_RESTORABLE_PREFIXES: readonly string[] = [
+  `${STORAGE_NAMESPACE}training-session:`, `${STORAGE_NAMESPACE}training-session-result:`, `${STORAGE_NAMESPACE}training-attempt:`,
+  `${STORAGE_NAMESPACE}review-entry:`, ...CONTENT_IDENTITY_PREFIXES,
+];
+
+export type InterruptedMaterializationRecovery = "recovered" | "not_applicable";
+
+/**
+ * Exit from evidence left inconsistent by an interrupted account apply.
+ * Applies only to an account-bound store whose account copy is complete:
+ * either the durable remote-apply marker is present, or (stores written
+ * before the marker existed) the sync was mid-flight and every local change
+ * had been acknowledged by the server. It removes the account-restorable evidence families and leaves the
+ * remote-apply marker, so account loading pulls the account copy again.
+ * Active sessions, drafts, journals, settings, goals/plans and content reports
+ * are never touched; any other state is left for the caller to report.
+ */
+export async function recoverInterruptedAccountMaterialization(context: LearningDataAdmissionContext): Promise<InterruptedMaterializationRecovery> {
+  const storage = getKeyValueStorage();
+  if (storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL) !== undefined
+    || storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION) !== undefined
+    || storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT) !== undefined) return "not_applicable";
+  let state: AccountSyncState;
+  let installation: Awaited<ReturnType<typeof getGuestInstallation>>;
+  try {
+    state = await getAccountSyncState(context);
+    installation = await getGuestInstallation();
+  } catch { return "not_applicable"; }
+  if (!installation || installation.bindingState !== "account_bound" || installation.accountId === null || state.accountId !== installation.accountId) return "not_applicable";
+  if (state.pendingConfirmation !== null || state.resetGuard || state.syncConflict) return "not_applicable";
+  const markerPresent = isRemoteApplyMaterialization(state.materialization);
+  // Everything local is already on the account: no outbox, or every outbox
+  // entry was acknowledged by the server in the current sync plan.
+  const ackedMutationIds = new Set((state.syncPlan?.items ?? []).filter((item) => item.status === "acked").map((item) => item.mutationId));
+  const fullyUploaded = state.syncPlan === null
+    ? state.outbox.length === 0
+    : state.syncPlan.items.every((item) => item.status === "acked") && state.outbox.every((entry) => ackedMutationIds.has(entry.mutationId));
+  const legacyInterruptedSync = state.materialization === null && state.status === "syncing" && fullyUploaded;
+  if (!markerPresent && !legacyInterruptedSync) return "not_applicable";
+  const accountId = state.accountId;
+  if (!markerPresent) await markAccountRemoteApplyPending(accountId, context);
+  for (const key of storage.getAllKeys()) {
+    if (ACCOUNT_RESTORABLE_FIXED_KEYS.includes(key) || ACCOUNT_RESTORABLE_PREFIXES.some((prefix) => key.startsWith(prefix))) removeCanonicalValue(key);
+  }
+  return "recovered";
 }

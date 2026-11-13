@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { StartupLoadingSurface, StartupUnavailableSurface, UnavailableActiveSurface } from "./startupPreparationSurfaces";
-import { startupFailureCopy } from "./startupFailureCopy";
+import { startupFailureCopy, startupFailureDiagnosticCode } from "./startupFailureCopy";
 import { abandonUnavailableActiveTrainingSession, bootstrapApplication } from "../../application/bootstrap";
 import { createBootstrapProgressObserver, describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
@@ -49,7 +49,7 @@ export type ContentPreparationState =
   | { kind: "ready" }
   | { kind: "home_ready_resume_unavailable"; activeSessionId: string; reason: "premium_entitlement_denied" | "premium_entitlement_unavailable"; actorFence: HomeResumeActorFence }
   | { kind: "content_identity_unavailable"; phase: ContentPreparationPhase; sessionIds: readonly string[]; exactMissingIdentity?: ExactArtifactIdentity; error?: string }
-  | { kind: "blocking"; phase: ContentPreparationPhase; reason: string };
+  | { kind: "blocking"; phase: ContentPreparationPhase; reason: string; diagnosticCode?: string | null };
 
 export type HomeResumeUnavailable = Readonly<{
   sessionId: string;
@@ -153,14 +153,17 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
       if (!isCurrent() || outcome.publication === "none") return;
       clearTimer();
       if (outcome.publication === "timeout") {
+        const diagnosticCode = startupFailureDiagnosticCode(null, currentPhase);
         markStartup("blocking");
+        markStartup(`blocking_cause:${diagnosticCode}`);
         endGateTrace();
-        setState({ kind: "blocking", phase: currentPhase, reason: preparationTimeoutReason(currentPhase) });
+        setState({ kind: "blocking", phase: currentPhase, reason: preparationTimeoutReason(currentPhase), diagnosticCode });
         if (materializedTransitionToken) accountRef.current.completeMaterializedAccountTransition(materializedTransitionToken);
         return;
       }
       if (!nextState) return;
       markStartup(nextState.kind);
+      if (nextState.kind === "blocking") markStartup(`blocking_cause:${nextState.diagnosticCode ?? startupFailureDiagnosticCode(nextState.reason) ?? "UNSPECIFIED"}`);
       endGateTrace();
       setState(nextState);
       if (materializedTransitionToken) accountRef.current.completeMaterializedAccountTransition(materializedTransitionToken);
@@ -397,6 +400,6 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
             confirming={confirmUnavailableActiveAbandon} pending={abandoningUnavailableActive}
             onCancel={() => setConfirmUnavailableActiveAbandon(false)} onConfirm={() => { void abandonUnavailableActive(); }}
             onAsk={() => setConfirmUnavailableActiveAbandon(true)} onRetry={retry} />
-        : <StartupUnavailableSurface testID={developmentResetUnavailable ? "patternly:content:unavailable:development-reset-unavailable" : runtimeSelectors.content.unavailable()} description={t(startupFailureCopy(state.reason))} onRetry={retry} title={t("Application unavailable")} />;
+        : <StartupUnavailableSurface testID={developmentResetUnavailable ? "patternly:content:unavailable:development-reset-unavailable" : runtimeSelectors.content.unavailable()} description={t(startupFailureCopy(state.reason))} diagnosticCode={state.diagnosticCode ?? startupFailureDiagnosticCode(state.reason)} onRetry={retry} title={t("Application unavailable")} />;
   return <View style={{ backgroundColor: colors.background, flex: 1 }}>{body}</View>;
 }

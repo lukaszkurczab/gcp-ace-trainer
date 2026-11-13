@@ -1,6 +1,6 @@
 import { markStartup } from "../infrastructure/diagnostics/startupTrace";
 import { ContentError } from "../content/errors";
-import { CorruptStoredRecordError, JournalMaterializationError, JournalVerificationError, JournalWriteError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../storage/errors";
+import { CanonicalEvidenceIntegrityError, CorruptStoredRecordError, JournalMaterializationError, JournalVerificationError, JournalWriteError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../storage/errors";
 import { CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER, type CanonicalRepositoryBootstrapStep as CanonicalRepositoryBootstrapStepCode } from "../storage/repositories/canonicalRepositories";
 import { isPatternlyPerfBuild, isPatternlySmokeRuntime, readPatternlyRuntimeMode } from "../infrastructure/runtime/runtimeMode";
 import { encryptedStorageFailureCode, type EncryptedStorageFailureCode } from "../infrastructure/storage/encryptedStorageBootstrap";
@@ -8,7 +8,7 @@ import type { LocalLogoutControlError } from "../infrastructure/storage/localLog
 import type { ProfileStorageError } from "../infrastructure/storage/profileStorageRouter";
 import { NodePackageStorageIntegrityError, NodePackageStorageUnavailableError } from "../content/runtime/nodeContentPackage";
 
-export type OperationalDiagnosticCode = "CONTENT_UNAVAILABLE" | "CONTENT_INVALID" | "NODE_PACKAGE_STORAGE_CORRUPT" | "NODE_PACKAGE_STORAGE_UNSUPPORTED" | "NODE_PACKAGE_IDENTITY_MISMATCH" | "NODE_PACKAGE_STORAGE_UNAVAILABLE" | "STORAGE_READ_FAILED" | "STORAGE_WRITE_FAILED" | "STORAGE_DELETE_FAILED" | "STORAGE_RECORD_INVALID" | "JOURNAL_WRITE_FAILED" | "JOURNAL_MATERIALIZATION_FAILED" | "JOURNAL_VERIFICATION_FAILED" | "LOCAL_OPERATION_FAILED";
+export type OperationalDiagnosticCode = "CONTENT_UNAVAILABLE" | "CONTENT_INVALID" | "NODE_PACKAGE_STORAGE_CORRUPT" | "NODE_PACKAGE_STORAGE_UNSUPPORTED" | "NODE_PACKAGE_IDENTITY_MISMATCH" | "NODE_PACKAGE_STORAGE_UNAVAILABLE" | "STORAGE_READ_FAILED" | "STORAGE_WRITE_FAILED" | "STORAGE_DELETE_FAILED" | "STORAGE_RECORD_INVALID" | "JOURNAL_WRITE_FAILED" | "JOURNAL_MATERIALIZATION_FAILED" | "JOURNAL_VERIFICATION_FAILED" | "EVIDENCE_INTEGRITY_FAILED" | "LOCAL_OPERATION_FAILED";
 
 /** Ordered application bootstrap stages exposed to the diagnostic boundary. */
 export enum ApplicationBootstrapStage {
@@ -511,6 +511,7 @@ export function operationalDiagnosticCode(error: unknown): OperationalDiagnostic
   if (error instanceof JournalWriteError) return "JOURNAL_WRITE_FAILED";
   if (error instanceof JournalMaterializationError) return "JOURNAL_MATERIALIZATION_FAILED";
   if (error instanceof JournalVerificationError) return "JOURNAL_VERIFICATION_FAILED";
+  if (error instanceof CanonicalEvidenceIntegrityError) return "EVIDENCE_INTEGRITY_FAILED";
   return "LOCAL_OPERATION_FAILED";
 }
 

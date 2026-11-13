@@ -33,6 +33,24 @@ import {
   assertContentIdentityRecordIntegrity,
 } from "../../storage/repositories";
 import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { recoverInterruptedAccountMaterialization } from "../../storage/repositories/accountDataRepository";
+import { CanonicalEvidenceIntegrityError } from "../../storage/errors";
+
+/**
+ * Evidence left inconsistent by an interrupted account apply is recovered from
+ * the account copy (the families are cleared and a re-pull is marked) instead
+ * of blocking every later start. Any other inconsistency still fails.
+ */
+async function assertTrainingEvidenceIntegrityOrRecover(): Promise<void> {
+  try {
+    assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
+  } catch (error) {
+    if (!(error instanceof CanonicalEvidenceIntegrityError)) throw error;
+    if (await recoverInterruptedAccountMaterialization(productionLearningDataAdmissionContext) !== "recovered") throw error;
+    markStartup("repository:interrupted_materialization_recovered");
+    assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
+  }
+}
 
 export type ApplicationBootstrapState =
   | Readonly<{ kind: "ready"; activeSessionId: string | null }>
@@ -114,7 +132,7 @@ async function bootstrapApplicationCore(
       assertLearningStateResetReplayState(reset.targetPlan);
     } else if (pendingJournal) assertTrainingEvidenceJournalPreflight(pendingJournal, productionTrackAdmissionContext);
     else {
-      assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
+      await assertTrainingEvidenceIntegrityOrRecover();
       assertContentIdentityRecordIntegrity();
     }
     // On a fresh profile, create metadata/identity only after proving the
