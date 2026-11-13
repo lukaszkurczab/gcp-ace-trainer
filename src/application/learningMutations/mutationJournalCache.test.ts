@@ -171,3 +171,41 @@ test("the plan fingerprint from B0 on the plan's own JSON equals the reference c
   nativeCalls = 0;
   assert.equal(createMutationPlanFingerprint(plan as MutationJournalPlan), reference);
 });
+
+test("a crash at every storage write of a commit recovers to the uninterrupted state, warm or cold, cache on or off", async () => {
+  const run = async (enabled: boolean, failAt: number | null, coldRestart: boolean): Promise<string> => {
+    storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); setMutationJournalCacheEnabledForTests(enabled);
+    await saveTrainingSession(session, productionTrackAdmissionContext);
+    const record = await build();
+    storage.resetCounters();
+    if (failAt !== null) storage.setFailurePlan({ kind: "fail_on_write_number", writeNumber: failAt });
+    let failed = false;
+    try { await commitMutation(record); } catch { failed = true; }
+    storage.setFailurePlan(null);
+    if (coldRestart) {
+      // A new process: same bytes, a new storage owner, so no memo survives.
+      const next = new MemoryKeyValueStorage();
+      for (const key of storage.getAllKeys()) next.setString(key, storage.getString(key)!);
+      storage = next; installKeyValueStorageForTests(next); setMutationJournalCacheEnabledForTests(enabled);
+    }
+    if (failed) {
+      await recoverPendingMutation();
+      if ((await getTrainingAttempts(productionTrackAdmissionContext)).value.length === 0) await commitMutation(await build());
+    }
+    assert.equal(getActiveMutationJournal(context), null);
+    const keys = storage.getAllKeys().filter((key) => !key.includes("account")).sort();
+    return JSON.stringify(keys.map((key) => [key, storage.getString(key)]));
+  };
+  const reference = await run(false, null, false);
+  storage.resetCounters();
+  await run(true, null, false);
+  const writes = storage.writes;
+  assert.ok(writes >= 5, `writes ${writes}`);
+  for (const enabled of [true, false]) {
+    for (const coldRestart of [true, false]) {
+      for (let failAt = 1; failAt <= writes; failAt += 1) {
+        assert.equal(await run(enabled, failAt, coldRestart), reference, `cache=${enabled} cold=${coldRestart} failAt=${failAt}`);
+      }
+    }
+  }
+});
