@@ -87,31 +87,66 @@ export function isRevenueCatAccountDeletionBlocked(accountId: string): boolean {
   return revenueCatDeletionBlockedAccountIds.has(accountId);
 }
 
-/** The installed SDK types define the original operation's transaction, never CustomerInfo history. */
-export function createRevenueCatGateway(): RevenueCatGateway {
-  if (nativeGateway) return nativeGateway;
+type PurchasesSdk = typeof import("react-native-purchases").default;
+let loadedSdk: PurchasesSdk | null = null;
+// Customer-info listeners registered before the SDK is loaded (T1.6 lazy start).
+const pendingCustomerInfoListeners = new Set<() => void>();
+const attachedCustomerInfoListeners = new Map<() => void, () => void>();
+
+function attachCustomerInfoListener(sdk: PurchasesSdk, listener: () => void): void {
+  const forward = () => { listener(); };
+  sdk.addCustomerInfoUpdateListener(forward);
+  attachedCustomerInfoListeners.set(listener, () => { sdk.removeCustomerInfoUpdateListener(forward); });
+}
+
+/**
+ * Loads the RevenueCat JS bridge and its native module on first SDK use (T1.6), not on the
+ * startup path. Customer info can only change after `configure`, which loads the SDK and then
+ * attaches every listener subscribed before that point.
+ */
+function revenueCatSdk(): PurchasesSdk {
+  if (loadedSdk) return loadedSdk;
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const Purchases = (require("react-native-purchases") as typeof import("react-native-purchases")).default;
   // Install before any SDK call. configure otherwise installs its raw console handler.
   Purchases.setLogHandler(sanitizeRevenueCatLog);
+  loadedSdk = Purchases;
+  for (const listener of pendingCustomerInfoListeners) attachCustomerInfoListener(Purchases, listener);
+  pendingCustomerInfoListeners.clear();
+  return Purchases;
+}
+
+/** Test seam: whether the native SDK has been loaded in this JS context. */
+export function isRevenueCatSdkLoaded(): boolean { return loadedSdk !== null; }
+
+/** The installed SDK types define the original operation's transaction, never CustomerInfo history. */
+export function createRevenueCatGateway(): RevenueCatGateway {
+  if (nativeGateway) return nativeGateway;
   nativeGateway = {
-    isConfigured: () => Purchases.isConfigured(),
-    getAppUserID: () => Purchases.getAppUserID(),
-    logOut: () => Purchases.logOut(),
+    isConfigured: () => revenueCatSdk().isConfigured(),
+    getAppUserID: () => revenueCatSdk().getAppUserID(),
+    logOut: () => revenueCatSdk().logOut(),
     configure: async (config) => {
+      const Purchases = revenueCatSdk();
       if (!await Purchases.isConfigured()) Purchases.configure(config);
       else if (await Purchases.getAppUserID() !== config.appUserID) await Purchases.logIn(config.appUserID);
     },
-    getOfferings: () => Purchases.getOfferings(),
-    purchasePackage: (pkg) => Purchases.purchasePackage(pkg as import("react-native-purchases").PurchasesPackage),
-    purchaseSubscriptionOption: (option) => Purchases.purchaseSubscriptionOption(option),
-    restorePurchases: () => Purchases.restorePurchases(),
-    getCustomerInfo: async (fresh) => { if (fresh) await Purchases.invalidateCustomerInfoCache(); return Purchases.getCustomerInfo(); },
-    managementURL: async () => (await Purchases.getCustomerInfo()).managementURL ?? null,
+    getOfferings: () => revenueCatSdk().getOfferings(),
+    purchasePackage: (pkg) => revenueCatSdk().purchasePackage(pkg as import("react-native-purchases").PurchasesPackage),
+    purchaseSubscriptionOption: (option) => revenueCatSdk().purchaseSubscriptionOption(option),
+    restorePurchases: () => revenueCatSdk().restorePurchases(),
+    getCustomerInfo: async (fresh) => { const Purchases = revenueCatSdk(); if (fresh) await Purchases.invalidateCustomerInfoCache(); return Purchases.getCustomerInfo(); },
+    managementURL: async () => (await revenueCatSdk().getCustomerInfo()).managementURL ?? null,
     subscribe: (listener) => {
       // Invalidation only. This callback cannot select a transaction or grant access.
-      Purchases.addCustomerInfoUpdateListener(listener);
-      return () => { Purchases.removeCustomerInfoUpdateListener(listener); };
+      const own = () => { listener(); };
+      if (loadedSdk) attachCustomerInfoListener(loadedSdk, own);
+      else pendingCustomerInfoListeners.add(own);
+      return () => {
+        pendingCustomerInfoListeners.delete(own);
+        attachedCustomerInfoListeners.get(own)?.();
+        attachedCustomerInfoListeners.delete(own);
+      };
     },
   };
   return nativeGateway;
