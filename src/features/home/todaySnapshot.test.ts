@@ -10,7 +10,8 @@ class MemoryKeyValueStorage {
   remove(key: string): void { this.values.delete(key); }
 }
 import { STORAGE_KEYS } from "../../storage/keys";
-import { TODAY_SNAPSHOT_FRESH_MS, TODAY_SNAPSHOT_KEY, clearTodaySnapshotMemory, computeTodayStoreRevision, isTodayInputKey, readTodaySnapshot, writeTodaySnapshot } from "./todaySnapshot";
+import { TODAY_SNAPSHOT_FRESH_MS, TODAY_SNAPSHOT_KEY, clearTodaySnapshotMemory, computeTodayStoreRevision, invalidateTodaySnapshot, isTodayInputKey, readTodaySnapshot, writeTodaySnapshot } from "./todaySnapshot";
+import { notifyActorBoundary } from "../../application/bootstrap/parallelBoot";
 
 test.afterEach(() => clearTodaySnapshotMemory());
 
@@ -83,17 +84,51 @@ test("a snapshot is reused only for the same revision and owner; a mismatching p
   assert.equal(storage.getString(TODAY_SNAPSHOT_KEY), undefined);
 });
 
-test("persisting is off by default (derived data must not outlive account deletion); memory still serves refocus", () => {
+test("persisting is on by default; PERSIST=0 keeps only the memory layer", () => {
   const defaultStorage = seeded();
   writeTodaySnapshot({ revision: "r", owner: { profileKey: "k", trackId: null }, capturedAt: "2026-11-13T10:00:00.000Z", data: {}, storage: defaultStorage });
-  assert.equal(defaultStorage.getString(TODAY_SNAPSHOT_KEY), undefined);
-
+  assert.ok(defaultStorage.getString(TODAY_SNAPSHOT_KEY), "owner decision 2026-11-13: on by default");
   const storage = seeded();
   const revision = computeTodayStoreRevision(storage);
-  const owner = { profileKey: "guest:g1:", trackId: null };
+  const owner = { profileKey: "guest|guest:g1:", trackId: null };
   writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { v: 2 }, storage, persisted: false });
   assert.equal(storage.getString(TODAY_SNAPSHOT_KEY), undefined);
   assert.equal(readTodaySnapshot({ revision, owner, nowMs: Date.parse("2026-11-13T10:00:01.000Z"), storage, persisted: false })?.source, "memory");
   clearTodaySnapshotMemory();
   assert.equal(readTodaySnapshot({ revision, owner, nowMs: 0, storage, persisted: false }), null);
+});
+
+test("foreign actor or lease, an old revision and a corrupt entry are ignored, removed and never throw", () => {
+  const storage = seeded();
+  const revision = computeTodayStoreRevision(storage);
+  const mine = { profileKey: "uid:a|account:p1:acc-1|premium:allowed|content:x", trackId: "t" };
+  const now = Date.parse("2026-11-13T10:00:00.000Z");
+  const write = () => { writeTodaySnapshot({ revision, owner: mine, capturedAt: "2026-11-13T10:00:00.000Z", data: { v: 1 }, storage }); clearTodaySnapshotMemory(); };
+  write();
+  assert.equal(readTodaySnapshot({ revision, owner: { ...mine, profileKey: "uid:b|account:p1:acc-1|premium:allowed|content:x" }, nowMs: now, storage }), null, "another actor on the same profile");
+  assert.equal(storage.getString(TODAY_SNAPSHOT_KEY), undefined);
+  write();
+  assert.equal(readTodaySnapshot({ revision, owner: { ...mine, profileKey: "uid:a|account:p2:acc-1|premium:allowed|content:x" }, nowMs: now, storage }), null, "another profile lease");
+  write();
+  storage.setString(STORAGE_KEYS.trainingAttempt("new"), "{\"attempt\":3}");
+  assert.equal(readTodaySnapshot({ revision: computeTodayStoreRevision(storage), owner: mine, nowMs: now, storage }), null, "old revision after a new attempt");
+  for (const corrupt of ["", "null", "[]", "{\"schema\":2}", JSON.stringify({ schema: 1, revision, owner: mine, capturedAt: "not a date", data: {} }), JSON.stringify({ schema: 1, revision, owner: mine, capturedAt: "2026-11-13T10:00:00.000Z", data: null })]) {
+    storage.setString(TODAY_SNAPSHOT_KEY, corrupt);
+    assert.doesNotThrow(() => assert.equal(readTodaySnapshot({ revision, owner: mine, nowMs: now, storage }), null, corrupt));
+    assert.equal(storage.getString(TODAY_SNAPSHOT_KEY), undefined, corrupt);
+  }
+  const throwing = { getString: () => { throw new Error("store closed"); }, remove: () => { throw new Error("store closed"); } };
+  assert.equal(readTodaySnapshot({ revision, owner: mine, nowMs: now, storage: throwing }), null, "an unreadable store never blocks the start");
+});
+
+test("sign-out, deletion or actor change drops both layers (account provider boundary)", () => {
+  const storage = seeded();
+  const revision = computeTodayStoreRevision(storage);
+  const owner = { profileKey: "uid:a|account:p1:acc-1|premium:allowed|content:x", trackId: "t" };
+  writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { v: 1 }, storage });
+  notifyActorBoundary(storage);
+  assert.equal(storage.getString(TODAY_SNAPSHOT_KEY), undefined, "removed by the provider boundary even if Home never loaded");
+  writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { v: 1 }, storage });
+  invalidateTodaySnapshot(null);
+  assert.equal(readTodaySnapshot({ revision, owner, nowMs: Date.parse("2026-11-13T10:00:01.000Z"), storage: null }), null, "memory dropped too");
 });

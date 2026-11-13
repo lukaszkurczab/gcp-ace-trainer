@@ -9,9 +9,9 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
-import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame } from "../../application/bootstrap/parallelBoot";
+import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame, onActorBoundary } from "../../application/bootstrap/parallelBoot";
 import { isSha256Utf8Accelerated } from "../../domain/identity/sha256";
-import { computeTodayStoreRevision, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "./todaySnapshot";
+import { computeTodayStoreRevision, invalidateTodaySnapshot, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "./todaySnapshot";
 import contentTrustManifest from "../../content/generated/content-trust-manifest.json";
 
 import {
@@ -116,13 +116,16 @@ type HomeShellTab = Exclude<ShellTab, "practice">;
 /** T2.3: the projected part of the shell, reused while the learning store is unchanged. */
 type TodayProjectionData = Pick<ShellData, "activityRecords" | "algorithmsDashboard" | "algorithmsDashboardError" | "homePractice" | "capturedAt" | "progressEvidence" | "progressEvidenceError" | "goal" | "goalOnboardingDismissed" | "homePlan">;
 
+// Sign-out, deletion or actor change drops the Today snapshot from the still-open profile store.
+onActorBoundary((store) => invalidateTodaySnapshot(store));
+
 const CONTENT_BUILD_KEY = `${(contentTrustManifest as { lockSha?: unknown }).lockSha ?? ""}:${(contentTrustManifest as { ledgerSha?: unknown }).ledgerSha ?? ""}`;
 
 /**
  * Revision and owner of the current Today inputs, or null when the snapshot is
  * off or the active profile cannot be read (the shell then computes as before).
  */
-function readTodaySnapshotKey(trackId: string | null, premiumAccess: string): Readonly<{ revision: string; owner: TodaySnapshotOwner; storage: TodaySnapshotStorage }> | null {
+function readTodaySnapshotKey(trackId: string | null, premiumAccess: string, actor: string): Readonly<{ revision: string; owner: TodaySnapshotOwner; storage: TodaySnapshotStorage }> | null {
   // The revision hashes every Today input as stored (~1–2 MB at 1 000 attempts):
   // only with the native B0 digest; the JS reference SHA-256 would cost more than the projections.
   if (!isParallelBootEnabled() || !isSha256Utf8Accelerated()) return null;
@@ -132,7 +135,7 @@ function readTodaySnapshotKey(trackId: string | null, premiumAccess: string): Re
     const { profile, storage } = store;
     return {
       revision: computeTodayStoreRevision(storage),
-      owner: { profileKey: `${profile.kind}:${profile.id}:${profile.accountId ?? ""}|premium:${premiumAccess}|content:${CONTENT_BUILD_KEY}`, trackId },
+      owner: { profileKey: `${actor}|${profile.kind}:${profile.id}:${profile.accountId ?? ""}|premium:${premiumAccess}|content:${CONTENT_BUILD_KEY}`, trackId },
       storage,
     };
   } catch {
@@ -236,12 +239,13 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           const readNow = getApplicationCurrentTime();
           // T2.3: projections are reused for an unchanged learning store (same
           // revision, profile, track, premium access and content build).
-          const snapshotKey = readTodaySnapshotKey(savedTrackId ?? null, accountRef.current.readCurrentPremiumAccess());
+          const snapshotKey = readTodaySnapshotKey(savedTrackId ?? null, accountRef.current.readCurrentPremiumAccess(), todaySnapshotActor(accountRef.current.state));
           const forceCompute = forceShellComputeRef.current;
           forceShellComputeRef.current = false;
           const reused = snapshotKey && !forceCompute
             ? readTodaySnapshot<TodayProjectionData>({ revision: snapshotKey.revision, owner: snapshotKey.owner, nowMs: Date.parse(readNow), storage: snapshotKey.storage })
             : null;
+          if (SLA_TRACE && snapshotKey) markStartup(reused ? (reused.source === "memory" ? "home_projection:memory" : "home_projection:persisted") : "home_projection:computed");
           const trainingAttemptsRead = getTrainingAttempts();
           const [
             activeSession,
@@ -807,6 +811,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
 });
 
 /** S1b (Plan §1): account data was synced with the backend during this launch, not restored from a previous one. */
+/** The actor that owns a Today snapshot: the Firebase user of an account session, or the guest. */
+function todaySnapshotActor(state: ReturnType<typeof usePatternlyAccount>["state"]): string {
+  if (state.kind === "authenticated" || state.kind === "localOffline") return `uid:${state.user.uid}`;
+  return state.kind === "guest" ? "guest" : `other:${state.kind}`;
+}
+
 function isFreshBackendAccountData(state: ReturnType<typeof usePatternlyAccount>["state"]): boolean {
   if (state.kind !== "authenticated" || state.accountData.status !== "synced" || !state.accountData.lastSuccessfulSyncAt) return false;
   return isEpochFromThisLaunch(Date.parse(state.accountData.lastSuccessfulSyncAt));

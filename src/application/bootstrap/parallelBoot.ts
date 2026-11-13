@@ -156,6 +156,29 @@ export function createStartupRevalidation<Result>(dependencies: Readonly<{
   };
 }
 
+/**
+ * Actor boundary (sign-out, deletion, actor change): derived per-actor caches
+ * registered here are dropped while the profile store is still open. The
+ * account provider reports the boundary; Home's Today snapshot registers.
+ */
+export type StartupCacheStore = Readonly<{ remove(key: string): void }>;
+/** Persisted Today snapshot (derived, per actor; format in `features/home/todaySnapshot.ts`). */
+export const TODAY_SNAPSHOT_STORE_KEY = "patternly:derived:v1:today-snapshot";
+const actorBoundaryListeners = new Set<(store: StartupCacheStore | null) => void>();
+
+export function onActorBoundary(listener: (store: StartupCacheStore | null) => void): () => void {
+  actorBoundaryListeners.add(listener);
+  return () => { actorBoundaryListeners.delete(listener); };
+}
+
+export function notifyActorBoundary(store: StartupCacheStore | null): void {
+  // Removed here directly, so it never depends on Home having been loaded.
+  if (store) { try { store.remove(TODAY_SNAPSHOT_STORE_KEY); } catch { /* closed store */ } }
+  for (const listener of [...actorBoundaryListeners]) {
+    try { listener(store); } catch { /* A cache drop never blocks sign-out. */ }
+  }
+}
+
 type ContentPrefetch = Readonly<{ promise: Promise<void> }>;
 let contentPrefetch: ContentPrefetch | null = null;
 

@@ -30,7 +30,7 @@ function shell(overrides = {}) {
     useAccountSyncActivity: () => false,
     // T2.3: no Today snapshot in these shell tests (projections always computed).
     hasStartupFirstUsableFrame: () => true, notifyStartupFirstUsableFrame: () => {},
-    readTodaySnapshotKey: () => null, readTodaySnapshot: () => null, writeTodaySnapshot: () => {},
+    readTodaySnapshotKey: () => null, readTodaySnapshot: () => null, writeTodaySnapshot: () => {}, todaySnapshotActor: () => "guest",
     // T2.0 cooperative slices and timers (the extracted subject has no module scope).
     createCooperativeSlice: () => async () => {}, setTimeout, clearTimeout,
     getSettingsAccountPresentation, getTrackDisplay, isHomeSnapshotOwnerCurrent, runtimeSelectors, ROUTES,

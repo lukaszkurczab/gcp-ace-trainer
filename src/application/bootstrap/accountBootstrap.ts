@@ -21,6 +21,7 @@ import { prepareRevenueCatAccountDeletion } from "../../infrastructure/purchases
 import { getAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
 import { isParallelBootEnabled, markStartupRevalidationPending } from "./parallelBoot";
+import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 
 type Ref<T> = { current: T };
 type BootstrapCommonPorts = Readonly<{
@@ -259,6 +260,7 @@ export async function prepareAuthenticatedAccountBootstrap(
         const local = await activateLocalAccountScope(ports, attempt, auth, user, preparedSelection, canContinue, startupDiagnostic, isLocalFirstAccountStartEligible);
         if (local) {
           markStartupRevalidationPending({ uid: user.uid, accountId: preparedSelection.accountId, handoff: local.handoffToken });
+          markStartup("startup:local_first");
           return local;
         }
         if (!canContinue()) throw new AccountSessionGenerationStaleError();

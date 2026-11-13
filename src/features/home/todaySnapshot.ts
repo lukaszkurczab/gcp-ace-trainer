@@ -7,7 +7,8 @@
  * active track and the clock, so they are reused while the store revision and
  * the owner (profile + track) are unchanged:
  * - in memory, for refocus and for the reload after an unchanged sync;
- * - persisted in the active profile's own storage, for the next cold start.
+ * - persisted in the active profile's own (encrypted) storage, for the next
+ *   cold start. Owner decision 2026-11-13: on by default, with kill-switches.
  *
  * A snapshot is stale-while-revalidate: it is shown at once and recomputed in
  * the background when it is older than `TODAY_SNAPSHOT_FRESH_MS`, so
@@ -16,10 +17,21 @@
  * kind and account, and the caller's profile/source fences still guard the
  * commit.
  *
- * Kill-switch: `EXPO_PUBLIC_PATTERNLY_PERF_OPT_PARALLEL_BOOT=0` disables both
- * layers (the snapshot is part of the parallel start).
+ * Kill-switches: `EXPO_PUBLIC_PATTERNLY_PERF_OPT_PARALLEL_BOOT=0` disables
+ * both layers, reads included; `EXPO_PUBLIC_PATTERNLY_PERF_OPT_TODAY_SNAPSHOT_PERSIST=0`
+ * disables only the persisted one.
+ *
+ * Stored format (stable input for T2.5, which reads it natively): one JSON
+ * value under `TODAY_SNAPSHOT_KEY`:
+ *   { schema: 1, revision: "<count>:<sha256>", owner: { profileKey, trackId },
+ *     capturedAt: ISO-8601, data: TodayProjectionData }
+ * `profileKey` = "<actor>|<profile kind>:<profile id>:<account id>|premium:<access>|content:<lock sha>:<ledger sha>".
+ * Any change to this shape or to `data` bumps `schema` (and the key's v1).
+ * A missing, corrupt, foreign or outdated entry is ignored, removed and
+ * recomputed; it never blocks the start.
  */
 import { STORAGE_NAMESPACE } from "../../storage/keys";
+import { TODAY_SNAPSHOT_STORE_KEY } from "../../application/bootstrap/parallelBoot";
 
 /** The slice of the active profile store this module uses. */
 export type TodaySnapshotStorage = Readonly<{
@@ -32,18 +44,17 @@ type KeyValueStorage = TodaySnapshotStorage;
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 /** Derived, rebuildable cache; outside the canonical namespace and never exported or synced. */
-export const TODAY_SNAPSHOT_KEY = "patternly:derived:v1:today-snapshot";
+export const TODAY_SNAPSHOT_KEY = TODAY_SNAPSHOT_STORE_KEY;
 const SNAPSHOT_SCHEMA = 1;
 /** A reused projection older than this is recomputed in the background. */
 export const TODAY_SNAPSHOT_FRESH_MS = 60_000;
 /**
- * Persisting is opt-in (`EXPO_PUBLIC_PATTERNLY_PERF_OPT_TODAY_SNAPSHOT_PERSIST=1`)
- * until account deletion and learning-history reset also remove this derived
- * key: today they clear only the canonical learning namespace, so a persisted
- * copy of derived progress could outlive the records it was built from.
- * The in-memory layer is always on with the parallel start.
+ * On by default. Account deletion and history reset clear only the canonical
+ * namespace, so this derived key is removed separately: at sign-out, deletion
+ * and actor change (`invalidateTodaySnapshot`, via the account provider) and on
+ * any read that does not match the current owner and revision.
  */
-export const TODAY_SNAPSHOT_PERSISTED = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_TODAY_SNAPSHOT_PERSIST === "1";
+export const TODAY_SNAPSHOT_PERSISTED = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_TODAY_SNAPSHOT_PERSIST !== "0";
 
 /**
  * Canonical families that Home reads or projects. Excluded on purpose: account
@@ -166,6 +177,16 @@ export function writeTodaySnapshot<Data>(input: Readonly<{
   memory = snapshot;
   if (!(input.persisted ?? TODAY_SNAPSHOT_PERSISTED) || !input.storage) return;
   try { input.storage.setString(TODAY_SNAPSHOT_KEY, JSON.stringify(snapshot)); } catch { /* Best effort: the next start recomputes. */ }
+}
+
+/**
+ * Removes both layers for the given (still open) profile store: sign-out,
+ * account deletion, actor change. Never throws.
+ */
+export function invalidateTodaySnapshot(storage: Pick<KeyValueStorage, "remove"> | null): void {
+  memory = null;
+  if (!storage) return;
+  try { storage.remove(TODAY_SNAPSHOT_KEY); } catch { /* A closed store has nothing left to read it. */ }
 }
 
 /** Drops the in-memory layer (profile change, tests). */

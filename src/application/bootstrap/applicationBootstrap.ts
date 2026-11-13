@@ -177,6 +177,7 @@ async function bootstrapApplicationCore(
     }
     const integrityStillProven = openingIntegrity === "verified" && prepareLifecycle !== undefined
       && readPreparationWroteNoLearningData(dependencies) && (await getActiveMutationJournal(productionLearningDataAdmissionContext)) === null;
+    markStartup(integrityStillProven ? "evidence_integrity:skipped" : "evidence_integrity:repeated");
     if (!integrityStillProven) {
       assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
       assertContentIdentityRecordIntegrity();

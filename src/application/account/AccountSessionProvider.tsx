@@ -13,7 +13,8 @@ import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
 import { readAccountPremiumTestingAccess, readGuestPremiumTestingAccess } from "./premiumTestingAccess";
 import { markStartup, markStartupAt, startupTraceNow } from "../../infrastructure/diagnostics/startupTrace";
-import { createStartupRevalidation, readStartupRevalidationPending, settleStartupRevalidation, whenStartupFirstUsableFrame } from "../bootstrap/parallelBoot";
+import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { createStartupRevalidation, notifyActorBoundary, readStartupRevalidationPending, settleStartupRevalidation, whenStartupFirstUsableFrame } from "../bootstrap/parallelBoot";
 import { ACCOUNT_SYNC_INDICATOR_DELAY_MS, createAccountSyncScheduler, deferAccountSyncUntilIdle, isSyncOnFinalizeEnabled, registerAccountSyncScheduler, setAccountSyncActivity, subscribeAppBackground } from "./accountSyncSchedule";
 import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
 import { getRetiredAccountSecretsCleanup, type RetiredAccountSecretsCleanupState } from "../../infrastructure/security/retiredAccountSecrets";
@@ -3122,6 +3123,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       refreshNow: () => refreshAccountIdentityNowRef.current(),
       superseded: () => ({ kind: "failure", failure: "revokedSession" }),
       onActive: (owner) => {
+        markStartup(owner ? "startup_revalidation:start" : "startup_revalidation:end");
         startupRevalidationActiveRef.current = owner;
         if (indicator !== null) clearTimeout(indicator);
         indicator = null;
@@ -3141,6 +3143,21 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     if (!owner || owner.uid !== startupRevalidationUid || owner.accountId !== startupRevalidationAccountId) return;
     void refreshAccountIdentity();
   }, [refreshAccountIdentity, startupRevalidationAccountId, startupRevalidationUid]);
+  // T2.3: sign-out, deletion and actor change drop derived per-actor caches
+  // (the persisted Today snapshot) while the profile store is still open.
+  const actorBoundaryKey = state.kind === "authenticated" || state.kind === "localOffline" ? `uid:${state.user.uid}` : state.kind === "guest" ? "guest" : null;
+  const previousActorBoundaryKeyRef = useRef<string | null>(actorBoundaryKey);
+  useEffect(() => {
+    const previous = previousActorBoundaryKeyRef.current;
+    if (actorBoundaryKey) previousActorBoundaryKeyRef.current = actorBoundaryKey;
+    const leaving = state.kind === "signingOut" || state.kind === "deleting" || state.kind === "signOutPending"
+      || state.kind === "revokedSession" || state.kind === "signedOut";
+    const actorChanged = previous !== null && actorBoundaryKey !== null && previous !== actorBoundaryKey;
+    if (!leaving && !actorChanged) return;
+    let store: Readonly<{ remove(key: string): void }> | null = null;
+    try { store = captureActiveProfileStorageLease() ? getKeyValueStorage() : null; } catch { store = null; }
+    notifyActorBoundary(store);
+  }, [actorBoundaryKey, state.kind]);
   const contextValue = useMemo<AccountSessionContextValue>(() => ({ ...value, refreshAccountIdentity }), [refreshAccountIdentity, value]);
 
   return <AccountSessionContext.Provider value={contextValue}>{children}</AccountSessionContext.Provider>;
