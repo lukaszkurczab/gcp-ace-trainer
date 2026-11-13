@@ -4,7 +4,7 @@ import test from "node:test";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const { createExpoConfig, updatesConfiguration } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: Record<string, any> }; updatesConfiguration: (mode: string) => Record<string, unknown> };
+const { createExpoConfig, updatesConfiguration } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: Record<string, any> }; updatesConfiguration?: unknown };
 const app = createExpoConfig({
   EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID: "demo-patternly-eas-config",
   EXPO_PUBLIC_PATTERNLY_FIREBASE_APP_ID: "1:1:ios:eas-config",
@@ -49,10 +49,13 @@ test("EAS release configuration has explicit version, runtime, and channel polic
     },
     release: { distribution: "store", channel: "production", autoIncrement: true, environment: "production", env: { PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release" } },
   });
-  assert.deepEqual(updatesConfiguration("release"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab", enabled: false, checkAutomatically: "NEVER" });
-  assert.deepEqual(updatesConfiguration("sandbox"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab" });
-  // R0: local smoke builds (Debug and Release perf) never contact EAS Update.
-  assert.deepEqual(updatesConfiguration("smoke"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab", enabled: false, checkAutomatically: "NEVER" });
+  // R2 (owner, 2026-11-11; T1.6): no OTA in any profile. expo-updates is not a dependency and the
+  // config carries no updates section, so no build can contact EAS Update.
+  assert.equal(updatesConfiguration, undefined);
+  assert.equal((app as Record<string, unknown>).updates, undefined);
+  const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as { dependencies: Record<string, string>; devDependencies?: Record<string, string> };
+  assert.equal(packageJson.dependencies["expo-updates"], undefined);
+  assert.equal(packageJson.devDependencies?.["expo-updates"], undefined);
 });
 
 test("EAS source archives exclude generated native output, artifacts, and credentials", () => {

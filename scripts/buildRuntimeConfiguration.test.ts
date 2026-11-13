@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 
 const require = createRequire(import.meta.url);
-const { createExpoConfig, validateReleasePublicLegalLinks } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { name: string; scheme: string; android: { package: string; googleServicesFile?: string }; extra: { patternlyRuntime: string; patternlyPerfBuild?: boolean; patternlyACMNativeFixture?: { enabled: boolean; runUUID: string; operation: "create" | "resume" } }; ios: { googleServicesFile: string; infoPlist: Record<string, unknown> }; plugins: unknown[]; updates: { enabled?: boolean; checkAutomatically?: string } } }; validateReleasePublicLegalLinks: (legalVariables: unknown, publicEnvironment: unknown) => void };
+const { createExpoConfig, validateReleasePublicLegalLinks } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { name: string; scheme: string; android: { package: string; googleServicesFile?: string }; extra: { patternlyRuntime: string; patternlyPerfBuild?: boolean; patternlyACMNativeFixture?: { enabled: boolean; runUUID: string; operation: "create" | "resume" } }; ios: { googleServicesFile: string; infoPlist: Record<string, unknown> }; plugins: unknown[]; updates?: unknown } }; validateReleasePublicLegalLinks: (legalVariables: unknown, publicEnvironment: unknown) => void };
 const releaseLegalVariables = require("../config/public-legal.release.json");
 
 const base = {
@@ -104,7 +104,7 @@ test("ACM native fixture config requires explicit smoke UUID/operation and disab
     PatternlyACMNativeFixtureOperation: "create",
   });
   assert.deepEqual(fixture.extra.patternlyACMNativeFixture, { enabled: true, runUUID, operation: "create" });
-  assert.deepEqual(fixture.updates, { enabled: false, checkAutomatically: "NEVER" });
+  assert.equal(fixture.updates, undefined);
   assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE_RUN_UUID: runUUID }), /require EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE/);
   assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE: "0" }), /must be exactly 1 when set/);
   assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_ACM_NATIVE_FIXTURE: "false" }), /must be exactly 1 when set/);
@@ -120,8 +120,7 @@ test("separate local Android identity requires explicit emulator-only configurat
   assert.equal(config.scheme, "com.lkurczab.patternly.local");
   assert.equal(config.extra.patternlyRuntime, "smoke");
   assert.equal(config.android.googleServicesFile, undefined);
-  assert.equal(config.updates.enabled, false);
-  assert.equal(config.updates.checkAutomatically, "NEVER");
+  assert.equal(config.updates, undefined);
   assert.ok(!config.plugins.some((plugin) => String(Array.isArray(plugin) ? plugin[0] : plugin).startsWith("@react-native-firebase/")));
   for (const invalid of [
     { PATTERNLY_ANDROID_LOCAL_APP: "other" }, { EAS_BUILD_PLATFORM: "ios" }, { EAS_BUILD_PLATFORM: "" },
@@ -303,12 +302,11 @@ test("perf build flag is accepted only for local loopback smoke builds and never
   const config = createExpoConfig(perf);
   assert.equal(config.expo.extra.patternlyRuntime, "smoke");
   assert.equal(config.expo.extra.patternlyPerfBuild, true);
-  assert.equal(config.expo.updates.enabled, false);
-  assert.equal(config.expo.updates.checkAutomatically, "NEVER");
+  // R2 (T1.6): expo-updates is not installed, so no build profile carries an updates configuration.
+  assert.equal(config.expo.updates, undefined);
   const plain = createExpoConfig({ ...smoke });
   assert.equal(plain.expo.extra.patternlyPerfBuild, undefined);
-  assert.equal(plain.expo.updates.enabled, false);
-  assert.equal(plain.expo.updates.checkAutomatically, "NEVER");
+  assert.equal(plain.expo.updates, undefined);
   assert.throws(() => createExpoConfig({ ...perf, EXPO_PUBLIC_PATTERNLY_PERF_BUILD: "true" }), /exactly 1/);
   assert.throws(() => createExpoConfig({ ...perf, EAS_BUILD: "true" }), /only in local smoke builds/);
   assert.throws(() => createExpoConfig({ ...perf, EAS_BUILD_PROFILE: "production" }), /only in local smoke builds/);

@@ -189,12 +189,6 @@ function readPerfBuild(environment, runtimeMode) {
   return true;
 }
 
-function updatesConfiguration(runtimeMode) {
-  const url = "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab";
-  // Local smoke builds (Debug and the Release perf build) never contact EAS Update (Plan R0, §W.1.3).
-  return runtimeMode === "release" || runtimeMode === "smoke" ? { url, enabled: false, checkAutomatically: "NEVER" } : { url };
-}
-
 function createExpoConfig(environment = process.env) {
   const runtimeMode = readRuntimeMode(environment);
   const publicEnvironment = assertRuntimeEnvironment(environment, runtimeMode);
@@ -309,7 +303,6 @@ function createExpoConfig(environment = process.env) {
         } } : {}),
         eas: { projectId: "204d9769-4832-4c4a-b932-6359c4ff9dab" },
       },
-      updates: localAndroid || acmFixtureRequested ? { enabled: false, checkAutomatically: "NEVER" } : updatesConfiguration(runtimeMode),
     },
   };
 }
@@ -322,5 +315,4 @@ module.exports.RUNTIME_MODES = RUNTIME_MODES;
 module.exports.LOCAL_E2E_KEYS = LOCAL_E2E_KEYS;
 module.exports.isLoopbackHttpOrigin = isLoopbackHttpOrigin;
 module.exports.validateReleasePublicLegalLinks = validateReleasePublicLegalLinks;
-module.exports.updatesConfiguration = updatesConfiguration;
 module.exports.readPerfBuild = readPerfBuild;
