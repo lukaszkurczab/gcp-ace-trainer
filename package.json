@@ -96,5 +96,14 @@
     "react-test-renderer": "19.2.3",
     "tsx": "^4.21.0",
     "typescript": "~6.0.3"
+  },
+  "expo": {
+    "autolinking": {
+      "exclude": [
+        "@expo/dom-webview",
+        "expo-font",
+        "expo-keep-awake"
+      ]
+    }
   }
 }
