@@ -6,7 +6,7 @@ import test from "node:test";
 const workflow = readFileSync(resolve(process.cwd(), ".github/workflows/qa.yml"), "utf8");
 
 test("QA installs the frontend lock before native and root verification", () => {
-  assert.equal((workflow.match(/node-version: 22\.13\.1/g) ?? []).length, 2);
+  assert.equal((workflow.match(/node-version: 24\.21\.0/g) ?? []).length, 2);
   assert.equal((workflow.match(/app\/package-lock\.json/g) ?? []).length, 2);
   const rootBaseline = workflow.indexOf("- name: Run recovery baseline (includes qa:static)");
   const nativePrebuild = workflow.indexOf("- name: Verify clean generated native platform contract");

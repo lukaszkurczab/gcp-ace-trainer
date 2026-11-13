@@ -20,7 +20,7 @@ test("Expo platform configuration declares the supported phone-only native matri
   assert.equal(app.ios.supportsTablet, false);
   assert.equal(app.android.edgeToEdgeEnabled, undefined);
   assert.equal(packageManifest.dependencies["expo-system-ui"], "~57.0.3");
-  assert.equal(packageManifest.engines.node, ">=22.13.0 <23");
+  assert.equal(packageManifest.engines.node, ">=24.11.0 <25");
 
   const buildProperties = app.plugins.find(
     (plugin: unknown): plugin is [string, Record<string, unknown>] =>

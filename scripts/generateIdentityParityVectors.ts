@@ -21,7 +21,8 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { canonicalFingerprintPayload, canonicalJsonV1, canonicalSerialize } from "../src/domain/identity/canonicalSerialization";
-import { recordFingerprintPayload } from "../src/domain/identity/recordFingerprint";
+import { parseJsonExact } from "../src/domain/identity/exactJson";
+import { recordFingerprintPayload, type RecordFingerprintInput } from "../src/domain/identity/recordFingerprint";
 import { sha256Utf8 } from "../src/domain/identity/sha256";
 import { CANONICAL_RECORD_SCHEMA, parseCanonicalRecordEnvelope } from "../src/storage/repositories/canonicalRecordCodec";
 
@@ -126,14 +127,14 @@ export const JS_ONLY_TAGS = Object.freeze(["undefined", "nan", "infinity", "-inf
 const BASE_RECORD = { recordId: "parity-record", recordType: "training_session_result", trackId: "coding-interview-dsa-problem-solving" } as const;
 
 export function evaluate(profile: Profile, input: Input): Expect {
-  const value = (): unknown => ("json" in input ? JSON.parse(input.json) : "js" in input ? buildJsOnlyValue(input.js) : (() => { throw new Error("bad input"); })());
+  const value = (): unknown => ("json" in input ? parseJsonExact(input.json) : "js" in input ? buildJsOnlyValue(input.js) : (() => { throw new Error("bad input"); })());
   switch (profile) {
     case "canonicalSerialize": return attempt(() => { const output = canonicalSerialize(value()); return { ok: true, output, sha256: sha256Utf8(output) }; });
     case "canonicalFingerprintPayload": return attempt(() => { const output = canonicalFingerprintPayload(value()); return { ok: true, output, sha256: sha256Utf8(output) }; });
     case "canonicalJsonV1": return attempt(() => { const output = canonicalJsonV1(value()); return { ok: true, output, utf8ByteLength: new TextEncoder().encode(output).byteLength }; });
     case "recordFingerprintPayload": return attempt(() => {
       // JSON input is the whole record; js-only input is placed under state.nested of a fixed record.
-      const record = "json" in input ? JSON.parse(input.json) : { ...BASE_RECORD, state: { nested: buildJsOnlyValue((input as { js: string }).js) } };
+      const record = "json" in input ? parseJsonExact(input.json) as RecordFingerprintInput : { ...BASE_RECORD, state: { nested: buildJsOnlyValue((input as { js: string }).js) } };
       const payload = recordFingerprintPayload(record);
       return { ok: true, payload, fingerprint: sha256Utf8(payload) };
     });

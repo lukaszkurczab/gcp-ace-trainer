@@ -63,7 +63,7 @@ jobs:
           printf 'Current web QA input: %s\n' "$web_sha"
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.13.1
+          node-version: 24.21.0
           cache: npm
           cache-dependency-path: |
             app/package-lock.json
@@ -159,7 +159,7 @@ jobs:
           printf 'sha=%s\n' "$current_content_sha" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.13.1
+          node-version: 24.21.0
           cache: npm
           cache-dependency-path: |
             app/package-lock.json

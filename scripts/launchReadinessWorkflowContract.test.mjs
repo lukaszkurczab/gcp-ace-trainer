@@ -133,7 +133,7 @@ function assertIntegrityContract(source) {
 }
 
 function assertToolingContract(source) {
-  assert.match(source, /node-version: 22\.13\.1/u);
+  assert.match(source, /node-version: 24\.21\.0/u);
   for (const { path } of inputs) assert.match(source, new RegExp(`^            ${escapeRegExp(path)}\/package-lock\\.json$`, "mu"));
   const java = stepBlock(source, "Set up Java 21 for backend emulator gate");
   assert.match(java, /uses: actions\/setup-java@v4/u);
@@ -368,7 +368,7 @@ test("mutations of every exact-head or clean-worktree assertion fail closed", ()
 });
 
 test("mutations of toolchain and every npm ci owning gate fail closed", () => {
-  assert.throws(() => assertWorkflowContract(replaceOnce(workflow, "node-version: 22.13.1", "node-version: 20")));
+  assert.throws(() => assertWorkflowContract(replaceOnce(workflow, "node-version: 24.21.0", "node-version: 20")));
   assert.throws(() => assertWorkflowContract(replaceOnce(workflow, "distribution: temurin", "distribution: zulu")));
   assert.throws(() => assertWorkflowContract(replaceOnce(workflow, "java-version: \"21\"", "java-version: \"17\"")));
   assert.throws(() => assertWorkflowContract(replaceOnce(workflow, "npm install --global firebase-tools", "npm install --global other-cli")));

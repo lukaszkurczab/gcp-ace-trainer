@@ -3,7 +3,8 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { canonicalFingerprintPayload, canonicalJsonV1, canonicalJsonV1ByteLength, canonicalSerialize } from "./canonicalSerialization";
-import { recordFingerprintPayload, accountDataRecordFingerprint } from "./recordFingerprint";
+import { parseJsonExact } from "./exactJson";
+import { recordFingerprintPayload, accountDataRecordFingerprint, type RecordFingerprintInput } from "./recordFingerprint";
 import { sha256Utf8 } from "./sha256";
 import { sha256Utf8 as infrastructureSha256Utf8 } from "../../infrastructure/identity/sha256";
 import { parseCanonicalRecordEnvelope } from "../../storage/repositories/canonicalRecordCodec";
@@ -61,7 +62,7 @@ function jsOnly(tag: string): unknown {
 }
 
 function value(vector: Vector): unknown {
-  if (vector.input.json !== undefined) return JSON.parse(vector.input.json);
+  if (vector.input.json !== undefined) return parseJsonExact(vector.input.json);
   if (vector.input.js !== undefined) return jsOnly(vector.input.js);
   throw new Error(`${vector.id}: no value input`);
 }
@@ -76,7 +77,7 @@ function run(vector: Vector): Record<string, unknown> {
     case "canonicalFingerprintPayload": { const output = canonicalFingerprintPayload(value(vector)); return { output, sha256: sha256Utf8(output) }; }
     case "canonicalJsonV1": { const v = value(vector); const output = canonicalJsonV1(v); return { output, utf8ByteLength: canonicalJsonV1ByteLength(v) }; }
     case "recordFingerprintPayload": {
-      const record = vector.input.json !== undefined ? JSON.parse(vector.input.json) : { ...BASE_RECORD, state: { nested: jsOnly(vector.input.js!) } };
+      const record = vector.input.json !== undefined ? parseJsonExact(vector.input.json) as RecordFingerprintInput : { ...BASE_RECORD, state: { nested: jsOnly(vector.input.js!) } };
       const payload = recordFingerprintPayload(record);
       return { payload, fingerprint: accountDataRecordFingerprint(record) };
     }
