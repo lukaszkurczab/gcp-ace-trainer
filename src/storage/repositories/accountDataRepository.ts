@@ -1406,6 +1406,8 @@ function orderCurrentActiveTrackLast<T extends Readonly<{ recordType: string; tr
   return [...records.filter((record) => record.recordType !== "active_track"), ...records.filter((record) => record.recordType === "active_track" && record.trackId !== current.trackId), ...records.filter((record) => record.recordType === "active_track" && record.trackId === current.trackId)];
 }
 
+const yieldToEventLoop = () => new Promise<void>((resolve) => { setTimeout(resolve, 0); });
+
 export async function applyRemoteAccountData(records: readonly AccountDataRecord[], context: LearningDataAdmissionContext, options: Readonly<{ preserveLocalContext?: boolean }> = {}): Promise<void> {
   assertTrainingEvidenceIntegrity(context.trackAdmission);
   assertValidAccountDataRecords(records, context);
@@ -1440,9 +1442,14 @@ export async function applyRemoteAccountData(records: readonly AccountDataRecord
       attempts.push(record.state);
     }
   }
+  // Yield between families so a large apply does not hold the JS thread in
+  // one stretch; callers hold the local learning write lane throughout.
+  await yieldToEventLoop();
   await saveTerminalTrainingSessionsBatch(sessions, context.trackAdmission);
   for (const result of results) await saveTrainingSessionResult(result, context.trackAdmission);
+  await yieldToEventLoop();
   if (attempts.length > 0) await addTrainingAttemptsBatch(attempts, context.trackAdmission);
+  await yieldToEventLoop();
   const reviews: ReviewQueueEntry[] = [];
   for (const record of records.filter((candidate) => candidate.recordType === "review_queue_entry" && !isDeletedAccountDataRecord(candidate))) {
     if (!isReviewQueueEntry(record.state, context.trackAdmission)) throw new AccountDataFailure("account_data_review_invalid");

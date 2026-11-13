@@ -825,9 +825,12 @@ async function materializeRemoteAccountData(accountId: string, records: readonly
 }
 
 async function materializeRemoteAccountDataUnlocked(accountId: string, records: readonly RemoteAccountDataRecord[], remoteAccountRevision: number, discardGuest: boolean, generation = 0): Promise<AccountDataSession> {
+  await yieldToEventLoop();
   const partition = await partitionRemoteAccountDataForRecovery({ accountId, generation, records });
   const localRecords = partition.records;
+  await yieldToEventLoop();
   const snapshot = await buildAccountDataSnapshot();
+  await yieldToEventLoop();
   if (snapshot.activeSession) throw new AccountDataFailure("active_session_adoption_blocked");
   if (snapshot.pendingJournal) throw new AccountDataFailure("journal_recovery_required");
   if (discardGuest) {
@@ -839,6 +842,7 @@ async function materializeRemoteAccountDataUnlocked(accountId: string, records: 
     await assertMaterializationGuards(accountId);
   }
   await applyRemoteAccountData(localRecords);
+  await yieldToEventLoop();
   await assertMaterializationGuards(accountId);
   await bindGuestInstallationToAccount(accountId);
   const finished = await finishAccountMaterialization(localRecords, accountId, remoteAccountRevision, nowIso(), partition.incident);
