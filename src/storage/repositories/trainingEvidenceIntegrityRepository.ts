@@ -2,7 +2,9 @@ import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessio
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { CanonicalEvidenceIntegrityError } from "../errors";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
-import { readCanonicalEnvelope, readCanonicalNamespaceKeys, type CanonicalRecordEnvelope } from "./canonicalRecordCodec";
+import { parseCanonicalRecordEnvelope, readCanonicalEnvelope, readCanonicalNamespaceKeys, readCanonicalRawValue, type CanonicalRecordEnvelope } from "./canonicalRecordCodec";
+import { UnsupportedStoredRecordError } from "../errors";
+import { captureActiveProfileStorageLease, getKeyValueStorage, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionResult } from "./trainingModelGuards";
 import type { StorageRepositoryResult } from "./result";
 import type { TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
@@ -50,13 +52,87 @@ function samePersistedPayload(left: unknown, right: unknown): boolean {
   }
 }
 
+/**
+ * T2.1 (D5): a strict family read still fetches every stored value and checks
+ * every index/key rule on each call. Only the JSON parse and record guard of
+ * bytes identical to an earlier accepted read on the same storage owner and
+ * admission context are reused; their payload is frozen so it cannot drift
+ * from those bytes. Track admission is re-evaluated on every reuse.
+ * Command paths only: `assertTrainingEvidenceIntegrity` (opening-storage,
+ * account recovery, reset, export) always validates every byte and clears the memo.
+ * Kill-switch: EXPO_PUBLIC_PATTERNLY_PERF_OPT_JOURNAL_CACHE=0.
+ */
+const EVIDENCE_MEMO_ENABLED_BY_ENV = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_JOURNAL_CACHE !== "0";
+/** Upper bound of retained stored text (UTF-16 units); above it the memo is dropped, never trimmed partially. */
+const EVIDENCE_MEMO_MAX_CHARS = 6_000_000;
+let evidenceMemoOverride: boolean | null = null;
+type MemoEntry = Readonly<{ raw: string; envelope: CanonicalRecordEnvelope<unknown> }>;
+type EvidenceMemo = { storage: object; lease: string; admission: object; entries: Map<string, MemoEntry>; chars: number };
+let evidenceMemo: EvidenceMemo | null = null;
+const evidenceMemoCounters = { hits: 0, misses: 0, clears: 0 };
+/** Tests only. `null` returns to the environment setting. */
+export function setTrainingEvidenceMemoEnabledForTests(enabled: boolean | null): void { evidenceMemoOverride = enabled; clearTrainingEvidenceMemo(); }
+export function readTrainingEvidenceMemoCountersForTests(): Readonly<typeof evidenceMemoCounters> { return { ...evidenceMemoCounters }; }
+export function resetTrainingEvidenceMemoCountersForTests(): void { evidenceMemoCounters.hits = 0; evidenceMemoCounters.misses = 0; evidenceMemoCounters.clears = 0; }
+/** Drops every reused parse. Full-integrity, recovery and profile transitions start from bytes alone. */
+export function clearTrainingEvidenceMemo(): void { if (evidenceMemo) evidenceMemoCounters.clears += 1; evidenceMemo = null; }
+
+function deepFreeze<T>(value: T): T {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const child of Object.values(value)) deepFreeze(child);
+  }
+  return value;
+}
+function leaseKey(): string | null {
+  const lease = captureActiveProfileStorageLease();
+  return lease ? JSON.stringify([lease.profile.id, lease.profile.kind, lease.profile.accountId, lease.generation]) : null;
+}
+/** The memo is bound to one storage owner, one profile lease (profile, actor, generation) and one admission context. */
+function memoFor(admission: object): EvidenceMemo | null {
+  if (!(evidenceMemoOverride ?? EVIDENCE_MEMO_ENABLED_BY_ENV)) return null;
+  const storage = getKeyValueStorage();
+  const lease = leaseKey();
+  if (lease === null && !(storage instanceof MemoryKeyValueStorage)) { clearTrainingEvidenceMemo(); return null; }
+  const key = lease ?? "unprofiled-test-storage";
+  if (!evidenceMemo || evidenceMemo.storage !== storage || evidenceMemo.lease !== key || evidenceMemo.admission !== admission) {
+    clearTrainingEvidenceMemo();
+    evidenceMemo = { storage, lease: key, admission, entries: new Map(), chars: 0 };
+  }
+  return evidenceMemo;
+}
+/** Same result and errors as `readCanonicalEnvelope(key, guard)`; identical bytes skip parse and guard. */
+function readEvidenceEnvelope<T>(key: string, guard: (value: unknown) => value is T, admission: TrackAdmissionContext, trackIdOf: ((value: T) => string) | null, useMemo: boolean): CanonicalRecordEnvelope<T> | null {
+  const memo = useMemo ? memoFor(admission) : null;
+  if (!memo) return readCanonicalEnvelope(key, guard);
+  const raw = readCanonicalRawValue(key);
+  const cached = memo.entries.get(key);
+  if (raw === undefined) { if (cached) { memo.entries.delete(key); memo.chars -= cached.raw.length; } return null; }
+  if (cached && cached.raw === raw) {
+    const payload = cached.envelope.payload as T;
+    if (!trackIdOf || admission.isAdmittedTrackId(trackIdOf(payload))) { evidenceMemoCounters.hits += 1; return cached.envelope as CanonicalRecordEnvelope<T>; }
+  }
+  evidenceMemoCounters.misses += 1;
+  if (cached) { memo.entries.delete(key); memo.chars -= cached.raw.length; }
+  const envelope = parseCanonicalRecordEnvelope(raw, key);
+  if (!envelope || !guard(envelope.payload)) throw new UnsupportedStoredRecordError(key);
+  const frozen = deepFreeze(envelope) as CanonicalRecordEnvelope<T>;
+  // Keeps a reference to the string storage already returned; no second copy.
+  memo.entries.set(key, Object.freeze({ raw, envelope: frozen }));
+  memo.chars += raw.length;
+  if (memo.chars > EVIDENCE_MEMO_MAX_CHARS) clearTrainingEvidenceMemo();
+  return frozen;
+}
+const trackIdOfEvidence = (value: { trackId: string }) => value.trackId;
+
 function readIndexedFamily<T extends EvidenceValue>(
   family: FamilySpec<T>,
   namespaceKeys: readonly string[],
   admission: TrackAdmissionContext,
   allowedUnindexed: ReadonlyMap<string, unknown> = new Map(),
+  useMemo = true,
 ): IndexedSnapshot<T> {
-  const indexEnvelope = readCanonicalEnvelope(family.indexKey, isIds);
+  const indexEnvelope = readEvidenceEnvelope(family.indexKey, isIds, admission, null, useMemo);
   const ids = indexEnvelope?.payload ?? [];
   if (new Set(ids).size !== ids.length) integrityFailure();
 
@@ -67,7 +143,7 @@ function readIndexedFamily<T extends EvidenceValue>(
   for (const id of ids) {
     const key = family.keyFor(id);
     if (!physicalKeys.has(key)) integrityFailure();
-    const envelope = readCanonicalEnvelope(key, (value): value is T => family.guard(value, admission));
+    const envelope = readEvidenceEnvelope(key, (value): value is T => family.guard(value, admission), admission, trackIdOfEvidence, useMemo);
     if (!envelope || family.getId(envelope.payload) !== id) integrityFailure();
     values.push(envelope.payload);
     revisions[id] = envelope.revision;
@@ -77,7 +153,7 @@ function readIndexedFamily<T extends EvidenceValue>(
     const id = key.slice(family.recordPrefix.length);
     if (!id.trim() || family.keyFor(id) !== key) integrityFailure();
     if (indexedIds.has(id)) continue;
-    const envelope = readCanonicalEnvelope(key, (value): value is T => family.guard(value, admission));
+    const envelope = readEvidenceEnvelope(key, (value): value is T => family.guard(value, admission), admission, trackIdOfEvidence, useMemo);
     const expected = allowedUnindexed.get(key);
     if (!envelope || expected === undefined || !samePersistedPayload(envelope.payload, expected)
       || family.getId(envelope.payload) !== id) integrityFailure();
@@ -88,13 +164,13 @@ function readIndexedFamily<T extends EvidenceValue>(
   return Object.freeze({ values: Object.freeze(values), revisions: Object.freeze(revisions), indexRevision: indexEnvelope?.revision ?? null });
 }
 
-function readResultRecords(namespaceKeys: readonly string[], admission: TrackAdmissionContext): readonly TrainingSessionResult[] {
+function readResultRecords(namespaceKeys: readonly string[], admission: TrackAdmissionContext, useMemo = true): readonly TrainingSessionResult[] {
   const results: TrainingSessionResult[] = [];
   const seenSessionIds = new Set<string>();
   for (const key of namespaceKeys.filter((candidate) => candidate.startsWith(resultPrefix))) {
     const sessionId = key.slice(resultPrefix.length);
     if (!sessionId.trim() || STORAGE_KEYS.trainingSessionResult(sessionId) !== key || seenSessionIds.has(sessionId)) integrityFailure();
-    const envelope = readCanonicalEnvelope(key, (value): value is TrainingSessionResult => isTrainingSessionResult(value, admission));
+    const envelope = readEvidenceEnvelope(key, (value): value is TrainingSessionResult => isTrainingSessionResult(value, admission), admission, trackIdOfEvidence, useMemo);
     if (!envelope || envelope.payload.sessionId !== sessionId) integrityFailure();
     seenSessionIds.add(sessionId);
     results.push(envelope.payload);
@@ -137,26 +213,32 @@ export function readReviewQueueForJournal(targets: readonly ReviewQueueEntry[], 
   return readIndexedFamily(reviewFamily, readCanonicalNamespaceKeys(), admission, allowed).values;
 }
 
-/** Fresh full evidence read, including result ownership; never cached across verification boundaries. */
-export function readTrainingEvidenceSnapshotStrict(admission: TrackAdmissionContext): Readonly<{
+/** Fresh full evidence read, including result ownership: every stored byte is re-read on each call (only identical bytes reuse their parse). */
+export function readTrainingEvidenceSnapshotStrict(admission: TrackAdmissionContext, useMemo = true): Readonly<{
   sessions: readonly TrainingSession[];
   attempts: readonly TrainingAttempt<unknown>[];
   reviews: readonly ReviewQueueEntry[];
 }> {
   const keys = readCanonicalNamespaceKeys();
-  const sessions = readIndexedFamily(sessionFamily, keys, admission).values;
-  const attempts = readIndexedFamily(attemptFamily, keys, admission).values;
-  const reviews = readIndexedFamily(reviewFamily, keys, admission).values;
+  const sessions = readIndexedFamily(sessionFamily, keys, admission, undefined, useMemo).values;
+  const attempts = readIndexedFamily(attemptFamily, keys, admission, undefined, useMemo).values;
+  const reviews = readIndexedFamily(reviewFamily, keys, admission, undefined, useMemo).values;
   const sessionsById = new Map(sessions.map((session) => [session.id, session]));
-  for (const result of readResultRecords(keys, admission)) {
+  for (const result of readResultRecords(keys, admission, useMemo)) {
     const session = sessionsById.get(result.sessionId);
     if (!session || session.status !== "completed" || session.trackId !== result.trackId) integrityFailure();
   }
   return Object.freeze({ sessions, attempts, reviews });
 }
 
-/** Full post-replay/account-materialization gate, including result ownership. */
+/** Full post-replay/account-materialization gate, including result ownership. Never uses the memo (D5). */
 export function assertTrainingEvidenceIntegrity(admission: TrackAdmissionContext): void {
+  clearTrainingEvidenceMemo();
+  readTrainingEvidenceSnapshotStrict(admission, false);
+}
+
+/** The same gate for a new local learning command; identical bytes reuse their accepted parse (T2.1). */
+export function assertTrainingEvidenceIntegrityForCommand(admission: TrackAdmissionContext): void {
   readTrainingEvidenceSnapshotStrict(admission);
 }
 

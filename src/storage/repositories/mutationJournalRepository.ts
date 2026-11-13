@@ -18,7 +18,7 @@ import { isForegroundTimerState } from "./trainingModelGuards";
 import { getReviewQueueItems } from "./reviewQueueRepository";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
 import { isAccountSyncStateShape, isCanonicalAccountSyncState, type AccountSyncState } from "./accountDataRepository";
-import { assertTrainingEvidenceIntegrity } from "./trainingEvidenceIntegrityRepository";
+import { assertTrainingEvidenceIntegrityForCommand } from "./trainingEvidenceIntegrityRepository";
 import { assertContentIdentityRecordIntegrity } from "./contentIdentityUnavailableRepository";
 import { assertLearningStateResetPlanBeforeJournal, isLearningStateResetTargetPlan, type LearningStateResetTargetPlan } from "./learningStateResetRepository";
 
@@ -957,7 +957,7 @@ export async function persistMutationJournal(record: MutationJournalRecord, cont
         if (reset?.kind !== "clear_learning_state") throw new Error("A learning-state reset requires one exact target plan.");
         assertLearningStateResetPlanBeforeJournal(reset.targetPlan, context.trackAdmission);
       } else {
-        assertTrainingEvidenceIntegrity(context.trackAdmission);
+        assertTrainingEvidenceIntegrityForCommand(context.trackAdmission);
         assertContentIdentityRecordIntegrity();
       }
       const staleTarget = record.expectedRevisions.find((condition) => revisionForTarget(condition.target) !== condition.revision)?.target;

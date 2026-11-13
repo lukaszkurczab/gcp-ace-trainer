@@ -5,10 +5,13 @@ import { verifyMutation } from "./mutationVerifier";
 import { MutationCommitFailure } from "../mutationBoundary";
 import { assertLearningStateResetMaterialized } from "../../storage/repositories/learningStateResetRepository";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+import { clearTrainingEvidenceMemo } from "../../storage/repositories/trainingEvidenceIntegrityRepository";
 
 /** Replays only the durable phase that remains.  The immutable journal plan is
  * deliberately reused so retry never creates new attempts, reviews or results. */
 export async function recoverPendingMutation(): Promise<void> {
+  // Recovery starts from stored bytes alone (D5, T2.1).
+  clearTrainingEvidenceMemo();
   let record = await getActiveMutationJournal(productionLearningDataAdmissionContext);
   if (!record) return;
   if (record.status === "journal_durable") {
