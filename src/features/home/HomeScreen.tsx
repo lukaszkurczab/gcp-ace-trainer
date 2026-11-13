@@ -9,6 +9,10 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
+import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame } from "../../application/bootstrap/parallelBoot";
+import { isSha256Utf8Accelerated } from "../../domain/identity/sha256";
+import { computeTodayStoreRevision, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "./todaySnapshot";
+import contentTrustManifest from "../../content/generated/content-trust-manifest.json";
 
 import {
   AppShellHeader,
@@ -83,7 +87,7 @@ import { projectHomePractice, type HomePracticeProjection } from "../../applicat
 import { projectProgressEvidence, type ProgressEvidenceModel } from "../../application/learningPlan/progressReadProjection";
 import { isLocalLearningProjectionFailure, requireHomePlanReadIntegrity } from "../../application/learningProjectionFailure";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import { useHomeResumeUnavailable } from "../../content/application/ContentPreparationGate";
+import { captureTodaySnapshotStore, useHomeResumeUnavailable } from "../../content/application/ContentPreparationGate";
 
 
 type HomeScreenProps = NativeStackScreenProps<
@@ -108,6 +112,33 @@ type ShellData = {
 };
 
 type HomeShellTab = Exclude<ShellTab, "practice">;
+
+/** T2.3: the projected part of the shell, reused while the learning store is unchanged. */
+type TodayProjectionData = Pick<ShellData, "activityRecords" | "algorithmsDashboard" | "algorithmsDashboardError" | "homePractice" | "capturedAt" | "progressEvidence" | "progressEvidenceError" | "goal" | "goalOnboardingDismissed" | "homePlan">;
+
+const CONTENT_BUILD_KEY = `${(contentTrustManifest as { lockSha?: unknown }).lockSha ?? ""}:${(contentTrustManifest as { ledgerSha?: unknown }).ledgerSha ?? ""}`;
+
+/**
+ * Revision and owner of the current Today inputs, or null when the snapshot is
+ * off or the active profile cannot be read (the shell then computes as before).
+ */
+function readTodaySnapshotKey(trackId: string | null, premiumAccess: string): Readonly<{ revision: string; owner: TodaySnapshotOwner; storage: TodaySnapshotStorage }> | null {
+  // The revision hashes every Today input as stored (~1–2 MB at 1 000 attempts):
+  // only with the native B0 digest; the JS reference SHA-256 would cost more than the projections.
+  if (!isParallelBootEnabled() || !isSha256Utf8Accelerated()) return null;
+  try {
+    const store = captureTodaySnapshotStore();
+    if (!store) return null;
+    const { profile, storage } = store;
+    return {
+      revision: computeTodayStoreRevision(storage),
+      owner: { profileKey: `${profile.kind}:${profile.id}:${profile.accountId ?? ""}|premium:${premiumAccess}|content:${CONTENT_BUILD_KEY}`, trackId },
+      storage,
+    };
+  } catch {
+    return null;
+  }
+}
 
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const styles = useThemedStyles(createStyles);
@@ -136,6 +167,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [shellReload, setShellReload] = useState(0);
   const [shellReadError, setShellReadError] = useState<string | null>(null);
   const shellReadReady = useRef(false);
+  // T2.3: the next shell read recomputes projections instead of reusing a snapshot.
+  const forceShellComputeRef = useRef(false);
   // SLA trace only: Today must be marked visible after this focus's own shell read.
   const slaTodayPending = useRef(false);
   // SLA trace only: this focus's shell read started after a backend sync of this launch.
@@ -201,57 +234,75 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           const savedTrackId = await getActiveTrackId();
           const assertCurrentSources = captureHomeShellReadFence(savedTrackId);
           const readNow = getApplicationCurrentTime();
+          // T2.3: projections are reused for an unchanged learning store (same
+          // revision, profile, track, premium access and content build).
+          const snapshotKey = readTodaySnapshotKey(savedTrackId ?? null, accountRef.current.readCurrentPremiumAccess());
+          const forceCompute = forceShellComputeRef.current;
+          forceShellComputeRef.current = false;
+          const reused = snapshotKey && !forceCompute
+            ? readTodaySnapshot<TodayProjectionData>({ revision: snapshotKey.revision, owner: snapshotKey.owner, nowMs: Date.parse(readNow), storage: snapshotKey.storage })
+            : null;
           const trainingAttemptsRead = getTrainingAttempts();
           const [
             activeSession,
             reviewQueueItemsResult,
             trainingAttemptsResult,
-            activityRecords,
-            homePlan,
           ] = await Promise.all([
             loadActiveTrainingSession(),
             getReviewQueueItems(),
             trainingAttemptsRead,
-            loadActivitySessionRecords({ getAttempts: () => trainingAttemptsRead }),
-            savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: readNow, premiumAccess: accountRef.current.readCurrentPremiumAccess() }) : Promise.resolve(null),
           ]);
-          requireHomePlanReadIntegrity(homePlan);
-          // T2.0: projections over a large history are split by event-loop
-          // yields so no single stretch blocks the JS thread; the profile and
-          // source fences below are re-checked before the result is committed.
-          await yieldToEventLoop();
-          const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
-          let goalOnboardingDismissed = true;
-          if (savedTrackId) {
-            try { goalOnboardingDismissed = loadGoalOnboardingDismissed(savedTrackId); }
-            catch { goalOnboardingDismissed = true; }
-          }
-          let algorithmsDashboard: CodingInterviewDashboard | null = null;
-          let algorithmsDashboardError: string | null = null;
-          if (savedTrackId === CODING_INTERVIEW_TRACK_ID) {
-            try { algorithmsDashboard = await loadCodingInterviewDashboard({ attempts: trainingAttemptsResult.value, reviews: reviewQueueItemsResult.value, activeSession, now: readNow }); }
-            catch (error) {
-              if (!isLocalLearningProjectionFailure(error)) throw error;
-              algorithmsDashboardError = describeOperationalFailure(error, "Coding Interview recommendation is unavailable.");
+          let projected: TodayProjectionData;
+          if (reused) {
+            projected = reused.snapshot.data;
+          } else {
+            const [activityRecords, homePlan] = await Promise.all([
+              loadActivitySessionRecords({ getAttempts: () => trainingAttemptsRead }),
+              savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: readNow, premiumAccess: accountRef.current.readCurrentPremiumAccess() }) : Promise.resolve(null),
+            ]);
+            requireHomePlanReadIntegrity(homePlan);
+            // T2.0: projections over a large history are split by event-loop
+            // yields so no single stretch blocks the JS thread; the profile and
+            // source fences below are re-checked before the result is committed.
+            await yieldToEventLoop();
+            const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
+            let goalOnboardingDismissed = true;
+            if (savedTrackId) {
+              try { goalOnboardingDismissed = loadGoalOnboardingDismissed(savedTrackId); }
+              catch { goalOnboardingDismissed = true; }
             }
-          }
+            let algorithmsDashboard: CodingInterviewDashboard | null = null;
+            let algorithmsDashboardError: string | null = null;
+            if (savedTrackId === CODING_INTERVIEW_TRACK_ID) {
+              try { algorithmsDashboard = await loadCodingInterviewDashboard({ attempts: trainingAttemptsResult.value, reviews: reviewQueueItemsResult.value, activeSession, now: readNow }); }
+              catch (error) {
+                if (!isLocalLearningProjectionFailure(error)) throw error;
+                algorithmsDashboardError = describeOperationalFailure(error, "Coding Interview recommendation is unavailable.");
+              }
+            }
 
-          await yieldToEventLoop();
-          let homePractice: HomePracticeProjection | null = null;
-          if (savedTrackId) {
-            try { homePractice = projectHomePractice({ trackId: savedTrackId, attempts: trainingAttemptsResult.value, reviews: reviewQueueItemsResult.value, activeSession, homePlan, now: readNow }); }
-            catch (error) { if (!isLocalLearningProjectionFailure(error)) throw error; homePractice = { kind: "unavailable" }; }
-          }
-          await yieldToEventLoop();
-          let progressEvidence: ProgressEvidenceModel | null = null;
-          let progressEvidenceError: string | null = null;
-          if (savedTrackId) {
-            try { progressEvidence = projectProgressEvidence({ activeTrackId: savedTrackId, activityRecords, trainingAttempts: trainingAttemptsResult.value, reviewQueueItems: reviewQueueItemsResult.value, now: readNow }); }
-            catch (error) {
-              if (!isLocalLearningProjectionFailure(error)) throw error;
-              progressEvidenceError = "Progress is unavailable";
+            await yieldToEventLoop();
+            let homePractice: HomePracticeProjection | null = null;
+            if (savedTrackId) {
+              try { homePractice = projectHomePractice({ trackId: savedTrackId, attempts: trainingAttemptsResult.value, reviews: reviewQueueItemsResult.value, activeSession, homePlan, now: readNow }); }
+              catch (error) { if (!isLocalLearningProjectionFailure(error)) throw error; homePractice = { kind: "unavailable" }; }
             }
+            await yieldToEventLoop();
+            let progressEvidence: ProgressEvidenceModel | null = null;
+            let progressEvidenceError: string | null = null;
+            if (savedTrackId) {
+              try { progressEvidence = projectProgressEvidence({ activeTrackId: savedTrackId, activityRecords, trainingAttempts: trainingAttemptsResult.value, reviewQueueItems: reviewQueueItemsResult.value, now: readNow }); }
+              catch (error) {
+                if (!isLocalLearningProjectionFailure(error)) throw error;
+                progressEvidenceError = "Progress is unavailable";
+              }
+            }
+            projected = { activityRecords, algorithmsDashboard, algorithmsDashboardError, homePractice, capturedAt: readNow, progressEvidence, progressEvidenceError, goal, goalOnboardingDismissed, homePlan };
           }
+          const {
+            activityRecords, algorithmsDashboard, algorithmsDashboardError, homePractice,
+            progressEvidence, progressEvidenceError, goal, goalOnboardingDismissed, homePlan,
+          } = projected;
           if (isActive) {
             assertCurrentProfile();
             assertCurrentSources();
@@ -263,7 +314,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               algorithmsDashboardError,
               activeSession,
               homePractice,
-              capturedAt: readNow,
+              capturedAt: projected.capturedAt,
               progressEvidence,
               progressEvidenceError,
               goal,
@@ -274,6 +325,22 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             });
             setHasLoadedActiveTrack(true);
             shellReadReady.current = true;
+            if (snapshotKey && !reused) {
+              const computed = projected;
+              setTimeout(() => {
+                if (!isActive) return;
+                try { assertCurrentProfile(); assertCurrentSources(); } catch { return; }
+                writeTodaySnapshot({ revision: snapshotKey.revision, owner: snapshotKey.owner, capturedAt: computed.capturedAt ?? readNow, data: computed, storage: snapshotKey.storage });
+              }, 0);
+            } else if (reused && !reused.fresh) {
+              // Stale-while-revalidate: clock-dependent parts are recomputed
+              // after this frame; the reused projection stays on screen meanwhile.
+              setTimeout(() => {
+                if (!isActive) return;
+                forceShellComputeRef.current = true;
+                setShellReload((reload) => reload + 1);
+              }, 0);
+            }
           }
         } catch (error) {
           if (isActive) {
@@ -316,6 +383,15 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   useEffect(() => {
     if (hasLoadedActiveTrack && !shellReadError) markStartup("home_data_commit");
   }, [hasLoadedActiveTrack, shellReadError]);
+
+  // T2.3: deferred start work (online revalidation, sync) waits for the first
+  // committed Today (or its error/onboarding surface), whether or not tracing is on.
+  useLayoutEffect(() => {
+    if (!hasLoadedActiveTrack || hasStartupFirstUsableFrame()) return;
+    try {
+      globalThis.requestAnimationFrame(() => notifyStartupFirstUsableFrame());
+    } catch { notifyStartupFirstUsableFrame(); }
+  }, [hasLoadedActiveTrack]);
 
   // S1a/S1b/S4 (Plan §1): the frame that shows Today with this focus's committed shell read.
   useLayoutEffect(() => {

@@ -13,6 +13,7 @@ import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
 import { readAccountPremiumTestingAccess, readGuestPremiumTestingAccess } from "./premiumTestingAccess";
 import { markStartup, markStartupAt, startupTraceNow } from "../../infrastructure/diagnostics/startupTrace";
+import { createStartupRevalidation, readStartupRevalidationPending, settleStartupRevalidation, whenStartupFirstUsableFrame } from "../bootstrap/parallelBoot";
 import { ACCOUNT_SYNC_INDICATOR_DELAY_MS, createAccountSyncScheduler, deferAccountSyncUntilIdle, isSyncOnFinalizeEnabled, registerAccountSyncScheduler, setAccountSyncActivity, subscribeAppBackground } from "./accountSyncSchedule";
 import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
 import { getRetiredAccountSecretsCleanup, type RetiredAccountSecretsCleanupState } from "../../infrastructure/security/retiredAccountSecrets";
@@ -641,6 +642,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const sessionExchangeUidRef = useRef<string | null>(null);
   const pendingSessionRevocationDrainRef = useRef<ReturnType<typeof createPendingSessionRevocationDrain> | null>(null);
   const legalAcceptancePendingRef = useRef(false);
+  const startupRevalidationActiveRef = useRef<Readonly<{ uid: string; accountId: string }> | null>(null);
   const registrationIntentRef = useRef<Readonly<{ uid: string; promise: Promise<AccountCommandResult> }> | null>(null);
   const providerAuthenticationInFlightRef = useRef(false);
   const providerRegistrationInFlightRef = useRef(false);
@@ -894,13 +896,20 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
               }
               return { kind: "continue", value: { accountId: response.user.id, pendingDeletion } };
             },
-            loadAccountData: async (verified, guestAdoption) => ({
-              kind: "continue" as const,
-              value: verified.pendingDeletion ?? await loadAccountDataSession(api, verified.accountId, {
+            loadAccountData: async (verified, guestAdoption) => {
+              const accountData = verified.pendingDeletion ?? await loadAccountDataSession(api, verified.accountId, {
                 guestAdoption,
                 canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
-              }),
-            }),
+              });
+              // T2.3: a transient failure of the deferred startup sync keeps the
+              // local session on Today; a later reconnect refresh retries it.
+              const startup = startupRevalidationActiveRef.current;
+              if (startup && startup.uid === user.uid && startup.accountId === verified.accountId
+                && !verified.pendingDeletion && isTransientStartupSyncFailure(accountData)) {
+                return { kind: "return" as const, outcome: { result: { kind: "failure" as const, failure: accountData.lastFailureCode === "offline" ? "offline" as const : "backendUnavailable" as const } } };
+              }
+              return { kind: "continue" as const, value: accountData };
+            },
             shouldReconcileReminders: (accountData) => accountData.status === "synced",
             reconcileReminders: reconcileMaterializedAccountReminders,
             finish: (response, _verified, accountData) => {
@@ -3095,7 +3104,60 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     };
   }, []);
 
-  return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
+  // T2.3: a local-first start (`localOffline` before `/me`) is revalidated
+  // online once, after the first usable frame. The sidecar's initial refresh
+  // joins the same deferred attempt instead of running before Today.
+  const refreshAccountIdentityNowRef = useRef(value.refreshAccountIdentity);
+  refreshAccountIdentityNowRef.current = value.refreshAccountIdentity;
+  const startupRevalidationRef = useRef<(() => Promise<AccountCommandResult>) | null>(null);
+  if (!startupRevalidationRef.current) {
+    let indicator: ReturnType<typeof setTimeout> | null = null;
+    startupRevalidationRef.current = createStartupRevalidation<AccountCommandResult>({
+      readOwner: readStartupRevalidationPending,
+      readLocalActor: () => {
+        const live = stateRef.current;
+        return live.kind === "localOffline" ? { uid: live.user.uid, accountId: live.accountId } : null;
+      },
+      waitForFirstFrame: () => whenStartupFirstUsableFrame().promise,
+      refreshNow: () => refreshAccountIdentityNowRef.current(),
+      superseded: () => ({ kind: "failure", failure: "revokedSession" }),
+      onActive: (owner) => {
+        startupRevalidationActiveRef.current = owner;
+        if (indicator !== null) clearTimeout(indicator);
+        indicator = null;
+        // Freshness indicator on Today while the startup sync revalidates the local copy.
+        if (owner) indicator = setTimeout(() => setAccountSyncActivity(true), ACCOUNT_SYNC_INDICATOR_DELAY_MS);
+        else setAccountSyncActivity(false);
+      },
+      settle: settleStartupRevalidation,
+    });
+  }
+  const refreshAccountIdentity = useCallback((): Promise<AccountCommandResult> => startupRevalidationRef.current!(), []);
+  const startupRevalidationUid = state.kind === "localOffline" ? state.user.uid : null;
+  const startupRevalidationAccountId = state.kind === "localOffline" ? state.accountId : null;
+  useEffect(() => {
+    if (!startupRevalidationUid || !startupRevalidationAccountId) return;
+    const owner = readStartupRevalidationPending();
+    if (!owner || owner.uid !== startupRevalidationUid || owner.accountId !== startupRevalidationAccountId) return;
+    void refreshAccountIdentity();
+  }, [refreshAccountIdentity, startupRevalidationAccountId, startupRevalidationUid]);
+  const contextValue = useMemo<AccountSessionContextValue>(() => ({ ...value, refreshAccountIdentity }), [refreshAccountIdentity, value]);
+
+  return <AccountSessionContext.Provider value={contextValue}>{children}</AccountSessionContext.Provider>;
+}
+
+const TRANSIENT_STARTUP_SYNC_FAILURE_CODES: ReadonlySet<string> = new Set(["offline", "remoteFailure", "local_dataset_changed_during_sync"]);
+
+/**
+ * T2.3: sync outcomes that leave a local-first start on Today instead of the
+ * account screens: a network or server failure, or a local commit during the
+ * sync. Conflicts, guards, previews and identity denials still surface.
+ */
+export function isTransientStartupSyncFailure(accountData: AccountDataSession): boolean {
+  return (accountData.status === "offlinePending" || accountData.status === "failed")
+    && accountData.lastFailureCode !== null && TRANSIENT_STARTUP_SYNC_FAILURE_CODES.has(accountData.lastFailureCode)
+    && accountData.blockingConflictCode === null && !accountData.syncConflict
+    && !accountData.activeSessionBlocked && accountData.preview === null;
 }
 
 export function usePatternlyAccount(): AccountSessionContextValue {

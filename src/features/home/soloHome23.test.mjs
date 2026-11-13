@@ -28,6 +28,11 @@ function shell(overrides = {}) {
     useLayoutEffect: hooks.bindings.useEffect, SLA_TRACE: false,
     // T1.3 sync indicator: no background sync in these shell tests.
     useAccountSyncActivity: () => false,
+    // T2.3: no Today snapshot in these shell tests (projections always computed).
+    hasStartupFirstUsableFrame: () => true, notifyStartupFirstUsableFrame: () => {},
+    readTodaySnapshotKey: () => null, readTodaySnapshot: () => null, writeTodaySnapshot: () => {},
+    // T2.0 cooperative slices and timers (the extracted subject has no module scope).
+    createCooperativeSlice: () => async () => {}, setTimeout, clearTimeout,
     getSettingsAccountPresentation, getTrackDisplay, isHomeSnapshotOwnerCurrent, runtimeSelectors, ROUTES,
     CODING_INTERVIEW_TRACK_ID: 'coding-interview-dsa-problem-solving',
     getActiveTrackId: async () => shellTrackId,
@@ -317,4 +322,69 @@ test('successful background materialization refreshes Home; failures and unchang
   assert.equal(networkCalls, 1, 'the settled follow-up pending check does not start another network sync');
   assert.equal(reads, 2, 'a no-op retry cannot cause another reload');
   ui.unmount();
+});
+
+// T2.3: Today projections reused for an unchanged learning store (stale-while-revalidate).
+function snapshotData(overrides = {}) {
+  return {
+    activityRecords: [], algorithmsDashboard: null, algorithmsDashboardError: null,
+    homePractice: { kind: 'snapshot' }, capturedAt: '2026-10-15T09:00:00Z',
+    progressEvidence: { capturedAt: '2026-10-15T09:00:00Z' }, progressEvidenceError: null,
+    goal: null, goalOnboardingDismissed: true, homePlan: null, ...overrides,
+  };
+}
+
+test('a matching Today snapshot is shown without recomputing projections; a fresh one is not revalidated', async () => {
+  let projections = 0, writes = 0;
+  const key = { revision: 'r1', owner: { profileKey: 'p', trackId: 'aws-certified-solutions-architect-associate' }, storage: {} };
+  const ui = shell({
+    readTodaySnapshotKey: () => key,
+    readTodaySnapshot: input => (input.revision === 'r1' ? { snapshot: { data: snapshotData() }, source: 'persisted', fresh: true } : null),
+    writeTodaySnapshot: () => { writes++; },
+    projectHomePractice: () => { projections++; return { kind: 'computed' }; },
+    homePlanSnapshotReader: { read: async () => { projections++; return null; } },
+  });
+  ui.render('home'); await settle(); await settle();
+  const home = nodes(ui.render('home')).find(node => node.type === 'HomeTab');
+  assert.ok(home);
+  assert.deepEqual(home.props.homePractice, { kind: 'snapshot' });
+  assert.equal(home.props.capturedAt, '2026-10-15T09:00:00Z', 'the snapshot keeps its own capture time');
+  assert.equal(projections, 0);
+  assert.equal(writes, 0);
+});
+
+test('a stale Today snapshot is shown, then recomputed and replaced (stale-while-revalidate)', async () => {
+  let projections = 0;
+  const written = [];
+  const key = { revision: 'r1', owner: { profileKey: 'p', trackId: 'aws-certified-solutions-architect-associate' }, storage: {} };
+  const ui = shell({
+    readTodaySnapshotKey: () => key,
+    readTodaySnapshot: () => ({ snapshot: { data: snapshotData() }, source: 'persisted', fresh: false }),
+    writeTodaySnapshot: input => { written.push(input); },
+    projectHomePractice: () => { projections++; return { kind: 'computed' }; },
+  });
+  ui.render('home'); await settle();
+  assert.deepEqual(nodes(ui.render('home')).find(node => node.type === 'HomeTab').props.homePractice, { kind: 'snapshot' });
+  for (let i = 0; i < 4; i++) { ui.render('home'); await new Promise(resolve => setTimeout(resolve, 5)); await settle(); }
+  const home = nodes(ui.render('home')).find(node => node.type === 'HomeTab');
+  assert.deepEqual(home.props.homePractice, { kind: 'computed' }, 'the recomputed projection replaces the snapshot');
+  assert.equal(home.props.capturedAt, '2026-10-15T10:00:00Z');
+  assert.equal(projections, 1);
+  assert.equal(written.length, 1);
+  assert.equal(written[0].revision, 'r1');
+  assert.deepEqual(written[0].data.homePractice, { kind: 'computed' });
+});
+
+test('without a snapshot key (kill-switch, no native digest) the shell computes as before and writes nothing', async () => {
+  let projections = 0, writes = 0;
+  const ui = shell({
+    readTodaySnapshotKey: () => null,
+    readTodaySnapshot: () => { throw new Error('not read without a key'); },
+    writeTodaySnapshot: () => { writes++; },
+    projectHomePractice: () => { projections++; return { kind: 'computed' }; },
+  });
+  ui.render('home'); await settle(); await settle();
+  assert.deepEqual(nodes(ui.render('home')).find(node => node.type === 'HomeTab').props.homePractice, { kind: 'computed' });
+  assert.equal(projections, 1);
+  assert.equal(writes, 0);
 });

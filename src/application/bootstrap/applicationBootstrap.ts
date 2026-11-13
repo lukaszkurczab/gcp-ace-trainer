@@ -41,14 +41,16 @@ import { CanonicalEvidenceIntegrityError } from "../../storage/errors";
  * the account copy (the families are cleared and a re-pull is marked) instead
  * of blocking every later start. Any other inconsistency still fails.
  */
-async function assertTrainingEvidenceIntegrityOrRecover(): Promise<void> {
+async function assertTrainingEvidenceIntegrityOrRecover(): Promise<"verified" | "recovered"> {
   try {
     assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
+    return "verified";
   } catch (error) {
     if (!(error instanceof CanonicalEvidenceIntegrityError)) throw error;
     if (await recoverInterruptedAccountMaterialization(productionLearningDataAdmissionContext) !== "recovered") throw error;
     markStartup("repository:interrupted_materialization_recovered");
     assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
+    return "recovered";
   }
 }
 
@@ -62,6 +64,14 @@ export type ApplicationBootstrapDependencies = Readonly<{
   repositories?: CanonicalRepositoryBootstrapDependencies;
   diagnosticObserver?: BootstrapDiagnosticObserver;
   recoveryStepObserver?: BootstrapRecoveryStepObserver;
+  /**
+   * T2.3: true when the lifecycle preparation (account completion included)
+   * wrote no learning data, e.g. a local-first or guest start. The evidence
+   * integrity proven while opening storage then still holds, and the repeated
+   * full check after recovery is skipped. Asked only when no journal was
+   * pending and nothing was recovered.
+   */
+  lifecyclePreparationWroteNoLearningData?: () => boolean;
 }>;
 
 export { ApplicationBootstrapStage } from "../operationalDiagnostics";
@@ -131,8 +141,9 @@ async function bootstrapApplicationCore(
       if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
       assertLearningStateResetReplayState(reset.targetPlan);
     } else if (pendingJournal) assertTrainingEvidenceJournalPreflight(pendingJournal, productionTrackAdmissionContext);
-    else {
-      await assertTrainingEvidenceIntegrityOrRecover();
+    let openingIntegrity: "verified" | "recovered" | null = null;
+    if (!pendingJournal) {
+      openingIntegrity = await assertTrainingEvidenceIntegrityOrRecover();
       assertContentIdentityRecordIntegrity();
     }
     // On a fresh profile, create metadata/identity only after proving the
@@ -164,8 +175,12 @@ async function bootstrapApplicationCore(
       // Test-only/headless bootstrap has no lifecycle composition to install.
       await recoverPendingMutation();
     }
-    assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
-    assertContentIdentityRecordIntegrity();
+    const integrityStillProven = openingIntegrity === "verified" && prepareLifecycle !== undefined
+      && readPreparationWroteNoLearningData(dependencies) && (await getActiveMutationJournal(productionLearningDataAdmissionContext)) === null;
+    if (!integrityStillProven) {
+      assertTrainingEvidenceIntegrity(productionTrackAdmissionContext);
+      assertContentIdentityRecordIntegrity();
+    }
     if (pendingJournal) await finishCanonicalRepositories(instrumentedRepositoryDependencies);
     const unavailableActive = (await getUnavailableActiveRecords()).value;
     if (unavailableActive.length > 0) {
@@ -251,6 +266,11 @@ async function bootstrapApplicationCore(
     // bootstrap settles, even a non-throwing unavailable result ends that attempt.
     reportRecoveryStep(null);
   }
+}
+
+function readPreparationWroteNoLearningData(dependencies: ApplicationBootstrapDependencies): boolean {
+  try { return dependencies.lifecyclePreparationWroteNoLearningData?.() === true; }
+  catch { return false; }
 }
 
 function sameExactIdentity(identity: ExactArtifactIdentity, session: TrainingSession): boolean {

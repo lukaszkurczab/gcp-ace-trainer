@@ -1,6 +1,6 @@
 import "./infrastructure/identity/installNativeSha256";
 import { NavigationContainer } from "@react-navigation/native";
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -17,8 +17,18 @@ import { ProfileTransitionSurface } from "./content/application/startupPreparati
 import { Q13StorageReceiptHost } from "./application/runtimeAuditability/Q13StorageReceiptHost";
 import { AndroidClockProbeHost } from "./application/runtimeAuditability/AndroidClockProbeHost";
 import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfileTransition } from "./storage/repositories/profileStorageRepository";
+import { isParallelBootEnabled, startBundledContentPrefetch } from "./application/bootstrap/parallelBoot";
+import { contentPackageRuntimeOwner } from "./application/contentPackageRuntimeOwner";
 
 export default function RegularApplicationRoot() {
+  // T2.3: verify bundled content while profile storage, auth and the account
+  // bootstrap wait on native I/O and the network. Child effects (storage
+  // preparation, auth setup) have already started when this one runs.
+  useEffect(() => {
+    if (!isParallelBootEnabled()) return;
+    const handle = setTimeout(() => { void startBundledContentPrefetch(() => contentPackageRuntimeOwner.verifyBundledPackages()); }, 0);
+    return () => clearTimeout(handle);
+  }, []);
   return (
     <SafeAreaProvider>
       <AppPreferencesProvider>

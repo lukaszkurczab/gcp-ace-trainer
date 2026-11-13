@@ -23,6 +23,7 @@ import { captureExactMissingActorAnchor, captureExactMissingActorFenceAtConfirma
 import { prepareLifecycleAfterProfileCompletion } from "./profilePreparationBarrier";
 import type { ProfilePreparationHandoffToken } from "../../application/account/profilePreparationHandoff";
 import { createContentPreparationAttempt, type ContentPreparationOutcome } from "./contentPreparationAttempt";
+import { armStartupFirstFrameFallback, isParallelBootEnabled, notifyStartupFirstUsableFrame, readStartupRevalidationPending } from "../../application/bootstrap/parallelBoot";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -61,6 +62,16 @@ type HomeResumeContextValue = Readonly<{
   clearIfSessionChanged: (activeSessionId: string | null) => void;
 }>;
 const HomeResumeContext = createContext<HomeResumeContextValue | null>(null);
+
+/**
+ * T2.3: the active profile and its store for Today's projection snapshot. Home
+ * reads storage through this boundary (it may not reach the MMKV client).
+ */
+export function captureTodaySnapshotStore(): Readonly<{ profile: Readonly<{ kind: string; id: string; accountId?: string | null }>; storage: ReturnType<typeof getKeyValueStorage> }> | null {
+  const lease = captureActiveProfileStorageLease();
+  if (!lease || !isActiveProfileStorageLeaseCurrent(lease)) return null;
+  return { profile: lease.profile, storage: getKeyValueStorage() };
+}
 
 export function useHomeResumeUnavailable(): HomeResumeContextValue | null {
   return useContext(HomeResumeContext);
@@ -104,7 +115,12 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
   }, []);
 
   useEffect(() => {
-    if (state.kind === "ready" || state.kind === "home_ready_resume_unavailable") markStartup("content_ready_commit");
+    if (state.kind === "ready" || state.kind === "home_ready_resume_unavailable") {
+      markStartup("content_ready_commit");
+      armStartupFirstFrameFallback();
+    }
+    // T2.3: a terminal startup surface is the first usable frame; deferred start work may run.
+    else if (state.kind !== "loading") notifyStartupFirstUsableFrame();
   }, [state.kind]);
 
   useEffect(() => {
@@ -200,6 +216,8 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
         () => {
           setPhase("verifying-content");
           return (async () => {
+            // T2.3: the catalog build started at root mount (parallel boot) is
+            // memoized, so the call below joins it, or repeats a failed build.
             const endBundledTrace = beginStartupSpan("bundled_materialization");
             try {
               unsubscribeVerification = contentPackageRuntimeOwner.subscribeBundledVerification({
@@ -257,7 +275,22 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
         },
         {
           diagnosticObserver: bootstrapProgress.observeFailure,
-          recoveryStepObserver: bootstrapProgress.observeStep,
+          // T2.3: a local-first account completion reads the local copy only (its
+          // sync is deferred past the first frame), so it writes no learning data.
+          lifecyclePreparationWroteNoLearningData: () => {
+            if (!isParallelBootEnabled()) return false;
+            const pending = readStartupRevalidationPending();
+            const profile = getActiveStorageProfileOrNull();
+            return pending !== null && activeHandoffToken !== null && pending.handoff === activeHandoffToken
+              && profile?.kind === "account" && profile.accountId === pending.accountId
+              && lease !== null && isActiveProfileStorageLeaseCurrent(lease);
+          },
+          // T2.3: the recovery steps are the unmarked gap between `account:complete`
+          // and `verifying-content` (G1: 190–310 ms); trace them in every traced build.
+          recoveryStepObserver: (step) => {
+            if (isCurrent()) markStartup(`recovery:${step ?? "idle"}`);
+            bootstrapProgress.observeStep(step);
+          },
         },
       );
     })().then((result) => {

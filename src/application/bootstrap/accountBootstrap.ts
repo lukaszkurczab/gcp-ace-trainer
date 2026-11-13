@@ -18,6 +18,9 @@ import { getMeWithExchangedSession } from "../account/accountSessionExchange";
 import { accountFinalizationPolicies, type AccountFinalizationOptions } from "../account/accountFinalization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { prepareRevenueCatAccountDeletion } from "../../infrastructure/purchases";
+import { getAccountSyncState } from "../../storage/repositories/accountDataRepository";
+import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+import { isParallelBootEnabled, markStartupRevalidationPending } from "./parallelBoot";
 
 type Ref<T> = { current: T };
 type BootstrapCommonPorts = Readonly<{
@@ -245,6 +248,26 @@ export async function prepareAuthenticatedAccountBootstrap(
       preparedSelection = (await inspectPreparedProfileState()).selectedProfile;
       if (!canContinue()) throw new AccountSessionGenerationStaleError();
       attempt.profile = preparedSelection;
+      // T2.3: a bound account starts from its local copy; `/me` and the sync
+      // run after the first usable frame through the local-offline refresh.
+      if (isParallelBootEnabled() && preparedSelection?.kind === "account" && preparedSelection.accountId
+        && !findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid)
+        && !findMatchingLocalLogoutBlock(logoutControlSnapshotRef.current, user.uid)
+        && !legalAcceptancePendingRef.current) {
+        if (!canContinue()) throw new AccountSessionGenerationStaleError();
+        setAccountEntryMode("login");
+        const local = await activateLocalAccountScope(ports, attempt, auth, user, preparedSelection, canContinue, startupDiagnostic, isLocalFirstAccountStartEligible);
+        if (local) {
+          markStartupRevalidationPending({ uid: user.uid, accountId: preparedSelection.accountId, handoff: local.handoffToken });
+          return local;
+        }
+        if (!canContinue()) throw new AccountSessionGenerationStaleError();
+        // Not eligible after all: continue with the online start below.
+        await prepareProfileStorage();
+        preparedSelection = (await inspectPreparedProfileState()).selectedProfile;
+        if (!canContinue()) throw new AccountSessionGenerationStaleError();
+        attempt.profile = preparedSelection;
+      }
       diagnosticStage = "account_binding_barrier";
       proofBarrier = await beginIdentityProofBarrier(auth, user, generation, true);
     }
@@ -376,42 +399,8 @@ export async function prepareAuthenticatedAccountBootstrap(
       && !legalAcceptancePendingRef.current) {
       const profile = preparedSelection;
       if (profile?.kind === "account" && profile.accountId) {
-        try {
-          const preparedBinding = await readPreparedAccountIdentityBinding(profile.id);
-          if (preparedBinding.kind === "verified" && preparedBinding.binding.profileId === profile.id
-            && preparedBinding.binding.profileKind === profile.kind && preparedBinding.binding.accountId === profile.accountId
-            && preparedBinding.binding.firebaseUid === user.uid && canContinue()) {
-            activatePreparedProfile(profile.id, profile.kind, { deferReadyNotification: true });
-            const lease = captureActiveProfileStorageLease();
-            if (!lease || lease.profile.id !== profile.id || lease.profile.kind !== profile.kind || lease.profile.accountId !== profile.accountId) {
-              throw new Error("local_account_scope_unavailable");
-            }
-            const activeBinding = await readActiveAccountIdentityBinding(lease);
-            const accountData = await readLocalAccountDataSession(profile.accountId);
-            const signOutMarker = getAccountSignOutState();
-            const deletionMarker = getAccountDeletionState();
-            const scopedLogoutPending = signOutMarker?.accountId === profile.accountId;
-            const deletionPending = deletionMarker !== null
-              && (deletionMarker.accountId === profile.accountId || deletionMarker.accountUidHash === sha256Utf8(user.uid));
-            if (!canContinue() || auth.getSnapshot()?.uid !== user.uid || !isActiveProfileStorageLeaseCurrent(lease)
-              || activeBinding.kind !== "verified" || activeBinding.binding.checksum !== preparedBinding.binding.checksum
-              || accountData === null || scopedLogoutPending || deletionPending) {
-              throw new Error("local_account_scope_unavailable");
-            }
-            attempt.kind = "localOffline";
-            attempt.profile = profile;
-            attempt.localOffline = Object.freeze({ accountId: profile.accountId, bindingRevision: activeBinding.binding.verificationRevision, profileLease: lease });
-            profilePreparationRef.current = attempt;
-            notifyProfileStorageReady();
-            attempt.handoffReady = true;
-            setState({ kind: "profilePreparing", profile });
-            startupDiagnostic?.pending("profile_preparing", "profilePreparing");
-            return attempt;
-          }
-        } catch {
-          const activeProfile = getActiveStorageProfileOrNull();
-          if (activeProfile?.id === profile.id) closeActiveProfileStorage();
-        }
+        const local = await activateLocalAccountScope(ports, attempt, auth, user, profile, canContinue, startupDiagnostic);
+        if (local) return local;
       }
     }
     if (ownsPreparation && canContinue()) {
@@ -423,6 +412,85 @@ export async function prepareAuthenticatedAccountBootstrap(
     resolveCompletion(attempt.bootstrapFailure);
     return attempt;
   }
+}
+
+/**
+ * T2.3: the local-first start is admitted only for a steady, already bound
+ * account copy. Anything that the online start resolves on its own screen
+ * (adoption, materialization, reset, sync conflict, identity denial) keeps the
+ * online start.
+ */
+export async function isLocalFirstAccountStartEligible(accountId: string): Promise<boolean> {
+  try {
+    const state = await getAccountSyncState(productionLearningDataAdmissionContext);
+    return state.accountId === accountId
+      && (state.status === "synced" || state.status === "offlinePending")
+      && !state.syncConflict && state.blockingConflictCode === null
+      && state.materialization === null && state.pendingConfirmation === null && state.resetGuard === null;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Activates the prepared account profile from its verified local binding and
+ * publishes `profilePreparing` for a `localOffline` completion. Used when the
+ * backend is unreachable at start and, with T2.3, before `/me` for a steady
+ * bound account. Returns null (storage closed again) when any fence fails.
+ */
+async function activateLocalAccountScope(
+  ports: AccountBootstrapPreparationPorts,
+  attempt: ProfilePreparationAttempt,
+  auth: FirebaseAuthClient,
+  user: FirebaseAuthUserSnapshot,
+  profile: StorageProfile,
+  canContinue: () => boolean,
+  startupDiagnostic?: AccountStartupDiagnosticWriter,
+  /** Read after activation, under the same lease (the sync state lives in the profile). */
+  isEligible?: (accountId: string) => Promise<boolean>,
+): Promise<ProfilePreparationAttempt | null> {
+  const { profilePreparationRef, setState } = ports;
+  if (profile.kind !== "account" || !profile.accountId) return null;
+  try {
+    const preparedBinding = await readPreparedAccountIdentityBinding(profile.id);
+    if (preparedBinding.kind === "verified" && preparedBinding.binding.profileId === profile.id
+      && preparedBinding.binding.profileKind === profile.kind && preparedBinding.binding.accountId === profile.accountId
+      && preparedBinding.binding.firebaseUid === user.uid && canContinue()) {
+      activatePreparedProfile(profile.id, profile.kind, { deferReadyNotification: true });
+      const lease = captureActiveProfileStorageLease();
+      if (!lease || lease.profile.id !== profile.id || lease.profile.kind !== profile.kind || lease.profile.accountId !== profile.accountId) {
+        throw new Error("local_account_scope_unavailable");
+      }
+      const activeBinding = await readActiveAccountIdentityBinding(lease);
+      const accountData = await readLocalAccountDataSession(profile.accountId);
+      const signOutMarker = getAccountSignOutState();
+      const deletionMarker = getAccountDeletionState();
+      const scopedLogoutPending = signOutMarker?.accountId === profile.accountId;
+      const deletionPending = deletionMarker !== null
+        && (deletionMarker.accountId === profile.accountId || deletionMarker.accountUidHash === sha256Utf8(user.uid));
+      if (!canContinue() || auth.getSnapshot()?.uid !== user.uid || !isActiveProfileStorageLeaseCurrent(lease)
+        || activeBinding.kind !== "verified" || activeBinding.binding.checksum !== preparedBinding.binding.checksum
+        || accountData === null || scopedLogoutPending || deletionPending) {
+        throw new Error("local_account_scope_unavailable");
+      }
+      if (isEligible && (!await isEligible(profile.accountId) || !canContinue() || !isActiveProfileStorageLeaseCurrent(lease))) {
+        throw new Error("local_first_start_not_eligible");
+      }
+      attempt.kind = "localOffline";
+      attempt.profile = profile;
+      attempt.localOffline = Object.freeze({ accountId: profile.accountId, bindingRevision: activeBinding.binding.verificationRevision, profileLease: lease });
+      profilePreparationRef.current = attempt;
+      notifyProfileStorageReady();
+      attempt.handoffReady = true;
+      setState({ kind: "profilePreparing", profile });
+      startupDiagnostic?.pending("profile_preparing", "profilePreparing");
+      return attempt;
+    }
+  } catch {
+    const activeProfile = getActiveStorageProfileOrNull();
+    if (activeProfile?.id === profile.id) closeActiveProfileStorage();
+  }
+  return null;
 }
 
 export function completeAccountBootstrap(ports: AccountBootstrapCompletionPorts, token: ProfilePreparationHandoffToken): Promise<void> {
