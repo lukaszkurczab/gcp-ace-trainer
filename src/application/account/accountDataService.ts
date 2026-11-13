@@ -73,6 +73,8 @@ import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
 import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
+// Lets timers, rendering and the startup gate run between the linear phases of a large sync.
+import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 import { commitLearningStateReset, preflightLearningStateReset, LearningStateResetPreflightError } from "../learningMutations";
 import type { TrackId } from "../../domain";
@@ -112,8 +114,6 @@ const markGuestDiscardMaterializationPending = (accountId: string, installationI
 const markGuestDiscardMaterializationApplying = (accountId: string) => markGuestDiscardMaterializationApplyingWithPolicy(accountId, productionLearningDataAdmissionContext);
 const readAccountDataSyncGuardFlags = () => readAccountDataSyncGuardFlagsWithPolicy(productionLearningDataAdmissionContext);
 const markAccountRemoteApplyPending = (accountId: string) => markAccountRemoteApplyPendingWithPolicy(accountId, productionLearningDataAdmissionContext);
-/** Lets timers, rendering and the startup gate run between the linear phases of a sync. */
-const yieldToEventLoop = () => new Promise<void>((resolve) => { setTimeout(resolve, 0); });
 const applyRemoteAccountData = (records: readonly AccountDataRecord[], options?: Readonly<{ preserveLocalContext?: boolean }>) => applyRemoteAccountDataWithPolicy(records, productionLearningDataAdmissionContext, options);
 const finishAccountMaterialization = (records: readonly AccountDataRecord[], accountId: string, remoteRevision: number, syncedAt: string, recovery?: LearningPlanRecoveryIncident | null) => finishAccountMaterializationWithPolicy(records, accountId, remoteRevision, syncedAt, productionLearningDataAdmissionContext, recovery);
 function assertValidAccountDataRecords(records: unknown): asserts records is readonly AccountDataRecord[] { assertValidAccountDataRecordsWithPolicy(records, productionLearningDataAdmissionContext); }
@@ -825,6 +825,7 @@ async function materializeRemoteAccountData(accountId: string, records: readonly
 }
 
 async function materializeRemoteAccountDataUnlocked(accountId: string, records: readonly RemoteAccountDataRecord[], remoteAccountRevision: number, discardGuest: boolean, generation = 0): Promise<AccountDataSession> {
+  const yieldToEventLoop = createCooperativeSlice();
   await yieldToEventLoop();
   const partition = await partitionRemoteAccountDataForRecovery({ accountId, generation, records });
   const localRecords = partition.records;
@@ -1173,6 +1174,7 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
 }
 
 async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession> {
+  const yieldToEventLoop = createCooperativeSlice();
   let state = await getAccountSyncState();
   if (state.accountId === accountId && isPersistedIdentityDenial(state.lastFailureCode)) return failureSession(state, false);
   if (state.accountId === accountId && state.syncConflict) return failureSession(state, false);

@@ -9,6 +9,7 @@ import { accountDataRecordFingerprint } from "../../domain/identity/recordFinger
 import { SYNCABLE_RECORD_TYPES, type SyncableRecordType } from "../../domain/account/accountDataRecordIdentity";
 import { applyActiveForegroundTimerRaw, captureActiveProfileStorageLease, pauseActiveForegroundClock, getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
+import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
 import { CANONICAL_RECORD_SCHEMA, readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, restoreCanonicalEnvelopeUnlocked, withCanonicalWriteLocks, writeCanonicalJson, writeCanonicalJsonUnlocked } from "./canonicalRecordCodec";
 import { getGuestInstallation } from "./guestInstallationRepository";
 import { getActiveMutationJournal } from "./mutationJournalRepository";
@@ -1406,9 +1407,8 @@ function orderCurrentActiveTrackLast<T extends Readonly<{ recordType: string; tr
   return [...records.filter((record) => record.recordType !== "active_track"), ...records.filter((record) => record.recordType === "active_track" && record.trackId !== current.trackId), ...records.filter((record) => record.recordType === "active_track" && record.trackId === current.trackId)];
 }
 
-const yieldToEventLoop = () => new Promise<void>((resolve) => { setTimeout(resolve, 0); });
-
 export async function applyRemoteAccountData(records: readonly AccountDataRecord[], context: LearningDataAdmissionContext, options: Readonly<{ preserveLocalContext?: boolean }> = {}): Promise<void> {
+  const yieldToEventLoop = createCooperativeSlice();
   assertTrainingEvidenceIntegrity(context.trackAdmission);
   assertValidAccountDataRecords(records, context);
   if (await getActiveTrainingSessionId()) throw new AccountDataFailure("active_session_adoption_blocked");

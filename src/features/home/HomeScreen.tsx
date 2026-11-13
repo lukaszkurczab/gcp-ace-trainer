@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
+import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
 
 import {
   AppShellHeader,
@@ -108,8 +109,6 @@ type ShellData = {
 
 type HomeShellTab = Exclude<ShellTab, "practice">;
 
-const yieldToEventLoop = () => new Promise<void>((resolve) => { setTimeout(resolve, 0); });
-
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
@@ -188,6 +187,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
 
       async function loadShellData() {
         try {
+          const yieldToEventLoop = createCooperativeSlice();
           const assertCurrentProfile = captureProfileReadFence();
           const ownerScope = readLearningPlanStorageScope();
           const accountState = accountRef.current.state;
