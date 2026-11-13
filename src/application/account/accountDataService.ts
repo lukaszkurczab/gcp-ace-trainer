@@ -1315,6 +1315,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
       if (!isBoundStorageScopeCurrent(baseline!)) return Object.freeze({ kind: "scope_changed" as const });
       const downloadGuard = await readBoundSyncGuard(accountId);
       if (downloadGuard) return Object.freeze({ kind: "blocked" as const, guard: downloadGuard });
+      await yieldToEventLoop();
       const installation = await getGuestInstallation();
       if (!installation
         || installation.installationId !== baseline!.installationId
@@ -1328,6 +1329,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         return Object.freeze({ kind: "local_changed" as const, session: failureSession(pending, false) });
       }
       const latestSnapshot = await buildAccountDataSnapshot();
+      await yieldToEventLoop();
       latestState = await getAccountSyncState();
       // The post-upload snapshot captured any expected version changes from
       // exact ACKs. From here, compare that version again after materialization
@@ -1370,6 +1372,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         await applyRemoteAccountData(partition.records);
         await assertBoundSyncIdentity(baseline!);
       }
+      await yieldToEventLoop();
       const stateBeforeFinish = await getAccountSyncState();
       if (stateBeforeFinish.accountId !== accountId || stateBeforeFinish.localDatasetVersion !== materializationDatasetVersion) {
         return Object.freeze({ kind: "scope_changed" as const });
