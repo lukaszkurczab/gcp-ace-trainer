@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import test, { afterEach, beforeEach } from "node:test";
 
 import { bootstrapApplication } from "../bootstrap/applicationBootstrap";
@@ -10,7 +11,7 @@ import type { PatternlyApiClient, ProgressMutationDto, ProgressRecordDto } from 
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../../storage/keys";
 import { initializeStorageMetadata } from "../../storage/repositories/storageMetadataRepository";
-import { bindGuestInstallationToAccount, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
+import { bindGuestInstallationToAccount, clearGuestAccountBinding, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 import { addTrainingAttempt } from "../../storage/repositories/trainingAttemptRepository";
 import { saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
 import { saveTrainingSessionResult } from "../../storage/repositories/trainingSessionResultRepository";
@@ -95,16 +96,40 @@ class FakeAccountBackend {
         return JSON.parse(JSON.stringify({ accountRevision: input.expectedAccountRevision + applied.length, applied, duplicates: [], conflicts: [] }));
       },
       getProgress: async () => {
-        this.getCalls += 1;
-        const hook = this.beforeGet;
-        this.beforeGet = null;
-        if (hook) await hook();
-        return JSON.parse(JSON.stringify({ accountRevision: this.records.length + this.revisionOffset, records: this.records }));
+        const read = await this.read(null);
+        assert.equal(read.kind, "full");
+        return read.progress;
       },
+      getProgressSnapshot: (knownSnapshot: string | null) => this.read(knownSnapshot),
     } as Record<string, unknown>, { get: (target, key) => (key in target ? target[key as string] : unused) }) as unknown as PatternlyApiClient;
   }
   /** Another device's write: the account copy changes without this device. */
   revisionOffset = 0;
+  /** T3.3a: server metadata rewrites at the same revision move the token too. */
+  metadataEpoch = 0;
+  /** Distinguishes accounts: the server token is bound to the account. */
+  accountSalt = ACCOUNT_ID;
+  fullReads = 0;
+  unchangedReads = 0;
+  knownSnapshots: (string | null)[] = [];
+  token(): string {
+    return createHash("sha256").update(JSON.stringify({ account: this.accountSalt, revision: this.records.length + this.revisionOffset, epoch: this.metadataEpoch })).digest("hex");
+  }
+  private async read(knownSnapshot: string | null) {
+    this.getCalls += 1;
+    this.knownSnapshots.push(knownSnapshot);
+    const hook = this.beforeGet;
+    this.beforeGet = null;
+    if (hook) await hook();
+    const accountRevision = this.records.length + this.revisionOffset;
+    const snapshotToken = this.token();
+    if (knownSnapshot === snapshotToken) {
+      this.unchangedReads += 1;
+      return { kind: "unchanged" as const, accountRevision, generation: 0, snapshotToken };
+    }
+    this.fullReads += 1;
+    return { kind: "full" as const, progress: JSON.parse(JSON.stringify({ accountRevision, records: this.records })) as { accountRevision: number; records: ProgressRecordDto[] }, snapshotToken };
+  }
 }
 
 let storage: ObservedStorage;
@@ -419,5 +444,126 @@ test("a kill at any write of a quiz sync or of an unchanged start never breaks t
     assert.equal(loaded.status, "synced", `kill after write ${killAfter}: ${loaded.lastFailureCode}`);
     assert.deepEqual(await localRecordKeys(), remoteRecordKeys(backend), `kill after write ${killAfter}`);
     assert.equal(await unchangedStartTakesBaseline(backend), true, `kill after write ${killAfter}: the following start is unchanged`);
+  }
+});
+
+/*
+ * T3.3a: the baseline keeps the server's progress snapshot token, so a cold
+ * start with nothing changed is one conditional request with no download.
+ */
+
+function storedBaseline(): Record<string, unknown> { return JSON.parse(storage.getString(BASELINE_KEY)!) as Record<string, unknown>; }
+
+async function tokenStart(backend: FakeAccountBackend): Promise<Readonly<{ unchanged: number; full: number; sent: string | null | undefined }>> {
+  restart();
+  const unchanged = backend.unchangedReads;
+  const full = backend.fullReads;
+  const sentBefore = backend.knownSnapshots.length;
+  const session = await loadAccountDataSession(backend.api(), ACCOUNT_ID);
+  assert.equal(session.status, "synced", String(session.lastFailureCode));
+  return { unchanged: backend.unchangedReads - unchanged, full: backend.fullReads - full, sent: backend.knownSnapshots[sentBefore] };
+}
+
+test("T3.3a: an unchanged cold start sends the persisted token and downloads nothing", async () => {
+  const backend = await steadyAccount();
+  assert.equal(storedBaseline().remoteSnapshotToken, backend.token());
+  const before = await getAccountSyncState(context);
+  resetCounters();
+  assert.deepEqual(await tokenStart(backend), { unchanged: 1, full: 0, sent: backend.token() });
+  assert.equal(readSyncSnapshotPerfCountersForTests().recordProjections, 0);
+  const after = await getAccountSyncState(context);
+  assert.deepEqual({ ...after, lastSuccessfulSyncAt: null }, { ...before, lastSuccessfulSyncAt: null });
+  assert.notEqual(after.lastSuccessfulSyncAt, before.lastSuccessfulSyncAt);
+});
+
+test("T3.3a: a change from another device moves the token: full read, applied, then the new token", async () => {
+  const backend = await steadyAccount();
+  const oldToken = backend.token();
+  const current = storage;
+  install(new ObservedStorage());
+  await prepareBoundAccount();
+  await addHistory("other", 1, 30);
+  await retryAccountDataSync(backend.api(), ACCOUNT_ID);
+  install(current);
+  const first = await tokenStart(backend);
+  assert.equal(first.sent, oldToken);
+  assert.equal(first.unchanged, 0);
+  assert.ok(first.full >= 1);
+  assert.deepEqual(await localRecordKeys(), remoteRecordKeys(backend));
+  // The apply clears the baseline; the next full unchanged sync records the current token.
+  await tokenStart(backend);
+  assert.equal(storedBaseline().remoteSnapshotToken, backend.token());
+  assert.deepEqual(await tokenStart(backend), { unchanged: 1, full: 0, sent: backend.token() });
+});
+
+test("T3.3a: a token moved by a same-revision server rewrite is refreshed without a full sync", async () => {
+  const backend = await steadyAccount();
+  backend.metadataEpoch += 1;
+  const moved = await tokenStart(backend);
+  assert.deepEqual({ unchanged: moved.unchanged, full: moved.full }, { unchanged: 0, full: 1 });
+  assert.equal(storedBaseline().remoteSnapshotToken, backend.token(), "the digest-equal copy keeps the newer token");
+  assert.deepEqual(await tokenStart(backend), { unchanged: 1, full: 0, sent: backend.token() });
+});
+
+test("T3.3a: a damaged or foreign token never skips the download", async () => {
+  const backend = await steadyAccount();
+  // A well-formed token the server does not confirm: full read, compared by digest.
+  storage.setString(BASELINE_KEY, JSON.stringify({ ...storedBaseline(), remoteSnapshotToken: "f".repeat(64) }));
+  const wrong = await tokenStart(backend);
+  assert.deepEqual({ unchanged: wrong.unchanged, full: wrong.full, sent: wrong.sent }, { unchanged: 0, full: 1, sent: "f".repeat(64) });
+  assert.equal(storedBaseline().remoteSnapshotToken, backend.token());
+  // A malformed token invalidates the whole baseline: no conditional read at all.
+  storage.setString(BASELINE_KEY, JSON.stringify({ ...storedBaseline(), remoteSnapshotToken: "not-a-token" }));
+  const malformed = await tokenStart(backend);
+  assert.deepEqual({ unchanged: malformed.unchanged, sent: malformed.sent }, { unchanged: 0, sent: null });
+  assert.deepEqual(await localRecordKeys(), remoteRecordKeys(backend));
+  // A token the server confirms at another revision than the baseline is not trusted.
+  const baseline = storedBaseline();
+  storage.setString(BASELINE_KEY, JSON.stringify({ ...baseline, remoteSnapshotToken: backend.token() }));
+  backend.revisionOffset += 1;
+  const stale = await tokenStart(backend);
+  assert.equal(stale.unchanged, 0);
+  assert.deepEqual(await localRecordKeys(), remoteRecordKeys(backend));
+});
+
+test("T3.3a: sign-out or another account never sends this account's token", async () => {
+  const backend = await steadyAccount();
+  const token = backend.token();
+  restart();
+  await clearGuestAccountBinding();
+  const sent = backend.knownSnapshots.length;
+  const unchanged = backend.unchangedReads;
+  await loadAccountDataSession(backend.api(), ACCOUNT_ID).catch(() => null);
+  assert.equal(backend.unchangedReads, unchanged, "an unbound install never ends on the token");
+  assert.ok(!backend.knownSnapshots.slice(sent).includes(token));
+  const other = new FakeAccountBackend();
+  other.accountSalt = "another-account";
+  other.records = JSON.parse(JSON.stringify(backend.records)) as ProgressRecordDto[];
+  await bindGuestInstallationToAccount("acc-another-account").catch(() => undefined);
+  await loadAccountDataSession(other.api(), "acc-another-account").catch(() => null);
+  assert.equal(other.unchangedReads, 0);
+  assert.ok(!other.knownSnapshots.includes(token), "another account's start never carries this account's token");
+});
+
+test("T3.3a: a kill at any write of a token start never breaks the next start", async () => {
+  const backend = await steadyAccount(3);
+  restart();
+  const before = storage.clone();
+  storage.resetCounters();
+  assert.equal((await loadAccountDataSession(backend.api(), ACCOUNT_ID)).status, "synced");
+  const writes = storage.mutations.length;
+  assert.ok(writes > 0);
+  for (let killAfter = 0; killAfter < writes; killAfter += 1) {
+    const device = before.clone();
+    install(device);
+    device.killAfter = killAfter;
+    await loadAccountDataSession(backend.api(), ACCOUNT_ID).catch(() => undefined);
+    device.restart();
+    restart();
+    const boot = await bootstrapApplication(async () => undefined, async () => undefined);
+    assert.equal(boot.kind, "ready", `kill after write ${killAfter}/${writes}`);
+    assert.equal((await loadAccountDataSession(backend.api(), ACCOUNT_ID)).status, "synced", `kill after write ${killAfter}`);
+    assert.deepEqual(await localRecordKeys(), remoteRecordKeys(backend), `kill after write ${killAfter}`);
+    assert.deepEqual(await tokenStart(backend), { unchanged: 1, full: 0, sent: backend.token() }, `kill after write ${killAfter}: the following start uses the token`);
   }
 });

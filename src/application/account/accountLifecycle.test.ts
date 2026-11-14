@@ -71,6 +71,7 @@ function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
     getAdminContentReports: async () => ({ reports: [] }),
     transitionAdminContentReport: async () => { throw new Error("unused"); },
     ...overrides,
+    getProgressSnapshot: overrides.getProgressSnapshot ?? (async () => ({ kind: "full" as const, progress: await (overrides.getProgress ?? (async () => ({ accountRevision: 0, records: [] })))(), snapshotToken: null })),
   };
 }
 

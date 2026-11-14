@@ -35,7 +35,7 @@ export type StartupTraceStage =
   | "repository:interrupted_materialization_recovered"
   | "account_sync:unchanged" | "account_sync:applied"
   // T2.6: the unchanged sync ended on the recorded baseline (no snapshots).
-  | "account_sync:baseline"
+  | "account_sync:baseline" | "account_sync:snapshot_token"
   // T2.3: parallel start, deferred revalidation, repeated integrity pass, Today projection source.
   | "startup:local_first" | "startup_revalidation:start" | "startup_revalidation:end"
   | "evidence_integrity:repeated" | "evidence_integrity:skipped"

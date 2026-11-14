@@ -70,6 +70,7 @@ class FakeAccountBackend {
         return { accountRevision: input.expectedAccountRevision + applied.length, applied, duplicates: [], conflicts: [] };
       },
       getProgress: async () => ({ accountRevision: this.records.length, records: this.records }),
+      getProgressSnapshot: async () => ({ kind: "full", progress: { accountRevision: this.records.length, records: this.records }, snapshotToken: null }),
     } as Record<string, unknown>, { get: (target, key) => (key in target ? target[key as string] : unused) }) as unknown as PatternlyApiClient;
   }
 }

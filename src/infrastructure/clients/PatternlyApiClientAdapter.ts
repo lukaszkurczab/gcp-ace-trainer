@@ -1,5 +1,6 @@
 import { canonicalJsonV1 } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../domain/identity/sha256";
+import { getKeyValueStorage } from "../storage/mmkvClient";
 import { parseContentPackageDescriptor } from "./contentPackageDescriptor";
 import { isAccountWireState } from "../../domain/account/accountWireState";
 import { normalizeLegacyTerminalSessionRead } from "../../domain/account/terminalSessionWire";
@@ -238,6 +239,45 @@ function validateSyncRequest(value: unknown): value is SyncRequestDto {
 
 type ProgressSnapshotCache = Readonly<{ token: string | null; scope: string; revision: number; generation: number; serialized: string }>;
 
+/**
+ * T3.3a: the sweep cache survives a cold start. Header line (schema, API
+ * origin, validators, SHA-256 of the body) plus the serialized sweep, in the
+ * active profile's encrypted storage, outside the canonical namespace. It is
+ * only ever used after the server confirms its validator (`unchanged`), and a
+ * digest or header mismatch drops it. Writes are deferred and coalesced: a
+ * kill before the write leaves an older validator, which the server answers
+ * with a full read. The actor boundary removes it (sign-out, account switch).
+ */
+export const PROGRESS_SNAPSHOT_CACHE_KEY = "patternly:derived:v1:progress-snapshot-cache";
+const PROGRESS_SNAPSHOT_CACHE_SCHEMA = 1;
+const PROGRESS_SNAPSHOT_PERSIST_DELAY_MS = 1_000;
+let progressSnapshotPersistenceEnabled = true;
+
+/** Tests of the adapter alone can opt out; production always persists. */
+export function setProgressSnapshotPersistenceEnabledForTests(enabled: boolean): void { progressSnapshotPersistenceEnabled = enabled; }
+
+export function clearPersistedProgressSnapshot(storage?: Readonly<{ remove(key: string): void }> | null): void {
+  try { (storage ?? getKeyValueStorage()).remove(PROGRESS_SNAPSHOT_CACHE_KEY); } catch { /* storage closed: nothing to clear */ }
+}
+
+function encodePersistedProgressSnapshot(origin: string, cache: ProgressSnapshotCache): string {
+  return `${JSON.stringify({ schema: PROGRESS_SNAPSHOT_CACHE_SCHEMA, origin, token: cache.token, scope: cache.scope, revision: cache.revision, generation: cache.generation, digest: sha256Utf8(cache.serialized) })}\n${cache.serialized}`;
+}
+
+function decodePersistedProgressSnapshot(origin: string, raw: string): ProgressSnapshotCache | null {
+  const split = raw.indexOf("\n");
+  if (split < 0 || raw.length - split - 1 > MAX_PROGRESS_CACHE_CODE_UNITS) return null;
+  let header: unknown;
+  try { header = JSON.parse(raw.slice(0, split)); } catch { return null; }
+  if (!isPlainRecord(header) || !hasExactKeys(header, ["schema", "origin", "token", "scope", "revision", "generation", "digest"])
+    || header.schema !== PROGRESS_SNAPSHOT_CACHE_SCHEMA || header.origin !== origin
+    || !(header.token === null || isSha256(header.token)) || !isSha256(header.scope) || !isSha256(header.digest)
+    || !isFiniteNonNegativeInteger(header.revision) || !isFiniteNonNegativeInteger(header.generation)) return null;
+  const serialized = raw.slice(split + 1);
+  if (sha256Utf8(serialized) !== header.digest) return null;
+  return Object.freeze({ token: header.token as string | null, scope: header.scope as string, revision: header.revision as number, generation: header.generation as number, serialized });
+}
+
 /** Shared bounded cache serializer. Failure never replaces a valid full read or ACK. */
 function createProgressSnapshotSerializer() {
   let parts: string[] | null = [];
@@ -471,6 +511,14 @@ export type EntitlementsResponseDto = Readonly<{
   }>[];
 }>;
 export type ProgressResponseDto = Readonly<{ accountRevision: number; records: readonly ProgressRecordDto[]; nextPageToken?: string | null; generation?: number }>;
+/**
+ * T3.3a: a progress read with its server validator. `unchanged` only answers a
+ * caller-supplied `knownSnapshot` the server confirmed byte-for-byte; `full`
+ * carries the token of exactly that sweep (null on the older read contract).
+ */
+export type ProgressSnapshotReadDto =
+  | Readonly<{ kind: "unchanged"; accountRevision: number; generation: number; snapshotToken: string }>
+  | Readonly<{ kind: "full"; progress: ProgressResponseDto; snapshotToken: string | null }>;
 export type AccountDataExportDto = Readonly<{
   schemaVersion: "account-data-export-v1";
   exportId: string;
@@ -690,6 +738,7 @@ export type PatternlyApiClient = Readonly<{
   getPurchaseCases: (isCurrent?: () => boolean) => Promise<Readonly<{ items: readonly PurchaseCaseDto[]; truncated: boolean }>>;
   getEntitlements: (isCurrent?: () => boolean) => Promise<EntitlementsResponseDto>;
   getProgress: () => Promise<ProgressResponseDto>;
+  getProgressSnapshot: (knownSnapshot: string | null) => Promise<ProgressSnapshotReadDto>;
   exportAccountData: () => Promise<AccountDataExportDto>;
   createPrivacyRequest: (right: PrivacyRequestRightDto, narrative?: string) => Promise<Readonly<{ request: PrivacyRequestListItemDto }>>;
   getPrivacyRequests: () => Promise<Readonly<{ requests: readonly PrivacyRequestListItemDto[] }>>;
@@ -739,6 +788,39 @@ export function createPatternlyApiClient(input: Readonly<{
   // Keep one complete, server-validated sweep. Serialization isolates nested
   // state from consumers; this is disposable memory, never an offline source.
   let progressSnapshot: ProgressSnapshotCache | null = null;
+  let persistedSnapshotLoaded = false;
+  let persistTimer: ReturnType<typeof setTimeout> | null = null;
+  const persistenceOrigin = origin.origin;
+  function loadPersistedProgressSnapshot(): void {
+    if (persistedSnapshotLoaded) return;
+    persistedSnapshotLoaded = true;
+    if (!progressSnapshotPersistenceEnabled || progressSnapshot !== null) return;
+    try {
+      const raw = getKeyValueStorage().getString(PROGRESS_SNAPSHOT_CACHE_KEY);
+      if (raw === undefined) return;
+      progressSnapshot = decodePersistedProgressSnapshot(persistenceOrigin, raw);
+      if (progressSnapshot === null) clearPersistedProgressSnapshot();
+    } catch { progressSnapshot = null; }
+  }
+  function setProgressSnapshot(next: ProgressSnapshotCache | null): void {
+    if (next === progressSnapshot) return;
+    progressSnapshot = next;
+    if (!progressSnapshotPersistenceEnabled) return;
+    if (next === null) {
+      if (persistTimer !== null) { clearTimeout(persistTimer); persistTimer = null; }
+      clearPersistedProgressSnapshot();
+      return;
+    }
+    if (persistTimer !== null) return;
+    persistTimer = setTimeout(() => {
+      persistTimer = null;
+      const latest = progressSnapshot;
+      try {
+        if (latest === null) clearPersistedProgressSnapshot();
+        else getKeyValueStorage().setString(PROGRESS_SNAPSHOT_CACHE_KEY, encodePersistedProgressSnapshot(persistenceOrigin, latest));
+      } catch { /* storage closed or replaced: the next start reads in full */ }
+    }, PROGRESS_SNAPSHOT_PERSIST_DELAY_MS);
+  }
 
   type AuthenticationMode = "none" | "optional" | "required";
   async function requestJson<T>(path: string, method: "GET" | "POST" | "PATCH", body?: unknown, authentication: AuthenticationMode = "required", extraHeaders: Readonly<Record<string, string>> = {}, isCurrent: () => boolean = () => true): Promise<T> {
@@ -890,6 +972,79 @@ export function createPatternlyApiClient(input: Readonly<{
     } finally { if (timeoutId !== undefined) clearTimeout(timeoutId); }
   }
 
+  async function readProgress(knownSnapshot: string | null): Promise<ProgressSnapshotReadDto> {
+    loadPersistedProgressSnapshot();
+    const cached = progressSnapshot;
+    // A persisted validator is only sent while this process holds no sweep.
+    const persisted = cached ? null : knownSnapshot;
+    try {
+      const records: ProgressRecordDto[] = [];
+      let pageToken: string | null = null;
+      let accountRevision: number | null = null;
+      let generation: number | undefined;
+      let snapshotToken: string | undefined;
+      let snapshotScope: string | undefined;
+      let legacyRead = false;
+      const serializer = createProgressSnapshotSerializer();
+      for (let page = 0; page < 1_001; page += 1) {
+        const query: string = legacyRead
+          ? `/v1/progress?pageSize=100${pageToken === null ? "" : `&pageToken=${encodeURIComponent(pageToken)}`}`
+          : pageToken === null
+          ? `/v1/progress?pageSize=100&conditional=1${!cached ? (persisted === null ? "" : `&knownSnapshot=${persisted}`) : cached.token !== null ? `&knownSnapshot=${cached.token}` : `&knownScope=${cached.scope}&knownRevision=${cached.revision}`}`
+          : `/v1/progress?pageSize=100&conditional=1&pageToken=${encodeURIComponent(pageToken)}`;
+        let payload: unknown;
+        try { payload = await requestJson<unknown>(query, "GET"); }
+        catch (error) {
+          if (page !== 0 || !(error instanceof ConditionalProgressUnsupportedError)) throw error;
+          legacyRead = true;
+          // Restart the first page against the documented older endpoint. Never
+          // downgrade malformed successes or return cached/partial account data.
+          payload = await requestJson<unknown>("/v1/progress?pageSize=100", "GET");
+        }
+        if (isPlainRecord(payload) && payload.unchanged === true && !cached) {
+          if (legacyRead || page !== 0 || persisted === null || !hasExactKeys(payload, ["accountRevision", "generation", "snapshotToken", "snapshotScope", "unchanged"])
+            || payload.snapshotToken !== persisted || !isSha256(payload.snapshotScope)
+            || !isFiniteNonNegativeInteger(payload.accountRevision) || !isFiniteNonNegativeInteger(payload.generation)) return invalidResponse();
+          return Object.freeze({ kind: "unchanged" as const, accountRevision: payload.accountRevision as number, generation: payload.generation as number, snapshotToken: persisted });
+        }
+        if (isPlainRecord(payload) && payload.unchanged === true) {
+          if (legacyRead || page !== 0 || !cached || !hasExactKeys(payload, ["accountRevision", "generation", "snapshotToken", "snapshotScope", "unchanged"])
+            || !isSha256(payload.snapshotToken) || payload.snapshotScope !== cached.scope
+            || (cached.token !== null && payload.snapshotToken !== cached.token)
+            || payload.accountRevision !== cached.revision || payload.generation !== cached.generation) return invalidResponse();
+          if (progressSnapshot === cached && cached.token !== payload.snapshotToken) setProgressSnapshot({ ...cached, token: payload.snapshotToken as string });
+          // The caller's own validator confirmed: it needs no copy of the sweep.
+          if (knownSnapshot !== null && payload.snapshotToken === knownSnapshot) {
+            return Object.freeze({ kind: "unchanged" as const, accountRevision: cached.revision, generation: cached.generation, snapshotToken: knownSnapshot });
+          }
+          return Object.freeze({ kind: "full" as const, progress: JSON.parse(cached.serialized) as ProgressResponseDto, snapshotToken: payload.snapshotToken as string });
+        }
+        const response = parseProgressPage(payload, legacyRead);
+        if (accountRevision === null) {
+          accountRevision = response.accountRevision;
+          generation = response.generation;
+          snapshotToken = response.snapshotToken;
+          snapshotScope = response.snapshotScope;
+        } else if (response.accountRevision !== accountRevision || response.generation !== generation || response.snapshotToken !== snapshotToken || response.snapshotScope !== snapshotScope) {
+          throw new PatternlyApiClientError("server_error", 409, "progress_generation_conflict");
+        }
+        if (!legacyRead) serializer.append(response.records);
+        records.push(...response.records);
+        pageToken = response.nextPageToken ?? null;
+        if (pageToken === null) {
+          const result = { accountRevision: accountRevision ?? 0, records: Object.freeze(records), generation, nextPageToken: null };
+          const serialized = legacyRead ? null : serializer.finish(result.accountRevision, generation!);
+          if (!legacyRead || progressSnapshot === cached) setProgressSnapshot(serialized === null ? null : { token: snapshotToken!, scope: snapshotScope!, revision: result.accountRevision, generation: generation!, serialized });
+          return Object.freeze({ kind: "full" as const, progress: result, snapshotToken: legacyRead ? null : snapshotToken! });
+        }
+      }
+      throw new PatternlyApiClientError("invalid_response");
+    } catch (error) {
+      if (progressSnapshot === cached) setProgressSnapshot(null);
+      throw error;
+    }
+  }
+
   return Object.freeze({
     availability: "available" as const,
     getHealth: () => requestJson<HealthResponseDto>("/health", "GET", undefined, "none"),
@@ -915,63 +1070,13 @@ export function createPatternlyApiClient(input: Readonly<{
     getPurchaseCases: async (isCurrent) => parsePurchaseCases(await requestJson<unknown>("/v1/purchase-cases", "GET", undefined, "required", {}, isCurrent)),
     getEntitlements: (isCurrent) => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET", undefined, "required", {}, isCurrent),
     getProgress: async () => {
-      const cached = progressSnapshot;
-      try {
-        const records: ProgressRecordDto[] = [];
-        let pageToken: string | null = null;
-        let accountRevision: number | null = null;
-        let generation: number | undefined;
-        let snapshotToken: string | undefined;
-        let snapshotScope: string | undefined;
-        let legacyRead = false;
-        const serializer = createProgressSnapshotSerializer();
-        for (let page = 0; page < 1_001; page += 1) {
-          const query: string = legacyRead
-            ? `/v1/progress?pageSize=100${pageToken === null ? "" : `&pageToken=${encodeURIComponent(pageToken)}`}`
-            : pageToken === null
-            ? `/v1/progress?pageSize=100&conditional=1${!cached ? "" : cached.token !== null ? `&knownSnapshot=${cached.token}` : `&knownScope=${cached.scope}&knownRevision=${cached.revision}`}`
-            : `/v1/progress?pageSize=100&conditional=1&pageToken=${encodeURIComponent(pageToken)}`;
-          let payload: unknown;
-          try { payload = await requestJson<unknown>(query, "GET"); }
-          catch (error) {
-            if (page !== 0 || !(error instanceof ConditionalProgressUnsupportedError)) throw error;
-            legacyRead = true;
-            // Restart the first page against the documented older endpoint. Never
-            // downgrade malformed successes or return cached/partial account data.
-            payload = await requestJson<unknown>("/v1/progress?pageSize=100", "GET");
-          }
-          if (isPlainRecord(payload) && payload.unchanged === true) {
-            if (legacyRead || page !== 0 || !cached || !hasExactKeys(payload, ["accountRevision", "generation", "snapshotToken", "snapshotScope", "unchanged"])
-              || !isSha256(payload.snapshotToken) || payload.snapshotScope !== cached.scope
-              || (cached.token !== null && payload.snapshotToken !== cached.token)
-              || payload.accountRevision !== cached.revision || payload.generation !== cached.generation) return invalidResponse();
-            if (progressSnapshot === cached) progressSnapshot = { ...cached, token: payload.snapshotToken as string };
-            return JSON.parse(cached.serialized) as ProgressResponseDto;
-          }
-          const response = parseProgressPage(payload, legacyRead);
-          if (accountRevision === null) {
-            accountRevision = response.accountRevision;
-            generation = response.generation;
-            snapshotToken = response.snapshotToken;
-            snapshotScope = response.snapshotScope;
-          } else if (response.accountRevision !== accountRevision || response.generation !== generation || response.snapshotToken !== snapshotToken || response.snapshotScope !== snapshotScope) {
-            throw new PatternlyApiClientError("server_error", 409, "progress_generation_conflict");
-          }
-          if (!legacyRead) serializer.append(response.records);
-          records.push(...response.records);
-          pageToken = response.nextPageToken ?? null;
-          if (pageToken === null) {
-            const result = { accountRevision: accountRevision ?? 0, records: Object.freeze(records), generation, nextPageToken: null };
-            const serialized = legacyRead ? null : serializer.finish(result.accountRevision, generation!);
-            if (!legacyRead || progressSnapshot === cached) progressSnapshot = serialized === null ? null : { token: snapshotToken!, scope: snapshotScope!, revision: result.accountRevision, generation: generation!, serialized };
-            return result;
-          }
-        }
-        throw new PatternlyApiClientError("invalid_response");
-      } catch (error) {
-        if (progressSnapshot === cached) progressSnapshot = null;
-        throw error;
-      }
+      const read = await readProgress(null);
+      if (read.kind !== "full") return invalidResponse();
+      return read.progress;
+    },
+    getProgressSnapshot: async (knownSnapshot) => {
+      if (knownSnapshot !== null && !isSha256(knownSnapshot)) return invalidResponse();
+      return readProgress(knownSnapshot);
     },
     exportAccountData: () => requestJson<AccountDataExportDto>("/v1/account-data/export", "GET"),
     createPrivacyRequest: async (right, narrative) => parsePrivacyRequestEnvelope(await requestJson<unknown>("/v1/privacy-requests", "POST", { right, ...(narrative === undefined ? {} : { narrative }) })),
@@ -987,10 +1092,11 @@ export function createPatternlyApiClient(input: Readonly<{
     getLegalRequest: async (requestId) => parseLegalRequestEnvelope(await requestJson<unknown>(`/v1/legal-requests/${encodeURIComponent(requestId)}`, "GET")),
     syncProgress: async (body: SyncRequestDto) => {
       validateSyncRequest(body);
+      loadPersistedProgressSnapshot();
       const cached = progressSnapshot;
       const response = parseSyncResponse(await requestJson<unknown>("/v1/progress/sync", "POST", body, "required",
         cached ? { "x-patternly-progress-cache": "1" } : {}));
-      if (cached && progressSnapshot === cached) progressSnapshot = composeProgressSnapshot(cached, body, response) ?? cached;
+      if (cached && progressSnapshot === cached) setProgressSnapshot(composeProgressSnapshot(cached, body, response) ?? cached);
       // The scope is transport proof, not a new durable ACK field.
       return { accountRevision: response.accountRevision, applied: response.applied, duplicates: response.duplicates, conflicts: response.conflicts };
     },

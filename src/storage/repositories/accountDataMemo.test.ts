@@ -81,6 +81,7 @@ function syncApi(): PatternlyApiClient {
       return { accountRevision: input.expectedAccountRevision + batch.length, applied: batch, duplicates: [], conflicts: [] };
     },
     getProgress: async () => ({ accountRevision: records.length, records }),
+    getProgressSnapshot: async () => ({ kind: "full", progress: { accountRevision: records.length, records }, snapshotToken: null }),
   } as Record<string, unknown>, { get: (target, key) => (key in target ? target[key as string] : unused) }) as unknown as PatternlyApiClient;
 }
 

@@ -1288,9 +1288,16 @@ export async function readAccountDataSyncGuardFlags(context: LearningDataAdmissi
  * difference, or any doubt, runs the full path. Bootstrap integrity checks are
  * untouched (D5); the baseline holds digests only, no learning data.
  * Same kill-switch as the snapshot memo.
+ *
+ * T3.3a: the baseline also keeps the server's progress snapshot token of the
+ * remote copy it digested. A cold start sends it as a conditional read; only
+ * the server's `unchanged` answer for exactly that token (same account,
+ * authorization and progress generation, revision and metadata write time are
+ * all inside it) skips the paged download. The token is a validator, never
+ * data: anything else is a full read compared by digest as before.
  */
 const ACCOUNT_SYNC_BASELINE_KEY = "patternly:derived:v1:account-sync-baseline";
-const ACCOUNT_SYNC_BASELINE_SCHEMA = 1;
+const ACCOUNT_SYNC_BASELINE_SCHEMA = 2;
 
 type AccountSyncBaseline = Readonly<{
   schema: typeof ACCOUNT_SYNC_BASELINE_SCHEMA;
@@ -1301,15 +1308,17 @@ type AccountSyncBaseline = Readonly<{
   acknowledgedDigest: string;
   remoteDigest: string;
   localInputDigest: string;
+  remoteSnapshotToken: string | null;
 }>;
 
 export type AccountSyncBaselineMatch = Readonly<{ accountId: string; baseline: AccountSyncBaseline; state: AccountSyncState; scope: SnapshotScope | null; localInputDigest: string }>;
 
 function isAccountSyncBaseline(value: unknown): value is AccountSyncBaseline {
-  return isRecord(value) && hasOnlyKeys(value, ["schema", "accountId", "remoteAccountRevision", "localDatasetVersion", "localDatasetFingerprint", "acknowledgedDigest", "remoteDigest", "localInputDigest"])
+  return isRecord(value) && hasOnlyKeys(value, ["schema", "accountId", "remoteAccountRevision", "localDatasetVersion", "localDatasetFingerprint", "acknowledgedDigest", "remoteDigest", "localInputDigest", "remoteSnapshotToken"])
     && value.schema === ACCOUNT_SYNC_BASELINE_SCHEMA && typeof value.accountId === "string"
     && Number.isSafeInteger(value.remoteAccountRevision) && Number.isSafeInteger(value.localDatasetVersion)
-    && ["localDatasetFingerprint", "acknowledgedDigest", "remoteDigest", "localInputDigest"].every((key) => typeof value[key] === "string" && /^[a-f0-9]{64}$/u.test(value[key] as string));
+    && ["localDatasetFingerprint", "acknowledgedDigest", "remoteDigest", "localInputDigest"].every((key) => typeof value[key] === "string" && /^[a-f0-9]{64}$/u.test(value[key] as string))
+    && (value.remoteSnapshotToken === null || (typeof value.remoteSnapshotToken === "string" && /^[a-f0-9]{64}$/u.test(value.remoteSnapshotToken)));
 }
 
 let localInputDigestMemo: Readonly<{ scope: SnapshotScope; digest: string }> | null = null;
@@ -1379,7 +1388,7 @@ export function clearAccountSyncBaseline(): void {
  * upload nothing (every local record acknowledged with its fingerprint, every
  * other acknowledgement a tombstone) and the dataset version is settled.
  */
-export async function recordAccountSyncBaseline(input: Readonly<{ accountId: string; remoteAccountRevision: number; remoteRecords: readonly RemoteAccountDataRecord[] }>, context: LearningDataAdmissionContext): Promise<boolean> {
+export async function recordAccountSyncBaseline(input: Readonly<{ accountId: string; remoteAccountRevision: number; remoteRecords: readonly RemoteAccountDataRecord[]; remoteSnapshotToken: string | null }>, context: LearningDataAdmissionContext): Promise<boolean> {
   if (!isSyncSnapshotMemoEnabled()) return false;
   clearAccountSyncBaseline();
   const snapshot = await buildAccountDataSnapshot(context);
@@ -1410,6 +1419,7 @@ export async function recordAccountSyncBaseline(input: Readonly<{ accountId: str
     acknowledgedDigest: acknowledgedDigest(state),
     remoteDigest: remoteRecordsDigest(input.remoteRecords),
     localInputDigest,
+    remoteSnapshotToken: input.remoteSnapshotToken !== null && /^[a-f0-9]{64}$/u.test(input.remoteSnapshotToken) ? input.remoteSnapshotToken : null,
   });
   getKeyValueStorage().setString(ACCOUNT_SYNC_BASELINE_KEY, JSON.stringify(baseline));
   return true;
@@ -1432,6 +1442,25 @@ export async function readAccountSyncBaselineMatch(accountId: string, context: L
 
 export function isRemoteAccountDataUnchangedSinceBaseline(match: AccountSyncBaselineMatch, remote: Readonly<{ accountRevision: number; records: readonly RemoteAccountDataRecord[] }>): boolean {
   return Array.isArray(remote.records) && remote.accountRevision === match.baseline.remoteAccountRevision && remoteRecordsDigest(remote.records) === match.baseline.remoteDigest;
+}
+
+/** T3.3a: the server confirmed the baseline's own snapshot token at the baseline's revision. */
+export function isRemoteSnapshotUnchangedSinceBaseline(match: AccountSyncBaselineMatch, read: Readonly<{ accountRevision: number; snapshotToken: string }>): boolean {
+  return match.baseline.remoteSnapshotToken !== null && read.snapshotToken === match.baseline.remoteSnapshotToken
+    && read.accountRevision === match.baseline.remoteAccountRevision;
+}
+
+/**
+ * T3.3a: after a full read that digested equal to the baseline (the server
+ * token moved, e.g. a metadata rewrite at the same revision), keep the newer
+ * token so the next cold start can skip the download. Writes only when the
+ * stored baseline is still the matched one.
+ */
+export function refreshAccountSyncBaselineSnapshotToken(match: AccountSyncBaselineMatch, remoteSnapshotToken: string | null): void {
+  if (remoteSnapshotToken === null || remoteSnapshotToken === match.baseline.remoteSnapshotToken || !/^[a-f0-9]{64}$/u.test(remoteSnapshotToken)) return;
+  const stored = readAccountSyncBaseline();
+  if (!stored || JSON.stringify(stored) !== JSON.stringify(match.baseline)) return;
+  try { getKeyValueStorage().setString(ACCOUNT_SYNC_BASELINE_KEY, JSON.stringify({ ...stored, remoteSnapshotToken })); } catch { /* storage closed: the next start reads in full */ }
 }
 
 /**

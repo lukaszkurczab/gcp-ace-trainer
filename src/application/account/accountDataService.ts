@@ -42,6 +42,8 @@ import {
   recordAccountSyncBaseline as recordAccountSyncBaselineWithPolicy,
   finishUnchangedAccountSync as finishUnchangedAccountSyncWithPolicy,
   isRemoteAccountDataUnchangedSinceBaseline,
+  isRemoteSnapshotUnchangedSinceBaseline,
+  refreshAccountSyncBaselineSnapshotToken,
   clearAccountSyncBaseline,
   type AccountSyncBaselineMatch,
   recordAccountMutationAcknowledgements as recordAccountMutationAcknowledgementsWithPolicy,
@@ -1193,7 +1195,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
   let confirmedConflict: AccountSyncConflict | null = null;
   // T2.6: the account copy read by the unchanged-start check, reused by the
   // full path when it has nothing to upload.
-  let prefetchedRemote: Awaited<ReturnType<PatternlyApiClient["getProgress"]>> | null = null;
+  let prefetchedRemote: RemoteProgressRead | null = null;
   try {
     const unchangedStart = await synchronizeUnchangedBoundAccount(api, accountId);
     if (unchangedStart.kind !== "full") return unchangedStart.session;
@@ -1328,7 +1330,8 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
     if (postUploadCheck.kind === "local_changed") return postUploadCheck.session;
     postUploadDatasetVersion = postUploadCheck.localDatasetVersion;
     await yieldToEventLoop();
-    const remote = prefetchedRemote !== null && state.outbox.length === 0 ? prefetchedRemote : await api.getProgress();
+    const remoteRead = prefetchedRemote !== null && state.outbox.length === 0 ? prefetchedRemote : await readRemoteProgress(api);
+    const remote = remoteRead.progress;
     prefetchedRemote = null;
     await yieldToEventLoop();
     const partition = await partitionRemoteAccountDataForRecovery({ accountId, generation: remote.generation ?? 0, records: remote.records });
@@ -1401,7 +1404,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         return Object.freeze({ kind: "scope_changed" as const });
       }
       let finished = await finishAccountMaterialization(partition.records, accountId, remote.accountRevision, nowIso(), partition.incident);
-      if (unchanged && partition.incident === null && await recordAccountSyncBaseline({ accountId, remoteAccountRevision: remote.accountRevision, remoteRecords: remote.records })) {
+      if (unchanged && partition.incident === null && await recordAccountSyncBaseline({ accountId, remoteAccountRevision: remote.accountRevision, remoteRecords: remote.records, remoteSnapshotToken: remoteRead.snapshotToken })) {
         finished = await getAccountSyncState();
       }
       return Object.freeze({ kind: "synced" as const, session: sessionFromState(finished, false) });
@@ -1429,7 +1432,17 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
 
 type UnchangedSyncOutcome =
   | Readonly<{ kind: "synced" | "blocked"; session: AccountDataSession }>
-  | Readonly<{ kind: "full"; remote: Awaited<ReturnType<PatternlyApiClient["getProgress"]>> | null }>;
+  | Readonly<{ kind: "full"; remote: RemoteProgressRead | null }>;
+
+type RemoteProgressRead = Readonly<{ progress: Awaited<ReturnType<PatternlyApiClient["getProgress"]>>; snapshotToken: string | null }>;
+
+/** A complete account copy with the server token of exactly that sweep (null when the client has no validator). */
+async function readRemoteProgress(api: PatternlyApiClient): Promise<RemoteProgressRead> {
+  if (typeof api.getProgressSnapshot !== "function") return Object.freeze({ progress: await api.getProgress(), snapshotToken: null });
+  const read = await api.getProgressSnapshot(null);
+  if (read.kind !== "full") throw new PatternlyApiClientError("invalid_response");
+  return Object.freeze({ progress: read.progress, snapshotToken: read.snapshotToken });
+}
 
 /**
  * T2.6: a sync with nothing to upload, whose local bytes, sync state and
@@ -1446,8 +1459,16 @@ async function synchronizeUnchangedBoundAccount(api: PatternlyApiClient, account
   });
   if (!match) return Object.freeze({ kind: "full" as const, remote: null });
   const scope = readLearningPlanStorageScope();
-  const remote = await api.getProgress();
-  if (!isRemoteAccountDataUnchangedSinceBaseline(match, remote)) return Object.freeze({ kind: "full" as const, remote });
+  // T3.3a: after a cold start the persisted token is the only validator; the
+  // server's `unchanged` for it replaces the paged download and its parsing.
+  const read = typeof api.getProgressSnapshot === "function" ? await api.getProgressSnapshot(match.baseline.remoteSnapshotToken) : null;
+  let remote: RemoteProgressRead | null = null;
+  if (read?.kind === "unchanged") {
+    if (!isRemoteSnapshotUnchangedSinceBaseline(match, read)) return Object.freeze({ kind: "full" as const, remote: null });
+  } else {
+    remote = read ? Object.freeze({ progress: read.progress, snapshotToken: read.snapshotToken }) : Object.freeze({ progress: await api.getProgress(), snapshotToken: null });
+    if (!isRemoteAccountDataUnchangedSinceBaseline(match, remote.progress)) return Object.freeze({ kind: "full" as const, remote });
+  }
   const finished = await withLocalLearningWriteOperation(async () => {
     if (readLearningPlanStorageScope() !== scope) return null;
     const guard = await readBoundSyncGuard(accountId);
@@ -1456,8 +1477,10 @@ async function synchronizeUnchangedBoundAccount(api: PatternlyApiClient, account
     if (!installation || installation.accountId !== accountId || installation.bindingState !== "account_bound") return null;
     const state = await finishUnchangedAccountSync(match, nowIso());
     if (!state) return null;
+    if (remote) refreshAccountSyncBaselineSnapshotToken(match, remote.snapshotToken);
     markStartup("account_sync:unchanged");
     markStartup("account_sync:baseline");
+    if (!remote) markStartup("account_sync:snapshot_token");
     return Object.freeze({ kind: "synced" as const, session: sessionFromState(state, false) });
   });
   return finished ?? Object.freeze({ kind: "full" as const, remote });

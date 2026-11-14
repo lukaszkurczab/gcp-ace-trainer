@@ -644,6 +644,40 @@ test("conditional progress rejects unseeded, mismatched and malformed unchanged 
   await assert.rejects(unseeded.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
+test("T3.3a: a persisted snapshot token is a cold-start validator only the server's exact confirmation satisfies", async () => {
+  const token = "c".repeat(64); const scope = "d".repeat(64);
+  const unchanged = { accountRevision: 7, generation: 0, snapshotToken: token, snapshotScope: scope, unchanged: true };
+  const page = { accountRevision: 7, generation: 0, snapshotToken: token, snapshotScope: scope, records: [conditionalProgressRecord()], nextPageToken: null };
+  const urls: string[] = [];
+  const cold = createTestClient({ fetchImplementation: async (url) => { urls.push(String(url)); return jsonResponse(unchanged); } });
+  assert.deepEqual(await cold.getProgressSnapshot(token), { kind: "unchanged", accountRevision: 7, generation: 0, snapshotToken: token });
+  assert.equal(new URL(urls[0]!).searchParams.get("knownSnapshot"), token);
+  assert.equal(urls.length, 1, "no page is downloaded");
+  // A changed account answers with pages: the full copy and the new token.
+  const changed = createTestClient({ fetchImplementation: async () => jsonResponse({ ...page, snapshotToken: "e".repeat(64) }) });
+  const full = await changed.getProgressSnapshot(token);
+  assert.equal(full.kind, "full");
+  assert.equal(full.kind === "full" && full.snapshotToken, "e".repeat(64));
+  assert.equal(full.kind === "full" && full.progress.records.length, 1);
+  // Unchanged for another token, malformed, or without a sent token: rejected.
+  for (const answer of [{ ...unchanged, snapshotToken: "b".repeat(64) }, { ...unchanged, snapshotScope: "nope" }, { ...unchanged, records: [] }, { ...unchanged, accountRevision: -1 }]) {
+    const client = createTestClient({ fetchImplementation: async () => jsonResponse(answer) });
+    await assert.rejects(client.getProgressSnapshot(token), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  }
+  const unsent = createTestClient({ fetchImplementation: async () => jsonResponse(unchanged) });
+  await assert.rejects(unsent.getProgressSnapshot(null), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  await assert.rejects(unsent.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  await assert.rejects(unsent.getProgressSnapshot("not-a-token"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  // A process that holds its own sweep revalidates that sweep, never the persisted token.
+  const warmUrls: string[] = [];
+  const warm = createTestClient({ fetchImplementation: async (url) => { warmUrls.push(String(url)); return jsonResponse(warmUrls.length === 1 ? page : unchanged); } });
+  await warm.getProgressSnapshot(null);
+  const again = await warm.getProgressSnapshot("f".repeat(64));
+  assert.equal(new URL(warmUrls[1]!).searchParams.get("knownSnapshot"), token);
+  assert.equal(again.kind, "full");
+  assert.equal(again.kind === "full" && again.progress.records.length, 1);
+});
+
 test("incomplete or mixed snapshot sweeps never become a conditional baseline", async () => {
   for (const failure of ["transport", "snapshot", "unchanged"]) {
     let calls = 0; const urls: string[] = [];
