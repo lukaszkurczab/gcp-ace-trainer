@@ -38,6 +38,12 @@ import {
   markGuestDiscardMaterializationApplying as markGuestDiscardMaterializationApplyingWithPolicy,
   markGuestDiscardMaterializationPending as markGuestDiscardMaterializationPendingWithPolicy,
   partitionRemoteAccountDataForRecovery as partitionRemoteAccountDataForRecoveryWithPolicy,
+  readAccountSyncBaselineMatch as readAccountSyncBaselineMatchWithPolicy,
+  recordAccountSyncBaseline as recordAccountSyncBaselineWithPolicy,
+  finishUnchangedAccountSync as finishUnchangedAccountSyncWithPolicy,
+  isRemoteAccountDataUnchangedSinceBaseline,
+  clearAccountSyncBaseline,
+  type AccountSyncBaselineMatch,
   recordAccountMutationAcknowledgements as recordAccountMutationAcknowledgementsWithPolicy,
   reserveLearningPlanRecoveryAttempt as reserveLearningPlanRecoveryAttemptWithPolicy,
   dismissLearningPlanRecovery as dismissPersistedLearningPlanRecovery,
@@ -118,6 +124,9 @@ const applyRemoteAccountData = (records: readonly AccountDataRecord[], options?:
 const finishAccountMaterialization = (records: readonly AccountDataRecord[], accountId: string, remoteRevision: number, syncedAt: string, recovery?: LearningPlanRecoveryIncident | null) => finishAccountMaterializationWithPolicy(records, accountId, remoteRevision, syncedAt, productionLearningDataAdmissionContext, recovery);
 function assertValidAccountDataRecords(records: unknown): asserts records is readonly AccountDataRecord[] { assertValidAccountDataRecordsWithPolicy(records, productionLearningDataAdmissionContext); }
 const partitionRemoteAccountDataForRecovery = (input: Parameters<typeof partitionRemoteAccountDataForRecoveryWithPolicy>[0]) => partitionRemoteAccountDataForRecoveryWithPolicy(input, productionLearningDataAdmissionContext);
+const readAccountSyncBaselineMatch = (accountId: string) => readAccountSyncBaselineMatchWithPolicy(accountId, productionLearningDataAdmissionContext);
+const recordAccountSyncBaseline = (input: Parameters<typeof recordAccountSyncBaselineWithPolicy>[0]) => recordAccountSyncBaselineWithPolicy(input, productionLearningDataAdmissionContext);
+const finishUnchangedAccountSync = (match: AccountSyncBaselineMatch, syncedAt: string) => finishUnchangedAccountSyncWithPolicy(match, syncedAt, productionLearningDataAdmissionContext);
 const recordAccountMutationAcknowledgements = (input: Parameters<typeof recordAccountMutationAcknowledgementsWithPolicy>[0]) => recordAccountMutationAcknowledgementsWithPolicy(input, productionLearningDataAdmissionContext);
 const reserveLearningPlanRecoveryAttempt = (accountId: string, incidentId: string, now: Date) => reserveLearningPlanRecoveryAttemptWithPolicy(accountId, incidentId, now, nextLearningPlanRecoveryRetryAt, isLearningPlanRecoveryRetryDue, productionLearningDataAdmissionContext);
 const completeLearningPlanRecovery = (accountId: string, incidentId: string, record: AccountDataRecord) => completeLearningPlanRecoveryWithPolicy(accountId, incidentId, record, productionLearningDataAdmissionContext);
@@ -1182,7 +1191,13 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
   if (initialGuard) return initialGuard;
   let baseline: BoundSyncBaseline | null = null;
   let confirmedConflict: AccountSyncConflict | null = null;
+  // T2.6: the account copy read by the unchanged-start check, reused by the
+  // full path when it has nothing to upload.
+  let prefetchedRemote: Awaited<ReturnType<PatternlyApiClient["getProgress"]>> | null = null;
   try {
+    const unchangedStart = await synchronizeUnchangedBoundAccount(api, accountId);
+    if (unchangedStart.kind !== "full") return unchangedStart.session;
+    prefetchedRemote = unchangedStart.remote;
     const planned = await withLocalLearningWriteOperation(async () => {
       const storageScope = readLearningPlanStorageScope();
       const uploadGuard = await readBoundSyncGuard(accountId);
@@ -1313,7 +1328,8 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
     if (postUploadCheck.kind === "local_changed") return postUploadCheck.session;
     postUploadDatasetVersion = postUploadCheck.localDatasetVersion;
     await yieldToEventLoop();
-    const remote = await api.getProgress();
+    const remote = prefetchedRemote !== null && state.outbox.length === 0 ? prefetchedRemote : await api.getProgress();
+    prefetchedRemote = null;
     await yieldToEventLoop();
     const partition = await partitionRemoteAccountDataForRecovery({ accountId, generation: remote.generation ?? 0, records: remote.records });
     await yieldToEventLoop();
@@ -1372,6 +1388,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
       markStartup(unchanged ? "account_sync:unchanged" : "account_sync:applied");
       if (!unchanged) {
         await assertBoundSyncIdentity(baseline!);
+        clearAccountSyncBaseline();
         await markAccountRemoteApplyPending(accountId);
         await yieldToEventLoop();
         await assertBoundSyncIdentity(baseline!);
@@ -1383,7 +1400,10 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
       if (stateBeforeFinish.accountId !== accountId || stateBeforeFinish.localDatasetVersion !== materializationDatasetVersion) {
         return Object.freeze({ kind: "scope_changed" as const });
       }
-      const finished = await finishAccountMaterialization(partition.records, accountId, remote.accountRevision, nowIso(), partition.incident);
+      let finished = await finishAccountMaterialization(partition.records, accountId, remote.accountRevision, nowIso(), partition.incident);
+      if (unchanged && partition.incident === null && await recordAccountSyncBaseline({ accountId, remoteAccountRevision: remote.accountRevision, remoteRecords: remote.records })) {
+        finished = await getAccountSyncState();
+      }
       return Object.freeze({ kind: "synced" as const, session: sessionFromState(finished, false) });
     });
     if (materialized.kind === "blocked") return preservePendingSyncGuard(accountId, materialized.guard);
@@ -1407,6 +1427,42 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
   }
 }
 
+type UnchangedSyncOutcome =
+  | Readonly<{ kind: "synced" | "blocked"; session: AccountDataSession }>
+  | Readonly<{ kind: "full"; remote: Awaited<ReturnType<PatternlyApiClient["getProgress"]>> | null }>;
+
+/**
+ * T2.6: a sync with nothing to upload, whose local bytes, sync state and
+ * account copy all equal the baseline recorded by the last unchanged full
+ * sync, ends as the full path would (only `lastSuccessfulSyncAt` changes)
+ * without building any snapshot. Anything else returns "full".
+ */
+async function synchronizeUnchangedBoundAccount(api: PatternlyApiClient, accountId: string): Promise<UnchangedSyncOutcome> {
+  const match = await withLocalLearningWriteOperation(async () => {
+    if (await readBoundSyncGuard(accountId)) return null;
+    const installation = await getGuestInstallation();
+    if (!installation || installation.accountId !== accountId || installation.bindingState !== "account_bound") return null;
+    return readAccountSyncBaselineMatch(accountId);
+  });
+  if (!match) return Object.freeze({ kind: "full" as const, remote: null });
+  const scope = readLearningPlanStorageScope();
+  const remote = await api.getProgress();
+  if (!isRemoteAccountDataUnchangedSinceBaseline(match, remote)) return Object.freeze({ kind: "full" as const, remote });
+  const finished = await withLocalLearningWriteOperation(async () => {
+    if (readLearningPlanStorageScope() !== scope) return null;
+    const guard = await readBoundSyncGuard(accountId);
+    if (guard) return Object.freeze({ kind: "blocked" as const, session: await preservePendingSyncGuard(accountId, guard) });
+    const installation = await getGuestInstallation();
+    if (!installation || installation.accountId !== accountId || installation.bindingState !== "account_bound") return null;
+    const state = await finishUnchangedAccountSync(match, nowIso());
+    if (!state) return null;
+    markStartup("account_sync:unchanged");
+    markStartup("account_sync:baseline");
+    return Object.freeze({ kind: "synced" as const, session: sessionFromState(state, false) });
+  });
+  return finished ?? Object.freeze({ kind: "full" as const, remote });
+}
+
 type BoundSyncBaseline = Readonly<{
   accountId: string;
   installationId: string;
@@ -1416,7 +1472,17 @@ type BoundSyncBaseline = Readonly<{
   snapshotFingerprint: string;
 }>;
 
+/** Snapshots are frozen; a memoized snapshot (T2.6) is fingerprinted once. */
+const localSnapshotFingerprints = new WeakMap<AccountDataSnapshot, string>();
 function localAccountSnapshotFingerprint(snapshot: AccountDataSnapshot): string {
+  const known = localSnapshotFingerprints.get(snapshot);
+  if (known !== undefined) return known;
+  const fingerprint = computeLocalAccountSnapshotFingerprint(snapshot);
+  if (Object.isFrozen(snapshot)) localSnapshotFingerprints.set(snapshot, fingerprint);
+  return fingerprint;
+}
+
+function computeLocalAccountSnapshotFingerprint(snapshot: AccountDataSnapshot): string {
   // The repository's versioned snapshot also includes acknowledged remote
   // record versions. Those versions may advance from this sync's exact upload
   // ACKs; compare local record identity/content while the write lane protects

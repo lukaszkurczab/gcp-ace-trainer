@@ -14,6 +14,27 @@ import { STORAGE_KEYS } from "../../storage/keys";
 import { sha256Utf8 } from "../identity/sha256";
 
 let client: KeyValueStorage | null = null;
+
+/*
+ * T2.6: write observation for in-memory memos keyed by storage revision.
+ * Every write through a published profile storage or a MemoryKeyValueStorage
+ * is reported to the listeners with its logical key. A storage that is not
+ * observable (any other test adapter) must never back a revision memo.
+ */
+export type KeyValueWriteListener = (storage: object, key: string) => void;
+const keyValueWriteListeners = new Set<KeyValueWriteListener>();
+const observableStorages = new WeakSet<object>();
+function noteKeyValueWrite(storage: object, key: string): void {
+  for (const listener of keyValueWriteListeners) listener(storage, key);
+}
+export function onKeyValueWrite(listener: KeyValueWriteListener): () => void {
+  keyValueWriteListeners.add(listener);
+  return () => { keyValueWriteListeners.delete(listener); };
+}
+/** True when every write to `storage` is reported to `onKeyValueWrite` listeners. */
+export function isKeyValueWriteObservable(storage: object): boolean {
+  return observableStorages.has(storage) || storage instanceof MemoryKeyValueStorage;
+}
 let profileRouter: ProfileStorageRouter | null = null;
 let activeForegroundClock: ForegroundClockCapability | null = null;
 let foregroundClockClaim: (() => ForegroundClockCapability) | null = null;
@@ -762,8 +783,8 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
   const scopedStorage = prepared.router.storage;
   const publishedStorage: KeyValueStorage = {
     getString(key) { checkPublished(); return scopedStorage.getString(key); },
-    setString(key, value) { checkPublished(); scopedStorage.setString(key, value); },
-    remove(key) { checkPublished(); scopedStorage.remove(key); },
+    setString(key, value) { checkPublished(); try { scopedStorage.setString(key, value); } finally { noteKeyValueWrite(publishedStorage, key); } },
+    remove(key) { checkPublished(); try { scopedStorage.remove(key); } finally { noteKeyValueWrite(publishedStorage, key); } },
     contains(key) { checkPublished(); return scopedStorage.contains(key); },
     getAllKeys() { checkPublished(); return scopedStorage.getAllKeys(); },
   };
@@ -778,6 +799,7 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
       isCurrent: () => profileStorageGeneration === generation && !profileTransitionActive && client === publishedStorage && activePreparedStorage === prepared,
     });
   }
+  observableStorages.add(publishedStorage);
   client = Object.freeze(publishedStorage);
   preparedStorage = null;
   preparation = null;
@@ -1197,6 +1219,7 @@ export function getForegroundTimerStorageAuthority(): "ios-native" | "android-na
 /** Atomic physical mutation for T only. Memory storage is an explicitly
  * installed test adapter; this branch is not available to native storage. */
 export function applyActiveForegroundTimerRaw(before: string | undefined, after: string | undefined): void {
+  if (client) noteKeyValueWrite(client, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
   if (client instanceof MemoryKeyValueStorage) { client.applyForegroundTimerRaw(before, after); return; }
   if (activeForegroundTimerTestCas) { activeForegroundTimerTestCas(before, after); return; }
   const observed = getActiveForegroundClock().apply(before, after);
@@ -1229,8 +1252,8 @@ export class MemoryKeyValueStorage implements KeyValueStorage {
   readonly operations: { kind: "read" | "write" | "remove"; key: string }[] = [];
   private reads = 0; private writes = 0; private removes = 0;
   getString(key: string): string | undefined { this.reads += 1; this.operations.push({ kind: "read", key }); this.fail("read", key, this.reads); return this.values.get(key); }
-  setString(key: string, value: string): void { this.writes += 1; this.operations.push({ kind: "write", key }); this.fail("write", key, this.writes); this.values.set(key, value); }
-  remove(key: string): void { this.removes += 1; this.operations.push({ kind: "remove", key }); this.fail("remove", key, this.removes); this.values.delete(key); }
+  setString(key: string, value: string): void { this.writes += 1; this.operations.push({ kind: "write", key }); try { this.fail("write", key, this.writes); this.values.set(key, value); } finally { noteKeyValueWrite(this, key); } }
+  remove(key: string): void { this.removes += 1; this.operations.push({ kind: "remove", key }); try { this.fail("remove", key, this.removes); this.values.delete(key); } finally { noteKeyValueWrite(this, key); } }
   contains(key: string): boolean { return this.values.has(key); }
   getAllKeys(): readonly string[] { return [...this.values.keys()]; }
   /** Explicit test-only synchronous CAS models the native atomic boundary. */
