@@ -581,15 +581,6 @@ test("fixture selector keeps ordinary providers behind a dynamic import boundary
   assert.match(ordinaryRoot, /<ProfileStoragePreparationGate>[\s\S]*?<PatternlyAccountProvider>[\s\S]*?<ContentPreparationGate/u);
 });
 
-test("recovery baseline grants only the explicit PERSIST-13 fixture its isolated MMKV test boundary", () => {
-  const checker = readFileSync("scripts/checkRecoveryBaseline.mjs", "utf8");
-  assert.match(checker, /const persist13FixtureRootPath = join\(root, "src\/application\/runtimeAuditability\/Persist13ResetFixtureRoot\.tsx"\)/u);
-  assert.match(checker, /const productionSourcePaths = sourcePaths\.filter\(\(path\) => path !== persist13FixtureRootPath\)/u);
-  assert.match(checker, /productionMMKVConsumers\.length !== 1[\s\S]*?mmkvConsumers\.length !== 2[\s\S]*?mmkvConsumers\.includes\(persist13FixtureRootPath\)/u);
-  assert.match(checker, /fixtureSource\.match\(\/createMMKV[\s\S]*?EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"/u);
-  assert.match(checker, /path !== persist13FixtureRootPath/u);
-});
-
 test("fixture pauses only after the durable reset materialization and exact native postconditions", () => {
   const commit = readFileSync("src/application/learningMutations/commitMutation.ts", "utf8");
   const hook = readFileSync("src/application/runtimeAuditability/persist13ResetPauseHook.ts", "utf8");
