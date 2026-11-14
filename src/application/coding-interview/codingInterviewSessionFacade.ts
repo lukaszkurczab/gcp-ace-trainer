@@ -32,6 +32,17 @@ import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-intervie
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { beginStartupSpan, markStartup, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
 import { requestAccountSync } from "../account/accountSyncSchedule";
+import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, type KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import type { AttemptResultKind } from "../../domain/learning/attemptResult";
+import {
+  createPracticeAnswerDraft,
+  decodePracticeAnswerDraft,
+  encodePracticeAnswerDraft,
+  gradePracticeAnswer,
+  practiceAnswerDraftMatches,
+  type PracticeAnswerDraft,
+  type PracticeAnswerTarget,
+} from "../../domain/learning/practiceAnswerDraft";
 
 /**
  * Q-CPU (Plan §1): one `quiz_command` span per practice command, from the
@@ -268,10 +279,7 @@ async function projectAlgorithmsPractice(
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const attempt = materializedAttempt ?? committedAttempt;
   const response = attempt?.response ?? null;
-  const feedbackProjection = response ? exactItem.interactions.projectFeedback(question.questionId, response) : null;
-  const feedback = attempt && feedbackIsAvailableDuringPractice(session) && feedbackProjection
-    ? { correctness: attempt.result.kind, reason: feedbackProjection.reason, details: feedbackProjection.details, ...(feedbackProjection.messages === undefined ? {} : { messages: feedbackProjection.messages }), sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback: feedbackProjection }), controls: projectInteractionControls(exactItem.interactions.projectDiagnostics(question.questionId, response)) }
-    : null;
+  const feedback = attempt && response && feedbackIsAvailableDuringPractice(session) ? projectPracticeFeedback(exactItem, attempt.result.kind, response) : null;
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
     timer.projection(session),
@@ -291,6 +299,158 @@ async function projectAlgorithmsPractice(
     feedback,
     response: response ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: response }) : null,
   });
+}
+
+/** One feedback projection for the committed attempt and for T2.2's optimistic preview. */
+function projectPracticeFeedback(exactItem: ResolvedInteractionItem, correctness: AttemptResultKind, response: unknown): AlgorithmsPracticeProjection["feedback"] {
+  const question = exactItem.question;
+  const feedbackProjection = exactItem.interactions.projectFeedback(question.questionId, response);
+  if (!feedbackProjection) return null;
+  return { correctness, reason: feedbackProjection.reason, details: feedbackProjection.details, ...(feedbackProjection.messages === undefined ? {} : { messages: feedbackProjection.messages }), sources: projectCanonicalSourceEvidence({ sourceRefs: question.sourceRefs, feedback: feedbackProjection }), controls: projectInteractionControls(exactItem.interactions.projectDiagnostics(question.questionId, response)) };
+}
+
+/**
+ * T2.2 optimistic feedback (Plan §T2.2, D6 = (a)). Kill-switch
+ * `EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK=0`: the screen then waits
+ * for the practice command as before. Read directly so Expo inlines it.
+ */
+export function isOptimisticPracticeFeedbackEnabled(): boolean {
+  return process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK !== "0";
+}
+
+/**
+ * The durable answer draft (D6 (a)): written to the active profile's encrypted
+ * store before optimistic feedback renders, removed once the practice command
+ * settles. Outside the canonical namespace: never exported or synced, and it
+ * exists only between submit and commit (or until the next session open after
+ * a kill, when `resumeAlgorithmsPracticeAnswerDraft` replays or drops it).
+ */
+export const PRACTICE_ANSWER_DRAFT_STORE_KEY = "patternly:pending:v1:practice-answer-draft";
+
+export type AlgorithmsPracticeOptimisticFeedback = Readonly<{ projection: AlgorithmsPracticeProjection; draft: PracticeAnswerDraft }>;
+
+/**
+ * The feedback the practice command will commit, computed without storage:
+ * the same exact-package `evaluate` the family runtime scores with, and the
+ * same feedback projection as `getAlgorithmsPracticeProjection`. Null when the
+ * answer cannot be shown before the command (not an unanswered afterEachAnswer
+ * occurrence, or a response the command would reject).
+ */
+export async function previewAlgorithmsPracticeFeedback(projection: AlgorithmsPracticeProjection, response: AlgorithmResponse, now: Date = new Date()): Promise<AlgorithmsPracticeOptimisticFeedback | null> {
+  return previewPracticeFeedback(contentPackageRuntimeOwner, projection, response, now);
+}
+
+export async function previewPracticeFeedback(owner: Pick<ContentPackageRuntimeOwner, "resolveItem">, projection: AlgorithmsPracticeProjection, response: AlgorithmResponse, now: Date): Promise<AlgorithmsPracticeOptimisticFeedback | null> {
+  if (projection.operation.kind !== "unanswered" || projection.response || !feedbackIsAvailableDuringPractice(projection.session)) return null;
+  const exactItem = await owner.resolveItem(projection.item);
+  const question = exactItem.question;
+  let canonical: CanonicalQuestionResponse;
+  try { canonical = toCanonicalPracticeResponse(question.interactionType, JSON.parse(JSON.stringify(response)) as AlgorithmResponse); }
+  catch { return null; }
+  const grade = gradePracticeAnswer(exactItem.interactions.evaluate(question.questionId, canonical));
+  if (!grade) return null;
+  const feedback = projectPracticeFeedback(exactItem, grade.kind, canonical);
+  if (!feedback) return null;
+  const draft = createPracticeAnswerDraft({ target: practiceAnswerTarget(projection), response, grade, capturedAt: now.toISOString() });
+  const optimistic: AlgorithmsPracticeProjection = Object.freeze({
+    ...projection,
+    operation: Object.freeze({ family: "practice" as const, kind: "feedback" as const }),
+    interaction: exactItem.interactions.present(question.questionId, canonical, projection.session.optionOrderByOccurrence[projection.occurrenceId] ?? []),
+    feedback,
+    response: Object.freeze({ source: "local" as const, value: canonical }),
+  });
+  return Object.freeze({ projection: optimistic, draft });
+}
+
+export function practiceAnswerTarget(projection: Pick<AlgorithmsPracticeProjection, "session" | "occurrenceId" | "item">): PracticeAnswerTarget {
+  return Object.freeze({ sessionId: projection.session.id, occurrenceId: projection.occurrenceId, questionId: projection.item.questionId, contentVersion: projection.item.contentVersion, artifactSha256: projection.item.artifactSha256 });
+}
+
+function practiceAnswerDraftStore(): KeyValueStorage | null {
+  try {
+    const lease = captureActiveProfileStorageLease();
+    if (!lease || !isActiveProfileStorageLeaseCurrent(lease)) return null;
+    return getKeyValueStorage();
+  } catch { return null; }
+}
+
+/** Synchronous and read back: true only when the draft is durable in the active profile store. */
+export function persistAlgorithmsPracticeAnswerDraft(draft: PracticeAnswerDraft): boolean {
+  const store = practiceAnswerDraftStore();
+  if (!store) return false;
+  const encoded = encodePracticeAnswerDraft(draft);
+  try {
+    store.setString(PRACTICE_ANSWER_DRAFT_STORE_KEY, encoded);
+    return store.getString(PRACTICE_ANSWER_DRAFT_STORE_KEY) === encoded;
+  } catch { return false; }
+}
+
+/** Removes the draft; with a target, only that occurrence's draft. */
+export function clearAlgorithmsPracticeAnswerDraft(target?: PracticeAnswerTarget): void {
+  const store = practiceAnswerDraftStore();
+  if (!store) return;
+  try {
+    if (target) {
+      const current = decodePracticeAnswerDraft(store.getString(PRACTICE_ANSWER_DRAFT_STORE_KEY));
+      if (current && !practiceAnswerDraftMatches(current, target)) return;
+    }
+    store.remove(PRACTICE_ANSWER_DRAFT_STORE_KEY);
+  } catch { /* A closed store has nothing left to replay. */ }
+}
+
+export function readAlgorithmsPracticeAnswerDraft(): PracticeAnswerDraft | null {
+  const store = practiceAnswerDraftStore();
+  if (!store) return null;
+  try { return decodePracticeAnswerDraft(store.getString(PRACTICE_ANSWER_DRAFT_STORE_KEY)); } catch { return null; }
+}
+
+export type PracticeAnswerDraftResume =
+  | "none"              // no draft
+  | "discarded"         // corrupt, or its session is no longer active
+  | "committed"         // the command had committed before the kill; shown grade matches
+  | "replayed"          // the command had not committed; replayed with the same response
+  | "pending_recovery"  // a journaled command awaits recovery; the draft stays until it resolves
+  | "mismatch";         // the committed grade differs from the one shown (must not happen)
+
+/**
+ * D6 (a): after a kill between optimistic feedback and its commit, the next
+ * open of the session replays the drafted answer through the same command, so
+ * the answer is not lost and the stored grade equals the one shown.
+ */
+export async function resumeAlgorithmsPracticeAnswerDraft(): Promise<PracticeAnswerDraftResume> {
+  const store = practiceAnswerDraftStore();
+  if (!store) return "none";
+  let raw: string | undefined;
+  try { raw = store.getString(PRACTICE_ANSWER_DRAFT_STORE_KEY); } catch { return "none"; }
+  if (raw === undefined) return "none";
+  const draft = decodePracticeAnswerDraft(raw);
+  const active = draft ? await loadActiveTrainingSession() : null;
+  if (!draft || !active || active.id !== draft.target.sessionId) {
+    clearAlgorithmsPracticeAnswerDraft();
+    return "discarded";
+  }
+  const projection = await getAlgorithmsPracticeProjection();
+  if (!practiceAnswerDraftMatches(draft, practiceAnswerTarget(projection))) {
+    // The session moved past the drafted occurrence, which needs its committed attempt.
+    clearAlgorithmsPracticeAnswerDraft();
+    return "committed";
+  }
+  if (projection.response) {
+    clearAlgorithmsPracticeAnswerDraft();
+    return projection.feedback && projection.feedback.correctness !== draft.grade.kind ? "mismatch" : "committed";
+  }
+  const replayable = projection.operation.kind === "unanswered" || (projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction === "submit_again");
+  if (!replayable) return "pending_recovery";
+  try {
+    await submitAlgorithmsPracticeResponse(draft.response as unknown as AlgorithmResponse);
+  } catch (error) {
+    // A response the command rejects can never commit; anything else is retried on the next open.
+    if (error instanceof TrainingApplicationFailure && error.code === "invalid_response") clearAlgorithmsPracticeAnswerDraft();
+    throw error;
+  }
+  const committed = await getAlgorithmsPracticeProjection();
+  clearAlgorithmsPracticeAnswerDraft();
+  return committed.feedback && committed.feedback.correctness !== draft.grade.kind ? "mismatch" : "replayed";
 }
 
 export async function submitAlgorithmsPracticeResponse(response: AlgorithmResponse): Promise<void> {

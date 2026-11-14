@@ -8,15 +8,20 @@ import { Alert, AppState, StyleSheet } from "react-native";
 import {
   abandonAlgorithmsSession,
   advanceAlgorithmsPracticeSession,
+  clearAlgorithmsPracticeAnswerDraft,
   completeAlgorithmsPracticeSession,
   enterAlgorithmsPracticeForeground,
   getAlgorithmsPracticeProjection,
   isAlgorithmsPracticeInteractionResponseComplete,
+  isOptimisticPracticeFeedbackEnabled,
   leaveAlgorithmsPracticeForeground,
+  persistAlgorithmsPracticeAnswerDraft,
+  previewAlgorithmsPracticeFeedback,
   recoverAlgorithmsPracticeOperation,
   recoverAlgorithmsPracticeCompletion,
   recoverAlgorithmsPracticeCompletionCheckpoint,
   retryAlgorithmsPracticeCompletionCheckpoint,
+  resumeAlgorithmsPracticeAnswerDraft,
   retryAlgorithmsPracticeResponse,
   startAlgorithmsSession,
   subscribeAlgorithmsPracticeOperation,
@@ -62,9 +67,14 @@ import { CertificationPracticeSessionScreen } from "./CertificationPracticeSessi
 import { DesignInterviewPracticeScreen } from "./DesignInterviewPracticeScreen";
 import { canonicalResponseToPracticeLocalResponse } from "./canonicalQuestionViewModel";
 import { markStartup, markVisible, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
+import { afterFeedbackFrame } from "./optimisticFeedbackFrame";
 
 // SLA markers (Plan §1 S2/S3a/S3b) are recorded only where the startup trace is on.
 const SLA_TRACE = startupTraceEnabled();
+// T2.2: feedback from the pure evaluation renders first; the command commits after that frame.
+const OPTIMISTIC_FEEDBACK = isOptimisticPracticeFeedbackEnabled();
+/** Plan T2.2: the durability indicator appears only when the commit takes longer than this. */
+const DURABILITY_INDICATOR_DELAY_MS = 150;
 
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION> & Readonly<{ additionalResponseRendererBindings?: ReadonlyMap<string, PracticeResponseRenderer> }>;
@@ -100,6 +110,13 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   const [pendingPhase, setPendingPhase] = useState<PracticeSurfacePhase | null>(null);
   // SLA trace only: which user press waits for its `*_visible` frame.
   const slaPending = useRef<Readonly<{ kind: "option" } | { kind: "submit" } | { kind: "continue"; from: string }> | null>(null);
+  // T2.2: an optimistic answer whose command has not settled. "Continue" is
+  // held (a press is queued) until the answer is durable in the session.
+  const optimisticCommit = useRef<{ projection: AlgorithmsPracticeProjection; scheduled: boolean; run: () => Promise<void> } | null>(null);
+  const [durabilityPending, setDurabilityPending] = useState(false);
+  const [durabilitySlow, setDurabilitySlow] = useState(false);
+  const [continueQueued, setContinueQueued] = useState(false);
+  const continueQueuedRef = useRef(false);
 
   usePreventRemove(!permitRouteExit.current && state?.kind === "session", ({ data }) => {
     if (permitRouteExit.current) {
@@ -131,6 +148,8 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
     void loadOrStartAlgorithmsPractice(route.params, algorithmsMode)
       .then(async () => {
         await enterAlgorithmsPracticeForeground();
+        // D6 (a): an answer whose feedback was shown before a kill commits now, unchanged.
+        await resumeAlgorithmsPracticeAnswerDraft().catch(() => undefined);
         return getAlgorithmsPracticeProjection();
       })
       .then((projection) => {
@@ -153,7 +172,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
     if (state?.kind !== "session") return;
     const listener = AppState.addEventListener("change", (appState) => {
       void (appState === "active" ? enterAlgorithmsPracticeForeground() : leaveAlgorithmsPracticeForeground("app_background"))
-        .then(refresh)
+        .then(() => refresh())
         .catch(() => undefined);
     });
     return () => listener.remove();
@@ -178,13 +197,38 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   }, [state?.kind, state?.kind === "session" ? state.projection.session.id : null]);
 
   useEffect(() => {
-    if (permitRouteExit.current || state?.kind !== "session" || pendingPhase || completionFailure || submissionError) return;
+    if (permitRouteExit.current || state?.kind !== "session" || pendingPhase || durabilityPending || completionFailure || submissionError) return;
     if (state.projection.session.configurationSnapshot.feedbackMode === "atSessionEnd" && state.projection.operation.kind === "feedback") {
       void advanceOrFinish();
     }
   // This also continues a locally committed answer after resume or recovery.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, pendingPhase, completionFailure, submissionError]);
+  }, [state, pendingPhase, durabilityPending, completionFailure, submissionError]);
+
+  // T2.2: the command starts after the frame that shows the optimistic
+  // feedback. Scheduled from an effect, so its frames come after the SLA
+  // marker's own (layout-effect) frames.
+  useEffect(() => {
+    const pending = optimisticCommit.current;
+    if (!pending || pending.scheduled) return;
+    pending.scheduled = true;
+    afterFeedbackFrame(() => { void pending.run(); });
+  }, [state]);
+
+  useEffect(() => {
+    if (!durabilityPending) { setDurabilitySlow(false); return; }
+    const timer = setTimeout(() => setDurabilitySlow(true), DURABILITY_INDICATOR_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [durabilityPending]);
+
+  useEffect(() => {
+    if (durabilityPending || !continueQueuedRef.current) return;
+    continueQueuedRef.current = false;
+    setContinueQueued(false);
+    if (state?.kind === "session" && state.projection.operation.kind === "feedback" && !submissionError) void advanceOrFinish(true, true);
+  // The queued press continues on the committed projection.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [durabilityPending, state]);
 
   const slaProjection = SLA_TRACE && state?.kind === "session" ? state.projection : null;
   const slaPhase = slaProjection ? completionOperation ? toPracticeSurfacePhase(completionOperation.kind) : pendingPhase ?? toPracticeSurfacePhase(slaProjection.operation.kind) : null;
@@ -240,6 +284,8 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   const phase = renderedCompletionOperation ? toPracticeSurfacePhase(renderedCompletionOperation.kind) : pendingPhase ?? toPracticeSurfacePhase(projection.operation.kind);
   const notice = submissionError
     ? { tone: "error" as const, message: submissionError }
+    : durabilitySlow
+      ? { tone: "neutral" as const, message: "Saving your answer…" }
     : completionFailure?.kind === "retry_final_checkpoint"
       ? noticeForPracticeCompletionCheckpoint("retry")
       : completionFailure?.kind === "recover_final_checkpoint"
@@ -259,12 +305,16 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
     return <Screen backAction={{ destinationLabel: t("Practice"), onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} edges={["top", "bottom"]}><EmptyState title={t("Practice interaction unavailable")} description={t("This practice interaction is not available in this version.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   const effectiveLocalResponse = resolvePracticeLocalResponse(localResponse, responseControl);
-  const primaryAction = completionFailure ? null : getPracticePrimaryAction({ feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode), hasLocalResponse: (builtinControl ? effectiveLocalResponse !== null : interactionResponseComplete) && (!frozenPracticeResponse || retryFrozenResponse), isFinalPosition: projection.position.current === projection.position.total, phase });
+  const committedPrimaryAction = completionFailure ? null : getPracticePrimaryAction({ feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode), hasLocalResponse: (builtinControl ? effectiveLocalResponse !== null : interactionResponseComplete) && (!frozenPracticeResponse || retryFrozenResponse), isFinalPosition: projection.position.current === projection.position.total, phase });
+  // A queued "Continue" waits for durability; the button shows it only after the indicator delay.
+  const primaryAction = committedPrimaryAction && continueQueued && durabilitySlow ? { ...committedPrimaryAction, enabled: false, loading: true } : committedPrimaryAction;
 
-  async function refresh() {
-    if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current)) return;
+  async function refresh(expectedOwner: string = currentResponseOwner, settlesOptimistic = false) {
+    // An optimistic answer is replaced only by its own command's projection.
+    if (optimisticCommit.current && !settlesOptimistic) return;
+    if (!isPracticeResponseOwnerCurrent(expectedOwner, interactionResponseOwner.current)) return;
     const next = await getAlgorithmsPracticeProjection();
-    if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current)) return;
+    if (!isPracticeResponseOwnerCurrent(expectedOwner, interactionResponseOwner.current)) return;
     const sameResponseOwner = practiceResponseOwner(next) === practiceResponseOwner(projection);
     // Fence queued handlers before React schedules the projection render.
     interactionResponseOwner.current = practiceResponseEventOwner(next);
@@ -284,6 +334,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
     if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || (builtinControl ? !effectiveLocalResponse : !interactionResponseComplete) || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
     if (SLA_TRACE) { markStartup("submit_press"); slaPending.current = { kind: "submit" }; }
     actionPending.current = true;
+    if (OPTIMISTIC_FEEDBACK && builtinControl && effectiveLocalResponse && !retryFrozenResponse && projection.operation.kind === "unanswered" && await submitOptimistically(effectiveLocalResponse)) return;
     setPendingPhase("submitting_before_journal");
     setSubmissionError(null);
     try {
@@ -300,10 +351,59 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
     }
   }
 
-  async function advanceOrFinish(userPress = false) {
-    if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || (projection.operation.kind !== "feedback" && projection.operation.kind !== "advance_failed")) return;
+  /**
+   * T2.2: render feedback from the pure evaluation, with the answer durable
+   * as a draft first (D6 (a)); the command commits after that frame. False
+   * leaves the submit to the regular (pre-T2.2) path.
+   */
+  async function submitOptimistically(response: NonNullable<typeof effectiveLocalResponse>): Promise<boolean> {
+    let preview: Awaited<ReturnType<typeof previewAlgorithmsPracticeFeedback>> = null;
+    try { preview = await previewAlgorithmsPracticeFeedback(projection, response); } catch { preview = null; }
+    if (!preview || !isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current)) return false;
+    if (!persistAlgorithmsPracticeAnswerDraft(preview.draft)) return false;
+    const optimistic = preview.projection;
+    const target = preview.draft.target;
+    const optimisticOwner = practiceResponseEventOwner(optimistic);
+    setSubmissionError(null);
+    optimisticCommit.current = {
+      projection: optimistic,
+      scheduled: false,
+      run: async () => {
+        let failure: unknown = null;
+        try { await submitAlgorithmsPracticeResponse(response); }
+        catch (error) { failure = error; }
+        // The command has settled: its journal or its failure state owns the answer now.
+        clearAlgorithmsPracticeAnswerDraft(target);
+        try {
+          if (failure) setSubmissionError(describePracticeSubmissionFailure(failure, t));
+          await refresh(optimisticOwner, true);
+        } catch (error) {
+          setSubmissionError(describeOperationalFailure(error, t("We couldn't save your answer. Choose an answer and try again.")));
+        } finally {
+          optimisticCommit.current = null;
+          actionPending.current = false;
+          if (failure) { continueQueuedRef.current = false; setContinueQueued(false); }
+          setDurabilityPending(false);
+        }
+      },
+    };
+    interactionResponseOwner.current = optimisticOwner;
+    setDurabilityPending(true);
+    setState({ kind: "session", projection: optimistic });
+    return true;
+  }
+
+  async function advanceOrFinish(userPress = false, queued = false) {
+    if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || (projection.operation.kind !== "feedback" && projection.operation.kind !== "advance_failed")) return;
+    if (actionPending.current && !optimisticCommit.current) return;
+    if (optimisticCommit.current && continueQueuedRef.current) return;
     // S2 covers only a user's continue to the next question, not the final step to the summary.
-    if (SLA_TRACE && userPress && projection.position.current !== projection.position.total) { markStartup("continue_press"); slaPending.current = { kind: "continue", from: practiceResponseOwner(projection) }; }
+    if (SLA_TRACE && userPress && !queued && projection.position.current !== projection.position.total) { markStartup("continue_press"); slaPending.current = { kind: "continue", from: practiceResponseOwner(projection) }; }
+    if (optimisticCommit.current) {
+      // T2.2: "Continue" waits until the shown answer is durable, then runs once.
+      if (userPress) { continueQueuedRef.current = true; setContinueQueued(true); }
+      return;
+    }
     actionPending.current = true;
     setSubmissionError(null);
     setPendingPhase(projection.position.current === projection.position.total ? "completing" : "advancing");
