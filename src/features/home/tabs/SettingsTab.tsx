@@ -99,7 +99,6 @@ export function SettingsTab({
   onSignOut,
 }: SettingsTabProps) {
   const styles = useThemedStyles(createStyles);
-  const { retiredDeviceSecretsCleanup, retryRetiredDeviceSecretsCleanup } = usePatternlyAccount();
   const { appearance, language } = useAppPreferences();
   const { t } = useTranslation("settings");
   const { t: tAccount } = useTranslation("account");
@@ -222,10 +221,6 @@ export function SettingsTab({
         </View>
       </View>
       {account.status !== "authenticated" && account.canOpenAccount ? <Button onPress={onOpenAccount} testID="settings-account-entry" variant="secondary">{accountTitle}</Button> : null}
-      {retiredDeviceSecretsCleanup.kind === "pending" ? <View style={styles.deviceCleanupNotice}>
-        <InfoBlock body={t("deviceCleanupPending")} title={t("deviceCleanupPending")} testID="settings-device-cleanup-pending" tone="warning" />
-        <Button onPress={() => void retryRetiredDeviceSecretsCleanup()} testID="settings-device-cleanup-retry" variant="secondary">{t("retryDeviceCleanup")}</Button>
-      </View> : null}
 
       {signOutFailure ? isResumeRequiredSignOutFailure ? (
         <InfoBlock accessibilityAlert body={tAccount("resumeRequiredDescription")} title={tAccount("resumeRequired")} testID="settings-sign-out-resume-required" tone="warning" />
@@ -355,7 +350,6 @@ function appMetadata(versionLabel: string): string | null {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  deviceCleanupNotice: { gap: spacing.sm },
   settingsLoading: {
     gap: spacing.xl,
     width: "100%",

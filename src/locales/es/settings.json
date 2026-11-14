@@ -56,8 +56,6 @@
   "reminders": "Recordatorios",
   "remindersDetail": "Configura tus recordatorios de práctica.",
   "version": "Versión",
-  "deviceCleanupPending": "Limpieza del dispositivo pendiente",
-  "retryDeviceCleanup": "Reintentar limpieza del dispositivo",
   "securityOptionUnavailable": "Esta opción de seguridad no está disponible",
   "securityOptionUnavailableDescription": "Esta pantalla ya no está disponible. Vuelve a los ajustes y elige una opción de cuenta disponible.",
   "preferencesSecurity": "Preferencias y seguridad",

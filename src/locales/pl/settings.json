@@ -56,8 +56,6 @@
   "reminders": "Przypomnienia",
   "remindersDetail": "Ustaw przypomnienia o ćwiczeniach.",
   "version": "Wersja",
-  "deviceCleanupPending": "Oczyszczanie urządzenia oczekuje na ponowienie",
-  "retryDeviceCleanup": "Ponów oczyszczanie urządzenia",
   "securityOptionUnavailable": "Ta opcja zabezpieczeń jest niedostępna",
   "securityOptionUnavailableDescription": "Ten ekran nie jest już dostępny. Wróć do ustawień i wybierz dostępną opcję konta.",
   "preferencesSecurity": "Preferencje i bezpieczeństwo",

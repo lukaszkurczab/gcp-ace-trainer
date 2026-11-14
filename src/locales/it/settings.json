@@ -56,8 +56,6 @@
   "reminders": "Promemoria",
   "remindersDetail": "Imposta i promemoria per le sessioni di pratica.",
   "version": "Versione",
-  "deviceCleanupPending": "Pulizia del dispositivo in sospeso",
-  "retryDeviceCleanup": "Riprova la pulizia del dispositivo",
   "securityOptionUnavailable": "Questa opzione di sicurezza non è disponibile",
   "securityOptionUnavailableDescription": "Questa schermata non è più disponibile. Torna alle impostazioni e scegli un’opzione account disponibile.",
   "preferencesSecurity": "Preferenze e sicurezza",

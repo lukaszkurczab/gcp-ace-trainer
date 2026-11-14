@@ -12,7 +12,6 @@ const { RETENTION_POLICY } = require(resolve(backendRoot, "src/modules/retention
 const { ACCOUNT_DELETION_TOMBSTONE_RETENTION_MS } = require(resolve(backendRoot, "src/modules/account-lifecycle/firestoreAccountErasure.ts"));
 const { LEGAL_TRANSLATION_LOCALES } = require(resolve(appRoot, "src/legal/legalVariablesSchema.ts"));
 const { legalVariablesLocalFixture } = require(resolve(appRoot, "src/legal/legalVariablesLocalFixture.ts"));
-const { RETIRED_RECOVERY_CLIPBOARD_RETENTION_MS } = require(resolve(appRoot, "src/infrastructure/security/retiredAccountSecrets.ts"));
 const canonical = JSON.parse(readFileSync(resolve(appRoot, "config/public-legal.release.json"), "utf8"));
 const logPolicy = JSON.parse(readFileSync(resolve(backendRoot, "config/log-retention-policy.json"), "utf8"));
 assert.equal(logPolicy.status, "desired_unapplied");
@@ -31,7 +30,6 @@ for (const [field, expected] of [
   ["deletionTombstoneRetentionDays", ACCOUNT_DELETION_TOMBSTONE_RETENTION_MS / 86_400_000],
   ["operationalLogRetentionDays", RETENTION_POLICY.ordinaryOperationalLogDays],
   ["securityLogRetentionDays", RETENTION_POLICY.selectedSecurityLogDays],
-  ["clipboardRecoveryCodeRetentionMinutes", RETIRED_RECOVERY_CLIPBOARD_RETENTION_MS / 60_000],
 ]) {
   for (const locale of LEGAL_TRANSLATION_LOCALES) assert.equal(canonical.privacy[field][locale], String(expected), `${field}.${locale}`);
 }

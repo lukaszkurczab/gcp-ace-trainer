@@ -17,7 +17,6 @@ import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { createStartupRevalidation, notifyActorBoundary, readStartupRevalidationPending, settleStartupRevalidation, whenStartupFirstUsableFrame } from "../bootstrap/parallelBoot";
 import { ACCOUNT_SYNC_INDICATOR_DELAY_MS, createAccountSyncScheduler, deferAccountSyncUntilIdle, isSyncOnFinalizeEnabled, registerAccountSyncScheduler, setAccountSyncActivity, subscribeAppBackground } from "./accountSyncSchedule";
 import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
-import { getRetiredAccountSecretsCleanup, type RetiredAccountSecretsCleanupState } from "../../infrastructure/security/retiredAccountSecrets";
 import { SessionRevocationExpiredError, createPendingSessionRevocationDrain } from "./pendingSessionRevocation";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
@@ -373,8 +372,6 @@ export type AccountSessionContextValue = Readonly<{
   readCurrentPremiumAccess: () => "allowed" | "denied" | "unavailable";
   installPremiumNodePackage: (offerId: string, appVersion: string) => Promise<void>;
   requestPasswordRecovery: (email: string) => Promise<AccountCommandResult>;
-  retiredDeviceSecretsCleanup: RetiredAccountSecretsCleanupState;
-  retryRetiredDeviceSecretsCleanup: () => Promise<void>;
   requestEmailChange: (credentials: FirebaseAuthCredentials, email: string) => Promise<AccountCommandResult>;
   retrySessionRestore: () => void;
   completeProfilePreparation: (token: ProfilePreparationHandoffToken) => Promise<void>;
@@ -613,9 +610,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const [logoutControlSnapshot, setLogoutControlSnapshot] = useState<LocalLogoutControlSnapshot>(initialLogoutControlSnapshot);
   const logoutControlSnapshotRef = useRef(initialLogoutControlSnapshot);
   const [state, setState] = useState<AccountState>({ kind: "loading" });
-  const [retiredDeviceSecretsCleanup, setRetiredDeviceSecretsCleanup] = useState<RetiredAccountSecretsCleanupState>({ kind: "idle" });
-  const retiredDeviceSecretsCleanupRef = useRef<ReturnType<typeof getRetiredAccountSecretsCleanup> | null>(null);
-  if (!retiredDeviceSecretsCleanupRef.current) retiredDeviceSecretsCleanupRef.current = getRetiredAccountSecretsCleanup();
   const [accountEntryMode, setAccountEntryMode] = useState<"welcome" | "login">(preparedProfileState.isFreshInstallation ? "welcome" : "login");
   const [guestTransitionFailure, setGuestTransitionFailure] = useState<Readonly<{ kind: "failure"; failure: AccountFailure }> | null>(null);
   const [materializedAccountTransitionOwner, setMaterializedAccountTransitionOwner] = useState<object | null>(null);
@@ -666,14 +660,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const sessionCoordinator = sessionCoordinatorRef.current;
   const deletionAuthorization = deletionAuthorizationRef.current!;
   const sensitiveCommandLane = sensitiveCommandLaneRef.current!;
-
-  useEffect(() => {
-    const cleanup = retiredDeviceSecretsCleanupRef.current!;
-    const publish = () => setRetiredDeviceSecretsCleanup(cleanup.getSnapshot());
-    const unsubscribe = cleanup.subscribe(publish);
-    publish();
-    return unsubscribe;
-  }, []);
 
   useEffect(() => {
     if (!apiClient || !appCheckReady) {
@@ -1944,8 +1930,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     isMaterializedAccountTransition: materializedAccountTransitionOwner !== null,
     materializedAccountTransitionToken: materializedAccountTransitionOwner,
     completeMaterializedAccountTransition,
-    retiredDeviceSecretsCleanup,
-    retryRetiredDeviceSecretsCleanup: () => retiredDeviceSecretsCleanupRef.current!.reconcile(),
     revokeDeletionAuthorization,
     refreshPremiumEntitlement,
     retryLearningPlanRecovery: retryLearningPlanRecoveryForAccount,
@@ -3076,7 +3060,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     completeProfilePreparation,
     profilePreparationHandoffToken,
     state,
-  }), [retiredDeviceSecretsCleanup, accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, readCurrentPremiumAccess, captureCurrentAuthenticatedActorFence, capturePremiumPurchaseActor, captureHomeResumeActorFence, inspectQ13ActorFence, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, completeMaterializedAccountProfile, materializedAccountTransitionOwner, profilePreparationHandoffToken, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, registerProviderIdentity, cancelProviderRegistration, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runProviderFirstUse, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
+  }), [accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, readCurrentPremiumAccess, captureCurrentAuthenticatedActorFence, capturePremiumPurchaseActor, captureHomeResumeActorFence, inspectQ13ActorFence, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, completeMaterializedAccountProfile, materializedAccountTransitionOwner, profilePreparationHandoffToken, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, registerProviderIdentity, cancelProviderRegistration, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runProviderFirstUse, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
 
   // T1.3: background sync right after a finalized session and on app background.
   // The scheduler calls the latest `retryPendingAccountSync`, which shares the

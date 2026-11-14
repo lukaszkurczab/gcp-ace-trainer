@@ -56,8 +56,6 @@
   "reminders": "Rappels",
   "remindersDetail": "Configurez vos rappels d’entraînement.",
   "version": "Version",
-  "deviceCleanupPending": "Nettoyage de l’appareil en attente",
-  "retryDeviceCleanup": "Réessayer le nettoyage de l’appareil",
   "securityOptionUnavailable": "Cette option de sécurité est indisponible",
   "securityOptionUnavailableDescription": "Cet écran n’est plus disponible. Revenez aux réglages et choisissez une option de compte disponible.",
   "preferencesSecurity": "Préférences et sécurité",

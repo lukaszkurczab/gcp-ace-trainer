@@ -11,7 +11,6 @@ import { AppPreferencesProvider, useAppPreferences } from "./preferences";
 import { buildNavigationTheme } from "./theme/navigationTheme";
 import { PatternlyAccountProvider, usePatternlyAccount } from "./application/account/AccountSessionProvider";
 import { ProfileStoragePreparationGate } from "./application/account/ProfileStoragePreparationGate";
-import { RetiredAccountSecretsCleanupHost } from "./application/account/RetiredAccountSecretsCleanupHost";
 import { AccountForegroundRefreshSidecar } from "./application/account/AccountForegroundRefreshSidecar";
 import { ProfileTransitionSurface } from "./content/application/startupPreparationSurfaces";
 import { Q13StorageReceiptHost } from "./application/runtimeAuditability/Q13StorageReceiptHost";
@@ -32,7 +31,6 @@ export default function RegularApplicationRoot() {
   return (
     <SafeAreaProvider>
       <AppPreferencesProvider>
-        <RetiredAccountSecretsCleanupHost />
         <ProfileStoragePreparationGate>
           <PatternlyAccountProvider>
             <AccountForegroundRefreshSidecar />

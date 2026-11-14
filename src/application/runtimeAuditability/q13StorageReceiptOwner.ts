@@ -7,7 +7,6 @@ import { readTrainingAttempts } from "../../storage/repositories/trainingAttempt
 import type { Q13ActorFence } from "../account/AccountSessionProvider";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { inspectQ13SecureAuthPersistence } from "../../infrastructure/firebase/secureAuthPersistence";
-import { inspectQ13RetiredAccountSecretsCleanup, type RetiredAccountSecretsCleanupState } from "../../infrastructure/security/retiredAccountSecrets";
 import { inspectQ13GuestPrivacyDraft } from "../../features/home/guestPrivacyDraft";
 import { inspectPreparedQ13StorageInventory, inspectPreparedQ13StorageReadiness, type Q13StorageInventorySnapshot, type Q13StorageReadiness } from "../../storage/repositories/profileStorageRepository";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
@@ -20,7 +19,6 @@ export type Q13FullStorageReceipt = Readonly<{
   packages: Q13NodePackageInventory;
   actor: Readonly<{ kind: "ready" | "denied"; accountIdSha256?: string; profileIdSha256?: string; uidSha256?: string; activeSessionCount?: number; activeSessionSha256?: string; activeAnswerRecordCount?: number; activeAnswerRecordsSha256?: string } | { kind: "unavailable"; reason: Q13ActorUnavailableReason }>;
   secureStoreInventory: Readonly<{ kind: "observed"; slotCount: number; inventorySha256: string; authUserAffinity: "not_checked" | "absent" | "matches_current_sdk_uid" | "different_or_unavailable"; dynamicFirebaseNamespace: "unavailable" } | { kind: "unavailable"; reason: "storage_inventory_unavailable" | "profile_control_unavailable" | "encrypted_control_unavailable" | "secure_slot_unavailable" | "storage_changed" }>;
-  retiredDeviceSecretsCleanup: RetiredAccountSecretsCleanupState;
 }>;
 
 export type Q13ActorUnavailableReason =
@@ -133,7 +131,6 @@ export async function inspectQ13CapabilityProbe(
   const [authSlot, guestPrivacySlot] = await Promise.all([
     inspectQ13SecureAuthPersistence(undefined, actorFence.kind === "ready" ? actorFence.isCurrentSdkUid : undefined), inspectQ13GuestPrivacyDraft(),
   ]);
-  const retiredDeviceSecretsCleanup = inspectQ13RetiredAccountSecretsCleanup();
   const secureStoreInventory = [authSlot, guestPrivacySlot].every((entry) => entry.kind === "observed")
     && storage.kind === "observed" && storage.secureControl?.kind === "observed" && storage.control?.kind === "observed"
     ? Object.freeze({
@@ -213,5 +210,5 @@ export async function inspectQ13CapabilityProbe(
     if (finalDecision.kind === "unavailable") actor = Object.freeze({ kind: "unavailable", reason: finalDecision.reason });
   }
   const { packagePointerSources: _privateSources, ...publicStorage } = finalStorage;
-  return Object.freeze({ kind: "observed", storageReadiness: readiness, inventory: Object.freeze(publicStorage), packageRoot, packages: finalPackages, actor, secureStoreInventory: finalSecureStoreInventory, retiredDeviceSecretsCleanup });
+  return Object.freeze({ kind: "observed", storageReadiness: readiness, inventory: Object.freeze(publicStorage), packageRoot, packages: finalPackages, actor, secureStoreInventory: finalSecureStoreInventory });
 }

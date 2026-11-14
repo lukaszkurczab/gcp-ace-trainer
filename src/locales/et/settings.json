@@ -56,8 +56,6 @@
   "reminders": "Meeldetuletused",
   "remindersDetail": "Seadista treeningumeeldetuletused.",
   "version": "Versioon",
-  "deviceCleanupPending": "Seadme puhastamine ootab",
-  "retryDeviceCleanup": "Proovi seadme puhastamist uuesti",
   "securityOptionUnavailable": "See turvavalik pole saadaval",
   "securityOptionUnavailableDescription": "See kuva pole enam saadaval. Mine tagasi seadetesse ja vali mõni saadaolev kontovalik.",
   "preferencesSecurity": "Eelistused ja turvalisus",

@@ -56,8 +56,6 @@
   "reminders": "Erinnerungen",
   "remindersDetail": "Richte deine Übungserinnerungen ein.",
   "version": "Version",
-  "deviceCleanupPending": "Gerätebereinigung ausstehend",
-  "retryDeviceCleanup": "Gerätebereinigung erneut versuchen",
   "securityOptionUnavailable": "Diese Sicherheitsoption ist nicht verfügbar",
   "securityOptionUnavailableDescription": "Dieser Bildschirm ist nicht mehr verfügbar. Kehre zu den Einstellungen zurück und wähle eine verfügbare Kontooption.",
   "preferencesSecurity": "Einstellungen und Sicherheit",

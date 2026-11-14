@@ -56,8 +56,6 @@
   "reminders": "Reminders",
   "remindersDetail": "Set up your practice reminders.",
   "version": "Version",
-  "deviceCleanupPending": "Device cleanup pending",
-  "retryDeviceCleanup": "Retry device cleanup",
   "securityOptionUnavailable": "This security option is unavailable",
   "securityOptionUnavailableDescription": "This screen is no longer available. Return to settings and choose an available account option.",
   "preferencesSecurity": "Preferences and security",
