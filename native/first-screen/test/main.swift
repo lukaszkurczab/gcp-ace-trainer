@@ -37,7 +37,7 @@ for item in cases {
     row["primary"] = record.view.decision.primary.label
   case .welcome(let record):
     row["primary"] = record.view.signIn.label
-  case .neutral(let reason, _):
+  case .neutral(let reason, _, _):
     row["reason"] = reason
   }
   output.append(row)
