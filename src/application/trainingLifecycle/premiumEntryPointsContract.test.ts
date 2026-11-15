@@ -21,6 +21,7 @@ function filesMatching(pattern: RegExp): string[] {
 test("new training sessions have one application entry and no prepare-only bypass", () => {
   assert.deepEqual(filesMatching(/startTrainingSession\s*\(/u), [
     "src/application/certification/certificationSessionFacade.ts",
+    "src/application/coding-interview/approachChallengeSessionFacade.ts",
     "src/application/coding-interview/codingInterviewSessionFacade.ts",
     "src/application/design-interview/designInterviewSessionFacade.ts",
     "src/application/design-interview/designInterviewSimulationFacade.ts",

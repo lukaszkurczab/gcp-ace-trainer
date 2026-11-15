@@ -73,7 +73,8 @@ test("route coverage has one native or inline shell owner and preserves active-s
   const fixtureBranch = rootNavigator.slice(fixtureStartIndex, fixtureEndIndex);
   assert.ok(fixtureBranch.length > 0);
   const fixtureRouteIds = [...fixtureBranch.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z0-9_]+)\}/g)].map((match) => match[1]);
-  assert.deepEqual(fixtureRouteIds, ["LEARNING_PLAN_PROPOSAL"]);
+  // 475b1e5b: the proposal fixture can continue to the goal cadence and Practice hub.
+  assert.deepEqual(fixtureRouteIds, ["LEARNING_PLAN_PROPOSAL", "GOAL_CADENCE", "PRACTICE_HUB"]);
   assert.match(fixtureBranch, /<NavigationIndependentTree>[\s\S]*?<NavigationContainer[\s\S]*?<Stack\.Navigator[\s\S]*?name=\{ROUTES\.LEARNING_PLAN_PROPOSAL\}[\s\S]*?headerShown:\s*false[\s\S]*?<LearningPlanProposalScreen \{\.\.\.screenProps\} runtime=\{proposalFixtureRuntime\} \/>/);
 
   const remainingRouteInventory = rootNavigator.slice(0, fixtureStartIndex) + rootNavigator.slice(fixtureEndIndex);
@@ -82,8 +83,9 @@ test("route coverage has one native or inline shell owner and preserves active-s
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
-  assert.equal(routeIds.length, 38);
-  assert.equal(new Set(routeIds).size, 37);
+  // 4357860d added APPROACH_CHALLENGE and APPROACH_CHALLENGE_REVIEW.
+  assert.equal(routeIds.length, 40);
+  assert.equal(new Set(routeIds).size, 39);
   assert.deepEqual(headerlessRouteIds, [
     "LANGUAGE_SETTINGS",
     "HOME",
@@ -108,6 +110,8 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "EXAM_REVIEW",
     "PRACTICE_SETUP",
     "PRACTICE_SESSION",
+    "APPROACH_CHALLENGE",
+    "APPROACH_CHALLENGE_REVIEW",
     "ALGORITHMS_PRACTICE_REVIEW",
     "ALGORITHMS_PRACTICE_SUMMARY",
     "ALGORITHMS_INTERVIEW_SIMULATION",
@@ -245,6 +249,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
   assert.deepEqual(safeAreaOwners, []);
   assert.deepEqual(scrollViewOwners, [
     "src/features/account/AccountSecurityScreen.tsx",
+    "src/features/exam/ExamResponseControls.tsx",
     "src/features/practice/PracticeSessionSurface.tsx",
     "src/features/reports/ContentReportSheet.tsx",
     "src/features/simulation/SimulationSessionSurface.tsx",
