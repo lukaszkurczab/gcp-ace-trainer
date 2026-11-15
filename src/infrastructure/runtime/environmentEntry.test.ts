@@ -52,6 +52,8 @@ function entry(rawMarker: string | null, configMatches = true) {
     if (name === "./src/testing/perf06Entry") return { resolvePerf06Entry: () => ({ kind: "regular" }) };
     if (name === "./src/application/runtimeAuditability/persist13Entry") return { resolvePersist13Entry: () => ({ kind: "regular" }) };
     if (name === "./src/infrastructure/diagnostics/startupTrace") return { markStartup() {}, markRnStartupEnd() {} };
+    // B0 native core (T1.1) installs before the gate; Node has no native core.
+    if (name === "./src/infrastructure/identity/installNativeCore") return { installNativeCore() {} };
     if (name === "./src/infrastructure/runtime/EnvironmentGate") return { default: gate };
     if (name === "./src/RegularApplicationRoot") { rootLoads++; return { default: "regular" }; }
     return assert.fail(`Unexpected app dependency: ${name}`);
