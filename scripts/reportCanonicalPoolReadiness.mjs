@@ -10,6 +10,7 @@ const {
   BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
   FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
   OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID,
+  CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID,
 } = require("../src/domain/tracks/trackRegistry.ts");
 const { loadCanonicalRuntimeCatalog } = require("../src/content/canonical/runtimeCatalog.ts");
 const { getProductSimulationModeConfig } = require("../src/content/canonical/productModeConfig.ts");
@@ -19,6 +20,7 @@ const REPORT_SCHEMA = "patternly-canonical-pool-readiness-v1";
 const EXPECTED_TRACK_COUNT = 9;
 const SIMULATION_NOW = "2026-10-08T00:00:00.000Z";
 const CONFIGURED_SIMULATION_TRACK_IDS = new Set([
+  CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID,
   GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   CODING_INTERVIEW_TRACK_ID,
   BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
@@ -222,8 +224,12 @@ async function projectSimulation({ track, registration, createRuntime, simulatio
     }
     return Object.freeze({ status: "configured", modeId: config.modeId, shape: "staged_case_anchor", anchorCount: session.actualLength, stageCount: profile.familyConfig.stages.length });
   }
-  if (profile.familyId !== "certification" || track.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID || session.actualLength !== 50
-    || profile.familyConfig.blueprint.kind !== "weighted_sections") {
+  // Weighted-section certification exams (GCP ACE, Claude Architect): the prepared length is
+  // within the profile's question-count range.
+  const questionCount = profile.familyConfig.questionCount;
+  const lengthMatches = typeof questionCount === "number" ? session.actualLength === questionCount
+    : questionCount?.kind === "range" && session.actualLength >= questionCount.minimum && session.actualLength <= questionCount.maximum;
+  if (profile.familyId !== "certification" || !lengthMatches || profile.familyConfig.blueprint.kind !== "weighted_sections") {
     throw new Error(`Certification simulation plan is invalid for ${track.trackId}.`);
   }
   const domainCounts = countBy(session.itemOrder.map((entry) => track.getQuestion(entry.item.questionId)), (question) => question?.contentDomainId);

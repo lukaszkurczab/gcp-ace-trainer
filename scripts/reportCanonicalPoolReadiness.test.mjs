@@ -26,6 +26,7 @@ test("reports actual canonical tracks, ordinary pool counts, and production-prep
   assert.equal(report.trackCount, 9);
   assert.equal(report.ordinaryModeCount, 29);
   const expectedConfiguredIds = [
+    "claude-certified-architect-professional-certification",
     GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
     CODING_INTERVIEW_TRACK_ID,
     BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
@@ -49,8 +50,11 @@ test("reports actual canonical tracks, ordinary pool counts, and production-prep
   assert.ok(designTracks.every((track) => track.simulation.shape === "staged_case_anchor" && track.simulation.anchorCount === 1));
   assert.ok(designTracks.every((track) => !JSON.stringify(track).includes("poolCapacity")));
 
-  const unconfiguredCertification = report.tracks.filter((track) => track.familyId === "certification" && track.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
-  assert.equal(unconfiguredCertification.length, 4);
+  const claude = report.tracks.find((track) => track.trackId === "claude-certified-architect-professional-certification");
+  assert.equal(claude?.simulation.preparedQuestionCount, 63);
+
+  const unconfiguredCertification = report.tracks.filter((track) => track.familyId === "certification" && track.simulation.status !== "configured");
+  assert.equal(unconfiguredCertification.length, 3);
   assert.ok(unconfiguredCertification.every((track) => track.simulation.status === "not_configured"));
 
   const evidenceModes = report.tracks.flatMap((track) => track.ordinaryModes).filter((mode) => mode.availability === "evidence_conditioned");
