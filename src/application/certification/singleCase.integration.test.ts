@@ -295,7 +295,12 @@ test("a case id cannot fall back to Focus; Premium Review checks fresh admission
   const reviewCommand = {trackId:TRACK,modeId:"certification-weak-area-review",request:{requestedLength:10,reviewSource:"due_queue"}};
   premium = false; await assert.rejects(lifecycle.startSession(reviewCommand), /Premium|premium/u); assert.equal(await getActiveTrainingSession(admission),null);
   premium = true; await lifecycle.startSession(reviewCommand); premium = false;
-  await lifecycle.resumeActiveSession(); await lifecycle.submitPracticeResponse(q.answer); await lifecycle.recordCaseExposure("solution");
+  await lifecycle.resumeActiveSession();
+  // Due Review routes the historical need to a current question in the same unit; since the
+  // matrix items (475b1e5b) that can be a non-case item, so exposure applies only to a case step.
+  const reviewing = await getActiveTrainingSession(admission); assert.ok(reviewing);
+  await lifecycle.submitPracticeResponse(h.track.getQuestion(reviewing.itemOrder[reviewing.currentItemIndex]!.item.questionId)!.answer);
+  if (reviewing.caseState || reviewing.caseStates?.length) await lifecycle.recordCaseExposure("solution");
   const active = await getActiveTrainingSession(admission); assert.ok(active);
   await lifecycle.completeActivePracticeSession(active.id);
   assert.equal(await getActiveTrainingSession(admission), null);

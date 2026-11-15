@@ -1079,7 +1079,8 @@ test("all canonical families journal a legacy A need through B in the same unit,
   for (const trackId of ["claude-certified-architect-professional-certification", "coding-interview-dsa-problem-solving", "frontend-system-design-interview"]) {
     const track = catalog.getTrack(trackId);
     const mode = track.modes.find(mode => mode.modeId.endsWith("weak-area-review"))!;
-    const b = track.getPool(mode.modeId).find(q => ((q.answer.type === "choice_multiple" && q.answer.optionIds.length > 1) || (q.answer.type === "ordering" && q.answer.orderedElementIds.length >= 4)) && track.questions.some(a => a.questionId !== q.questionId && a.nodeId === q.nodeId && a.mentalUnitId === q.mentalUnitId));
+    // Partial-capable: free-size multiple choice, ordering, or a decision matrix ("choose N" items are exact-set, 475b1e5b).
+    const b = track.getPool(mode.modeId).find(q => ((q.answer.type === "choice_multiple" && q.answer.optionIds.length > 1 && q.interaction.type === "choice_multiple" && q.interaction.requiredSelectionCount === undefined) || (q.answer.type === "ordering" && q.answer.orderedElementIds.length >= 4) || (q.interaction.type === "decision_matrix" && q.interaction.dimensions.length >= 2)) && track.questions.some(a => a.questionId !== q.questionId && a.nodeId === q.nodeId && a.mentalUnitId === q.mentalUnitId));
     assert.ok(b, `${trackId}: partial-capable B and distinct A must exist`);
     const a = track.questions.find(q => q.questionId !== b.questionId && q.nodeId === b.nodeId && q.mentalUnitId === b.mentalUnitId)!;
     for (const kind of ["incorrect", "partial", "correct"] as const) {
@@ -1096,8 +1097,11 @@ test("all canonical families journal a legacy A need through B in the same unit,
       assert.notEqual(occurrence.item.questionId, original.sourceItem.questionId);
       assert.deepEqual(occurrence.reviewSourceSnapshot?.legacyUnitProof, { sourceItem: original.sourceItem, nodeId: a.nodeId, mentalUnitId: a.mentalUnitId });
       await commitTrainingSessionStart({ session: prepared.session, draft: null, createdAt: NOW });
-      const partial = b.answer.type === "choice_multiple" ? { type: "choice_multiple", optionIds: b.answer.optionIds.slice(0, -1) } : b.answer.type === "ordering" ? { type: "ordering", orderedElementIds: [b.answer.orderedElementIds[1]!, b.answer.orderedElementIds[0]!, ...b.answer.orderedElementIds.slice(2)] } : null;
-      const outcome = await runtime.submitPractice({ session: prepared.session, response: kind === "correct" ? b.answer : kind === "partial" ? partial : wrongResponse(b), attempts: [], reviews: [original], now: NOW });
+      const partial = b.answer.type === "choice_multiple" ? { type: "choice_multiple", optionIds: b.answer.optionIds.slice(0, -1) } : b.answer.type === "ordering" ? { type: "ordering", orderedElementIds: [b.answer.orderedElementIds[1]!, b.answer.orderedElementIds[0]!, ...b.answer.orderedElementIds.slice(2)] }
+        : b.interaction.type === "decision_matrix" ? { type: "decision_matrix", selectedValueIdsByDimension: Object.fromEntries(b.interaction.dimensions.map((d, index) => [d.dimensionId, [index === 0 ? d.values.find((v) => !d.acceptedValueIds.includes(v.valueId))!.valueId : d.acceptedValueIds[0]!]])) } : null;
+      // A matrix is incorrect only when every dimension misses its accepted value.
+      const incorrect = b.interaction.type === "decision_matrix" ? { type: "decision_matrix", selectedValueIdsByDimension: Object.fromEntries(b.interaction.dimensions.map((d) => [d.dimensionId, [d.values.find((v) => !d.acceptedValueIds.includes(v.valueId))!.valueId]])) } : wrongResponse(b);
+      const outcome = await runtime.submitPractice({ session: prepared.session, response: kind === "correct" ? b.answer : kind === "partial" ? partial : incorrect, attempts: [], reviews: [original], now: NOW });
       assert.equal(outcome.attempt.result.kind, kind);
       const writes = outcome.reviewMutations.filter(m => m.kind === "upsert").map(m => m.entry);
       assert.equal(writes.length, 1);

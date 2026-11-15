@@ -48,11 +48,14 @@ test("current Claude preserves CC05 resources and all required completion units"
   assert.equal(units.length, 53);
   for (const question of track.questions) {
     const links = projectCanonicalSourceLinks(question);
-    if (question.questionId.includes("-qle-v2-")) { assert.equal(links[0]?.role, "documentation"); continue; }
-    assert.deepEqual(links.map((link) => link.role), ["documentation", "course"], question.questionId);
-    assert.equal(links[1]?.requiresAccount, true);
-    assert.equal(new URL(links[1]!.url).hostname, "anthropic-partners.skilljar.com");
-    assert.ok(links[1]?.section);
+    assert.equal(links[0]?.role, "documentation", question.questionId);
+    // The course link is optional: QLE v2 and the matrix/scenario items cite documentation only.
+    const course = links.find((link) => link.role === "course");
+    assert.ok(links.every((link) => link.role === "documentation" || link.role === "course"), question.questionId);
+    if (!course) continue;
+    assert.equal(course.requiresAccount, true);
+    assert.equal(new URL(course.url).hostname, "anthropic-partners.skilljar.com");
+    assert.ok(course.section);
   }
   const runtime = createCanonicalTrainingFamilyRuntime(track);
   for (const [index, unit] of units.entries()) {

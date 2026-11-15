@@ -13,11 +13,12 @@ test("practice answer fixture completes ten canonical submissions with the exact
     ["CCARP-D01-O01-boundary", "correct"],
     ["CCARP-D01-O01-diagnosis", "incorrect"],
     ["CCARP-D01-O01-transfer", "correct"],
-    ["CCARP-D01-O02-transfer", "partial"],
+    // exact_selected_set: one wrong option in a full-size selection scores incorrect (no partial).
+    ["CCARP-D01-O02-transfer", "incorrect"],
     ["CCARP-D01-O03-transfer", "incorrect"],
   ]);
-  assert.deepEqual(fixture.result.evidence.details, { activeForegroundMs: 0, correctCount: 7, partialCount: 1, incorrectCount: 2, pointsEarned: 15, maxPoints: 22 });
-  assert.deepEqual(fixture.previews.map((preview) => preview.feedback.result), ["correct", "incorrect", "correct", "partial", "incorrect"]);
+  assert.deepEqual(fixture.result.evidence.details, { activeForegroundMs: 0, correctCount: 7, partialCount: 0, incorrectCount: 3, pointsEarned: 11, maxPoints: 22 });
+  assert.deepEqual(fixture.previews.map((preview) => preview.feedback.result), ["correct", "incorrect", "correct", "incorrect", "incorrect"]);
   assert.deepEqual(fixture.previews[0]?.feedback.sources, [
     { host: "www.anthropic.com", url: "https://www.anthropic.com/engineering/building-effective-agents", role: "documentation" },
     {
