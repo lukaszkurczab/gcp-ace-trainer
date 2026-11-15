@@ -120,7 +120,7 @@ test("one MMKV native adapter is infrastructure-owned and runtime access stays b
   for (const path of source) {
     if (path.endsWith("src/infrastructure/storage/mmkvClient.ts")) continue;
     if (path === fixturePath || path === acmFixturePath) continue;
-    if (/infrastructure\/storage\/mmkvClient/.test(readFileSync(path, "utf8"))) assert.match(path, /src\/(?:application\/account|storage\/repositories|testing|content\/application|preferences)\//);
+    if (/infrastructure\/storage\/mmkvClient/.test(readFileSync(path, "utf8"))) assert.match(path, /src\/(?:application\/account|storage\/repositories|testing|content\/application|preferences)\/|src\/application\/coding-interview\/codingInterviewSessionFacade\.ts$/); // facade: D6 (a) answer draft (T2.2, owner decision)
   }
 });
 
