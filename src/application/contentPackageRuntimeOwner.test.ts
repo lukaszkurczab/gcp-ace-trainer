@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { approachChallengeProblemsOf } from "./coding-interview/approachChallengeCatalog";
 import { readFileSync } from "node:fs";
 import test, { before } from "node:test";
 import { getProductSimulationModeConfig } from "../content/canonical/productModeConfig";
@@ -115,7 +116,7 @@ test("a bank-only source mutation resolves only the new ACM pin and leaves the o
   const owner = new ContentPackageRuntimeOwner(() => null, async () => [], undefined, undefined, undefined, catalogOwner);
   const current = await owner.resolveForPreparation({ trackId: mutated.trackId, familyId: "coding_interview", modeId: APPROACH_CHALLENGE_MODE_ID });
   assert.equal(current.track.artifactSha256, f2);
-  assert.equal(current.track.approachChallengeProblems?.find(({ problemId }) => problemId === original.problemId)?.approachQuestion.prompt, problem.approachQuestion.prompt);
+  assert.equal(approachChallengeProblemsOf(current.track)?.find(({ problemId }) => problemId === original.problemId)?.approachQuestion.prompt, problem.approachQuestion.prompt);
   await assert.rejects(owner.resolveExactArtifact({ trackId: mutated.trackId, contentVersion: mutated.contentVersion,
     artifactSha256: f1, modeId: APPROACH_CHALLENGE_MODE_ID }),
     (error: unknown) => error instanceof ExactContentArtifactUnavailableError);

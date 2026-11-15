@@ -1,4 +1,5 @@
 import { beginStartupSpan } from "../../infrastructure/diagnostics/startupTrace";
+import { approachChallengeProblemsOf } from "./approachChallengeCatalog";
 import type { CanonicalFeedback } from "../../content/canonical/interactions/shared";
 import { canonicalInteractionRegistry } from "../../content/canonical/interactions/registry";
 import { APPROACH_CHALLENGE_MODE_ID } from "../../tracks/coding-interview/domain/algorithmModes";
@@ -99,7 +100,7 @@ export function selectCurrentApproachChallengeProblems(input: Readonly<{
 }>): ApproachChallengeSelection | ApproachChallengeUnavailable {
   try {
     const track = contentPackageRuntimeOwner.getPreparedDiscovery(APPROACH_CHALLENGE_TRACK_ID, APPROACH_CHALLENGE_MODE_ID).track;
-    const problems = track.approachChallengeProblems;
+    const problems = approachChallengeProblemsOf(track);
     if (!problems?.length) return unavailable("artifact_unavailable");
     return selectApproachChallengeProblems({ sources: problems.map((problem) => ({ problem })), contentVersion: track.contentVersion,
       artifactSha256: track.artifactSha256, completion: input.completion, access: input.access, settings: input.settings });
@@ -135,7 +136,7 @@ async function readApproachChallengeStageProjection(): Promise<ApproachChallenge
     if (!stageInfo) throw new Error("Current stage is outside the pinned manifest.");
     const exact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256, modeId: session.modeId });
     if (exact.track.contentVersion !== session.contentVersion || exact.track.artifactSha256 !== session.artifactSha256 || !exact.track.approachChallengeProblems) throw new Error("Exact paired artifact is unavailable.");
-    const problem = resolveManifestEntryProblem(stageInfo.entry, (problemId, version) => exact.track.approachChallengeProblems!.find((candidate) => candidate.problemId === problemId && candidate.problemVersion === version), session);
+    const problem = resolveManifestEntryProblem(stageInfo.entry, (problemId, version) => approachChallengeProblemsOf(exact.track)!.find((candidate) => candidate.problemId === problemId && candidate.problemVersion === version), session);
     const question = stageInfo.stage === "approach" ? problem.approachQuestion : problem.complexityQuestion;
     const attemptSet = (await loadTrainingAttempts()).value.filter((attempt) => attempt.sessionId === session.id && attempt.modeId === APPROACH_CHALLENGE_MODE_ID);
     const prior = session.itemOrder.slice(0, session.currentItemIndex);
@@ -245,7 +246,7 @@ export async function getApproachChallengeDetailedHistory(sessionId: string): Pr
         details.problemCount !== manifest.actualProblemCount || Object.entries(totals).some(([field, value]) => details[field] !== value)) throw new Error("Historical completed result does not match its durable attempts.");
     }
     const problems = manifest.entries.map((entry, problemIndex): ApproachChallengeDetailedProblem => {
-      const problem = resolveManifestEntryProblem(entry, (problemId, version) => exact.track.approachChallengeProblems!.find((candidate) => candidate.problemId === problemId && candidate.problemVersion === version), session);
+      const problem = resolveManifestEntryProblem(entry, (problemId, version) => approachChallengeProblemsOf(exact.track)!.find((candidate) => candidate.problemId === problemId && candidate.problemVersion === version), session);
       const stageRows = (["approach", "complexity"] as const).map((stage): ApproachChallengeDetailedStage => {
         const question = stage === "approach" ? problem.approachQuestion : problem.complexityQuestion;
         const occurrence = session.itemOrder[problemIndex * 2 + (stage === "approach" ? 0 : 1)]!;

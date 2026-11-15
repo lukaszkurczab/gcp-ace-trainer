@@ -77,6 +77,12 @@ export interface TrainingPresentationPort extends TrainingInteractionPort {
 }
 
 /** Neutral package projection passed across the lifecycle/family boundary. */
+/**
+ * A family-owned whole-task artifact (Approach Challenge problem). Lifecycle only
+ * routes it by identity; the owning family validates and narrows its shape.
+ */
+export type PairedTaskArtifact = Readonly<{ problemId: string; problemVersion: string }>;
+
 export interface TrainingCatalog {
   readonly trackId: TrackId;
   readonly contentVersion: string;
@@ -95,8 +101,8 @@ export interface TrainingCatalog {
   getMode(modeId: string): ProductModeConfig;
   getPool(modeId: string): readonly TrainingQuestionSummary[];
   /** Exact-package whole-task artifacts; absent until the track package publishes the paired bank. */
-  getApproachChallengeProblem?(problemId: string, problemVersion: string): import("../../content/canonical/approachChallengeProblem").ApproachChallengeProblem | undefined;
-  readonly approachChallengeProblems?: readonly import("../../content/canonical/approachChallengeProblem").ApproachChallengeProblem[];
+  getApproachChallengeProblem?(problemId: string, problemVersion: string): PairedTaskArtifact | undefined;
+  readonly approachChallengeProblems?: readonly PairedTaskArtifact[];
 }
 
 export const APPLICATION_FAILURE_CODES = [

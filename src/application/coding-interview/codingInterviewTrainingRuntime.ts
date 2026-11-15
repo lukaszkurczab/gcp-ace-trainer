@@ -11,6 +11,7 @@ import { selectPracticeQuestions } from "../canonical/practiceQuestionSelector";
 import { isCanonicalOptionOrder, prepareCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { canonicalInteractionRegistry } from "../../content/canonical/interactions/registry";
+import { asApproachChallengeProblem } from "./approachChallengeCatalog";
 import { validateApproachChallengeProblem, validateApproachChallengeProblemRef, type ApproachChallengeProblem, type ApproachChallengeProblemRef } from "../../content/canonical/approachChallengeProblem";
 import { APPROACH_CHALLENGE_MODE_ID } from "../../tracks/coding-interview/domain/algorithmModes";
 import { approachChallengeOccurrenceRef, approachChallengeStageForOccurrence, decodeApproachChallengeManifest, encodeApproachChallengeManifest, resolveManifestEntryProblem, type ApproachChallengeManifest, type ApproachChallengeManifestEntry } from "./approachChallengeSession";
@@ -283,13 +284,17 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
   }
 
   private resolveApproachChallengeProblem(ref: ApproachChallengeProblemRef): ApproachChallengeProblem {
-    const problem = this.catalog.getApproachChallengeProblem?.(ref.problemId, ref.problemVersion);
+    const problem = this.pairedProblem(ref.problemId, ref.problemVersion);
     if (!problem || validateApproachChallengeProblem(problem).length > 0 || validateApproachChallengeProblemRef(ref, problem, this.catalog).length > 0) throw new ProductModeUnavailableError("The exact pinned Approach Challenge artifact is unavailable.");
     return problem;
   }
 
   private resolveManifestProblem(entry: ApproachChallengeManifestEntry, session: TrainingSession): ApproachChallengeProblem {
-    return resolveManifestEntryProblem(entry, (problemId, version) => this.catalog.getApproachChallengeProblem?.(problemId, version), session);
+    return resolveManifestEntryProblem(entry, (problemId, version) => this.pairedProblem(problemId, version), session);
+  }
+
+  private pairedProblem(problemId: string, problemVersion: string): ApproachChallengeProblem | undefined {
+    return asApproachChallengeProblem(this.catalog.getApproachChallengeProblem?.(problemId, problemVersion));
   }
 
   private mode(modeId: string): ProductModeConfig { try { return this.catalog.getMode(modeId); } catch { throw new ProductModeUnavailableError(`Coding Interview mode ${modeId} is unavailable.`); } }

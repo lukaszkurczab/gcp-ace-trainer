@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { approachChallengeProblemsOf } from "./approachChallengeCatalog";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
@@ -342,7 +343,7 @@ test("production consumer composes the actual bank pair, durable feedback, compl
   await provisionGuestInstallation({ async create() { return { installationId: "55555555-5555-4555-8555-555555555555", localDatasetId: "66666666-6666-4666-8666-666666666666" }; } });
   const resolved = await contentPackageRuntimeOwner.resolveForPreparation({ trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", modeId: APPROACH_CHALLENGE_MODE_ID });
   const track = resolved.track;
-  const problem = track.approachChallengeProblems?.find((candidate) => candidate.problemId === "acm-b01-01");
+  const problem = approachChallengeProblemsOf(track)?.find((candidate) => candidate.problemId === "acm-b01-01");
   assert.ok(problem, "the current prepared bank contains the expected W01 production pair");
   let productionSessionId = 0;
   const lifecycle = composeTrainingLifecycleUseCases({
@@ -880,7 +881,7 @@ async function startActualProductionBankSession(sessionId: string) {
   const storage = installMemoryStorage();
   await provisionGuestInstallation({ async create() { return { installationId: "77777777-7777-4777-8777-777777777777", localDatasetId: "88888888-8888-4888-8888-888888888888" }; } });
   const resolved = await contentPackageRuntimeOwner.resolveForPreparation({ trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", modeId: APPROACH_CHALLENGE_MODE_ID });
-  const problem = resolved.track.approachChallengeProblems?.find((candidate) => candidate.problemId === "acm-b01-01");
+  const problem = approachChallengeProblemsOf(resolved.track)?.find((candidate) => candidate.problemId === "acm-b01-01");
   assert.ok(problem, "the actual canonical bank must contain the ACM.B01 W01 pair");
   const lifecycle = composeTrainingLifecycleUseCases({
     premiumSessionAdmission: { authorize: async () => "allowed" },
@@ -1040,7 +1041,7 @@ test("exact ACM history metadata and authored Q1 details stay read-only across l
   // The provider is modeled here to vary only teaching text, never the pinned scoring contract.
   contentPackageRuntimeOwner.resolveExactArtifact = async (input) => {
     const exact = await resolve(input);
-    return { ...exact, track: { ...exact.track, approachChallengeProblems: exact.track.approachChallengeProblems!.map(candidate => candidate.problemId === problem.problemId
+    return { ...exact, track: { ...exact.track, approachChallengeProblems: approachChallengeProblemsOf(exact.track)!.map(candidate => candidate.problemId === problem.problemId
       ? { ...candidate, approachQuestion: { ...candidate.approachQuestion, feedback: { ...candidate.approachQuestion.feedback, details: authored } } }
       : candidate) } };
   };

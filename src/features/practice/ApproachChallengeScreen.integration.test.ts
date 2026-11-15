@@ -89,6 +89,7 @@ const sessionFacade = loadComponent("../../application/coding-interview/approach
   "../../content/canonical/interactions/registry": require("../../content/canonical/interactions/registry.ts"),
   "../../tracks/coding-interview/domain/algorithmModes": require("../../tracks/coding-interview/domain/algorithmModes.ts"),
   "../../content/canonical/approachChallengeProblem": { APPROACH_CHALLENGE_TRACK_ID: codingArtifact.trackId },
+  "./approachChallengeCatalog": require("../../application/coding-interview/approachChallengeCatalog.ts"),
   "../contentPackageRuntimeOwner": { contentPackageRuntimeOwner },
   "../learningReadModels": { loadActiveTrainingSession: async () => null, loadTrainingAttempts: async () => ({ value: [] }) },
   "../trainingLifecycle": { getForegroundSessionTimerFacade: () => ({ initialize: async () => undefined }) },
@@ -179,6 +180,7 @@ const approachChallengeScreen = loadComponent("./ApproachChallengeScreen.tsx", {
   "../../constants": { ROUTES: { PRACTICE_HUB: "PracticeHub", HOME: "Home", ACTIVITY: "Activity", APPROACH_CHALLENGE: "ApproachChallenge", APPROACH_CHALLENGE_REVIEW: "ApproachChallengeReview" } },
   "../../tracks/coding-interview/generated/algorithmTaxonomyStructure.generated": require("../../tracks/coding-interview/generated/algorithmTaxonomyStructure.generated.ts"),
   "../../domain": require("../../domain/index.ts"),
+  "../../domain/learning/trainingAttemptModes": { CODING_INTERVIEW_TRACK_ID: codingArtifact.trackId },
   "../../application/contentPackageRuntimeOwner": { contentPackageRuntimeOwner },
   "../../application/learningReadModels": {
     loadActiveTrainingSession: async () => { activeSessionReads.count += 1; return activeSessionReads.value; },
