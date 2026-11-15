@@ -10,6 +10,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   statSync,
   symlinkSync,
@@ -169,7 +170,8 @@ async function withMutation(mutate, assertion) {
 }
 
 before(async () => {
-  fixtureRoot = mkdtempSync(join(tmpdir(), "patternly-gate03-"));
+  // macOS tmpdir() is under /var -> /private/var; the manifest rejects symlinked roots.
+  fixtureRoot = mkdtempSync(join(realpathSync(tmpdir()), "patternly-gate03-"));
   outputRoot = join(fixtureRoot, "evidence-output");
   mkdirSync(outputRoot);
   backendFixtureRoot = makeWorkingTreeFixture("backend", backendRoot);
