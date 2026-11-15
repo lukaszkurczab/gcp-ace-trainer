@@ -14,12 +14,16 @@ export function resolveCocoaPodsRuntime(cwd) {
   if (!rubyPath || rubyVersion.error || rubyVersion.status !== 0 || rubyVersion.stdout !== "3.3.6") {
     throw new Error("CocoaPods preflight requires the verified Ruby 3.3.6 runtime.");
   }
-  const wrapperLookup = spawnSync("which", ["pod"], { cwd, env, encoding: "utf8" });
+  // Every `pod` on PATH, in order: an rbenv shim may come first, so pick the
+  // first one that is the installed wrapper with its private GEM_HOME.
+  const wrapperLookup = spawnSync("which", ["-a", "pod"], { cwd, env, encoding: "utf8" });
   if (wrapperLookup.error || wrapperLookup.status !== 0) throw new Error("CocoaPods preflight cannot resolve its installed command wrapper.");
-  const wrapperPath = wrapperLookup.stdout.trim();
-  const wrapper = readFileSync(wrapperPath, "utf8");
-  const match = wrapper.match(/^GEM_HOME="([^"]+)" exec "([^"]+)"\s+"\$@"\s*$/mu);
-  if (!match || !existsSync(match[2])) throw new Error("CocoaPods preflight cannot resolve its installed command wrapper.");
+  let match = null;
+  for (const wrapperPath of wrapperLookup.stdout.split("\n").map((line) => line.trim()).filter(Boolean)) {
+    const candidate = readFileSync(wrapperPath, "utf8").match(/^GEM_HOME="([^"]+)" exec "([^"]+)"\s+"\$@"\s*$/mu);
+    if (candidate && existsSync(candidate[2])) { match = candidate; break; }
+  }
+  if (!match) throw new Error("CocoaPods preflight cannot resolve its installed command wrapper.");
   const podEnvironment = { ...env, GEM_HOME: match[1] };
   const podVersion = spawnSync(rubyPath, [match[2], "--version"], { cwd, env: podEnvironment, encoding: "utf8" });
   if (podVersion.error || podVersion.status !== 0 || podVersion.stdout.trim() !== "1.16.2") {
