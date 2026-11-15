@@ -442,7 +442,8 @@ export async function resumeAlgorithmsPracticeAnswerDraft(): Promise<PracticeAns
   const replayable = projection.operation.kind === "unanswered" || (projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction === "submit_again");
   if (!replayable) return "pending_recovery";
   try {
-    await submitAlgorithmsPracticeResponse(draft.response as unknown as AlgorithmResponse);
+    // The command validates the replayed response; an invalid one is rejected below.
+    await submitAlgorithmsPracticeResponse(draft.response as AlgorithmResponse);
   } catch (error) {
     // A response the command rejects can never commit; anything else is retried on the next open.
     if (error instanceof TrainingApplicationFailure && error.code === "invalid_response") clearAlgorithmsPracticeAnswerDraft();

@@ -187,7 +187,7 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
     for (const [index, selected] of selection.problems.entries()) {
       if (!isRecord(selected) || !isRecord(selected.problemRef) || !Array.isArray(selected.requiredFamilyIds) || typeof selected.primaryFamilyId !== "string" ||
         !("problemId" in selected.problemRef) || typeof selected.problemRef.problemId !== "string" || typeof selected.problemRef.problemVersion !== "string") throw new ProductModeUnavailableError("Approach Challenge task reference is invalid.");
-      const problem = this.resolveApproachChallengeProblem(selected.problemRef as unknown as ApproachChallengeProblemRef);
+      const problem = this.resolveApproachChallengeProblem(selected.problemRef as ApproachChallengeProblemRef);
       if (problem.primaryFamilyId !== selected.primaryFamilyId || JSON.stringify(problem.requiredFamilyIds) !== JSON.stringify(selected.requiredFamilyIds) || problem.difficulty !== selected.difficulty) throw new ProductModeUnavailableError("Approach Challenge selector metadata does not match the exact pinned task.");
       const approachOccurrenceId = `${sessionId}:occurrence:${index * 2}`;
       const complexityOccurrenceId = `${sessionId}:occurrence:${index * 2 + 1}`;
