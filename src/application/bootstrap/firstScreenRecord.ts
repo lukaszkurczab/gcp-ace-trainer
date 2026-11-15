@@ -20,7 +20,7 @@
  *
  * D23: an exact `schema` match is required, with no migration. A mismatch shows the neutral screen.
  */
-import { setProfileKeyWriteObserver } from "../../infrastructure/storage/profileStorageRouter";
+import { setProfileKeyWriteObserver, setProfileRegistryCommitObserver } from "../../infrastructure/storage/profileStorageRouter";
 
 export const FIRST_SCREEN_SCHEMA = 2 as const;
 /** Upper bound for the serialized record; larger views are not written (the native screen stays neutral). */
@@ -176,7 +176,7 @@ export function writeFirstScreenWelcome(input: Readonly<{ capturedAt: string; lo
   });
 }
 
-/** Sign-out, deletion, history reset, actor change, any input write. Never throws. */
+/** Sign-out, deletion, history reset, actor change, profile registry commit, any input write. Never throws. */
 export function clearFirstScreenRecord(): void {
   lastWritten = null;
   if (!sink) {
@@ -192,6 +192,7 @@ export function clearFirstScreenRecord(): void {
 }
 
 setProfileKeyWriteObserver(noteProfileKeyWrite);
+setProfileRegistryCommitObserver(clearFirstScreenRecord);
 
 /** Tests only. */
 export function resetFirstScreenRecordForTests(): void {

@@ -782,6 +782,21 @@ function observeProfileKeyWrite(key: string): void {
   try { profileKeyWriteObserver(key); } catch { /* A derived-cache drop never blocks a write. */ }
 }
 
+let profileRegistryCommitObserver: (() => void) | null = null;
+
+/**
+ * T2.5: told before every profile registry commit (selection, promotion, guest removal), so the
+ * native first-screen record never outlives the registry it was rendered under. Never throws.
+ */
+export function setProfileRegistryCommitObserver(observer: (() => void) | null): void {
+  profileRegistryCommitObserver = observer;
+}
+
+function observeProfileRegistryCommit(): void {
+  if (!profileRegistryCommitObserver) return;
+  try { profileRegistryCommitObserver(); } catch { /* A derived-cache drop never blocks a commit. */ }
+}
+
 export function createProfileScopedStorage(base: KeyValueStorage, profile: StorageProfile, isTransitionActive: () => boolean = () => false): KeyValueStorage {
   const map = (key: string) => physicalKey(profile.id, key);
   const check = () => { if (isTransitionActive()) throw new ProfileTransitionActiveError(); };
@@ -1247,6 +1262,7 @@ async function commitRegistry(control: StorageManifestStore, previous: ProfileRe
   const targetIndex = slots.findIndex((value) => value === null || parseRegistry(value)?.generation !== previous.generation);
   if (targetIndex < 0) throw new ProfileStorageError("profile_registry_corrupt");
   const serialized = JSON.stringify(next);
+  observeProfileRegistryCommit();
   await control.set(ROOT_KEYS[targetIndex]!, serialized);
   const verify = await control.get(ROOT_KEYS[targetIndex]!);
   if (verify !== serialized || !parseRegistry(verify)) throw new ProfileStorageError("profile_registry_corrupt");
