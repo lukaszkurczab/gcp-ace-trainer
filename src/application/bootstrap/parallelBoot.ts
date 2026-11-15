@@ -163,7 +163,7 @@ export function createStartupRevalidation<Result>(dependencies: Readonly<{
  * account provider reports the boundary; Home's Today snapshot registers.
  */
 export type StartupCacheStore = Readonly<{ remove(key: string): void }>;
-/** Persisted Today snapshot (derived, per actor; format in `features/home/todaySnapshot.ts`). */
+/** Persisted Today snapshot (derived, per actor; format in `application/home/todaySnapshot.ts`). */
 export const TODAY_SNAPSHOT_STORE_KEY = "patternly:derived:v1:today-snapshot";
 /** T3.3a: the persisted account-progress sweep (owned by the API client adapter; same key). */
 export const PROGRESS_SNAPSHOT_STORE_KEY = "patternly:derived:v1:progress-snapshot-cache";

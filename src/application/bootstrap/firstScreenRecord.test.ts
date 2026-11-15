@@ -19,7 +19,7 @@ import { setProfileKeyWriteObserver } from "../../infrastructure/storage/profile
 import { createProfileScopedStorage } from "../../infrastructure/storage/profileStorageRouter";
 import { noteProfileKeyWrite as observer } from "./firstScreenRecord";
 import { notifyActorBoundary } from "./parallelBoot";
-import { isTodayInputKey } from "../../features/home/todaySnapshot";
+import { isTodayInputKey } from "../home/todaySnapshot";
 import { STORAGE_NAMESPACE } from "../../storage/keys";
 
 function fakeSink() {

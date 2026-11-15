@@ -12,7 +12,7 @@ import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperat
 import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame, onActorBoundary } from "../../application/bootstrap/parallelBoot";
 import { isSha256Utf8Accelerated } from "../../domain/identity/sha256";
 import { captureFirstScreenInputEpoch, writeFirstScreenToday, type FirstScreenTodayView } from "../../application/bootstrap/firstScreenRecord";
-import { computeTodayStoreRevision, invalidateTodaySnapshot, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "./todaySnapshot";
+import { computeTodayStoreRevision, invalidateTodaySnapshot, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "../../application/home/todaySnapshot";
 import contentTrustManifest from "../../content/generated/content-trust-manifest.json";
 
 import {
