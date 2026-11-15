@@ -1,0 +1,17 @@
+{
+  "name": "PatternlyFirstScreen",
+  "version": "1.0.0",
+  "summary": "Patternly native first screen (T2.5): SwiftUI overlay drawn from the first-screen record before React Native",
+  "homepage": "https://github.com/lukaszkurczab/gcp-ace-trainer",
+  "license": { "type": "Proprietary" },
+  "authors": "Patternly",
+  "source": { "git": "https://github.com/lukaszkurczab/gcp-ace-trainer.git" },
+  "platforms": { "ios": "16.4" },
+  "swift_versions": ["5.9"],
+  "source_files": "swift/*.{swift,mm}",
+  "resource_bundles": { "PatternlyFirstScreen": ["swift/FirstScreenAssets.xcassets"] },
+  "frameworks": ["Foundation", "UIKit", "SwiftUI", "Security", "QuartzCore"],
+  "requires_arc": true,
+  "dependencies": { "NitroModules": ["0.36.1"] },
+  "pod_target_xcconfig": { "CLANG_CXX_LANGUAGE_STANDARD": "c++20", "DEFINES_MODULE": "YES" }
+}

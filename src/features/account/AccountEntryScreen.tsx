@@ -35,6 +35,8 @@ import {
   ScreenHeader,
 } from "../../components";
 import { PatternlyMark } from "../../components/PatternlyMark";
+import { handOverFirstScreenToAccount } from "../../application/bootstrap/firstScreenHandover";
+import { reportFirstScreenReady } from "../../infrastructure/runtime/firstScreenNative";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
 import { parseProviderAuthFixtureUrl, type ProviderAuthFixtureCommand } from "../../infrastructure/firebase/providerAuthFixtureCommand";
@@ -371,6 +373,12 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const slaUsableEntry = SLA_TRACE && ((account.state.kind === "signedOut" && (mode === "entry" || mode === "signIn"))
     || (account.state.kind === "guestAccessBlocked" && mode === "signIn"));
   useLayoutEffect(() => { if (slaUsableEntry) markFirstUsableFrame(); }, [slaUsableEntry]);
+  // T2.5: any account surface is React Native's first usable frame for the native first screen.
+  // The welcome branch reports first (child effect) and runs a tapped welcome action.
+  useEffect(() => {
+    const frame = globalThis.requestAnimationFrame?.(() => reportFirstScreenReady("account"));
+    return () => { if (frame !== undefined) globalThis.cancelAnimationFrame?.(frame); };
+  }, []);
 
   const screenEdges: Edge[] = ["top", "bottom"];
   if (account.state.kind === "providerRegistrationRequired") return (
@@ -1222,6 +1230,18 @@ function WelcomeScreen({
       },
     });
   }, [appearance, locale, tCommon, text]);
+  // T2.5: hand over from the native welcome and run the button tapped on it, once.
+  const handlers = useRef({ onContinueAsGuest, onRegister, onSignIn });
+  handlers.current = { onContinueAsGuest, onRegister, onSignIn };
+  useEffect(() => {
+    const frame = globalThis.requestAnimationFrame?.(() => {
+      const action = handOverFirstScreenToAccount();
+      if (action === "sign_in") handlers.current.onSignIn();
+      else if (action === "create_account") handlers.current.onRegister();
+      else if (action === "continue_guest") handlers.current.onContinueAsGuest();
+    });
+    return () => { if (frame !== undefined) globalThis.cancelAnimationFrame?.(frame); };
+  }, []);
   return (
     <Screen
       backgroundColor={colors.background}

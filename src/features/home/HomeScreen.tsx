@@ -12,6 +12,7 @@ import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperat
 import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame, onActorBoundary } from "../../application/bootstrap/parallelBoot";
 import { isSha256Utf8Accelerated } from "../../domain/identity/sha256";
 import { captureFirstScreenInputEpoch, writeFirstScreenToday, type FirstScreenTodayView } from "../../application/bootstrap/firstScreenRecord";
+import { handOverFirstScreenToToday, type FirstScreenTodayAction } from "../../application/bootstrap/firstScreenHandover";
 import { computeTodayStoreRevision, invalidateTodaySnapshot, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "../../application/home/todaySnapshot";
 import contentTrustManifest from "../../content/generated/content-trust-manifest.json";
 
@@ -177,6 +178,9 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   // T2.5: the read behind the committed `data`, for the native first-screen record.
   const firstScreenSourceRef = useRef<Readonly<{ epoch: number; profileId: string; actor: string; revision: string; capturedAt: string }> | null>(null);
   const preferences = useAppPreferences();
+  // T2.5: the action tapped on the native first screen (run by HomeTab), or the "Today changed" notice.
+  const [firstScreenAction, setFirstScreenAction] = useState<Readonly<{ id: string; action: FirstScreenTodayAction }> | null>(null);
+  const [firstScreenNotice, setFirstScreenNotice] = useState(false);
   const onFirstScreenView = useCallback((view: FirstScreenTodayView) => {
     const source = firstScreenSourceRef.current;
     if (!source) return;
@@ -408,9 +412,22 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   // committed Today (or its error/onboarding surface), whether or not tracing is on.
   useLayoutEffect(() => {
     if (!hasLoadedActiveTrack || hasStartupFirstUsableFrame()) return;
+    const firstFrame = () => {
+      // T2.5: hand over from the native first screen before deferred start work is released.
+      const source = firstScreenSourceRef.current;
+      const take = handOverFirstScreenToToday({ profileId: source?.profileId ?? "", revision: source?.revision ?? "" });
+      if (take.kind === "run") {
+        if (take.action === "open_tab:practice") navigation.navigate(ROUTES.PRACTICE_HUB);
+        else if (take.action === "open_tab:progress") handleHomeTabChange("progress");
+        else if (take.action === "open_tab:settings") handleHomeTabChange("settings");
+        else setFirstScreenAction({ id: take.id, action: take.action });
+      } else if (take.kind === "stale") setFirstScreenNotice(true);
+      notifyStartupFirstUsableFrame();
+    };
     try {
-      globalThis.requestAnimationFrame(() => notifyStartupFirstUsableFrame());
-    } catch { notifyStartupFirstUsableFrame(); }
+      globalThis.requestAnimationFrame(firstFrame);
+    } catch { firstFrame(); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasLoadedActiveTrack]);
 
   // S1a/S1b/S4 (Plan §1): the frame that shows Today with this focus's committed shell read.
@@ -745,6 +762,9 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               homePlan={data.homePlan}
               goalInvitationAudience={account.state.kind === "authenticated" ? "account" : "guest"}
               onFirstScreenView={onFirstScreenView}
+              firstScreenAction={firstScreenAction}
+              firstScreenNotice={firstScreenNotice}
+              onFirstScreenActionSettled={(notice) => { setFirstScreenAction(null); if (notice) setFirstScreenNotice(true); }}
               showGoalInvitation={(account.state.kind === "guest" || (account.state.kind === "authenticated"
                 && account.state.accountData.status === "synced"
                 && account.state.accountData.pendingMutationCount === 0

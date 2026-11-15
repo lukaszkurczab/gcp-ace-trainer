@@ -27,6 +27,7 @@ import {
 import { localizeHomePlanArea } from "../homePlanUiContract";
 import { MAIN_TAB_ITEMS } from "../shellModel";
 import type { FirstScreenTodayView } from "../../../application/bootstrap/firstScreenRecord";
+import type { FirstScreenTodayAction } from "../../../application/bootstrap/firstScreenHandover";
 
 
 type HomeTabProps = {
@@ -55,6 +56,11 @@ type HomeTabProps = {
   trainingAttempts: readonly TrainingAttempt[];
   /** T2.5: the strings this render shows, for the native first screen of the next launch. */
   onFirstScreenView?: (view: FirstScreenTodayView) => void;
+  /** T2.5: an action tapped on the native first screen, run once through this tab's own handlers. */
+  firstScreenAction?: Readonly<{ id: string; action: FirstScreenTodayAction }> | null;
+  /** T2.5: the tapped action no longer matched Today ("Today changed. Choose again."). */
+  firstScreenNotice?: boolean;
+  onFirstScreenActionSettled?: (notice: boolean) => void;
 };
 
 type HomeActionKey = "focus" | "activity";
@@ -150,6 +156,9 @@ export function HomeTab({
   showGoalInvitation,
   trainingAttempts,
   onFirstScreenView,
+  firstScreenAction,
+  firstScreenNotice,
+  onFirstScreenActionSettled,
 }: HomeTabProps) {
   const usableLayoutMeasured = useRef(false);
   const styles = useThemedStyles(createStyles);
@@ -296,6 +305,48 @@ export function HomeTab({
     if (firstScreenView && onFirstScreenView && !dashboardError) onFirstScreenView(firstScreenView);
   }, [firstScreenView, onFirstScreenView, dashboardError]);
 
+  function runPrimary(): void {
+    if (homePlanReady) {
+      onHomePlanAction(readyHomePlan.guidance.home.primary);
+      return;
+    }
+    if (homePlanUnavailable) {
+      onRetryHomePlan();
+      return;
+    }
+    if (recommendation) {
+      if (recommendation.action.kind === "start_single_case") markStartup("claude_case_start");
+      onRecommendationAction(recommendation.action);
+      return;
+    }
+    onStartLearning(model.topicId);
+  }
+
+  // T2.5: the native first screen's tapped control, if this Today still offers it (else the notice).
+  function firstScreenHandler(action: FirstScreenTodayAction): (() => void) | null {
+    switch (action) {
+      case "primary": return decisionEnabled ? runPrimary : null;
+      case "secondary": return renderedSecondary ? (isRecommendationSettingsAction ? onOpenSettings : onChooseTopic) : null;
+      case "change_track": return onChangeTrack;
+      case "open_practice_topic": return isFirstUse ? null : onChooseTopic;
+      case "open_activity": return isFirstUse ? null : onOpenActivity;
+      case "goal_set": return showGoalInvitation ? onSetGoal : null;
+      case "goal_not_now": return showGoalInvitation ? () => { void dismissGoalOnboarding(); } : null;
+      case "secondary_plan": return secondaryPlan ? () => onHomePlanAction(secondaryPlan.guidance.home.primary) : null;
+      default: return null;
+    }
+  }
+  const settledFirstScreenAction = useRef<string | null>(null);
+  useEffect(() => {
+    if (!firstScreenAction || settledFirstScreenAction.current === firstScreenAction.id) return;
+    settledFirstScreenAction.current = firstScreenAction.id;
+    const handler = firstScreenHandler(firstScreenAction.action);
+    onFirstScreenActionSettled?.(handler === null);
+    handler?.();
+  // Runs once per tapped action id, against the Today rendered in this commit.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstScreenAction]);
+
   function recordActionWidth(key: HomeActionKey, width: number): void {
     setActionMeasurements((current) => {
       const widths = current.key === actionMeasurementKey ? current.widths : { activity: 0, focus: 0 };
@@ -350,6 +401,11 @@ export function HomeTab({
         </Pressable>
       </View>
 
+      {firstScreenNotice ? (
+        <Text accessibilityLiveRegion="polite" maxFontSizeMultiplier={2} style={styles.firstScreenNotice} testID="home-first-screen-notice">
+          {t("Today changed. Choose again.")}
+        </Text>
+      ) : null}
       <HomeDecisionCard
         largeText={largeText} stretchCopy={largeText && activeTrack.id === "claude-certified-architect-professional-certification"}
         icon={decisionIcon} muted={decisionTone === "muted"} enabled={decisionEnabled}
@@ -384,22 +440,7 @@ export function HomeTab({
               ? runtimeSelectors.targetDateGuidance.primary("home")
               : runtimeSelectors.home.primaryAction()}
 
-          onPrimary={() => {
-            if (homePlanReady) {
-              onHomePlanAction(readyHomePlan.guidance.home.primary);
-              return;
-            }
-            if (homePlanUnavailable) {
-              onRetryHomePlan();
-              return;
-            }
-            if (recommendation) {
-              if (recommendation.action.kind === "start_single_case") markStartup("claude_case_start");
-              onRecommendationAction(recommendation.action);
-              return;
-            }
-            onStartLearning(model.topicId);
-          }}
+          onPrimary={runPrimary}
       />
       {secondaryPlan && secondaryPlanPresentation ? <Card style={styles.decisionCard}>
         <Text maxFontSizeMultiplier={2} style={styles.decisionTitle}>{secondaryPlanPresentation.stateLabel}</Text>
@@ -673,6 +714,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     height: 32,
     justifyContent: "center",
     width: 32,
+  },
+  firstScreenNotice: {
+    ...typography.small,
+    color: palette.textSecondary,
   },
   changeTrack: {
     color: palette.primary,

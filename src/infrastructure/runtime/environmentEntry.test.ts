@@ -41,6 +41,8 @@ function entry(rawMarker: string | null, configMatches = true) {
     if (name === "./environmentGuard") return { ...guardModule, createNativeEnvironmentMarkerStore: () => ({ get: async () => raw, set: async (value: string) => { writes++; raw = value; } }) };
     if (name === "./environmentIdentity") return { readEnvironmentIdentity: () => identity };
     if (name === "expo-constants") return { default: { expoConfig: { extra: { patternlyEnvironmentFingerprint: configMatches ? identity.fingerprint : "b".repeat(64) } } } };
+    // T2.5: the native first-screen port only calls Nitro; it opens no durable state.
+    if (name === "./firstScreenNative") return { reportFirstScreenReady: () => undefined };
     return assert.fail(`Unexpected pre-gate dependency: ${name}`);
   }).default;
   const app = compile(new URL("../../../App.tsx", import.meta.url), (name) => {

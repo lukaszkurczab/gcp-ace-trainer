@@ -259,6 +259,7 @@ function createExpoConfig(environment = process.env) {
               { name: "RecaptchaInterop", modular_headers: true },
               { name: "PatternlyForegroundClock", path: "../native/foreground-clock" },
               { name: "PatternlyCore", path: "../native/patternly-core" },
+              { name: "PatternlyFirstScreen", path: "../native/first-screen" },
             ],
           },
           android: { minSdkVersion: 28, targetSdkVersion: 36, compileSdkVersion: 36 },
@@ -266,6 +267,8 @@ function createExpoConfig(environment = process.env) {
         "./plugins/withPrivacyBoundary",
         // T1.6: Firebase after startReactNative; perf-build native launch markers.
         "./plugins/withDeferredNativeStartup",
+        // T2.5: native first screen from the first-screen record; React Native starts eagerly behind it.
+        "./plugins/withNativeFirstScreen",
         "./plugins/withAndroidForegroundClock",
         ...(environment.EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID ? ["./plugins/withAndroidClockProbe"] : []),
       ],

@@ -19,8 +19,12 @@ test("Home stacks quiet-layered context and decision metadata at large text size
   const primaryButton = source.match(/<HomeDecisionCard[\s\S]*?onPrimary=\{[\s\S]*?\n      \/>/)?.[0];
   assert.match(card, /<Button disabled=\{!enabled\} onPress=\{onPrimary\}/);
   assert.ok(primaryButton, "the primary decision button remains present");
-  assert.match(primaryButton, /onHomePlanAction\(readyHomePlan\.guidance\.home\.primary\)/);
-  assert.match(primaryButton, /onRetryHomePlan\(\)/);
-  assert.match(primaryButton, /onRecommendationAction\(recommendation\.action\)/);
-  assert.match(primaryButton, /onStartLearning\(model\.topicId\)/);
+  // T2.5: the button and a tap queued on the native first screen share one named handler.
+  assert.match(primaryButton, /onPrimary=\{runPrimary\}/);
+  const primaryHandler = source.match(/function runPrimary\(\): void \{[\s\S]*?\n  \}\n/)?.[0];
+  assert.ok(primaryHandler, "the primary handler remains present");
+  assert.match(primaryHandler, /onHomePlanAction\(readyHomePlan\.guidance\.home\.primary\)/);
+  assert.match(primaryHandler, /onRetryHomePlan\(\)/);
+  assert.match(primaryHandler, /onRecommendationAction\(recommendation\.action\)/);
+  assert.match(primaryHandler, /onStartLearning\(model\.topicId\)/);
 });

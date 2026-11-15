@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactElement } from "react";
 import { ActivityIndicator, Alert, Pressable, SafeAreaView, Text, View } from "react-native";
 import { createEnvironmentGuard, createNativeEnvironmentMarkerStore, EnvironmentGuardError, type EnvironmentGuardState } from "./environmentGuard";
 import { readEnvironmentIdentity, type EnvironmentIdentity } from "./environmentIdentity";
+import { reportFirstScreenReady } from "./firstScreenNative";
 
 type Guard = ReturnType<typeof createEnvironmentGuard>;
 type State = Readonly<{ kind: "loading" | EnvironmentGuardState | "error"; code?: string; identity?: EnvironmentIdentity }>;
@@ -29,8 +30,11 @@ export default function EnvironmentGate({ loadApplication }: Readonly<{ loadAppl
       const { guard, identity } = environmentRuntime();
       const kind = await guard.inspect();
       if (active) setState({ kind, identity });
+      // T2.5: a terminal environment surface is React Native's first usable frame (the overlay leaves at once).
+      if (active && kind !== "ready") reportFirstScreenReady("other");
     }).catch((error: unknown) => {
       if (active) setState({ kind: "error", code: error instanceof EnvironmentGuardError ? error.code : "environment_identity_configuration_invalid" });
+      reportFirstScreenReady("other");
     });
     return () => { active = false; };
   }, [revision]);

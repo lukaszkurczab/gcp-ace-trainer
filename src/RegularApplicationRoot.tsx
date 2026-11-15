@@ -19,8 +19,11 @@ import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfile
 import { isParallelBootEnabled, startBundledContentPrefetch } from "./application/bootstrap/parallelBoot";
 import { contentPackageRuntimeOwner } from "./application/contentPackageRuntimeOwner";
 import { installProgressSnapshotPersistence } from "./application/account/progressSnapshotPersistence";
+import { installFirstScreenHandover } from "./application/bootstrap/firstScreenHandover";
 
 installProgressSnapshotPersistence();
+// T2.5: native first-screen record sink and the overlay handover fallback.
+installFirstScreenHandover();
 
 export default function RegularApplicationRoot() {
   // T2.3: verify bundled content while profile storage, auth and the account
