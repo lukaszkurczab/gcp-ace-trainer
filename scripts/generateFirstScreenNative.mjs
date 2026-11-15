@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // T2.5 stage 3: generates the native first screen's design inputs from the React Native sources, so the
 // two stacks cannot drift by hand:
-//   - native/first-screen/ios/FirstScreenTokens.swift   ← src/theme/tokens.ts (colors light/dark, spacing, radius, type)
-//   - native/first-screen/ios/FirstScreenStrings.swift  ← src/locales/<locale>/common.json (the few native-only strings)
-//   - native/first-screen/ios/FirstScreenAssets.xcassets ← src/assets/icons/*.svg (template) + brand marks
+//   - native/first-screen/swift/FirstScreenTokens.swift   ← src/theme/tokens.ts (colors light/dark, spacing, radius, type)
+//   - native/first-screen/swift/FirstScreenStrings.swift  ← src/locales/<locale>/common.json (the few native-only strings)
+//   - native/first-screen/swift/FirstScreenAssets.xcassets ← src/assets/icons/*.svg (template) + brand marks
 // Run: node --import tsx scripts/generateFirstScreenNative.mjs [--check]
 // `--check` exits 1 when a generated file is missing or differs (used by the test suite).
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -11,7 +11,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = path.join(ROOT, "native/first-screen/ios");
+const OUT = path.join(ROOT, "native/first-screen/swift");
 const LOCALES = ["en", "de", "es", "et", "fr", "it", "pl"];
 /** Native-only strings: key in `common.json` → Swift name. Everything else comes rendered in the record. */
 const STRINGS = { "Loading…": "loading", "Opening…": "opening" };

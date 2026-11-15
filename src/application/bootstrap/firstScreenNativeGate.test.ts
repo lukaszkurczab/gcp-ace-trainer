@@ -1,5 +1,5 @@
 /**
- * T2.5 stage 2: the native first-screen gate (`native/first-screen/ios/FirstScreenGate.swift`) decides on
+ * T2.5 stage 2: the native first-screen gate (`native/first-screen/swift/FirstScreenGate.swift`) decides on
  * values produced by the real TS storage code (profile router, local logout control, record writer).
  * The Swift files are compiled with `swiftc` into a small CLI; on hosts without `swiftc` the parity cases skip.
  */
@@ -24,7 +24,7 @@ import {
 } from "./firstScreenRecord";
 
 const ROOT = path.resolve(__dirname, "../../..");
-const SWIFT_SOURCES = ["native/first-screen/ios/FirstScreenRecord.swift", "native/first-screen/ios/FirstScreenGate.swift", "native/first-screen/test/main.swift"]
+const SWIFT_SOURCES = ["native/first-screen/swift/FirstScreenRecord.swift", "native/first-screen/swift/FirstScreenGate.swift", "native/first-screen/test/main.swift"]
   .map((file) => path.join(ROOT, file));
 const swiftAvailable = process.platform === "darwin" && spawnSync("swiftc", ["--version"], { stdio: "ignore" }).status === 0;
 

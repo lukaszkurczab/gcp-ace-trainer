@@ -12,7 +12,7 @@ import { checkGenerated, renderStrings, renderTokens } from "../../../scripts/ge
 import * as tokens from "../../theme/tokens";
 
 const ROOT = path.resolve(__dirname, "../../..");
-const IOS = path.join(ROOT, "native/first-screen/ios");
+const IOS = path.join(ROOT, "native/first-screen/swift");
 const iosSdk = process.platform === "darwin" && spawnSync("xcrun", ["--sdk", "iphonesimulator", "--show-sdk-path"], { stdio: "ignore" }).status === 0;
 
 test("generated tokens, strings and icons match the React Native sources", async () => {
