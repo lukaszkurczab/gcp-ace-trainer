@@ -25,6 +25,10 @@ const kernelForbidden = (file: string) => ["src/content", "src/tracks", "src/fea
 const compositionRoots = new Set([
   "src/application/canonicalTrainingFamilyComposition.ts",
   "src/application/runtimeAuditability/Q13StorageReceiptHost.tsx",
+  // Native audit fixtures (ACM, PERSIST-13) mount the real practice screens by design.
+  "src/application/runtimeAuditability/ACMNativeFixtureRoot.tsx",
+  "src/application/runtimeAuditability/Persist13PracticeUiHost.tsx",
+  "src/application/runtimeAuditability/Persist13ResetFixtureRoot.tsx",
   "src/application/runtimeAuditability/q13StorageReceiptOwner.ts",
   "src/features/exam/certificationExamReviewFixtureNavigator.tsx",
   "src/features/exam/CertificationPracticeFeedbackPreview.tsx",
