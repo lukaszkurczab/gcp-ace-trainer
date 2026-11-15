@@ -26,7 +26,7 @@ import { PracticeSetupSectionHeader, PracticeSetupSegment, PracticeSetupSegmentG
 import { ApproachChallengeQuestion } from "./ApproachChallengeQuestion";
 import { APPROACH_CHALLENGE_BLUEPRINT } from "../../application/coding-interview/approachChallengeSelection";
 import { endApproachChallengeSession, pauseApproachChallengeSession, type ApproachChallengeEndAction, type ApproachChallengePauseAction } from "../../application/coding-interview/approachChallengeSessionExit";
-import { APPROACH_CHALLENGE_TRACK_ID } from "../../content/canonical/approachChallengeProblem";
+import { CODING_INTERVIEW_TRACK_ID as APPROACH_CHALLENGE_TRACK_ID } from "../../domain/learning/trainingAttemptModes";
 import { ActionBar, DurabilityNotice, ExitModal } from "./PracticeSessionSurface";
 import type { PracticeSurfacePhase } from "./practiceSessionPresentation";
 

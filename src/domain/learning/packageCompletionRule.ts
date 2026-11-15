@@ -5,7 +5,7 @@ import { createTrainingAttempt } from "./trainingAttempt";
 import { createAttemptResult } from "./attemptResult";
 import { createArtifactSha256 } from "./contentItemRef";
 import { isResolvedContentRef, type ResolvedContentRef } from "./resolvedContentRef";
-import { classifyTrainingAttemptMode, isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
+import { classifyTrainingAttemptMode, isApproachChallengeTrainingAttempt } from "./trainingAttemptModes";
 
 export type ChapterCompletionRequirementV2 = Readonly<{
   nodeId: string;

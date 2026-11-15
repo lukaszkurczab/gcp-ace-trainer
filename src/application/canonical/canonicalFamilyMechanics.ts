@@ -7,7 +7,7 @@ import { createReviewSourceSnapshot } from "../../domain/learning/reviewQueueEnt
 import { createAttemptId } from "../identity/trainingIdentity";
 import { createTrainingAttempt } from "../../domain/learning/trainingAttempt";
 import { createLegacyReviewUnitProof, reviewEvidenceMatchesAttempt, learningUnitIdentity, learningUnitInCurrentCatalog } from "../../domain/learning/mentalUnitEvidence";
-import { classifyTrainingAttemptMode } from "../../tracks/coding-interview/domain/algorithmModes";
+import { classifyTrainingAttemptMode } from "../../domain/learning/trainingAttemptModes";
 
 export async function createCanonicalAttempt(input: Readonly<{
   session: TrainingSession;

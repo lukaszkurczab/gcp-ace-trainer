@@ -1,5 +1,5 @@
 import { APPROACH_CHALLENGE_MODE_ID } from "../../tracks/coding-interview/domain/algorithmModes";
-import { APPROACH_CHALLENGE_TRACK_ID } from "../../content/canonical/approachChallengeProblem";
+import { CODING_INTERVIEW_TRACK_ID as APPROACH_CHALLENGE_TRACK_ID } from "../../domain/learning/trainingAttemptModes";
 
 export type ApproachChallengeActiveSession = Readonly<{ trackId: string; modeId: string; status: string }>;
 export type ApproachChallengeEntry<TStage, THistory> =

@@ -2,7 +2,7 @@ import { isLegacyReviewUnitProof } from "../../domain/learning/mentalUnitEvidenc
 import { isCaseAttemptEvidence, CASE_TRACK_ID } from "../../domain/learning/caseEvidence";
 import { REVIEW_REASONS, REVIEW_CYCLE_STAGES, isManualRequestId, type ReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
 import { createAttemptResult, type AttemptResultComponent } from "../../domain/learning/attemptResult";
-import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
+import { isApproachChallengeTrainingAttempt } from "../../domain/learning/trainingAttemptModes";
 import { createTrainingSession, type TrainingSession } from "../../domain/learning/trainingSession";
 import { createTrainingSessionDraft, type AcceptedSimulationFinalization, type TrainingSessionDraft, type TrainingSessionDraftResponse } from "../../domain/learning/trainingSessionDraft";
 import { createTrainingSessionResult, type TrainingSessionResult } from "../../domain/learning/sessionResult";

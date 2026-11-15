@@ -4,7 +4,9 @@ import type { TrackDisplay, TrackRegistration } from "./trackMetadata";
 
 export const GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID = "google-cloud-associate-cloud-engineer";
 export const MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID = "microsoft-azure-administrator-associate-az-104";
-export const CODING_INTERVIEW_TRACK_ID = "coding-interview-dsa-problem-solving";
+import { CODING_INTERVIEW_TRACK_ID } from "../learning/trainingAttemptModes";
+
+export { CODING_INTERVIEW_TRACK_ID };
 export const BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID = "backend-system-design-interview";
 export const FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID = "frontend-system-design-interview";
 export const OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID = "object-oriented-design-interview";
