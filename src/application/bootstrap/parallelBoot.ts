@@ -174,13 +174,15 @@ export function onActorBoundary(listener: (store: StartupCacheStore | null) => v
   return () => { actorBoundaryListeners.delete(listener); };
 }
 
-export function notifyActorBoundary(store: StartupCacheStore | null): void {
+export function notifyActorBoundary(store: StartupCacheStore | null, options: Readonly<{ keepFirstScreenRecord?: boolean }> = {}): void {
   // Removed here directly, so it never depends on Home having been loaded.
   if (store) { try { store.remove(TODAY_SNAPSHOT_STORE_KEY); } catch { /* closed store */ } }
   // T3.3a: the persisted account-progress sweep is per actor too.
   if (store) { try { store.remove(PROGRESS_SNAPSHOT_STORE_KEY); } catch { /* closed store */ } }
-  // T2.5: the native first-screen record belongs to the actor too.
-  clearFirstScreenRecord();
+  // T2.5: the native first-screen record belongs to the actor too. A launch that
+  // starts signed out had no actor to leave: its record is the welcome screen
+  // the Welcome view just wrote, so the caller keeps it.
+  if (!options.keepFirstScreenRecord) clearFirstScreenRecord();
   for (const listener of [...actorBoundaryListeners]) {
     try { listener(store); } catch { /* A cache drop never blocks sign-out. */ }
   }

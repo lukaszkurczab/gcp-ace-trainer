@@ -3140,7 +3140,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     if (!leaving && !actorChanged) return;
     let store: Readonly<{ remove(key: string): void }> | null = null;
     try { store = captureActiveProfileStorageLease() ? getKeyValueStorage() : null; } catch { store = null; }
-    notifyActorBoundary(store);
+    // T2.5: with no actor seen in this process (a signed-out launch) there is
+    // nothing to leave, so the welcome record the Welcome view wrote stays.
+    notifyActorBoundary(store, { keepFirstScreenRecord: previous === null });
   }, [actorBoundaryKey, state.kind]);
   const contextValue = useMemo<AccountSessionContextValue>(() => ({ ...value, refreshAccountIdentity }), [refreshAccountIdentity, value]);
 

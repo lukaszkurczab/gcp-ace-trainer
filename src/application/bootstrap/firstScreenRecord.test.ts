@@ -157,6 +157,16 @@ test("an actor boundary (sign-out, deletion, actor change) clears the record", (
   assert.equal(fake.value, null);
 });
 
+test("a signed-out launch keeps the welcome record across the actor boundary", () => {
+  const fake = fakeSink();
+  setFirstScreenSink(fake.sink);
+  today(captureFirstScreenInputEpoch());
+  const kept = fake.value;
+  notifyActorBoundary(null, { keepFirstScreenRecord: true });
+  assert.equal(fake.value, kept);
+  assert.notEqual(kept, null);
+});
+
 test("a failed native write clears instead of leaving an older record", () => {
   const fake = fakeSink();
   setFirstScreenSink(fake.sink);
