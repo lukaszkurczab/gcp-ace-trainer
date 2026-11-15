@@ -80,6 +80,8 @@ public enum PatternlyFirstScreenStartup {
     let decision = FirstScreenStore.load()
     mark("first_screen:read_end")
     mark("first_screen:kind:\(decision.kind)")
+    // Fixed reason codes only (no record content), so the trace can say why a launch fell back.
+    if case .neutral(let reason, _, _) = decision { mark("first_screen:neutral_reason:\(reason)") }
     switch decision {
     case .today(let record): handover.setShown(.init(kind: "today", profileId: record.profileId, revision: record.revision))
     case .welcome: handover.setShown(.init(kind: "welcome", profileId: nil, revision: nil))
