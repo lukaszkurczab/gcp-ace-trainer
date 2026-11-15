@@ -5,6 +5,7 @@ import test from "node:test";
 import { canonicalFingerprintPayload, canonicalJsonV1, canonicalJsonV1ByteLength, canonicalSerialize } from "./canonicalSerialization";
 import { parseJsonExact } from "./exactJson";
 import { recordFingerprintPayload, accountDataRecordFingerprint, type RecordFingerprintInput } from "./recordFingerprint";
+import type { AccountDataRecordFingerprintInput } from "../account/accountDataRecordIdentity";
 import { sha256Utf8 } from "./sha256";
 import { sha256Utf8 as infrastructureSha256Utf8 } from "../../infrastructure/identity/sha256";
 import { parseCanonicalRecordEnvelope } from "../../storage/repositories/canonicalRecordCodec";
@@ -79,7 +80,8 @@ function run(vector: Vector): Record<string, unknown> {
     case "recordFingerprintPayload": {
       const record = vector.input.json !== undefined ? parseJsonExact(vector.input.json) as RecordFingerprintInput : { ...BASE_RECORD, state: { nested: jsOnly(vector.input.js!) } };
       const payload = recordFingerprintPayload(record);
-      return { payload, fingerprint: accountDataRecordFingerprint(record) };
+      // Vectors carry arbitrary record types on purpose: the byte contract does not depend on the account enum.
+      return { payload, fingerprint: accountDataRecordFingerprint(record as AccountDataRecordFingerprintInput) };
     }
     case "sha256Utf8": {
       const s = shaInput(vector);
