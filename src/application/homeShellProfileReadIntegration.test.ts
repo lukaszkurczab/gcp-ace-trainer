@@ -21,6 +21,7 @@ import * as storageApi from "../infrastructure/storage/mmkvClient";
 import { openProfileStorageRouter } from "../infrastructure/storage/profileStorageRouter";
 import { productionTrackAdmissionContext } from "./tracks/trackAdmissionContext";
 import { readActiveTrackId, readLearningPlanStorageScope } from "./learningReadModels";
+import { createCooperativeSlice } from "../infrastructure/scheduling/cooperativeSlice";
 
 
 // The actual nested Home load command cannot be imported in Node with React Native.
@@ -61,6 +62,13 @@ async function runHome(
       finally { await changeAfterDashboard(); }
     },
     getApplicationCurrentTime: () => "2026-10-09T12:00:00.000Z",
+    createCooperativeSlice, setTimeout,
+    // Component-scope bindings added by T2.0/T2.3/T2.5B. The persisted Today snapshot is
+    // an optimisation keyed by a storage revision; with no key the command always computes,
+    // which is the source-fence path this test covers. Snapshot reuse has its own tests.
+    SLA_TRACE: false, markStartup: () => {}, slaTodayPending: { current: false }, slaShellReadFresh: { current: false },
+    readTodaySnapshotKey: () => null, todaySnapshotActor: () => "guest", readTodaySnapshot: () => null, writeTodaySnapshot: () => {},
+    forceShellComputeRef: { current: false }, firstScreenSourceRef: { current: null }, setShellReload: () => {},
     describeOperationalFailure, CODING_INTERVIEW_TRACK_ID,
     setActiveTrackId: () => {}, setData: (value: typeof outcome.published) => { outcome.published = value; },
     setHasLoadedActiveTrack: () => {}, setLoadedOwner: () => {}, setShellReadError: (value: string) => { outcome.readError = value; },
