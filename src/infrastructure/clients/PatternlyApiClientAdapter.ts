@@ -1,6 +1,5 @@
 import { canonicalJsonV1 } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../domain/identity/sha256";
-import { getKeyValueStorage } from "../storage/mmkvClient";
 import { parseContentPackageDescriptor } from "./contentPackageDescriptor";
 import { isAccountWireState } from "../../domain/account/accountWireState";
 import { normalizeLegacyTerminalSessionRead } from "../../domain/account/terminalSessionWire";
@@ -256,8 +255,16 @@ let progressSnapshotPersistenceEnabled = true;
 /** Tests of the adapter alone can opt out; production always persists. */
 export function setProgressSnapshotPersistenceEnabledForTests(enabled: boolean): void { progressSnapshotPersistenceEnabled = enabled; }
 
+/** Storage port for the persisted sweep; the application installs it (no install: memory only). */
+export type ProgressSnapshotStore = Readonly<{ getString(key: string): string | undefined; setString(key: string, value: string): void; remove(key: string): void }>;
+let resolveProgressSnapshotStore: (() => ProgressSnapshotStore) | null = null;
+
+export function installProgressSnapshotStore(resolve: (() => ProgressSnapshotStore) | null): void { resolveProgressSnapshotStore = resolve; }
+
+function progressSnapshotStore(): ProgressSnapshotStore | null { return resolveProgressSnapshotStore?.() ?? null; }
+
 export function clearPersistedProgressSnapshot(storage?: Readonly<{ remove(key: string): void }> | null): void {
-  try { (storage ?? getKeyValueStorage()).remove(PROGRESS_SNAPSHOT_CACHE_KEY); } catch { /* storage closed: nothing to clear */ }
+  try { (storage ?? progressSnapshotStore())?.remove(PROGRESS_SNAPSHOT_CACHE_KEY); } catch { /* storage closed: nothing to clear */ }
 }
 
 function encodePersistedProgressSnapshot(origin: string, cache: ProgressSnapshotCache): string {
@@ -796,7 +803,7 @@ export function createPatternlyApiClient(input: Readonly<{
     persistedSnapshotLoaded = true;
     if (!progressSnapshotPersistenceEnabled || progressSnapshot !== null) return;
     try {
-      const raw = getKeyValueStorage().getString(PROGRESS_SNAPSHOT_CACHE_KEY);
+      const raw = progressSnapshotStore()?.getString(PROGRESS_SNAPSHOT_CACHE_KEY);
       if (raw === undefined) return;
       progressSnapshot = decodePersistedProgressSnapshot(persistenceOrigin, raw);
       if (progressSnapshot === null) clearPersistedProgressSnapshot();
@@ -817,7 +824,7 @@ export function createPatternlyApiClient(input: Readonly<{
       const latest = progressSnapshot;
       try {
         if (latest === null) clearPersistedProgressSnapshot();
-        else getKeyValueStorage().setString(PROGRESS_SNAPSHOT_CACHE_KEY, encodePersistedProgressSnapshot(persistenceOrigin, latest));
+        else progressSnapshotStore()?.setString(PROGRESS_SNAPSHOT_CACHE_KEY, encodePersistedProgressSnapshot(persistenceOrigin, latest));
       } catch { /* storage closed or replaced: the next start reads in full */ }
     }, PROGRESS_SNAPSHOT_PERSIST_DELAY_MS);
   }

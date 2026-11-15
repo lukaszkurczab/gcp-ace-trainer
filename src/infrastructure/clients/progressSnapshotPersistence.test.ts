@@ -6,6 +6,7 @@ import {
   PatternlyApiClientError,
   createPatternlyApiClient,
 } from "./PatternlyApiClientAdapter";
+import { installProgressSnapshotPersistence } from "../../application/account/progressSnapshotPersistence";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../storage/mmkvClient";
 import { PROGRESS_SNAPSHOT_STORE_KEY, notifyActorBoundary } from "../../application/bootstrap/parallelBoot";
 
@@ -28,7 +29,7 @@ const json = (value: unknown) => new Response(JSON.stringify(value), { status: 2
 const flushPersist = () => new Promise((resolve) => setTimeout(resolve, 1_100));
 
 let storage: MemoryKeyValueStorage;
-beforeEach(() => { storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); });
+beforeEach(() => { storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); installProgressSnapshotPersistence(); });
 
 function client(answer: (url: URL) => unknown, urls: URL[], apiOrigin = API_ORIGIN) {
   return createPatternlyApiClient({

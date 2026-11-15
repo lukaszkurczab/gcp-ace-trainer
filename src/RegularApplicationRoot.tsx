@@ -18,6 +18,9 @@ import { AndroidClockProbeHost } from "./application/runtimeAuditability/Android
 import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfileTransition } from "./storage/repositories/profileStorageRepository";
 import { isParallelBootEnabled, startBundledContentPrefetch } from "./application/bootstrap/parallelBoot";
 import { contentPackageRuntimeOwner } from "./application/contentPackageRuntimeOwner";
+import { installProgressSnapshotPersistence } from "./application/account/progressSnapshotPersistence";
+
+installProgressSnapshotPersistence();
 
 export default function RegularApplicationRoot() {
   // T2.3: verify bundled content while profile storage, auth and the account
