@@ -4,7 +4,7 @@ import { markStartup } from "../../../infrastructure/diagnostics/startupTrace";
 import { getTrackIconName } from "../../../components/trackIcon";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button, Card, Icon, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
 import { FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID } from "../../../domain";
@@ -25,6 +25,8 @@ import {
   formatPracticeTopicTitle,
 } from "../../practice/practiceFlowPresentation";
 import { localizeHomePlanArea } from "../homePlanUiContract";
+import { MAIN_TAB_ITEMS } from "../shellModel";
+import type { FirstScreenTodayView } from "../../../application/bootstrap/firstScreenRecord";
 
 
 type HomeTabProps = {
@@ -51,6 +53,8 @@ type HomeTabProps = {
   goalInvitationAudience: "guest" | "account";
   showGoalInvitation: boolean;
   trainingAttempts: readonly TrainingAttempt[];
+  /** T2.5: the strings this render shows, for the native first screen of the next launch. */
+  onFirstScreenView?: (view: FirstScreenTodayView) => void;
 };
 
 type HomeActionKey = "focus" | "activity";
@@ -145,6 +149,7 @@ export function HomeTab({
   goalInvitationAudience,
   showGoalInvitation,
   trainingAttempts,
+  onFirstScreenView,
 }: HomeTabProps) {
   const usableLayoutMeasured = useRef(false);
   const styles = useThemedStyles(createStyles);
@@ -239,6 +244,57 @@ export function HomeTab({
   const recentAttempt = recentAttempts[0];
   const overview = buildHomeOverviewMetrics({ trackId: activeTrack.id, reviewQueueItems, trainingAttempts, activeSessionId: activeSession?.id, now: capturedAt });
   const isFirstUse = !hasActiveSession && trainingAttempts.length === 0 && reviewQueueItems.length === 0;
+
+  const trackIcon = isFrontendTrack ? getTrackIconName(activeTrack.id) : isCodingInterviewTrack ? "code-brackets" : "cloud";
+  const renderedTitle = homePlanReady && homePlanPresentation ? decisionTitle : t(decisionTitle);
+  const renderedPrimaryLabel = homePlanReady || homePlanUnavailable ? decisionLabel : t(decisionLabel);
+  const renderedSecondary = hasActiveSession || isFirstUse ? null : { label: t(isRecommendationSettingsAction ? "Manage settings" : "Choose another topic"), chevron: !isRecommendationSettingsAction };
+  const firstScreenView = useMemo<FirstScreenTodayView | null>(() => {
+    if (!onFirstScreenView) return null;
+    return {
+      title: t("Today"),
+      track: { label: t(activeTrack.shortTitle), icon: trackIcon, change: { label: t("Change"), action: "change_track" } },
+      decision: {
+        icon: decisionIcon,
+        title: renderedTitle,
+        detail: decisionDetail,
+        primary: { label: renderedPrimaryLabel, action: "primary" },
+        enabled: decisionEnabled,
+        muted: decisionTone === "muted",
+        secondary: renderedSecondary ? { ...renderedSecondary, action: "secondary" } : null,
+      },
+      secondaryPlan: secondaryPlan && secondaryPlanPresentation ? {
+        title: secondaryPlanPresentation.stateLabel,
+        detail: tPlan("homePlan.todayDetail", { area: localizeHomePlanArea(secondaryPlan, t), count: secondaryPlan.session.sessionLength, message: secondaryPlanPresentation.message, reviews: secondaryPlan.dueReviewCount, status: tPlan(`homePlan.day.${secondaryPlan.day.status}`) }),
+        button: { label: secondaryPlanPresentation.primaryLabel, action: "secondary_plan" },
+      } : null,
+      goalInvitation: showGoalInvitation ? {
+        title: t(goalInvitationAudience === "account" ? "No goal is set for this track" : "Set a goal for this track"),
+        detail: goalInvitationAudience === "guest" ? t("Choose when and why you want to practise {{trackName}}.", { trackName: t(activeTrack.shortTitle) }) : null,
+        primary: { label: t("Set a goal"), action: "goal_set" },
+        notNow: { label: t("Not now"), action: "goal_not_now" },
+      } : null,
+      firstUse: isFirstUse && !showGoalInvitation ? { title: t("Your learning starts here"), detail: t("Complete your first session to see progress and activity here.") } : null,
+      overview: isFirstUse ? null : {
+        label: t("Overview"),
+        rows: overview.map((metric) => ({ label: t(metric.label), value: t(metric.value, { count: metric.count, dueCount: metric.dueCount, manualCount: metric.manualCount }) })),
+      },
+      focus: isFirstUse ? null : { label: t("Current focus"), title: formatPracticeTopicTitle(model.heroTitle, t), button: { label: t("Open Practice"), action: "open_practice_topic" } },
+      activity: isFirstUse ? null : {
+        label: t("Recent activity"),
+        title: recentAttempt ? t(modeLabel(recentAttempt.modeId)) : null,
+        empty: t("No activity yet"),
+        button: { label: t("View activity"), action: "open_activity" },
+      },
+      tabs: MAIN_TAB_ITEMS.map((item) => ({ id: item.id, label: t(item.label), icon: item.icon })),
+      loading: t("Loading Today"),
+    };
+  // Every rendered string below depends on these values; `t` changes with the language.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onFirstScreenView, t, tPlan, activeTrack, trackIcon, decisionIcon, renderedTitle, decisionDetail, renderedPrimaryLabel, decisionEnabled, decisionTone, renderedSecondary?.label, renderedSecondary?.chevron, secondaryPlan, secondaryPlanPresentation, showGoalInvitation, goalInvitationAudience, isFirstUse, overview, model.heroTitle, recentAttempt?.modeId]);
+  useEffect(() => {
+    if (firstScreenView && onFirstScreenView && !dashboardError) onFirstScreenView(firstScreenView);
+  }, [firstScreenView, onFirstScreenView, dashboardError]);
 
   function recordActionWidth(key: HomeActionKey, width: number): void {
     setActionMeasurements((current) => {

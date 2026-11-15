@@ -31,6 +31,8 @@ function shell(overrides = {}) {
     // T2.3: no Today snapshot in these shell tests (projections always computed).
     hasStartupFirstUsableFrame: () => true, notifyStartupFirstUsableFrame: () => {},
     readTodaySnapshotKey: () => null, readTodaySnapshot: () => null, writeTodaySnapshot: () => {}, todaySnapshotActor: () => "guest",
+    // T2.5: the native first-screen record has no sink in these shell tests.
+    useAppPreferences: () => ({ locale: 'en', appearance: 'system' }), writeFirstScreenToday: () => 'unavailable',
     // T2.0 cooperative slices and timers (the extracted subject has no module scope).
     createCooperativeSlice: () => async () => {}, setTimeout, clearTimeout,
     getSettingsAccountPresentation, getTrackDisplay, isHomeSnapshotOwnerCurrent, runtimeSelectors, ROUTES,

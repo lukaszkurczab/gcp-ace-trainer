@@ -942,5 +942,8 @@
   "Unselect all": "Alle abwählen",
   "Input": "Eingabe",
   "Output": "Ausgabe",
-  "Diagnostic code": "Diagnosecode"
+  "Diagnostic code": "Diagnosecode",
+  "Loading…": "Wird geladen…",
+  "Opening…": "Wird geöffnet…",
+  "Today changed. Choose again.": "Heute hat sich geändert. Bitte erneut auswählen."
 }

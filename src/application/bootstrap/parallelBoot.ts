@@ -15,6 +15,7 @@
  *
  * The module has no React Native imports so Node tests can load it.
  */
+import { clearFirstScreenRecord } from "./firstScreenRecord";
 export function isParallelBootEnabled(): boolean {
   return process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_PARALLEL_BOOT !== "0";
 }
@@ -178,6 +179,8 @@ export function notifyActorBoundary(store: StartupCacheStore | null): void {
   if (store) { try { store.remove(TODAY_SNAPSHOT_STORE_KEY); } catch { /* closed store */ } }
   // T3.3a: the persisted account-progress sweep is per actor too.
   if (store) { try { store.remove(PROGRESS_SNAPSHOT_STORE_KEY); } catch { /* closed store */ } }
+  // T2.5: the native first-screen record belongs to the actor too.
+  clearFirstScreenRecord();
   for (const listener of [...actorBoundaryListeners]) {
     try { listener(store); } catch { /* A cache drop never blocks sign-out. */ }
   }

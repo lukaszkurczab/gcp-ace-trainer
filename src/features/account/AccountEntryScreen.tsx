@@ -62,6 +62,7 @@ import { accountSyncAutomaticRetryAllowed, getAccountSyncConflictPresentation } 
 import { useSettingsRecoveryReturn } from "./useSettingsRecoveryReturn";
 import { readLearningPlanStorageScope } from "../../application/learningReadModels";
 import { markFirstUsableFrame, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
+import { writeFirstScreenWelcome } from "../../application/bootstrap/firstScreenRecord";
 
 type AccountEntryProps = NativeStackScreenProps<
   RootStackParamList,
@@ -1202,7 +1203,25 @@ function WelcomeScreen({
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
-  const { colorMode, colors } = useAppPreferences();
+  const { appearance, colorMode, colors, locale } = useAppPreferences();
+  const { t: tCommon } = useTranslation("common");
+  // T2.5: the native first screen of the next signed-out launch draws these strings.
+  useEffect(() => {
+    writeFirstScreenWelcome({
+      capturedAt: new Date().toISOString(),
+      locale,
+      appearance,
+      view: {
+        brand: "Patternly",
+        title: text.welcomeTitle,
+        detail: text.welcomeDescription,
+        signIn: { label: text.signIn, action: "sign_in" },
+        register: { label: text.register, action: "create_account" },
+        guest: { label: text.continueWithoutAccount, action: "continue_guest" },
+        loading: tCommon("Loading…"),
+      },
+    });
+  }, [appearance, locale, tCommon, text]);
   return (
     <Screen
       backgroundColor={colors.background}

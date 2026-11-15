@@ -942,5 +942,8 @@
   "Unselect all": "Tühista kõik valikud",
   "Input": "Sisend",
   "Output": "Väljund",
-  "Diagnostic code": "Diagnostikakood"
+  "Diagnostic code": "Diagnostikakood",
+  "Loading…": "Laadimine…",
+  "Opening…": "Avamine…",
+  "Today changed. Choose again.": "Tänane vaade muutus. Vali uuesti."
 }

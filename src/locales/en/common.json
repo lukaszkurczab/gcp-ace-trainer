@@ -942,5 +942,8 @@
   "Unselect all": "Unselect all",
   "Input": "Input",
   "Output": "Output",
-  "Diagnostic code": "Diagnostic code"
+  "Diagnostic code": "Diagnostic code",
+  "Loading…": "Loading…",
+  "Opening…": "Opening…",
+  "Today changed. Choose again.": "Today changed. Choose again."
 }

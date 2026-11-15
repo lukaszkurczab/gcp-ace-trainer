@@ -11,6 +11,7 @@ import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
 import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame, onActorBoundary } from "../../application/bootstrap/parallelBoot";
 import { isSha256Utf8Accelerated } from "../../domain/identity/sha256";
+import { captureFirstScreenInputEpoch, writeFirstScreenToday, type FirstScreenTodayView } from "../../application/bootstrap/firstScreenRecord";
 import { computeTodayStoreRevision, invalidateTodaySnapshot, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "./todaySnapshot";
 import contentTrustManifest from "../../content/generated/content-trust-manifest.json";
 
@@ -125,7 +126,7 @@ const CONTENT_BUILD_KEY = `${(contentTrustManifest as { lockSha?: unknown }).loc
  * Revision and owner of the current Today inputs, or null when the snapshot is
  * off or the active profile cannot be read (the shell then computes as before).
  */
-function readTodaySnapshotKey(trackId: string | null, premiumAccess: string, actor: string): Readonly<{ revision: string; owner: TodaySnapshotOwner; storage: TodaySnapshotStorage }> | null {
+function readTodaySnapshotKey(trackId: string | null, premiumAccess: string, actor: string): Readonly<{ revision: string; owner: TodaySnapshotOwner; storage: TodaySnapshotStorage; profileId: string; firstScreenEpoch: number }> | null {
   // The revision hashes every Today input as stored (~1–2 MB at 1 000 attempts):
   // only with the native B0 digest; the JS reference SHA-256 would cost more than the projections.
   if (!isParallelBootEnabled() || !isSha256Utf8Accelerated()) return null;
@@ -133,7 +134,11 @@ function readTodaySnapshotKey(trackId: string | null, premiumAccess: string, act
     const store = captureTodaySnapshotStore();
     if (!store) return null;
     const { profile, storage } = store;
+    // T2.5: taken before the inputs are read, so a write during this read makes the view stale.
+    const firstScreenEpoch = captureFirstScreenInputEpoch();
     return {
+      firstScreenEpoch,
+      profileId: profile.id,
       revision: computeTodayStoreRevision(storage),
       owner: { profileKey: `${actor}|${profile.kind}:${profile.id}:${profile.accountId ?? ""}|premium:${premiumAccess}|content:${CONTENT_BUILD_KEY}`, trackId },
       storage,
@@ -169,6 +174,14 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);
   const [shellReload, setShellReload] = useState(0);
   const [shellReadError, setShellReadError] = useState<string | null>(null);
+  // T2.5: the read behind the committed `data`, for the native first-screen record.
+  const firstScreenSourceRef = useRef<Readonly<{ epoch: number; profileId: string; actor: string; revision: string; capturedAt: string }> | null>(null);
+  const preferences = useAppPreferences();
+  const onFirstScreenView = useCallback((view: FirstScreenTodayView) => {
+    const source = firstScreenSourceRef.current;
+    if (!source) return;
+    writeFirstScreenToday({ inputEpoch: source.epoch, profileId: source.profileId, actor: source.actor, revision: source.revision, capturedAt: source.capturedAt, locale: preferences.locale, appearance: preferences.appearance, view });
+  }, [preferences.locale, preferences.appearance]);
   const shellReadReady = useRef(false);
   // T2.3: the next shell read recomputes projections instead of reusing a snapshot.
   const forceShellComputeRef = useRef(false);
@@ -328,6 +341,9 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               homePlan,
             });
             setHasLoadedActiveTrack(true);
+            firstScreenSourceRef.current = snapshotKey
+              ? { epoch: snapshotKey.firstScreenEpoch, profileId: snapshotKey.profileId, actor: todaySnapshotActor(accountRef.current.state), revision: snapshotKey.revision, capturedAt: projected.capturedAt ?? readNow }
+              : null;
             shellReadReady.current = true;
             if (snapshotKey && !reused) {
               const computed = projected;
@@ -728,6 +744,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId, trackId: activeTrack.id })}
               homePlan={data.homePlan}
               goalInvitationAudience={account.state.kind === "authenticated" ? "account" : "guest"}
+              onFirstScreenView={onFirstScreenView}
               showGoalInvitation={(account.state.kind === "guest" || (account.state.kind === "authenticated"
                 && account.state.accountData.status === "synced"
                 && account.state.accountData.pendingMutationCount === 0

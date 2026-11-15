@@ -767,13 +767,28 @@ async function ensureAccountInstallation(
   }
 }
 
+let profileKeyWriteObserver: ((key: string) => void) | null = null;
+
+/**
+ * T2.5: told about every set/remove through a profile-scoped store, before the write lands
+ * (the native first-screen record is dropped on a Today input write). One observer; never throws.
+ */
+export function setProfileKeyWriteObserver(observer: ((key: string) => void) | null): void {
+  profileKeyWriteObserver = observer;
+}
+
+function observeProfileKeyWrite(key: string): void {
+  if (!profileKeyWriteObserver) return;
+  try { profileKeyWriteObserver(key); } catch { /* A derived-cache drop never blocks a write. */ }
+}
+
 export function createProfileScopedStorage(base: KeyValueStorage, profile: StorageProfile, isTransitionActive: () => boolean = () => false): KeyValueStorage {
   const map = (key: string) => physicalKey(profile.id, key);
   const check = () => { if (isTransitionActive()) throw new ProfileTransitionActiveError(); };
   return Object.freeze({
     getString(key: string) { check(); return base.getString(map(key)); },
-    setString(key: string, value: string) { check(); base.setString(map(key), value); },
-    remove(key: string) { check(); base.remove(map(key)); },
+    setString(key: string, value: string) { check(); observeProfileKeyWrite(key); base.setString(map(key), value); },
+    remove(key: string) { check(); observeProfileKeyWrite(key); base.remove(map(key)); },
     contains(key: string) { check(); return base.contains(map(key)); },
     getAllKeys() {
       check();

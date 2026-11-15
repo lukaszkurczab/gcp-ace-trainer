@@ -942,5 +942,8 @@
   "Unselect all": "Odznacz wszystkie",
   "Input": "Dane wejściowe",
   "Output": "Wynik",
-  "Diagnostic code": "Kod diagnostyczny"
+  "Diagnostic code": "Kod diagnostyczny",
+  "Loading…": "Wczytywanie…",
+  "Opening…": "Otwieranie…",
+  "Today changed. Choose again.": "Widok Dzisiaj się zmienił. Wybierz ponownie."
 }

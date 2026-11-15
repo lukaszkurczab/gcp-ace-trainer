@@ -32,6 +32,7 @@
  */
 import { STORAGE_NAMESPACE } from "../../storage/keys";
 import { TODAY_SNAPSHOT_STORE_KEY } from "../../application/bootstrap/parallelBoot";
+import { setFirstScreenInputKeyFilter } from "../../application/bootstrap/firstScreenRecord";
 
 /** The slice of the active profile store this module uses. */
 export type TodaySnapshotStorage = Readonly<{
@@ -84,6 +85,9 @@ const EXCLUDED_KEYS: ReadonlySet<string> = new Set([`${STORAGE_NAMESPACE}active-
 export function isTodayInputKey(key: string): boolean {
   return !EXCLUDED_KEYS.has(key) && TODAY_INPUT_PREFIXES.some((prefix) => key.startsWith(prefix));
 }
+
+// T2.5: a write of any Today input drops the native first-screen record.
+setFirstScreenInputKeyFilter(isTodayInputKey);
 
 /**
  * Digest of every Today input record as stored (key and raw value), in key
