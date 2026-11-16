@@ -20,7 +20,7 @@
  *
  * D23: an exact `schema` match is required, with no migration. A mismatch shows the neutral screen.
  */
-import { setProfileKeyWriteObserver, setProfileRegistryCommitObserver } from "../../infrastructure/storage/profileStorageRouter";
+import { setProfileKeyWriteObserver, setProfileRegistryCommitObserver, type ProfileKeyWriteScope } from "../../infrastructure/storage/profileStorageRouter";
 
 export const FIRST_SCREEN_SCHEMA = 2 as const;
 /** Upper bound for the serialized record; larger views are not written (the native screen stays neutral). */
@@ -98,11 +98,21 @@ export function setFirstScreenInputKeyFilter(filter: ((key: string) => boolean) 
   inputKeyFilter = filter;
 }
 
+let inputWriteListener: ((scope: ProfileKeyWriteScope) => void) | null = null;
+
+/** T27: told about every Today input write with its store (the Today revision token is dropped there). */
+export function setTodayInputWriteListener(listener: ((scope: ProfileKeyWriteScope) => void) | null): void {
+  inputWriteListener = listener;
+}
+
 /** Called by the profile-scoped storage on every set/remove, before the write lands. */
-export function noteProfileKeyWrite(key: string): void {
+export function noteProfileKeyWrite(key: string, scope?: ProfileKeyWriteScope): void {
   if (inputKeyFilter && !inputKeyFilter(key)) return;
   inputEpoch += 1;
   if (maybePresent) clearFirstScreenRecord();
+  if (scope && inputWriteListener) {
+    try { inputWriteListener(scope); } catch { /* A derived-cache drop never blocks a write. */ }
+  }
 }
 
 /** Captured with the Today read: a write is accepted only while no input changed since. */

@@ -10,10 +10,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
 import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame, onActorBoundary } from "../../application/bootstrap/parallelBoot";
-import { isSha256Utf8Accelerated } from "../../domain/identity/sha256";
 import { captureFirstScreenInputEpoch, writeFirstScreenToday, type FirstScreenTodayView } from "../../application/bootstrap/firstScreenRecord";
 import { handOverFirstScreenToToday, type FirstScreenTodayAction } from "../../application/bootstrap/firstScreenHandover";
-import { computeTodayStoreRevision, invalidateTodaySnapshot, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "../../application/home/todaySnapshot";
+import { invalidateTodaySnapshot, readTodayStoreRevision, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "../../application/home/todaySnapshot";
 import contentTrustManifest from "../../content/generated/content-trust-manifest.json";
 
 import {
@@ -128,9 +127,8 @@ const CONTENT_BUILD_KEY = `${(contentTrustManifest as { lockSha?: unknown }).loc
  * off or the active profile cannot be read (the shell then computes as before).
  */
 function readTodaySnapshotKey(trackId: string | null, premiumAccess: string, actor: string): Readonly<{ revision: string; owner: TodaySnapshotOwner; storage: TodaySnapshotStorage; profileId: string; firstScreenEpoch: number }> | null {
-  // The revision hashes every Today input as stored (~1–2 MB at 1 000 attempts):
-  // only with the native B0 digest; the JS reference SHA-256 would cost more than the projections.
-  if (!isParallelBootEnabled() || !isSha256Utf8Accelerated()) return null;
+  // T27: the revision is a token dropped on every Today input write (O(1), not a hash of the history).
+  if (!isParallelBootEnabled()) return null;
   try {
     const store = captureTodaySnapshotStore();
     if (!store) return null;
@@ -140,7 +138,7 @@ function readTodaySnapshotKey(trackId: string | null, premiumAccess: string, act
     return {
       firstScreenEpoch,
       profileId: profile.id,
-      revision: computeTodayStoreRevision(storage),
+      revision: readTodayStoreRevision(profile.id, storage),
       owner: { profileKey: `${actor}|${profile.kind}:${profile.id}:${profile.accountId ?? ""}|premium:${premiumAccess}|content:${CONTENT_BUILD_KEY}`, trackId },
       storage,
     };

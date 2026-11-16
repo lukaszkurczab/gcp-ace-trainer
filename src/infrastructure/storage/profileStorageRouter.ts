@@ -767,19 +767,27 @@ async function ensureAccountInstallation(
   }
 }
 
-let profileKeyWriteObserver: ((key: string) => void) | null = null;
+/**
+ * The profile store a write goes to. `dropDerived` removes a derived (non-canonical) key of that
+ * same store without notifying the observer again.
+ */
+export type ProfileKeyWriteScope = Readonly<{ profileId: string; dropDerived(key: string): void }>;
+export type ProfileKeyWriteObserver = (key: string, scope?: ProfileKeyWriteScope) => void;
+
+let profileKeyWriteObserver: ProfileKeyWriteObserver | null = null;
 
 /**
  * T2.5: told about every set/remove through a profile-scoped store, before the write lands
- * (the native first-screen record is dropped on a Today input write). One observer; never throws.
+ * (the native first-screen record and the Today revision token are dropped on a Today input
+ * write). One observer; never throws.
  */
-export function setProfileKeyWriteObserver(observer: ((key: string) => void) | null): void {
+export function setProfileKeyWriteObserver(observer: ProfileKeyWriteObserver | null): void {
   profileKeyWriteObserver = observer;
 }
 
-function observeProfileKeyWrite(key: string): void {
+function observeProfileKeyWrite(key: string, scope: ProfileKeyWriteScope): void {
   if (!profileKeyWriteObserver) return;
-  try { profileKeyWriteObserver(key); } catch { /* A derived-cache drop never blocks a write. */ }
+  try { profileKeyWriteObserver(key, scope); } catch { /* A derived-cache drop never blocks a write. */ }
 }
 
 let profileRegistryCommitObserver: (() => void) | null = null;
@@ -800,10 +808,11 @@ function observeProfileRegistryCommit(): void {
 export function createProfileScopedStorage(base: KeyValueStorage, profile: StorageProfile, isTransitionActive: () => boolean = () => false): KeyValueStorage {
   const map = (key: string) => physicalKey(profile.id, key);
   const check = () => { if (isTransitionActive()) throw new ProfileTransitionActiveError(); };
+  const scope: ProfileKeyWriteScope = Object.freeze({ profileId: profile.id, dropDerived(key: string) { base.remove(map(key)); } });
   return Object.freeze({
     getString(key: string) { check(); return base.getString(map(key)); },
-    setString(key: string, value: string) { check(); observeProfileKeyWrite(key); base.setString(map(key), value); },
-    remove(key: string) { check(); observeProfileKeyWrite(key); base.remove(map(key)); },
+    setString(key: string, value: string) { check(); observeProfileKeyWrite(key, scope); base.setString(map(key), value); },
+    remove(key: string) { check(); observeProfileKeyWrite(key, scope); base.remove(map(key)); },
     contains(key: string) { check(); return base.contains(map(key)); },
     getAllKeys() {
       check();

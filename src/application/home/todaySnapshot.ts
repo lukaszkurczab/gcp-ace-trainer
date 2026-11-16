@@ -23,7 +23,7 @@
  *
  * Stored format (stable input for T2.5, which reads it natively): one JSON
  * value under `TODAY_SNAPSHOT_KEY`:
- *   { schema: 1, revision: "<count>:<sha256>", owner: { profileKey, trackId },
+ *   { schema: 1, revision: "<token from TODAY_REVISION_KEY>", owner: { profileKey, trackId },
  *     capturedAt: ISO-8601, data: TodayProjectionData }
  * `profileKey` = "<actor>|<profile kind>:<profile id>:<account id>|premium:<access>|content:<lock sha>:<ledger sha>".
  * Any change to this shape or to `data` bumps `schema` (and the key's v1).
@@ -32,7 +32,7 @@
  */
 import { STORAGE_NAMESPACE } from "../../storage/keys";
 import { TODAY_SNAPSHOT_STORE_KEY } from "../bootstrap/parallelBoot";
-import { setFirstScreenInputKeyFilter } from "../bootstrap/firstScreenRecord";
+import { setFirstScreenInputKeyFilter, setTodayInputWriteListener } from "../bootstrap/firstScreenRecord";
 
 /** The slice of the active profile store this module uses. */
 export type TodaySnapshotStorage = Readonly<{
@@ -42,7 +42,6 @@ export type TodaySnapshotStorage = Readonly<{
   remove(key: string): void;
 }>;
 type KeyValueStorage = TodaySnapshotStorage;
-import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 /** Derived, rebuildable cache; outside the canonical namespace and never exported or synced. */
 export const TODAY_SNAPSHOT_KEY = TODAY_SNAPSHOT_STORE_KEY;
@@ -90,20 +89,57 @@ export function isTodayInputKey(key: string): boolean {
 setFirstScreenInputKeyFilter(isTodayInputKey);
 
 /**
- * Digest of every Today input record as stored (key and raw value), in key
- * order. Any write, removal or re-creation of an input changes it. Raw values
- * are hashed without parsing or validation, so the cost is a key scan and one
- * SHA-256 (native on device).
+ * T27: derived key holding the revision token of the Today inputs in this profile store.
+ * Outside the canonical namespace, so writing it is not a Today input write.
  */
-export function computeTodayStoreRevision(storage: Pick<KeyValueStorage, "getAllKeys" | "getString">, hash: (value: string) => string = sha256Utf8): string {
-  const keys = storage.getAllKeys().filter(isTodayInputKey).sort();
-  const parts: string[] = [];
-  for (const key of keys) {
-    const value = storage.getString(key);
-    if (value === undefined) continue;
-    parts.push(key, String(value.length), value);
+export const TODAY_REVISION_KEY = "patternly:derived:v1:today-revision";
+
+/** Profiles whose token is known to be absent since their last Today input write (this launch). */
+const revisionDropped = new Set<string>();
+let tokenCounter = 0;
+
+/**
+ * Called before every Today input write in a profile store (`createProfileScopedStorage` →
+ * `noteProfileKeyWrite`): the store's revision token is dropped, so the next read issues a new one
+ * and no snapshot taken under the old token matches again. Only the first write after a token was
+ * issued pays for the removal.
+ */
+export function noteTodayInputWrite(scope: Readonly<{ profileId: string; dropDerived(key: string): void }>): void {
+  if (revisionDropped.has(scope.profileId)) return;
+  scope.dropDerived(TODAY_REVISION_KEY);
+  revisionDropped.add(scope.profileId);
+}
+
+setTodayInputWriteListener(noteTodayInputWrite);
+
+function newRevisionToken(): string {
+  tokenCounter += 1;
+  return `t:${Date.now().toString(36)}:${tokenCounter.toString(36)}:${Math.random().toString(36).slice(2, 12)}`;
+}
+
+/**
+ * Revision of the Today inputs in this profile store: a token that stays the same until a Today
+ * input is written or removed, then is replaced. O(1) at start, whatever the history size.
+ * (Before T27 the revision was a SHA-256 over every input record, which grew with the history.)
+ *
+ * Trust model: as for the native first-screen record (T2.5), every write of a Today input goes
+ * through the profile-scoped store, whose observer drops the token before the write lands.
+ */
+export function readTodayStoreRevision(profileId: string, storage: Pick<KeyValueStorage, "getString" | "setString">): string {
+  const existing = storage.getString(TODAY_REVISION_KEY);
+  if (existing !== undefined && existing.length > 0) {
+    revisionDropped.delete(profileId);
+    return existing;
   }
-  return `${keys.length}:${hash(parts.join("\u0000"))}`;
+  const token = newRevisionToken();
+  storage.setString(TODAY_REVISION_KEY, token);
+  revisionDropped.delete(profileId);
+  return token;
+}
+
+/** Tests only. */
+export function resetTodayRevisionForTests(): void {
+  revisionDropped.clear();
 }
 
 export type TodaySnapshotOwner = Readonly<{ profileKey: string; trackId: string | null }>;

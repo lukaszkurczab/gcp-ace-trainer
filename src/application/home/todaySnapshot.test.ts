@@ -10,13 +10,23 @@ class MemoryKeyValueStorage {
   remove(key: string): void { this.values.delete(key); }
 }
 import { STORAGE_KEYS } from "../../storage/keys";
-import { TODAY_SNAPSHOT_FRESH_MS, TODAY_SNAPSHOT_KEY, clearTodaySnapshotMemory, computeTodayStoreRevision, invalidateTodaySnapshot, isTodayInputKey, readTodaySnapshot, writeTodaySnapshot } from "./todaySnapshot";
+import { TODAY_REVISION_KEY, TODAY_SNAPSHOT_FRESH_MS, TODAY_SNAPSHOT_KEY, clearTodaySnapshotMemory, invalidateTodaySnapshot, isTodayInputKey, readTodaySnapshot, readTodayStoreRevision, resetTodayRevisionForTests, writeTodaySnapshot } from "./todaySnapshot";
+import { createProfileScopedStorage } from "../../infrastructure/storage/profileStorageRouter";
 import { notifyActorBoundary } from "../bootstrap/parallelBoot";
 
-test.afterEach(() => clearTodaySnapshotMemory());
+test.afterEach(() => { clearTodaySnapshotMemory(); resetTodayRevisionForTests(); });
 
-function seeded(): MemoryKeyValueStorage {
-  const storage = new MemoryKeyValueStorage();
+type ScopedStorage = Readonly<{ getAllKeys(): readonly string[]; getString(key: string): string | undefined; setString(key: string, value: string): void; remove(key: string): void }>;
+
+/** The active profile store as the app sees it: writes go through the scoped store and its observer. */
+function scoped(base: MemoryKeyValueStorage = new MemoryKeyValueStorage(), profileId = "p1"): ScopedStorage {
+  return createProfileScopedStorage(base as never, { id: profileId, kind: "guest", accountId: null } as never) as ScopedStorage;
+}
+
+const revisionOf = (storage: ScopedStorage, profileId = "p1") => readTodayStoreRevision(profileId, storage);
+
+function seeded(): ScopedStorage {
+  const storage = scoped();
   storage.setString(STORAGE_KEYS.ACTIVE_TRACK, "{\"track\":\"a\"}");
   storage.setString(STORAGE_KEYS.trainingAttempt("a1"), "{\"attempt\":1}");
   storage.setString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, "[\"a1\"]");
@@ -26,34 +36,58 @@ function seeded(): MemoryKeyValueStorage {
   return storage;
 }
 
-test("the store revision follows every Today input and ignores sync bookkeeping, drafts and the snapshot itself", () => {
-  const storage = seeded();
-  const base = computeTodayStoreRevision(storage);
-  assert.equal(computeTodayStoreRevision(storage), base, "deterministic");
+test("the store revision token follows every Today input write and ignores sync bookkeeping, drafts and the snapshot itself", () => {
+  const base = new MemoryKeyValueStorage();
+  const storage = scoped(base);
+  storage.setString(STORAGE_KEYS.ACTIVE_TRACK, "{\"track\":\"a\"}");
+  storage.setString(STORAGE_KEYS.trainingAttempt("a1"), "{\"attempt\":1}");
+  const first = revisionOf(storage);
+  assert.equal(revisionOf(storage), first, "stable while nothing changes");
+  assert.equal(storage.getString(TODAY_REVISION_KEY), first, "persisted in the profile store for the next start");
 
   storage.setString(STORAGE_KEYS.ACCOUNT_SYNC, "{\"lastSuccessfulSyncAt\":\"t2\"}");
   storage.setString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, "{\"draft\":2}");
   storage.setString(TODAY_SNAPSHOT_KEY, "{}");
-  assert.equal(computeTodayStoreRevision(storage), base, "an unchanged sync, an answer draft or the cache do not invalidate Today");
+  assert.equal(revisionOf(storage), first, "an unchanged sync, an answer draft or the cache do not invalidate Today");
 
   storage.setString(STORAGE_KEYS.reviewEntry("r1"), "{\"due\":\"y\"}");
-  const updated = computeTodayStoreRevision(storage);
-  assert.notEqual(updated, base, "an in-place record update");
+  assert.equal(storage.getString(TODAY_REVISION_KEY), undefined, "dropped before the write lands");
+  const updated = revisionOf(storage);
+  assert.notEqual(updated, first, "an in-place record update");
   storage.setString(STORAGE_KEYS.trainingAttempt("a2"), "{\"attempt\":2}");
-  assert.notEqual(computeTodayStoreRevision(storage), updated, "a new record");
+  storage.setString(STORAGE_KEYS.trainingAttempt("a3"), "{\"attempt\":3}");
+  const afterBatch = revisionOf(storage);
+  assert.notEqual(afterBatch, updated, "a new record");
   storage.remove(STORAGE_KEYS.trainingAttempt("a2"));
-  assert.equal(computeTodayStoreRevision(storage), updated, "removal restores the earlier revision only with identical records");
+  assert.notEqual(revisionOf(storage), afterBatch, "a removal");
+  const beforeGoal = revisionOf(storage);
   storage.setString(STORAGE_KEYS.goal("track"), "{\"goal\":1}");
-  assert.notEqual(computeTodayStoreRevision(storage), updated, "goal");
+  assert.notEqual(revisionOf(storage), beforeGoal, "goal");
+
+  // Next launch (module state gone): the persisted token is reused, and the first input write still drops it.
+  resetTodayRevisionForTests();
+  const relaunched = scoped(base);
+  const persisted = revisionOf(relaunched);
+  assert.equal(persisted, revisionOf(storage));
+  resetTodayRevisionForTests();
+  relaunched.setString(STORAGE_KEYS.trainingAttempt("a4"), "{\"attempt\":4}");
+  assert.notEqual(revisionOf(relaunched), persisted, "a write on the next launch, before any read");
+
+  // Another profile's writes leave this profile's token alone.
+  const mine = revisionOf(storage);
+  const other = scoped(base, "p2");
+  other.setString(STORAGE_KEYS.trainingAttempt("b1"), "{\"attempt\":1}");
+  assert.equal(revisionOf(storage), mine, "a write in another profile");
 
   assert.equal(isTodayInputKey(STORAGE_KEYS.learningPlan("t")), true);
   assert.equal(isTodayInputKey(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), false);
   assert.equal(isTodayInputKey(STORAGE_KEYS.SETTINGS), false);
+  assert.equal(isTodayInputKey(TODAY_REVISION_KEY), false);
 });
 
 test("a snapshot is reused only for the same revision and owner; a mismatching persisted copy is removed", () => {
   const storage = seeded();
-  const revision = computeTodayStoreRevision(storage);
+  const revision = revisionOf(storage);
   const owner = { profileKey: "account:p1:acc-1|premium:allowed|content:x", trackId: "track-a" };
   const now = Date.parse("2026-11-13T10:00:00.000Z");
   writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { value: 1 }, storage, persisted: true });
@@ -89,7 +123,7 @@ test("persisting is on by default; PERSIST=0 keeps only the memory layer", () =>
   writeTodaySnapshot({ revision: "r", owner: { profileKey: "k", trackId: null }, capturedAt: "2026-11-13T10:00:00.000Z", data: {}, storage: defaultStorage });
   assert.ok(defaultStorage.getString(TODAY_SNAPSHOT_KEY), "owner decision 2026-11-13: on by default");
   const storage = seeded();
-  const revision = computeTodayStoreRevision(storage);
+  const revision = revisionOf(storage);
   const owner = { profileKey: "guest|guest:g1:", trackId: null };
   writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { v: 2 }, storage, persisted: false });
   assert.equal(storage.getString(TODAY_SNAPSHOT_KEY), undefined);
@@ -100,7 +134,7 @@ test("persisting is on by default; PERSIST=0 keeps only the memory layer", () =>
 
 test("foreign actor or lease, an old revision and a corrupt entry are ignored, removed and never throw", () => {
   const storage = seeded();
-  const revision = computeTodayStoreRevision(storage);
+  const revision = revisionOf(storage);
   const mine = { profileKey: "uid:a|account:p1:acc-1|premium:allowed|content:x", trackId: "t" };
   const now = Date.parse("2026-11-13T10:00:00.000Z");
   const write = () => { writeTodaySnapshot({ revision, owner: mine, capturedAt: "2026-11-13T10:00:00.000Z", data: { v: 1 }, storage }); clearTodaySnapshotMemory(); };
@@ -111,7 +145,7 @@ test("foreign actor or lease, an old revision and a corrupt entry are ignored, r
   assert.equal(readTodaySnapshot({ revision, owner: { ...mine, profileKey: "uid:a|account:p2:acc-1|premium:allowed|content:x" }, nowMs: now, storage }), null, "another profile lease");
   write();
   storage.setString(STORAGE_KEYS.trainingAttempt("new"), "{\"attempt\":3}");
-  assert.equal(readTodaySnapshot({ revision: computeTodayStoreRevision(storage), owner: mine, nowMs: now, storage }), null, "old revision after a new attempt");
+  assert.equal(readTodaySnapshot({ revision: revisionOf(storage), owner: mine, nowMs: now, storage }), null, "old revision after a new attempt");
   for (const corrupt of ["", "null", "[]", "{\"schema\":2}", JSON.stringify({ schema: 1, revision, owner: mine, capturedAt: "not a date", data: {} }), JSON.stringify({ schema: 1, revision, owner: mine, capturedAt: "2026-11-13T10:00:00.000Z", data: null })]) {
     storage.setString(TODAY_SNAPSHOT_KEY, corrupt);
     assert.doesNotThrow(() => assert.equal(readTodaySnapshot({ revision, owner: mine, nowMs: now, storage }), null, corrupt));
@@ -123,7 +157,7 @@ test("foreign actor or lease, an old revision and a corrupt entry are ignored, r
 
 test("sign-out, deletion or actor change drops both layers (account provider boundary)", () => {
   const storage = seeded();
-  const revision = computeTodayStoreRevision(storage);
+  const revision = revisionOf(storage);
   const owner = { profileKey: "uid:a|account:p1:acc-1|premium:allowed|content:x", trackId: "t" };
   writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { v: 1 }, storage });
   notifyActorBoundary(storage);
