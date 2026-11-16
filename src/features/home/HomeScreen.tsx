@@ -147,7 +147,10 @@ function readTodaySnapshotKey(trackId: string | null, premiumAccess: string, act
   }
 }
 
+let homeMountMarked = false;
+
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
+  if (SLA_TRACE && !homeMountMarked) { homeMountMarked = true; markStartup("home_shell:mount"); }
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const { t: tLearningPlan } = useTranslation("learningPlan");
@@ -249,12 +252,15 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               await accountRef.current.retryAccountSync();
             }
           }
+          if (SLA_TRACE) markStartup("home_shell:start");
           const savedTrackId = await getActiveTrackId();
+          if (SLA_TRACE) markStartup("home_shell:track");
           const assertCurrentSources = captureHomeShellReadFence(savedTrackId);
           const readNow = getApplicationCurrentTime();
           // T2.3: projections are reused for an unchanged learning store (same
           // revision, profile, track, premium access and content build).
           const snapshotKey = readTodaySnapshotKey(savedTrackId ?? null, accountRef.current.readCurrentPremiumAccess(), todaySnapshotActor(accountRef.current.state));
+          if (SLA_TRACE) markStartup("home_shell:revision");
           const forceCompute = forceShellComputeRef.current;
           forceShellComputeRef.current = false;
           const reused = snapshotKey && !forceCompute
@@ -271,6 +277,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             getReviewQueueItems(),
             trainingAttemptsRead,
           ]);
+          if (SLA_TRACE) markStartup("home_shell:reads");
           let projected: TodayProjectionData;
           if (reused) {
             projected = reused.snapshot.data;
@@ -323,6 +330,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             progressEvidence, progressEvidenceError, goal, goalOnboardingDismissed, homePlan,
           } = projected;
           if (isActive) {
+            if (SLA_TRACE) markStartup("home_shell:commit");
             assertCurrentProfile();
             assertCurrentSources();
             setActiveTrackId(savedTrackId ?? null);

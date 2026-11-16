@@ -135,7 +135,9 @@ async function bootstrapApplicationCore(
       },
     };
     await inspectCanonicalRepositories(instrumentedRepositoryDependencies);
+    markStartup("bootstrap:metadata_read");
     const pendingJournal = await getActiveMutationJournal(productionLearningDataAdmissionContext);
+    markStartup("bootstrap:journal_read");
     if (pendingJournal?.operation === "reset_learning_state") {
       const reset = pendingJournal.writes[0];
       if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
@@ -144,7 +146,9 @@ async function bootstrapApplicationCore(
     let openingIntegrity: "verified" | "recovered" | null = null;
     if (!pendingJournal) {
       openingIntegrity = await assertTrainingEvidenceIntegrityOrRecover();
+      markStartup("bootstrap:evidence_integrity");
       assertContentIdentityRecordIntegrity();
+      markStartup("bootstrap:content_identity_integrity");
     }
     // On a fresh profile, create metadata/identity only after proving the
     // physical evidence namespace is genuinely empty and consistent.

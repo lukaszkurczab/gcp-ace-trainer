@@ -40,6 +40,8 @@ export type StartupTraceStage =
   | "startup:local_first" | "startup_revalidation:start" | "startup_revalidation:end"
   | "evidence_integrity:repeated" | "evidence_integrity:skipped"
   | "home_projection:computed" | "home_projection:memory" | "home_projection:persisted"
+  // T27: steps of the Home shell read and the bootstrap integrity preflight (start path on a large history).
+  | `home_shell:${string}` | `bootstrap:${string}`
   | `repository:${CanonicalRepositoryBootstrapStep}`
   | `account:${AccountStartupDiagnosticStage}`
   | `profile_storage:${ProfileStoragePreparationDiagnosticStage}`;
