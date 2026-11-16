@@ -11,7 +11,7 @@ import { isLocalLearningProjectionFailure, requireHomePlanReadIntegrity } from "
 import * as reads from "./learningReadModels";
 import { loadActivitySessionRecords } from "./activityReadModels";
 import { captureProfileReadFence } from "./profileReadFence";
-import { captureHomeShellReadFence } from "./homeShellReadFence";
+import { captureHomeShellEpochFence, captureHomeShellReadFence, HomeShellSourcesChangedError } from "./homeShellReadFence";
 import { homePlanSnapshotReader } from "./homePlanSnapshotReader";
 import { describeOperationalFailure } from "./operationalDiagnostics";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
@@ -69,6 +69,8 @@ async function runHome(
     SLA_TRACE: false, markStartup: () => {}, slaTodayPending: { current: false }, slaShellReadFresh: { current: false },
     readTodaySnapshotKey: () => null, todaySnapshotActor: () => "guest", readTodaySnapshot: () => null, writeTodaySnapshot: () => {},
     forceShellComputeRef: { current: false }, firstScreenSourceRef: { current: null }, setShellReload: () => {},
+    // T27: the reused-snapshot fence and the deferred recompute (not reached without a snapshot key).
+    captureHomeShellEpochFence, HomeShellSourcesChangedError, whenStartupFirstUsableFrame: () => ({ promise: Promise.resolve(), cancel() {} }),
     describeOperationalFailure, CODING_INTERVIEW_TRACK_ID,
     setActiveTrackId: () => {}, setData: (value: typeof outcome.published) => { outcome.published = value; },
     setHasLoadedActiveTrack: () => {}, setLoadedOwner: () => {}, setShellReadError: (value: string) => { outcome.readError = value; },

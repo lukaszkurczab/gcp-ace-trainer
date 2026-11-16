@@ -9,7 +9,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
-import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame, onActorBoundary } from "../../application/bootstrap/parallelBoot";
+import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame, onActorBoundary, whenStartupFirstUsableFrame } from "../../application/bootstrap/parallelBoot";
 import { captureFirstScreenInputEpoch, writeFirstScreenToday, type FirstScreenTodayView } from "../../application/bootstrap/firstScreenRecord";
 import { handOverFirstScreenToToday, type FirstScreenTodayAction } from "../../application/bootstrap/firstScreenHandover";
 import { invalidateTodaySnapshot, readTodayStoreRevision, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "../../application/home/todaySnapshot";
@@ -53,7 +53,7 @@ import {
   type GuidanceAction,
 } from "../../application/learningPlan";
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
-import { captureHomeShellReadFence } from "../../application/homeShellReadFence";
+import { captureHomeShellEpochFence, captureHomeShellReadFence, HomeShellSourcesChangedError } from "../../application/homeShellReadFence";
 import { useRouteLifetime } from "./routeLifetime";
 import { captureProfileReadFence } from "../../application/profileReadFence";
 import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
@@ -255,7 +255,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           if (SLA_TRACE) markStartup("home_shell:start");
           const savedTrackId = await getActiveTrackId();
           if (SLA_TRACE) markStartup("home_shell:track");
-          const assertCurrentSources = captureHomeShellReadFence(savedTrackId);
           const readNow = getApplicationCurrentTime();
           // T2.3: projections are reused for an unchanged learning store (same
           // revision, profile, track, premium access and content build).
@@ -266,6 +265,13 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           const reused = snapshotKey && !forceCompute
             ? readTodaySnapshot<TodayProjectionData>({ revision: snapshotKey.revision, owner: snapshotKey.owner, nowMs: Date.parse(readNow), storage: snapshotKey.storage })
             : null;
+          // T27: a reused snapshot was computed under the full fence at this same revision token,
+          // so only a write during this read can invalidate it (O(1) check). Computing reads and
+          // validates every source twice (~100 ms each at 100 sessions), so it keeps the full fence.
+          const assertCurrentSources = reused && snapshotKey
+            ? captureHomeShellEpochFence(snapshotKey.firstScreenEpoch)
+            : captureHomeShellReadFence(savedTrackId);
+          if (SLA_TRACE) markStartup("home_shell:fence");
           if (SLA_TRACE && snapshotKey) markStartup(reused ? (reused.source === "memory" ? "home_projection:memory" : "home_projection:persisted") : "home_projection:computed");
           const trainingAttemptsRead = getTrainingAttempts();
           const [
@@ -365,14 +371,22 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             } else if (reused && !reused.fresh) {
               // Stale-while-revalidate: clock-dependent parts are recomputed
               // after this frame; the reused projection stays on screen meanwhile.
-              setTimeout(() => {
+              // T27: on a start, only after the first usable frame (and the native
+              // first-screen handover), so the recompute does not delay that frame.
+              void whenStartupFirstUsableFrame().promise.then(() => {
                 if (!isActive) return;
                 forceShellComputeRef.current = true;
                 setShellReload((reload) => reload + 1);
-              }, 0);
+              });
             }
           }
         } catch (error) {
+          if (isActive && error instanceof HomeShellSourcesChangedError) {
+            // T27: a Today input changed during a reused-snapshot read; read again (the new
+            // revision token makes it a full, fenced compute).
+            setShellReload((reload) => reload + 1);
+            return;
+          }
           if (isActive) {
             setShellReadError("We couldn't load your Patternly data. Check your connection and try again.");
             setHasLoadedActiveTrack(true);

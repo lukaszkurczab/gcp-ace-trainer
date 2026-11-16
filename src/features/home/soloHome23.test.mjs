@@ -41,6 +41,9 @@ function shell(overrides = {}) {
     readActiveTrackId: () => shellTrackId,
     readLearningPlanStorageScope: () => shellStorageScope,
     captureProfileReadFence: () => () => {}, captureHomeShellReadFence: () => () => {},
+    // T27: O(1) fence for a reused Today snapshot, its retryable error, and the deferred recompute.
+    captureHomeShellEpochFence: () => () => {}, HomeShellSourcesChangedError: class HomeShellSourcesChangedError extends Error {},
+    whenStartupFirstUsableFrame: () => ({ promise: Promise.resolve(), cancel() {} }),
     projectHomePractice: () => ({ kind: "none" }),
     projectProgressEvidence: () => ({ capturedAt: "2026-10-15T10:00:00Z" }), isLocalLearningProjectionFailure, requireHomePlanReadIntegrity,
     getApplicationCurrentTime: () => '2026-10-15T10:00:00Z',
@@ -389,4 +392,41 @@ test('without a snapshot key (kill-switch, no native digest) the shell computes 
   assert.deepEqual(nodes(ui.render('home')).find(node => node.type === 'HomeTab').props.homePractice, { kind: 'computed' });
   assert.equal(projections, 1);
   assert.equal(writes, 0);
+});
+
+test('T27: a reused snapshot uses the O(1) fence, never the full source fence', async () => {
+  let fullFences = 0, epochFences = 0;
+  const key = { revision: 'r1', owner: { profileKey: 'p', trackId: 'aws-certified-solutions-architect-associate' }, storage: {}, firstScreenEpoch: 7 };
+  const ui = shell({
+    readTodaySnapshotKey: () => key,
+    readTodaySnapshot: () => ({ snapshot: { data: snapshotData() }, source: 'persisted', fresh: true }),
+    captureHomeShellReadFence: () => { fullFences++; return () => {}; },
+    captureHomeShellEpochFence: epoch => { assert.equal(epoch, 7); epochFences++; return () => {}; },
+  });
+  ui.render('home'); await settle(); await settle();
+  assert.ok(nodes(ui.render('home')).some(node => node.type === 'HomeTab'));
+  assert.equal(epochFences, 1);
+  assert.equal(fullFences, 0);
+});
+
+test('T27: a Today input write during a reused-snapshot read re-reads with the full fence instead of failing', async () => {
+  class SourcesChanged extends Error {}
+  let fullFences = 0, snapshotReads = 0;
+  const key = { revision: 'r1', owner: { profileKey: 'p', trackId: 'aws-certified-solutions-architect-associate' }, storage: {}, firstScreenEpoch: 1 };
+  const ui = shell({
+    HomeShellSourcesChangedError: SourcesChanged,
+    readTodaySnapshotKey: () => key,
+    // The first read reuses the snapshot; after the write the token changed, so nothing matches.
+    readTodaySnapshot: () => (++snapshotReads === 1 ? { snapshot: { data: snapshotData() }, source: 'persisted', fresh: true } : null),
+    captureHomeShellEpochFence: () => () => { throw new SourcesChanged(); },
+    captureHomeShellReadFence: () => { fullFences++; return () => {}; },
+    projectHomePractice: () => ({ kind: 'computed' }),
+  });
+  for (let i = 0; i < 3; i++) { ui.render('home'); await settle(); }
+  const rendered = nodes(ui.render('home'));
+  assert.ok(!rendered.some(node => node.type === 'EmptyState'), 'no error screen');
+  const home = rendered.find(node => node.type === 'HomeTab');
+  assert.deepEqual(home.props.homePractice, { kind: 'computed' });
+  assert.equal(snapshotReads, 2);
+  assert.equal(fullFences, 1);
 });
