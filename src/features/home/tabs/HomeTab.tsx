@@ -8,7 +8,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button, Card, Icon, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
 import { FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID } from "../../../domain";
-import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
+import type { TrackDisplay, TrainingSession } from "../../../domain";
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
 import type { GuidanceAction } from "../../../application/learningPlan";
 import { presentTargetDateGuidance } from "../../../application/learningPlan";
@@ -16,7 +16,7 @@ import type { HomePlanSnapshot } from "../../../application/homePlanSnapshotRead
 import { colorWithOpacity, radius, spacing, typography } from "../../../theme";
 import { modeLabel } from "./activityPresentation";
 import { homePlanPlacement, buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
-import { buildHomeOverviewMetrics } from "./homeOverviewPresentation";
+import type { HomeHistorySummary } from "./homeHistorySummary";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
@@ -33,8 +33,6 @@ import type { FirstScreenTodayAction } from "../../../application/bootstrap/firs
 type HomeTabProps = {
   activeTrack: TrackDisplay;
   homePractice: HomePracticeProjection | null;
-  capturedAt: string;
-  reviewQueueItems: readonly ReviewQueueEntry[];
   currentNodeId?: string;
   activeSession: TrainingSession | null;
   resumeUnavailableReason?: "premium_entitlement_denied" | "premium_entitlement_unavailable";
@@ -53,7 +51,8 @@ type HomeTabProps = {
   homePlan: HomePlanSnapshot | null;
   goalInvitationAudience: "guest" | "account";
   showGoalInvitation: boolean;
-  trainingAttempts: readonly TrainingAttempt[];
+  /** T27: what Today shows from the learning history, projected with the shell read. */
+  history: HomeHistorySummary;
   /** T2.5: the strings this render shows, for the native first screen of the next launch. */
   onFirstScreenView?: (view: FirstScreenTodayView) => void;
   /** T2.5: an action tapped on the native first screen, run once through this tab's own handlers. */
@@ -134,8 +133,6 @@ export function HomeLoadingSkeleton() {
 export function HomeTab({
   activeTrack,
   homePractice,
-  capturedAt,
-  reviewQueueItems,
   currentNodeId,
   activeSession,
   resumeUnavailableReason,
@@ -154,7 +151,7 @@ export function HomeTab({
   homePlan,
   goalInvitationAudience,
   showGoalInvitation,
-  trainingAttempts,
+  history,
   onFirstScreenView,
   firstScreenAction,
   firstScreenNotice,
@@ -180,7 +177,7 @@ export function HomeTab({
   const singleCaseRecommendation: import("./homeTabModel").HomeRecommendationModel | null = homePractice?.kind === "case"
     ? { action: { kind: "start_single_case", caseId: homePractice.caseId, nodeId: homePractice.nodeId, decisionCount: homePractice.decisionCount }, title: homePractice.title, detail: `${t("One case · {{count}} decisions", { count: homePractice.decisionCount })} · ${t("Initial estimate: about {{minutes}} min", { minutes: homePractice.initialMinutes })}`, enabled: true, icon: "practice", label: "Start", primaryLabel: "Start", tone: "primary" }
     : homePractice?.kind === "unavailable" ? { action: { kind: "unavailable", reason: "This practice mode is unavailable." }, title: "Recommendation unavailable", detail: "This practice mode is unavailable.", unavailableReason: "This practice mode is unavailable.", enabled: false, icon: "alert-triangle", label: "Unavailable", primaryLabel: "Unavailable", tone: "warning" } : null;
-  const model = buildHomeTabModel({ activeSession, activeTrack, currentNodeId, algorithmsDashboard, dashboardError, trainingAttempts, singleCaseRecommendation, dueReviewRecommendation });
+  const model = buildHomeTabModel({ activeSession, activeTrack, currentNodeId, algorithmsDashboard, dashboardError, hasTrackAttempts: history.hasTrackAttempts, singleCaseRecommendation, dueReviewRecommendation });
   const recommendation = model.recommendations[0];
   const hasActiveSession = activeSession?.status === "active" && activeSession.trackId === activeTrack.id;
   const planPlacement = homePlanPlacement({ hasActiveSession, hasPracticeRecommendation: Boolean(singleCaseRecommendation || dueReviewRecommendation), planKind: homePlan?.kind });
@@ -247,12 +244,9 @@ export function HomeTab({
         : recommendation?.icon ?? (isFrontendTrack ? getTrackIconName(activeTrack.id) : isCodingInterviewTrack ? "route" : "cloud");
   const decisionTone = homePlanUnavailable || recommendation?.enabled === false ? "muted" : "primary";
   const decisionEnabled = homePlanUnavailable || homePlanReady || recommendation?.enabled !== false;
-  const recentAttempts = trainingAttempts
-    .filter((attempt) => attempt.trackId === activeTrack.id && attempt.sessionId !== activeSession?.id)
-    .sort((left, right) => right.answeredAt.localeCompare(left.answeredAt));
-  const recentAttempt = recentAttempts[0];
-  const overview = buildHomeOverviewMetrics({ trackId: activeTrack.id, reviewQueueItems, trainingAttempts, activeSessionId: activeSession?.id, now: capturedAt });
-  const isFirstUse = !hasActiveSession && trainingAttempts.length === 0 && reviewQueueItems.length === 0;
+  const recentAttemptModeId = history.recentAttemptModeId;
+  const overview = history.overview;
+  const isFirstUse = !hasActiveSession && history.isEmpty;
 
   const trackIcon = isFrontendTrack ? getTrackIconName(activeTrack.id) : isCodingInterviewTrack ? "code-brackets" : "cloud";
   const renderedTitle = homePlanReady && homePlanPresentation ? decisionTitle : t(decisionTitle);
@@ -291,7 +285,7 @@ export function HomeTab({
       focus: isFirstUse ? null : { label: t("Current focus"), title: formatPracticeTopicTitle(model.heroTitle, t), button: { label: t("Open Practice"), action: "open_practice_topic" } },
       activity: isFirstUse ? null : {
         label: t("Recent activity"),
-        title: recentAttempt ? t(modeLabel(recentAttempt.modeId)) : null,
+        title: recentAttemptModeId ? t(modeLabel(recentAttemptModeId)) : null,
         empty: t("No activity yet"),
         button: { label: t("View activity"), action: "open_activity" },
       },
@@ -300,7 +294,7 @@ export function HomeTab({
     };
   // Every rendered string below depends on these values; `t` changes with the language.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onFirstScreenView, t, tPlan, activeTrack, trackIcon, decisionIcon, renderedTitle, decisionDetail, renderedPrimaryLabel, decisionEnabled, decisionTone, renderedSecondary?.label, renderedSecondary?.chevron, secondaryPlan, secondaryPlanPresentation, showGoalInvitation, goalInvitationAudience, isFirstUse, overview, model.heroTitle, recentAttempt?.modeId]);
+  }, [onFirstScreenView, t, tPlan, activeTrack, trackIcon, decisionIcon, renderedTitle, decisionDetail, renderedPrimaryLabel, decisionEnabled, decisionTone, renderedSecondary?.label, renderedSecondary?.chevron, secondaryPlan, secondaryPlanPresentation, showGoalInvitation, goalInvitationAudience, isFirstUse, overview, model.heroTitle, recentAttemptModeId]);
   useEffect(() => {
     if (firstScreenView && onFirstScreenView && !dashboardError) onFirstScreenView(firstScreenView);
   }, [firstScreenView, onFirstScreenView, dashboardError]);
@@ -523,9 +517,9 @@ export function HomeTab({
       {!isFirstUse ? <View style={styles.detailSection}>
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Recent activity")}</Text>
         <View style={[styles.activityRow, largeText ? styles.activityRowLargeText : null]}>
-          {recentAttempt ? (
+          {recentAttemptModeId ? (
             <View style={styles.activityCopy}>
-              <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(modeLabel(recentAttempt.modeId))}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(modeLabel(recentAttemptModeId))}</Text>
             </View>
           ) : (
             <Text maxFontSizeMultiplier={2} style={styles.activityEmpty}>{t("No activity yet")}</Text>

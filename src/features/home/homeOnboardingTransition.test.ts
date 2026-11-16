@@ -35,7 +35,7 @@ test("Home keeps resume-required handling internal instead of showing sync imple
 test("the first Home visit replaces repeated empty metrics with one honest next-step state", () => {
   const homeTab = readFileSync("src/features/home/tabs/HomeTab.tsx", "utf8");
 
-  assert.match(homeTab, /const isFirstUse = !hasActiveSession && trainingAttempts\.length === 0 && reviewQueueItems\.length === 0/);
+  assert.match(homeTab, /const isFirstUse = !hasActiveSession && history\.isEmpty/);
   assert.match(homeTab, /hasActiveSession \|\| isFirstUse \? undefined/);
   assert.match(homeTab, /Your learning starts here/);
   assert.match(homeTab, /Complete your first session to see progress and activity here\./);

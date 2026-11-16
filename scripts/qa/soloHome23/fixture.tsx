@@ -6,6 +6,7 @@ import { registerRootComponent } from 'expo';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppPreferencesPresentationProvider, deriveAppPreferencesPresentation } from '../../../src/preferences/appPreferencesContext';
 import { HomeTab } from '../../../src/features/home/tabs/HomeTab';
+import { projectHomeHistorySummary } from '../../../src/features/home/tabs/homeHistorySummary';
 import { ProgressTab } from '../../../src/features/home/tabs/ProgressTab';
 import { SettingsTab } from '../../../src/features/home/tabs/SettingsTab';
 import { contentPackageRuntimeOwner } from '../../../src/application/contentPackageRuntimeOwner';
@@ -32,8 +33,8 @@ function App() {
         {['Home', 'Progress', 'Settings'].map(value => <Pressable key={value} testID={`solo23-${value}`} accessibilityRole="button" onPress={() => setPanel(value)}><Text style={{ color: '#fff', padding: 6 }}>{value}</Text></Pressable>)}
       </View>
       {failed ? <Text>Fixture catalog unavailable</Text> : !ready ? <Text>Preparing fixture catalog</Text> : <Screen>
-        {panel === 'Home' ? <HomeTab activeTrack={activeTrack} activeSession={null} homePractice={{ kind: "none" }} capturedAt="2026-10-15T12:00:00.000Z" reviewQueueItems={[]} algorithmsDashboard={null} dashboardError={null}
-          homePlan={null} trainingAttempts={[]} showGoalInvitation={false} goalInvitationAudience="guest"
+        {panel === 'Home' ? <HomeTab activeTrack={activeTrack} activeSession={null} homePractice={{ kind: "none" }} algorithmsDashboard={null} dashboardError={null}
+          homePlan={null} history={projectHomeHistorySummary({ trackId: activeTrack.id, trainingAttempts: [], reviewQueueItems: [], now: "2026-10-15T12:00:00.000Z" })} showGoalInvitation={false} goalInvitationAudience="guest"
           onChangeTrack={noop} onChooseTopic={noop} onDismissGoalOnboarding={async () => unavailable()} onOpenActivity={noop} onOpenSettings={() => setPanel('Settings')}
           onSetGoal={noop} onRecommendationAction={noop} onHomePlanAction={noop} onRetryHomePlan={noop} onStartLearning={noop} />
           : panel === 'Progress' ? <ProgressTab activeTrack={activeTrack} activityRecords={[]} evidence={projectProgressEvidence({ activeTrackId: activeTrack.id, trainingAttempts: [], reviewQueueItems: [], now: "2026-10-15T12:00:00.000Z" })}

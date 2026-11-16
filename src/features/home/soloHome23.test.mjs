@@ -44,6 +44,8 @@ function shell(overrides = {}) {
     // T27: O(1) fence for a reused Today snapshot, its retryable error, and the deferred recompute.
     captureHomeShellEpochFence: () => () => {}, HomeShellSourcesChangedError: class HomeShellSourcesChangedError extends Error {},
     whenStartupFirstUsableFrame: () => ({ promise: Promise.resolve(), cancel() {} }),
+    // T27: Home gets a history summary projected with the shell read (inputs kept for assertions).
+    projectHomeHistorySummary: input => ({ trackId: input.trackId, attempts: input.trainingAttempts, reviews: input.reviewQueueItems, activeSessionId: input.activeSessionId, now: input.now }),
     projectHomePractice: () => ({ kind: "none" }),
     projectProgressEvidence: () => ({ capturedAt: "2026-10-15T10:00:00Z" }), isLocalLearningProjectionFailure, requireHomePlanReadIntegrity,
     getApplicationCurrentTime: () => '2026-10-15T10:00:00Z',
@@ -321,7 +323,7 @@ test('successful background materialization refreshes Home; failures and unchang
   const home = nodes(ui.render('home')).find(node => node.type === 'HomeTab');
   assert.ok(home, 'Home must recover from the old track owner after remote materialization');
   assert.equal(home.props.activeTrack.id, trackId);
-  assert.equal(home.props.trainingAttempts, attempts);
+  assert.equal(home.props.history.attempts, attempts);
   assert.equal(reads, 2);
   idle.run(); await settle(); ui.render('home');
   assert.equal(networkCalls, 1, 'the settled follow-up pending check does not start another network sync');
@@ -335,7 +337,8 @@ function snapshotData(overrides = {}) {
     activityRecords: [], algorithmsDashboard: null, algorithmsDashboardError: null,
     homePractice: { kind: 'snapshot' }, capturedAt: '2026-10-15T09:00:00Z',
     progressEvidence: { capturedAt: '2026-10-15T09:00:00Z' }, progressEvidenceError: null,
-    goal: null, goalOnboardingDismissed: true, homePlan: null, ...overrides,
+    goal: null, goalOnboardingDismissed: true, homePlan: null,
+    activeSession: null, homeHistory: { trackId: 'aws-certified-solutions-architect-associate', now: '2026-10-15T09:00:00Z' }, ...overrides,
   };
 }
 
@@ -353,7 +356,7 @@ test('a matching Today snapshot is shown without recomputing projections; a fres
   const home = nodes(ui.render('home')).find(node => node.type === 'HomeTab');
   assert.ok(home);
   assert.deepEqual(home.props.homePractice, { kind: 'snapshot' });
-  assert.equal(home.props.capturedAt, '2026-10-15T09:00:00Z', 'the snapshot keeps its own capture time');
+  assert.equal(home.props.history.now, '2026-10-15T09:00:00Z', 'the snapshot keeps its own capture time');
   assert.equal(projections, 0);
   assert.equal(writes, 0);
 });
@@ -373,7 +376,7 @@ test('a stale Today snapshot is shown, then recomputed and replaced (stale-while
   for (let i = 0; i < 4; i++) { ui.render('home'); await new Promise(resolve => setTimeout(resolve, 5)); await settle(); }
   const home = nodes(ui.render('home')).find(node => node.type === 'HomeTab');
   assert.deepEqual(home.props.homePractice, { kind: 'computed' }, 'the recomputed projection replaces the snapshot');
-  assert.equal(home.props.capturedAt, '2026-10-15T10:00:00Z');
+  assert.equal(home.props.history.now, '2026-10-15T10:00:00Z');
   assert.equal(projections, 1);
   assert.equal(written.length, 1);
   assert.equal(written[0].revision, 'r1');
@@ -429,4 +432,23 @@ test('T27: a Today input write during a reused-snapshot read re-reads with the f
   assert.deepEqual(home.props.homePractice, { kind: 'computed' });
   assert.equal(snapshotReads, 2);
   assert.equal(fullFences, 1);
+});
+
+test('T27: a reused snapshot commits Home without reading attempts, reviews or the active session', async () => {
+  let historyReads = 0;
+  const key = { revision: 'r1', owner: { profileKey: 'p', trackId: 'aws-certified-solutions-architect-associate' }, storage: {}, firstScreenEpoch: 3 };
+  const active = { id: 'session-1', status: 'active', trackId: 'aws-certified-solutions-architect-associate', modeId: 'mode' };
+  const ui = shell({
+    readTodaySnapshotKey: () => key,
+    readTodaySnapshot: () => ({ snapshot: { data: snapshotData({ activeSession: active }) }, source: 'persisted', fresh: true }),
+    getTrainingAttempts: async () => { historyReads++; return { ok: true, value: [] }; },
+    getReviewQueueItems: async () => { historyReads++; return { ok: true, value: [] }; },
+    loadActiveTrainingSession: async () => { historyReads++; return null; },
+  });
+  ui.render('home'); await settle(); await settle();
+  const home = nodes(ui.render('home')).find(node => node.type === 'HomeTab');
+  assert.ok(home);
+  assert.equal(home.props.activeSession, active, 'the active session comes from the snapshot');
+  assert.equal(home.props.history.now, '2026-10-15T09:00:00Z');
+  assert.equal(historyReads, 0);
 });

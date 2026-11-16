@@ -10,7 +10,7 @@ const trackId = "coding-interview-dsa-problem-solving" as const;
 const base = {
   activeTrack: getTrackDisplay(trackId),
   dashboardError: null,
-  trainingAttempts: [],
+  hasTrackAttempts: false,
 };
 
 before(async () => {

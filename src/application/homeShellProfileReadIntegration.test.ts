@@ -12,6 +12,7 @@ import * as reads from "./learningReadModels";
 import { loadActivitySessionRecords } from "./activityReadModels";
 import { captureProfileReadFence } from "./profileReadFence";
 import { captureHomeShellEpochFence, captureHomeShellReadFence, HomeShellSourcesChangedError } from "./homeShellReadFence";
+import { projectHomeHistorySummary } from "../features/home/tabs/homeHistorySummary";
 import { homePlanSnapshotReader } from "./homePlanSnapshotReader";
 import { describeOperationalFailure } from "./operationalDiagnostics";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
@@ -47,7 +48,7 @@ async function runHome(
   changeAfterGoal: () => Promise<void> = async () => {},
   changeAfterDashboard: () => Promise<void> = async () => {},
 ) {
-  const outcome: { published: { trainingAttempts: readonly TrainingAttempt[] } | null; readError: string | null } = { published: null, readError: null };
+  const outcome: { published: { homeHistory: { attemptIds: readonly string[] } } | null; readError: string | null } = { published: null, readError: null };
   const context = {
     isActive: true, shellReadReady: { current: false }, accountRef: { current: { state: { kind: "guest" }, readCurrentPremiumAccess: () => "denied" } },
     getActiveTrackId: reads.loadLocalActiveTrackId, getAttempts: reads.loadExamSummaries, getPracticeHistory: reads.loadPracticeHistory,
@@ -71,6 +72,8 @@ async function runHome(
     forceShellComputeRef: { current: false }, firstScreenSourceRef: { current: null }, setShellReload: () => {},
     // T27: the reused-snapshot fence and the deferred recompute (not reached without a snapshot key).
     captureHomeShellEpochFence, HomeShellSourcesChangedError, whenStartupFirstUsableFrame: () => ({ promise: Promise.resolve(), cancel() {} }),
+    // T27: Home publishes a history summary; the ids show which persisted answers it was read from.
+    projectHomeHistorySummary: (input: Parameters<typeof projectHomeHistorySummary>[0]) => ({ ...projectHomeHistorySummary(input), attemptIds: input.trainingAttempts.map((attempt) => attempt.id) }),
     describeOperationalFailure, CODING_INTERVIEW_TRACK_ID,
     setActiveTrackId: () => {}, setData: (value: typeof outcome.published) => { outcome.published = value; },
     setHasLoadedActiveTrack: () => {}, setLoadedOwner: () => {}, setShellReadError: (value: string) => { outcome.readError = value; },
@@ -107,7 +110,7 @@ test("actual Home command rejects profile changes after Activity reads and befor
     await t.test("same profile publishes actual persisted answers", async () => {
       const unchanged = await runHome(async () => {});
       assert.equal(unchanged.readError, null);
-      assert.equal(unchanged.published?.trainingAttempts[0]?.id, "a-answer");
+      assert.equal(unchanged.published?.homeHistory.attemptIds[0], "a-answer");
     });
     await t.test("same-profile attempt committed after parallel reads rejects stale HomeShell publication", async () => {
       const freshItem = { ...item, questionId: track.questions[1]!.questionId };
@@ -126,7 +129,7 @@ test("actual Home command rejects profile changes after Activity reads and befor
       assert.ok(changed.readError);
       const retry = await runHome();
       assert.equal(retry.readError, null);
-      assert.deepEqual(retry.published?.trainingAttempts.map((attempt) => attempt.id).sort(), ["a-answer", "b-answer"]);
+      assert.deepEqual([...(retry.published?.homeHistory.attemptIds ?? [])].sort(), ["a-answer", "b-answer"]);
     });
     await t.test("same-profile attempt committed after the final dashboard await rejects publication", async () => {
       const sessionItem = { ...item, questionId: track.questions[2]!.questionId };
@@ -145,7 +148,7 @@ test("actual Home command rejects profile changes after Activity reads and befor
       assert.ok(changed.readError);
       const retry = await runHome();
       assert.equal(retry.readError, null);
-      assert.deepEqual(retry.published?.trainingAttempts.map((attempt) => attempt.id).sort(), ["a-answer", "b-answer", "c-answer"]);
+      assert.deepEqual([...(retry.published?.homeHistory.attemptIds ?? [])].sort(), ["a-answer", "b-answer", "c-answer"]);
     });
     await t.test("A→B after Activity read rejects publication", async () => {
       const switched = await runHome(() => select("home-read-fixture-b"));

@@ -56,7 +56,7 @@ import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../ap
 import { captureHomeShellEpochFence, captureHomeShellReadFence, HomeShellSourcesChangedError } from "../../application/homeShellReadFence";
 import { useRouteLifetime } from "./routeLifetime";
 import { captureProfileReadFence } from "../../application/profileReadFence";
-import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
+import { type GoalRecord, type TrainingSession } from "../../domain";
 import type { CodingInterviewDashboard } from "../../application/coding-interview";
 import { getApplicationCurrentTime, resumeActiveTrainingSession } from "../../application/trainingLifecycle";
 import { TrainingApplicationFailure } from "../../application/trainingLifecycle/contracts";
@@ -74,6 +74,7 @@ import {
 import { resolveCertificationExamAccess } from "../practice/certificationExamAccess";
 import { HomeLoadingSkeleton, HomeTab } from "./tabs/HomeTab";
 import type { HomeRecommendationAction } from "./tabs/homeTabModel";
+import { projectHomeHistorySummary, type HomeHistorySummary } from "./tabs/homeHistorySummary";
 import { ProgressLoadingSkeleton, ProgressTab } from "./tabs/ProgressTab";
 import type { ProgressAction } from "./tabs/progressTabModel";
 import { SettingsLoadingSkeleton, SettingsTab } from "./tabs/SettingsTab";
@@ -107,15 +108,17 @@ type ShellData = {
   progressEvidenceError: string | null;
   goal: GoalRecord | null;
   goalOnboardingDismissed: boolean;
-  reviewQueueItems: ReviewQueueEntry[];
-  trainingAttempts: TrainingAttempt[];
+  /** T27: what Today shows from the attempts and review queue (Home keeps no raw history). */
+  homeHistory: HomeHistorySummary | null;
   homePlan: HomePlanSnapshot | null;
 };
 
 type HomeShellTab = Exclude<ShellTab, "practice">;
 
 /** T2.3: the projected part of the shell, reused while the learning store is unchanged. */
-type TodayProjectionData = Pick<ShellData, "activityRecords" | "algorithmsDashboard" | "algorithmsDashboardError" | "homePractice" | "capturedAt" | "progressEvidence" | "progressEvidenceError" | "goal" | "goalOnboardingDismissed" | "homePlan">;
+// T27: the active session is a Today input too (its writes drop the revision token), so a reused
+// snapshot commits without reading any learning source.
+type TodayProjectionData = Pick<ShellData, "activityRecords" | "activeSession" | "algorithmsDashboard" | "algorithmsDashboardError" | "homeHistory" | "homePractice" | "capturedAt" | "progressEvidence" | "progressEvidenceError" | "goal" | "goalOnboardingDismissed" | "homePlan">;
 
 // Sign-out, deletion or actor change drops the Today snapshot from the still-open profile store.
 onActorBoundary((store) => invalidateTodaySnapshot(store));
@@ -205,8 +208,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     progressEvidenceError: null,
     goal: null,
     goalOnboardingDismissed: true,
-    reviewQueueItems: [],
-    trainingAttempts: [],
+    homeHistory: null,
     homePlan: null,
   });
 
@@ -273,21 +275,23 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             : captureHomeShellReadFence(savedTrackId);
           if (SLA_TRACE) markStartup("home_shell:fence");
           if (SLA_TRACE && snapshotKey) markStartup(reused ? (reused.source === "memory" ? "home_projection:memory" : "home_projection:persisted") : "home_projection:computed");
-          const trainingAttemptsRead = getTrainingAttempts();
-          const [
-            activeSession,
-            reviewQueueItemsResult,
-            trainingAttemptsResult,
-          ] = await Promise.all([
-            loadActiveTrainingSession(),
-            getReviewQueueItems(),
-            trainingAttemptsRead,
-          ]);
-          if (SLA_TRACE) markStartup("home_shell:reads");
           let projected: TodayProjectionData;
           if (reused) {
+            // T27: no attempts, reviews or session reads before the first frame; a stale snapshot
+            // is recomputed (with those reads) after it.
             projected = reused.snapshot.data;
           } else {
+            const trainingAttemptsRead = getTrainingAttempts();
+            const [
+              activeSession,
+              reviewQueueItemsResult,
+              trainingAttemptsResult,
+            ] = await Promise.all([
+              loadActiveTrainingSession(),
+              getReviewQueueItems(),
+              trainingAttemptsRead,
+            ]);
+            if (SLA_TRACE) markStartup("home_shell:reads");
             const [activityRecords, homePlan] = await Promise.all([
               loadActivitySessionRecords({ getAttempts: () => trainingAttemptsRead }),
               savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: readNow, premiumAccess: accountRef.current.readCurrentPremiumAccess() }) : Promise.resolve(null),
@@ -329,10 +333,16 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
                 progressEvidenceError = "Progress is unavailable";
               }
             }
-            projected = { activityRecords, algorithmsDashboard, algorithmsDashboardError, homePractice, capturedAt: readNow, progressEvidence, progressEvidenceError, goal, goalOnboardingDismissed, homePlan };
+            await yieldToEventLoop();
+            // Same session id HomeTab gets from the plan (planned active session).
+            const plannedSessionId = homePlan?.kind === "ready" ? homePlan.activeSession?.id : homePlan?.kind === "unavailable" ? undefined : activeSession?.id;
+            const homeHistory = savedTrackId
+              ? projectHomeHistorySummary({ trackId: savedTrackId, trainingAttempts: trainingAttemptsResult.value, reviewQueueItems: reviewQueueItemsResult.value, activeSessionId: plannedSessionId, now: readNow })
+              : null;
+            projected = { activityRecords, activeSession, algorithmsDashboard, algorithmsDashboardError, homeHistory, homePractice, capturedAt: readNow, progressEvidence, progressEvidenceError, goal, goalOnboardingDismissed, homePlan };
           }
           const {
-            activityRecords, algorithmsDashboard, algorithmsDashboardError, homePractice,
+            activityRecords, activeSession, algorithmsDashboard, algorithmsDashboardError, homeHistory, homePractice,
             progressEvidence, progressEvidenceError, goal, goalOnboardingDismissed, homePlan,
           } = projected;
           if (isActive) {
@@ -352,8 +362,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               progressEvidenceError,
               goal,
               goalOnboardingDismissed,
-              reviewQueueItems: reviewQueueItemsResult.value,
-              trainingAttempts: trainingAttemptsResult.value,
+              homeHistory,
               homePlan,
             });
             setHasLoadedActiveTrack(true);
@@ -758,9 +767,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               resumeUnavailableReason={resumeUnavailableReason}
               activeTrack={activeTrack}
               homePractice={data.homePractice}
-              trainingAttempts={data.trainingAttempts}
-              reviewQueueItems={data.reviewQueueItems}
-              capturedAt={data.capturedAt!}
+              history={data.homeHistory!}
               currentNodeId={data.progressEvidence?.algorithmsProgress?.currentFocus.nodeId}
               algorithmsDashboard={data.algorithmsDashboard}
               dashboardError={data.algorithmsDashboardError}

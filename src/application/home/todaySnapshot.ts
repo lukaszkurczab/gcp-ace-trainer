@@ -23,7 +23,7 @@
  *
  * Stored format (stable input for T2.5, which reads it natively): one JSON
  * value under `TODAY_SNAPSHOT_KEY`:
- *   { schema: 1, revision: "<token from TODAY_REVISION_KEY>", owner: { profileKey, trackId },
+ *   { schema: 2, revision: "<token from TODAY_REVISION_KEY>", owner: { profileKey, trackId },
  *     capturedAt: ISO-8601, data: TodayProjectionData }
  * `profileKey` = "<actor>|<profile kind>:<profile id>:<account id>|premium:<access>|content:<lock sha>:<ledger sha>".
  * Any change to this shape or to `data` bumps `schema` (and the key's v1).
@@ -45,7 +45,8 @@ type KeyValueStorage = TodaySnapshotStorage;
 
 /** Derived, rebuildable cache; outside the canonical namespace and never exported or synced. */
 export const TODAY_SNAPSHOT_KEY = TODAY_SNAPSHOT_STORE_KEY;
-const SNAPSHOT_SCHEMA = 1;
+// T27 (2): data carries the active session and the Home history summary.
+const SNAPSHOT_SCHEMA = 2;
 /** A reused projection older than this is recomputed in the background. */
 export const TODAY_SNAPSHOT_FRESH_MS = 60_000;
 /**

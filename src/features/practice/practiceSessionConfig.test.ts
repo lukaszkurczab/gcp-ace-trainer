@@ -57,7 +57,7 @@ test("actual canonical practice producer resumes through routes and Home without
         assert.equal(route.sessionLength, session.requestedLength);
         assert.equal(route.feedbackMode, session.configurationSnapshot.feedbackMode);
         const recommendation = buildHomeTabModel({ activeTrack: getTrackDisplay(trackId as TrackId), activeSession: session,
-          algorithmsDashboard: null, dashboardError: null, trainingAttempts: [] }).recommendations[0];
+          algorithmsDashboard: null, dashboardError: null, hasTrackAttempts: false }).recommendations[0];
         assert.equal(recommendation?.enabled, true);
         assert.equal(recommendation?.action.kind, family === "certification" ? "resume_certification_practice" : "resume_design_interview");
         assert.equal("sessionId" in recommendation.action ? recommendation.action.sessionId : undefined, session.id);
@@ -340,7 +340,7 @@ test("Claude scoped Focus resumes non-default units and retained questions witho
     await runtime.validateResume({ session: prepared.session, draft: null });
     assert.equal(JSON.stringify(prepared.session), before);
     if (track === old) assert.ok(prepared.session.itemOrder.some(occurrence => !current.getQuestion(occurrence.item.questionId)), "actual retained session includes a replaced QID");
-    const recommendation: ReturnType<typeof buildHomeTabModel>["recommendations"][number] | undefined = buildHomeTabModel({ activeTrack: getTrackDisplay(track.trackId as TrackId), activeSession: prepared.session, algorithmsDashboard: null, dashboardError: null, trainingAttempts: [] }).recommendations[0];
+    const recommendation: ReturnType<typeof buildHomeTabModel>["recommendations"][number] | undefined = buildHomeTabModel({ activeTrack: getTrackDisplay(track.trackId as TrackId), activeSession: prepared.session, algorithmsDashboard: null, dashboardError: null, hasTrackAttempts: false }).recommendations[0];
     assert.equal(recommendation?.enabled, true);
     assert.equal(recommendation?.action.kind, "resume_certification_practice");
   }

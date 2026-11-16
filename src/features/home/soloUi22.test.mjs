@@ -56,12 +56,12 @@ for (const locale of TARGET_LOCALES) for (const panel of ['primary', 'secondary'
       contentPackageRuntimeOwner: { getPreparedDiscovery: () => ({ track: { trackId } }) },
       selectSingleCase: () => panel === 'secondary' ? { recipe: { caseId: 'case', title: 'Case', steps: [1], initialEstimatedSeconds: 60 }, nodeId: 'node' } : null,
       getApplicationCurrentTime: () => '2026-10-15T10:00:00Z',
-      buildHomeOverviewMetrics: () => [], getTrackIconName: () => 'cloud', localizeHomePlanArea: () => 'Area',
+      getTrackIconName: () => 'cloud', localizeHomePlanArea: () => 'Area',
       formatPracticeTopicTitle: value => value, formatPracticeTopicDetail: value => value,
       FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID: 'frontend-system-design-interview', modeLabel: () => 'Practice',
     });
     const homePlan = { kind: 'ready', guidance, plan: { timezone: 'Europe/Warsaw' }, chapterAccess: [], session: { sessionLength: 10 }, day: { status: 'scheduled' }, dueReviewCount: 0 };
-    const element = hooks.render(home, { activeTrack: track, activeSession: null, homePlan, trainingAttempts: [], reviewQueueItems: [] });
+    const element = hooks.render(home, { activeTrack: track, activeSession: null, homePlan, history: { trackId, hasTrackAttempts: false, isEmpty: true, recentAttemptModeId: null, overview: [] } });
     assert.equal(calls.length, 1);
     assert.equal(calls[0].locale, locale);
     const expected = presentTargetDateGuidance({ guidance, locale, timezone: homePlan.plan.timezone });

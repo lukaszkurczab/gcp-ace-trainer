@@ -170,7 +170,9 @@ test("weekly text and accessibility label share real translated plural values in
   }
   const home = readFileSync("src/features/home/tabs/HomeTab.tsx", "utf8");
   assert.doesNotMatch(home, /startOfUtcWeek|weekAttempts|function buildOverviewMetrics/);
-  assert.match(home, /buildHomeOverviewMetrics\(\{/);
+  // T27: the overview is projected with the shell read (history summary), HomeTab only renders it.
+  assert.match(readFileSync("src/features/home/tabs/homeHistorySummary.ts", "utf8"), /buildHomeOverviewMetrics\(\{/);
+  assert.match(home, /const overview = history\.overview;/);
   assert.match(home, /accessibilityLabel=\{`\$\{t\(metric.label\)\}: \$\{t\(metric.value, \{ count: metric.count, dueCount: metric.dueCount, manualCount: metric.manualCount \}\)\}`\}/);
   assert.match(home, /maxFontSizeMultiplier=\{2\}[^\n]*\{t\(metric.value, \{ count: metric.count, dueCount: metric.dueCount, manualCount: metric.manualCount \}\)\}/);
 });

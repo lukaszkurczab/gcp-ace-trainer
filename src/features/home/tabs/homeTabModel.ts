@@ -1,6 +1,6 @@
 import { projectCodingHomeRecommendation } from "../../../application/coding-interview/codingHomeRecommendation";
 import type { IconName } from "../../../components";
-import type { TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
+import type { TrackDisplay, TrainingSession } from "../../../domain";
 import type { CodingInterviewDashboard, HomeRecommendationAction as CanonicalHomeRecommendationAction } from "../../../application/coding-interview";
 import { getCertificationMode, isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../../tracks/certification";
 import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../../tracks/design-interview";
@@ -57,14 +57,15 @@ export type BuildHomeTabModelInput = {
   dashboardError: string | null;
   dueReviewRecommendation?: HomeRecommendationModel | null;
   singleCaseRecommendation?: HomeRecommendationModel | null;
-  trainingAttempts: readonly TrainingAttempt[];
+  /** Some attempt of this track exists (from the Home history summary). */
+  hasTrackAttempts: boolean;
 };
 
 export function buildHomeTabModel(input: BuildHomeTabModelInput): HomeTabModel {
-  const topic = getCurrentPracticeTopic(input.activeTrack, input.trainingAttempts);
+  const topic = getCurrentPracticeTopic(input.activeTrack);
   const certificationResume = buildCertificationResumeRecommendation(input);
   const recommendations = certificationResume ? [certificationResume] : input.dueReviewRecommendation ? [input.dueReviewRecommendation] : input.singleCaseRecommendation ? [input.singleCaseRecommendation] : projectCodingHomeRecommendation(input, input.currentNodeId ?? topic.id);
-  const hasProgress = input.trainingAttempts.some((attempt) => attempt.trackId === input.activeTrack.id)
+  const hasProgress = input.hasTrackAttempts
     || (input.activeSession?.status === "active" && input.activeSession.trackId === input.activeTrack.id);
   const learningLabel = hasProgress ? "Continue learning" : "Start learning";
 
