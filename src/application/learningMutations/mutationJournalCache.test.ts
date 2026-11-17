@@ -10,7 +10,7 @@ import { getTrainingAttempts, saveTrainingSession } from "../../storage";
 import { STORAGE_KEYS } from "../../storage/keys";
 import {
   assertValidMutationJournal, createMutationPlanFingerprint, getActiveMutationJournal, persistMutationJournal, readMutationJournalCacheCountersForTests,
-  resetMutationJournalCacheCountersForTests, setMutationJournalCacheEnabledForTests, updateMutationJournalPhase, type MutationJournalPlan, type MutationJournalRecord,
+  resetMutationJournalCacheCountersForTests, clearMutationJournalMemoForTests, updateMutationJournalPhase, type MutationJournalPlan, type MutationJournalRecord,
 } from "../../storage/repositories/mutationJournalRepository";
 import { productionLearningDataAdmissionContext as context, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import type { LearningDataAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
@@ -21,13 +21,25 @@ import { commitMutation } from "./commitMutation";
 // other bytes, owner or admission take the full validator again (D5).
 
 let storage: MemoryKeyValueStorage;
-beforeEach(() => { storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); setMutationJournalCacheEnabledForTests(true); resetMutationJournalCacheCountersForTests(); });
-afterEach(() => { setMutationJournalCacheEnabledForTests(null); resetNativeCoreForTests(); });
+beforeEach(() => { storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); clearMutationJournalMemoForTests(); resetMutationJournalCacheCountersForTests(); });
+afterEach(() => { clearMutationJournalMemoForTests(); resetNativeCoreForTests(); });
 
 const trackId = "coding-interview-dsa-problem-solving";
 const artifactSha256 = "a".repeat(64);
 const session = createTrainingSession({ id: "s", trackId, modeId: "m", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId, questionId: "i", contentVersion: "v", artifactSha256 } }], optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v", artifactSha256, status: "active" as const, startedAt: "2026-01-01T00:00:00.000Z" });
 const attempt = { id: "a", sessionId: "s", trackId, modeId: "m", occurrenceId: "occurrence-1", item: session.itemOrder[0]!.item, response: { ids: ["x"] }, result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: session.itemOrder[0]!.item, taxonomyOrSkillRefs: [] }, answeredAt: session.startedAt, committedAt: session.startedAt };
+/**
+ * Durable storage after the uninterrupted commit, recorded from the removed
+ * uncached journal path: every interruption point and crash recovers to it.
+ */
+const envelope = (payload: unknown) => JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision: 1, payload });
+const EXPECTED_DURABLE_STORAGE = JSON.stringify([
+  ["patternly:canonical:v1:active-training-session", envelope("s")],
+  ["patternly:canonical:v1:training-attempt-index", envelope(["a"])],
+  ["patternly:canonical:v1:training-attempt:a", envelope(attempt)],
+  ["patternly:canonical:v1:training-session-index", envelope(["s"])],
+  ["patternly:canonical:v1:training-session:s", envelope(session)],
+]);
 const build = () => buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId, identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
 
 test("a commit validates its journal a fixed number of times and reuses the frozen proof for every later phase", async () => {
@@ -69,7 +81,7 @@ test("tampered bytes behind a cached journal are rejected exactly as on a cold r
   envelope.payload.writes[0].record.result.earnedPoints = 0;
   storage.setString(STORAGE_KEYS.ACTIVE_JOURNAL, JSON.stringify(envelope));
   assert.throws(() => getActiveMutationJournal(context), /unsupported/u);
-  setMutationJournalCacheEnabledForTests(false);
+  clearMutationJournalMemoForTests();
   assert.throws(() => getActiveMutationJournal(context), /unsupported/u);
 });
 
@@ -107,19 +119,19 @@ test("phase updates carry the proof and recovery from a cold memo revalidates th
   const persisted = await persistMutationJournal(await build(), context);
   const materialized = await updateMutationJournalPhase(persisted, "materialized", context);
   assert.equal(getActiveMutationJournal(context), materialized);
-  // A new launch: same bytes, empty memo (cache disabled then re-enabled clears it).
-  setMutationJournalCacheEnabledForTests(true);
+  // A new launch: same bytes, empty memo.
+  clearMutationJournalMemoForTests();
   resetMutationJournalCacheCountersForTests();
   const cold = getActiveMutationJournal(context);
   assert.ok(cold && cold !== materialized && cold.status === "materialized");
   assert.ok(readMutationJournalCacheCountersForTests().fullValidations >= 1);
 });
 
-test("interrupted commits recover to the same durable state with the cache on and off", async () => {
+test("interrupted commits recover to the recorded durable state", async () => {
   const snapshots: string[] = [];
-  for (const enabled of [true, false]) {
+  {
     for (const stopAfter of ["journal_durable", "materialized", "verified_pending_clear"] as const) {
-      storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); setMutationJournalCacheEnabledForTests(enabled);
+      storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); clearMutationJournalMemoForTests();
       await saveTrainingSession(session, productionTrackAdmissionContext);
       const persisted = await persistMutationJournal(await build(), context);
       if (stopAfter !== "journal_durable") {
@@ -129,14 +141,14 @@ test("interrupted commits recover to the same durable state with the cache on an
         if (stopAfter === "verified_pending_clear") current = await updateMutationJournalPhase(current, "verified_pending_clear", context);
       }
       // Process death: the memo is gone; the next launch recovers from bytes alone.
-      setMutationJournalCacheEnabledForTests(enabled);
+      clearMutationJournalMemoForTests();
       await recoverPendingMutation();
       assert.equal(getActiveMutationJournal(context), null);
       const keys = storage.getAllKeys().filter((key) => !key.includes("account")).sort();
       snapshots.push(JSON.stringify(keys.map((key) => [key, storage.getString(key)])));
     }
   }
-  assert.equal(new Set(snapshots).size, 1, "every interruption point and cache setting ends in identical storage");
+  assert.deepEqual(snapshots, snapshots.map(() => EXPECTED_DURABLE_STORAGE), "every interruption point ends in the recorded storage");
 });
 
 function referenceCore(overrides: Partial<NativeCore> = {}): NativeCore {
@@ -167,14 +179,11 @@ test("the plan fingerprint from B0 on the plan's own JSON equals the reference c
   resetNativeCoreForTests();
   installNativeCore(() => referenceCore({ fingerprint: () => undefined }));
   assert.equal(createMutationPlanFingerprint(plan as MutationJournalPlan), reference, "a native refusal keeps the reference result");
-  setMutationJournalCacheEnabledForTests(false);
-  nativeCalls = 0;
-  assert.equal(createMutationPlanFingerprint(plan as MutationJournalPlan), reference);
 });
 
-test("a crash at every storage write of a commit recovers to the uninterrupted state, warm or cold, cache on or off", async () => {
-  const run = async (enabled: boolean, failAt: number | null, coldRestart: boolean): Promise<string> => {
-    storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); setMutationJournalCacheEnabledForTests(enabled);
+test("a crash at every storage write of a commit recovers to the uninterrupted state, warm or cold", async () => {
+  const run = async (failAt: number | null, coldRestart: boolean): Promise<string> => {
+    storage = new MemoryKeyValueStorage(); installKeyValueStorageForTests(storage); clearMutationJournalMemoForTests();
     await saveTrainingSession(session, productionTrackAdmissionContext);
     const record = await build();
     storage.resetCounters();
@@ -186,7 +195,7 @@ test("a crash at every storage write of a commit recovers to the uninterrupted s
       // A new process: same bytes, a new storage owner, so no memo survives.
       const next = new MemoryKeyValueStorage();
       for (const key of storage.getAllKeys()) next.setString(key, storage.getString(key)!);
-      storage = next; installKeyValueStorageForTests(next); setMutationJournalCacheEnabledForTests(enabled);
+      storage = next; installKeyValueStorageForTests(next); clearMutationJournalMemoForTests();
     }
     if (failed) {
       await recoverPendingMutation();
@@ -196,16 +205,12 @@ test("a crash at every storage write of a commit recovers to the uninterrupted s
     const keys = storage.getAllKeys().filter((key) => !key.includes("account")).sort();
     return JSON.stringify(keys.map((key) => [key, storage.getString(key)]));
   };
-  const reference = await run(false, null, false);
-  storage.resetCounters();
-  await run(true, null, false);
+  assert.equal(await run(null, false), EXPECTED_DURABLE_STORAGE);
   const writes = storage.operations.filter((operation) => operation.kind === "write").length;
   assert.ok(writes >= 5, `writes ${writes}`);
-  for (const enabled of [true, false]) {
-    for (const coldRestart of [true, false]) {
-      for (let failAt = 1; failAt <= writes; failAt += 1) {
-        assert.equal(await run(enabled, failAt, coldRestart), reference, `cache=${enabled} cold=${coldRestart} failAt=${failAt}`);
-      }
+  for (const coldRestart of [true, false]) {
+    for (let failAt = 1; failAt <= writes; failAt += 1) {
+      assert.equal(await run(failAt, coldRestart), EXPECTED_DURABLE_STORAGE, `cold=${coldRestart} failAt=${failAt}`);
     }
   }
 });

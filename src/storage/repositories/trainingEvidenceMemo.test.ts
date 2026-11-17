@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import test, { afterEach, beforeEach } from "node:test";
+import test, { beforeEach } from "node:test";
 import { setActiveProfileLeaseForTests, type MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { attempt, installMemoryStorage, session } from "../../testing/journalTestSupport";
 import { productionTrackAdmissionContext as admission } from "../../application/tracks/trackAdmissionContext";
@@ -8,7 +8,7 @@ import { saveTrainingSession } from "./trainingSessionRepository";
 import { addTrainingAttempt } from "./trainingAttemptRepository";
 import {
   assertTrainingEvidenceIntegrity, assertTrainingEvidenceIntegrityForCommand, clearTrainingEvidenceMemo, readTrainingAttemptsStrict, readTrainingEvidenceSnapshotStrict,
-  readTrainingEvidenceMemoCountersForTests, resetTrainingEvidenceMemoCountersForTests, setTrainingEvidenceMemoEnabledForTests,
+  readTrainingEvidenceMemoCountersForTests, resetTrainingEvidenceMemoCountersForTests,
 } from "./trainingEvidenceIntegrityRepository";
 
 // T2.1 (D5, owner-approved): command-path strict reads reuse the parse of identical
@@ -17,13 +17,12 @@ import {
 let storage: MemoryKeyValueStorage;
 beforeEach(async () => {
   storage = installMemoryStorage();
-  setTrainingEvidenceMemoEnabledForTests(true);
+  clearTrainingEvidenceMemo();
   await saveTrainingSession(session("completed", "session-1"), admission);
   await addTrainingAttempt(attempt("attempt-1", "session-1"), admission);
   await addTrainingAttempt(attempt("attempt-2", "session-1"), admission);
   resetTrainingEvidenceMemoCountersForTests();
 });
-afterEach(() => setTrainingEvidenceMemoEnabledForTests(null));
 
 const counters = () => readTrainingEvidenceMemoCountersForTests();
 
@@ -104,12 +103,3 @@ test("revoked track admission is enforced on a memo hit", () => {
   assert.throws(() => readTrainingEvidenceSnapshotStrict(toggled));
 });
 
-test("the kill-switch keeps the reference read path", () => {
-  setTrainingEvidenceMemoEnabledForTests(false);
-  resetTrainingEvidenceMemoCountersForTests();
-  readTrainingEvidenceSnapshotStrict(admission);
-  readTrainingEvidenceSnapshotStrict(admission);
-  assert.deepEqual(counters(), { hits: 0, misses: 0, clears: 0 });
-  const value = readTrainingAttemptsStrict(admission).value[0]!;
-  assert.equal(Object.isFrozen(value), false);
-});

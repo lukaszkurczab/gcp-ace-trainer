@@ -724,7 +724,7 @@ export function createMutationPlanFingerprint(plan: MutationJournalPlan): string
   // B0 parses the JSON text with `JSON.parse` semantics, so the plan's own
   // `JSON.stringify` text is the exact input the reference clone produced
   // (T2.1: no JS clone). Any native refusal keeps the reference path.
-  if (journalCacheEnabled() && getNativeCoreStatus().serialization) {
+  if (getNativeCoreStatus().serialization) {
     const native = getNativeCore();
     const json = JSON.stringify(plan);
     if (native && typeof json === "string") {
@@ -746,21 +746,15 @@ export function createMutationPlanFingerprint(plan: MutationJournalPlan): string
  * the storage owner: any other bytes (another writer, recovery, a new launch)
  * take the full parse and validation path. Track admission is re-evaluated on
  * every hit because it is the only live input of the validators.
- *
- * Kill-switch: EXPO_PUBLIC_PATTERNLY_PERF_OPT_JOURNAL_CACHE=0 restores full
- * validation on every call and the reference plan fingerprint.
  */
-const JOURNAL_CACHE_ENABLED_BY_ENV = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_JOURNAL_CACHE !== "0";
-let journalCacheOverride: boolean | null = null;
-function journalCacheEnabled(): boolean { return journalCacheOverride ?? JOURNAL_CACHE_ENABLED_BY_ENV; }
 type ProofLevel = "integrity" | "plan";
 const provenJournals = new WeakMap<object, Map<LearningDataAdmissionContext, ProofLevel>>();
 type ActiveJournalMemo = Readonly<{ storage: object; raw: string; context: LearningDataAdmissionContext; record: MutationJournalRecord }>;
 let activeJournalMemo: ActiveJournalMemo | null = null;
 const journalCacheCounters = { fullValidations: 0, memoHits: 0, activeReadHits: 0, activeReadMisses: 0 };
 
-/** Tests only. `null` returns to the environment setting. */
-export function setMutationJournalCacheEnabledForTests(enabled: boolean | null): void { journalCacheOverride = enabled; activeJournalMemo = null; }
+/** Tests only: drops the active-journal memo, as on a new launch. */
+export function clearMutationJournalMemoForTests(): void { activeJournalMemo = null; }
 export function readMutationJournalCacheCountersForTests(): Readonly<typeof journalCacheCounters> { return { ...journalCacheCounters }; }
 export function resetMutationJournalCacheCountersForTests(): void { for (const key of Object.keys(journalCacheCounters) as (keyof typeof journalCacheCounters)[]) journalCacheCounters[key] = 0; }
 
@@ -778,7 +772,7 @@ function isDeepFrozen(value: unknown): boolean {
   return true;
 }
 function provenLevel(value: unknown, context: LearningDataAdmissionContext): ProofLevel | null {
-  if (!journalCacheEnabled() || !value || typeof value !== "object") return null;
+  if (!value || typeof value !== "object") return null;
   const level = provenJournals.get(value)?.get(context) ?? null;
   if (level === null) return null;
   const trackId = (value as { trackId?: unknown }).trackId;
@@ -786,14 +780,13 @@ function provenLevel(value: unknown, context: LearningDataAdmissionContext): Pro
 }
 /** Records a proof for an object this module froze itself (never a caller's live object). */
 function recordProof(record: MutationJournalRecord, context: LearningDataAdmissionContext, level: ProofLevel): void {
-  if (!journalCacheEnabled()) return;
   let levels = provenJournals.get(record);
   if (!levels) { levels = new Map(); provenJournals.set(record, levels); }
   if (levels.get(context) !== "plan") levels.set(context, level);
 }
 /** Marks a validated object proven only when it is already deep-frozen (structurally immutable). */
 function rememberIfImmutable(value: unknown, context: LearningDataAdmissionContext, level: ProofLevel): void {
-  if (journalCacheEnabled() && value && typeof value === "object" && isDeepFrozen(value)) recordProof(value as MutationJournalRecord, context, level);
+  if (value && typeof value === "object" && isDeepFrozen(value)) recordProof(value as MutationJournalRecord, context, level);
 }
 /** A frozen, fully validated copy of the exact stored journal bytes. */
 function provenJournalFromRaw(storage: object, raw: string, context: LearningDataAdmissionContext): MutationJournalRecord | null {
@@ -851,22 +844,17 @@ export function assertValidMutationJournal(value: unknown, context: LearningData
 /** Presence-only gate. It intentionally exposes no unvalidated journal payload. */
 export function hasPendingMutationJournal(): boolean { return getKeyValueStorage().getString(STORAGE_KEYS.ACTIVE_JOURNAL) !== undefined; }
 export function getActiveMutationJournal(context: LearningDataAdmissionContext): MutationJournalRecord | null {
-  if (journalCacheEnabled()) {
-    const storage = getKeyValueStorage();
-    const raw = readCanonicalRawValue(STORAGE_KEYS.ACTIVE_JOURNAL);
-    if (raw === undefined) { activeJournalMemo = null; return null; }
-    const memo = activeJournalMemo;
-    if (memo && memo.storage === storage && memo.context === context && memo.raw === raw && provenLevel(memo.record, context) === "plan") {
-      journalCacheCounters.activeReadHits += 1;
-      return memo.record;
-    }
-    journalCacheCounters.activeReadMisses += 1;
-    activeJournalMemo = null;
-    return provenJournalFromRaw(storage, raw, context);
+  const storage = getKeyValueStorage();
+  const raw = readCanonicalRawValue(STORAGE_KEYS.ACTIVE_JOURNAL);
+  if (raw === undefined) { activeJournalMemo = null; return null; }
+  const memo = activeJournalMemo;
+  if (memo && memo.storage === storage && memo.context === context && memo.raw === raw && provenLevel(memo.record, context) === "plan") {
+    journalCacheCounters.activeReadHits += 1;
+    return memo.record;
   }
-  const record = readCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, (value) => hasValidMutationJournalIntegrity(value, context));
-  if (record !== null && !hasValidOperationPlan(record, context)) throw new Error("Mutation journal record is unsupported.");
-  return record;
+  journalCacheCounters.activeReadMisses += 1;
+  activeJournalMemo = null;
+  return provenJournalFromRaw(storage, raw, context);
 }
 export function reconcileMutationJournalWriteAttempt(value: unknown, expected: Readonly<{ commandFingerprint: string; planFingerprint: string }>, context: LearningDataAdmissionContext): "verified" | "conflict" | "unknown" {
   if (!isMutationJournalWriteAttempt(value, context)) return "unknown";
@@ -980,8 +968,7 @@ export async function persistMutationJournal(record: MutationJournalRecord, cont
     if (outcome.kind !== "verified") throw new JournalWriteError(new CanonicalWriteOutcomeError(STORAGE_KEYS.ACTIVE_JOURNAL, outcome));
     // The verified bytes are exactly what recovery would read: hand the caller
     // the frozen, validated copy of those bytes so later phases reuse its proof.
-    if (journalCacheEnabled()) return provenJournalFromRaw(outcome.attempt.storage, outcome.attempt.afterRaw, context) ?? outcome.envelope.payload;
-    return outcome.envelope.payload;
+    return provenJournalFromRaw(outcome.attempt.storage, outcome.attempt.afterRaw, context) ?? outcome.envelope.payload;
   } catch (error) {
     if (error instanceof JournalWriteError) throw error;
     throw new JournalWriteError(error);
@@ -1013,7 +1000,7 @@ export async function updateMutationJournalPhase(record: MutationJournalRecord, 
     if (from < 0 || to !== from + 1) throw new JournalWriteError(new Error("Mutation journal phase transition is not monotonic."));
     const updated = { ...current, status } as MutationJournalRecord;
     const envelope = writeCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, updated);
-    if (journalCacheEnabled() && provenLevel(current, context) === "plan") {
+    if (provenLevel(current, context) === "plan") {
       // Status is outside the plan fingerprint and the operation plan; with a
       // monotonic legal status the proof of `current` carries to `updated`.
       const frozen = Object.freeze(updated);

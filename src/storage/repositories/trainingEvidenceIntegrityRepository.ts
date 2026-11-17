@@ -60,18 +60,13 @@ function samePersistedPayload(left: unknown, right: unknown): boolean {
  * from those bytes. Track admission is re-evaluated on every reuse.
  * Command paths only: `assertTrainingEvidenceIntegrity` (opening-storage,
  * account recovery, reset, export) always validates every byte and clears the memo.
- * Kill-switch: EXPO_PUBLIC_PATTERNLY_PERF_OPT_JOURNAL_CACHE=0.
  */
-const EVIDENCE_MEMO_ENABLED_BY_ENV = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_JOURNAL_CACHE !== "0";
 /** Upper bound of retained stored text (UTF-16 units); above it the memo is dropped, never trimmed partially. */
 const EVIDENCE_MEMO_MAX_CHARS = 6_000_000;
-let evidenceMemoOverride: boolean | null = null;
 type MemoEntry = Readonly<{ raw: string; envelope: CanonicalRecordEnvelope<unknown> }>;
 type EvidenceMemo = { storage: object; lease: string; admission: object; entries: Map<string, MemoEntry>; chars: number };
 let evidenceMemo: EvidenceMemo | null = null;
 const evidenceMemoCounters = { hits: 0, misses: 0, clears: 0 };
-/** Tests only. `null` returns to the environment setting. */
-export function setTrainingEvidenceMemoEnabledForTests(enabled: boolean | null): void { evidenceMemoOverride = enabled; clearTrainingEvidenceMemo(); }
 export function readTrainingEvidenceMemoCountersForTests(): Readonly<typeof evidenceMemoCounters> { return { ...evidenceMemoCounters }; }
 export function resetTrainingEvidenceMemoCountersForTests(): void { evidenceMemoCounters.hits = 0; evidenceMemoCounters.misses = 0; evidenceMemoCounters.clears = 0; }
 /** Drops every reused parse. Full-integrity, recovery and profile transitions start from bytes alone. */
@@ -90,7 +85,6 @@ function leaseKey(): string | null {
 }
 /** The memo is bound to one storage owner, one profile lease (profile, actor, generation) and one admission context. */
 function memoFor(admission: object): EvidenceMemo | null {
-  if (!(evidenceMemoOverride ?? EVIDENCE_MEMO_ENABLED_BY_ENV)) return null;
   const storage = getKeyValueStorage();
   const lease = leaseKey();
   if (lease === null && !(storage instanceof MemoryKeyValueStorage)) { clearTrainingEvidenceMemo(); return null; }
