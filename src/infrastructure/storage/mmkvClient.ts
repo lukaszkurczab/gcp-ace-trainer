@@ -12,6 +12,7 @@ import { applySynchronousForegroundTimerRaw } from "./foregroundTimerRawCas";
 import type { ForegroundClockCapability, ForegroundClockScope } from "./foregroundClockCapability";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { sha256Utf8 } from "../identity/sha256";
+import { noteProfiledStorageKeyList, noteProfiledStorageRead, noteProfiledStorageWrite, quizCommandProfileEnabled } from "../diagnostics/quizCommandProfile";
 
 let client: KeyValueStorage | null = null;
 
@@ -781,7 +782,13 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
     if (profileStorageGeneration !== generation || profileTransitionActive || client !== publishedStorage) throw new ProfileTransitionActiveError();
   };
   const scopedStorage = prepared.router.storage;
-  const publishedStorage: KeyValueStorage = {
+  const publishedStorage: KeyValueStorage = quizCommandProfileEnabled() ? {
+    getString(key) { checkPublished(); const value = scopedStorage.getString(key); noteProfiledStorageRead(value); return value; },
+    setString(key, value) { checkPublished(); noteProfiledStorageWrite(value); try { scopedStorage.setString(key, value); } finally { noteKeyValueWrite(publishedStorage, key); } },
+    remove(key) { checkPublished(); noteProfiledStorageWrite(undefined); try { scopedStorage.remove(key); } finally { noteKeyValueWrite(publishedStorage, key); } },
+    contains(key) { checkPublished(); return scopedStorage.contains(key); },
+    getAllKeys() { checkPublished(); noteProfiledStorageKeyList(); return scopedStorage.getAllKeys(); },
+  } : {
     getString(key) { checkPublished(); return scopedStorage.getString(key); },
     setString(key, value) { checkPublished(); try { scopedStorage.setString(key, value); } finally { noteKeyValueWrite(publishedStorage, key); } },
     remove(key) { checkPublished(); try { scopedStorage.remove(key); } finally { noteKeyValueWrite(publishedStorage, key); } },

@@ -8,6 +8,7 @@ import { validateActiveReviewIdentity } from "../../storage/repositories/reviewQ
 import { assertLearningStateResetMaterialized } from "../../storage/repositories/learningStateResetRepository";
 import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
+import { quizSegment } from "../../infrastructure/diagnostics/quizCommandProfile";
 const equal = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right);
 function unsupportedWrite(write: never): never { throw new JournalVerificationError(); }
 export async function verifyMutation(record: MutationJournalRecord): Promise<void> {
@@ -30,8 +31,8 @@ export async function verifyMutation(record: MutationJournalRecord): Promise<voi
   }
   let evidence: ReturnType<typeof readTrainingEvidenceSnapshotStrict>;
   try {
-    if (!areMutationPhysicalWritesAfter(record.physicalWrites)) throw new JournalVerificationError();
-    evidence = readTrainingEvidenceSnapshotStrict(productionTrackAdmissionContext);
+    if (!quizSegment("physical_after", () => areMutationPhysicalWritesAfter(record.physicalWrites))) throw new JournalVerificationError();
+    evidence = quizSegment("verify_scan", () => readTrainingEvidenceSnapshotStrict(productionTrackAdmissionContext));
   } catch (error) {
     if (error instanceof StorageReadError) throw error;
     if (error instanceof JournalVerificationError) throw error;

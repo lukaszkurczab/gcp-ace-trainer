@@ -21,6 +21,7 @@ import { isAccountSyncStateShape, isCanonicalAccountSyncState, type AccountSyncS
 import { assertTrainingEvidenceIntegrityForCommand } from "./trainingEvidenceIntegrityRepository";
 import { assertContentIdentityRecordIntegrity } from "./contentIdentityUnavailableRepository";
 import { assertLearningStateResetPlanBeforeJournal, isLearningStateResetTargetPlan, type LearningStateResetTargetPlan } from "./learningStateResetRepository";
+import { quizSegment } from "../../infrastructure/diagnostics/quizCommandProfile";
 
 export type { ActiveProfileStorageLease };
 
@@ -901,7 +902,7 @@ export function isMutationJournalLeaseCurrent(lease: ActiveProfileStorageLease |
 
 export async function persistMutationJournal(record: MutationJournalRecord, context: LearningDataAdmissionContext, expectedLease: ActiveProfileStorageLease | null = captureActiveProfileStorageLease()): Promise<MutationJournalRecord> {
   return inJournalCriticalSection(async () => { try {
-    assertValidMutationJournal(record, context);
+    quizSegment("journal_validate", () => assertValidMutationJournal(record, context));
     const reviewUpdates = record.writes.filter((write): write is Extract<JournalWrite, { kind: "update_review_entry" }> => write.kind === "update_review_entry");
     if (reviewUpdates.length > 0) {
       const existingReviews = (await getReviewQueueItems(context.trackAdmission)).value;
@@ -945,12 +946,12 @@ export async function persistMutationJournal(record: MutationJournalRecord, cont
         if (reset?.kind !== "clear_learning_state") throw new Error("A learning-state reset requires one exact target plan.");
         assertLearningStateResetPlanBeforeJournal(reset.targetPlan, context.trackAdmission);
       } else {
-        assertTrainingEvidenceIntegrityForCommand(context.trackAdmission);
-        assertContentIdentityRecordIntegrity();
+        quizSegment("evidence_scan", () => assertTrainingEvidenceIntegrityForCommand(context.trackAdmission));
+        quizSegment("content_identity", () => assertContentIdentityRecordIntegrity());
       }
-      const staleTarget = record.expectedRevisions.find((condition) => revisionForTarget(condition.target) !== condition.revision)?.target;
+      const staleTarget = quizSegment("revision_check", () => record.expectedRevisions.find((condition) => revisionForTarget(condition.target) !== condition.revision)?.target);
       if (staleTarget) throw new StaleMutationRevisionError(staleTarget);
-      const stalePhysicalTarget = record.physicalWrites.find((write) => canonicalPhysicalWriteRelation(write) !== "before")?.target;
+      const stalePhysicalTarget = quizSegment("relation_check", () => record.physicalWrites.find((write) => canonicalPhysicalWriteRelation(write) !== "before")?.target);
       if (stalePhysicalTarget) throw new StaleMutationRevisionError(stalePhysicalTarget);
     }
     if (record.operation === "start_training_session") {
@@ -964,11 +965,11 @@ export async function persistMutationJournal(record: MutationJournalRecord, cont
       const stalePhysicalTarget = record.physicalWrites.find((write) => canonicalPhysicalWriteRelation(write) !== "before")?.target;
       if (stalePhysicalTarget) throw new StaleMutationRevisionError(stalePhysicalTarget);
     }
-    const outcome = writeCanonicalJsonWithOutcome(STORAGE_KEYS.ACTIVE_JOURNAL, record, null, expectedLease);
+    const outcome = quizSegment("journal_write", () => writeCanonicalJsonWithOutcome(STORAGE_KEYS.ACTIVE_JOURNAL, record, null, expectedLease));
     if (outcome.kind !== "verified") throw new JournalWriteError(new CanonicalWriteOutcomeError(STORAGE_KEYS.ACTIVE_JOURNAL, outcome));
     // The verified bytes are exactly what recovery would read: hand the caller
     // the frozen, validated copy of those bytes so later phases reuse its proof.
-    return provenJournalFromRaw(outcome.attempt.storage, outcome.attempt.afterRaw, context) ?? outcome.envelope.payload;
+    return quizSegment("journal_reparse", () => provenJournalFromRaw(outcome.attempt.storage, outcome.attempt.afterRaw, context)) ?? outcome.envelope.payload;
   } catch (error) {
     if (error instanceof JournalWriteError) throw error;
     throw new JournalWriteError(error);
@@ -981,7 +982,7 @@ function isJournalLeaseCurrent(lease: ActiveProfileStorageLease | null): boolean
 }
 
 export async function updateMutationJournalPhase(record: MutationJournalRecord, status: MutationJournalRecord["status"], context: LearningDataAdmissionContext): Promise<MutationJournalRecord> {
-  return inJournalCriticalSection(async () => {
+  return quizSegment("phase_write", () => inJournalCriticalSection(async () => {
     assertValidMutationJournal(record, context);
     const current = getActiveMutationJournal(context);
     if (!current || current.commandIdentity.fingerprint !== record.commandIdentity.fingerprint) throw new JournalWriteError(new Error("Pending mutation ownership changed."));
@@ -1009,7 +1010,7 @@ export async function updateMutationJournalPhase(record: MutationJournalRecord, 
       return frozen;
     }
     return updated;
-  });
+  }));
 }
 
 function hasSameReviewIdentity(left: ReviewQueueEntry, right: ReviewQueueEntry): boolean {

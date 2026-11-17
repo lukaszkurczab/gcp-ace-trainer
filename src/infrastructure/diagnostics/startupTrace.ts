@@ -44,7 +44,9 @@ export type StartupTraceStage =
   | `home_shell:${string}` | `bootstrap:${string}`
   | `repository:${CanonicalRepositoryBootstrapStep}`
   | `account:${AccountStartupDiagnosticStage}`
-  | `profile_storage:${ProfileStoragePreparationDiagnosticStage}`;
+  | `profile_storage:${ProfileStoragePreparationDiagnosticStage}`
+  // Stage 0 (J/B-full): sub-spans, storage counters and microbenchmark inside `quiz_command`.
+  | `quiz_seg:${string}` | `quiz_counter:${string}` | `quiz_bench:${string}`;
 export type StartupTraceEvent = Readonly<{ stage: StartupTraceStage; edge: "begin" | "end" | "event"; atMs: number; epochMs: number; span?: number }>;
 const MAX_EVENTS = 512;
 /** "interactive": the first `setTimeout(0)` loop probe that returns in under this many ms (Plan §1). */

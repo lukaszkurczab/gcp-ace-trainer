@@ -11,6 +11,7 @@ import { pausePersist13Start, pausePersist13AfterJournalClear, pausePersist13Res
 import { recoverPendingMutation } from "./recoverPendingMutation";
 import type { ActiveProfileStorageLease } from "../../storage/repositories/mutationJournalRepository";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
+import { quizSegment } from "../../infrastructure/diagnostics/quizCommandProfile";
 
 export async function commitMutation(record: MutationJournalRecord, expectedLease: ActiveProfileStorageLease | null = captureMutationJournalLease()): Promise<void> {
   return withLocalLearningWriteOperation(() => {
@@ -42,14 +43,14 @@ export function retainMutationRetryPreflight(error: unknown, preflight: (() => P
 }
 
 async function commitMutationUnlocked(record: MutationJournalRecord, beforeGoalPlanWrite?: GoalPlanAcceptanceInterruptionHook, lease = captureMutationJournalLease()): Promise<void> {
-  const accountState = await getAccountSyncState(productionLearningDataAdmissionContext);
+  const accountState = await quizSegment("account_state", () => getAccountSyncState(productionLearningDataAdmissionContext));
   if (accountState.materialization || accountState.pendingConfirmation) throw new MutationCommitFailure("journal_write", "not_durable", new Error("Account data transition is in progress."));
   try {
     const pause = pausePersist13Start(record, lease, "before_start_journal_write", () => isRetryLeaseCurrent(lease));
     if (pause) await pause;
   } catch (error) { throw new MutationCommitFailure("journal_write", "not_durable", error); }
   let prepared: MutationJournalRecord;
-  try { prepared = await persistMutationJournal(record, productionLearningDataAdmissionContext, lease); }
+  try { prepared = await quizSegment("persist", () => persistMutationJournal(record, productionLearningDataAdmissionContext, lease)); }
   catch (error) {
     const cause = error instanceof Error ? error.cause : undefined;
     const outcome = cause instanceof CanonicalWriteOutcomeError ? cause.outcome.kind : null;
@@ -81,15 +82,15 @@ async function commitMutationUnlocked(record: MutationJournalRecord, beforeGoalP
     await updateMutationJournalPhase(prepared, "materialized", productionLearningDataAdmissionContext);
   }
   catch (error) { throw new MutationCommitFailure("materialization", "journal_durable", error); }
-  try { await verifyMutation(prepared); await updateMutationJournalPhase(prepared, "verified_pending_clear", productionLearningDataAdmissionContext); }
+  try { await quizSegment("verify1", () => verifyMutation(prepared)); await updateMutationJournalPhase(prepared, "verified_pending_clear", productionLearningDataAdmissionContext); }
   catch (error) { throw new MutationCommitFailure("verification", "materialized", error); }
   try {
-    await verifyMutation(prepared);
-    if (prepared.operation !== "resolve_account_sync_conflict" && prepared.operation !== "reset_learning_state") await markAccountDataPending(productionLearningDataAdmissionContext);
-    await verifyMutation(prepared);
+    await quizSegment("verify2", () => verifyMutation(prepared));
+    if (prepared.operation !== "resolve_account_sync_conflict" && prepared.operation !== "reset_learning_state") await quizSegment("mark_pending", () => markAccountDataPending(productionLearningDataAdmissionContext));
+    await quizSegment("verify3", () => verifyMutation(prepared));
     const persist13Pause = pausePersist13BeforeJournalClear(prepared.operation);
     if (persist13Pause) await persist13Pause;
-    await clearMutationJournal(productionLearningDataAdmissionContext, prepared.commandIdentity.fingerprint);
+    await quizSegment("clear", () => clearMutationJournal(productionLearningDataAdmissionContext, prepared.commandIdentity.fingerprint));
   }
   catch (error) { throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error); }
   const persist13PostClearPause = pausePersist13AfterJournalClear(prepared.operation);

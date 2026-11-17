@@ -12,6 +12,7 @@ import {
 import { createIdentityFingerprint } from "../identity/trainingIdentity";
 import { isArtifactSha256 } from "../../domain";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
+import { quizSegment } from "../../infrastructure/diagnostics/quizCommandProfile";
 
 export type { MutationOperation };
 
@@ -85,13 +86,13 @@ export async function buildMutationJournal(input: { operation: MutationOperation
     trackId: input.trackId,
     artifactSha256,
     commandIdentity: { version: 1, fingerprint: commandFingerprint },
-    expectedRevisions: captureMutationExpectedRevisions(input.writes, input.expectedRevisionOverrides),
-    physicalWrites: input.operation === "reset_learning_state" ? [] : captureMutationPhysicalWrites(input.writes, productionTrackAdmissionContext),
+    expectedRevisions: quizSegment("expected_revisions", () => captureMutationExpectedRevisions(input.writes, input.expectedRevisionOverrides)),
+    physicalWrites: input.operation === "reset_learning_state" ? [] : quizSegment("physical_capture", () => captureMutationPhysicalWrites(input.writes, productionTrackAdmissionContext)),
     writes: input.writes,
   };
   return {
     journalId: `journal:${commandFingerprint}`,
     ...plan,
-    planFingerprint: createMutationPlanFingerprint(plan),
+    planFingerprint: quizSegment("plan_fingerprint", () => createMutationPlanFingerprint(plan)),
   };
 }

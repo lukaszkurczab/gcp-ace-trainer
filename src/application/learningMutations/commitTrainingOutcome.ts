@@ -9,6 +9,7 @@ import { buildMutationJournal } from "./mutationJournalBuilder";
 import { commitMutationAfterPreflight, retainMutationRetryPreflight } from "./commitMutation";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { reviewConcurrencyKey } from "../canonical/canonicalFamilyMechanics";
+import { quizSegment } from "../../infrastructure/diagnostics/quizCommandProfile";
 
 export type LocalTrainingMutationGuard = Readonly<{ expectedLease: ActiveProfileStorageLease; preflight(): Promise<void> }>;
 
@@ -25,7 +26,7 @@ export async function commitTrainingOutcome(input: {
   let conflict = input.reviewSnapshotConflict === true;
   const execute = (includeReviewWrites: boolean) => commitMutationAfterPreflight(async () => {
     if (input.guard) await input.guard.preflight();
-    const snapshot = await getReviewQueueSnapshot(productionTrackAdmissionContext);
+    const snapshot = await quizSegment("review_snapshot", () => getReviewQueueSnapshot(productionTrackAdmissionContext));
     const reviewWrites = includeReviewWrites ? input.reviews : [];
     const resolvedReviews = includeReviewWrites ? input.resolvedReviews ?? [] : [];
     const touched = [...reviewWrites, ...resolvedReviews];
@@ -50,7 +51,7 @@ export async function commitTrainingOutcome(input: {
       }),
       ...(reviewTargets.size > 0 ? [{ target: "review_index", revision: snapshot.value.indexRevision }] : []),
     ];
-    return buildMutationJournal({
+    return quizSegment("journal_build", () => buildMutationJournal({
       operation: "submit_training_outcome",
       sessionId: input.session.id,
       trackId: input.session.trackId,
@@ -58,7 +59,7 @@ export async function commitTrainingOutcome(input: {
       writes,
       createdAt: input.createdAt,
       expectedRevisionOverrides,
-    });
+    }));
   }, input.guard?.preflight, undefined, input.guard?.expectedLease);
 
   try {

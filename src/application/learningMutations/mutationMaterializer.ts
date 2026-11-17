@@ -18,8 +18,13 @@ import { materializeGoalPlanAcceptance, type GoalPlanAcceptanceInterruptionHook 
 import { materializeAccountSyncConflictResolution } from "../../storage/repositories/accountSyncConflictResolutionRepository";
 import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
+import { quizSegment } from "../../infrastructure/diagnostics/quizCommandProfile";
 
-export async function materializeMutation(record: MutationJournalRecord, beforeGoalPlanWrite?: GoalPlanAcceptanceInterruptionHook): Promise<void> {
+export function materializeMutation(record: MutationJournalRecord, beforeGoalPlanWrite?: GoalPlanAcceptanceInterruptionHook): Promise<void> {
+  return quizSegment("materialize", () => materializeMutationUnprofiled(record, beforeGoalPlanWrite));
+}
+
+async function materializeMutationUnprofiled(record: MutationJournalRecord, beforeGoalPlanWrite?: GoalPlanAcceptanceInterruptionHook): Promise<void> {
   try {
     assertValidMutationJournal(record, productionLearningDataAdmissionContext);
     if (record.operation === "reset_learning_state") {
@@ -27,7 +32,7 @@ export async function materializeMutation(record: MutationJournalRecord, beforeG
       if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
       assertLearningStateResetReplayState(reset.targetPlan);
     } else {
-      assertTrainingEvidenceJournalPreflight(record, productionTrackAdmissionContext);
+      quizSegment("preflight_scan", () => assertTrainingEvidenceJournalPreflight(record, productionTrackAdmissionContext));
     }
     if (record.operation === "accept_goal_plan" || record.operation === "resolve_account_sync_conflict") {
       const write = record.writes[0];
@@ -63,7 +68,7 @@ export async function materializeMutation(record: MutationJournalRecord, beforeG
         throw new Error("Journaled active draft does not match its active session or conflicts with the durable draft.");
       }
     }
-    materializeMutationPhysicalWrites(record, productionTrackAdmissionContext);
+    quizSegment("physical_apply", () => materializeMutationPhysicalWrites(record, productionTrackAdmissionContext));
   } catch (error) {
     throw new JournalMaterializationError(error);
   }

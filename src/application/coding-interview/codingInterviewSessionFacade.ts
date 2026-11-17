@@ -31,6 +31,8 @@ import { overallScoreCredit } from "../canonical/overallScoreCredit";
 import { isApproachChallengeTrainingAttempt } from "../../tracks/coding-interview/domain/algorithmModes";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { beginStartupSpan, markStartup, startupTraceEnabled } from "../../infrastructure/diagnostics/startupTrace";
+import { beginQuizCommandProfile, installQuizCommandProfileSink } from "../../infrastructure/diagnostics/quizCommandProfile";
+import { scheduleQuizStorageBench } from "../../infrastructure/storage/perfStorageBench";
 import { requestAccountSync } from "../account/accountSyncSchedule";
 import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, type KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import type { AttemptResultKind } from "../../domain/learning/attemptResult";
@@ -50,11 +52,16 @@ import {
  * settle. Returns the command's own promise, so behaviour and timing for the
  * caller are unchanged; without the trace it is a direct call.
  */
+installQuizCommandProfileSink({ begin: beginStartupSpan, mark: markStartup });
+
 function traceQuizCommand<T>(command: () => Promise<T>): Promise<T> {
   if (!startupTraceEnabled()) return command();
   const end = beginStartupSpan("quiz_command");
-  const result = command();
-  void result.then(end, end);
+  const endProfile = beginQuizCommandProfile();
+  scheduleQuizStorageBench();
+  let result: Promise<T>;
+  try { result = command(); } catch (error) { endProfile(); end(); throw error; }
+  void result.then(() => { endProfile(); end(); }, () => { endProfile(); end(); });
   return result;
 }
 

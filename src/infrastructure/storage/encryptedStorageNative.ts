@@ -190,8 +190,27 @@ export function createNativeEncryptedStoragePlatform(): EncryptedStoragePlatform
     manifestStore,
     async createKey() { return base64Url(await crypto.getRandomBytesAsync(24)); },
     exists: (id) => mmkv.existsMMKV(id),
-    open: (id, key) => wrap(mmkv.createMMKV({ id, ...(key ? { encryptionKey: key, encryptionType: "AES-256" as const } : {}), recoveryStrategy: "recover-on-error" }), () => crypto.randomUUID()),
+    open: (id, key) => wrap(openMmkv(mmkv, id, key), () => crypto.randomUUID()),
     delete: (id) => { if (mmkv.existsMMKV(id) && !mmkv.deleteMMKV(id)) throw new Error(`mmkv_delete_failed:${id}`); },
     bootId: () => currentBootId,
   };
+}
+
+/** Stage 0 perf microbenchmark only: a temporary MMKV store (plain or AES-256) that removes itself on dispose. */
+export function openPerfBenchMmkv(id: string, encrypted: boolean): Readonly<{ set(key: string, value: string): void; getString(key: string): string | undefined; dispose(): void }> {
+  const mmkv = require("react-native-mmkv") as MmkvModule;
+  const instance = openMmkv(mmkv, id, encrypted ? "0123456789abcdef0123456789abcdef" : undefined);
+  return Object.freeze({
+    set: (key: string, value: string) => instance.set(key, value),
+    getString: (key: string) => instance.getString(key),
+    dispose: () => {
+      try { instance.clearAll(); } catch { /* bench only */ }
+      try { mmkv.deleteMMKV(id); } catch { /* bench only */ }
+    },
+  });
+}
+
+/** The single native store constructor (AES-256 when a key is given). */
+function openMmkv(mmkv: MmkvModule, id: string, key: string | undefined): ReturnType<MmkvModule["createMMKV"]> {
+  return mmkv.createMMKV({ id, ...(key ? { encryptionKey: key, encryptionType: "AES-256" as const } : {}), recoveryStrategy: "recover-on-error" });
 }
