@@ -13,7 +13,6 @@ import {
   enterAlgorithmsPracticeForeground,
   getAlgorithmsPracticeProjection,
   isAlgorithmsPracticeInteractionResponseComplete,
-  isOptimisticPracticeFeedbackEnabled,
   leaveAlgorithmsPracticeForeground,
   persistAlgorithmsPracticeAnswerDraft,
   previewAlgorithmsPracticeFeedback,
@@ -72,10 +71,8 @@ import { afterFeedbackFrame } from "./optimisticFeedbackFrame";
 // SLA markers (Plan §1 S2/S3a/S3b) are recorded only where the startup trace is on.
 const SLA_TRACE = startupTraceEnabled();
 // T2.2: feedback from the pure evaluation renders first; the command commits after that frame.
-const OPTIMISTIC_FEEDBACK = isOptimisticPracticeFeedbackEnabled();
 /** Plan T2.2: the durability indicator appears only when the commit takes longer than this. */
 const DURABILITY_INDICATOR_DELAY_MS = 150;
-
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION> & Readonly<{ additionalResponseRendererBindings?: ReadonlyMap<string, PracticeResponseRenderer> }>;
 type ViewState =
@@ -334,7 +331,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
     if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || (builtinControl ? !effectiveLocalResponse : !interactionResponseComplete) || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
     if (SLA_TRACE) { markStartup("submit_press"); slaPending.current = { kind: "submit" }; }
     actionPending.current = true;
-    if (OPTIMISTIC_FEEDBACK && builtinControl && effectiveLocalResponse && !retryFrozenResponse && projection.operation.kind === "unanswered" && await submitOptimistically(effectiveLocalResponse)) return;
+    if (builtinControl && effectiveLocalResponse && !retryFrozenResponse && projection.operation.kind === "unanswered" && await submitOptimistically(effectiveLocalResponse)) return;
     setPendingPhase("submitting_before_journal");
     setSubmissionError(null);
     try {

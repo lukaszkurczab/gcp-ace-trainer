@@ -13,7 +13,6 @@ import {
   advanceAlgorithmsPracticeSession,
   clearAlgorithmsPracticeAnswerDraft,
   getAlgorithmsPracticeProjection,
-  isOptimisticPracticeFeedbackEnabled,
   persistAlgorithmsPracticeAnswerDraft,
   previewAlgorithmsPracticeFeedback,
   readAlgorithmsPracticeAnswerDraft,
@@ -78,21 +77,6 @@ async function attemptsFor(sessionId: string) {
 }
 
 const choice = (optionId: string) => ({ kind: "choice" as const, selectedOptionIds: [optionId] });
-
-test("the kill-switch defaults to on and only the literal 0 turns it off", () => {
-  const previous = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK;
-  try {
-    delete process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK;
-    assert.equal(isOptimisticPracticeFeedbackEnabled(), true);
-    process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK = "0";
-    assert.equal(isOptimisticPracticeFeedbackEnabled(), false);
-    process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK = "1";
-    assert.equal(isOptimisticPracticeFeedbackEnabled(), true);
-  } finally {
-    if (previous === undefined) delete process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK;
-    else process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK = previous;
-  }
-});
 
 test("the grade and draft codec are strict and pure", () => {
   assert.equal(gradePracticeAnswer({ complete: false, result: null }), null);

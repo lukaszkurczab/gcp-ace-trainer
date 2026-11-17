@@ -310,15 +310,6 @@ function projectPracticeFeedback(exactItem: ResolvedInteractionItem, correctness
 }
 
 /**
- * T2.2 optimistic feedback (Plan §T2.2, D6 = (a)). Kill-switch
- * `EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK=0`: the screen then waits
- * for the practice command as before. Read directly so Expo inlines it.
- */
-export function isOptimisticPracticeFeedbackEnabled(): boolean {
-  return process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_OPTIMISTIC_FEEDBACK !== "0";
-}
-
-/**
  * The durable answer draft (D6 (a)): written to the active profile's encrypted
  * store before optimistic feedback renders, removed once the practice command
  * settles. Outside the canonical namespace: never exported or synced, and it
