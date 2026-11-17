@@ -338,15 +338,10 @@ function createTrustedLazyCatalog(context: TrustedLazyContext): CanonicalRuntime
     const inFlight = pending.get(trackId);
     if (inFlight) return inFlight;
     const promise = (async () => {
-      const endRead = beginStartupSpan("catalog_asset_read");
-      let asset: ContentAsset;
-      let retained: readonly (ContentAsset | undefined)[];
-      try {
-        [asset, retained] = await Promise.all([
-          context.assets.read("canonical-content", trackAssetFile(trackId)).catch(() => { throw unavailableArtifact(); }),
-          trackId === RETAINED_TRACK_ID ? Promise.all(RETAINED_FILES.map((file) => context.assets.read("retained-content", file).catch(() => undefined))) : Promise.resolve([]),
-        ]);
-      } finally { endRead(); }
+      const [asset, retained] = await Promise.all([
+        context.assets.read("canonical-content", trackAssetFile(trackId)).catch(() => { throw unavailableArtifact(); }),
+        trackId === RETAINED_TRACK_ID ? Promise.all(RETAINED_FILES.map((file) => context.assets.read("retained-content", file).catch(() => undefined))) : Promise.resolve([]),
+      ]);
       return traced(trackId, () => install(trackId, () => buildTrustedTrack(context, trackId, asset, retained)));
     })();
     pending.set(trackId, promise);

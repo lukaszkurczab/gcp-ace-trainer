@@ -4,17 +4,26 @@
  * - iOS: `<App>.app/patternly-content/<directory>/<file>`;
  * - Android: APK assets `<directory>/<file>` (`asset://`).
  *
- * `sha256` is computed natively over the exact file bytes (Expo Crypto `digest`, zero-copy over the buffer).
- * The loader compares it with the content trust manifest before it parses the text.
+ * `sha256` is the SHA-256 of the text re-encoded as UTF-8, computed natively by Expo Crypto. For a UTF-8 file
+ * that is exactly the file bytes; a file decoded any other way re-encodes differently and fails the manifest
+ * check (fail closed). The text is read and hashed
+ * off the JS thread (`text()`, `digestStringAsync`); a `Uint8Array` copy of the file is avoided on purpose,
+ * because converting a 10 MB `Data` result blocked the JS thread for hundreds of ms (T2.4 device check).
+ * The loader compares the digest with the content trust manifest before it builds the track.
  */
 import { Platform } from "react-native";
 import { requireNativeModule } from "expo-modules-core";
+import { beginStartupSpan } from "../../infrastructure/diagnostics/startupTrace";
 import type { ContentAsset, ContentAssetDirectory, ContentAssetSource } from "./contentAssetSource";
 
 export type { ContentAsset, ContentAssetDirectory, ContentAssetSource } from "./contentAssetSource";
 
 type FileSystemModule = typeof import("expo-file-system");
-type NativeCrypto = Readonly<{ digest(algorithm: string, output: Uint8Array, data: Uint8Array): void }>;
+type DigestOptions = Readonly<{ encoding: "hex" }>;
+type NativeCrypto = Readonly<{
+  digestString(algorithm: "SHA-256", value: string, options: DigestOptions): string;
+  digestStringAsync(algorithm: "SHA-256", value: string, options: DigestOptions): Promise<string>;
+}>;
 
 let fileSystem: FileSystemModule | null = null;
 let crypto: NativeCrypto | null = null;
@@ -28,24 +37,21 @@ function contentFile(directory: ContentAssetDirectory, fileName: string) {
     : new File(Paths.bundle, "patternly-content", directory, fileName);
 }
 
-function sha256Hex(bytes: Uint8Array): string {
-  const digest = new Uint8Array(32);
-  nativeCrypto().digest("SHA-256", digest, bytes);
-  let hex = "";
-  for (const byte of digest) hex += (byte < 16 ? "0" : "") + byte.toString(16);
-  return hex;
-}
+const HEX: DigestOptions = Object.freeze({ encoding: "hex" });
 
 export const bundledContentAssetSource: ContentAssetSource = Object.freeze({
   async read(directory: ContentAssetDirectory, fileName: string): Promise<ContentAsset> {
-    const file = contentFile(directory, fileName);
-    // Both reads leave the JS thread; the bytes are hashed before the text is ever parsed.
-    const [bytes, text] = await Promise.all([file.bytes(), file.text()]);
-    return Object.freeze({ text, sha256: sha256Hex(bytes) });
+    const endRead = beginStartupSpan("catalog_asset_read");
+    let text: string;
+    try { text = await contentFile(directory, fileName).text(); }
+    finally { endRead(); }
+    const endHash = beginStartupSpan("catalog_asset_hash");
+    try { return Object.freeze({ text, sha256: await nativeCrypto().digestStringAsync("SHA-256", text, HEX) }); }
+    finally { endHash(); }
   },
   readSync(directory: ContentAssetDirectory, fileName: string): ContentAsset {
-    const file = contentFile(directory, fileName);
-    return Object.freeze({ sha256: sha256Hex(file.bytesSync()), text: file.textSync() });
+    const text = contentFile(directory, fileName).textSync();
+    return Object.freeze({ text, sha256: nativeCrypto().digestString("SHA-256", text, HEX) });
   },
 });
 
