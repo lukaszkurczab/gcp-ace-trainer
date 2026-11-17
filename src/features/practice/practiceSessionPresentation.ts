@@ -299,12 +299,20 @@ function builtinRendererModel(model: unknown): BuiltinPracticeRendererModel {
   return renderer as BuiltinPracticeRendererModel;
 }
 
-/** The visible ordering is itself a complete response, even before a move. */
+/**
+ * The submittable response for a builtin control, or null while it is incomplete. Submit is
+ * enabled and accepted only for a non-null result.
+ * - The visible ordering is itself a complete response, even before a move.
+ * - A choice needs at least one selected option.
+ * - A value (complexity / decision matrix) response needs a value in every dimension the
+ *   control shows (owner decision 2026-11-17: before, one dimension enabled submit and the
+ *   press did nothing).
+ */
 export function resolvePracticeLocalResponse(
   localResponse: PracticeLocalResponse,
   control: PracticeResponseControl,
 ): PracticeLocalResponse {
-  if (localResponse) return localResponse;
+  if (localResponse) return isPracticeLocalResponseComplete(localResponse, control) ? localResponse : null;
   if (control.interactionType !== "ordering") return null;
   const model = control.model as BuiltinPracticeControlModel;
   if (!model || typeof model !== "object" || !("kind" in model) || model.kind !== "ordering") return null;
@@ -312,6 +320,16 @@ export function resolvePracticeLocalResponse(
     kind: "ordering",
     orderedSubgoalIds: Object.freeze(model.elements.map((element) => element.id)),
   });
+}
+
+/** Whether `response` answers every part of `control` (see `resolvePracticeLocalResponse`). */
+export function isPracticeLocalResponseComplete(response: Exclude<PracticeLocalResponse, null>, control: PracticeResponseControl): boolean {
+  if (response.kind === "choice") return response.selectedOptionIds.length > 0;
+  if (response.kind === "ordering") return response.orderedSubgoalIds.length > 0;
+  const model = control.model as BuiltinPracticeControlModel;
+  if (!model || typeof model !== "object" || !("kind" in model) || model.kind !== "complexity") return false;
+  return model.dimensions.length > 0
+    && model.dimensions.every((dimension) => (response.selectedValuesByDimension[dimension.id]?.length ?? 0) > 0);
 }
 
 export function practiceChoiceSelectionMode(control: PracticeResponseControl): "single" | "multiple" | null {

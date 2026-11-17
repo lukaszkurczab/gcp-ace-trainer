@@ -18,6 +18,7 @@ import {
   practiceOptionCorrectnessValue,
   reconcilePracticeLocalResponse,
   reconcilePracticeChoiceSelection,
+  isPracticeLocalResponseComplete,
   resolvePracticeLocalResponse,
   toggleDimensionSelection,
 } from "./practiceSessionPresentation";
@@ -302,6 +303,35 @@ test("The visible ordering is a complete response before the learner moves an el
     resolvePracticeLocalResponse({ kind: "ordering", orderedSubgoalIds: ["second", "first"] }, control),
     { kind: "ordering", orderedSubgoalIds: ["second", "first"] },
   );
+});
+
+test("a multi-dimension value response is submittable only with a value in every dimension", () => {
+  const renderer = {
+    interactionType: "complexity",
+    model: { renderer: { kind: "complexity", dimensions: [
+      { id: "time", label: "Time", values: [{ id: "o_n", text: "O(n)" }, { id: "o_n2", text: "O(n^2)" }] },
+      { id: "extra_space", label: "Extra space", values: [{ id: "o_1", text: "O(1)" }, { id: "o_n", text: "O(n)" }] },
+    ] } },
+  };
+  const control = (localResponse: Parameters<typeof buildPracticeResponseControl>[0]["localResponse"]) => buildPracticeResponseControl({ localResponse, renderer });
+  const one = { kind: "complexity", selectedValuesByDimension: { time: ["o_n"] } } as const;
+  assert.equal(resolvePracticeLocalResponse(one, control(one)), null, "one of two dimensions keeps submit disabled");
+  assert.equal(isPracticeLocalResponseComplete(one, control(one)), false);
+  const cleared = { kind: "complexity", selectedValuesByDimension: { time: ["o_n"], extra_space: [] } } as const;
+  assert.equal(resolvePracticeLocalResponse(cleared, control(cleared)), null, "a deselected dimension counts as empty");
+  const both = { kind: "complexity", selectedValuesByDimension: { time: ["o_n"], extra_space: ["o_1"] } } as const;
+  assert.deepEqual(resolvePracticeLocalResponse(both, control(both)), both);
+  assert.equal(getPracticePrimaryAction({ feedbackTiming: "afterEachAnswer", hasLocalResponse: resolvePracticeLocalResponse(one, control(one)) !== null, isFinalPosition: false, phase: "unanswered" })?.enabled, false);
+  assert.equal(getPracticePrimaryAction({ feedbackTiming: "afterEachAnswer", hasLocalResponse: resolvePracticeLocalResponse(both, control(both)) !== null, isFinalPosition: false, phase: "unanswered" })?.enabled, true);
+});
+
+test("a choice response with every option deselected is not submittable", () => {
+  const control = buildPracticeResponseControl({
+    localResponse: null,
+    renderer: { interactionType: "choice_single", model: { renderer: { kind: "choice", options: [{ id: "a", text: "A", selected: false }] } } },
+  });
+  assert.equal(resolvePracticeLocalResponse({ kind: "choice", selectedOptionIds: [] }, control), null);
+  assert.deepEqual(resolvePracticeLocalResponse({ kind: "choice", selectedOptionIds: ["a"] }, control), { kind: "choice", selectedOptionIds: ["a"] });
 });
 
 test("Practice feedback labels distinguish selection from correctness", () => {
