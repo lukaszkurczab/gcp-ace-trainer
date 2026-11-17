@@ -8,7 +8,6 @@ import ledgerFile from "../generated/canonical-content/content-successor-ledger.
 import bundledManifest from "../generated/content-trust-manifest.json";
 import type { CanonicalContentLockRecord } from "./questionTypes";
 
-const FLAG = "EXPO_PUBLIC_PATTERNLY_PERF_OPT_CONTENT_TRUST_MANIFEST";
 const hashCounter = () => {
   const inputs: number[] = [];
   return { inputs, sha256Utf8: async (value: string) => { inputs.push(value.length); return createHash("sha256").update(value, "utf8").digest("hex"); } };
@@ -36,16 +35,6 @@ test("a matching manifest skips per-start artifact hashing but yields the same c
     assert.deepEqual(a.modes.map((mode) => [mode.modeId, a.getPool(mode.modeId).map((q) => q.questionId)]), b.modes.map((mode) => [mode.modeId, b.getPool(mode.modeId).map((q) => q.questionId)]));
     assert.ok(Object.isFrozen(a.questions) && Object.isFrozen(a.questions[0]));
   }
-});
-
-test("kill-switch =0 restores full per-start verification", async () => {
-  const previous = process.env[FLAG];
-  process.env[FLAG] = "0";
-  try {
-    const counter = hashCounter();
-    await buildCanonicalRuntimeCatalog({ sha256Utf8: counter.sha256Utf8 });
-    assert.ok(counter.inputs.length >= 9 + 9);
-  } finally { if (previous === undefined) delete process.env[FLAG]; else process.env[FLAG] = previous; }
 });
 
 test("injected content is never covered by the bundled manifest", async () => {

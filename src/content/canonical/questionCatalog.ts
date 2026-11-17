@@ -44,7 +44,7 @@ export async function createCanonicalQuestionCatalog(value: unknown, lock: Canon
 /**
  * Trusted path (D5, T1.4): the build-time trust manifest proved that this exact bundled artifact passed
  * `validateCanonicalArtifact` and hashes to `lock.sha256`, so runtime only re-checks cheap identity fields
- * and indexes. Full validation stays in `createCanonicalQuestionCatalog` (kill-switch, recovery, retained resolve).
+ * and indexes. Full validation stays in `createCanonicalQuestionCatalog` (recovery, retained resolve).
  */
 export function createTrustedCanonicalQuestionCatalog(value: unknown, lock: CanonicalContentLockRecord, expectedTrackId: string): CanonicalQuestionCatalog {
   const source = value as Record<string, unknown> | null;

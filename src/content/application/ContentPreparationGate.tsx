@@ -23,7 +23,7 @@ import { captureExactMissingActorAnchor, captureExactMissingActorFenceAtConfirma
 import { prepareLifecycleAfterProfileCompletion } from "./profilePreparationBarrier";
 import type { ProfilePreparationHandoffToken } from "../../application/account/profilePreparationHandoff";
 import { createContentPreparationAttempt, type ContentPreparationOutcome } from "./contentPreparationAttempt";
-import { armStartupFirstFrameFallback, isParallelBootEnabled, notifyStartupFirstUsableFrame, readStartupRevalidationPending } from "../../application/bootstrap/parallelBoot";
+import { armStartupFirstFrameFallback, notifyStartupFirstUsableFrame, readStartupRevalidationPending } from "../../application/bootstrap/parallelBoot";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -278,7 +278,6 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
           // T2.3: a local-first account completion reads the local copy only (its
           // sync is deferred past the first frame), so it writes no learning data.
           lifecyclePreparationWroteNoLearningData: () => {
-            if (!isParallelBootEnabled()) return false;
             const pending = readStartupRevalidationPending();
             const profile = getActiveStorageProfileOrNull();
             return pending !== null && activeHandoffToken !== null && pending.handoff === activeHandoffToken

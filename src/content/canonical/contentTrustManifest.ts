@@ -29,11 +29,6 @@ export type TrustedContent = Readonly<{
 
 const HASH = /^[a-f0-9]{64}$/u;
 
-/** Kill-switch: `EXPO_PUBLIC_PATTERNLY_PERF_OPT_CONTENT_TRUST_MANIFEST=0` restores full verification on every start. */
-export function isContentTrustManifestEnabled(): boolean {
-  return process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_CONTENT_TRUST_MANIFEST !== "0";
-}
-
 export function contentTrustBindingSha(value: unknown, sha256Utf8: (value: string) => Promise<string>): Promise<string> {
   return sha256Utf8(JSON.stringify(value));
 }

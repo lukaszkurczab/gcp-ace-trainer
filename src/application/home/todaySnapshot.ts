@@ -8,7 +8,7 @@
  * the owner (profile + track) are unchanged:
  * - in memory, for refocus and for the reload after an unchanged sync;
  * - persisted in the active profile's own (encrypted) storage, for the next
- *   cold start. Owner decision 2026-11-13: on by default, with kill-switches.
+ *   cold start. Owner decision 2026-11-13.
  *
  * A snapshot is stale-while-revalidate: it is shown at once and recomputed in
  * the background when it is older than `TODAY_SNAPSHOT_FRESH_MS`, so
@@ -16,10 +16,6 @@
  * two. It is never read across profiles: the owner key carries the profile id,
  * kind and account, and the caller's profile/source fences still guard the
  * commit.
- *
- * Kill-switches: `EXPO_PUBLIC_PATTERNLY_PERF_OPT_PARALLEL_BOOT=0` disables
- * both layers, reads included; `EXPO_PUBLIC_PATTERNLY_PERF_OPT_TODAY_SNAPSHOT_PERSIST=0`
- * disables only the persisted one.
  *
  * Stored format (stable input for T2.5, which reads it natively): one JSON
  * value under `TODAY_SNAPSHOT_KEY`:
@@ -49,13 +45,12 @@ export const TODAY_SNAPSHOT_KEY = TODAY_SNAPSHOT_STORE_KEY;
 const SNAPSHOT_SCHEMA = 2;
 /** A reused projection older than this is recomputed in the background. */
 export const TODAY_SNAPSHOT_FRESH_MS = 60_000;
-/**
- * On by default. Account deletion and history reset clear only the canonical
- * namespace, so this derived key is removed separately: at sign-out, deletion
- * and actor change (`invalidateTodaySnapshot`, via the account provider) and on
+/*
+ * Account deletion and history reset clear only the canonical namespace, so
+ * the persisted snapshot is removed separately: at sign-out, deletion and
+ * actor change (`invalidateTodaySnapshot`, via the account provider) and on
  * any read that does not match the current owner and revision.
  */
-export const TODAY_SNAPSHOT_PERSISTED = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_TODAY_SNAPSHOT_PERSIST !== "0";
 
 /**
  * Canonical families that Home reads or projects. Excluded on purpose: account
@@ -182,7 +177,6 @@ export function readTodaySnapshot<Data>(input: Readonly<{
   owner: TodaySnapshotOwner;
   nowMs: number;
   storage: Pick<KeyValueStorage, "getString" | "remove"> | null;
-  persisted?: boolean;
 }>): TodaySnapshotRead<Data> | null {
   const freshness = (snapshot: TodaySnapshot<unknown>) => {
     const age = input.nowMs - Date.parse(snapshot.capturedAt);
@@ -191,7 +185,7 @@ export function readTodaySnapshot<Data>(input: Readonly<{
   if (memory && memory.revision === input.revision && sameOwner(memory.owner, input.owner)) {
     return { snapshot: memory as TodaySnapshot<Data>, source: "memory", fresh: freshness(memory) };
   }
-  if (!(input.persisted ?? TODAY_SNAPSHOT_PERSISTED) || !input.storage) return null;
+  if (!input.storage) return null;
   let raw: string | undefined;
   try { raw = input.storage.getString(TODAY_SNAPSHOT_KEY); } catch { return null; }
   if (raw === undefined) return null;
@@ -205,18 +199,17 @@ export function readTodaySnapshot<Data>(input: Readonly<{
   return { snapshot: parsed as TodaySnapshot<Data>, source: "persisted", fresh: freshness(parsed) };
 }
 
-/** Keeps the latest projection in memory and, when enabled, in the profile store. */
+/** Keeps the latest projection in memory and in the profile store. */
 export function writeTodaySnapshot<Data>(input: Readonly<{
   revision: string;
   owner: TodaySnapshotOwner;
   capturedAt: string;
   data: Data;
   storage: Pick<KeyValueStorage, "setString"> | null;
-  persisted?: boolean;
 }>): void {
   const snapshot: TodaySnapshot<Data> = Object.freeze({ schema: SNAPSHOT_SCHEMA, revision: input.revision, owner: Object.freeze({ ...input.owner }), capturedAt: input.capturedAt, data: input.data });
   memory = snapshot;
-  if (!(input.persisted ?? TODAY_SNAPSHOT_PERSISTED) || !input.storage) return;
+  if (!input.storage) return;
   try { input.storage.setString(TODAY_SNAPSHOT_KEY, JSON.stringify(snapshot)); } catch { /* Best effort: the next start recomputes. */ }
 }
 

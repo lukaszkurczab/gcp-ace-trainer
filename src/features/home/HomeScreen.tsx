@@ -9,7 +9,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
-import { hasStartupFirstUsableFrame, isParallelBootEnabled, notifyStartupFirstUsableFrame, onActorBoundary, whenStartupFirstUsableFrame } from "../../application/bootstrap/parallelBoot";
+import { hasStartupFirstUsableFrame, notifyStartupFirstUsableFrame, onActorBoundary, whenStartupFirstUsableFrame } from "../../application/bootstrap/parallelBoot";
 import { captureFirstScreenInputEpoch, writeFirstScreenToday, type FirstScreenTodayView } from "../../application/bootstrap/firstScreenRecord";
 import { handOverFirstScreenToToday, type FirstScreenTodayAction } from "../../application/bootstrap/firstScreenHandover";
 import { invalidateTodaySnapshot, readTodayStoreRevision, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "../../application/home/todaySnapshot";
@@ -126,12 +126,11 @@ onActorBoundary((store) => invalidateTodaySnapshot(store));
 const CONTENT_BUILD_KEY = `${(contentTrustManifest as { lockSha?: unknown }).lockSha ?? ""}:${(contentTrustManifest as { ledgerSha?: unknown }).ledgerSha ?? ""}`;
 
 /**
- * Revision and owner of the current Today inputs, or null when the snapshot is
- * off or the active profile cannot be read (the shell then computes as before).
+ * Revision and owner of the current Today inputs, or null when the active
+ * profile cannot be read (the shell then computes as before).
  */
 function readTodaySnapshotKey(trackId: string | null, premiumAccess: string, actor: string): Readonly<{ revision: string; owner: TodaySnapshotOwner; storage: TodaySnapshotStorage; profileId: string; firstScreenEpoch: number }> | null {
   // T27: the revision is a token dropped on every Today input write (O(1), not a hash of the history).
-  if (!isParallelBootEnabled()) return null;
   try {
     const store = captureTodaySnapshotStore();
     if (!store) return null;

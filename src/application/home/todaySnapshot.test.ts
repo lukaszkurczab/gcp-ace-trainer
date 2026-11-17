@@ -90,46 +90,38 @@ test("a snapshot is reused only for the same revision and owner; a mismatching p
   const revision = revisionOf(storage);
   const owner = { profileKey: "account:p1:acc-1|premium:allowed|content:x", trackId: "track-a" };
   const now = Date.parse("2026-11-13T10:00:00.000Z");
-  writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { value: 1 }, storage, persisted: true });
+  writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { value: 1 }, storage });
   assert.ok(storage.getString(TODAY_SNAPSHOT_KEY));
 
-  const memory = readTodaySnapshot<{ value: number }>({ revision, owner, nowMs: now + 1_000, storage, persisted: true });
+  const memory = readTodaySnapshot<{ value: number }>({ revision, owner, nowMs: now + 1_000, storage });
   assert.equal(memory?.source, "memory");
   assert.equal(memory?.fresh, true);
   assert.deepEqual(memory?.snapshot.data, { value: 1 });
 
   clearTodaySnapshotMemory(); // cold start
-  const persisted = readTodaySnapshot<{ value: number }>({ revision, owner, nowMs: now + TODAY_SNAPSHOT_FRESH_MS + 1, storage, persisted: true });
+  const persisted = readTodaySnapshot<{ value: number }>({ revision, owner, nowMs: now + TODAY_SNAPSHOT_FRESH_MS + 1, storage });
   assert.equal(persisted?.source, "persisted");
   assert.equal(persisted?.fresh, false, "an old snapshot is shown, then revalidated");
 
   clearTodaySnapshotMemory();
-  assert.equal(readTodaySnapshot({ revision, owner: { ...owner, trackId: "track-b" }, nowMs: now, storage, persisted: true }), null, "another track");
+  assert.equal(readTodaySnapshot({ revision, owner: { ...owner, trackId: "track-b" }, nowMs: now, storage }), null, "another track");
   assert.equal(storage.getString(TODAY_SNAPSHOT_KEY), undefined, "no derived copy outlives a mismatch");
 
-  writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { value: 1 }, storage, persisted: true });
+  writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { value: 1 }, storage });
   clearTodaySnapshotMemory();
-  assert.equal(readTodaySnapshot({ revision, owner: { ...owner, profileKey: "account:p2:acc-2|premium:allowed|content:x" }, nowMs: now, storage, persisted: true }), null, "another profile or account");
-  writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { value: 1 }, storage, persisted: true });
+  assert.equal(readTodaySnapshot({ revision, owner: { ...owner, profileKey: "account:p2:acc-2|premium:allowed|content:x" }, nowMs: now, storage }), null, "another profile or account");
+  writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { value: 1 }, storage });
   clearTodaySnapshotMemory();
-  assert.equal(readTodaySnapshot({ revision: "other", owner, nowMs: now, storage, persisted: true }), null, "a changed store");
+  assert.equal(readTodaySnapshot({ revision: "other", owner, nowMs: now, storage }), null, "a changed store");
   storage.setString(TODAY_SNAPSHOT_KEY, "{not json");
-  assert.equal(readTodaySnapshot({ revision, owner, nowMs: now, storage, persisted: true }), null, "a corrupt copy");
+  assert.equal(readTodaySnapshot({ revision, owner, nowMs: now, storage }), null, "a corrupt copy");
   assert.equal(storage.getString(TODAY_SNAPSHOT_KEY), undefined);
 });
 
-test("persisting is on by default; PERSIST=0 keeps only the memory layer", () => {
-  const defaultStorage = seeded();
-  writeTodaySnapshot({ revision: "r", owner: { profileKey: "k", trackId: null }, capturedAt: "2026-11-13T10:00:00.000Z", data: {}, storage: defaultStorage });
-  assert.ok(defaultStorage.getString(TODAY_SNAPSHOT_KEY), "owner decision 2026-11-13: on by default");
+test("a snapshot is persisted to the profile store", () => {
   const storage = seeded();
-  const revision = revisionOf(storage);
-  const owner = { profileKey: "guest|guest:g1:", trackId: null };
-  writeTodaySnapshot({ revision, owner, capturedAt: "2026-11-13T10:00:00.000Z", data: { v: 2 }, storage, persisted: false });
-  assert.equal(storage.getString(TODAY_SNAPSHOT_KEY), undefined);
-  assert.equal(readTodaySnapshot({ revision, owner, nowMs: Date.parse("2026-11-13T10:00:01.000Z"), storage, persisted: false })?.source, "memory");
-  clearTodaySnapshotMemory();
-  assert.equal(readTodaySnapshot({ revision, owner, nowMs: 0, storage, persisted: false }), null);
+  writeTodaySnapshot({ revision: "r", owner: { profileKey: "k", trackId: null }, capturedAt: "2026-11-13T10:00:00.000Z", data: {}, storage });
+  assert.ok(storage.getString(TODAY_SNAPSHOT_KEY), "owner decision 2026-11-13");
 });
 
 test("foreign actor or lease, an old revision and a corrupt entry are ignored, removed and never throw", () => {

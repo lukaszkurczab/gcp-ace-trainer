@@ -20,7 +20,7 @@ import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { prepareRevenueCatAccountDeletion } from "../../infrastructure/purchases";
 import { getAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
-import { isParallelBootEnabled, markStartupRevalidationPending } from "./parallelBoot";
+import { markStartupRevalidationPending } from "./parallelBoot";
 import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
 
 type Ref<T> = { current: T };
@@ -251,7 +251,7 @@ export async function prepareAuthenticatedAccountBootstrap(
       attempt.profile = preparedSelection;
       // T2.3: a bound account starts from its local copy; `/me` and the sync
       // run after the first usable frame through the local-offline refresh.
-      if (isParallelBootEnabled() && preparedSelection?.kind === "account" && preparedSelection.accountId
+      if (preparedSelection?.kind === "account" && preparedSelection.accountId
         && !findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid)
         && !findMatchingLocalLogoutBlock(logoutControlSnapshotRef.current, user.uid)
         && !legalAcceptancePendingRef.current) {

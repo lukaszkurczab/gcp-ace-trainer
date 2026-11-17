@@ -10,15 +10,9 @@
  *   (`whenStartupFirstUsableFrame`), through the ordinary local-offline
  *   refresh, which upgrades the session to `authenticated`.
  *
- * Kill-switch: `EXPO_PUBLIC_PATTERNLY_PERF_OPT_PARALLEL_BOOT=0` restores the
- * linear start (content after the account, `/me` and sync before Today).
- *
  * The module has no React Native imports so Node tests can load it.
  */
 import { clearFirstScreenRecord } from "./firstScreenRecord";
-export function isParallelBootEnabled(): boolean {
-  return process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_PARALLEL_BOOT !== "0";
-}
 
 /**
  * Fallback after the content gate settled: Today may never draw (a resumed

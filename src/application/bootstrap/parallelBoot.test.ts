@@ -18,7 +18,6 @@ import {
   armStartupFirstFrameFallback,
   createStartupRevalidation,
   hasStartupFirstUsableFrame,
-  isParallelBootEnabled,
   markStartupRevalidationPending,
   notifyStartupFirstUsableFrame,
   readStartupRevalidationPending,
@@ -29,14 +28,11 @@ import {
   type StartupRevalidationOwner,
 } from "./parallelBoot";
 
-const ENV_KEY = "EXPO_PUBLIC_PATTERNLY_PERF_OPT_PARALLEL_BOOT";
-
 test.afterEach(() => {
   closeActiveProfileStorage();
   setProfileStoragePreparationFactoryForTests(null);
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   resetParallelBootForTests();
-  delete process.env[ENV_KEY];
 });
 
 function deferred<T>() {
@@ -50,14 +46,6 @@ const tick = () => new Promise<void>((resolve) => { setTimeout(resolve, 0); });
 // ---------------------------------------------------------------------------
 // Process-wide startup signals
 // ---------------------------------------------------------------------------
-
-test("kill-switch: only an explicit 0 restores the linear start", () => {
-  assert.equal(isParallelBootEnabled(), true);
-  process.env[ENV_KEY] = "0";
-  assert.equal(isParallelBootEnabled(), false);
-  process.env[ENV_KEY] = "1";
-  assert.equal(isParallelBootEnabled(), true);
-});
 
 test("deferred work waits for the first usable frame, then one macrotask; no timer runs before the gate settles", async () => {
   const wait = whenStartupFirstUsableFrame();
@@ -307,17 +295,6 @@ test("a steady bound account starts from its local copy: no /me, no sync before 
   assert.deepEqual(await attempt.completion, { kind: "success", next: "localOffline" });
   assert.deepEqual(counters, { getMe: 0, getProgress: 0 }, "the identity proof and the sync are deferred past the first frame");
   assert.equal(finalizeCalls.length, 0);
-});
-
-test("kill-switch 0: the same account starts online (/me before Today)", async () => {
-  process.env[ENV_KEY] = "0";
-  const fixture = await createBoundAccountFixture();
-  const counters = { getMe: 0, getProgress: 0 };
-  const prep = preparationPorts(fixture.selected);
-  const attempt = await prepareAuthenticatedAccountBootstrap(prep.ports, prep.auth as never, steadyApi(counters), USER, prep.generation);
-  assert.equal(attempt?.kind, "authenticated");
-  assert.equal(counters.getMe, 1);
-  assert.equal(readStartupRevalidationPending(), null);
 });
 
 test("conflict, interrupted apply and pending sign-out keep the online start", async () => {

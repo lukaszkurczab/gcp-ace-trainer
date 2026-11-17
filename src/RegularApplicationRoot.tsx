@@ -16,7 +16,7 @@ import { ProfileTransitionSurface } from "./content/application/startupPreparati
 import { Q13StorageReceiptHost } from "./application/runtimeAuditability/Q13StorageReceiptHost";
 import { AndroidClockProbeHost } from "./application/runtimeAuditability/AndroidClockProbeHost";
 import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfileTransition } from "./storage/repositories/profileStorageRepository";
-import { isParallelBootEnabled, startBundledContentPrefetch } from "./application/bootstrap/parallelBoot";
+import { startBundledContentPrefetch } from "./application/bootstrap/parallelBoot";
 import { contentPackageRuntimeOwner } from "./application/contentPackageRuntimeOwner";
 import { installProgressSnapshotPersistence } from "./application/account/progressSnapshotPersistence";
 import { installFirstScreenHandover } from "./application/bootstrap/firstScreenHandover";
@@ -30,7 +30,6 @@ export default function RegularApplicationRoot() {
   // bootstrap wait on native I/O and the network. Child effects (storage
   // preparation, auth setup) have already started when this one runs.
   useEffect(() => {
-    if (!isParallelBootEnabled()) return;
     const handle = setTimeout(() => { void startBundledContentPrefetch(() => contentPackageRuntimeOwner.verifyBundledPackages()); }, 0);
     return () => clearTimeout(handle);
   }, []);

@@ -15,7 +15,7 @@ import contentTrustManifestFile from "../generated/content-trust-manifest.json";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { getProductModeConfig, PRODUCT_MODE_CONFIGS, validateProductModeConfigsAgainstArtifacts, type ProductModeConfig } from "./productModeConfig";
 import { createCanonicalQuestionCatalog, createTrustedCanonicalQuestionCatalog, type CanonicalQuestionCatalog } from "./questionCatalog";
-import { CONTENT_TRUST_MANIFEST_SCHEMA, contentTrustBindingSha, isContentTrustManifestEnabled, matchContentTrustManifest, retainedTrustBindingSha, type ContentTrustManifest, type TrustedContent } from "./contentTrustManifest";
+import { CONTENT_TRUST_MANIFEST_SCHEMA, contentTrustBindingSha, matchContentTrustManifest, retainedTrustBindingSha, type ContentTrustManifest, type TrustedContent } from "./contentTrustManifest";
 import type { CanonicalContentLockRecord, CanonicalProductSimulationProfile, Question } from "./questionTypes";
 import { validateLearningPlanningPolicy, type LearningPlanningPolicy } from "./planningPolicy";
 import { assertValidContentSuccessorLedger, contentSuccessorLedgerEntry, type ContentPlanningPolicyIdentity, type ContentTrackIdentity, type ContentSuccessorLedger } from "./contentSuccessorLedger";
@@ -168,7 +168,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
     const interactionRegistry = dependencies.interactionRegistry ?? canonicalInteractionRegistry;
     const successorLedger = dependencies.successorLedger ?? (dependencies.artifacts === undefined ? successorLedgerFile : undefined);
     if (successorLedger !== undefined) assertValidContentSuccessorLedger(successorLedger);
-    const trust: TrustedContent | undefined = mode === "auto" && coversBundledContent(dependencies) && isContentTrustManifestEnabled()
+    const trust: TrustedContent | undefined = mode === "auto" && coversBundledContent(dependencies)
       ? await matchContentTrustManifest(contentTrustManifestFile, { lockFile, ledgerFile: successorLedgerFile, artifacts: sourceArtifacts, locks: sourceLocks, sha256Utf8: sha256 })
       : undefined;
     const catalogs: CanonicalQuestionCatalog[] = [];

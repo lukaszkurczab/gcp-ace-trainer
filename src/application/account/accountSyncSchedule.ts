@@ -12,18 +12,12 @@ import { useSyncExternalStore } from "react";
  */
 export type AccountSyncReason = "session_finalized" | "app_background";
 
-/** Kill-switch: `EXPO_PUBLIC_PATTERNLY_PERF_OPT_SYNC_ON_FINALIZE=0` restores sync on Today focus only. */
-export function isSyncOnFinalizeEnabled(): boolean {
-  return process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_SYNC_ON_FINALIZE !== "0";
-}
-
 /** Upper bound for the idle wait, so `sync_start` lands ≤ 1 s after `session_finalized`. */
 export const ACCOUNT_SYNC_IDLE_TIMEOUT_MS = 500;
 /** The indicator appears only for a sync that is still running after this delay (no flicker for no-ops). */
 export const ACCOUNT_SYNC_INDICATOR_DELAY_MS = 250;
 
 export type AccountSyncSchedulerDependencies = Readonly<{
-  enabled: () => boolean;
   /** Runs `task` once the JS thread is idle; returns a cancel function. */
   defer: (task: () => void) => () => void;
   /** One sync attempt. It must deduplicate network work itself (the account operation lane does). */
@@ -67,7 +61,7 @@ export function createAccountSyncScheduler(dependencies: AccountSyncSchedulerDep
   };
 
   const schedule = (reason: AccountSyncReason): void => {
-    if (disposed || !dependencies.enabled()) return;
+    if (disposed) return;
     if (running) {
       if (reason === "session_finalized") followUp = true;
       return;

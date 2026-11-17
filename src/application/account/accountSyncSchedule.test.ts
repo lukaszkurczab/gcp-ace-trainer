@@ -3,13 +3,12 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { createAccountSyncScheduler, readAccountSyncActivity, registerAccountSyncScheduler, requestAccountSync, setAccountSyncActivity, type AccountSyncReason } from "./accountSyncSchedule";
 
-function harness(options: Readonly<{ enabled?: boolean }> = {}) {
+function harness() {
   const deferred: (() => void)[] = [];
   let cancelled = 0;
   const runs: AccountSyncReason[] = [];
   const pending: { resolve: () => void; reject: (error: unknown) => void }[] = [];
   const scheduler = createAccountSyncScheduler({
-    enabled: () => options.enabled ?? true,
     defer: (task) => {
       deferred.push(task);
       return () => { cancelled += 1; const index = deferred.indexOf(task); if (index >= 0) deferred.splice(index, 1); };
@@ -71,12 +70,7 @@ test("T1.3 a failed attempt releases the scheduler", async () => {
   assert.deepEqual(h.runs, ["app_background", "app_background"]);
 });
 
-test("T1.3 kill-switch and dispose leave sync to the Today focus", () => {
-  const off = harness({ enabled: false });
-  off.scheduler.schedule("session_finalized");
-  off.scheduler.schedule("app_background");
-  assert.equal(off.deferred.length + off.runs.length, 0);
-
+test("T1.3 dispose leaves sync to the Today focus", () => {
   const disposed = harness();
   disposed.scheduler.schedule("session_finalized");
   disposed.scheduler.dispose();
@@ -102,14 +96,11 @@ test("T1.3 sync activity store toggles the Today indicator state", () => {
   assert.equal(readAccountSyncActivity(), false);
 });
 
-test("T1.3 wiring: both practice finalization points request sync; provider registers it with the kill-switch", () => {
+test("T1.3 wiring: both practice finalization points request sync; provider registers it", () => {
   const facade = readFileSync("src/application/coding-interview/codingInterviewSessionFacade.ts", "utf8");
   assert.equal(facade.match(/notifySessionFinalized\(\);/g)?.length, 2);
   assert.match(facade, /function notifySessionFinalized\(\): void \{\s*markStartup\("session_finalized"\);\s*requestAccountSync\("session_finalized"\);/);
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
   assert.match(provider, /registerAccountSyncScheduler\(scheduler\.schedule\)/);
-  assert.match(provider, /enabled: isSyncOnFinalizeEnabled/);
   assert.match(provider, /subscribeAppBackground\(\(\) => scheduler\.schedule\("app_background"\)\)/);
-  const schedule = readFileSync("src/application/account/accountSyncSchedule.ts", "utf8");
-  assert.match(schedule, /process\.env\.EXPO_PUBLIC_PATTERNLY_PERF_OPT_SYNC_ON_FINALIZE !== "0"/);
 });

@@ -15,7 +15,7 @@ import { readAccountPremiumTestingAccess, readGuestPremiumTestingAccess } from "
 import { markStartup, markStartupAt, startupTraceNow } from "../../infrastructure/diagnostics/startupTrace";
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { createStartupRevalidation, notifyActorBoundary, readStartupRevalidationPending, settleStartupRevalidation, whenStartupFirstUsableFrame } from "../bootstrap/parallelBoot";
-import { ACCOUNT_SYNC_INDICATOR_DELAY_MS, createAccountSyncScheduler, deferAccountSyncUntilIdle, isSyncOnFinalizeEnabled, registerAccountSyncScheduler, setAccountSyncActivity, subscribeAppBackground } from "./accountSyncSchedule";
+import { ACCOUNT_SYNC_INDICATOR_DELAY_MS, createAccountSyncScheduler, deferAccountSyncUntilIdle, registerAccountSyncScheduler, setAccountSyncActivity, subscribeAppBackground } from "./accountSyncSchedule";
 import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
 import { SessionRevocationExpiredError, createPendingSessionRevocationDrain } from "./pendingSessionRevocation";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
@@ -3069,7 +3069,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   retryPendingAccountSyncRef.current = value.retryPendingAccountSync;
   useEffect(() => {
     const scheduler = createAccountSyncScheduler({
-      enabled: isSyncOnFinalizeEnabled,
       defer: deferAccountSyncUntilIdle,
       run: async () => {
         const live = stateRef.current;
