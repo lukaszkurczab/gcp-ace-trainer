@@ -6,10 +6,12 @@
  *
  * `sha256` is the SHA-256 of the text re-encoded as UTF-8, computed natively by Expo Crypto. For a UTF-8 file
  * that is exactly the file bytes; a file decoded any other way re-encodes differently and fails the manifest
- * check (fail closed). The text is read and hashed
- * off the JS thread (`text()`, `digestStringAsync`); a `Uint8Array` copy of the file is avoided on purpose,
- * because converting a 10 MB `Data` result blocked the JS thread for hundreds of ms (T2.4 device check).
- * The loader compares the digest with the content trust manifest before it builds the track.
+ * check (fail closed). The loader compares the digest with the content trust manifest before it builds the track.
+ *
+ * T2.4 device check (seed 100, coding track, 10.8 MB): a `Uint8Array` copy of the file (`bytes()`) blocked the
+ * JS thread for hundreds of ms, so only text is read. `readSync` (~40 ms read + ~15 ms hash) is the start path:
+ * the async variant runs on Expo's single serial queue for async native functions and would hold back SecureStore
+ * and the account start behind it. `read` is for later loads (track switch), off the JS thread.
  */
 import { Platform } from "react-native";
 import { requireNativeModule } from "expo-modules-core";
@@ -50,8 +52,13 @@ export const bundledContentAssetSource: ContentAssetSource = Object.freeze({
     finally { endHash(); }
   },
   readSync(directory: ContentAssetDirectory, fileName: string): ContentAsset {
-    const text = contentFile(directory, fileName).textSync();
-    return Object.freeze({ text, sha256: nativeCrypto().digestString("SHA-256", text, HEX) });
+    const endRead = beginStartupSpan("catalog_asset_read");
+    let text: string;
+    try { text = contentFile(directory, fileName).textSync(); }
+    finally { endRead(); }
+    const endHash = beginStartupSpan("catalog_asset_hash");
+    try { return Object.freeze({ text, sha256: nativeCrypto().digestString("SHA-256", text, HEX) }); }
+    finally { endHash(); }
   },
 });
 

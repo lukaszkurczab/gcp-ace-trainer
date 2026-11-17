@@ -204,7 +204,10 @@ export class ContentPackageRuntimeOwner {
   async verifyBundledPackages(): Promise<void> {
     const catalog = await this.loadBundledCatalog();
     const trackId = this.startupTrackId(catalog);
-    if (trackId) this.prepareDiscovery(await catalog.loadTrack(trackId));
+    // Synchronous on purpose: Expo runs every async native function on one serial queue, so an async read
+    // of a 10 MB asset would hold back SecureStore and the rest of the account start behind it (T2.4 device
+    // check). Read on the JS thread, the account start's native I/O proceeds in parallel.
+    if (trackId) this.prepareBundledTrackSync(trackId);
   }
   /** Builds a bundled track off the start path (track switch) so its first screen does not read it synchronously. */
   async prepareBundledTrack(trackId: TrackId): Promise<void> {
