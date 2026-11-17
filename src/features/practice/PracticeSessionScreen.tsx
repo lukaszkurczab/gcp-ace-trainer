@@ -104,6 +104,10 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   const actionPending = useRef(false);
   const interactionResponseValidation = useRef(0);
   const interactionResponseOwner = useRef<string | null>(null);
+  // Long-lived subscriptions (timer ticks, AppState) must call this render's
+  // refresh: an older closure carries a superseded response owner and a stale
+  // projection, so its owner fence would silently drop every later refresh.
+  const latestRefresh = useRef<() => Promise<void>>(async () => undefined);
   const [pendingPhase, setPendingPhase] = useState<PracticeSurfacePhase | null>(null);
   // SLA trace only: which user press waits for its `*_visible` frame.
   const slaPending = useRef<Readonly<{ kind: "option" } | { kind: "submit" } | { kind: "continue"; from: string }> | null>(null);
@@ -169,20 +173,18 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
     if (state?.kind !== "session") return;
     const listener = AppState.addEventListener("change", (appState) => {
       void (appState === "active" ? enterAlgorithmsPracticeForeground() : leaveAlgorithmsPracticeForeground("app_background"))
-        .then(() => refresh())
+        .then(() => latestRefresh.current())
         .catch(() => undefined);
     });
     return () => listener.remove();
-  // refresh intentionally reads the latest canonical projection.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state?.kind]);
 
   useEffect(() => {
     if (state?.kind !== "session") return;
     return subscribeAlgorithmsPracticeProjectionRefresh((event) => {
-      if (event.sessionId === state.projection.session.id) void refresh();
+      if (event.sessionId === state.projection.session.id) void latestRefresh.current();
     });
-  // refresh intentionally reads the latest canonical projection.
+  // Session identity is the only subscription key; the handler is read through latestRefresh.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state?.kind, state?.kind === "session" ? state.projection.session.id : null]);
 
@@ -306,6 +308,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   // A queued "Continue" waits for durability; the button shows it only after the indicator delay.
   const primaryAction = committedPrimaryAction && continueQueued && durabilitySlow ? { ...committedPrimaryAction, enabled: false, loading: true } : committedPrimaryAction;
 
+  latestRefresh.current = () => refresh();
   async function refresh(expectedOwner: string = currentResponseOwner, settlesOptimistic = false) {
     // An optimistic answer is replaced only by its own command's projection.
     if (optimisticCommit.current && !settlesOptimistic) return;
