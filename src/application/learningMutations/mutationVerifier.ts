@@ -9,8 +9,11 @@ import { assertLearningStateResetMaterialized } from "../../storage/repositories
 import { productionLearningDataAdmissionContext, productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { resolveGoalPolicy } from "../../domain/goals/goalPolicy";
 import { quizSegment } from "../../infrastructure/diagnostics/quizCommandProfile";
+import { captureLearningStoreEpoch, isLearningStoreEpochCurrent, type LearningStoreEpoch } from "../../storage/repositories/learningStoreEpoch";
 const equal = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right);
 function unsupportedWrite(write: never): never { throw new JournalVerificationError(); }
+let lastVerification: Readonly<{ record: MutationJournalRecord; epoch: LearningStoreEpoch }> | null = null;
+
 export async function verifyMutation(record: MutationJournalRecord): Promise<void> {
   try { assertValidMutationJournal(record, productionLearningDataAdmissionContext); } catch { throw new JournalVerificationError(); }
   if (record.operation === "accept_goal_plan") {
@@ -29,6 +32,12 @@ export async function verifyMutation(record: MutationJournalRecord): Promise<voi
     try { assertLearningStateResetMaterialized(reset.targetPlan); } catch { throw new JournalVerificationError(); }
     return;
   }
+  // J1 (D5a): a repeated verification of the same proven journal object needs
+  // no read while no observed writer touched the store since the last full one.
+  const proof = lastVerification;
+  if (proof && proof.record === record && isLearningStoreEpochCurrent(proof.epoch)) return;
+  lastVerification = null;
+  const epoch = captureLearningStoreEpoch();
   let evidence: ReturnType<typeof readTrainingEvidenceSnapshotStrict>;
   try {
     if (!quizSegment("physical_after", () => areMutationPhysicalWritesAfter(record.physicalWrites))) throw new JournalVerificationError();
@@ -65,5 +74,9 @@ export async function verifyMutation(record: MutationJournalRecord): Promise<voi
       case "clear_learning_state": throw new JournalVerificationError();
       default: unsupportedWrite(write);
     }
+  }
+  // The native foreground clock writes its timer outside the store epoch.
+  if (epoch && Object.isFrozen(record) && !record.writes.some((write) => write.kind === "put_active_foreground_timer" || write.kind === "clear_active_session")) {
+    lastVerification = Object.freeze({ record, epoch });
   }
 }

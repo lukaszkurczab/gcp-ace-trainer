@@ -239,6 +239,11 @@ export function readCanonicalJson<T>(key: string, guard: StorageValueGuard<T>): 
   return readCanonicalEnvelope(key, guard)?.payload ?? null;
 }
 
+/** Whether one canonical key is present (J1: the evidence index probes only keys written since its last read). */
+export function readCanonicalKeyPresence(key: string): boolean {
+  try { return getKeyValueStorage().contains(key); } catch (error) { throw new StorageReadError(key, error); }
+}
+
 /** Enumerates only current-profile keys owned by the canonical namespace. */
 export function readCanonicalNamespaceKeys(): readonly string[] {
   try {

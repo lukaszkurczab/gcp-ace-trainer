@@ -34,3 +34,19 @@ test("rejects a conflicting session physical state", async () => { installMemory
 test("rejects an active session pointer that should have been cleared", async () => { installMemoryStorage(); await saveTrainingSession(session(), productionTrackAdmissionContext); const record = completion(); await assert.rejects(() => verifyMutation(record), JournalVerificationError); });
 test("propagates storage read failure", async () => { const storage = installMemoryStorage(); const record = journal([{ kind: "put_session", record: session() }], "advance_training_session"); await persistMutationJournal(record, productionLearningDataAdmissionContext); await materializeMutation(record); storage.setFailurePlan({ kind: "fail_on_key_read", key: STORAGE_KEYS.TRAINING_SESSION_INDEX }); await assert.rejects(() => verifyMutation(record), StorageReadError); });
 test("preserves active journal after verification failure", async () => { const storage = installMemoryStorage(); const record = outcome(); await persistMutationJournal(record, productionLearningDataAdmissionContext); await assert.rejects(() => verifyMutation(record), JournalVerificationError); assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true); });
+test("J1: repeating the verification of the same proven journal reads nothing until an observed write", async () => {
+  const storage = installMemoryStorage();
+  const prepared = await persistMutationJournal(outcome(), productionLearningDataAdmissionContext);
+  assert.ok(Object.isFrozen(prepared));
+  await materializeMutation(prepared);
+  await verifyMutation(prepared);
+  storage.resetCounters();
+  await verifyMutation(prepared);
+  storage.setString(STORAGE_KEYS.ACCOUNT_SYNC, "account sync writes are outside the learning store epoch");
+  await verifyMutation(prepared);
+  assert.equal(storage.operations.filter((operation) => operation.kind === "read").length, 0);
+  const key = STORAGE_KEYS.trainingAttempt(attempt().id);
+  const envelope = JSON.parse(storage.getString(key)!);
+  storage.setString(key, JSON.stringify({ ...envelope, payload: { ...envelope.payload, response: { choice: "changed" } } }));
+  await assert.rejects(() => verifyMutation(prepared), JournalVerificationError);
+});
