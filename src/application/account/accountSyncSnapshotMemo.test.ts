@@ -18,13 +18,13 @@ import { saveTrainingSessionResult } from "../../storage/repositories/trainingSe
 import { saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import {
   buildAccountDataSnapshot,
+  clearSyncSnapshotMemo,
   getAccountSyncState,
   readAccountDataPerfCountersForTests,
   readSyncSnapshotPerfCountersForTests,
   resetAccountDataPerfCountersForTests,
   resetSyncSnapshotPerfCountersForTests,
   saveAccountSyncState,
-  setSyncSnapshotMemoEnabledForTests,
   type AccountSyncState,
 } from "../../storage/repositories/accountDataRepository";
 
@@ -137,8 +137,7 @@ function install(next: ObservedStorage): void { storage = next; installKeyValueS
 /** Restart: same bytes, new storage owner, empty memos. */
 function restart(): void { install(storage.clone()); }
 
-beforeEach(() => { setSyncSnapshotMemoEnabledForTests(null); install(new ObservedStorage()); });
-afterEach(() => { setSyncSnapshotMemoEnabledForTests(null); });
+beforeEach(() => { clearSyncSnapshotMemo(); install(new ObservedStorage()); });
 
 async function prepareBoundAccount(): Promise<void> {
   initializeStorageMetadata();
@@ -278,18 +277,17 @@ function comparableState(state: AccountSyncState): unknown {
   return rest;
 }
 
-async function scenario(memo: boolean): Promise<Readonly<{ states: unknown[]; local: unknown[]; remote: unknown[] }>> {
-  setSyncSnapshotMemoEnabledForTests(memo);
+async function scenario(): Promise<Readonly<{ states: unknown[]; local: (readonly string[])[]; remote: ProgressRecordDto[][] }>> {
   install(new ObservedStorage());
   const backend = new FakeAccountBackend();
   const states: unknown[] = [];
-  const local: unknown[] = [];
-  const remote: unknown[] = [];
+  const local: (readonly string[])[] = [];
+  const remote: ProgressRecordDto[][] = [];
   const step = async (run: () => Promise<unknown>) => {
     const session = await run() as { status: string };
     states.push([session.status, comparableState(await getAccountSyncState(context))]);
     local.push(await localRecordKeys());
-    remote.push(JSON.parse(JSON.stringify(backend.records)));
+    remote.push(JSON.parse(JSON.stringify(backend.records)) as ProgressRecordDto[]);
   };
   await prepareBoundAccount();
   await addHistory("local", 5);
@@ -315,12 +313,46 @@ async function scenario(memo: boolean): Promise<Readonly<{ states: unknown[]; lo
   return { states, local, remote };
 }
 
-test("the snapshot memo and the baseline end every sync exactly like the previous path (kill-switch parity)", async () => {
-  const withMemo = await scenario(true);
-  const legacy = await scenario(false);
-  assert.deepEqual(withMemo.states, legacy.states);
-  assert.deepEqual(withMemo.local, legacy.local);
-  assert.deepEqual(withMemo.remote, legacy.remote);
+/**
+ * Expected end of every step, recorded from the pre-memo snapshot path before
+ * it was removed: 5 local sessions, a quiz, then 2 sessions from another device.
+ */
+const EXPECTED_STEPS = [
+  { revision: 61, records: 61, outboxSequence: 61, highWatermark: 61 },
+  { revision: 61, records: 61, outboxSequence: 61, highWatermark: 61 },
+  { revision: 61, records: 61, outboxSequence: 61, highWatermark: 61 },
+  { revision: 73, records: 73, outboxSequence: 73, highWatermark: 73 },
+  { revision: 97, records: 97, outboxSequence: 73, highWatermark: 73 },
+  { revision: 97, records: 97, outboxSequence: 73, highWatermark: 73 },
+] as const;
+
+test("the snapshot memo and the baseline end every sync with the recorded sync contract", async () => {
+  const { states, local, remote } = await scenario();
+  assert.equal(states.length, EXPECTED_STEPS.length);
+  EXPECTED_STEPS.forEach((expected, index) => {
+    const [status, state] = states[index] as [string, Record<string, unknown> & { acknowledged: Record<string, { fingerprint: string; remoteVersion: number }>; outbox: unknown[] }];
+    const { acknowledged, ...rest } = state;
+    assert.equal(status, "synced", `step ${index}`);
+    assert.deepEqual(rest, {
+      accountId: ACCOUNT_ID, guestAdoptionChoice: "transfer", status: "synced", remoteAccountRevision: expected.revision,
+      pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, syncConflict: null, outbox: [],
+      materialization: null, pendingConfirmation: null, syncPlan: null, outboxSequence: expected.outboxSequence,
+      highWatermark: expected.highWatermark, resetGuard: null, learningPlanRecovery: null,
+    }, `step ${index}`);
+    assert.equal(local[index]!.length, expected.records, `step ${index}: local records`);
+    assert.equal(remote[index]!.length, expected.records, `step ${index}: remote records`);
+    // Local and remote hold the same records with the same fingerprints, all acknowledged at version 1.
+    assert.deepEqual(local[index], remote[index]!.map((record) => `${record.recordType}|${record.targetId}|${record.fingerprint}`).sort(), `step ${index}`);
+    assert.equal(Object.keys(acknowledged).length, expected.records, `step ${index}: acknowledged`);
+    for (const record of remote[index]!) {
+      assert.equal(record.version, 1);
+      const key = JSON.stringify({ recordId: record.targetId, recordType: record.recordType, trackId: record.trackId });
+      assert.deepEqual([acknowledged[key]?.fingerprint, acknowledged[key]?.remoteVersion], [record.fingerprint, 1], `step ${index}: ${key}`);
+    }
+  });
+  const byType: Record<string, number> = {};
+  for (const record of remote.at(-1)!) byType[record.recordType] = (byType[record.recordType] ?? 0) + 1;
+  assert.deepEqual(byType, { training_attempt: 80, training_session_result: 8, training_session_summary: 8, active_track: 1 });
 });
 
 async function steadyAccount(sessions = 4): Promise<FakeAccountBackend> {

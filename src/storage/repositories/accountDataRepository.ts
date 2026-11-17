@@ -143,12 +143,7 @@ export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: stri
  * - A record fingerprint is re-hashed only for state objects this module did
  *   not deep-freeze itself after a verified hash. Within one synchronous
  *   validation pass, a record object is hashed at most once.
- * Kill-switch: EXPO_PUBLIC_PATTERNLY_PERF_OPT_ACCOUNT_MEMO=0 restores the
- * previous behaviour (no memo, no fingerprint reuse, shallow-frozen records).
  */
-const ACCOUNT_MEMO_ENABLED_BY_ENV = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_ACCOUNT_MEMO !== "0";
-let accountMemoOverrideForTests: boolean | null = null;
-function isAccountMemoEnabled(): boolean { return accountMemoOverrideForTests ?? ACCOUNT_MEMO_ENABLED_BY_ENV; }
 
 type FingerprintIdentity = Readonly<{ fingerprint: string; recordId: string; recordType: SyncableRecordType; trackId: string }>;
 type FingerprintSubject = Readonly<{ recordId: string; recordType: SyncableRecordType; state: Readonly<Record<string, unknown>>; trackId: string }>;
@@ -178,11 +173,6 @@ export function resetAccountDataPerfCountersForTests(): void {
   accountDataPerfCounters.fullStateValidations = 0;
   accountDataPerfCounters.stateMemoHits = 0;
 }
-/** Test-only: overrides the kill-switch (null = environment) and drops the memo, as on a cold start. */
-export function setAccountDataMemoEnabledForTests(enabled: boolean | null): void {
-  accountMemoOverrideForTests = enabled;
-  accountSyncStateMemo = null;
-}
 /** Drops the in-memory sync-state memo; the next read fully revalidates the stored bytes. */
 export function invalidateAccountSyncStateMemo(): void { accountSyncStateMemo = null; }
 
@@ -192,7 +182,6 @@ function computeRecordFingerprint(record: FingerprintSubject): string {
 }
 
 function recordFingerprintMatches(record: FingerprintSubject & Readonly<{ fingerprint: string }>): boolean {
-  if (!isAccountMemoEnabled()) return computeRecordFingerprint(record) === record.fingerprint;
   const known = verifiedFrozenStates.get(record.state);
   if (known && known.fingerprint === record.fingerprint && known.recordId === record.recordId && known.recordType === record.recordType && known.trackId === record.trackId) return true;
   const pass = validationPassFingerprints;
@@ -211,13 +200,13 @@ function rememberVerifiedFingerprint(record: FingerprintSubject & Readonly<{ fin
 
 /** Runs `work` inside the given fingerprint pass (several slices of one validation share it). */
 function withValidationPassMap<T>(pass: WeakMap<object, string>, work: () => T): T {
-  if (validationPassFingerprints !== null || !isAccountMemoEnabled()) return work();
+  if (validationPassFingerprints !== null) return work();
   validationPassFingerprints = pass;
   try { return work(); } finally { validationPassFingerprints = null; }
 }
 
 function withValidationPass<T>(work: () => T): T {
-  if (validationPassFingerprints !== null || !isAccountMemoEnabled()) return work();
+  if (validationPassFingerprints !== null) return work();
   validationPassFingerprints = new WeakMap();
   try { return work(); } finally { validationPassFingerprints = null; }
 }
@@ -230,7 +219,6 @@ function deepFreezeJsonInPlace(value: unknown): void {
 
 /** Deep-frozen, identity-stable copy of a record state; reuses states this module already froze. */
 function freezeRecordState(state: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
-  if (!isAccountMemoEnabled()) return cloneAndFreezeJson(state) as Readonly<Record<string, unknown>>;
   if (ownFrozenStates.has(state)) return state;
   const frozen = cloneAndFreezeJson(state) as Readonly<Record<string, unknown>>;
   ownFrozenStates.add(frozen);
@@ -251,7 +239,7 @@ function readAccountSyncRaw(): Readonly<{ storage: object; raw: string | undefin
 
 function memoizedAccountSyncState(storage: object, raw: string, context: LearningDataAdmissionContext): AccountSyncState | null {
   const memo = accountSyncStateMemo;
-  if (!memo || !isAccountMemoEnabled()) return null;
+  if (!memo) return null;
   if (memo.storage !== storage || memo.raw !== raw || memo.trackAdmission !== context.trackAdmission || memo.goalPolicyResolver !== context.goalPolicyResolver || memo.lease !== captureLeaseKey()) return null;
   accountDataPerfCounters.stateMemoHits += 1;
   return memo.state;
@@ -264,7 +252,6 @@ function rememberValidatedStateRecords(state: AccountSyncState): void {
 }
 
 function storeAccountSyncStateMemo(storage: object, raw: string, context: LearningDataAdmissionContext, state: AccountSyncState): void {
-  if (!isAccountMemoEnabled()) return;
   rememberValidatedStateRecords(state);
   accountSyncStateMemo = Object.freeze({ storage, lease: captureLeaseKey(), trackAdmission: context.trackAdmission, goalPolicyResolver: context.goalPolicyResolver, raw, state });
 }
@@ -782,12 +769,10 @@ export function saveAccountSyncState(state: AccountSyncState, context: LearningD
   if (!isCanonicalAccountSyncState(state, context)) throw new AccountDataFailure("account_sync_state_invalid");
   accountSyncStateMemo = null;
   const saved = writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, state, expectedRevision);
-  if (isAccountMemoEnabled()) {
-    // Validated at this write boundary: memoize exactly what a fresh read of
-    // the verified bytes would return, keyed by those bytes.
-    const { storage, raw } = readAccountSyncRaw();
-    if (raw !== undefined) storeAccountSyncStateMemo(storage, raw, context, freezeSyncState({ ...state, learningPlanRecovery: state.learningPlanRecovery ?? null, syncConflict: state.syncConflict ?? null }));
-  }
+  // Validated at this write boundary: memoize exactly what a fresh read of
+  // the verified bytes would return, keyed by those bytes.
+  const { storage, raw } = readAccountSyncRaw();
+  if (raw !== undefined) storeAccountSyncStateMemo(storage, raw, context, freezeSyncState({ ...state, learningPlanRecovery: state.learningPlanRecovery ?? null, syncConflict: state.syncConflict ?? null }));
   return saved.payload;
 }
 
@@ -957,17 +942,7 @@ export async function saveGuestAdoptionChoice(choice: "transfer" | "discard", co
  * - The record pass yields in 50 ms slices; a write that lands during a yield
  *   discards the read and reads again (no torn snapshot).
  * A cold start has empty memos, so the first snapshot verifies every record.
- * Kill-switch: EXPO_PUBLIC_PATTERNLY_PERF_OPT_SYNC_SNAPSHOT_MEMO=0 restores the
- * previous snapshot path (`…Legacy`).
  */
-const SYNC_SNAPSHOT_MEMO_ENABLED_BY_ENV = process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_SYNC_SNAPSHOT_MEMO !== "0";
-let syncSnapshotMemoOverrideForTests: boolean | null = null;
-export function isSyncSnapshotMemoEnabled(): boolean { return syncSnapshotMemoOverrideForTests ?? SYNC_SNAPSHOT_MEMO_ENABLED_BY_ENV; }
-/** Test-only: overrides the kill-switch (null = environment) and drops every snapshot memo, as on a cold start. */
-export function setSyncSnapshotMemoEnabledForTests(enabled: boolean | null): void {
-  syncSnapshotMemoOverrideForTests = enabled;
-  clearSyncSnapshotMemo();
-}
 /** Drops the in-memory snapshot memos; the next snapshot verifies every record again. */
 export function clearSyncSnapshotMemo(): void {
   localEvidenceMemo = null;
@@ -1001,7 +976,6 @@ onKeyValueWrite((storage, key) => {
 
 type SnapshotScope = Readonly<{ storage: object; lease: string; revision: number; trackAdmission: TrackAdmissionContext; goalPolicyResolver: GoalPolicyResolver }>;
 function captureSnapshotScope(context: LearningDataAdmissionContext): SnapshotScope | null {
-  if (!isSyncSnapshotMemoEnabled()) return null;
   const storage = getKeyValueStorage();
   if (!isKeyValueWriteObservable(storage)) return null;
   return Object.freeze({ storage, lease: captureLeaseKey(), revision: snapshotInputRevisions.get(storage) ?? 0, trackAdmission: context.trackAdmission, goalPolicyResolver: context.goalPolicyResolver });
@@ -1099,7 +1073,7 @@ function assertTrainingEvidenceIntegrityUnlessUnchanged(context: LearningDataAdm
 function verifiedLocalRecordFingerprints(context: LearningDataAdmissionContext): ReadonlyMap<string, string> {
   const memo = recordMemo;
   const known = new Map<string, string>();
-  if (!isSyncSnapshotMemoEnabled() || !memo || memo.trackAdmission !== context.trackAdmission || memo.goalPolicyResolver !== context.goalPolicyResolver) return known;
+  if (!memo || memo.trackAdmission !== context.trackAdmission || memo.goalPolicyResolver !== context.goalPolicyResolver) return known;
   for (const entry of memo.entries.values()) known.set(entry.base.key, entry.base.fingerprint);
   return known;
 }
@@ -1108,7 +1082,6 @@ function verifiedLocalRecordFingerprints(context: LearningDataAdmissionContext):
 const validatedRemoteRecordLists = new WeakMap<readonly AccountDataRecord[], LearningDataAdmissionContext>();
 
 function recordMemoFor(context: LearningDataAdmissionContext): RecordMemo | null {
-  if (!isSyncSnapshotMemoEnabled()) return null;
   const storage = getKeyValueStorage();
   const lease = captureLeaseKey();
   const memo = recordMemo;
@@ -1246,7 +1219,6 @@ function persistSnapshotDatasetVersion(state: AccountSyncState, records: readonl
 }
 
 export async function buildAccountDataSnapshot(context: LearningDataAdmissionContext): Promise<AccountDataSnapshot> {
-  if (!isSyncSnapshotMemoEnabled()) return buildAccountDataSnapshotLegacy(context);
   const evidence = await readLocalEvidence(context, true);
   const state = await getAccountSyncState(context);
   const memo = snapshotMemo;
@@ -1257,7 +1229,7 @@ export async function buildAccountDataSnapshot(context: LearningDataAdmissionCon
   const records = versionLocalRecords(evidence.base!, state, context);
   const nextVersion = persistSnapshotDatasetVersion(state, records, context);
   const snapshot = createAccountDataSnapshot(nextVersion, evidence.installationId, records, evidence.activeSession, evidence.pendingJournal);
-  if (evidence.scope !== null && isAccountMemoEnabled()) {
+  if (evidence.scope !== null) {
     // The frozen sync state is identity-stable until its stored bytes change.
     snapshotMemo = Object.freeze({ evidence, state: await getAccountSyncState(context), snapshot });
   }
@@ -1270,7 +1242,6 @@ export async function buildAccountDataSnapshot(context: LearningDataAdmissionCon
  * Sync guards only need these two flags.
  */
 export async function readAccountDataSyncGuardFlags(context: LearningDataAdmissionContext): Promise<Readonly<{ activeSession: boolean; pendingJournal: boolean }>> {
-  if (!isSyncSnapshotMemoEnabled()) return readAccountDataSyncGuardFlagsLegacy(context);
   const evidence = await readLocalEvidence(context, false);
   return Object.freeze({ activeSession: evidence.activeSession, pendingJournal: evidence.pendingJournal });
 }
@@ -1287,7 +1258,6 @@ export async function readAccountDataSyncGuardFlags(context: LearningDataAdmissi
  * would only rewrite `lastSuccessfulSyncAt`, so that is all it does. Any
  * difference, or any doubt, runs the full path. Bootstrap integrity checks are
  * untouched (D5); the baseline holds digests only, no learning data.
- * Same kill-switch as the snapshot memo.
  *
  * T3.3a: the baseline also keeps the server's progress snapshot token of the
  * remote copy it digested. A cold start sends it as a conditional read; only
@@ -1389,7 +1359,6 @@ export function clearAccountSyncBaseline(): void {
  * other acknowledgement a tombstone) and the dataset version is settled.
  */
 export async function recordAccountSyncBaseline(input: Readonly<{ accountId: string; remoteAccountRevision: number; remoteRecords: readonly RemoteAccountDataRecord[]; remoteSnapshotToken: string | null }>, context: LearningDataAdmissionContext): Promise<boolean> {
-  if (!isSyncSnapshotMemoEnabled()) return false;
   clearAccountSyncBaseline();
   const snapshot = await buildAccountDataSnapshot(context);
   const state = await getAccountSyncState(context);
@@ -1427,7 +1396,6 @@ export async function recordAccountSyncBaseline(input: Readonly<{ accountId: str
 
 /** The recorded baseline, when the stored sync state and every local input byte still match it. */
 export async function readAccountSyncBaselineMatch(accountId: string, context: LearningDataAdmissionContext): Promise<AccountSyncBaselineMatch | null> {
-  if (!isSyncSnapshotMemoEnabled()) return null;
   const state = await getAccountSyncState(context);
   if (!isBaselineEligibleState(state, accountId)) return null;
   const baseline = readAccountSyncBaseline();
@@ -1478,46 +1446,6 @@ export async function finishUnchangedAccountSync(match: AccountSyncBaselineMatch
     : (await computeLocalInputDigest(context)) === match.localInputDigest;
   if (!unchangedLocal) return null;
   return saveAccountSyncState({ ...state, status: "synced", remoteAccountRevision: match.baseline.remoteAccountRevision, lastSuccessfulSyncAt: syncedAt, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null }, context);
-}
-
-function persistSnapshotDatasetVersionLegacy(state: AccountSyncState, records: readonly AccountDataRecord[], context: LearningDataAdmissionContext): number {
-  const datasetFingerprint = sha256Utf8(canonicalSerialize(records));
-  const nextVersion = state.localDatasetFingerprint === datasetFingerprint ? state.localDatasetVersion : state.localDatasetVersion + 1;
-  if (nextVersion !== state.localDatasetVersion || state.localDatasetFingerprint !== datasetFingerprint) {
-    saveAccountSyncState({ ...state, localDatasetVersion: nextVersion, localDatasetFingerprint: datasetFingerprint }, context);
-  }
-  return nextVersion;
-}
-
-async function buildAccountDataSnapshotLegacy(context: LearningDataAdmissionContext): Promise<AccountDataSnapshot> {
-  assertTrainingEvidenceIntegrity(context.trackAdmission);
-  const installation = await getGuestInstallation();
-  if (!installation) throw new AccountDataFailure("guest_installation_required");
-  const state = await getAccountSyncState(context);
-  const activeSession = (await getTrainingSessions(context.trackAdmission)).value.some((session) => session.status === "active");
-  const activeJournal = await getActiveMutationJournal(context);
-  if (activeJournal?.operation === "accept_goal_plan" || activeJournal?.operation === "resolve_account_sync_conflict") throw new AccountDataFailure("journal_recovery_required");
-  const pendingJournal = activeJournal !== null;
-  const records = await readLocalAccountDataRecords(state, context);
-  assertValidAccountDataRecords(records, context);
-  const nextVersion = persistSnapshotDatasetVersionLegacy(state, records, context);
-  return createAccountDataSnapshot(nextVersion, installation.installationId, records, activeSession, pendingJournal);
-}
-
-/**
- * The guard part of `buildAccountDataSnapshot` (same integrity and journal
- * checks, same failures) without projecting and fingerprinting every record.
- * Sync guards only need these two flags.
- */
-async function readAccountDataSyncGuardFlagsLegacy(context: LearningDataAdmissionContext): Promise<Readonly<{ activeSession: boolean; pendingJournal: boolean }>> {
-  assertTrainingEvidenceIntegrity(context.trackAdmission);
-  const installation = await getGuestInstallation();
-  if (!installation) throw new AccountDataFailure("guest_installation_required");
-  await getAccountSyncState(context);
-  const activeSession = (await getTrainingSessions(context.trackAdmission)).value.some((session) => session.status === "active");
-  const activeJournal = await getActiveMutationJournal(context);
-  if (activeJournal?.operation === "accept_goal_plan" || activeJournal?.operation === "resolve_account_sync_conflict") throw new AccountDataFailure("journal_recovery_required");
-  return Object.freeze({ activeSession, pendingJournal: activeJournal !== null });
 }
 
 function createAccountDataSnapshot(guestSnapshotVersion: number, guestUserId: string, records: readonly AccountDataRecord[], activeSession: boolean, pendingJournal: boolean): AccountDataSnapshot {
@@ -1584,13 +1512,11 @@ function makeRecord(recordType: SyncableRecordType, recordId: string, trackId: s
 function makeVersionedRecord(recordType: SyncableRecordType, recordId: string, trackId: string, state: Readonly<Record<string, unknown>>, version: number): AccountDataRecord {
   const copied = JSON.parse(JSON.stringify(state)) as Record<string, unknown>;
   const fingerprint = computeRecordFingerprint({ recordId, recordType, state: copied, trackId });
-  if (isAccountMemoEnabled() || isSyncSnapshotMemoEnabled()) {
-    // `copied` is private to this call, so freezing it in place makes the
-    // verified hash permanently valid for this exact state object.
-    deepFreezeJsonInPlace(copied);
-    ownFrozenStates.add(copied);
-    verifiedFrozenStates.set(copied, Object.freeze({ fingerprint, recordId, recordType, trackId }));
-  }
+  // `copied` is private to this call, so freezing it in place makes the
+  // verified hash permanently valid for this exact state object.
+  deepFreezeJsonInPlace(copied);
+  ownFrozenStates.add(copied);
+  verifiedFrozenStates.set(copied, Object.freeze({ fingerprint, recordId, recordType, trackId }));
   return Object.freeze({ fingerprint, recordId, recordType, state: Object.freeze(copied), trackId, version });
 }
 
@@ -1915,14 +1841,14 @@ export async function partitionRemoteAccountDataForRecovery(
   const known = verifiedLocalRecordFingerprints(context);
   const isKnown = (record: AccountDataRecord): boolean => known.size > 0 && known.get(accountDataRecordKey(record)) === record.fingerprint;
   // One fingerprint pass for the whole partition, run in 50 ms slices.
-  const slice = isSyncSnapshotMemoEnabled() ? createCooperativeSlice() : null;
+  const slice = createCooperativeSlice();
   const pass = new WeakMap<object, string>();
   const isShapeValid = (record: AccountDataRecord): boolean => (isKnown(record)
     ? isAccountDataRecord(record) && hasOnlyKeys(record, ["fingerprint", "recordId", "recordType", "state", "trackId", "version"]) && record.recordId.trim().length > 0 && isTrackAdmitted(context.trackAdmission, record.trackId) && recordFingerprintMatches(record)
     : isCanonicalAccountDataRecord(record, context.trackAdmission));
   for (let index = 0; index < records.length; index += 1) {
     if (!withValidationPassMap(pass, () => isShapeValid(records[index] as AccountDataRecord))) throw new AccountDataFailure("account_data_record_invalid");
-    if (slice) await slice();
+    await slice();
   }
   const invalidPlans = withValidationPassMap(pass, () => {
     const keys = records.map(accountDataRecordKey);
@@ -1935,7 +1861,7 @@ export async function partitionRemoteAccountDataForRecovery(
     for (const record of records) {
       if (isKnown(record)) { snapshotPerfCounters.knownRemoteRecords += 1; continue; }
       withValidationPassMap(pass, () => assertValidAccountDataRecordUnchecked(record, context));
-      if (slice) await slice();
+      await slice();
     }
     withValidationPassMap(pass, () => assertGoalPlanRecordBundles(records, context.goalPolicyResolver));
   }
@@ -1990,12 +1916,11 @@ export async function partitionRemoteAccountDataForRecovery(
 }
 
 /**
- * Freezes a validated remote record. With the snapshot memo (T2.6) its state is
- * deep-frozen in place and its verified fingerprint remembered, so finish and
+ * Freezes a validated remote record. Its state is deep-frozen in place and its verified fingerprint remembered, so finish and
  * apply do not hash it again.
  */
 function freezeVerifiedRemoteRecord(record: AccountDataRecord): AccountDataRecord {
-  if (isSyncSnapshotMemoEnabled() && isAccountMemoEnabled() && !ownFrozenStates.has(record.state)) {
+  if (!ownFrozenStates.has(record.state)) {
     deepFreezeJsonInPlace(record.state);
     ownFrozenStates.add(record.state);
     rememberVerifiedFingerprint(record);

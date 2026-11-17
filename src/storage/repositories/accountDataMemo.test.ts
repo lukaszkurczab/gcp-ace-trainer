@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import test, { afterEach, beforeEach } from "node:test";
+import test, { beforeEach } from "node:test";
 
 import { MemoryKeyValueStorage, getKeyValueStorage, installKeyValueStorageForTests, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
 import type { PatternlyApiClient, ProgressMutationDto, ProgressRecordDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
@@ -17,7 +17,7 @@ import {
   readAccountDataPerfCountersForTests,
   resetAccountDataPerfCountersForTests,
   saveAccountSyncState,
-  setAccountDataMemoEnabledForTests,
+  invalidateAccountSyncStateMemo,
 } from "./accountDataRepository";
 import { AccountDataFailure } from "../errors";
 
@@ -27,14 +27,12 @@ const TRACK_ID = "coding-interview-dsa-problem-solving" as const;
 const context = productionLearningDataAdmissionContext;
 
 beforeEach(async () => {
-  setAccountDataMemoEnabledForTests(true);
+  invalidateAccountSyncStateMemo();
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   await provisionGuestInstallation({ async create() { return { installationId: INSTALLATION_ID, localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
   await bindGuestInstallationToAccount(ACCOUNT_ID);
   saveAccountSyncState({ ...await getAccountSyncState(context), accountId: ACCOUNT_ID, status: "synced" }, context);
 });
-
-afterEach(() => { setAccountDataMemoEnabledForTests(null); });
 
 function reviews(count: number): ReviewQueueEntry[] {
   return Array.from({ length: count }, (_, index) => ({
@@ -90,8 +88,7 @@ async function seedLocalDataset(reviewCount: number): Promise<void> {
   await addReviewQueueItems(reviews(reviewCount), productionTrackAdmissionContext);
 }
 
-async function fingerprintsForOneSync(memo: boolean, reviewCount: number): Promise<Readonly<{ fingerprints: number; validations: number; status: string }>> {
-  setAccountDataMemoEnabledForTests(memo);
+async function fingerprintsForOneSync(reviewCount: number): Promise<Readonly<{ fingerprints: number; validations: number; status: string }>> {
   await seedLocalDataset(reviewCount);
   resetAccountDataPerfCountersForTests();
   const session = await retryAccountDataSync(syncApi(), ACCOUNT_ID);
@@ -99,24 +96,21 @@ async function fingerprintsForOneSync(memo: boolean, reviewCount: number): Promi
   return { fingerprints: counters.fingerprintComputations, validations: counters.fullStateValidations, status: session.status };
 }
 
-test("one full sync computes record fingerprints at least 4x less often with the memo", async () => {
-  const before = await fingerprintsForOneSync(false, 30);
-  installKeyValueStorageForTests(new MemoryKeyValueStorage());
-  await provisionGuestInstallation({ async create() { return { installationId: INSTALLATION_ID, localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
-  await bindGuestInstallationToAccount(ACCOUNT_ID);
-  saveAccountSyncState({ ...await getAccountSyncState(context), accountId: ACCOUNT_ID, status: "synced" }, context);
-  const after = await fingerprintsForOneSync(true, 30);
-  assert.equal(before.status, "synced");
+/** One full sync of the 31-record fixture before the memo existed (recorded from the removed path). */
+const PRE_MEMO_FINGERPRINTS_PER_SYNC = 7006;
+
+test("one full sync computes record fingerprints at least 4x less often than before the memo", async () => {
+  const after = await fingerprintsForOneSync(30);
   assert.equal(after.status, "synced");
-  console.log(`[T1.2] fingerprints per sync (31 records): memo off ${before.fingerprints}, memo on ${after.fingerprints}; full validations ${before.validations} -> ${after.validations}`);
-  assert.ok(after.fingerprints * 4 <= before.fingerprints, `expected >=4x fewer fingerprints, got ${before.fingerprints} -> ${after.fingerprints}`);
+  console.log(`[T1.2] fingerprints per sync (31 records): ${after.fingerprints} (before the memo: ${PRE_MEMO_FINGERPRINTS_PER_SYNC}); full validations ${after.validations}`);
+  assert.ok(after.fingerprints * 4 <= PRE_MEMO_FINGERPRINTS_PER_SYNC, `expected >=4x fewer fingerprints than ${PRE_MEMO_FINGERPRINTS_PER_SYNC}, got ${after.fingerprints}`);
 });
 
-test("memo and kill-switch return the same sync state as a fresh validated read", async () => {
+test("the memo returns the same sync state as a fresh validated read", async () => {
   await seedLocalDataset(5);
   const pending = await ensureAccountOutboxFromLocalDataset(context);
   const memoized = await getAccountSyncState(context);
-  setAccountDataMemoEnabledForTests(false);
+  invalidateAccountSyncStateMemo();
   const fresh = await getAccountSyncState(context);
   assert.deepEqual(memoized, fresh);
   assert.deepEqual(memoized.outbox, pending.outbox);
@@ -147,7 +141,7 @@ test("a corrupt stored record is detected on cold start (empty memo)", async () 
   await ensureAccountOutboxFromLocalDataset(context);
   const storage = getKeyValueStorage();
   storage.setString(STORAGE_KEYS.ACCOUNT_SYNC, corruptOutboxFingerprint(storage.getString(STORAGE_KEYS.ACCOUNT_SYNC)!));
-  setAccountDataMemoEnabledForTests(true); // cold start: the in-memory memo is gone
+  invalidateAccountSyncStateMemo(); // cold start: the in-memory memo is gone
   await assert.rejects(getAccountSyncState(context), (error: unknown) => error instanceof AccountDataFailure && error.message.includes("account_sync_state_invalid"));
 });
 
