@@ -43,7 +43,7 @@ function shell(overrides = {}) {
     captureProfileReadFence: () => () => {}, captureHomeShellReadFence: () => () => {},
     // T27: O(1) fence for a reused Today snapshot, its retryable error, and the deferred recompute.
     captureHomeShellEpochFence: () => () => {}, HomeShellSourcesChangedError: class HomeShellSourcesChangedError extends Error {},
-    whenStartupFirstUsableFrame: () => ({ promise: Promise.resolve(), cancel() {} }),
+    whenStartupBackgroundWorkAllowed: () => ({ promise: Promise.resolve(), cancel() {} }),
     // T27: Home gets a history summary projected with the shell read (inputs kept for assertions).
     projectHomeHistorySummary: input => ({ trackId: input.trackId, attempts: input.trainingAttempts, reviews: input.reviewQueueItems, activeSessionId: input.activeSessionId, now: input.now }),
     projectHomePractice: () => ({ kind: "none" }),
@@ -381,6 +381,29 @@ test('a stale Today snapshot is shown, then recomputed and replaced (stale-while
   assert.equal(written.length, 1);
   assert.equal(written[0].revision, 'r1');
   assert.deepEqual(written[0].data.homePractice, { kind: 'computed' });
+});
+
+test('Home-after-FUF: a stale snapshot is recomputed only once start background work is allowed (after the startup sync)', async () => {
+  let projections = 0;
+  const gate = deferred();
+  let cancelled = 0;
+  const key = { revision: 'r1', owner: { profileKey: 'p', trackId: 'aws-certified-solutions-architect-associate' }, storage: {} };
+  const ui = shell({
+    readTodaySnapshotKey: () => key,
+    readTodaySnapshot: () => ({ snapshot: { data: snapshotData() }, source: 'persisted', fresh: false }),
+    projectHomePractice: () => { projections++; return { kind: 'computed' }; },
+    whenStartupBackgroundWorkAllowed: () => ({ promise: gate.promise, cancel: () => { cancelled++; } }),
+  });
+  ui.render('home'); await settle();
+  for (let i = 0; i < 4; i++) { ui.render('home'); await new Promise(resolve => setTimeout(resolve, 5)); await settle(); }
+  assert.deepEqual(nodes(ui.render('home')).find(node => node.type === 'HomeTab').props.homePractice, { kind: 'snapshot' }, 'the snapshot stays on screen while the sync runs');
+  assert.equal(projections, 0, 'no recompute before the gate opens');
+  gate.resolve();
+  for (let i = 0; i < 4; i++) { ui.render('home'); await new Promise(resolve => setTimeout(resolve, 5)); await settle(); }
+  assert.deepEqual(nodes(ui.render('home')).find(node => node.type === 'HomeTab').props.homePractice, { kind: 'computed' });
+  assert.equal(projections, 1);
+  ui.unmount();
+  assert.ok(cancelled >= 1, 'leaving Home cancels a pending wait');
 });
 
 test('without a snapshot key (kill-switch, no native digest) the shell computes as before and writes nothing', async () => {

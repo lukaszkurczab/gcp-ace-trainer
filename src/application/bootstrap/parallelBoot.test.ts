@@ -24,7 +24,9 @@ import {
   resetParallelBootForTests,
   settleStartupRevalidation,
   startBundledContentPrefetch,
+  whenStartupBackgroundWorkAllowed,
   whenStartupFirstUsableFrame,
+  type StartupBackgroundTimers,
   type StartupRevalidationOwner,
 } from "./parallelBoot";
 
@@ -68,6 +70,57 @@ test("the post-gate fallback reports the first frame when no screen does", async
   const wait = whenStartupFirstUsableFrame();
   await wait.promise;
   assert.equal(hasStartupFirstUsableFrame(), true);
+});
+
+function backgroundTimers(): StartupBackgroundTimers & { idleCalls: number } {
+  const timers = {
+    idleCalls: 0,
+    set: (task: () => void, ms: number): unknown => setTimeout(task, ms),
+    clear: (handle: unknown): void => { clearTimeout(handle as ReturnType<typeof setTimeout>); },
+    idle: (task: () => void): unknown => { timers.idleCalls += 1; return setTimeout(task, 0); },
+    cancelIdle: (handle: unknown): void => { clearTimeout(handle as ReturnType<typeof setTimeout>); },
+  };
+  return timers;
+}
+
+test("Home-after-FUF: background start work waits for the first frame and the startup revalidation, then idle", async () => {
+  const owner = { uid: "u1", accountId: "a1" };
+  markStartupRevalidationPending(owner);
+  const timers = backgroundTimers();
+  const wait = whenStartupBackgroundWorkAllowed(timers);
+  let resolved = false;
+  void wait.promise.then(() => { resolved = true; });
+  notifyStartupFirstUsableFrame();
+  for (let index = 0; index < 5; index += 1) await tick();
+  assert.equal(resolved, false, "the stale Today recompute must not overlap the startup sync handling");
+  settleStartupRevalidation(owner);
+  assert.equal(resolved, false, "the sync result commits first (one macrotask)");
+  for (let index = 0; index < 4; index += 1) await tick();
+  assert.equal(resolved, true);
+  assert.equal(timers.idleCalls, 1, "the work runs when the JS thread is idle");
+});
+
+test("Home-after-FUF: without a pending revalidation, the work runs after the first frame; a hanging one is capped", async () => {
+  const timers = backgroundTimers();
+  notifyStartupFirstUsableFrame();
+  await whenStartupBackgroundWorkAllowed(timers).promise;
+  markStartupRevalidationPending({ uid: "u1", accountId: "a1" });
+  await whenStartupBackgroundWorkAllowed(timers, 10).promise;
+  assert.equal(readStartupRevalidationPending() !== null, true, "the cap releases the work, not the revalidation");
+});
+
+test("Home-after-FUF: a cancelled wait never runs the work", async () => {
+  const owner = { uid: "u1", accountId: "a1" };
+  markStartupRevalidationPending(owner);
+  const wait = whenStartupBackgroundWorkAllowed(backgroundTimers());
+  let resolved = false;
+  void wait.promise.then(() => { resolved = true; });
+  notifyStartupFirstUsableFrame();
+  await tick();
+  wait.cancel();
+  settleStartupRevalidation(owner);
+  for (let index = 0; index < 4; index += 1) await tick();
+  assert.equal(resolved, false);
 });
 
 test("content prefetch runs once; a failed verification is not cached as success", async () => {

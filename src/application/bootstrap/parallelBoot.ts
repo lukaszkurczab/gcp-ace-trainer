@@ -88,12 +88,34 @@ const defaultTimers = Object.freeze({
   clear: (handle: unknown): void => { clearTimeout(handle as ReturnType<typeof setTimeout>); },
 });
 
+type IdleGlobal = Readonly<{
+  requestIdleCallback?: (task: () => void, options?: Readonly<{ timeout: number }>) => unknown;
+  cancelIdleCallback?: (handle: unknown) => void;
+}>;
+
+const defaultBackgroundTimers: StartupBackgroundTimers = Object.freeze({
+  ...defaultTimers,
+  idle: (task: () => void, timeoutMs: number): unknown => {
+    const host = globalThis as IdleGlobal;
+    if (typeof host.requestIdleCallback === "function") return { idle: host.requestIdleCallback(task, { timeout: timeoutMs }) };
+    return { timer: setTimeout(task, 0) };
+  },
+  cancelIdle: (handle: unknown): void => {
+    const value = handle as { idle?: unknown; timer?: ReturnType<typeof setTimeout> };
+    const host = globalThis as IdleGlobal;
+    if (value.timer !== undefined) clearTimeout(value.timer);
+    else if (typeof host.cancelIdleCallback === "function") host.cancelIdleCallback(value.idle);
+  },
+});
+
 /**
  * Startup online revalidation of a local-first account start. The account
  * provider marks it when it publishes the local session and settles it when
  * the deferred refresh ends, whatever the result.
  */
 let startupRevalidation: StartupRevalidationOwner | null = null;
+
+const revalidationWaiters = new Set<() => void>();
 
 export function markStartupRevalidationPending(owner: StartupRevalidationOwner): void {
   startupRevalidation = Object.freeze({ uid: owner.uid, accountId: owner.accountId, ...(owner.handoff ? { handoff: owner.handoff } : {}) });
@@ -105,6 +127,77 @@ export function readStartupRevalidationPending(): StartupRevalidationOwner | nul
 
 export function settleStartupRevalidation(owner?: StartupRevalidationOwner): void {
   if (!owner || (startupRevalidation?.uid === owner.uid && startupRevalidation.accountId === owner.accountId)) startupRevalidation = null;
+  if (startupRevalidation !== null) return;
+  const waiters = [...revalidationWaiters];
+  revalidationWaiters.clear();
+  for (const waiter of waiters) {
+    try { waiter(); } catch { /* A waiter never changes the settled revalidation. */ }
+  }
+}
+
+/** Upper bound on how long background start work waits for the startup revalidation. */
+export const STARTUP_BACKGROUND_WORK_MAX_WAIT_MS = 15_000;
+
+export type StartupBackgroundTimers = Readonly<{
+  set: (task: () => void, ms: number) => unknown;
+  clear: (handle: unknown) => void;
+  /** Runs `task` when the JS thread is idle (RN `requestIdleCallback`), at the latest after `timeoutMs`. */
+  idle: (task: () => void, timeoutMs: number) => unknown;
+  cancelIdle: (handle: unknown) => void;
+}>;
+
+/**
+ * Home-after-FUF fix (2026-11-17): optional background start work (the recompute of a stale
+ * Today snapshot) runs only after the first usable frame, after the startup online
+ * revalidation (`/me` + account sync) has settled, and then when the JS thread is idle.
+ * Before, the recompute started together with the revalidation and its ~0.9 s of JS
+ * (seed 100) held the sync response handling and the first interaction.
+ * The wait for the revalidation is bounded (`STARTUP_BACKGROUND_WORK_MAX_WAIT_MS`), so a
+ * hanging network never leaves Today stale. `cancel` drops the work: the promise never resolves.
+ */
+export function whenStartupBackgroundWorkAllowed(
+  timers: StartupBackgroundTimers = defaultBackgroundTimers,
+  maxWaitMs: number = STARTUP_BACKGROUND_WORK_MAX_WAIT_MS,
+): Readonly<{ promise: Promise<void>; cancel: () => void }> {
+  let settle!: () => void;
+  const promise = new Promise<void>((resolve) => { settle = resolve; });
+  let cancelled = false;
+  let stage: "frame" | "revalidation" | "idle" | "done" = "frame";
+  let cap: unknown = null;
+  let hop: unknown = null;
+  let idleHandle: unknown = null;
+  const frame = whenStartupFirstUsableFrame(timers);
+  const onIdle = () => {
+    if (cancelled || stage !== "idle") return;
+    stage = "done";
+    settle();
+  };
+  const onRevalidationSettled = () => {
+    if (cancelled || stage !== "revalidation") return;
+    revalidationWaiters.delete(onRevalidationSettled);
+    if (cap !== null) { timers.clear(cap); cap = null; }
+    stage = "idle";
+    // One macrotask first: the sync result's own state update and Home reload commit before this work.
+    hop = timers.set(() => { hop = null; if (!cancelled) idleHandle = timers.idle(onIdle, 1_000); }, 0);
+  };
+  void frame.promise.then(() => {
+    if (cancelled) return;
+    stage = "revalidation";
+    if (startupRevalidation === null) { onRevalidationSettled(); return; }
+    revalidationWaiters.add(onRevalidationSettled);
+    cap = timers.set(onRevalidationSettled, maxWaitMs);
+  });
+  return Object.freeze({
+    promise,
+    cancel: () => {
+      cancelled = true;
+      frame.cancel();
+      revalidationWaiters.delete(onRevalidationSettled);
+      if (cap !== null) timers.clear(cap);
+      if (hop !== null) timers.clear(hop);
+      if (idleHandle !== null) timers.cancelIdle(idleHandle);
+    },
+  });
 }
 
 /** `handoff`: the profile-preparation token of the local-first start, so a later preparation never matches it. */
@@ -206,5 +299,6 @@ export function resetParallelBootForTests(): void {
   if (firstFrame.fallback !== null) clearTimeout(firstFrame.fallback);
   firstFrame.fallback = null;
   startupRevalidation = null;
+  revalidationWaiters.clear();
   contentPrefetch = null;
 }

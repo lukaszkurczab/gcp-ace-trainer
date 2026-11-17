@@ -9,7 +9,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
-import { hasStartupFirstUsableFrame, notifyStartupFirstUsableFrame, onActorBoundary, whenStartupFirstUsableFrame } from "../../application/bootstrap/parallelBoot";
+import { hasStartupFirstUsableFrame, notifyStartupFirstUsableFrame, onActorBoundary, whenStartupBackgroundWorkAllowed } from "../../application/bootstrap/parallelBoot";
 import { captureFirstScreenInputEpoch, writeFirstScreenToday, type FirstScreenTodayView } from "../../application/bootstrap/firstScreenRecord";
 import { handOverFirstScreenToToday, type FirstScreenTodayAction } from "../../application/bootstrap/firstScreenHandover";
 import { invalidateTodaySnapshot, readTodayStoreRevision, readTodaySnapshot, writeTodaySnapshot, type TodaySnapshotOwner, type TodaySnapshotStorage } from "../../application/home/todaySnapshot";
@@ -229,6 +229,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
+      let cancelBackgroundRecompute: (() => void) | null = null;
       shellReadReady.current = false;
       if (SLA_TRACE) {
         slaTodayPending.current = true;
@@ -381,8 +382,18 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               // after this frame; the reused projection stays on screen meanwhile.
               // T27: on a start, only after the first usable frame (and the native
               // first-screen handover), so the recompute does not delay that frame.
-              void whenStartupFirstUsableFrame().promise.then(() => {
+              // Home-after-FUF (2026-11-17): and only after the startup revalidation
+              // (account sync) has settled and the JS thread is idle, so its ~0.9 s of
+              // JS (seed 100) holds neither the sync handling nor the first interaction.
+              const backgroundWork = whenStartupBackgroundWorkAllowed();
+              cancelBackgroundRecompute = backgroundWork.cancel;
+              void backgroundWork.promise.then(() => {
                 if (!isActive) return;
+                // A successful sync already queued a reload of this focus; that reload
+                // reads again and schedules its own recompute if Today is still stale.
+                const live = accountRef.current.state;
+                const liveSyncAt = live.kind === "authenticated" ? live.accountData.lastSuccessfulSyncAt : null;
+                if (liveSyncAt !== previousSuccessfulSyncAt.current) return;
                 forceShellComputeRef.current = true;
                 setShellReload((reload) => reload + 1);
               });
@@ -406,6 +417,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
 
       return () => {
         isActive = false;
+        cancelBackgroundRecompute?.();
         shellReadReady.current = false;
       };
     }, [shellReload]),

@@ -71,7 +71,7 @@ async function runHome(
     readTodaySnapshotKey: () => null, todaySnapshotActor: () => "guest", readTodaySnapshot: () => null, writeTodaySnapshot: () => {},
     forceShellComputeRef: { current: false }, firstScreenSourceRef: { current: null }, setShellReload: () => {},
     // T27: the reused-snapshot fence and the deferred recompute (not reached without a snapshot key).
-    captureHomeShellEpochFence, HomeShellSourcesChangedError, whenStartupFirstUsableFrame: () => ({ promise: Promise.resolve(), cancel() {} }),
+    captureHomeShellEpochFence, HomeShellSourcesChangedError, whenStartupBackgroundWorkAllowed: () => ({ promise: Promise.resolve(), cancel() {} }),
     // T27: Home publishes a history summary; the ids show which persisted answers it was read from.
     projectHomeHistorySummary: (input: Parameters<typeof projectHomeHistorySummary>[0]) => ({ ...projectHomeHistorySummary(input), attemptIds: input.trainingAttempts.map((attempt) => attempt.id) }),
     describeOperationalFailure, CODING_INTERVIEW_TRACK_ID,
