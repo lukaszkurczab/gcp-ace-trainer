@@ -9,7 +9,7 @@ import { matchesReviewSourceSnapshot } from "../../domain/learning/reviewQueueEn
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
-import { canonicalPhysicalWriteRelation, captureCanonicalPhysicalWrite, isCanonicalWriteAttemptCurrent, parseCanonicalRecordEnvelope, readCanonicalEnvelope, readCanonicalJson, readCanonicalRawValue, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalPhysicalAfter, type CanonicalPhysicalState, type CanonicalPhysicalWrite, type CanonicalRecordEnvelope, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
+import { canonicalPhysicalWriteRelation, captureCanonicalIndexDeltaWrite, captureCanonicalPhysicalWrite, type CanonicalEnvelopePhysicalWrite, type CanonicalIndexDelta, type CanonicalIndexDeltaPhysicalWrite, isCanonicalWriteAttemptCurrent, parseCanonicalRecordEnvelope, readCanonicalEnvelope, readCanonicalJson, readCanonicalRawValue, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalPhysicalAfter, type CanonicalPhysicalState, type CanonicalPhysicalWrite, type CanonicalRecordEnvelope, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
 import { CanonicalWriteOutcomeError, JournalWriteError, UnsupportedStoredRecordError } from "../errors";
 import { getNativeCore, getNativeCoreStatus, NATIVE_CORE_PROFILE } from "../../infrastructure/identity/installNativeCore";
 import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
@@ -18,7 +18,7 @@ import { isForegroundTimerState } from "./trainingModelGuards";
 import { getReviewQueueItems } from "./reviewQueueRepository";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
 import { isAccountSyncStateShape, isCanonicalAccountSyncState, type AccountSyncState } from "./accountDataRepository";
-import { assertTrainingEvidenceIntegrityForCommand } from "./trainingEvidenceIntegrityRepository";
+import { assertTrainingEvidenceIntegrityForCommand, readTrustedEvidenceIndex } from "./trainingEvidenceIntegrityRepository";
 import { assertContentIdentityRecordIntegrity } from "./contentIdentityUnavailableRepository";
 import { assertLearningStateResetPlanBeforeJournal, isLearningStateResetTargetPlan, type LearningStateResetTargetPlan } from "./learningStateResetRepository";
 import { quizSegment } from "../../infrastructure/diagnostics/quizCommandProfile";
@@ -311,8 +311,26 @@ function targetStorageKey(target: string): string {
 }
 
 type PhysicalDesired = Readonly<{ kind: "write"; payload: unknown }> | Readonly<{ kind: "remove" }>;
-type PhysicalSpec = Readonly<{ target: string; desired: PhysicalDesired | ((before: CanonicalPhysicalState) => PhysicalDesired); retainBeforeEnvelope?: boolean }>;
-const idsGuard = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string" && id.trim().length > 0) && new Set(value).size === value.length;
+type EnvelopeSpec = Readonly<{ kind: "envelope"; target: string; desired: PhysicalDesired | ((before: CanonicalPhysicalState) => PhysicalDesired); retainBeforeEnvelope?: boolean }>;
+/** J2: an ordered id index target, journaled as a delta of this command's ids. */
+type IndexSpec = Readonly<{ kind: "index"; target: string; deltaFor: (before: readonly string[]) => CanonicalIndexDelta; isAllowedDelta: (delta: CanonicalIndexDelta) => boolean }>;
+type PhysicalSpec = EnvelopeSpec | IndexSpec;
+const sameIdList = (left: readonly string[], right: readonly string[]) => left.length === right.length && left.every((id, index) => id === right[index]);
+const noIds: readonly string[] = Object.freeze([]);
+/** Each new id is put in front, in command order (the last new id first). */
+function prependIndexSpec(target: string, ids: readonly string[]): IndexSpec {
+  return {
+    kind: "index", target,
+    deltaFor: (before) => {
+      const present = new Set(before);
+      const prepend: string[] = [];
+      for (const id of ids) if (!present.has(id) && !prepend.includes(id)) prepend.unshift(id);
+      return { prepend, append: noIds, remove: noIds };
+    },
+    isAllowedDelta: (delta) => delta.append.length === 0 && delta.remove.length === 0 && new Set(delta.prepend).size === delta.prepend.length &&
+      sameIdList(delta.prepend, [...ids].reverse().filter((id, index, all) => all.indexOf(id) === index && delta.prepend.includes(id))),
+  };
+}
 
 function physicalWriteSpecs(writes: readonly JournalWrite[], admission: TrackAdmissionContext): readonly PhysicalSpec[] {
   const attempts = writes.filter((write): write is Extract<JournalWrite, { kind: "put_attempt" }> => write.kind === "put_attempt");
@@ -320,53 +338,54 @@ function physicalWriteSpecs(writes: readonly JournalWrite[], admission: TrackAdm
   const reviewDeletes = writes.filter((write): write is Extract<JournalWrite, { kind: "delete_review_entry" | "delete_review_entry_for_attempt" }> => write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt");
   const specs: PhysicalSpec[] = [];
 
-  for (const write of attempts) specs.push({ target: `attempt:${write.record.id}`, desired: { kind: "write", payload: write.record } });
-  if (attempts.length > 0) specs.push({ target: "attempt_index", retainBeforeEnvelope: true, desired: (before) => {
-    const ids = before.kind === "present" ? readPriorIndex(before, "attempt_index") : [];
-    for (const attempt of attempts) if (!ids.includes(attempt.record.id)) ids.unshift(attempt.record.id);
-    return { kind: "write", payload: ids };
-  } });
+  for (const write of attempts) specs.push({ kind: "envelope", target: `attempt:${write.record.id}`, desired: { kind: "write", payload: write.record } });
+  if (attempts.length > 0) specs.push(prependIndexSpec("attempt_index", attempts.map((write) => write.record.id)));
 
-  for (const write of reviewPuts) specs.push({ target: `review:${write.record.id}`, desired: { kind: "write", payload: write.record } });
-  if (reviewPuts.length > 0 || reviewDeletes.length > 0) specs.push({ target: "review_index", retainBeforeEnvelope: true, desired: (before) => {
-    const ids = before.kind === "present" ? readPriorIndex(before, "review_index") : [];
-    for (const review of reviewPuts) if (review.kind === "put_review_entry" || review.kind === "put_review_entry_for_attempt") if (!ids.includes(review.record.id)) ids.push(review.record.id);
-    const deletedIds = new Set(reviewDeletes.map((write) => write.record.id));
-    return { kind: "write", payload: ids.filter((id) => !deletedIds.has(id)) };
-  } });
-  for (const write of reviewDeletes) specs.push({ target: `review:${write.record.id}`, desired: { kind: "remove" } });
+  for (const write of reviewPuts) specs.push({ kind: "envelope", target: `review:${write.record.id}`, desired: { kind: "write", payload: write.record } });
+  if (reviewPuts.length > 0 || reviewDeletes.length > 0) {
+    const appendable = reviewPuts.filter((review) => review.kind === "put_review_entry" || review.kind === "put_review_entry_for_attempt").map((review) => review.record.id);
+    const removed = reviewDeletes.map((write) => write.record.id);
+    specs.push({
+      kind: "index", target: "review_index",
+      deltaFor: (before) => {
+        const present = new Set(before);
+        const append: string[] = [];
+        for (const id of appendable) if (!present.has(id) && !append.includes(id)) append.push(id);
+        return { prepend: noIds, append, remove: removed };
+      },
+      isAllowedDelta: (delta) => delta.prepend.length === 0 && sameIdList(delta.remove, removed) && new Set(delta.append).size === delta.append.length &&
+        sameIdList(delta.append, appendable.filter((id, index, all) => all.indexOf(id) === index && delta.append.includes(id))),
+    });
+  }
+  for (const write of reviewDeletes) specs.push({ kind: "envelope", target: `review:${write.record.id}`, desired: { kind: "remove" } });
 
   const clearSession = writes.find((write): write is Extract<JournalWrite, { kind: "clear_active_session" }> => write.kind === "clear_active_session");
   let sessionIndexWritten = false;
   for (const write of writes) {
     switch (write.kind) {
       case "put_session":
-        specs.push({ target: `session:${write.record.id}`, desired: { kind: "write", payload: write.record } });
+        specs.push({ kind: "envelope", target: `session:${write.record.id}`, desired: { kind: "write", payload: write.record } });
         if (!sessionIndexWritten) {
-          specs.push({ target: "session_index", retainBeforeEnvelope: true, desired: (before) => {
-            const ids = before.kind === "present" ? readPriorIndex(before, "session_index") : [];
-            if (!ids.includes(write.record.id)) ids.unshift(write.record.id);
-            return { kind: "write", payload: ids };
-          } });
+          specs.push(prependIndexSpec("session_index", [write.record.id]));
           sessionIndexWritten = true;
         }
-        if (!clearSession) specs.push({ target: "active_session", retainBeforeEnvelope: true, desired: (before) => {
+        if (!clearSession) specs.push({ kind: "envelope", target: "active_session", retainBeforeEnvelope: true, desired: (before) => {
           if (write.record.status === "active") return { kind: "write", payload: write.record.id };
           const activeId = readPriorString(before, "active_session");
           return activeId === write.record.id ? { kind: "remove" } : preservePriorValue(before);
         } });
         break;
       case "put_active_foreground_timer":
-        specs.push({ target: "active_foreground_timer", desired: (before) => {
+        specs.push({ kind: "envelope", target: "active_foreground_timer", desired: (before) => {
           if (before.kind !== "absent") throw new Error("A foreground-timed session cannot start while a timer already exists.");
           return { kind: "write", payload: write.record };
         } });
         break;
-      case "put_session_result": specs.push({ target: `result:${write.record.sessionId}`, desired: { kind: "write", payload: write.record } }); break;
-      case "put_active_session_draft": specs.push({ target: "active_session_draft", desired: { kind: "write", payload: write.record } }); break;
+      case "put_session_result": specs.push({ kind: "envelope", target: `result:${write.record.sessionId}`, desired: { kind: "write", payload: write.record } }); break;
+      case "put_active_session_draft": specs.push({ kind: "envelope", target: "active_session_draft", desired: { kind: "write", payload: write.record } }); break;
       case "clear_active_session":
-        specs.push({ target: "active_session", retainBeforeEnvelope: true, desired: (before) => readPriorString(before, "active_session") === write.sessionId ? { kind: "remove" } : preservePriorValue(before) });
-        specs.push({ target: "active_foreground_timer", retainBeforeEnvelope: true, desired: (before) => {
+        specs.push({ kind: "envelope", target: "active_session", retainBeforeEnvelope: true, desired: (before) => readPriorString(before, "active_session") === write.sessionId ? { kind: "remove" } : preservePriorValue(before) });
+        specs.push({ kind: "envelope", target: "active_foreground_timer", retainBeforeEnvelope: true, desired: (before) => {
           const timer = readPriorTimer(before, admission);
           if (!timer) return { kind: "remove" };
           const owner = writes.find((candidate): candidate is Extract<JournalWrite, { kind: "put_session" }> => candidate.kind === "put_session" && candidate.record.id === write.sessionId);
@@ -375,10 +394,10 @@ function physicalWriteSpecs(writes: readonly JournalWrite[], admission: TrackAdm
         } });
         break;
       case "clear_active_session_draft":
-        specs.push({ target: "active_session_draft", retainBeforeEnvelope: true, desired: (before) => readPriorScopedSessionId(before, "active_session_draft") === write.sessionId ? { kind: "remove" } : preservePriorValue(before) });
+        specs.push({ kind: "envelope", target: "active_session_draft", retainBeforeEnvelope: true, desired: (before) => readPriorScopedSessionId(before, "active_session_draft") === write.sessionId ? { kind: "remove" } : preservePriorValue(before) });
         break;
       case "delete_active_session_draft":
-        specs.push({ target: "active_session_draft", retainBeforeEnvelope: true, desired: (before) => {
+        specs.push({ kind: "envelope", target: "active_session_draft", retainBeforeEnvelope: true, desired: (before) => {
           const record = write.record;
           if (isAcceptedSimulationFinalization(record, admission)) {
             if (before.kind !== "present" || !before.envelope || before.envelope.revision !== before.revision ||
@@ -394,14 +413,6 @@ function physicalWriteSpecs(writes: readonly JournalWrite[], admission: TrackAdm
     }
   }
   return Object.freeze(specs);
-}
-
-function readPriorIndex(before: CanonicalPhysicalState, target: string): string[] {
-  if (before.kind !== "present" || !before.envelope || !idsGuard(before.envelope.payload) || before.envelope.revision !== before.revision ||
-    sha256Utf8(JSON.stringify(before.envelope)) !== before.digest || sha256Utf8(JSON.stringify(before.envelope.payload)) !== before.payloadDigest) {
-    throw new Error(`The captured ${target} envelope is unavailable or invalid.`);
-  }
-  return [...before.envelope.payload];
 }
 
 function readPriorString(before: CanonicalPhysicalState, target: string): string | null {
@@ -449,7 +460,9 @@ function derivePhysicalAfter(before: CanonicalPhysicalState, desired: PhysicalDe
 
 /** Builds the closed physical operation list from one exact set of typed journal writes. */
 export function captureMutationPhysicalWrites(writes: readonly JournalWrite[], admission: TrackAdmissionContext): readonly CanonicalPhysicalWrite[] {
-  return Object.freeze(physicalWriteSpecs(writes, admission).map((spec) => captureCanonicalPhysicalWrite(
+  return Object.freeze(physicalWriteSpecs(writes, admission).map((spec) => spec.kind === "index"
+    ? captureCanonicalIndexDeltaWrite(spec.target, targetStorageKey(spec.target), spec.deltaFor, readTrustedEvidenceIndex(targetStorageKey(spec.target), admission))
+    : captureCanonicalPhysicalWrite(
     spec.target,
     targetStorageKey(spec.target),
     (envelope) => {
@@ -469,6 +482,14 @@ function hasValidPhysicalWrites(plan: MutationJournalPlan, admission: TrackAdmis
   for (let index = 0; index < specs.length; index += 1) {
     const step = physical[index];
     const spec = specs[index]!;
+    if (spec.kind === "index") {
+      if (!isIndexDeltaPhysicalWriteShape(step) || step.target !== spec.target || step.key !== targetStorageKey(spec.target) || !spec.isAllowedDelta(step.delta)) return false;
+      const adds = step.delta.prepend.length + step.delta.append.length > 0;
+      if (step.before.kind === "absent") { if (step.after.revision !== 1) return false; }
+      else if (step.after.revision === step.before.revision) { if (adds || step.after.digest !== step.before.digest) return false; }
+      else if (step.after.revision !== step.before.revision + 1 || step.after.digest === step.before.digest) return false;
+      continue;
+    }
     if (!isCanonicalPhysicalWriteShape(step) || step.target !== spec.target || step.key !== targetStorageKey(spec.target)) return false;
     if (spec.retainBeforeEnvelope) {
       if (step.before.kind === "present" && (!step.before.envelope || step.before.envelope.revision !== step.before.revision ||
@@ -482,7 +503,20 @@ function hasValidPhysicalWrites(plan: MutationJournalPlan, admission: TrackAdmis
   return true;
 }
 
-function isCanonicalPhysicalWriteShape(value: unknown): value is CanonicalPhysicalWrite {
+const isIdList = (value: unknown): value is string[] => Array.isArray(value) && value.every(isNonEmptyString);
+function isIndexDeltaPhysicalWriteShape(value: unknown): value is CanonicalIndexDeltaPhysicalWrite {
+  if (!isRecord(value) || !hasExactKeys(value, ["target", "key", "before", "delta", "after"]) || !isNonEmptyString(value.target) || !isNonEmptyString(value.key)
+    || !isRecord(value.before) || !isRecord(value.delta) || !isRecord(value.after)) return false;
+  const { before, delta, after } = value;
+  const beforeValid = before.kind === "absent" ? hasExactKeys(before, ["kind"])
+    : before.kind === "present" && hasExactKeys(before, ["kind", "revision", "digest"]) && Number.isSafeInteger(before.revision) && Number(before.revision) >= 1 && SHA_256.test(String(before.digest));
+  if (!beforeValid || !hasExactKeys(delta, ["prepend", "append", "remove"]) || !isIdList(delta.prepend) || !isIdList(delta.append) || !isIdList(delta.remove)) return false;
+  const all = [...delta.prepend, ...delta.append, ...delta.remove];
+  return new Set(all).size === all.length && after.kind === "present" && hasExactKeys(after, ["kind", "revision", "digest"])
+    && Number.isSafeInteger(after.revision) && Number(after.revision) >= 1 && SHA_256.test(String(after.digest));
+}
+
+function isCanonicalPhysicalWriteShape(value: unknown): value is CanonicalEnvelopePhysicalWrite {
   if (!isRecord(value) || !hasExactKeys(value, ["target", "key", "before", "after"]) || !isNonEmptyString(value.target) || !isNonEmptyString(value.key) || !isRecord(value.before) || !isRecord(value.after)) return false;
   const before = value.before;
   const after = value.after;

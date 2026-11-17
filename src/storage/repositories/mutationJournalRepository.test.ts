@@ -3,7 +3,7 @@ import test, { beforeEach } from "node:test";
 import { createForegroundTimerState, createTrainingSession, createTrainingSessionDraft, getTrackRegistration, initialForegroundTimerForSession, type TrainingSession } from "../../domain";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
-import { writeCanonicalJson } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, canonicalPhysicalWriteRelation, isEnvelopePhysicalWrite, isIndexDeltaPhysicalWrite, writeCanonicalJson, type CanonicalIndexDelta } from "./canonicalRecordCodec";
 import { addReviewQueueItems } from "./reviewQueueRepository";
 
 import { installMemoryStorage, attempt, journal, review, session, timestamp } from "../../testing/journalTestSupport";
@@ -263,16 +263,23 @@ test("rejects additional, missing, duplicate, and reordered physical targets eve
   for (const physicalWrites of variants) assert.equal(hasValidMutationJournalIntegrity(refingerprint(record, physicalWrites), productionLearningDataAdmissionContext), false);
 });
 
-test("derives the final attempt index from its captured prior envelope, retaining unrelated ids", () => {
-  installMemoryStorage();
+test("J2: the attempt index is journaled as a delta bound to digests of the exact before and after bytes", () => {
+  const storage = installMemoryStorage();
   writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, ["unrelated-attempt"]);
   const record = journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_session", record: session() }]);
-  const physicalWrites = record.physicalWrites.map((step) => {
-    if (step.target !== "attempt_index" || step.after.kind !== "present") return step;
-    const envelope = { ...step.after.envelope, payload: [] };
-    return { ...step, after: { ...step.after, envelope, digest: sha256Utf8(JSON.stringify(envelope)) } };
-  });
-  assert.equal(hasValidMutationJournalIntegrity(refingerprint(record, physicalWrites), productionLearningDataAdmissionContext), false);
+  const index = record.physicalWrites.find((step) => step.target === "attempt_index")!;
+  assert.ok(isIndexDeltaPhysicalWrite(index));
+  assert.deepEqual(index.delta, { prepend: [attempt().id], append: [], remove: [] });
+  assert.equal(JSON.stringify(record).includes("unrelated-attempt"), false, "the journal carries no index contents");
+  const expectedAfter = JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision: 2, payload: [attempt().id, "unrelated-attempt"] });
+  assert.deepEqual(index.after, { kind: "present", revision: 2, digest: sha256Utf8(expectedAfter) });
+  assert.deepEqual(index.before, { kind: "present", revision: 1, digest: sha256Utf8(storage.getString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX)!) });
+  const forged = (delta: CanonicalIndexDelta) => refingerprint(record, record.physicalWrites.map((step) => step === index ? { ...index, delta } : step));
+  for (const delta of [{ prepend: ["other-attempt"], append: [], remove: [] }, { prepend: [], append: [attempt().id], remove: [] }, { prepend: [attempt().id], append: [], remove: ["unrelated-attempt"] }]) {
+    assert.equal(hasValidMutationJournalIntegrity(forged(delta), productionLearningDataAdmissionContext), false, JSON.stringify(delta));
+  }
+  const unchanged = refingerprint(record, record.physicalWrites.map((step) => step === index ? { ...index, after: { ...index.after, revision: 1 } } : step));
+  assert.equal(hasValidMutationJournalIntegrity(unchanged, productionLearningDataAdmissionContext), false, "an added id needs a new revision");
 });
 
 test("rejects a recomputed same-revision forged before payload digest for a mutable review without changing bytes", async () => {
@@ -282,7 +289,7 @@ test("rejects a recomputed same-revision forged before payload digest for a muta
   const next = { ...prior, dueAt: "2026-07-16T00:00:00.000Z" };
   const record = journal([{ kind: "update_review_entry", record: next, transitionId: "attempt-1" }], "set_review_entry");
   const physicalWrites = record.physicalWrites.map((step) => {
-    if (step.target !== `review:${prior.id}` || step.before.kind !== "present" || step.after.kind !== "present") return step;
+    if (step.target !== `review:${prior.id}` || !isEnvelopePhysicalWrite(step) || step.before.kind !== "present" || step.after.kind !== "present") return step;
     const forgedPayloadDigest = sha256Utf8(JSON.stringify(step.after.envelope.payload));
     const envelope = { ...step.after.envelope, revision: step.before.revision };
     return { ...step, before: { ...step.before, payloadDigest: forgedPayloadDigest }, after: { ...step.after, envelope, digest: step.before.digest } };
@@ -355,4 +362,21 @@ test("pending journal read, phase and clear reject corrupt, forged and operation
     await assert.rejects(() => clearMutationJournal(productionLearningDataAdmissionContext, record.commandIdentity.fingerprint), candidate.error, candidate.name);
     assert.deepEqual(storage.snapshot(), before, `${candidate.name} must preserve all stored bytes`);
   }
+});
+
+test("J2: an index delta applies only over its exact before bytes, is idempotent after, and conflicts otherwise", () => {
+  const storage = installMemoryStorage();
+  writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, ["unrelated-attempt"]);
+  const record = journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_session", record: session() }]);
+  const index = record.physicalWrites.find((step) => step.target === "attempt_index")!;
+  const before = storage.getString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX)!;
+  assert.equal(canonicalPhysicalWriteRelation(index), "before");
+  applyCanonicalPhysicalWrite(index);
+  assert.equal(canonicalPhysicalWriteRelation(index), "after");
+  assert.deepEqual(JSON.parse(storage.getString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX)!), { schemaIdentity: "patternly:canonical:v1", revision: 2, payload: [attempt().id, "unrelated-attempt"] });
+  applyCanonicalPhysicalWrite(index);
+  assert.equal(JSON.parse(storage.getString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX)!).revision, 2, "replay after the write is a no-op");
+  storage.setString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, before.replace("unrelated-attempt", "other-attempt"));
+  assert.equal(canonicalPhysicalWriteRelation(index), "conflict");
+  assert.throws(() => applyCanonicalPhysicalWrite(index), (error: Error) => error.name === "CanonicalWriteConflictError");
 });

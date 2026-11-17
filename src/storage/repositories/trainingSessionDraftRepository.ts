@@ -1,6 +1,6 @@
 import { canPersistTrainingSessionDraft, createTrainingSessionDraft, StaleDraftRevisionError, type AcceptedSimulationFinalization, type ResolvedContentRef, type TrainingSessionDraft, type TrainingSessionDraftState } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { applyCanonicalPhysicalWrite, readCanonicalEnvelope, readCanonicalEnvelopeProof, readCanonicalJson, reconcileCanonicalWriteAttempt, reconcileCanonicalWriteAttemptWithPrior, removeCanonicalValue, writeCanonicalJsonWithOutcome, type CanonicalPhysicalWrite, type CanonicalWriteAttempt, type CanonicalWriteOutcome } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalEnvelope, readCanonicalEnvelopeProof, readCanonicalJson, reconcileCanonicalWriteAttempt, reconcileCanonicalWriteAttemptWithPrior, removeCanonicalValue, writeCanonicalJsonWithOutcome, type CanonicalPhysicalWrite, type CanonicalWriteAttempt, type CanonicalWriteOutcome, isEnvelopePhysicalWrite } from "./canonicalRecordCodec";
 import { CanonicalWriteOutcomeError, StorageReadError } from "../errors";
 import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
@@ -239,7 +239,7 @@ export function materializeTrainingSessionDraftJournalStep(hasDraftWrite: boolea
   const expected = hasDraftWrite ? ["active_session_draft"] : [];
   if (steps.length !== expected.length || steps.some((step, index) => step.target !== expected[index])) throw new Error("Training session draft step does not match its exact journal plan.");
   for (const step of steps) {
-    if (step.after.kind === "present" && !isTrainingSessionDraftState(step.after.envelope.payload, admission)) throw new Error("Training session draft journal step has an unadmitted track.");
+    if (!isEnvelopePhysicalWrite(step) || (step.after.kind === "present" && !isTrainingSessionDraftState(step.after.envelope.payload, admission))) throw new Error("Training session draft journal step has an unadmitted track.");
     applyCanonicalPhysicalWrite(step);
   }
 }

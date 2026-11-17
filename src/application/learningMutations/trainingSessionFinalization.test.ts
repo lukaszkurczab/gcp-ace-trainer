@@ -8,7 +8,7 @@ import { buildMutationJournal } from "./mutationJournalBuilder";
 import { completeTrainingSession, createTrainingAttempt, createTrainingSessionDraft, type TrainingSessionDraft } from "../../domain";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../../storage/keys";
-import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
+import { isEnvelopePhysicalWrite, writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { captureMutationExpectedRevisions, captureMutationPhysicalWrites, createMutationPlanFingerprint, isMutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
 import { readActiveTrainingSessionDraftStateProof } from "../../storage/repositories/trainingSessionDraftRepository";
 import {
@@ -367,7 +367,7 @@ test("accepted finalization journals bind command identity and reject a re-finge
   const forgedAccepted = { ...accepted, responseDraft: createTrainingSessionDraft({ ...accepted.responseDraft, updatedAt: "2026-07-16T10:00:00.000Z" }) };
   const forgedWrites = writes.map((write) => write.kind === "delete_active_session_draft" ? { ...write, record: forgedAccepted } : write);
   const forgedPhysicalWrites = record.physicalWrites.map((step) => {
-    if (step.target !== "active_session_draft" || step.before.kind !== "present" || !step.before.envelope) return step;
+    if (step.target !== "active_session_draft" || !isEnvelopePhysicalWrite(step) || step.before.kind !== "present" || !step.before.envelope) return step;
     const envelope = { ...step.before.envelope, payload: forgedAccepted };
     return { ...step, before: { ...step.before, envelope, digest: sha256Utf8(JSON.stringify(envelope)), payloadDigest: sha256Utf8(JSON.stringify(forgedAccepted)) } };
   });

@@ -29,12 +29,78 @@ export type CanonicalPhysicalAfter = Readonly<{ kind: "absent" }> | Readonly<{
   envelope: CanonicalRecordEnvelope<unknown>;
   digest: string;
 }>;
-export type CanonicalPhysicalWrite = Readonly<{
+/**
+ * J2 (D23a): an ordered id index is journaled as a delta, not as whole
+ * envelopes. The result is `[...prepend, ...before, ...append]` without
+ * `remove`; `prepend` and `append` must be absent from the before index. The
+ * exact before and after bytes are bound by their SHA-256 digests (which also
+ * cover the revision), so the journal is O(writes), not O(history).
+ */
+export type CanonicalIndexDelta = Readonly<{ prepend: readonly string[]; append: readonly string[]; remove: readonly string[] }>;
+export type CanonicalDigestState = Readonly<{ kind: "absent" }> | Readonly<{ kind: "present"; revision: number; digest: string }>;
+export type CanonicalEnvelopePhysicalWrite = Readonly<{
   target: string;
   key: string;
   before: CanonicalPhysicalState;
   after: CanonicalPhysicalAfter;
 }>;
+export type CanonicalIndexDeltaPhysicalWrite = Readonly<{
+  target: string;
+  key: string;
+  before: CanonicalDigestState;
+  delta: CanonicalIndexDelta;
+  after: Readonly<{ kind: "present"; revision: number; digest: string }>;
+}>;
+export type CanonicalPhysicalWrite = CanonicalEnvelopePhysicalWrite | CanonicalIndexDeltaPhysicalWrite;
+export function isIndexDeltaPhysicalWrite(write: CanonicalPhysicalWrite): write is CanonicalIndexDeltaPhysicalWrite { return Object.hasOwn(write, "delta"); }
+export function isEnvelopePhysicalWrite(write: CanonicalPhysicalWrite): write is CanonicalEnvelopePhysicalWrite { return !Object.hasOwn(write, "delta"); }
+
+const isIndexIds = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string" && id.trim().length > 0) && new Set(value).size === value.length;
+
+/** The ids of one index after `delta`; throws when the delta does not fit the before index. */
+export function applyCanonicalIndexDelta(before: readonly string[], delta: CanonicalIndexDelta): string[] {
+  const present = new Set(before);
+  if ([...delta.prepend, ...delta.append].some((id) => present.has(id))) throw new Error("An index delta adds an id that is already indexed.");
+  const removed = new Set(delta.remove);
+  const after = [...delta.prepend, ...before, ...delta.append].filter((id) => !removed.has(id));
+  if (!isIndexIds(after)) throw new Error("An index delta produces an invalid index.");
+  return after;
+}
+
+/**
+ * J2: captures one index target as a delta at command preflight. `deltaFor`
+ * receives the stored ids (empty when absent) and returns the exact delta; an
+ * empty effect keeps the before bytes and revision. `known` are bytes the
+ * evidence index validated and no reported write changed since (J1).
+ */
+export function captureCanonicalIndexDeltaWrite(target: string, key: string, deltaFor: (before: readonly string[]) => CanonicalIndexDelta, known?: Readonly<{ raw: string; ids: readonly string[]; revision: number }> | null): CanonicalIndexDeltaPhysicalWrite {
+  let raw: string | undefined;
+  let ids: readonly string[];
+  let revision: number;
+  if (known) {
+    raw = known.raw;
+    ids = known.ids;
+    revision = known.revision;
+  } else {
+    try { raw = getKeyValueStorage().getString(key); } catch (error) { throw new StorageReadError(key, error); }
+    const current = parseEnvelope(raw, key);
+    if (current !== null && !isIndexIds(current.payload)) throw new UnsupportedStoredRecordError(key);
+    ids = current === null ? [] : current.payload as string[];
+    revision = current?.revision ?? 0;
+  }
+  const before: CanonicalDigestState = raw === undefined ? Object.freeze({ kind: "absent" }) : Object.freeze({ kind: "present", revision, digest: sha256Utf8(raw) });
+  const delta = freezeDelta(deltaFor(ids));
+  const next = applyCanonicalIndexDelta(ids, delta);
+  const unchanged = before.kind === "present" && next.length === ids.length && next.every((id, index) => id === ids[index]);
+  const after = unchanged && before.kind === "present"
+    ? Object.freeze({ kind: "present" as const, revision: before.revision, digest: before.digest })
+    : Object.freeze({ kind: "present" as const, revision: revision + 1, digest: sha256Utf8(JSON.stringify({ schemaIdentity: CANONICAL_RECORD_SCHEMA, revision: revision + 1, payload: next })) });
+  return Object.freeze({ target, key, before, delta, after });
+}
+
+function freezeDelta(delta: CanonicalIndexDelta): CanonicalIndexDelta {
+  return Object.freeze({ prepend: Object.freeze([...delta.prepend]), append: Object.freeze([...delta.append]), remove: Object.freeze([...delta.remove]) });
+}
 
 /**
  * Write result for the two user-visible operations which must distinguish a
@@ -138,12 +204,25 @@ export function captureCanonicalPhysicalWrite(
 }
 
 export function canonicalPhysicalWriteRelation(write: CanonicalPhysicalWrite): "before" | "after" | "conflict" {
+  if (isIndexDeltaPhysicalWrite(write)) return indexDeltaRelationFromRaw(write, readRawForRelation(write.key));
   let raw: string | undefined;
   try { raw = getKeyValueStorage().getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
   return physicalWriteRelationFromRaw(write, raw);
 }
 
-function physicalWriteRelationFromRaw(write: CanonicalPhysicalWrite, raw: string | undefined): "before" | "after" | "conflict" {
+function readRawForRelation(key: string): string | undefined {
+  try { return getKeyValueStorage().getString(key); } catch (error) { throw new StorageReadError(key, error); }
+}
+
+/** Digest-only relation: the digests bind the exact bytes, revision included. */
+function indexDeltaRelationFromRaw(write: CanonicalIndexDeltaPhysicalWrite, raw: string | undefined): "before" | "after" | "conflict" {
+  const digest = raw === undefined ? null : sha256Utf8(raw);
+  if (write.before.kind === "absent" ? raw === undefined : digest === write.before.digest) return "before";
+  if (digest !== null && digest === write.after.digest) return "after";
+  return "conflict";
+}
+
+function physicalWriteRelationFromRaw(write: CanonicalEnvelopePhysicalWrite, raw: string | undefined): "before" | "after" | "conflict" {
   const isBeforeState = (state: CanonicalPhysicalState): boolean => {
     if (state.kind === "absent") return raw === undefined;
     if (raw === undefined || sha256Utf8(raw) !== state.digest) return false;
@@ -163,6 +242,7 @@ function physicalWriteRelationFromRaw(write: CanonicalPhysicalWrite, raw: string
 export function isCanonicalPhysicalWriteAfter(write: CanonicalPhysicalWrite): boolean {
   let raw: string | undefined;
   try { raw = getKeyValueStorage().getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
+  if (isIndexDeltaPhysicalWrite(write)) return raw !== undefined && sha256Utf8(raw) === write.after.digest;
   return isAfterState(raw, write.after);
 }
 
@@ -172,7 +252,7 @@ export function assertCanonicalPhysicalPrefix(writes: readonly CanonicalPhysical
   for (const write of writes) {
     const relation = canonicalPhysicalWriteRelation(write);
     if (relation === "conflict") throw new CanonicalWriteConflictError(write.key);
-    const isNoop = samePhysicalStates(write.before, write.after);
+    const isNoop = isNoopPhysicalWrite(write);
     if (isNoop) continue;
     if (relation === "before") firstUnapplied = true;
     else if (firstUnapplied) throw new CanonicalWriteConflictError(write.key);
@@ -181,12 +261,13 @@ export function assertCanonicalPhysicalPrefix(writes: readonly CanonicalPhysical
 
 /** Apply one exact step. An exact-after state is a no-op and keeps its revision. */
 export function applyCanonicalPhysicalWrite(write: CanonicalPhysicalWrite): void {
+  if (isIndexDeltaPhysicalWrite(write)) { applyCanonicalIndexDeltaWrite(write); return; }
   withCanonicalWriteLocks([write.key], () => {
     const storage = getKeyValueStorage();
     let beforeRaw: string | undefined;
     try { beforeRaw = storage.getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
     const relation = physicalWriteRelationFromRaw(write, beforeRaw);
-    if (samePhysicalStates(write.before, write.after)) {
+    if (isNoopPhysicalWrite(write)) {
       if (relation !== "before") throw new CanonicalWriteConflictError(write.key);
       return;
     }
@@ -209,6 +290,39 @@ export function applyCanonicalPhysicalWrite(write: CanonicalPhysicalWrite): void
     try { observed = storage.getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
     if (observed !== raw) throw new StorageWriteError(write.key, new Error("Canonical write did not reach its exact intended envelope."));
   });
+}
+
+/** J2: rebuilds the exact after bytes from the digest-checked before bytes and the delta. */
+function applyCanonicalIndexDeltaWrite(write: CanonicalIndexDeltaPhysicalWrite): void {
+  withCanonicalWriteLocks([write.key], () => {
+    const storage = getKeyValueStorage();
+    let beforeRaw: string | undefined;
+    try { beforeRaw = storage.getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
+    const relation = indexDeltaRelationFromRaw(write, beforeRaw);
+    if (isNoopPhysicalWrite(write)) {
+      if (relation !== "before") throw new CanonicalWriteConflictError(write.key);
+      return;
+    }
+    if (relation === "after") return;
+    if (relation !== "before") throw new CanonicalWriteConflictError(write.key);
+    const current = parseEnvelope(beforeRaw, write.key);
+    if (current !== null && !isIndexIds(current.payload)) throw new CanonicalWriteConflictError(write.key);
+    let ids: string[];
+    try { ids = applyCanonicalIndexDelta(current === null ? [] : current.payload as string[], write.delta); }
+    catch { throw new CanonicalWriteConflictError(write.key); }
+    const revision = (current?.revision ?? 0) + 1;
+    const raw = JSON.stringify({ schemaIdentity: CANONICAL_RECORD_SCHEMA, revision, payload: ids });
+    if (revision !== write.after.revision || sha256Utf8(raw) !== write.after.digest) throw new CanonicalWriteConflictError(write.key);
+    try { storage.setString(write.key, raw); } catch (error) { throw new StorageWriteError(write.key, error); }
+    let observed: string | undefined;
+    try { observed = storage.getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
+    if (observed !== raw) throw new StorageWriteError(write.key, new Error("Canonical index write did not reach its exact intended bytes."));
+  });
+}
+
+function isNoopPhysicalWrite(write: CanonicalPhysicalWrite): boolean {
+  if (isIndexDeltaPhysicalWrite(write)) return write.before.kind === "present" && write.before.revision === write.after.revision && write.before.digest === write.after.digest;
+  return samePhysicalStates(write.before, write.after);
 }
 
 function isAfterState(raw: string | undefined, state: CanonicalPhysicalAfter): boolean {

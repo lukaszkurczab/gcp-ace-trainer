@@ -10,7 +10,7 @@ import { addReviewQueueItems, getReviewQueueItems, getTrainingAttempts, getTrain
 import { materializeMutation } from "./mutationMaterializer";
 import { UnsupportedStoredRecordError } from "../../storage/errors";
 import { installMemoryStorage, attempt, journal, review, session } from "../../testing/journalTestSupport";
-import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
+import { isIndexDeltaPhysicalWrite, writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { transitionQualifiedSuccess } from "../../domain/learning/reviewCycleTransition";
@@ -249,8 +249,9 @@ test("restarted recovery resumes after each changed completion boundary, includi
   await saveTrainingSession(session(), productionTrackAdmissionContext);
   writeCanonicalJson(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, createForegroundTimerState({ schemaVersion: 1, timerVersion: 1, familyId: "coding-interview", sessionId: "session-1", trackId: "coding-interview-dsa-problem-solving", accumulatedForegroundMs: 0, checkpointRevision: 1, lastCheckpointAt: "2026-07-15T10:00:00.000Z", running: false }));
   const sample = completion().physicalWrites;
+  const afterRevision = (step: (typeof sample)[number]) => step.after.kind !== "present" ? null : isIndexDeltaPhysicalWrite(step) ? step.after.revision : step.after.envelope.revision;
   const changed = sample.filter((step) => step.before.kind !== step.after.kind || (step.before.kind === "present" && step.after.kind === "present" &&
-    (step.before.digest !== step.after.digest || step.before.revision !== step.after.envelope.revision)));
+    (step.before.digest !== step.after.digest || step.before.revision !== afterRevision(step))));
   for (const boundary of changed) {
     const storage = installMemoryStorage();
     await saveTrainingSession(session(), productionTrackAdmissionContext);

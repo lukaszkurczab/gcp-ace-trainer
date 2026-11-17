@@ -5,7 +5,7 @@ import type { ForegroundClockCapability } from "../../infrastructure/storage/for
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { createForegroundTimerState, getTrackRegistration, initialForegroundTimerForSession, type ForegroundTimerState, type TrainingSession } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { CANONICAL_RECORD_SCHEMA, applyCanonicalPhysicalWrite, readCanonicalJson, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
+import { CANONICAL_RECORD_SCHEMA, applyCanonicalPhysicalWrite, readCanonicalJson, writeCanonicalJson, type CanonicalPhysicalWrite, isEnvelopePhysicalWrite } from "./canonicalRecordCodec";
 import { readActiveTrainingSession, getActiveTrainingSession } from "./trainingSessionRepository";
 import { isAcceptedSimulationFinalization, isForegroundTimerState, isTrainingSession, isTrainingSessionDraftState } from "./trainingModelGuards";
 import type { TrackAdmissionContext } from "../../domain/tracks/trackAdmissionContext";
@@ -66,14 +66,14 @@ export function materializeActiveForegroundTimerJournalStep(hasClearSession: boo
     if (step) throw new Error("A timer physical step has no clear-session owner.");
     return;
   }
-  if (!step || step.target !== "active_foreground_timer" || step.after.kind !== "absent") throw new Error("The clear-session journal has no exact timer-removal step.");
+  if (!step || !isEnvelopePhysicalWrite(step) || step.target !== "active_foreground_timer" || step.after.kind !== "absent") throw new Error("The clear-session journal has no exact timer-removal step.");
   if (step.before.kind === "present" && (!step.before.envelope || !isForegroundTimerState(step.before.envelope.payload, admission))) throw new Error("The timer journal before-state has an unadmitted track.");
   applyCanonicalPhysicalWrite(step);
 }
 
 /** Exact start-owned timer put; ordinary timer checkpoint and terminal-clear APIs keep their own contracts. */
 export function materializeStartedForegroundTimerJournalStep(session: TrainingSession | null, step: CanonicalPhysicalWrite | undefined, admission: TrackAdmissionContext): void {
-  if (!session || !isTrainingSession(session, admission) || !step || step.target !== "active_foreground_timer" || step.before.kind !== "absent" || step.after.kind !== "present" || step.after.envelope.revision !== 1) {
+  if (!session || !isTrainingSession(session, admission) || !step || !isEnvelopePhysicalWrite(step) || step.target !== "active_foreground_timer" || step.before.kind !== "absent" || step.after.kind !== "present" || step.after.envelope.revision !== 1) {
     throw new Error("A foreground-timed session start has no exact initial timer step.");
   }
   const expected = initialForegroundTimerForSession(session, getTrackRegistration(session.trackId).familyId);

@@ -145,6 +145,28 @@ function memoFor(admission: object): EvidenceMemo | null {
   }
   return evidenceMemo;
 }
+/** The memo of this storage owner, lease and admission context, without creating or dropping one. */
+function currentMemo(admission: object): EvidenceMemo | null {
+  const memo = evidenceMemo;
+  if (!memo) return null;
+  let storage: object;
+  try { storage = getKeyValueStorage(); } catch { return null; }
+  return memo.storage === storage && memo.lease === (leaseKey() ?? (storage instanceof MemoryKeyValueStorage ? "unprofiled-test-storage" : null)) && memo.admission === admission ? memo : null;
+}
+
+/**
+ * J1/J2: the validated bytes, ids and revision of one evidence index key when
+ * no write to it was reported since they were read; null otherwise (the caller reads the store).
+ */
+export function readTrustedEvidenceIndex(key: string, admission: TrackAdmissionContext): Readonly<{ raw: string; ids: readonly string[]; revision: number }> | null {
+  if (key !== sessionFamily.indexKey && key !== attemptFamily.indexKey && key !== reviewFamily.indexKey) return null;
+  const memo = currentMemo(admission);
+  if (!memo || !memo.trusted || memo.dirty.has(key)) return null;
+  const entry = memo.entries.get(key);
+  if (!entry || !isIds(entry.envelope.payload)) return null;
+  return Object.freeze({ raw: entry.raw, ids: entry.envelope.payload, revision: entry.envelope.revision });
+}
+
 function forget(memo: EvidenceMemo, key: string): void {
   const cached = memo.entries.get(key);
   if (cached) memo.chars -= cached.raw.length;

@@ -1,7 +1,7 @@
 import { caseStatesAreMonotonic, sessionCaseStates } from "../../domain/learning/caseEvidence";
 import type { TrainingSession, TrainingSessionDraftState } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { applyCanonicalPhysicalWrite, readCanonicalEnvelopeProof, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalEnvelopeProof, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite, isEnvelopePhysicalWrite } from "./canonicalRecordCodec";
 import { isTrainingSession } from "./trainingModelGuards";
 import { clearTrainingSessionResults } from "./trainingSessionResultRepository";
 import { clearContentIdentityUnavailableRecords } from "./contentIdentityUnavailableRepository";
@@ -37,7 +37,7 @@ export function materializeTrainingSessionJournalSteps(sessionIds: readonly stri
   if (sessionIds.length > 0 || clearSessionIds.length > 0) expected.push("active_session");
   if (new Set(expected).size !== expected.length || steps.length !== 1 || !expected.includes(steps[0]!.target)) throw new Error("Training session step does not match its exact journal plan.");
   for (const step of steps) {
-    if (step.target.startsWith("session:") && step.after.kind === "present" && !isTrainingSession(step.after.envelope.payload, admission)) throw new Error("Training session journal step has an unadmitted track.");
+    if (step.target.startsWith("session:") && (!isEnvelopePhysicalWrite(step) || (step.after.kind === "present" && !isTrainingSession(step.after.envelope.payload, admission)))) throw new Error("Training session journal step has an unadmitted track.");
     applyCanonicalPhysicalWrite(step);
   }
 }
