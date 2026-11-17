@@ -1,7 +1,9 @@
 import { indexCaseRecipes } from "../content/canonical/caseRecipe";
 import { resolveRetainedClaudeTrack, type VerificationObserver } from "../content/canonical/runtimeCatalog";
 import { createCanonicalTrainingFamilyComposition } from "./canonicalTrainingFamilyComposition";
-import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime } from "../content/canonical";
+import { createCanonicalRuntimeCatalogOwner, type CanonicalRuntimeCatalog, type CanonicalTrackRuntime } from "../content/canonical";
+import { readStartupTrackHint, writeStartupTrackHint } from "../content/canonical/contentAssetSource";
+import { readActiveTrackId } from "../storage/repositories/activeTrackRepository";
 import { isCanonicalSafeIdentity } from "../domain/identity/canonicalIdentity";
 import { createResolvedContentRef, isArtifactSha256, type ResolvedContentRef, type TrackFamilyId, type TrackId } from "../domain";
 import type { VerifiedNodePackage } from "../content/runtime/nodeContentPackage";
@@ -35,6 +37,8 @@ export class ContentPackageRuntimeOwner {
     private readonly availableOfferForMode: typeof getAvailablePremiumNodeOfferForMode = getAvailablePremiumNodeOfferForMode,
     private readonly interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry,
     catalogOwner?: ReturnType<typeof createCanonicalRuntimeCatalogOwner>,
+    /** T2.4: the track the start prepares; throws or returns null while profile storage is not open yet. */
+    private readonly readStartupTrackId: () => string | null = readActiveTrackId,
   ) {
     this.loadActiveInstalledPackages = loadActiveInstalledPackages ?? ((scopeKey) => loadActiveProfileNodePackages(scopeKey, this.interactions));
     this.catalogOwner = catalogOwner ?? createCanonicalRuntimeCatalogOwner({ interactionRegistry: this.interactions });
@@ -45,9 +49,11 @@ export class ContentPackageRuntimeOwner {
   private readonly discovered = new Map<string, ResolvedPackageRuntime>();
   private readonly modeDiscovered = new Map<string, ResolvedPackageRuntime>();
   private readonly sourceTracks = new Map<string, CanonicalTrackRuntime>();
+  /** The resolved bundled catalog; inactive tracks are built from it on first use (T2.4). */
+  private bundledCatalog: CanonicalRuntimeCatalog | null = null;
   subscribeBundledVerification(observer: VerificationObserver): () => void { return this.catalogOwner.subscribeVerification(observer); }
   async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string; caseId?: string }>): Promise<ResolvedPackageRuntime> {
-    const track = (await this.catalogOwner.load()).getTrack(input.trackId);
+    const track = await this.loadBundledTrack(input.trackId);
     assertFamily(track, input.familyId);
     if (input.modeId === APPROACH_CHALLENGE_MODE_ID) {
       if (input.trackId !== APPROACH_CHALLENGE_TRACK_ID || input.nodeId !== undefined || input.caseId !== undefined || !track.approachChallengeProblems?.length) throw new Error("Approach Challenge requires the current whole-track artifact.");
@@ -100,9 +106,9 @@ export class ContentPackageRuntimeOwner {
     }
     const key = runtimeKey(input.trackId, input.contentVersion, input.artifactSha256);
     if (input.modeId === APPROACH_CHALLENGE_MODE_ID) {
-      const catalog = await this.catalogOwner.load();
+      const catalog = await this.loadBundledCatalog();
       if (!catalog.tracks.includes(input.trackId)) throw unavailable(input);
-      const source = catalog.getTrack(input.trackId);
+      const source = await catalog.loadTrack(input.trackId);
       if (input.trackId !== APPROACH_CHALLENGE_TRACK_ID || source.contentVersion !== input.contentVersion || source.artifactSha256 !== input.artifactSha256 || !source.approachChallengeProblems?.length) throw unavailable(input);
       return this.materialize(source, APPROACH_CHALLENGE_MODE_ID);
     }
@@ -111,9 +117,9 @@ export class ContentPackageRuntimeOwner {
     // A missing exact ref is meaningful only after the canonical catalog has
     // loaded and passed its lock/content checks. Catalog failure is an unknown
     // state, not evidence that the requested version was removed.
-    const catalog = await this.catalogOwner.load();
+    const catalog = await this.loadBundledCatalog();
     if (catalog.tracks.includes(input.trackId)) {
-      const track = catalog.getTrack(input.trackId);
+      const track = await catalog.loadTrack(input.trackId);
       if (track.trainingIdentity?.contentVersion === input.contentVersion && track.trainingIdentity.artifactSha256 === input.artifactSha256) return this.materialize(track);
     }
     const historical = this.historicalExact.get(key);
@@ -174,9 +180,65 @@ export class ContentPackageRuntimeOwner {
       target.set(key, Object.freeze({ track: family.catalog, runtime: family.runtime, presentation: family.presentation }));
     }
   }
-  async resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ResolvedPackageRuntime> { const track = (await this.catalogOwner.load()).getTrack(trackId); assertFamily(track, familyId); const r = this.materialize(track); this.discovered.set(trackId, r); return r; }
-  getPreparedDiscovery(trackId: TrackId, modeId?: string): ResolvedPackageRuntime { if (modeId === APPROACH_CHALLENGE_MODE_ID) { const prepared = this.modeDiscovered.get(modeDiscoveryKey(trackId, modeId)); if (prepared) return prepared; throw new Error(`Canonical discovery is not prepared for ${trackId}/${modeId}.`); } const prepared = this.discovered.get(trackId); if (prepared) return prepared; for (const [key, candidate] of this.exact) { if (candidate.track.trackId === trackId && isOrdinaryRuntimeKey(key)) { this.discovered.set(trackId, candidate); return candidate; } } throw new Error(`Canonical discovery is not prepared for ${trackId}.`); }
-  async verifyBundledPackages(): Promise<void> { const catalog = await this.catalogOwner.load(); for (const id of catalog.tracks) { const track = catalog.getTrack(id); const runtime = this.materialize(track); this.discovered.set(id, runtime); if (id === APPROACH_CHALLENGE_TRACK_ID && track.approachChallengeProblems?.length) this.modeDiscovered.set(modeDiscoveryKey(id, APPROACH_CHALLENGE_MODE_ID), this.materialize(track, APPROACH_CHALLENGE_MODE_ID)); } }
+  async resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ResolvedPackageRuntime> { const track = await this.loadBundledTrack(trackId); assertFamily(track, familyId); const r = this.materialize(track); this.discovered.set(trackId, r); return r; }
+  getPreparedDiscovery(trackId: TrackId, modeId?: string): ResolvedPackageRuntime {
+    if (modeId === APPROACH_CHALLENGE_MODE_ID) {
+      const key = modeDiscoveryKey(trackId, modeId);
+      const prepared = this.modeDiscovered.get(key) ?? (this.prepareBundledTrackSync(trackId) ? this.modeDiscovered.get(key) : undefined);
+      if (prepared) return prepared;
+      throw new Error(`Canonical discovery is not prepared for ${trackId}/${modeId}.`);
+    }
+    const prepared = this.discovered.get(trackId);
+    if (prepared) return prepared;
+    for (const [key, candidate] of this.exact) { if (candidate.track.trackId === trackId && isOrdinaryRuntimeKey(key)) { this.discovered.set(trackId, candidate); return candidate; } }
+    // T2.4: a bundled track that the start did not prepare (not the active one) is built here on first use.
+    const built = this.prepareBundledTrackSync(trackId) ? this.discovered.get(trackId) : undefined;
+    if (built) return built;
+    throw new Error(`Canonical discovery is not prepared for ${trackId}.`);
+  }
+  /**
+   * Start contract (content gate and the root-mount prefetch, T2.3/T2.4): resolve the bundled catalog and
+   * prepare the active track. Other tracks are built on demand (`prepareBundledTrack`, `getPreparedDiscovery`).
+   * Before profile storage is open the active track is unknown, so the last active track (a hint) is used.
+   */
+  async verifyBundledPackages(): Promise<void> {
+    const catalog = await this.loadBundledCatalog();
+    const trackId = this.startupTrackId(catalog);
+    if (trackId) this.prepareDiscovery(await catalog.loadTrack(trackId));
+  }
+  /** Builds a bundled track off the start path (track switch) so its first screen does not read it synchronously. */
+  async prepareBundledTrack(trackId: TrackId): Promise<void> {
+    const catalog = await this.loadBundledCatalog();
+    if (!catalog.tracks.includes(trackId)) return;
+    this.prepareDiscovery(await catalog.loadTrack(trackId));
+    writeStartupTrackHint(trackId);
+  }
+  private async loadBundledCatalog(): Promise<CanonicalRuntimeCatalog> {
+    const catalog = await this.catalogOwner.load();
+    this.bundledCatalog = catalog;
+    return catalog;
+  }
+  private async loadBundledTrack(trackId: string): Promise<CanonicalTrackRuntime> {
+    return (await this.loadBundledCatalog()).loadTrack(trackId);
+  }
+  private startupTrackId(catalog: CanonicalRuntimeCatalog): string | null {
+    let active: string | null = null;
+    try { active = this.readStartupTrackId(); } catch { active = null; }
+    if (active !== null && catalog.tracks.includes(active)) { writeStartupTrackHint(active); return active; }
+    const hint = readStartupTrackHint();
+    return hint !== null && catalog.tracks.includes(hint) ? hint : null;
+  }
+  private prepareBundledTrackSync(trackId: string): boolean {
+    const catalog = this.bundledCatalog;
+    if (!catalog || !catalog.tracks.includes(trackId)) return false;
+    this.prepareDiscovery(catalog.getTrack(trackId));
+    return true;
+  }
+  private prepareDiscovery(track: CanonicalTrackRuntime): void {
+    if (!this.discovered.has(track.trackId)) this.discovered.set(track.trackId, this.materialize(track));
+    const approachKey = modeDiscoveryKey(track.trackId, APPROACH_CHALLENGE_MODE_ID);
+    if (track.trackId === APPROACH_CHALLENGE_TRACK_ID && track.approachChallengeProblems?.length && !this.modeDiscovered.has(approachKey)) this.modeDiscovered.set(approachKey, this.materialize(track, APPROACH_CHALLENGE_MODE_ID));
+  }
   /** Fresh bootstrap check: cache hits and bundled content must not hide a corrupt installed index. */
   async verifyInstalledPackages(): Promise<void> {
     const scopeKey = this.syncInstalledScope();

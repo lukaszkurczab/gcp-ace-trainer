@@ -39,14 +39,42 @@ before(async () => {
 test("bundled verification observes this owner's cached catalog without opening installed storage", async () => {
   const plans: object[] = [], proofs: string[] = [];
   const off = contentPackageRuntimeOwner.subscribeBundledVerification({
-    onWorkPlan(plan) { plans.push(plan.build); assert.equal(plan.units.length, 13); },
-    onVerifiedUnit(proof) { assert.equal(proof.build, plans[0]); proofs.push(proof.unitId); },
+    onWorkPlan(plan) { plans.push(plan.build); },
+    onVerifiedUnit(proof) { proofs.push(proof.unitId); },
   });
-  assert.equal(plans.length, 1);
-  assert.equal(proofs.length, 13);
+  // T2.4: the trusted catalog has no eager verification units; tracks are checked against the manifest on load.
+  assert.equal(plans.length, 0);
+  assert.equal(proofs.length, 0);
   await contentPackageRuntimeOwner.verifyBundledPackages();
-  assert.equal(plans.length, 1); assert.equal(proofs.length, 13);
+  assert.equal(plans.length, 0); assert.equal(proofs.length, 0);
   off();
+});
+
+test("T2.4: the start prepares only the active track; another track is built on first use", async () => {
+  const catalogOwner = createCanonicalRuntimeCatalogOwner();
+  let active: string | null = null;
+  const owner = new ContentPackageRuntimeOwner(() => null, async () => [], undefined, undefined, undefined, catalogOwner, () => {
+    if (active === null) throw new Error("profile storage is not open");
+    return active;
+  });
+  assert.throws(() => owner.getPreparedDiscovery("google-cloud-associate-cloud-engineer"), /not prepared/);
+  active = "coding-interview-dsa-problem-solving";
+  await owner.verifyBundledPackages();
+  const catalog = await catalogOwner.load();
+  assert.deepEqual(catalog.tracks.filter((trackId) => catalog.isTrackLoaded(trackId)), ["coding-interview-dsa-problem-solving"]);
+  assert.equal(owner.getPreparedDiscovery("coding-interview-dsa-problem-solving", APPROACH_CHALLENGE_MODE_ID).track.trackId, "coding-interview-dsa-problem-solving");
+  // Storage closed again (root-mount prefetch): the last active track is the startup hint.
+  active = null;
+  await owner.verifyBundledPackages();
+  assert.deepEqual(catalog.tracks.filter((trackId) => catalog.isTrackLoaded(trackId)), ["coding-interview-dsa-problem-solving"]);
+  // Synchronous first use of an inactive track builds it once.
+  const gcp = owner.getPreparedDiscovery("google-cloud-associate-cloud-engineer");
+  assert.equal(gcp.track.trackId, "google-cloud-associate-cloud-engineer");
+  assert.equal(owner.getPreparedDiscovery("google-cloud-associate-cloud-engineer"), gcp);
+  // Asynchronous preparation (track switch) builds the track off the start path.
+  await owner.prepareBundledTrack("aws-certified-solutions-architect-associate");
+  assert.equal(catalog.isTrackLoaded("aws-certified-solutions-architect-associate"), true);
+  assert.equal(catalog.isTrackLoaded("object-oriented-design-interview"), false);
 });
 
 test("resolves an exact canonical artifact by track, content version, and SHA", async () => {

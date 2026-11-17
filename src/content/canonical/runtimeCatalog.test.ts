@@ -204,17 +204,29 @@ test("public owner retries after a failed cached load and then preserves cache i
   assert.equal(owner.load(), loading);
   const recovered = await loading;
   assert.equal(await owner.load(), recovered);
-  assert.equal(plans.length, 2);
-  assert.notEqual(plans[0]!.build, plans[1]!.build);
-  assert.equal(plans[1]!.units.length, 13);
-  assert.equal(plans[1]!.units.filter((unit) => unit.kind === "retained_pair").length, 4);
-  assert.equal(Object.isFrozen(plans[1]!.units), true);
-  assert.equal(Object.isFrozen(plans[1]!.units[0]), true);
-  assert.deepEqual(proofs, plans[1]!.units.map((unit) => unit.id));
+  // The failed run fell back to full verification (the lock binding hash mismatched) and announced its finite plan.
+  assert.equal(plans[0]!.units.length, 13);
+  assert.equal(plans[0]!.units.filter((unit) => unit.kind === "retained_pair").length, 4);
+  assert.equal(Object.isFrozen(plans[0]!.units), true);
+  assert.equal(Object.isFrozen(plans[0]!.units[0]), true);
+  // T2.4: the recovered run matched the manifest; the trusted lazy catalog has no eager units to announce.
+  assert.equal(plans.length, 1);
+  assert.equal(proofs.length, 0);
   const replay: string[] = [];
-  const off = owner.subscribeVerification({ onWorkPlan: (plan) => { assert.equal(plan, plans[1]); }, onVerifiedUnit: (proof) => { replay.push(proof.unitId); } });
+  const off = owner.subscribeVerification({ onWorkPlan: () => { assert.fail("a fulfilled lazy catalog has no plan to replay"); }, onVerifiedUnit: (proof) => { replay.push(proof.unitId); } });
   off();
-  assert.deepEqual(replay, proofs, "fulfilled cache replays only its own completed finite plan");
+  assert.deepEqual(replay, []);
+});
+
+test("T2.4: full verification reads every asset and announces the bundled 9 + 4 plan", async () => {
+  const owner = createCanonicalRuntimeCatalogOwner({ sha256Utf8: async (value) => (await import("../../infrastructure/identity/sha256")).sha256Utf8(value), locks: lockFile.tracks });
+  const plans: VerificationWorkPlan[] = [], proofs: string[] = [];
+  owner.subscribeVerification({ onWorkPlan: (plan) => { plans.push(plan); }, onVerifiedUnit: (proof) => { proofs.push(proof.unitId); } });
+  const catalog = await owner.load();
+  assert.equal(plans.length, 1);
+  assert.equal(plans[0]!.units.length, 13);
+  assert.deepEqual(proofs, plans[0]!.units.map((unit) => unit.id));
+  assert.equal(catalog.tracks.every((trackId) => catalog.isTrackLoaded(trackId)), true);
 });
 
 test("owner installs its run before notifications and replays in-flight proofs without another build", async () => {

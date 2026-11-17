@@ -16,15 +16,20 @@ export type ContentTrustManifest = Readonly<{
   ledgerSha: string;
   /** Bundle import order; `sha` is the lock SHA-256 the build re-hashed from the artifact itself. */
   artifacts: readonly Readonly<{ trackId: string; sha: string }>[];
-  /** Retained Claude packages whose proofs passed at build; `sha` binds their lock and ledger. */
-  retained: readonly Readonly<{ id: string; sha: string }>[];
+  /**
+   * Retained Claude packages whose proofs passed at build; `sha` binds their lock and ledger, `fileSha` is the
+   * SHA-256 of the exact asset bytes (T2.4: the runtime reads them from an asset, not from the JS bundle).
+   */
+  retained: readonly Readonly<{ id: string; sha: string; fileSha: string }>[];
 }>;
 
 export type RetainedTrustBinding = Readonly<{ lock: unknown; ledger: unknown }>;
 
 export type TrustedContent = Readonly<{
-  /** Returns true only for a retained package whose exact lock and ledger were proven at build time. */
-  retainedProven(id: string, retained: RetainedTrustBinding): Promise<boolean>;
+  /** SHA-256 of the exact current artifact asset bytes the build proved (equal to its lock row), by track. */
+  artifactSha(trackId: string): string | undefined;
+  /** SHA-256 of the exact retained package asset bytes whose full proof passed at build time. */
+  retainedFileSha(id: string): string | undefined;
 }>;
 
 const HASH = /^[a-f0-9]{64}$/u;
@@ -43,33 +48,33 @@ function isManifest(value: unknown): value is ContentTrustManifest {
   return manifest.schemaVersion === CONTENT_TRUST_MANIFEST_SCHEMA && typeof manifest.lockSha === "string" && HASH.test(manifest.lockSha)
     && typeof manifest.ledgerSha === "string" && HASH.test(manifest.ledgerSha)
     && Array.isArray(manifest.artifacts) && manifest.artifacts.every((row) => row && typeof row === "object" && typeof row.trackId === "string" && typeof row.sha === "string" && HASH.test(row.sha))
-    && Array.isArray(manifest.retained) && manifest.retained.every((row) => row && typeof row === "object" && typeof row.id === "string" && typeof row.sha === "string" && HASH.test(row.sha));
+    && Array.isArray(manifest.retained) && manifest.retained.every((row) => row && typeof row === "object" && typeof row.id === "string" && typeof row.sha === "string" && HASH.test(row.sha)
+      && typeof row.fileSha === "string" && HASH.test(row.fileSha));
 }
 
 /**
  * Cheap runtime gate (two ~5 KB hashes). Any mismatch returns undefined and the caller falls back to the
- * full per-start verification, so a stale or missing manifest costs time, never integrity.
+ * full per-start verification, so a stale or missing manifest costs time, never integrity. Asset bytes are
+ * checked per track against `artifactSha` / `retainedFileSha` when the track is read.
  */
 export async function matchContentTrustManifest(manifest: unknown, inputs: Readonly<{
   lockFile: unknown;
   ledgerFile: unknown;
-  artifacts: readonly unknown[];
+  trackIds: readonly string[];
   locks: ReadonlyMap<string, CanonicalContentLockRecord>;
   sha256Utf8: (value: string) => Promise<string>;
 }>): Promise<TrustedContent | undefined> {
-  if (!isManifest(manifest) || manifest.artifacts.length !== inputs.artifacts.length) return undefined;
-  for (const [index, artifact] of inputs.artifacts.entries()) {
-    const trackId = artifact && typeof artifact === "object" && !Array.isArray(artifact) ? (artifact as Record<string, unknown>).trackId : undefined;
+  if (!isManifest(manifest) || manifest.artifacts.length !== inputs.trackIds.length) return undefined;
+  for (const [index, trackId] of inputs.trackIds.entries()) {
     const row = manifest.artifacts[index];
-    if (typeof trackId !== "string" || row?.trackId !== trackId || inputs.locks.get(trackId)?.sha256 !== row.sha) return undefined;
+    if (row?.trackId !== trackId || inputs.locks.get(trackId)?.sha256 !== row.sha) return undefined;
   }
   if (await contentTrustBindingSha(inputs.lockFile, inputs.sha256Utf8) !== manifest.lockSha) return undefined;
   if (await contentTrustBindingSha(inputs.ledgerFile, inputs.sha256Utf8) !== manifest.ledgerSha) return undefined;
-  const retained = new Map(manifest.retained.map((row) => [row.id, row.sha]));
+  const artifacts = new Map(manifest.artifacts.map((row) => [row.trackId, row.sha]));
+  const retained = new Map(manifest.retained.map((row) => [row.id, row.fileSha]));
   return Object.freeze({
-    async retainedProven(id: string, binding: RetainedTrustBinding) {
-      const expected = retained.get(id);
-      return expected !== undefined && await retainedTrustBindingSha(binding, inputs.sha256Utf8) === expected;
-    },
+    artifactSha: (trackId: string) => artifacts.get(trackId),
+    retainedFileSha: (id: string) => retained.get(id),
   });
 }

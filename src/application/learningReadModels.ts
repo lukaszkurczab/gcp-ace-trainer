@@ -48,7 +48,12 @@ export async function loadLocalActiveTrackId(): Promise<TrackId | null> {
     return trackId;
   });
 }
-export async function selectActiveTrack(trackId: TrackId) { await commitActiveTrackSelection(trackId); }
+export async function selectActiveTrack(trackId: TrackId) {
+  // T2.4: build the newly active track's content (an asset read off the JS thread) before it becomes active,
+  // so its first screen does not read it synchronously. A failure here surfaces later, where the track is used.
+  await contentPackageRuntimeOwner.prepareBundledTrack(trackId).catch(() => undefined);
+  await commitActiveTrackSelection(trackId);
+}
 export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId, requireGoalPolicy(trackId)); }
 export async function persistGoalPlanStatus(trackId: TrackId) { return transitionGoalPlanStatus(trackId); }
 export async function loadGoalSnapshot(trackId: TrackId): Promise<GoalSnapshot | null> { return getGoalSnapshot(trackId, requireGoalPolicy(trackId)); }

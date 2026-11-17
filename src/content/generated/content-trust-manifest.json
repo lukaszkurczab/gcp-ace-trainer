@@ -43,19 +43,23 @@
   "retained": [
     {
       "id": "retained:claude-pre-qle-v2.json",
-      "sha": "54fce3740cc604e33395cf5f0e459969304a6b31236e3b1f75373f4dd9bf1eb7"
+      "sha": "54fce3740cc604e33395cf5f0e459969304a6b31236e3b1f75373f4dd9bf1eb7",
+      "fileSha": "149afda8628dfb79f109eaeb760dc41dfcbacdaa5bd9f59a3c2e7a88bf2151ff"
     },
     {
       "id": "retained:claude-qle-v2-first-cases.json",
-      "sha": "2b4d7bb495f0c8a6749e423ab81a034db6c4b59f7f1eae441528fbb2bf5801cc"
+      "sha": "2b4d7bb495f0c8a6749e423ab81a034db6c4b59f7f1eae441528fbb2bf5801cc",
+      "fileSha": "bd0f5191998108b3d1d651358dd9d4be486543d64e12167d6489adb44fc718cf"
     },
     {
       "id": "retained:claude-qle-v2-before-identity.json",
-      "sha": "0cb9a9d0cdf775d4a52b25ae0b079e2cdd8e3a702c59e0d4bc8f6b89611eae0c"
+      "sha": "0cb9a9d0cdf775d4a52b25ae0b079e2cdd8e3a702c59e0d4bc8f6b89611eae0c",
+      "fileSha": "4aec030c921e333adca9dfddb768859a36b06cb2aa4c5f6bd201c9ade27d8bd1"
     },
     {
       "id": "retained:claude-qle-v2-active-before-exam.json",
-      "sha": "bcd826ad8c67dbbe9d25bdd089d894240dd359813f7a636428097a08f1968625"
+      "sha": "bcd826ad8c67dbbe9d25bdd089d894240dd359813f7a636428097a08f1968625",
+      "fileSha": "6a927fd3fa5d4b62a710bbf58d305d5f6d0aa9810ce31a3756d1059fe52dc440"
     }
   ]
 }

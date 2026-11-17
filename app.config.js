@@ -269,6 +269,8 @@ function createExpoConfig(environment = process.env) {
         "./plugins/withDeferredNativeStartup",
         // T2.5: native first screen from the first-screen record; React Native starts eagerly behind it.
         "./plugins/withNativeFirstScreen",
+        // T2.4: canonical content as app assets next to the JS bundle (read by contentAssetSource.native.ts).
+        "./plugins/withBundledContent",
         "./plugins/withAndroidForegroundClock",
         ...(environment.EXPO_PUBLIC_PATTERNLY_ANDROID_CLOCK_PROBE_RUN_ID ? ["./plugins/withAndroidClockProbe"] : []),
       ],

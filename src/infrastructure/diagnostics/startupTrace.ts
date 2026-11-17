@@ -16,6 +16,8 @@ export type StartupTraceStage =
   | "predecessor_clone_stringify" | "predecessor_hash" | "catalog_projection" | "catalog_tracks"
   | "planning_policy" | "pool_construction"
   | "mode_artifact_questions"
+  // T2.4: per-track content load (asset read off the JS thread, parse, trusted build).
+  | "catalog_track_load" | "catalog_asset_read" | "catalog_asset_parse" | `catalog_track:${string}`
   | "practice_submit_handler" | "practice_advance_handler" | "practice_response_checkpoint"
   | "practice_answer_command" | "practice_advance_command" | "practice_command_projection"
   | "premium:response_v2" | "premium:response_missing_v2" | "premium:response_rejected" | "premium:refresh_failed"

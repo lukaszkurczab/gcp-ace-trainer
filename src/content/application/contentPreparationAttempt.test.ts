@@ -43,8 +43,9 @@ test("unique verified work renews beyond total 15s; whole completion alone estab
   assert.equal(attempt.complete(true).publication, "whole_result");
 });
 
-test("the default canonical owner’s 13 verified units renew a real preparation attempt", async () => {
-  const owner = createCanonicalRuntimeCatalogOwner();
+test("the full-verification owner’s 13 verified units renew a real preparation attempt", async () => {
+  // T2.4: the trusted default catalog has no eager units; the full path (stale manifest, injected locks) keeps the 9 + 4 plan.
+  const owner = createCanonicalRuntimeCatalogOwner({ locks: lockFile.tracks });
   let time = 0;
   const attempt = createContentPreparationAttempt({
     isCurrent: () => true,

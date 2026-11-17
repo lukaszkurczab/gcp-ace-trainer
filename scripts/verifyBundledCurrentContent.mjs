@@ -227,9 +227,12 @@ export async function verifyContentTrustManifestBinding({ root = appRoot, built 
   if (!Array.isArray(manifest.retained)) fail("retained inventory");
   for (const row of manifest.retained) {
     const fileName = typeof row?.id === "string" ? row.id.replace(/^retained:/u, "") : "";
-    if (!exactKeys(row, ["id", "sha"]) || !RETAINED_TRUST_IDS.includes(fileName)) fail("retained identity");
-    const retained = parseJson(await readRegularFile(path.join(root, RETAINED_CONTENT_RELATIVE_DIRECTORY, fileName)), fileName);
+    if (!exactKeys(row, ["id", "sha", "fileSha"]) || !RETAINED_TRUST_IDS.includes(fileName)) fail("retained identity");
+    const retainedBytes = await readRegularFile(path.join(root, RETAINED_CONTENT_RELATIVE_DIRECTORY, fileName));
+    const retained = parseJson(retainedBytes, fileName);
     if (sha256(Buffer.from(JSON.stringify({ lock: retained.lock, ledger: retained.ledger }))) !== row.sha) fail(`retained ${fileName}`);
+    // T2.4: the app reads the retained package as an asset and accepts it only with exactly these bytes.
+    if (sha256(retainedBytes) !== row.fileSha) fail(`retained ${fileName} bytes`);
   }
   return { artifactCount: manifest.artifacts.length, retainedCount: manifest.retained.length };
 }

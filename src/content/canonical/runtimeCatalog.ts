@@ -1,19 +1,11 @@
-import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
+import { beginStartupSpan, markStartup } from "../../infrastructure/diagnostics/startupTrace";
 import type { PackageCompletionRule, VerifiedCompletionSource } from "../../domain/learning/packageCompletionRule";
-import aws from "../generated/canonical-content/aws-certified-solutions-architect-associate.json";
-import backend from "../generated/canonical-content/backend-system-design-interview.json";
-import claude from "../generated/canonical-content/claude-certified-architect-professional-certification.json";
-import coding from "../generated/canonical-content/coding-interview-dsa-problem-solving.json";
-import frontend from "../generated/canonical-content/frontend-system-design-interview.json";
-import gcp from "../generated/canonical-content/google-cloud-associate-cloud-engineer.json";
-import az104 from "../generated/canonical-content/microsoft-azure-administrator-associate-az-104.json";
-import ai901 from "../generated/canonical-content/microsoft-azure-ai-fundamentals-ai-901.json";
-import objectDesign from "../generated/canonical-content/object-oriented-design-interview.json";
 import lockFile from "../generated/canonical-content/content-lock.json";
 import successorLedgerFile from "../generated/canonical-content/content-successor-ledger.json";
 import contentTrustManifestFile from "../generated/content-trust-manifest.json";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
-import { getProductModeConfig, PRODUCT_MODE_CONFIGS, validateProductModeConfigsAgainstArtifacts, type ProductModeConfig } from "./productModeConfig";
+import { bundledContentAssetSource, type ContentAsset, type ContentAssetSource } from "./contentAssetSource";
+import { getProductModeConfig, PRODUCT_MODE_CONFIGS, validateProductModeConfigsAgainstArtifacts, validateTrackModeConfigsAgainstArtifact, type ProductModeConfig } from "./productModeConfig";
 import { createCanonicalQuestionCatalog, createTrustedCanonicalQuestionCatalog, type CanonicalQuestionCatalog } from "./questionCatalog";
 import { CONTENT_TRUST_MANIFEST_SCHEMA, contentTrustBindingSha, matchContentTrustManifest, retainedTrustBindingSha, type ContentTrustManifest, type TrustedContent } from "./contentTrustManifest";
 import type { CanonicalContentLockRecord, CanonicalProductSimulationProfile, Question } from "./questionTypes";
@@ -21,11 +13,18 @@ import { validateLearningPlanningPolicy, type LearningPlanningPolicy } from "./p
 import { assertValidContentSuccessorLedger, contentSuccessorLedgerEntry, type ContentPlanningPolicyIdentity, type ContentTrackIdentity, type ContentSuccessorLedger } from "./contentSuccessorLedger";
 import { canonicalInteractionRegistry, type CanonicalInteractionRegistry } from "./interactions/registry";
 
-const artifacts: readonly unknown[] = Object.freeze([aws, backend, claude, coding, frontend, gcp, az104, ai901, objectDesign]);
+/**
+ * T2.4: the nine current artifacts (54 MB) and the four retained Claude packages (14 MB) are not part of
+ * the JS bundle. They are app assets (`contentAssetSource`), read per track when a track is first needed.
+ * Only the content lock, the successor ledger and the trust manifest (a few KB) stay in the bundle.
+ */
 const locks = new Map((lockFile.tracks as CanonicalContentLockRecord[]).map((entry) => [entry.trackId, entry]));
-const retainedVerificationIds = Object.freeze([
-  "retained:claude-pre-qle-v2.json", "retained:claude-qle-v2-first-cases.json", "retained:claude-qle-v2-before-identity.json", "retained:claude-qle-v2-active-before-exam.json",
-]);
+/** Lock order (sorted track ids): the order of the trust manifest, the verification plan and `catalog.tracks`. */
+const CURRENT_TRACK_IDS: readonly string[] = Object.freeze((lockFile.tracks as CanonicalContentLockRecord[]).map((entry) => entry.trackId));
+const RETAINED_TRACK_ID = "claude-certified-architect-professional-certification";
+const RETAINED_FILES = Object.freeze(["claude-pre-qle-v2.json", "claude-qle-v2-first-cases.json", "claude-qle-v2-before-identity.json", "claude-qle-v2-active-before-exam.json"]);
+const retainedVerificationIds = Object.freeze(RETAINED_FILES.map((file) => `retained:${file}`));
+const trackAssetFile = (trackId: string) => `${trackId}.json`;
 
 export type CanonicalTrackRuntime = Readonly<{
   trackId: string;
@@ -50,16 +49,23 @@ export type CanonicalTrackRuntime = Readonly<{
   approachChallengeProblems?: readonly import("./approachChallengeProblem").ApproachChallengeProblem[];
 }>;
 
+/**
+ * `tracks` lists every current track. A track is built on first use: `loadTrack` reads its asset off the
+ * JS thread (startup, track switch); `getTrack` is the synchronous path for callers that cannot wait and
+ * reads the asset on the JS thread once. Both verify the asset bytes against the trust manifest first.
+ */
 export type CanonicalRuntimeCatalog = Readonly<{
   tracks: readonly string[];
   getTrack(trackId: string): CanonicalTrackRuntime;
+  loadTrack(trackId: string): Promise<CanonicalTrackRuntime>;
+  isTrackLoaded(trackId: string): boolean;
   getQuestion(trackId: string, questionId: string): Question | undefined;
   getNode(trackId: string, nodeId: string): readonly Question[];
   getMentalUnit(trackId: string, mentalUnitId: string): readonly Question[];
   getMode(trackId: string, modeId: string): ProductModeConfig;
   getPool(trackId: string, modeId: string): readonly Question[];
 }>;
-export type CanonicalRuntimeBuildDependencies = Readonly<{ artifacts?: readonly unknown[]; locks?: readonly CanonicalContentLockRecord[]; sha256Utf8?: (value: string) => Promise<string>; successorLedger?: unknown; interactionRegistry?: CanonicalInteractionRegistry }>;
+export type CanonicalRuntimeBuildDependencies = Readonly<{ artifacts?: readonly unknown[]; locks?: readonly CanonicalContentLockRecord[]; sha256Utf8?: (value: string) => Promise<string>; successorLedger?: unknown; interactionRegistry?: CanonicalInteractionRegistry; assets?: ContentAssetSource }>;
 
 let activeCatalog: Promise<CanonicalRuntimeCatalog> | undefined;
 
@@ -80,15 +86,18 @@ export type CanonicalRuntimeCatalogOwner = Readonly<{
   load(): Promise<CanonicalRuntimeCatalog>;
   subscribeVerification(observer: VerificationObserver): () => void;
 }>;
+type VerificationUnits = VerificationWorkPlan["units"];
+/** Full verification announces its units before it starts; the trusted lazy catalog has no eager units. */
+type BuildObserver = Readonly<{ plan(units: VerificationUnits): void; verified(unitId: string): void }>;
 
-function createVerificationPlan(sourceArtifacts: readonly unknown[], includeRetained: boolean): VerificationWorkPlan | undefined {
+function createVerificationUnits(sourceArtifacts: readonly unknown[], includeRetained: boolean): VerificationUnits | undefined {
   if (sourceArtifacts.length > 9) return undefined;
   const trackIds = sourceArtifacts.map((artifact) => artifact && typeof artifact === "object" && !Array.isArray(artifact)
     ? (artifact as Record<string, unknown>).trackId : undefined);
   if (trackIds.some((id) => typeof id !== "string" || id.length === 0) || new Set(trackIds).size !== trackIds.length) return undefined;
-  const units: VerificationWorkPlan["units"][number][] = trackIds.map((id, index) => Object.freeze({ id: `current:${index}:${id}`, kind: "current_artifact" }));
+  const units: VerificationUnits[number][] = trackIds.map((id, index) => Object.freeze({ id: `current:${index}:${id}`, kind: "current_artifact" }));
   if (includeRetained) for (const id of retainedVerificationIds) units.push(Object.freeze({ id, kind: "retained_pair" }));
-  return Object.freeze({ build: Object.freeze({}), units: Object.freeze(units) });
+  return Object.freeze(units);
 }
 
 export function createCanonicalRuntimeCatalogOwner(dependencies: CanonicalRuntimeBuildDependencies = {}): CanonicalRuntimeCatalogOwner {
@@ -102,24 +111,32 @@ export function createCanonicalRuntimeCatalogOwner(dependencies: CanonicalRuntim
   return Object.freeze({
     load() {
       if (cached) return cached.promise;
-      const sourceArtifacts = Object.freeze([...(dependencies.artifacts ?? artifacts)]);
-      const snapshot = { ...dependencies, ...(dependencies.artifacts === undefined ? {} : { artifacts: sourceArtifacts }),
+      const sourceArtifacts = dependencies.artifacts === undefined ? undefined : Object.freeze([...dependencies.artifacts]);
+      const snapshot = { ...dependencies, ...(sourceArtifacts === undefined ? {} : { artifacts: sourceArtifacts }),
         ...(dependencies.locks === undefined ? {} : { locks: Object.freeze([...dependencies.locks]) }) };
       let resolve!: (catalog: CanonicalRuntimeCatalog) => void;
       let reject!: (error: unknown) => void;
       const promise = new Promise<CanonicalRuntimeCatalog>((yes, no) => { resolve = yes; reject = no; });
-      const run: Run = { promise, plan: createVerificationPlan(sourceArtifacts, dependencies.artifacts === undefined), completed: new Set() };
-      // Install both identities before reentrant observers or the builder can call load().
+      const run: Run = { promise, plan: undefined, completed: new Set() };
+      // Install the run before reentrant observers or the builder can call load().
       cached = run;
-      const plan = run.plan;
-      if (plan) for (const subscriber of [...subscribers]) notify(subscriber, () => subscriber.observer.onWorkPlan(plan));
-      const verified = (unitId: string) => {
-        if (!plan || run.completed.has(unitId) || !plan.units.some((unit) => unit.id === unitId)) return;
-        run.completed.add(unitId);
-        const proof = Object.freeze({ build: plan.build, unitId });
-        for (const subscriber of [...subscribers]) notify(subscriber, () => subscriber.observer.onVerifiedUnit(proof));
+      const build = Object.freeze({});
+      const observer: BuildObserver = {
+        plan(units) {
+          if (run.plan) return;
+          const plan = Object.freeze({ build, units });
+          run.plan = plan;
+          for (const subscriber of [...subscribers]) notify(subscriber, () => subscriber.observer.onWorkPlan(plan));
+        },
+        verified(unitId) {
+          const plan = run.plan;
+          if (!plan || run.completed.has(unitId) || !plan.units.some((unit) => unit.id === unitId)) return;
+          run.completed.add(unitId);
+          const proof = Object.freeze({ build: plan.build, unitId });
+          for (const subscriber of [...subscribers]) notify(subscriber, () => subscriber.observer.onVerifiedUnit(proof));
+        },
       };
-      void buildCatalog(snapshot, verified).then(resolve, (error: unknown) => {
+      void buildCatalog(snapshot, observer).then(resolve, (error: unknown) => {
         if (cached === run) cached = undefined;
         reject(error);
       });
@@ -159,37 +176,54 @@ function coversBundledContent(dependencies: CanonicalRuntimeBuildDependencies): 
     && (dependencies.interactionRegistry === undefined || dependencies.interactionRegistry === canonicalInteractionRegistry);
 }
 
-async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}, verified?: (unitId: string) => void, mode: VerificationMode = "auto"): Promise<CanonicalRuntimeCatalog> {
+const unavailableArtifact = () => new Error("Canonical artifact is unavailable; restart to load canonical content.");
+
+async function readBundledArtifacts(assets: ContentAssetSource): Promise<readonly unknown[]> {
+  const artifacts: unknown[] = [];
+  for (const trackId of CURRENT_TRACK_IDS) {
+    let asset: ContentAsset;
+    try { asset = await assets.read("canonical-content", trackAssetFile(trackId)); }
+    catch { throw unavailableArtifact(); }
+    artifacts.push(JSON.parse(asset.text) as unknown);
+  }
+  return Object.freeze(artifacts);
+}
+
+async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}, observer?: BuildObserver, mode: VerificationMode = "auto"): Promise<CanonicalRuntimeCatalog> {
   markStartup("catalog_build", "begin");
   try {
-    const sourceArtifacts = dependencies.artifacts ?? artifacts;
+    // Injected artifacts announce their plan synchronously, inside load().
+    const injectedUnits = dependencies.artifacts === undefined ? undefined : createVerificationUnits(dependencies.artifacts, false);
+    if (injectedUnits) observer?.plan(injectedUnits);
     const sourceLocks = new Map((dependencies.locks ?? [...locks.values()]).map((entry) => [entry.trackId, entry]));
     const sha256 = dependencies.sha256Utf8 ?? contentHasher.sha256;
     const interactionRegistry = dependencies.interactionRegistry ?? canonicalInteractionRegistry;
+    const assets = dependencies.assets ?? bundledContentAssetSource;
     const successorLedger = dependencies.successorLedger ?? (dependencies.artifacts === undefined ? successorLedgerFile : undefined);
     if (successorLedger !== undefined) assertValidContentSuccessorLedger(successorLedger);
-    const trust: TrustedContent | undefined = mode === "auto" && coversBundledContent(dependencies)
-      ? await matchContentTrustManifest(contentTrustManifestFile, { lockFile, ledgerFile: successorLedgerFile, artifacts: sourceArtifacts, locks: sourceLocks, sha256Utf8: sha256 })
-      : undefined;
+    if (mode === "auto" && coversBundledContent(dependencies)) {
+      const trust = await matchContentTrustManifest(contentTrustManifestFile, { lockFile, ledgerFile: successorLedgerFile, trackIds: CURRENT_TRACK_IDS, locks: sourceLocks, sha256Utf8: sha256 });
+      if (trust) return createTrustedLazyCatalog({ trust, assets, interactionRegistry, successorLedger: successorLedger as ContentSuccessorLedger });
+    }
+    const sourceArtifacts = dependencies.artifacts ?? await readBundledArtifacts(assets);
+    if (dependencies.artifacts === undefined) {
+      const units = createVerificationUnits(sourceArtifacts, true);
+      if (units) observer?.plan(units);
+    }
+    const verified = (unitId: string) => observer?.verified(unitId);
     const catalogs: CanonicalQuestionCatalog[] = [];
     for (const [index, artifact] of sourceArtifacts.entries()) {
-      if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || typeof (artifact as Record<string, unknown>).trackId !== "string") throw new Error("Canonical artifact is unavailable; restart to load canonical content.");
+      if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || typeof (artifact as Record<string, unknown>).trackId !== "string") throw unavailableArtifact();
       const trackId = (artifact as Record<string, unknown>).trackId as string;
       const lock = sourceLocks.get(trackId);
       if (!lock) throw new Error(`Canonical content lock is missing for ${trackId}.`);
-      catalogs.push(trust ? createTrustedCanonicalQuestionCatalog(artifact, lock, trackId) : await createCanonicalQuestionCatalog(artifact, lock, trackId, sha256, interactionRegistry));
+      catalogs.push(await createCanonicalQuestionCatalog(artifact, lock, trackId, sha256, interactionRegistry));
       if (successorLedger !== undefined) {
         const entry = contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, trackId);
-        const source = artifact as Record<string, unknown>;
-        if (source.schemaVersion !== "patternly-content-artifact-v2" || source.contentVersion !== entry.planningPolicy.contentVersion || lock.sha256 !== entry.planningPolicy.artifactSha256 ||
-          (source.planningPolicy as Record<string, unknown> | undefined)?.policyVersion !== entry.planningPolicy.policyVersion || !Array.isArray(source.questions) || source.questions.length !== entry.training.questionCount) {
-          throw new Error(`Content successor ledger does not match the current v2 policy artifact for ${trackId}.`);
-        }
-        // The build-time manifest already reconstructed and hashed this exact predecessor.
-        if (trust) { verified?.(`current:${index}:${trackId}`); continue; }
+        assertLedgerMatchesArtifact(entry, artifact as Record<string, unknown>, lock, trackId);
         markStartup("predecessor_clone_stringify", "begin");
         // Only root fields change; nested generated JSON is read-only during serialization.
-        const historical = { ...source };
+        const historical = { ...(artifact as Record<string, unknown>) };
         delete historical.planningPolicy;
         delete historical.approachChallengeProblems;
         historical.schemaVersion = "patternly-content-artifact-v1";
@@ -202,7 +236,7 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
         finally { markStartup("predecessor_hash", "end"); }
         if (predecessorHash !== entry.training.artifactSha256) throw new Error(`Content successor ledger does not reconstruct the exact training predecessor for ${trackId}.`);
       }
-      verified?.(`current:${index}:${trackId}`);
+      verified(`current:${index}:${trackId}`);
     }
     markStartup("catalog_projection", "begin");
     const projections = catalogs.map((catalog) => ({ schemaVersion: "patternly-content-artifact-v1", trackId: catalog.trackId, contentVersion: catalog.contentVersion, questions: catalog.questions.map((question) => ({ trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, questionId: question.questionId, interaction: { type: question.interaction.type } })) }));
@@ -213,36 +247,138 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
     // Attributed unit progress does not depend on these historical catalogs.
     const onRetainedPair = (index: number) => {
       const unitId = retainedVerificationIds[index];
-      if (unitId) verified?.(unitId);
+      if (unitId) verified(unitId);
     };
     const retainedProofs = dependencies.artifacts === undefined
-      ? trust
-        ? await trustedRetainedCompletionCatalogs(await loadRetainedClaudePackages().catch(() => []), trust, onRetainedPair)
-        : await verifyRetainedCompletionCatalogs(await loadRetainedClaudePackages().catch(() => []), interactionRegistry, onRetainedPair)
+      ? await verifyRetainedCompletionCatalogs(await loadRetainedClaudePackages(assets).catch(() => []), interactionRegistry, onRetainedPair)
       : [];
-    const byTrack = new Map(catalogs.map((catalog) => {
-      const completionSources = [catalog, ...retainedProofs.filter(source => source.trackId === catalog.trackId)].map(source => Object.freeze({
-        trackId: source.trackId, contentVersion: source.contentVersion, artifactSha256: source.artifactSha256, completionRule: source.completionRule,
-        getQuestion: (questionId: string) => {
-          const question = source.getQuestionById(questionId);
-          return question ? Object.freeze({ nodeId: question.nodeId, mentalUnitId: question.mentalUnitId }) : undefined;
-        },
-      }));
-      return [catalog.trackId, createTrackRuntime(catalog, modeConfigs,
-        successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId), interactionRegistry,
-        completionSources)] as const;
-    }));
+    const byTrack = new Map(catalogs.map((catalog) => [catalog.trackId, createTrackRuntime(catalog, modeConfigs,
+      successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId), interactionRegistry,
+      completionSourcesFor(catalog, retainedProofs))] as const));
     markStartup("catalog_tracks", "end");
-    return Object.freeze({
-      tracks: Object.freeze(catalogs.map((catalog) => catalog.trackId)),
-      getTrack(trackId: string) { const result = byTrack.get(trackId); if (!result) throw new Error(`Canonical track ${trackId} is unavailable; restart to load canonical content.`); return result; },
-      getQuestion(trackId: string, questionId: string) { return this.getTrack(trackId).getQuestion(questionId); },
-      getNode(trackId: string, nodeId: string) { return this.getTrack(trackId).getQuestionsForNode(nodeId); },
-      getMentalUnit(trackId: string, mentalUnitId: string) { return this.getTrack(trackId).getQuestionsForMentalUnit(mentalUnitId); },
-      getMode(trackId: string, modeId: string) { return this.getTrack(trackId).getMode(modeId); },
-      getPool(trackId: string, modeId: string) { return this.getTrack(trackId).getPool(modeId); },
+    return catalogFacade(Object.freeze(catalogs.map((catalog) => catalog.trackId)), (trackId) => byTrack.get(trackId), (trackId) => {
+      const result = byTrack.get(trackId);
+      if (!result) throw new Error(`Canonical track ${trackId} is unavailable; restart to load canonical content.`);
+      return result;
     });
   } finally { markStartup("catalog_build", "end"); }
+}
+
+function assertLedgerMatchesArtifact(entry: ContentSuccessorLedger["tracks"][number], source: Record<string, unknown>, lock: CanonicalContentLockRecord, trackId: string): void {
+  if (source.schemaVersion !== "patternly-content-artifact-v2" || source.contentVersion !== entry.planningPolicy.contentVersion || lock.sha256 !== entry.planningPolicy.artifactSha256 ||
+    (source.planningPolicy as Record<string, unknown> | undefined)?.policyVersion !== entry.planningPolicy.policyVersion || !Array.isArray(source.questions) || source.questions.length !== entry.training.questionCount) {
+    throw new Error(`Content successor ledger does not match the current v2 policy artifact for ${trackId}.`);
+  }
+}
+
+function completionSourcesFor(catalog: CanonicalQuestionCatalog, retainedProofs: readonly CanonicalQuestionCatalog[]): readonly VerifiedCompletionSource[] {
+  return [catalog, ...retainedProofs.filter((source) => source.trackId === catalog.trackId)].map((source) => Object.freeze({
+    trackId: source.trackId, contentVersion: source.contentVersion, artifactSha256: source.artifactSha256, completionRule: source.completionRule,
+    getQuestion: (questionId: string) => {
+      const question = source.getQuestionById(questionId);
+      return question ? Object.freeze({ nodeId: question.nodeId, mentalUnitId: question.mentalUnitId }) : undefined;
+    },
+  }));
+}
+
+function catalogFacade(tracks: readonly string[], loaded: (trackId: string) => CanonicalTrackRuntime | undefined, getTrack: (trackId: string) => CanonicalTrackRuntime, loadTrack?: (trackId: string) => Promise<CanonicalTrackRuntime>): CanonicalRuntimeCatalog {
+  return Object.freeze({
+    tracks,
+    getTrack,
+    loadTrack: loadTrack ?? (async (trackId: string) => getTrack(trackId)),
+    isTrackLoaded: (trackId: string) => loaded(trackId) !== undefined,
+    getQuestion: (trackId: string, questionId: string) => getTrack(trackId).getQuestion(questionId),
+    getNode: (trackId: string, nodeId: string) => getTrack(trackId).getQuestionsForNode(nodeId),
+    getMentalUnit: (trackId: string, mentalUnitId: string) => getTrack(trackId).getQuestionsForMentalUnit(mentalUnitId),
+    getMode: (trackId: string, modeId: string) => getTrack(trackId).getMode(modeId),
+    getPool: (trackId: string, modeId: string) => getTrack(trackId).getPool(modeId),
+  });
+}
+
+type TrustedLazyContext = Readonly<{ trust: TrustedContent; assets: ContentAssetSource; interactionRegistry: CanonicalInteractionRegistry; successorLedger: ContentSuccessorLedger }>;
+
+/**
+ * Trusted path (D5, T1.4, T2.4): the build-time full verification proved these exact asset bytes. At runtime a
+ * track is accepted only when the SHA-256 of its asset bytes equals the manifest entry (which equals the lock),
+ * so the expensive validation, stringify and predecessor hashing stay at build time. Its modes are still checked
+ * against its questions, because mode configs are code and the manifest does not bind them.
+ */
+function createTrustedLazyCatalog(context: TrustedLazyContext): CanonicalRuntimeCatalog {
+  const loaded = new Map<string, CanonicalTrackRuntime>();
+  const pending = new Map<string, Promise<CanonicalTrackRuntime>>();
+  const unavailable = (trackId: string) => new Error(`Canonical track ${trackId} is unavailable; restart to load canonical content.`);
+  const install = (trackId: string, build: () => CanonicalTrackRuntime) => {
+    const existing = loaded.get(trackId);
+    if (existing) return existing;
+    const runtime = build();
+    loaded.set(trackId, runtime);
+    return runtime;
+  };
+  const traced = <T>(trackId: string, work: () => T): T => {
+    const end = beginStartupSpan("catalog_track_load");
+    markStartup(`catalog_track:${trackId}`);
+    try { return work(); } finally { end(); }
+  };
+  const getTrack = (trackId: string): CanonicalTrackRuntime => {
+    const ready = loaded.get(trackId);
+    if (ready) return ready;
+    if (!CURRENT_TRACK_IDS.includes(trackId)) throw unavailable(trackId);
+    return traced(trackId, () => {
+      let asset: ContentAsset;
+      try { asset = context.assets.readSync("canonical-content", trackAssetFile(trackId)); }
+      catch { throw unavailableArtifact(); }
+      const retained = trackId === RETAINED_TRACK_ID ? RETAINED_FILES.map((file) => { try { return context.assets.readSync("retained-content", file); } catch { return undefined; } }) : [];
+      return install(trackId, () => buildTrustedTrack(context, trackId, asset, retained));
+    });
+  };
+  const loadTrack = (trackId: string): Promise<CanonicalTrackRuntime> => {
+    const ready = loaded.get(trackId);
+    if (ready) return Promise.resolve(ready);
+    if (!CURRENT_TRACK_IDS.includes(trackId)) return Promise.reject(unavailable(trackId));
+    const inFlight = pending.get(trackId);
+    if (inFlight) return inFlight;
+    const promise = (async () => {
+      const endRead = beginStartupSpan("catalog_asset_read");
+      let asset: ContentAsset;
+      let retained: readonly (ContentAsset | undefined)[];
+      try {
+        [asset, retained] = await Promise.all([
+          context.assets.read("canonical-content", trackAssetFile(trackId)).catch(() => { throw unavailableArtifact(); }),
+          trackId === RETAINED_TRACK_ID ? Promise.all(RETAINED_FILES.map((file) => context.assets.read("retained-content", file).catch(() => undefined))) : Promise.resolve([]),
+        ]);
+      } finally { endRead(); }
+      return traced(trackId, () => install(trackId, () => buildTrustedTrack(context, trackId, asset, retained)));
+    })();
+    pending.set(trackId, promise);
+    const settle = () => { if (pending.get(trackId) === promise) pending.delete(trackId); };
+    promise.then(settle, settle);
+    return promise;
+  };
+  return catalogFacade(CURRENT_TRACK_IDS, (trackId) => loaded.get(trackId), getTrack, loadTrack);
+}
+
+function parseTrustedAsset(label: string, asset: ContentAsset, expectedSha: string | undefined): unknown {
+  if (expectedSha === undefined || asset.sha256 !== expectedSha) throw new Error(`Canonical content asset ${label} does not match its trust manifest; restart to load canonical content.`);
+  markStartup("catalog_asset_parse", "begin");
+  try { return JSON.parse(asset.text) as unknown; }
+  finally { markStartup("catalog_asset_parse", "end"); }
+}
+
+function buildTrustedTrack(context: TrustedLazyContext, trackId: string, asset: ContentAsset, retainedAssets: readonly (ContentAsset | undefined)[]): CanonicalTrackRuntime {
+  const lock = locks.get(trackId);
+  if (!lock) throw new Error(`Canonical content lock is missing for ${trackId}.`);
+  const artifact = parseTrustedAsset(trackId, asset, context.trust.artifactSha(trackId));
+  const catalog = createTrustedCanonicalQuestionCatalog(artifact, lock, trackId);
+  const entry = contentSuccessorLedgerEntry(context.successorLedger, trackId);
+  assertLedgerMatchesArtifact(entry, artifact as Record<string, unknown>, lock, trackId);
+  markStartup("catalog_projection", "begin");
+  let modes: readonly ProductModeConfig[];
+  try {
+    modes = validateTrackModeConfigsAgainstArtifact(PRODUCT_MODE_CONFIGS, { schemaVersion: "patternly-content-artifact-v1", trackId, contentVersion: catalog.contentVersion, questions: catalog.questions },
+      (edge) => markStartup("mode_artifact_questions", edge));
+  } finally { markStartup("catalog_projection", "end"); }
+  const retainedProofs = trustedRetainedCompletionCatalogs(context.trust, retainedAssets);
+  return createTrackRuntime(catalog, modes, entry, context.interactionRegistry, completionSourcesFor(catalog, retainedProofs));
 }
 
 function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry, completionSources?: readonly VerifiedCompletionSource[]): CanonicalTrackRuntime {
@@ -294,17 +430,23 @@ function resolvePool(catalog: CanonicalQuestionCatalog, mode: ProductModeConfig)
 
 export function getCanonicalModeConfig(trackId: string, modeId: string): ProductModeConfig { return getProductModeConfig(trackId, modeId); }
 
-/** Exact-only historical Claude data, outside the replaced active bundle directory. */
-async function loadRetainedClaudePackages() {
-  return [
-    (await import("../generated/retained-content/claude-pre-qle-v2.json")).default,
-    (await import("../generated/retained-content/claude-qle-v2-first-cases.json")).default,
-    (await import("../generated/retained-content/claude-qle-v2-before-identity.json")).default,
-    (await import("../generated/retained-content/claude-qle-v2-active-before-exam.json")).default,
-  ];
-}
+/** Retained Claude package (exact historical artifact + its lock and successor ledger row), read from an asset. */
+export type RetainedClaudePackage = Readonly<{
+  artifact: Readonly<{ trackId: string; contentVersion: string; planningPolicy: Readonly<{ policyVersion: string }>; questions: readonly unknown[] }>;
+  lock: CanonicalContentLockRecord;
+  ledger: Readonly<{
+    trackId: string;
+    training: Readonly<{ contentVersion: string; artifactSha256: string; questionCount: number }>;
+    planningPolicy: Readonly<{ contentVersion: string; artifactSha256: string; policyVersion: string }>;
+  }>;
+}>;
 
-type RetainedClaudePackage = Awaited<ReturnType<typeof loadRetainedClaudePackages>>[number];
+/** Exact-only historical Claude data, outside the replaced active content directory. */
+async function loadRetainedClaudePackages(assets: ContentAssetSource = bundledContentAssetSource): Promise<RetainedClaudePackage[]> {
+  const packages: RetainedClaudePackage[] = [];
+  for (const file of RETAINED_FILES) packages.push(JSON.parse((await assets.read("retained-content", file)).text) as RetainedClaudePackage);
+  return packages;
+}
 
 /** Failed historical proofs stay absent from the classifier's verified pin set. */
 export async function verifyRetainedCompletionCatalogs(sources: readonly RetainedClaudePackage[], interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry, onVerifiedPair?: (index: number) => void): Promise<readonly CanonicalQuestionCatalog[]> {
@@ -330,19 +472,18 @@ async function verifyRetainedClaudePackage(retained: RetainedClaudePackage, inte
 }
 
 /**
- * Trusted retained proofs: the manifest lists only packages whose full proof passed at build time, so a
- * package that is absent (or whose lock/ledger changed) stays unverified, exactly as a failed proof would.
- * Full re-verification of a retained pin happens lazily, on demand, in `resolveRetainedClaudeTrack`.
+ * Trusted retained proofs: the manifest lists only packages whose full proof passed at build time, with the
+ * SHA-256 of their exact file bytes. A package that is absent, unreadable or changed stays unverified, exactly
+ * as a failed proof would. Full re-verification of a retained pin happens on demand in `resolveRetainedClaudeTrack`.
  */
-async function trustedRetainedCompletionCatalogs(sources: readonly RetainedClaudePackage[], trust: TrustedContent, onVerifiedPair?: (index: number) => void): Promise<readonly CanonicalQuestionCatalog[]> {
+function trustedRetainedCompletionCatalogs(trust: TrustedContent, assets: readonly (ContentAsset | undefined)[]): readonly CanonicalQuestionCatalog[] {
   const verified: CanonicalQuestionCatalog[] = [];
-  for (const [index, source] of sources.entries()) {
+  for (const [index, asset] of assets.entries()) {
     const id = retainedVerificationIds[index];
-    try {
-      if (!id || !await trust.retainedProven(id, source)) continue;
-      verified.push(...trustedRetainedClaudePackage(source));
-      onVerifiedPair?.(index);
-    } catch { /* Same contract as the full path: an unverified pin yields explicit unavailable completion. */ }
+    const expected = id === undefined ? undefined : trust.retainedFileSha(id);
+    if (!asset || expected === undefined || asset.sha256 !== expected) continue;
+    try { verified.push(...trustedRetainedClaudePackage(JSON.parse(asset.text) as RetainedClaudePackage)); }
+    catch { /* Same contract as the full path: an unverified pin yields explicit unavailable completion. */ }
   }
   return Object.freeze(verified);
 }
@@ -365,25 +506,27 @@ function trustedRetainedClaudePackage(retained: RetainedClaudePackage): readonly
  * bundled content once and returns the manifest that lets each start of this binary skip it. Throws when the
  * current bundle does not verify, so a broken bank can never obtain a manifest.
  */
-export async function deriveBundledContentTrustManifest(sha256Utf8: (value: string) => Promise<string> = contentHasher.sha256): Promise<ContentTrustManifest> {
+export async function deriveBundledContentTrustManifest(sha256Utf8: (value: string) => Promise<string> = contentHasher.sha256, assets: ContentAssetSource = bundledContentAssetSource): Promise<ContentTrustManifest> {
   const proven = new Set<string>();
-  await buildCatalog({ sha256Utf8 }, (unitId) => { proven.add(unitId); }, "full");
-  const retainedPackages = await loadRetainedClaudePackages();
-  const retained: { id: string; sha: string }[] = [];
+  await buildCatalog({ sha256Utf8, assets }, { plan() {}, verified: (unitId) => { proven.add(unitId); } }, "full");
+  const retained: { id: string; sha: string; fileSha: string }[] = [];
   for (const [index, id] of retainedVerificationIds.entries()) {
-    const source = retainedPackages[index];
-    if (source && proven.has(id)) retained.push({ id, sha: await retainedTrustBindingSha(source, sha256Utf8) });
+    const file = RETAINED_FILES[index];
+    if (!file || !proven.has(id)) continue;
+    const asset = await assets.read("retained-content", file);
+    retained.push({ id, sha: await retainedTrustBindingSha(JSON.parse(asset.text) as RetainedClaudePackage, sha256Utf8), fileSha: asset.sha256 });
   }
   return {
     schemaVersion: CONTENT_TRUST_MANIFEST_SCHEMA,
     lockSha: await contentTrustBindingSha(lockFile, sha256Utf8),
     ledgerSha: await contentTrustBindingSha(successorLedgerFile, sha256Utf8),
-    artifacts: artifacts.map((artifact) => {
-      const trackId = (artifact as { trackId: string }).trackId;
+    artifacts: await Promise.all(CURRENT_TRACK_IDS.map(async (trackId) => {
       const sha = locks.get(trackId)?.sha256;
       if (!sha) throw new Error(`Canonical content lock is missing for ${trackId}.`);
+      // The asset bytes are what the runtime hashes; the full proof above hashed their canonical serialization.
+      if ((await assets.read("canonical-content", trackAssetFile(trackId))).sha256 !== sha) throw new Error(`Canonical content asset ${trackId} bytes do not match its lock.`);
       return { trackId, sha };
-    }),
+    })),
     retained,
   };
 }
@@ -394,7 +537,7 @@ export async function buildFullyVerifiedCanonicalRuntimeCatalog(dependencies: Ca
 }
 
 export async function resolveRetainedClaudeTrack(identity: Readonly<{ trackId: string; contentVersion: string; artifactSha256: string }>, interactions: CanonicalInteractionRegistry = canonicalInteractionRegistry): Promise<CanonicalTrackRuntime | null> {
-  if (identity.trackId !== "claude-certified-architect-professional-certification") return null;
+  if (identity.trackId !== RETAINED_TRACK_ID) return null;
   const retained = (await loadRetainedClaudePackages()).find(({ lock, ledger }) =>
     (identity.contentVersion === lock.contentVersion && identity.artifactSha256 === lock.sha256) ||
     (identity.contentVersion === ledger.training.contentVersion && identity.artifactSha256 === ledger.training.artifactSha256));
@@ -402,5 +545,5 @@ export async function resolveRetainedClaudeTrack(identity: Readonly<{ trackId: s
   const catalogs = await verifyRetainedClaudePackage(retained, interactions);
   const exact = catalogs.find(catalog => catalog.contentVersion === identity.contentVersion && catalog.artifactSha256 === identity.artifactSha256);
   if (!exact) return null;
-  return createTrackRuntime(exact, PRODUCT_MODE_CONFIGS, exact.contentVersion === retained.lock.contentVersion && exact.artifactSha256 === retained.lock.sha256 ? retained.ledger : undefined, interactions);
+  return createTrackRuntime(exact, PRODUCT_MODE_CONFIGS, exact.contentVersion === retained.lock.contentVersion && exact.artifactSha256 === retained.lock.sha256 ? retained.ledger as ContentSuccessorLedger["tracks"][number] : undefined, interactions);
 }

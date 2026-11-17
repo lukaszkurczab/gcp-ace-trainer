@@ -241,21 +241,38 @@ export function validateProductModeConfigsAgainstArtifacts(configs: readonly Pro
 
   const validatedArtifacts = new Set<ProductModeArtifact>();
   for (const entry of validatedConfigs) {
-    const entryKey = key(entry.trackId, entry.modeId);
     const artifact = artifactByTrack.get(entry.trackId);
-    if (!artifact) throw new Error(`ProductModeConfig ${entryKey} references a foreign track.`);
-    if (!validatedArtifacts.has(artifact)) {
-      try { observeArtifactQuestions?.("begin"); } catch { /* Optional observation cannot change validation. */ }
-      try { validateArtifactQuestions(artifact); }
-      finally { try { observeArtifactQuestions?.("end"); } catch { /* Preserve the validation outcome. */ } }
-      validatedArtifacts.add(artifact);
-    }
-    const pool = selectionPool(entry.selection, artifact);
-    if (pool.length === 0) throw new Error(`ProductModeConfig ${entryKey} has an empty canonical pool.`);
-    if (entry.selection.kind === "exact_ordered_questions" && pool.some((question) => question.nodeId !== TRACKS.gcp.freeNodeId)) throw new Error("GCP Diagnostic questions must belong to its canonical Free node.");
-    if (entry.requestedLengths.some((length) => length > pool.length)) throw new Error(`ProductModeConfig ${entryKey} has a requested length larger than its canonical pool.`);
+    if (!artifact) throw new Error(`ProductModeConfig ${key(entry.trackId, entry.modeId)} references a foreign track.`);
+    validateConfigAgainstArtifact(entry, artifact, validatedArtifacts, observeArtifactQuestions);
   }
   return validatedConfigs;
+}
+
+/**
+ * T2.4: one track's modes against that track's questions (the lazily loaded catalog builds one track at a
+ * time). The nine-track inventory check stays in `validateProductModeConfigsAgainstArtifacts`, which the
+ * full verification (build-time trust manifest, tests) still runs. `configs` must already be validated.
+ */
+export function validateTrackModeConfigsAgainstArtifact(configs: readonly ProductModeConfig[], artifact: ProductModeArtifact, observeArtifactQuestions?: (edge: "begin" | "end") => void): readonly ProductModeConfig[] {
+  if (!artifact || typeof artifact !== "object" || !isCanonicalSafeIdentity(artifact.trackId) || !Array.isArray(artifact.questions) || artifact.questions.length === 0) throw new Error("Product mode artifact must be a non-empty canonical track with a safe identity.");
+  const modes = Object.freeze(configs.filter((entry) => entry.trackId === artifact.trackId));
+  const validatedArtifacts = new Set<ProductModeArtifact>();
+  for (const entry of modes) validateConfigAgainstArtifact(entry, artifact, validatedArtifacts, observeArtifactQuestions);
+  return modes;
+}
+
+function validateConfigAgainstArtifact(entry: ProductModeConfig, artifact: ProductModeArtifact, validatedArtifacts: Set<ProductModeArtifact>, observeArtifactQuestions?: (edge: "begin" | "end") => void): void {
+  const entryKey = key(entry.trackId, entry.modeId);
+  if (!validatedArtifacts.has(artifact)) {
+    try { observeArtifactQuestions?.("begin"); } catch { /* Optional observation cannot change validation. */ }
+    try { validateArtifactQuestions(artifact); }
+    finally { try { observeArtifactQuestions?.("end"); } catch { /* Preserve the validation outcome. */ } }
+    validatedArtifacts.add(artifact);
+  }
+  const pool = selectionPool(entry.selection, artifact);
+  if (pool.length === 0) throw new Error(`ProductModeConfig ${entryKey} has an empty canonical pool.`);
+  if (entry.selection.kind === "exact_ordered_questions" && pool.some((question) => question.nodeId !== TRACKS.gcp.freeNodeId)) throw new Error("GCP Diagnostic questions must belong to its canonical Free node.");
+  if (entry.requestedLengths.some((length) => length > pool.length)) throw new Error(`ProductModeConfig ${entryKey} has a requested length larger than its canonical pool.`);
 }
 
 export const PRODUCT_MODE_CONFIGS = validateProductModeConfigs(CANDIDATE_CONFIGS);
