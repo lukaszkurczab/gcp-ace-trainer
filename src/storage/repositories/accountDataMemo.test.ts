@@ -127,7 +127,8 @@ test("repeated reads of unchanged bytes are memo hits without revalidation", asy
   assert.equal(first, second);
   assert.equal(counters.fullStateValidations, 0);
   assert.equal(counters.fingerprintComputations, 0);
-  assert.equal(counters.stateMemoHits, 2);
+  assert.equal(counters.stateEpochHits, 2, "J3: no ACCOUNT_SYNC write was reported, so neither read touches the store");
+  assert.equal(counters.stateMemoHits, 0);
 });
 
 function corruptOutboxFingerprint(raw: string): string {
@@ -151,6 +152,24 @@ test("bytes changed behind the memo (same revision) force full revalidation", as
   await getAccountSyncState(context);
   const storage = getKeyValueStorage();
   storage.setString(STORAGE_KEYS.ACCOUNT_SYNC, corruptOutboxFingerprint(storage.getString(STORAGE_KEYS.ACCOUNT_SYNC)!));
+  await assert.rejects(getAccountSyncState(context), (error: unknown) => error instanceof AccountDataFailure);
+});
+
+test("J3: a repeated state read does not touch ACCOUNT_SYNC until a write to it is reported", async () => {
+  await seedLocalDataset(2);
+  await ensureAccountOutboxFromLocalDataset(context);
+  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
+  await getAccountSyncState(context);
+  storage.resetCounters();
+  await getAccountSyncState(context);
+  await getAccountSyncState(context);
+  assert.equal(storage.operations.filter((operation) => operation.key === STORAGE_KEYS.ACCOUNT_SYNC).length, 0);
+  // An unreported byte change is not seen on this path (D5a); the next reported write is.
+  const values = Reflect.get(storage, "values") as Map<string, string>;
+  const corrupt = corruptOutboxFingerprint(storage.getString(STORAGE_KEYS.ACCOUNT_SYNC)!);
+  values.set(STORAGE_KEYS.ACCOUNT_SYNC, corrupt);
+  await getAccountSyncState(context);
+  storage.setString(STORAGE_KEYS.ACCOUNT_SYNC, corrupt);
   await assert.rejects(getAccountSyncState(context), (error: unknown) => error instanceof AccountDataFailure);
 });
 

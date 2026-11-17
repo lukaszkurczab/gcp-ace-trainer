@@ -161,10 +161,20 @@ type AccountSyncStateMemo = Readonly<{
   goalPolicyResolver: GoalPolicyResolver;
   raw: string;
   state: AccountSyncState;
+  /** J3: reported ACCOUNT_SYNC writes on `storage` when the memo was taken; null when the store does not report writes. */
+  writes: number | null;
 }>;
 let accountSyncStateMemo: AccountSyncStateMemo | null = null;
+/** J3 (D5a): writes to ACCOUNT_SYNC reported by each storage owner. */
+const accountSyncWrites = new WeakMap<object, number>();
+onKeyValueWrite((storage, key) => {
+  if (key === STORAGE_KEYS.ACCOUNT_SYNC) accountSyncWrites.set(storage, (accountSyncWrites.get(storage) ?? 0) + 1);
+});
+function accountSyncWriteCount(storage: object): number | null {
+  return isKeyValueWriteObservable(storage) ? accountSyncWrites.get(storage) ?? 0 : null;
+}
 
-const accountDataPerfCounters = { fingerprintComputations: 0, fullStateValidations: 0, stateMemoHits: 0 };
+const accountDataPerfCounters = { fingerprintComputations: 0, fullStateValidations: 0, stateMemoHits: 0, stateEpochHits: 0 };
 
 /** Test-only: observes how much verification work the repository performs. */
 export function readAccountDataPerfCountersForTests(): Readonly<typeof accountDataPerfCounters> { return Object.freeze({ ...accountDataPerfCounters }); }
@@ -172,6 +182,7 @@ export function resetAccountDataPerfCountersForTests(): void {
   accountDataPerfCounters.fingerprintComputations = 0;
   accountDataPerfCounters.fullStateValidations = 0;
   accountDataPerfCounters.stateMemoHits = 0;
+  accountDataPerfCounters.stateEpochHits = 0;
 }
 /** Drops the in-memory sync-state memo; the next read fully revalidates the stored bytes. */
 export function invalidateAccountSyncStateMemo(): void { accountSyncStateMemo = null; }
@@ -253,14 +264,25 @@ function rememberValidatedStateRecords(state: AccountSyncState): void {
 
 function storeAccountSyncStateMemo(storage: object, raw: string, context: LearningDataAdmissionContext, state: AccountSyncState): void {
   rememberValidatedStateRecords(state);
-  accountSyncStateMemo = Object.freeze({ storage, lease: captureLeaseKey(), trackAdmission: context.trackAdmission, goalPolicyResolver: context.goalPolicyResolver, raw, state });
+  accountSyncStateMemo = Object.freeze({ storage, lease: captureLeaseKey(), trackAdmission: context.trackAdmission, goalPolicyResolver: context.goalPolicyResolver, raw, state, writes: accountSyncWriteCount(storage) });
 }
 
 /**
- * The single validated read of ACCOUNT_SYNC. A memo hit requires identical
- * stored bytes, storage owner, profile lease and admission context.
+ * The single validated read of ACCOUNT_SYNC. A memo hit requires the same
+ * storage owner, profile lease and admission context, and either no reported
+ * write to ACCOUNT_SYNC since the memo (J3, D5a: no read at all on a store that
+ * reports its writes) or identical stored bytes.
  */
 function readValidatedAccountSyncStateMemoized(context: LearningDataAdmissionContext): AccountSyncState {
+  const memo = accountSyncStateMemo;
+  if (memo && memo.writes !== null) {
+    const storage = getKeyValueStorage();
+    if (memo.storage === storage && accountSyncWriteCount(storage) === memo.writes && memo.trackAdmission === context.trackAdmission
+      && memo.goalPolicyResolver === context.goalPolicyResolver && memo.lease === captureLeaseKey()) {
+      accountDataPerfCounters.stateEpochHits += 1;
+      return memo.state;
+    }
+  }
   const { storage, raw } = readAccountSyncRaw();
   if (raw === undefined) {
     accountSyncStateMemo = null;
