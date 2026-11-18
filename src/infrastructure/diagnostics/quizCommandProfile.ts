@@ -1,12 +1,12 @@
+import { isPatternlyPerfBuild } from "../runtime/runtimeMode";
+
 /**
  * Stage 0 of the J/B-full design (`Projekt-B-full.md` §6.1): sub-spans and
  * storage counters inside one `quiz_command`. Perf build with
  * `EXPO_PUBLIC_PATTERNLY_PERF_QUIZ_PROFILE=1` only; everywhere else every
  * helper is a direct call with no extra work.
  */
-const ENABLED = process.env.EXPO_PUBLIC_PATTERNLY_PERF_QUIZ_PROFILE === "1"
-  && process.env.EXPO_PUBLIC_PATTERNLY_PERF_BUILD === "1"
-  && process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke";
+const ENABLED = process.env.EXPO_PUBLIC_PATTERNLY_PERF_QUIZ_PROFILE === "1" && isPatternlyPerfBuild();
 
 /**
  * The trace emitter is installed by the command owner (which already depends
