@@ -4,6 +4,8 @@ import { installKeyValueStorageForTests, setActiveProfileLeaseForTests, type Key
 import { attempt, installMemoryStorage, session } from "../../testing/journalTestSupport";
 import { productionTrackAdmissionContext as admission } from "../../application/tracks/trackAdmissionContext";
 import { STORAGE_KEYS } from "../keys";
+import { readCanonicalNamespaceKeys, readCanonicalNamespaceKeysObserved } from "./canonicalRecordCodec";
+import { assertContentIdentityRecordIntegrity } from "./contentIdentityUnavailableRepository";
 import { saveTrainingSession } from "./trainingSessionRepository";
 import { addTrainingAttempt } from "./trainingAttemptRepository";
 import {
@@ -162,3 +164,42 @@ test("revoked track admission is enforced on a memo hit", () => {
   assert.throws(() => readTrainingEvidenceSnapshotStrict(toggled));
 });
 
+
+test("J1b: a family that only gained new indexed records is extended and equals a full read", async () => {
+  readTrainingEvidenceSnapshotStrict(admission);
+  await addTrainingAttempt(attempt("attempt-3", "session-1"), admission);
+  await addTrainingAttempt(attempt("attempt-4", "session-1"), admission);
+  resetTrainingEvidenceMemoCountersForTests();
+  storage.resetCounters();
+  const extended = readTrainingEvidenceSnapshotStrict(admission).attempts.map((value) => value.id);
+  assert.equal(counters().familyExtensions, 1);
+  // addTrainingAttempt reads the family before it writes, so attempt-3 was already folded in; only attempt-4 is read here.
+  assert.deepEqual(storage.operations.filter((operation) => operation.kind === "read" && operation.key.startsWith(STORAGE_KEYS.trainingAttempt(""))).map((operation) => operation.key), [STORAGE_KEYS.trainingAttempt("attempt-4")]);
+  clearTrainingEvidenceMemo();
+  assert.deepEqual(extended, readTrainingEvidenceSnapshotStrict(admission).attempts.map((value) => value.id));
+});
+
+test("J1b: a rewritten existing record or a removed index id takes the full read", async () => {
+  readTrainingEvidenceSnapshotStrict(admission);
+  const key = STORAGE_KEYS.trainingAttempt("attempt-1");
+  const envelope = JSON.parse(storage.getString(key)!);
+  storage.setString(key, JSON.stringify({ ...envelope, revision: envelope.revision + 1 }));
+  resetTrainingEvidenceMemoCountersForTests();
+  readTrainingEvidenceSnapshotStrict(admission);
+  assert.equal(counters().familyExtensions, 0);
+  storage.setString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision: 99, payload: ["attempt-1"] }));
+  assert.throws(() => readTrainingEvidenceSnapshotStrict(admission), (error: Error) => error.name === "CanonicalEvidenceIntegrityError", "attempt-2 is now an unindexed record");
+});
+
+test("J1b: the observed namespace key list follows reported writes and matches a full listing", () => {
+  const before = readCanonicalNamespaceKeysObserved();
+  assert.deepEqual(before, readCanonicalNamespaceKeys());
+  storage.setString(STORAGE_KEYS.unavailableActive("orphan"), "{}");
+  storage.resetCounters();
+  const after = readCanonicalNamespaceKeysObserved();
+  assert.ok(after.includes(STORAGE_KEYS.unavailableActive("orphan")));
+  assert.deepEqual(after, readCanonicalNamespaceKeys());
+  assert.throws(() => assertContentIdentityRecordIntegrity({ observedKeys: true }), (error: Error) => error.name === "CanonicalEvidenceIntegrityError");
+  storage.remove(STORAGE_KEYS.unavailableActive("orphan"));
+  assert.deepEqual(readCanonicalNamespaceKeysObserved(), readCanonicalNamespaceKeys());
+});

@@ -1,4 +1,4 @@
-import { applyActiveForegroundTimerRaw, pauseActiveForegroundClock, captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, MemoryKeyValueStorage, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
+import { applyActiveForegroundTimerRaw, pauseActiveForegroundClock, captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, isKeyValueWriteObservable, MemoryKeyValueStorage, onKeyValueWrite, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { CanonicalWriteConflictError, CorruptStoredRecordError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../errors";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
@@ -365,6 +365,39 @@ export function readCanonicalNamespaceKeys(): readonly string[] {
   } catch (error) {
     throw new StorageReadError(STORAGE_NAMESPACE, error);
   }
+}
+
+/**
+ * J1b: the namespace key list of a store that reports its writes, kept by
+ * probing only keys written since the last call (one `contains` each) instead
+ * of listing every key. For command-path checks of families that only JS
+ * writes; full validation keeps `readCanonicalNamespaceKeys`.
+ */
+type ObservedNamespaceKeys = { storage: object; keys: readonly string[]; present: Set<string>; written: Set<string> };
+let observedNamespaceKeys: ObservedNamespaceKeys | null = null;
+onKeyValueWrite((storage, key) => {
+  if (observedNamespaceKeys?.storage === storage && key.startsWith(STORAGE_NAMESPACE)) observedNamespaceKeys.written.add(key);
+});
+export function readCanonicalNamespaceKeysObserved(): readonly string[] {
+  let storage: ReturnType<typeof getKeyValueStorage>;
+  try { storage = getKeyValueStorage(); } catch (error) { throw new StorageReadError(STORAGE_NAMESPACE, error); }
+  if (!isKeyValueWriteObservable(storage)) return readCanonicalNamespaceKeys();
+  const cache = observedNamespaceKeys;
+  if (!cache || cache.storage !== storage) {
+    const keys = readCanonicalNamespaceKeys();
+    observedNamespaceKeys = { storage, keys, present: new Set(keys), written: new Set() };
+    return keys;
+  }
+  if (cache.written.size > 0) {
+    let changed = false;
+    for (const key of cache.written) {
+      const exists = readCanonicalKeyPresence(key);
+      if (exists !== cache.present.has(key)) { changed = true; if (exists) cache.present.add(key); else cache.present.delete(key); }
+    }
+    cache.written.clear();
+    if (changed) cache.keys = Object.freeze([...cache.present].sort());
+  }
+  return cache.keys;
 }
 
 /** Read the exact raw values for one selected profile namespace through the codec owner. */

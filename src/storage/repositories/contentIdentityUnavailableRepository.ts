@@ -2,7 +2,7 @@ import { isContentIdentityTombstone, type ContentIdentityTombstone } from "../..
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import type { KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalEnvelope, readCanonicalJson, readCanonicalNamespaceKeys, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { readCanonicalEnvelope, readCanonicalJson, readCanonicalNamespaceKeys, readCanonicalNamespaceKeysObserved, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { CanonicalEvidenceIntegrityError, CanonicalWriteConflictError, CorruptStoredRecordError, UnsupportedStoredRecordError } from "../errors";
 import type { StorageRepositoryResult } from "./result";
 
@@ -145,9 +145,14 @@ export type ContentIdentityRetainedHistorySnapshot = Readonly<{
   unavailableReviews: readonly ContentIdentityUnavailableReviewRecord[];
 }>;
 
-/** Strict read-only closure check used before a reset is authorized. */
-export function assertContentIdentityRecordIntegrity(): void {
-  const keys = readCanonicalNamespaceKeys();
+/**
+ * Strict read-only closure check used before a reset is authorized. A new
+ * learning command passes `observedKeys` (J1b): the key list comes from the
+ * write-tracked namespace list instead of listing the store; every index and
+ * record is still read and checked.
+ */
+export function assertContentIdentityRecordIntegrity(options: Readonly<{ observedKeys?: boolean }> = {}): void {
+  const keys = options.observedKeys ? readCanonicalNamespaceKeysObserved() : readCanonicalNamespaceKeys();
   const fail = (): never => { throw new CanonicalEvidenceIntegrityError(); };
   const assertFamily = <T>(family: Readonly<{
     index: string;

@@ -75,7 +75,8 @@ function samePersistedPayload(left: unknown, right: unknown): boolean {
 const EVIDENCE_MEMO_MAX_CHARS = 6_000_000;
 type MemoEntry = Readonly<{ raw: string; envelope: CanonicalRecordEnvelope<unknown> }>;
 type FamilyName = EvidenceKind | "result";
-type CachedFamily = Readonly<{ version: number; snapshot: IndexedSnapshot<EvidenceValue> }>;
+/** `ids` is the frozen index payload the snapshot was built from; `idSet` is owned by this entry alone. */
+type CachedFamily = Readonly<{ version: number; snapshot: IndexedSnapshot<EvidenceValue>; ids: readonly string[]; idSet: Set<string> }>;
 type EvidenceMemo = {
   storage: object; lease: string; admission: object;
   /** The store reports every write: unwritten keys are trusted without a read. */
@@ -88,10 +89,12 @@ type EvidenceMemo = {
   keys: readonly string[] | null; keysDirty: Set<string>;
   versions: Map<FamilyName, number>;
   families: Map<FamilyName, CachedFamily>;
+  /** Keys of each family written since its cached snapshot (cleared only when a new snapshot is cached). */
+  changes: Map<FamilyName, Set<string>>;
   results: Readonly<{ version: number; values: readonly TrainingSessionResult[] }> | null;
 };
 let evidenceMemo: EvidenceMemo | null = null;
-const evidenceMemoCounters = { hits: 0, misses: 0, clears: 0, reads: 0, familyHits: 0 };
+const evidenceMemoCounters = { hits: 0, misses: 0, clears: 0, reads: 0, familyHits: 0, familyExtensions: 0 };
 export function readTrainingEvidenceMemoCountersForTests(): Readonly<typeof evidenceMemoCounters> { return { ...evidenceMemoCounters }; }
 export function resetTrainingEvidenceMemoCountersForTests(): void { for (const key of Object.keys(evidenceMemoCounters) as (keyof typeof evidenceMemoCounters)[]) evidenceMemoCounters[key] = 0; }
 /** Drops the evidence index. Full-integrity, recovery and profile transitions start from bytes alone. */
@@ -117,6 +120,9 @@ onKeyValueWrite((storage, key) => {
   memo.dirty.add(key);
   if (isEvidenceRecordKey(key)) memo.keysDirty.add(key);
   memo.versions.set(family, (memo.versions.get(family) ?? 0) + 1);
+  let changed = memo.changes.get(family);
+  if (!changed) { changed = new Set(); memo.changes.set(family, changed); }
+  changed.add(key);
 });
 
 function deepFreeze<T>(value: T): T {
@@ -140,7 +146,7 @@ function memoFor(admission: object): EvidenceMemo | null {
     clearTrainingEvidenceMemo();
     evidenceMemo = {
       storage, lease: key, admission, trusted: isKeyValueWriteObservable(storage),
-      entries: new Map(), chars: 0, dirty: new Set(), keys: null, keysDirty: new Set(), versions: new Map(), families: new Map(), results: null,
+      entries: new Map(), chars: 0, dirty: new Set(), keys: null, keysDirty: new Set(), versions: new Map(), families: new Map(), changes: new Map(), results: null,
     };
   }
   return evidenceMemo;
@@ -172,9 +178,12 @@ function forget(memo: EvidenceMemo, key: string): void {
   if (cached) memo.chars -= cached.raw.length;
   memo.entries.delete(key);
 }
-/** Same result and errors as `readCanonicalEnvelope(key, guard)`; an unwritten key or identical bytes skip parse and guard. */
-function readEvidenceEnvelope<T>(key: string, guard: (value: unknown) => value is T, admission: TrackAdmissionContext, trackIdOf: ((value: T) => string) | null, useMemo: boolean): CanonicalRecordEnvelope<T> | null {
-  const memo = useMemo ? memoFor(admission) : null;
+/**
+ * Same result and errors as `readCanonicalEnvelope(key, guard)`; an unwritten key or identical bytes skip parse and guard.
+ * `memo` is resolved once per family read by the caller (`memoFor`): the owner, lease and admission cannot change
+ * inside one synchronous read, and resolving it per key captured and serialized the lease for every record.
+ */
+function readEvidenceEnvelope<T>(key: string, guard: (value: unknown) => value is T, admission: TrackAdmissionContext, trackIdOf: ((value: T) => string) | null, memo: EvidenceMemo | null): CanonicalRecordEnvelope<T> | null {
   if (!memo) return readCanonicalEnvelope(key, guard);
   if (memo.trusted && !memo.dirty.has(key) && memo.entries.has(key)) {
     const trusted = memo.entries.get(key)!;
@@ -256,7 +265,11 @@ function readIndexedFamily<T extends EvidenceValue>(
   const memo = useMemo ? memoFor(admission) : null;
   const name = familyName(family);
   const version = memo?.versions.get(name) ?? 0;
-  const indexEnvelope = readEvidenceEnvelope(family.indexKey, isIds, admission, null, useMemo);
+  if (memo?.trusted) {
+    const extended = extendCachedFamily(family, memo, admission, name, version);
+    if (extended) return extended;
+  }
+  const indexEnvelope = readEvidenceEnvelope(family.indexKey, isIds, admission, null, memo);
   const ids = indexEnvelope?.payload ?? [];
   if (new Set(ids).size !== ids.length) integrityFailure();
 
@@ -267,7 +280,7 @@ function readIndexedFamily<T extends EvidenceValue>(
   for (const id of ids) {
     const key = family.keyFor(id);
     if (!physicalKeys.has(key)) integrityFailure();
-    const envelope = readEvidenceEnvelope(key, (value): value is T => family.guard(value, admission), admission, trackIdOfEvidence, useMemo);
+    const envelope = readEvidenceEnvelope(key, (value): value is T => family.guard(value, admission), admission, trackIdOfEvidence, memo);
     if (!envelope || family.getId(envelope.payload) !== id) integrityFailure();
     values.push(envelope.payload);
     revisions[id] = envelope.revision;
@@ -279,7 +292,7 @@ function readIndexedFamily<T extends EvidenceValue>(
     if (!id.trim() || family.keyFor(id) !== key) integrityFailure();
     if (indexedIds.has(id)) continue;
     unindexed = true;
-    const envelope = readEvidenceEnvelope(key, (value): value is T => family.guard(value, admission), admission, trackIdOfEvidence, useMemo);
+    const envelope = readEvidenceEnvelope(key, (value): value is T => family.guard(value, admission), admission, trackIdOfEvidence, memo);
     const expected = allowedUnindexed.get(key);
     if (!envelope || expected === undefined || !samePersistedPayload(envelope.payload, expected)
       || family.getId(envelope.payload) !== id) integrityFailure();
@@ -289,9 +302,73 @@ function readIndexedFamily<T extends EvidenceValue>(
 
   const snapshot = Object.freeze({ values: Object.freeze(values), revisions: Object.freeze(revisions), indexRevision: indexEnvelope?.revision ?? null });
   // Only a snapshot that no allowance shaped is reusable; nothing was written while it was read (synchronous).
-  if (memo && memo === evidenceMemo && memo.trusted && !unindexed && (memo.versions.get(name) ?? 0) === version) {
-    memo.families.set(name, Object.freeze({ version, snapshot: snapshot as IndexedSnapshot<EvidenceValue> }));
+  if (memo && memo === evidenceMemo && memo.trusted) {
+    if (!unindexed && (memo.versions.get(name) ?? 0) === version) {
+      memo.families.set(name, Object.freeze({ version, snapshot: snapshot as IndexedSnapshot<EvidenceValue>, ids, idSet: indexedIds }));
+      memo.changes.set(name, new Set());
+    } else memo.families.delete(name);
   }
+  return snapshot;
+}
+
+/**
+ * J1b: a family whose only writes since its cached snapshot are new records
+ * put in front of or after the unchanged index ids (a submit: one attempt; a
+ * review put) is extended without visiting every indexed record. The new
+ * index bytes and the new records are read and validated; the unchanged part
+ * of the index must equal the cached ids element by element. Anything else
+ * (a changed existing record, a removal, an unindexed record) takes the full read.
+ */
+function extendCachedFamily<T extends EvidenceValue>(family: FamilySpec<T>, memo: EvidenceMemo, admission: TrackAdmissionContext, name: EvidenceKind, version: number): IndexedSnapshot<T> | null {
+  const cached = memo.families.get(name);
+  const changed = memo.changes.get(name);
+  if (!cached || !changed || changed.size === 0 || changed.size > 32) return null;
+  const changedIds: string[] = [];
+  for (const key of changed) {
+    if (key === family.indexKey) continue;
+    if (!key.startsWith(family.recordPrefix)) return null;
+    const id = key.slice(family.recordPrefix.length);
+    if (!id.trim() || family.keyFor(id) !== key || cached.idSet.has(id)) return null;
+    changedIds.push(id);
+  }
+  for (const value of cached.snapshot.values) if (!admission.isAdmittedTrackId(value.trackId)) return null;
+  const indexEnvelope = readEvidenceEnvelope(family.indexKey, isIds, admission, null, memo);
+  const ids = indexEnvelope?.payload ?? [];
+  const prior = cached.ids;
+  let start = 0;
+  while (start < ids.length && !cached.idSet.has(ids[start]!)) start += 1;
+  if (start + prior.length > ids.length) return null;
+  for (let index = 0; index < prior.length; index += 1) if (ids[start + index] !== prior[index]) return null;
+  const head = ids.slice(0, start);
+  const tail = ids.slice(start + prior.length);
+  const added = [...head, ...tail];
+  const addedSet = new Set(added);
+  if (addedSet.size !== added.length || added.some((id) => cached.idSet.has(id))) return null;
+  const guard = (value: unknown): value is T => family.guard(value, admission);
+  // A written record key that the index does not name must take the full read (orphan or allowance).
+  for (const id of changedIds) if (!addedSet.has(id) && readEvidenceEnvelope(family.keyFor(id), guard, admission, trackIdOfEvidence, memo) !== null) return null;
+  const revisions: Record<string, number> = {};
+  const read = (list: readonly string[]): T[] => list.map((id) => {
+    const key = family.keyFor(id);
+    if (!id.trim() || !changed.has(key)) integrityFailure();
+    const envelope = readEvidenceEnvelope(key, guard, admission, trackIdOfEvidence, memo);
+    if (!envelope || family.getId(envelope.payload) !== id) integrityFailure();
+    revisions[id] = envelope.revision;
+    return envelope.payload;
+  });
+  const headValues = read(head);
+  const tailValues = read(tail);
+  const snapshot: IndexedSnapshot<T> = Object.freeze({
+    values: Object.freeze([...headValues, ...(cached.snapshot.values as readonly T[]), ...tailValues]),
+    revisions: Object.freeze(Object.assign({}, cached.snapshot.revisions, revisions)),
+    indexRevision: indexEnvelope?.revision ?? null,
+  });
+  if (memo === evidenceMemo && (memo.versions.get(name) ?? 0) === version) {
+    for (const id of added) cached.idSet.add(id);
+    memo.families.set(name, Object.freeze({ version, snapshot: snapshot as IndexedSnapshot<EvidenceValue>, ids, idSet: cached.idSet }));
+    memo.changes.set(name, new Set());
+  }
+  evidenceMemoCounters.familyExtensions += 1;
   return snapshot;
 }
 
@@ -308,7 +385,7 @@ function readResultRecords(namespaceKeys: readonly string[], admission: TrackAdm
   for (const key of namespaceKeys.filter((candidate) => candidate.startsWith(resultPrefix))) {
     const sessionId = key.slice(resultPrefix.length);
     if (!sessionId.trim() || STORAGE_KEYS.trainingSessionResult(sessionId) !== key || seenSessionIds.has(sessionId)) integrityFailure();
-    const envelope = readEvidenceEnvelope(key, (value): value is TrainingSessionResult => isTrainingSessionResult(value, admission), admission, trackIdOfEvidence, useMemo);
+    const envelope = readEvidenceEnvelope(key, (value): value is TrainingSessionResult => isTrainingSessionResult(value, admission), admission, trackIdOfEvidence, current);
     if (!envelope || envelope.payload.sessionId !== sessionId) integrityFailure();
     seenSessionIds.add(sessionId);
     results.push(envelope.payload);

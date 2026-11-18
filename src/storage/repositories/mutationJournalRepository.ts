@@ -981,7 +981,7 @@ export async function persistMutationJournal(record: MutationJournalRecord, cont
         assertLearningStateResetPlanBeforeJournal(reset.targetPlan, context.trackAdmission);
       } else {
         quizSegment("evidence_scan", () => assertTrainingEvidenceIntegrityForCommand(context.trackAdmission));
-        quizSegment("content_identity", () => assertContentIdentityRecordIntegrity());
+        quizSegment("content_identity", () => assertContentIdentityRecordIntegrity({ observedKeys: true }));
       }
       const staleTarget = quizSegment("revision_check", () => record.expectedRevisions.find((condition) => revisionForTarget(condition.target) !== condition.revision)?.target);
       if (staleTarget) throw new StaleMutationRevisionError(staleTarget);
