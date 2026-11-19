@@ -108,6 +108,12 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   // refresh: an older closure carries a superseded response owner and a stale
   // projection, so its owner fence would silently drop every later refresh.
   const latestRefresh = useRef<() => Promise<void>>(async () => undefined);
+  // Bumped when a command (submit, continue, recover) starts. A passive
+  // refresh (tick, AppState) is dropped if a command started since it began:
+  // it may have read the command's transient state (e.g. "advancing"), and
+  // applying it would move the owner fence so the command's own refresh is
+  // dropped and the next question waits for the next tick (S2, ~1 s outliers).
+  const commandEpoch = useRef(0);
   const [pendingPhase, setPendingPhase] = useState<PracticeSurfacePhase | null>(null);
   // SLA trace only: which user press waits for its `*_visible` frame.
   const slaPending = useRef<Readonly<{ kind: "option" } | { kind: "submit" } | { kind: "continue"; from: string }> | null>(null);
@@ -308,12 +314,14 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   // A queued "Continue" waits for durability; the button shows it only after the indicator delay.
   const primaryAction = committedPrimaryAction && continueQueued && durabilitySlow ? { ...committedPrimaryAction, enabled: false, loading: true } : committedPrimaryAction;
 
-  latestRefresh.current = () => refresh();
-  async function refresh(expectedOwner: string = currentResponseOwner, settlesOptimistic = false) {
+  // Passive refresh: never while a command runs; the command refreshes itself.
+  latestRefresh.current = () => actionPending.current ? Promise.resolve() : refresh(currentResponseOwner, false, commandEpoch.current);
+  async function refresh(expectedOwner: string = currentResponseOwner, settlesOptimistic = false, passiveEpoch: number | null = null) {
     // An optimistic answer is replaced only by its own command's projection.
     if (optimisticCommit.current && !settlesOptimistic) return;
     if (!isPracticeResponseOwnerCurrent(expectedOwner, interactionResponseOwner.current)) return;
     const next = await getAlgorithmsPracticeProjection();
+    if (passiveEpoch !== null && passiveEpoch !== commandEpoch.current) return;
     if (!isPracticeResponseOwnerCurrent(expectedOwner, interactionResponseOwner.current)) return;
     const sameResponseOwner = practiceResponseOwner(next) === practiceResponseOwner(projection);
     // Fence queued handlers before React schedules the projection render.
@@ -334,6 +342,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
     if (!isPracticeResponseOwnerCurrent(currentResponseOwner, interactionResponseOwner.current) || actionPending.current || (builtinControl ? !effectiveLocalResponse : !interactionResponseComplete) || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
     if (SLA_TRACE) { markStartup("submit_press"); slaPending.current = { kind: "submit" }; }
     actionPending.current = true;
+    commandEpoch.current += 1;
     if (builtinControl && effectiveLocalResponse && !retryFrozenResponse && projection.operation.kind === "unanswered" && await submitOptimistically(effectiveLocalResponse)) return;
     setPendingPhase("submitting_before_journal");
     setSubmissionError(null);
@@ -405,6 +414,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
       return;
     }
     actionPending.current = true;
+    commandEpoch.current += 1;
     setSubmissionError(null);
     setPendingPhase(projection.position.current === projection.position.total ? "completing" : "advancing");
     try {
@@ -424,6 +434,7 @@ export function PracticeSessionScreen({ navigation, route, additionalResponseRen
   }
 
   async function recover() {
+    commandEpoch.current += 1;
     setSubmissionError(null);
     try { await recoverAlgorithmsPracticeOperation(); await refresh(); }
     catch (error) { setSubmissionError(describeOperationalFailure(error, t("We couldn't restore the session. Try again."))); }
