@@ -21,7 +21,7 @@ import { SessionRevocationExpiredError, createPendingSessionRevocationDrain } fr
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
-import { createFirebaseAuthClient, firebaseAuthErrorCode, FirebaseAuthClientError, type AppleCredentialDependencies, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
+import { createFirebaseAuthClient, firebaseAuthErrorCode, prewarmFirebaseAuth, FirebaseAuthClientError, type AppleCredentialDependencies, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, discardGuestDataAndLoadAccount, inspectAccountSyncConflict, loadAccountDataSession, resetAccountLocalLearningHistory, resolveAccountSyncConflict, resumeSelectedAccountDeletionWithoutAuth, retryAccountDataSync, retryLearningPlanRecovery, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession, type AccountSyncConflictPreview } from "./accountDataService";
 import { commitLearningStateReset } from "../learningMutations";
@@ -603,6 +603,28 @@ function deletionPendingState(user: FirebaseAuthUserSnapshot, deletion: NonNulla
     status: accountData.status === "remoteDeletionPending" ? "remoteDeletionPending" : "localCleanupPending",
     failure: failure ?? deletionRecoveryFailure(deletion, accountData.status === "localCleanupPending" ? "localCleanupFailure" : "remoteDeletionPending"),
   };
+}
+
+/**
+ * K: begin the Firebase persisted-user restore while profile storage is still
+ * opening. Mirrors the provider's own configuration guards; when the provider
+ * would not create an auth client, nothing is started.
+ */
+export function prewarmAccountAuthRestore(runtimeMode: PatternlyRuntimeMode | undefined = readPatternlyRuntimeMode()): void {
+  const smokeRuntime = runtimeMode === "smoke";
+  const publicEnvironment = readPublicEnvironmentFromRuntime();
+  if (!smokeRuntime && publicEnvironment.kind !== "configured") return;
+  const firebaseConfiguration = readFirebaseClientConfiguration();
+  if (firebaseConfiguration.kind !== "configured") return;
+  const authEmulatorOrigin = readDevelopmentFirebaseAuthEmulatorOrigin();
+  const apiOrigin = smokeRuntime
+    ? process.env.EXPO_PUBLIC_PATTERNLY_API_ORIGIN
+    : publicEnvironment.kind === "configured" ? publicEnvironment.value.apiOrigin : undefined;
+  const authActionOrigin = smokeRuntime
+    ? apiOrigin
+    : publicEnvironment.kind === "configured" ? publicEnvironment.value.authActionOrigin : undefined;
+  if (!apiOrigin || !authActionOrigin || (smokeRuntime && !authEmulatorOrigin)) return;
+  prewarmFirebaseAuth({ config: firebaseConfiguration.value, authEmulatorOrigin });
 }
 
 export function PatternlyAccountProvider({ children }: Readonly<{ children: ReactNode }>) {

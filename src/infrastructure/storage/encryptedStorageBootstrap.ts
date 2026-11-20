@@ -358,6 +358,11 @@ async function advance(platform: EncryptedStoragePlatform, initial: StoredManife
 
 export async function openEncryptedStorage(platform: EncryptedStoragePlatform): Promise<EncryptedStorageOpenResult> {
   markStartup("storage_open:encrypted_begin");
+  // K: the rotation request is read in the same secure-store round as the
+  // manifest. Its value (and any read failure) still matters only for a
+  // complete manifest, exactly as before.
+  const rotationRequest = secure(() => platform.manifestStore.get(ROTATION_REQUEST_KEY));
+  rotationRequest.catch(() => undefined);
   let manifest = await readManifest(platform);
   markStartup("storage_open:manifest_read");
   if (!manifest) {
@@ -371,7 +376,7 @@ export async function openEncryptedStorage(platform: EncryptedStoragePlatform): 
     if (!platform.exists(LEGACY_STORAGE_ID) || ENCRYPTED_STORAGE_IDS.some((id) => platform.exists(id)) || secureArtifacts.some((value) => value !== null)) throw new EncryptedStorageBootstrapError("storage_manifest_corrupt");
     return advance(platform, await beginLegacyMigration(platform));
   }
-  if (manifest.stage === "complete" && await secure(() => platform.manifestStore.get(ROTATION_REQUEST_KEY)) === "requested") {
+  if (manifest.stage === "complete" && await rotationRequest === "requested") {
     manifest = await beginRotation(platform, manifest);
   }
   markStartup("storage_open:rotation_read");

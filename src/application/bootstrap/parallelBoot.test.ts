@@ -15,10 +15,12 @@ import { beginAccountSignOut } from "../../storage/repositories/accountLifecycle
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
 import { completeAccountBootstrap, prepareAuthenticatedAccountBootstrap, type AccountBootstrapCompletionPorts, type AccountBootstrapPreparationPorts, type ProfilePreparationAttempt } from "./accountBootstrap";
 import {
+  afterProfileStoragePreparationSettled,
   armStartupFirstFrameFallback,
   createStartupRevalidation,
   hasStartupFirstUsableFrame,
   markStartupRevalidationPending,
+  notifyProfileStoragePreparationSettled,
   notifyStartupFirstUsableFrame,
   readStartupRevalidationPending,
   resetParallelBootForTests,
@@ -130,6 +132,28 @@ test("content prefetch runs once; a failed verification is not cached as success
   assert.equal(first, second, "callers join one prefetch");
   await first;
   assert.equal(calls, 1, "the prefetch swallows the failure; the gate repeats the verification and reports it");
+});
+
+test("content prefetch waits for the first profile storage settle, then runs at once for later callers (K)", () => {
+  const order: string[] = [];
+  const cancelled = afterProfileStoragePreparationSettled(() => order.push("cancelled"));
+  afterProfileStoragePreparationSettled(() => order.push("first"));
+  cancelled();
+  assert.equal(order.join(","), "", "nothing runs while storage is still opening");
+  notifyProfileStoragePreparationSettled();
+  notifyProfileStoragePreparationSettled();
+  assert.equal(order.join(","), "first", "a settle runs each live waiter once; a cancelled waiter never runs");
+  afterProfileStoragePreparationSettled(() => order.push("late"));
+  assert.equal(order.join(","), "first,late", "after the settle a task runs synchronously");
+});
+
+test("the profile storage gate settles the signal on success and on failure (K)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const gate = readFileSync(join(__dirname, "..", "account", "ProfileStoragePreparationGate.tsx"), "utf8");
+  assert.equal(gate.match(/notifyProfileStoragePreparationSettled\(\);/gu)?.length, 2);
+  const root = readFileSync(join(__dirname, "..", "..", "RegularApplicationRoot.tsx"), "utf8");
+  assert.match(root, /afterProfileStoragePreparationSettled\(\(\) => \{ void startBundledContentPrefetch\(/u);
 });
 
 // ---------------------------------------------------------------------------

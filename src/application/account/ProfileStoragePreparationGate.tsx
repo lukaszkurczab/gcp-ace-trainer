@@ -12,6 +12,7 @@ import { createNativeLocalLogoutControl, LocalLogoutControlError, type LocalLogo
 import { EncryptedStorageRecoverySurface, type EncryptedStorageRecoveryStatus } from "../../content/application/EncryptedStorageRecoverySurface";
 import { canStartManualRetry, createManualRetryLimit, reserveManualRetry, settleManualRetry } from "../../content/application/manualRetryLimit";
 import { PreparedProfileStorageContext } from "./profileStoragePreparationContext";
+import { notifyProfileStoragePreparationSettled } from "../bootstrap/parallelBoot";
 
 type PreparationState =
   | { kind: "loading" }
@@ -64,6 +65,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
         diagnostic.ready();
         setState({ kind: "ready", profile: profileState, logoutControl, logoutControlSnapshot });
       }
+      notifyProfileStoragePreparationSettled();
     }).catch((error: unknown) => {
       if (active) {
         settleManualRetry(manualRetry.current, false);
@@ -74,6 +76,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
           : t(describeOperationalFailure(error, "Local profile storage could not be prepared.", { includeDiagnosticCode: false }));
         setState({ kind: "unavailable", reason, ...(storageFailureCode ? { storageFailureCode } : {}) });
       }
+      notifyProfileStoragePreparationSettled();
     });
     return () => { active = false; diagnostic.dispose(); };
   }, [revision]);

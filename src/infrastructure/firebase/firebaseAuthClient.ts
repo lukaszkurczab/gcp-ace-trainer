@@ -228,6 +228,17 @@ export async function createAppleCredential(
   return createCredential(credential.identityToken, rawNonce);
 }
 
+/**
+ * K: start the SDK's persisted-user restore (secure store read and token
+ * reload) before the account provider mounts, so it overlaps the encrypted
+ * storage open. Same app, persistence and emulator wiring as the client below,
+ * which later reuses this Auth instance. Best-effort: any failure is left for
+ * the client's own initialization to surface.
+ */
+export function prewarmFirebaseAuth(input: Readonly<{ config: FirebaseClientConfiguration; authEmulatorOrigin?: string }>): void {
+  try { firebaseAuth(firebaseApp(input.config), input.authEmulatorOrigin); } catch { /* the provider reports it */ }
+}
+
 export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClientConfiguration; authActionOrigin: string; authEmulatorOrigin?: string }>): FirebaseAuthClient {
   const auth = firebaseAuth(firebaseApp(input.config), input.authEmulatorOrigin);
   let current: User | null = auth.currentUser;
