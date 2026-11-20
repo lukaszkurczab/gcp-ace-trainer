@@ -9,8 +9,8 @@ const source = (path: string) => readFileSync(join(__dirname, "..", "..", path),
 
 test("the regular root starts the auth restore before the storage gate settles", () => {
   const root = source("RegularApplicationRoot.tsx");
-  const effect = root.slice(root.indexOf("useEffect(() => {"), root.indexOf("return (", root.indexOf("useEffect(() => {")));
-  assert.match(effect, /prewarmAccountAuthRestore\(\);[\s\S]*startBundledContentPrefetch/u);
+  const rootComponent = root.slice(root.indexOf("export default function RegularApplicationRoot"), root.indexOf("function AppContent()"));
+  assert.match(rootComponent, /useEffect\(\(\) => \{ prewarmAccountAuthRestore\(\); \}, \[\]\);/u);
   assert.ok(root.indexOf("<ProfileStoragePreparationGate>") < root.indexOf("<PatternlyAccountProvider>"), "the provider still mounts behind the gate");
 });
 

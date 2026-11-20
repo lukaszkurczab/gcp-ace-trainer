@@ -16,7 +16,7 @@ import { ProfileTransitionSurface } from "./content/application/startupPreparati
 import { Q13StorageReceiptHost } from "./application/runtimeAuditability/Q13StorageReceiptHost";
 import { AndroidClockProbeHost } from "./application/runtimeAuditability/AndroidClockProbeHost";
 import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfileTransition } from "./storage/repositories/profileStorageRepository";
-import { afterProfileStoragePreparationSettled, startBundledContentPrefetch } from "./application/bootstrap/parallelBoot";
+import { startBundledContentPrefetch } from "./application/bootstrap/parallelBoot";
 import { contentPackageRuntimeOwner } from "./application/contentPackageRuntimeOwner";
 import { installProgressSnapshotPersistence } from "./application/account/progressSnapshotPersistence";
 import { installFirstScreenHandover } from "./application/bootstrap/firstScreenHandover";
@@ -26,18 +26,9 @@ installProgressSnapshotPersistence();
 installFirstScreenHandover();
 
 export default function RegularApplicationRoot() {
-  // T2.3: verify bundled content while profile storage, auth and the account
-  // bootstrap wait on native I/O and the network. Child effects (storage
-  // preparation, auth setup) have already started when this one runs.
-  useEffect(() => {
-    // K: the auth restore waits on the secure store and the auth backend, not
-    // on profile storage; start it now instead of after the storage gate.
-    prewarmAccountAuthRestore();
-    // K: content parsing is synchronous; queue it behind the storage open so
-    // it fills the auth and account bootstrap waits instead of delaying them.
-    // The asset read itself is native and still overlaps that chain.
-    return afterProfileStoragePreparationSettled(() => { void startBundledContentPrefetch(() => contentPackageRuntimeOwner.verifyBundledPackages()); });
-  }, []);
+  // K: the auth restore waits on the secure store and the auth backend, not
+  // on profile storage; start it before the storage gate opens.
+  useEffect(() => { prewarmAccountAuthRestore(); }, []);
   return (
     <SafeAreaProvider>
       <AppPreferencesProvider>
@@ -57,6 +48,13 @@ export default function RegularApplicationRoot() {
 function AppContent() {
   const { state, completeProfilePreparation, profilePreparationHandoffToken } = usePatternlyAccount();
   const needsContent = state.kind === "profilePreparing" || state.kind === "guest" || state.kind === "authenticated" || state.kind === "localOffline" || state.kind === "signingOut" || state.kind === "deleting";
+  // T2.3/K: bundled content verification starts with the content gate. Its
+  // native asset read overlaps the gate's integrity preflight; the synchronous
+  // parse runs after it instead of delaying the storage, auth and account
+  // bootstrap hops before the gate. The gate's own call joins this build.
+  useEffect(() => {
+    if (needsContent) void startBundledContentPrefetch(() => contentPackageRuntimeOwner.verifyBundledPackages());
+  }, [needsContent]);
   return needsContent
     ? <ContentPreparationGate completeAccountPreparation={completeProfilePreparation} handoffToken={profilePreparationHandoffToken}><AppNavigation /></ContentPreparationGate>
     : <AppNavigation />;

@@ -292,38 +292,8 @@ export function startBundledContentPrefetch(verify: () => Promise<void>): Promis
   return promise;
 }
 
-type StorageSettle = { settled: boolean; waiters: Set<() => void> };
-const profileStorageSettle: StorageSettle = { settled: false, waiters: new Set() };
-
-/**
- * K: the profile storage gate finished its first preparation (ready or
- * unavailable). Idempotent. The encrypted storage open is a chain of short
- * secure-store and MMKV hops; synchronous content parsing queued before it
- * delayed every hop, and with it auth and the account bootstrap.
- */
-export function notifyProfileStoragePreparationSettled(): void {
-  if (profileStorageSettle.settled) return;
-  profileStorageSettle.settled = true;
-  const waiters = [...profileStorageSettle.waiters];
-  profileStorageSettle.waiters.clear();
-  for (const waiter of waiters) {
-    try { waiter(); } catch { /* A waiter never changes the storage outcome. */ }
-  }
-}
-
-/** Runs `task` once profile storage preparation has settled (at once if it already has). Returns a cancel. */
-export function afterProfileStoragePreparationSettled(task: () => void): () => void {
-  if (profileStorageSettle.settled) { task(); return () => undefined; }
-  let live = true;
-  const waiter = () => { if (live) { live = false; task(); } };
-  profileStorageSettle.waiters.add(waiter);
-  return () => { live = false; profileStorageSettle.waiters.delete(waiter); };
-}
-
 /** Test-only reset of the process-wide startup signals. */
 export function resetParallelBootForTests(): void {
-  profileStorageSettle.settled = false;
-  profileStorageSettle.waiters.clear();
   firstFrame.reported = false;
   firstFrame.waiters.clear();
   if (firstFrame.fallback !== null) clearTimeout(firstFrame.fallback);
