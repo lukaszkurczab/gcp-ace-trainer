@@ -1,4 +1,5 @@
 import { sha256Utf8 } from "../identity/sha256";
+import { markStartup } from "../diagnostics/startupTrace";
 
 export const LEGACY_STORAGE_ID = "patternly";
 export const ENCRYPTED_STORAGE_IDS = ["patternly-secure-a", "patternly-secure-b"] as const;
@@ -273,7 +274,9 @@ async function advance(platform: EncryptedStoragePlatform, initial: StoredManife
   const targetKey = existingTargetKey ?? (manifest.stage === "building"
     ? await createStoredKey(platform, targetKeyName)
     : await readRequiredKey(platform, targetKeyName));
+  markStartup("storage_open:slot_key_read");
   let target = openSlot(platform, slotId(manifest.activeSlot), targetKey);
+  markStartup("storage_open:slot_open");
 
   if (manifest.stage === "building") {
     const source = manifest.sourceKind === "fresh"
@@ -354,7 +357,9 @@ async function advance(platform: EncryptedStoragePlatform, initial: StoredManife
 }
 
 export async function openEncryptedStorage(platform: EncryptedStoragePlatform): Promise<EncryptedStorageOpenResult> {
+  markStartup("storage_open:encrypted_begin");
   let manifest = await readManifest(platform);
+  markStartup("storage_open:manifest_read");
   if (!manifest) {
     const secureArtifacts = await secure(() => Promise.all([
       platform.manifestStore.get(slotKeyName("a")),
@@ -369,6 +374,7 @@ export async function openEncryptedStorage(platform: EncryptedStoragePlatform): 
   if (manifest.stage === "complete" && await secure(() => platform.manifestStore.get(ROTATION_REQUEST_KEY)) === "requested") {
     manifest = await beginRotation(platform, manifest);
   }
+  markStartup("storage_open:rotation_read");
   if (manifest.stage !== "building" && !platform.exists(slotId(manifest.activeSlot))) throw new EncryptedStorageBootstrapError("encrypted_storage_key_missing");
   return advance(platform, manifest);
 }

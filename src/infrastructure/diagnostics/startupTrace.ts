@@ -47,6 +47,8 @@ export type StartupTraceStage =
   | `repository:${CanonicalRepositoryBootstrapStep}`
   | `account:${AccountStartupDiagnosticStage}`
   | `profile_storage:${ProfileStoragePreparationDiagnosticStage}`
+  // K: encrypted storage / profile router open inside the profile storage gate.
+  | `storage_open:${string}`
   // Stage 0 (J/B-full): sub-spans, storage counters and microbenchmark inside `quiz_command`.
   | `quiz_seg:${string}` | `quiz_counter:${string}` | `quiz_bench:${string}`;
 export type StartupTraceEvent = Readonly<{ stage: StartupTraceStage; edge: "begin" | "end" | "event"; atMs: number; epochMs: number; span?: number }>;

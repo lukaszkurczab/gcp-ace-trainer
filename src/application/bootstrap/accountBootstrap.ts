@@ -455,16 +455,20 @@ async function activateLocalAccountScope(
   if (profile.kind !== "account" || !profile.accountId) return null;
   try {
     const preparedBinding = await readPreparedAccountIdentityBinding(profile.id);
+    markStartup("bootstrap:local_binding_read");
     if (preparedBinding.kind === "verified" && preparedBinding.binding.profileId === profile.id
       && preparedBinding.binding.profileKind === profile.kind && preparedBinding.binding.accountId === profile.accountId
       && preparedBinding.binding.firebaseUid === user.uid && canContinue()) {
       activatePreparedProfile(profile.id, profile.kind, { deferReadyNotification: true });
       const lease = captureActiveProfileStorageLease();
+      markStartup("bootstrap:local_activate");
       if (!lease || lease.profile.id !== profile.id || lease.profile.kind !== profile.kind || lease.profile.accountId !== profile.accountId) {
         throw new Error("local_account_scope_unavailable");
       }
       const activeBinding = await readActiveAccountIdentityBinding(lease);
+      markStartup("bootstrap:local_active_binding");
       const accountData = await readLocalAccountDataSession(profile.accountId);
+      markStartup("bootstrap:local_account_data");
       const signOutMarker = getAccountSignOutState();
       const deletionMarker = getAccountDeletionState();
       const scopedLogoutPending = signOutMarker?.accountId === profile.accountId;
@@ -478,6 +482,7 @@ async function activateLocalAccountScope(
       if (isEligible && (!await isEligible(profile.accountId) || !canContinue() || !isActiveProfileStorageLeaseCurrent(lease))) {
         throw new Error("local_first_start_not_eligible");
       }
+      markStartup("bootstrap:local_eligible");
       attempt.kind = "localOffline";
       attempt.profile = profile;
       attempt.localOffline = Object.freeze({ accountId: profile.accountId, bindingRevision: activeBinding.binding.verificationRevision, profileLease: lease });

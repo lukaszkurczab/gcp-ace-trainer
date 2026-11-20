@@ -264,7 +264,16 @@ export function createAccountStartupDiagnosticWriter(): AccountStartupDiagnostic
 /** Per-gate writer fenced across retries and HMR; disposal clears only its own pending receipt. */
 export function createProfileStoragePreparationDiagnosticWriter(): ProfileStoragePreparationDiagnosticWriter {
   const inert = Object.freeze({ pending: () => undefined, ready: () => undefined, failed: () => undefined, dispose: () => undefined });
-  if (!developmentSmokeDiagnosticsEnabled()) return inert;
+  if (!developmentSmokeDiagnosticsEnabled()) {
+    if (!isPatternlyPerfBuild()) return inert;
+    // Perf build: trace markers only, no receipt bridge.
+    return Object.freeze({
+      pending: (stage) => markStartup(`profile_storage:${stage}`),
+      ready: () => markStartup("profile_storage:complete"),
+      failed: (stage) => markStartup(`profile_storage:${stage}`),
+      dispose: () => undefined,
+    });
+  }
   const host = bootstrapProgressHost();
   const owner = Object.freeze({});
   try {

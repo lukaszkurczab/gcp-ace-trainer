@@ -3,6 +3,7 @@ import type { StorageManifestStore } from "./encryptedStorageBootstrap";
 import { STORAGE_NAMESPACE, STORAGE_KEYS } from "../../storage/keys";
 import { installationIdentity, type GuestInstallationIdentityPort } from "../identity/installationIdentity";
 import { sha256Utf8 } from "../identity/sha256";
+import { markStartup } from "../diagnostics/startupTrace";
 import { inspectQ13LocalLogoutControl } from "./localLogoutControl";
 
 export const PROFILE_STORAGE_REGISTRY_CONTROL_KEYS = Object.freeze(["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"] as const);
@@ -851,8 +852,10 @@ export async function openProfileStorageRouter(
   const identity = dependencies.identity ?? installationIdentity;
   try { await resumeGuestRemoval34(base, control); }
   catch { throw new ProfileStorageError("profile_removal_recovery_required"); }
+  markStartup("storage_open:guest_removal_resume");
   const readSlots = async () => Promise.all(ROOT_KEYS.map((key) => control.get(key)));
   const raw = await readSlots();
+  markStartup("storage_open:registry_read");
   const inspected = raw.map(inspectRegistry);
   let isFreshInstallation = false;
   let registry: ProfileRegistry;
@@ -877,6 +880,7 @@ export async function openProfileStorageRouter(
     registry = valid.sort((left, right) => right.generation - left.generation)[0]!;
     if (!registry) throw new ProfileStorageError("profile_registry_corrupt");
     isFreshInstallation = isUnchosenFreshGuestRegistry(registry, base.getAllKeys());
+    markStartup("storage_open:fresh_check");
   }
   const profile = registry.profiles.find((candidate) => candidate.id === registry.selectedProfileId);
   if (!profile) throw new ProfileStorageError("profile_registry_corrupt");

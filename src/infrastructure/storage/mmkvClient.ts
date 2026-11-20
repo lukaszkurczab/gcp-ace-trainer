@@ -6,6 +6,7 @@ export interface KeyValueStorage {
   getAllKeys(): readonly string[];
 }
 
+import { markStartup } from "../diagnostics/startupTrace";
 import { foregroundTimerPhysicalKey, openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError, type AccountIdentityBinding, type AccountIdentityBindingRead, type AccountIdentityProofBarrierReceipt, type GuestRemoval34ExpectedState, type GuestRemoval34Receipt, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
 import type { StorageManifestStore } from "./encryptedStorageBootstrap";
 import { applySynchronousForegroundTimerRaw } from "./foregroundTimerRawCas";
@@ -521,10 +522,12 @@ async function openProductionProfileStorage(generation: number): Promise<Prepare
     getAllKeys: () => result.storage.getAllKeys().filter((key) => key !== STORAGE_MIGRATION_MARKER_KEY),
   };
   profileTransitionActive = false;
+  markStartup("storage_open:router_begin");
   const router = await openProfileStorageRouter(base, platform.manifestStore, {
     isTransitionActive: () => profileTransitionActive || profileStorageGeneration !== generation,
     onBeforeProfileCommit: beginProfileTransition,
   });
+  markStartup("storage_open:router_end");
   const operatingSystem = (require("react-native") as typeof import("react-native")).Platform.OS;
   if (operatingSystem === "ios" || operatingSystem === "android") return {
     base, router, secureControl: platform.manifestStore, generation, nativeForegroundClockPlatform: operatingSystem,
