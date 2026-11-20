@@ -7,7 +7,7 @@ import type { ReactElement } from "react";
 import { installNativeCore } from "./src/infrastructure/identity/installNativeCore";
 
 // B0 (Plan T1.1): native identity primitives, installed before any domain code
-// hashes or serializes. No-op off iOS and with EXPO_PUBLIC_PATTERNLY_PERF_OPT_NATIVE_CORE=0.
+// hashes or serializes. No-op off iOS (no Android adapter yet).
 installNativeCore();
 
 declare const require: (path: string) => unknown;

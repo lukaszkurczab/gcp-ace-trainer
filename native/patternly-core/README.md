@@ -28,7 +28,8 @@ is enabled only when it matches Hermes `String.prototype.normalize` on known
 divergence probes: CoreFoundation and ICU order some combining sequences
 differently (e.g. U+0F71 U+0F72 next to U+0323 U+0307).
 
-Kill-switch: `EXPO_PUBLIC_PATTERNLY_PERF_OPT_NATIVE_CORE=0`.
+The core is always on (no kill-switch, D23). The TS path is the oracle and the
+fallback only where the core is unavailable (Android) or a hook fails its probes.
 
 ## Checks
 

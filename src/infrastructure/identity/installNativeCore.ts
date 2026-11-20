@@ -11,8 +11,7 @@ import type { HybridObject } from "react-native-nitro-modules";
  * fallback: each hook is installed only after its probes match the reference,
  * is removed on an unexpected native failure, and returns `undefined` (reference
  * path) for inputs the transport cannot represent exactly.
- *
- * Kill-switch: EXPO_PUBLIC_PATTERNLY_PERF_OPT_NATIVE_CORE=0 keeps the full TS path.
+
  */
 export type NativeCore = Readonly<{
   sha256: (value: string) => string;
@@ -121,9 +120,6 @@ export function installNativeCore(load: () => NativeCore | null = loadCore, now:
     status = Object.freeze({ ...next, installMs: now() - started });
     return status;
   };
-  if (process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_NATIVE_CORE === "0") {
-    return finish({ installed: false, reason: "kill_switch", sha256: false, serialization: false, recordFingerprint: false, nfc: false });
-  }
   let native: NativeCore | null;
   try { native = load(); } catch { native = null; }
   if (!native) return finish({ installed: false, reason: "unavailable", sha256: false, serialization: false, recordFingerprint: false, nfc: false });

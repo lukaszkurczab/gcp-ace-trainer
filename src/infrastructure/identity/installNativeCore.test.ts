@@ -11,7 +11,7 @@ import { guardedJson, installNativeCore, resetNativeCoreForTests, type NativeCor
 // Here a JS stand-in with exact reference semantics checks the wiring: probes,
 // guard fallbacks, kill-switch, NFC gate and auto-disable.
 
-afterEach(() => { resetNativeCoreForTests(); delete process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_NATIVE_CORE; });
+afterEach(() => { resetNativeCoreForTests(); });
 
 type Calls = { sha: number; serialize: number; nfcDisabled: boolean };
 
@@ -101,13 +101,8 @@ test("values JSON cannot carry exactly bypass the core and keep the reference re
   assert.equal(canonicalSerialize({ arrayExtra }), referenceCanonicalSerialize({ arrayExtra }));
 });
 
-test("kill-switch, unavailable core and wrong answers keep the full TS path", () => {
-  process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_NATIVE_CORE = "0";
+test("an unavailable core and wrong answers keep the full TS path", () => {
   const calls: Calls = { sha: 0, serialize: 0, nfcDisabled: false };
-  assert.equal(installNativeCore(() => fakeCore(calls)).reason, "kill_switch");
-  assert.equal(calls.sha + calls.serialize, 0);
-  resetNativeCoreForTests();
-  delete process.env.EXPO_PUBLIC_PATTERNLY_PERF_OPT_NATIVE_CORE;
   assert.equal(installNativeCore(() => null).reason, "unavailable");
   resetNativeCoreForTests();
   assert.equal(installNativeCore(() => { throw new Error("no native"); }).reason, "unavailable");
