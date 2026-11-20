@@ -91,6 +91,9 @@ function deletionResponse(status: string, operationId = DELETION_OPERATION_ID, p
   return { status, operationId, proofId };
 }
 
+// T3.2: `/me` arrives as the `me` component of `GET /v1/bootstrap`.
+const meBootstrapResponse = (body: unknown) => new Response(JSON.stringify({ bootstrapVersion: 1, serverObservedAt: "2026-10-04T10:20:31.000Z", components: { me: { status: 200, body } } }), { status: 200 });
+
 test("getMe validates the complete canonical profile and preserves nullable fields", async () => {
   const user = {
     id: "00000000-0000-4000-8000-000000000303",
@@ -98,21 +101,21 @@ test("getMe validates the complete canonical profile and preserves nullable fiel
     acceptedTermsVersion: null,
     identity: { provider: "apple", subject: "provider-subject-distinct-from-account-and-firebase-uid", email: null, emailVerified: false },
   };
-  const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ user }), { status: 200 }) });
+  const client = createTestClient({ fetchImplementation: async () => meBootstrapResponse(({ user })) });
   assert.deepEqual(await client.getMe(), { user });
 
-  const withNullableValues = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({
+  const withNullableValues = createTestClient({ fetchImplementation: async () => meBootstrapResponse(({
     user: { ...user, createdAt: "2026-10-04t12:20:30.123+02:30", acceptedTermsVersion: "", identity: { ...user.identity, email: "person@example.test", emailVerified: true } },
-  }), { status: 200 }) });
+  })) });
   const accepted = await withNullableValues.getMe();
   assert.equal(accepted.user.createdAt, "2026-10-04t12:20:30.123+02:30");
   assert.equal(accepted.user.acceptedTermsVersion, "", "the wire schema permits any string or null for acceptedTermsVersion");
   assert.equal(accepted.user.identity.email, "person@example.test");
 
   for (const email of [`${"a".repeat(65)}@example.test`, `person@${"a".repeat(64)}.test`]) {
-    const longEmailClient = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({
+    const longEmailClient = createTestClient({ fetchImplementation: async () => meBootstrapResponse(({
       user: { ...user, identity: { ...user.identity, email } },
-    }), { status: 200 }) });
+    })) });
     assert.equal((await longEmailClient.getMe()).user.identity.email, email, "mirror the installed backend email format without adding absent length bounds");
   }
 });
@@ -142,7 +145,7 @@ test("getMe rejects incomplete, mistyped, malformed, and extended account profil
     { ...canonical, unexpected: true },
   ];
   for (const user of invalidUsers) {
-    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ user }), { status: 200 }) });
+    const client = createTestClient({ fetchImplementation: async () => meBootstrapResponse(({ user })) });
     await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
   }
 });
@@ -206,12 +209,12 @@ test("account and deletion parsers preserve the existing route, method, body, an
   const client = createTestClient({ fetchImplementation: async (url, init) => {
     captured.push({ body: init?.body === undefined ? undefined : String(init.body), headers: new Headers(init?.headers), method: init?.method ?? "", url: String(url) });
     const path = new URL(String(url)).pathname;
-    if (path === "/v1/me") return new Response(JSON.stringify({ user: {
+    if (path === "/v1/bootstrap") return new Response(JSON.stringify({ bootstrapVersion: 1, serverObservedAt: "2026-10-04T10:20:31.000Z", components: { me: { status: 200, body: { user: {
       id: "00000000-0000-4000-8000-000000000303",
       createdAt: "2026-10-04T10:20:30.000Z",
       acceptedTermsVersion: null,
       identity: { provider: "firebase", subject: "provider-subject", email: null, emailVerified: true },
-    } }), { status: 200 });
+    } } } } }), { status: 200 });
     if (path === "/v1/account/deletion") return new Response(JSON.stringify(deletionResponse("deleted")), { status: 200 });
     if (path === `/v1/public/deletion-proofs/${DELETION_PROOF_ID}`) return new Response(JSON.stringify(deletionResponse("deleted")), { status: 200 });
     if (path === "/v1/public/deletion-operations/status") return new Response(JSON.stringify(deletionResponse("pending", DELETION_OPERATION_ID, null)), { status: 200 });
@@ -224,7 +227,7 @@ test("account and deletion parsers preserve the existing route, method, body, an
   await client.getDeletionOperationStatus(DELETION_OPERATION_ID, "a".repeat(64));
 
   assert.deepEqual(captured.map(({ method, url, body }) => ({ method, url, body })), [
-    { method: "GET", url: `${API_ORIGIN}/v1/me`, body: undefined },
+    { method: "GET", url: `${API_ORIGIN}/v1/bootstrap?include=me`, body: undefined },
     { method: "POST", url: `${API_ORIGIN}/v1/account/deletion`, body: JSON.stringify({ operationId: DELETION_OPERATION_ID, operationSecret: "a".repeat(64) }) },
     { method: "GET", url: `${API_ORIGIN}/v1/public/deletion-proofs/${DELETION_PROOF_ID}`, body: undefined },
     { method: "POST", url: `${API_ORIGIN}/v1/public/deletion-operations/status`, body: JSON.stringify({ operationId: DELETION_OPERATION_ID, operationSecret: "a".repeat(64) }) },

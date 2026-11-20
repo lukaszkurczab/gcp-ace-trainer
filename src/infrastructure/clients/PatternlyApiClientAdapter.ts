@@ -236,6 +236,8 @@ function validateSyncRequest(value: unknown): value is SyncRequestDto {
   return true;
 }
 
+/** T3.2: how long the first progress page from a bootstrap stays usable by the next progress read. */
+const BOOTSTRAP_PROGRESS_TTL_MS = 30_000;
 type ProgressSnapshotCache = Readonly<{ token: string | null; scope: string; revision: number; generation: number; serialized: string }>;
 
 /**
@@ -644,6 +646,30 @@ function parseAccountRegistrationResponse(value: unknown): AccountRegistrationRe
   });
 }
 
+type BootstrapComponent = Readonly<{ status: number; body: unknown }>;
+
+/** T3.2: strict `GET /v1/bootstrap` envelope; `components` holds exactly the requested names. */
+function parseBootstrapEnvelope(value: unknown, include: readonly string[]): Readonly<Record<string, BootstrapComponent>> {
+  if (!hasExactKeys(value, ["bootstrapVersion", "serverObservedAt", "components"]) || value.bootstrapVersion !== 1
+    || !isIsoDate(value.serverObservedAt) || !hasExactKeys(value.components, include)) return invalidResponse();
+  const components: Record<string, BootstrapComponent> = {};
+  for (const name of include) {
+    const component = value.components[name];
+    if (!hasExactKeys(component, ["status", "body"]) || typeof component.status !== "number" || !Number.isInteger(component.status)
+      || component.status < 200 || component.status > 599) return invalidResponse();
+    components[name] = Object.freeze({ status: component.status, body: component.body });
+  }
+  return Object.freeze(components);
+}
+
+/** A component carries exactly the status and body its own route would have returned. */
+function bootstrapComponentBody(component: BootstrapComponent): unknown {
+  if (component.status === 200) return component.body;
+  const body = component.body;
+  const serverCode = isRecord(body) && isRecord(body.error) && typeof body.error.code === "string" ? body.error.code : undefined;
+  throw new PatternlyApiClientError("server_error", component.status, serverCode);
+}
+
 function parseMeResponse(value: unknown): MeResponseDto {
   if (!isPlainRecord(value) || !hasExactKeys(value, ["user"]) || !isPlainRecord(value.user)
     || !hasExactKeys(value.user, ["id", "createdAt", "acceptedTermsVersion", "identity"])) return invalidResponse();
@@ -812,6 +838,7 @@ export function createPatternlyApiClient(input: Readonly<{
   function setProgressSnapshot(next: ProgressSnapshotCache | null): void {
     if (next === progressSnapshot) return;
     progressSnapshot = next;
+    bootstrapProgress = null;
     if (!progressSnapshotPersistenceEnabled) return;
     if (next === null) {
       if (persistTimer !== null) { clearTimeout(persistTimer); persistTimer = null; }
@@ -827,6 +854,37 @@ export function createPatternlyApiClient(input: Readonly<{
         else progressSnapshotStore()?.setString(PROGRESS_SNAPSHOT_CACHE_KEY, encodePersistedProgressSnapshot(persistenceOrigin, latest));
       } catch { /* storage closed or replaced: the next start reads in full */ }
     }, PROGRESS_SNAPSHOT_PERSIST_DELAY_MS);
+  }
+
+  /** First conditional progress page, exactly as `readProgress` requests it for this cache state. */
+  function firstProgressPageQuery(cached: ProgressSnapshotCache | null, persisted: string | null): string {
+    return `/v1/progress?pageSize=100&conditional=1${!cached ? (persisted === null ? "" : `&knownSnapshot=${persisted}`) : cached.token !== null ? `&knownSnapshot=${cached.token}` : `&knownScope=${cached.scope}&knownRevision=${cached.revision}`}`;
+  }
+  // T3.2: the first progress page that arrived with `/me` in one bootstrap
+  // request. Used once, by the next progress read whose first page would be
+  // this exact request against the same cached sweep, and only shortly after.
+  let bootstrapProgress: Readonly<{ query: string; cached: ProgressSnapshotCache | null; component: BootstrapComponent; expiresAt: number }> | null = null;
+  function takeBootstrapProgress(query: string, cached: ProgressSnapshotCache | null): BootstrapComponent | null {
+    const stashed = bootstrapProgress;
+    bootstrapProgress = null;
+    if (!stashed || stashed.query !== query || stashed.cached !== cached || Date.now() > stashed.expiresAt) return null;
+    return stashed.component;
+  }
+  async function getMeThroughBootstrap(): Promise<MeResponseDto> {
+    loadPersistedProgressSnapshot();
+    const cached = progressSnapshot;
+    bootstrapProgress = null;
+    // Without a cached sweep the caller's own validator decides the first page,
+    // so only `/me` is read here.
+    const include = cached ? ["me", "progress"] : ["me"];
+    const known = !cached ? "" : cached.token !== null
+      ? `&progressKnownSnapshot=${cached.token}`
+      : `&progressKnownScope=${cached.scope}&progressKnownRevision=${cached.revision}`;
+    const components = parseBootstrapEnvelope(await requestJson<unknown>(`/v1/bootstrap?include=${include.join(",")}${known}`, "GET"), include);
+    if (cached && progressSnapshot === cached) {
+      bootstrapProgress = Object.freeze({ query: firstProgressPageQuery(cached, null), cached, component: components.progress!, expiresAt: Date.now() + BOOTSTRAP_PROGRESS_TTL_MS });
+    }
+    return parseMeResponse(bootstrapComponentBody(components.me!));
   }
 
   type AuthenticationMode = "none" | "optional" | "required";
@@ -997,10 +1055,11 @@ export function createPatternlyApiClient(input: Readonly<{
         const query: string = legacyRead
           ? `/v1/progress?pageSize=100${pageToken === null ? "" : `&pageToken=${encodeURIComponent(pageToken)}`}`
           : pageToken === null
-          ? `/v1/progress?pageSize=100&conditional=1${!cached ? (persisted === null ? "" : `&knownSnapshot=${persisted}`) : cached.token !== null ? `&knownSnapshot=${cached.token}` : `&knownScope=${cached.scope}&knownRevision=${cached.revision}`}`
+          ? firstProgressPageQuery(cached, persisted)
           : `/v1/progress?pageSize=100&conditional=1&pageToken=${encodeURIComponent(pageToken)}`;
+        const prefetched = page === 0 && !legacyRead ? takeBootstrapProgress(query, cached) : null;
         let payload: unknown;
-        try { payload = await requestJson<unknown>(query, "GET"); }
+        try { payload = prefetched ? bootstrapComponentBody(prefetched) : await requestJson<unknown>(query, "GET"); }
         catch (error) {
           if (page !== 0 || !(error instanceof ConditionalProgressUnsupportedError)) throw error;
           legacyRead = true;
@@ -1057,7 +1116,7 @@ export function createPatternlyApiClient(input: Readonly<{
     getHealth: () => requestJson<HealthResponseDto>("/health", "GET", undefined, "none"),
     getReady: () => requestJson<ReadyResponseDto>("/ready", "GET", undefined, "none"),
     getOpenApi: () => requestJson<OpenApiResponseDto>("/openapi.json", "GET", undefined, "none"),
-    getMe: async () => parseMeResponse(await requestJson<unknown>("/v1/me", "GET")),
+    getMe: getMeThroughBootstrap,
     exchangeAccountSession: async () => {
       const response = await requestJson<unknown>("/v1/account/session/exchange", "POST");
       if (!isRecord(response) || typeof response.customToken !== "string" || response.customToken.trim().length === 0) {
