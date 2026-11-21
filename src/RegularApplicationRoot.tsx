@@ -48,16 +48,13 @@ export default function RegularApplicationRoot() {
 function AppContent() {
   const { state, completeProfilePreparation, profilePreparationHandoffToken } = usePatternlyAccount();
   const needsContent = state.kind === "profilePreparing" || state.kind === "guest" || state.kind === "authenticated" || state.kind === "localOffline" || state.kind === "signingOut" || state.kind === "deleting";
-  // T2.3/K: bundled content verification starts once profile storage is open
-  // (this component mounts behind the storage gate), while the account state is
-  // still loading. Its native asset read then overlaps the auth and account
-  // bootstrap hops instead of the gate's integrity preflight. Not at root
-  // mount: the read shares Expo's serial native queue with the storage-open
-  // keychain reads. The gate's own call joins this build.
-  const prefetchContent = needsContent || state.kind === "loading";
+  // T2.3/K: bundled content verification starts with the content gate. Its
+  // native asset read overlaps the gate's integrity preflight; the synchronous
+  // parse runs after it instead of delaying the storage, auth and account
+  // bootstrap hops before the gate. The gate's own call joins this build.
   useEffect(() => {
-    if (prefetchContent) void startBundledContentPrefetch(() => contentPackageRuntimeOwner.verifyBundledPackages());
-  }, [prefetchContent]);
+    if (needsContent) void startBundledContentPrefetch(() => contentPackageRuntimeOwner.verifyBundledPackages());
+  }, [needsContent]);
   return needsContent
     ? <ContentPreparationGate completeAccountPreparation={completeProfilePreparation} handoffToken={profilePreparationHandoffToken}><AppNavigation /></ContentPreparationGate>
     : <AppNavigation />;

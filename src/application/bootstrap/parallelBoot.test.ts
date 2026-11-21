@@ -132,13 +132,12 @@ test("content prefetch runs once; a failed verification is not cached as success
   assert.equal(calls, 1, "the prefetch swallows the failure; the gate repeats the verification and reports it");
 });
 
-test("content verification starts behind the storage gate while the account loads, not at root mount (K)", async () => {
+test("content verification starts with the content gate, not at root mount (K)", async () => {
   const { readFileSync } = await import("node:fs");
   const { join } = await import("node:path");
   const root = readFileSync(join(__dirname, "..", "..", "RegularApplicationRoot.tsx"), "utf8");
   const appContent = root.slice(root.indexOf("function AppContent()"), root.indexOf("function AppNavigation()"));
-  assert.match(appContent, /const prefetchContent = needsContent \|\| state\.kind === "loading";/u);
-  assert.match(appContent, /if \(prefetchContent\) void startBundledContentPrefetch\(\(\) => contentPackageRuntimeOwner\.verifyBundledPackages\(\)\);/u);
+  assert.match(appContent, /if \(needsContent\) void startBundledContentPrefetch\(\(\) => contentPackageRuntimeOwner\.verifyBundledPackages\(\)\);/u);
   assert.equal(root.match(/startBundledContentPrefetch\(/gu)?.length, 1, "no earlier root-mount prefetch");
 });
 
