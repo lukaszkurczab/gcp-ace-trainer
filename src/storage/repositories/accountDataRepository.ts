@@ -1289,7 +1289,7 @@ export async function readAccountDataSyncGuardFlags(context: LearningDataAdmissi
  * data: anything else is a full read compared by digest as before.
  */
 const ACCOUNT_SYNC_BASELINE_KEY = "patternly:derived:v1:account-sync-baseline";
-const ACCOUNT_SYNC_BASELINE_SCHEMA = 2;
+const ACCOUNT_SYNC_BASELINE_SCHEMA = 3;
 
 type AccountSyncBaseline = Readonly<{
   schema: typeof ACCOUNT_SYNC_BASELINE_SCHEMA;
@@ -1301,43 +1301,53 @@ type AccountSyncBaseline = Readonly<{
   remoteDigest: string;
   localInputDigest: string;
   remoteSnapshotToken: string | null;
+  /** T4.2: number of snapshot input keys the digest covered; a different count is a different byte set. */
+  localInputKeyCount: number;
 }>;
 
 export type AccountSyncBaselineMatch = Readonly<{ accountId: string; baseline: AccountSyncBaseline; state: AccountSyncState; scope: SnapshotScope | null; localInputDigest: string }>;
 
 function isAccountSyncBaseline(value: unknown): value is AccountSyncBaseline {
-  return isRecord(value) && hasOnlyKeys(value, ["schema", "accountId", "remoteAccountRevision", "localDatasetVersion", "localDatasetFingerprint", "acknowledgedDigest", "remoteDigest", "localInputDigest", "remoteSnapshotToken"])
+  return isRecord(value) && hasOnlyKeys(value, ["schema", "accountId", "remoteAccountRevision", "localDatasetVersion", "localDatasetFingerprint", "acknowledgedDigest", "remoteDigest", "localInputDigest", "remoteSnapshotToken", "localInputKeyCount"])
     && value.schema === ACCOUNT_SYNC_BASELINE_SCHEMA && typeof value.accountId === "string"
     && Number.isSafeInteger(value.remoteAccountRevision) && Number.isSafeInteger(value.localDatasetVersion)
+    && Number.isSafeInteger(value.localInputKeyCount) && (value.localInputKeyCount as number) >= 0
     && ["localDatasetFingerprint", "acknowledgedDigest", "remoteDigest", "localInputDigest"].every((key) => typeof value[key] === "string" && /^[a-f0-9]{64}$/u.test(value[key] as string))
     && (value.remoteSnapshotToken === null || (typeof value.remoteSnapshotToken === "string" && /^[a-f0-9]{64}$/u.test(value.remoteSnapshotToken)));
 }
 
-let localInputDigestMemo: Readonly<{ scope: SnapshotScope; digest: string }> | null = null;
+type LocalInputDigest = Readonly<{ digest: string; keyCount: number }>;
+let localInputDigestMemo: Readonly<{ scope: SnapshotScope; value: LocalInputDigest }> | null = null;
+
+/** T4.2: the snapshot input keys present now; the digest frames exactly these. */
+function countLocalInputKeys(): number {
+  return getKeyValueStorage().getAllKeys().filter(isAccountSnapshotInputKey).length;
+}
 
 /** SHA-256 over the exact stored bytes of every snapshot input key (length-framed, key order). */
-async function computeLocalInputDigest(context: LearningDataAdmissionContext): Promise<string | null> {
+async function computeLocalInputDigest(context: LearningDataAdmissionContext): Promise<LocalInputDigest | null> {
   const scope = captureSnapshotScope(context);
   const memo = localInputDigestMemo;
-  if (scope && memo && sameSnapshotScope(memo.scope, scope)) return memo.digest;
+  if (scope && memo && sameSnapshotScope(memo.scope, scope)) return memo.value;
   const storage = getKeyValueStorage();
   const slice = createCooperativeSlice();
   const parts: string[] = [];
+  let keyCount = 0;
   const keys = storage.getAllKeys().filter(isAccountSnapshotInputKey).sort();
   for (let index = 0; index < keys.length; index += 1) {
     const key = keys[index]!;
     const raw = readCanonicalRawValue(key);
-    if (raw !== undefined) parts.push(`${key.length}:${key}${raw.length}:${raw}`);
+    if (raw !== undefined) { parts.push(`${key.length}:${key}${raw.length}:${raw}`); keyCount += 1; }
     if ((index & 63) === 63) await slice();
   }
-  const digest = sha256Utf8(parts.join(""));
+  const value: LocalInputDigest = Object.freeze({ digest: sha256Utf8(parts.join("")), keyCount });
   const after = captureSnapshotScope(context);
   if (scope && after && sameSnapshotScope(scope, after)) {
-    localInputDigestMemo = Object.freeze({ scope, digest });
-    return digest;
+    localInputDigestMemo = Object.freeze({ scope, value });
+    return value;
   }
   // A write landed during the read: the digest may be torn. Never match on it.
-  return scope ? null : digest;
+  return scope ? null : value;
 }
 
 function acknowledgedDigest(state: AccountSyncState): string {
@@ -1409,7 +1419,8 @@ export async function recordAccountSyncBaseline(input: Readonly<{ accountId: str
     localDatasetFingerprint: state.localDatasetFingerprint!,
     acknowledgedDigest: acknowledgedDigest(state),
     remoteDigest: remoteRecordsDigest(input.remoteRecords),
-    localInputDigest,
+    localInputDigest: localInputDigest.digest,
+    localInputKeyCount: localInputDigest.keyCount,
     remoteSnapshotToken: input.remoteSnapshotToken !== null && /^[a-f0-9]{64}$/u.test(input.remoteSnapshotToken) ? input.remoteSnapshotToken : null,
   });
   getKeyValueStorage().setString(ACCOUNT_SYNC_BASELINE_KEY, JSON.stringify(baseline));
@@ -1424,10 +1435,14 @@ export async function readAccountSyncBaselineMatch(accountId: string, context: L
   if (!baseline || baseline.accountId !== accountId || baseline.remoteAccountRevision !== state.remoteAccountRevision
     || baseline.localDatasetVersion !== state.localDatasetVersion || baseline.localDatasetFingerprint !== state.localDatasetFingerprint
     || baseline.acknowledgedDigest !== acknowledgedDigest(state)) return null;
+  // T4.2: a different number of input keys is a different byte set: no digest
+  // (a full read of every input key) is needed to know the baseline misses.
+  // After a quiz there are always new keys, so this is the common exit.
+  if (countLocalInputKeys() !== baseline.localInputKeyCount) return null;
   const scope = captureSnapshotScope(context);
-  const localInputDigest = await computeLocalInputDigest(context);
-  if (localInputDigest === null || localInputDigest !== baseline.localInputDigest) return null;
-  return Object.freeze({ accountId, baseline, state, scope, localInputDigest });
+  const localInput = await computeLocalInputDigest(context);
+  if (localInput === null || localInput.digest !== baseline.localInputDigest || localInput.keyCount !== baseline.localInputKeyCount) return null;
+  return Object.freeze({ accountId, baseline, state, scope, localInputDigest: localInput.digest });
 }
 
 export function isRemoteAccountDataUnchangedSinceBaseline(match: AccountSyncBaselineMatch, remote: Readonly<{ accountRevision: number; records: readonly RemoteAccountDataRecord[] }>): boolean {
@@ -1465,7 +1480,7 @@ export async function finishUnchangedAccountSync(match: AccountSyncBaselineMatch
   const scope = captureSnapshotScope(context);
   const unchangedLocal = match.scope !== null && scope !== null
     ? sameSnapshotScope(match.scope, scope)
-    : (await computeLocalInputDigest(context)) === match.localInputDigest;
+    : (await computeLocalInputDigest(context))?.digest === match.localInputDigest;
   if (!unchangedLocal) return null;
   return saveAccountSyncState({ ...state, status: "synced", remoteAccountRevision: match.baseline.remoteAccountRevision, lastSuccessfulSyncAt: syncedAt, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null }, context);
 }

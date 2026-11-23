@@ -10,6 +10,7 @@ import { normalizeLegacyTerminalSessionRead } from "../../domain/account/termina
 
 import { developmentLoopbackHost } from "../developmentEndpoints";
 import { getPatternlyAppCheckToken } from "./patternlyAppCheckToken";
+import { quizSegment } from "../diagnostics/quizCommandProfile";
 import { isContentIdentityResolution, isContentIdentityTombstone, isResolvedContentRef } from "../../domain";
 
 const MAX_SERIALIZED_JSON_UTF16_CODE_UNITS = 128 * 1024;
@@ -908,7 +909,7 @@ export function createPatternlyApiClient(input: Readonly<{
     try {
       let token: string | null;
       try {
-        token = authentication === "none" ? null : await withinDeadline(input.getIdToken());
+        token = authentication === "none" ? null : await quizSegment("sync_id_token", () => withinDeadline(input.getIdToken()));
       } catch (error) {
         if (error instanceof PatternlyApiClientError) throw error;
         if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
@@ -920,7 +921,7 @@ export function createPatternlyApiClient(input: Readonly<{
         const supplied = Object.entries(extraHeaders).find(([name]) => name.toLowerCase() === "x-firebase-appcheck")?.[1];
         if (supplied !== undefined) appCheckToken = supplied;
         else {
-          try { appCheckToken = await withinDeadline(getAppCheckToken()); }
+          try { appCheckToken = await quizSegment("sync_app_check", () => withinDeadline(getAppCheckToken())); }
           catch { throw new PatternlyApiClientError("app_check_unavailable"); }
         }
         if (!appCheckToken?.trim()) throw new PatternlyApiClientError("app_check_unavailable");
@@ -929,12 +930,12 @@ export function createPatternlyApiClient(input: Readonly<{
       try {
         // Token/App Check awaits must not dispatch an old actor’s command with a new account token.
         if (!isCurrent()) throw new PatternlyApiClientError("authentication_required");
-        response = await withinDeadline(fetchImplementation(url, {
+        response = await quizSegment("sync_fetch", () => withinDeadline(fetchImplementation(url, {
           method,
           signal: controller.signal,
           ...(body === undefined ? {} : { body: JSON.stringify(body) }),
           headers: { ...extraHeaders, ...(needsAppCheck && !Object.keys(extraHeaders).some((name) => name.toLowerCase() === "x-firebase-appcheck") ? { "x-firebase-appcheck": appCheckToken! } : {}), ...(token ? { authorization: `Bearer ${token}` } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) },
-        }));
+        })));
       } catch (error) {
         if (error instanceof PatternlyApiClientError) throw error;
         if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");

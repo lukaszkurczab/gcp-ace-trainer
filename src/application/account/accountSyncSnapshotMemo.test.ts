@@ -20,6 +20,7 @@ import {
   buildAccountDataSnapshot,
   clearSyncSnapshotMemo,
   getAccountSyncState,
+  readAccountSyncBaselineMatch,
   readAccountDataPerfCountersForTests,
   readSyncSnapshotPerfCountersForTests,
   resetAccountDataPerfCountersForTests,
@@ -598,4 +599,27 @@ test("T3.3a: a kill at any write of a token start never breaks the next start", 
     assert.deepEqual(await localRecordKeys(), remoteRecordKeys(backend), `kill after write ${killAfter}`);
     assert.deepEqual(await tokenStart(backend), { unchanged: 1, full: 0, sent: backend.token() }, `kill after write ${killAfter}: the following start uses the token`);
   }
+});
+
+test("T4.2: after new local keys the baseline misses on the key count, without reading every input key", async () => {
+  await steadyAccount();
+  restart();
+  assert.notEqual(await readAccountSyncBaselineMatch(ACCOUNT_ID, context), null, "the steady account matches");
+  await addHistory("quiz-count", 1, 50);
+  saveAccountSyncState({ ...await getAccountSyncState(context), status: "offlinePending" }, context);
+  restart();
+  storage.resetCounters();
+  assert.equal(await readAccountSyncBaselineMatch(ACCOUNT_ID, context), null);
+  assert.ok(storage.observedReads < 10, `the key count decides: ${storage.observedReads} reads`);
+});
+
+test("T4.2: the same key count with different bytes still misses through the digest", async () => {
+  await steadyAccount();
+  restart();
+  const key = storage.getAllKeys().find((candidate) => candidate.startsWith(`${STORAGE_NAMESPACE}training-attempt:`))!;
+  const raw = storage.getString(key)!;
+  storage.setString(key, raw.replace('"revision":1', '"revision":2'));
+  assert.notEqual(storage.getString(key), raw);
+  restart();
+  assert.equal(await readAccountSyncBaselineMatch(ACCOUNT_ID, context), null);
 });

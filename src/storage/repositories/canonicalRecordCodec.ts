@@ -540,10 +540,34 @@ function isWriteContextCurrent(storage: ReturnType<typeof getKeyValueStorage>, l
  * second lock for the plan key from inside a goal+plan lock would look like a
  * reentrant write and would make the compound operation impossible.
  */
+/**
+ * T4.2: exact bytes of large envelopes this module wrote and verified, per
+ * storage owner, with their revision. When the stored bytes are still those
+ * bytes, the prior revision is known without parsing them again. The match is
+ * on the exact bytes read now, so another writer can never make it stale.
+ */
+const VERIFIED_ENVELOPE_MIN_CHARS = 16 * 1024;
+const verifiedEnvelopes = new WeakMap<object, Map<string, Readonly<{ raw: string; revision: number }>>>();
+
+function rememberVerifiedEnvelope(storage: object, key: string, raw: string, revision: number): void {
+  let byKey = verifiedEnvelopes.get(storage);
+  if (raw.length < VERIFIED_ENVELOPE_MIN_CHARS) { byKey?.delete(key); return; }
+  if (!byKey) { byKey = new Map(); verifiedEnvelopes.set(storage, byKey); }
+  byKey.set(key, Object.freeze({ raw, revision }));
+}
+
+function priorEnvelopeRevision(storage: object, key: string, priorRaw: string | undefined): number | null | undefined {
+  if (priorRaw === undefined) return null;
+  const known = verifiedEnvelopes.get(storage)?.get(key);
+  return known !== undefined && known.raw === priorRaw ? known.revision : undefined;
+}
+
 export function writeCanonicalJsonUnlocked<T>(key: string, value: T, expectedRevision?: number | null): CanonicalRecordEnvelope<T> {
   let priorRaw: string | undefined;
-  try { priorRaw = getKeyValueStorage().getString(key); } catch (error) { throw new StorageReadError(key, error); }
-  const current = parseEnvelope(priorRaw, key);
+  const storage = getKeyValueStorage();
+  try { priorRaw = storage.getString(key); } catch (error) { throw new StorageReadError(key, error); }
+  const knownRevision = priorEnvelopeRevision(storage, key, priorRaw);
+  const current = knownRevision === undefined ? parseEnvelope(priorRaw, key) : knownRevision === null ? null : Object.freeze({ revision: knownRevision });
   if (expectedRevision === null) {
     if (current !== null) throw new UnsupportedStoredRecordError(key);
   } else if (expectedRevision !== undefined && current?.revision !== expectedRevision) {
@@ -554,14 +578,23 @@ export function writeCanonicalJsonUnlocked<T>(key: string, value: T, expectedRev
     revision: (current?.revision ?? 0) + 1,
     payload: value,
   };
+  const written = JSON.stringify(envelope);
   try {
-    if (key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) applyActiveForegroundTimerRaw(priorRaw, JSON.stringify(envelope));
-    else getKeyValueStorage().setString(key, JSON.stringify(envelope));
+    if (key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) applyActiveForegroundTimerRaw(priorRaw, written);
+    else storage.setString(key, written);
   } catch (error) { throw new StorageWriteError(key, error); }
-  const verified = readCanonicalEnvelope(key, (_value): _value is T => true);
-  if (!verified || verified.schemaIdentity !== envelope.schemaIdentity || verified.revision !== envelope.revision || JSON.stringify(verified.payload) !== JSON.stringify(envelope.payload)) {
-    throw new StorageWriteError(key, new Error("Canonical record write could not be verified."));
+  // T4.2 (D5, verified at write): the stored bytes equal the written bytes,
+  // which is stronger than re-serializing the parsed payload. Anything else
+  // takes the full check as before.
+  let readBack: string | undefined;
+  try { readBack = storage.getString(key); } catch (error) { throw new StorageReadError(key, error); }
+  if (readBack !== written) {
+    const verified = readCanonicalEnvelope(key, (_value): _value is T => true);
+    if (!verified || verified.schemaIdentity !== envelope.schemaIdentity || verified.revision !== envelope.revision || JSON.stringify(verified.payload) !== JSON.stringify(envelope.payload)) {
+      throw new StorageWriteError(key, new Error("Canonical record write could not be verified."));
+    }
   }
+  if (readBack === written) rememberVerifiedEnvelope(storage, key, written, envelope.revision);
   return envelope;
 }
 

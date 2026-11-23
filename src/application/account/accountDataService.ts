@@ -80,7 +80,8 @@ import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { canonicalSerialize } from "../../domain/identity/canonicalSerialization";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
-import { markStartup } from "../../infrastructure/diagnostics/startupTrace";
+import { beginStartupSpan, markStartup } from "../../infrastructure/diagnostics/startupTrace";
+import { beginQuizCommandProfile, installQuizCommandProfileSink, quizSegment } from "../../infrastructure/diagnostics/quizCommandProfile";
 // Lets timers, rendering and the startup gate run between the linear phases of a large sync.
 import { createCooperativeSlice } from "../../infrastructure/scheduling/cooperativeSlice";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
@@ -657,11 +658,19 @@ export function retryAccountDataSync(api: PatternlyApiClient, accountId: string)
  * the account operation lane and concurrent calls for one account share the
  * same attempt, including a failed attempt.
  */
+// T4.2: the quiz-exit sync is one profiled command (perf build with the quiz
+// profile flag only): segments and storage counters before the POST.
+installQuizCommandProfileSink({ begin: beginStartupSpan, mark: markStartup });
+
 export function retryPendingAccountDataSync(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession | null> {
   const existing = pendingHomeSyncAttempts.get(accountId);
   if (existing) return existing;
 
-  const attempt = withAccountDataOperation(() => retryPendingAccountDataSyncUnlocked(api, accountId));
+  const endProfile = beginQuizCommandProfile();
+  let laneEntered: () => void = () => undefined;
+  void quizSegment("sync_lane_wait", () => new Promise<void>((resolve) => { laneEntered = resolve; }));
+  const attempt = withAccountDataOperation(() => { laneEntered(); return retryPendingAccountDataSyncUnlocked(api, accountId); });
+  void attempt.then(endProfile, endProfile);
   pendingHomeSyncAttempts.set(accountId, attempt);
   void attempt.then(
     () => {
@@ -721,6 +730,11 @@ export function retryLearningPlanRecovery(api: PatternlyApiClient, accountId: st
 }
 
 async function retryPendingAccountDataSyncUnlocked(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession | null> {
+  const ready = await quizSegment("sync_precheck", () => retryPendingAccountDataSyncPrecheck(accountId));
+  return ready === true ? synchronizeBoundAccount(api, accountId) : ready;
+}
+
+async function retryPendingAccountDataSyncPrecheck(accountId: string): Promise<AccountDataSession | null | true> {
   const installation = await getGuestInstallation();
   const state = await getAccountSyncState();
   if (!installation || installation.accountId !== accountId || state.accountId !== accountId) return null;
@@ -743,7 +757,7 @@ async function retryPendingAccountDataSyncUnlocked(api: PatternlyApiClient, acco
   if (latestState.status !== "offlinePending") return null;
   if (latestState.materialization) return explicitFailureSession(latestState, "account_materialization_in_progress", false);
   if (latestState.pendingConfirmation !== null) return explicitFailureSession(latestState, "account_adoption_pending", false);
-  return synchronizeBoundAccount(api, accountId);
+  return true;
 }
 
 function materializationTargetAccountId(state: AccountSyncState): string | null {
@@ -1197,17 +1211,17 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
   // full path when it has nothing to upload.
   let prefetchedRemote: RemoteProgressRead | null = null;
   try {
-    const unchangedStart = await synchronizeUnchangedBoundAccount(api, accountId);
+    const unchangedStart = await quizSegment("sync_unchanged_check", () => synchronizeUnchangedBoundAccount(api, accountId));
     if (unchangedStart.kind !== "full") return unchangedStart.session;
     prefetchedRemote = unchangedStart.remote;
-    const planned = await withLocalLearningWriteOperation(async () => {
+    const planned = await quizSegment("sync_plan", () => withLocalLearningWriteOperation(async () => {
       const storageScope = readLearningPlanStorageScope();
       const uploadGuard = await readBoundSyncGuard(accountId);
       if (uploadGuard) return Object.freeze({ kind: "blocked" as const, guard: uploadGuard });
       const installation = await getGuestInstallation();
       if (!installation || installation.accountId !== accountId || installation.bindingState !== "account_bound") throw new AccountDataFailure("account_binding_mismatch");
-      await ensureAccountOutboxFromLocalDataset();
-      const snapshot = await buildAccountDataSnapshot();
+      await quizSegment("sync_outbox", () => ensureAccountOutboxFromLocalDataset());
+      const snapshot = await quizSegment("sync_snapshot", () => buildAccountDataSnapshot());
       const currentInstallation = await getGuestInstallation();
       const currentState = await getAccountSyncState();
       if (currentState.accountId === accountId && isPersistedIdentityDenial(currentState.lastFailureCode)) {
@@ -1222,7 +1236,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         || (currentState.accountId !== null && currentState.accountId !== accountId)) throw new AccountDataFailure("account_binding_mismatch");
       const snapshotGuard = learningSyncGuardSession(currentState, snapshot, true, accountId);
       if (snapshotGuard) return Object.freeze({ kind: "blocked" as const, guard: snapshotGuard });
-      const syncing = saveAccountSyncState({ ...currentState, accountId, status: "syncing", lastFailureCode: null });
+      const syncing = quizSegment("sync_state_save", () => saveAccountSyncState({ ...currentState, accountId, status: "syncing", lastFailureCode: null }));
       return Object.freeze({
         kind: "ready" as const,
         state: syncing,
@@ -1232,10 +1246,10 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
           localDatasetId: installation.localDatasetId,
           storageScope,
           localDatasetVersion: currentState.localDatasetVersion,
-          snapshotFingerprint: localAccountSnapshotFingerprint(snapshot),
+          snapshotFingerprint: quizSegment("sync_fingerprint", () => localAccountSnapshotFingerprint(snapshot)),
         }),
       });
-    });
+    }));
     if (planned.kind === "blocked") return preservePendingSyncGuard(accountId, planned.guard);
     if (planned.kind === "identity_denied") return planned.session;
     state = planned.state;
@@ -1258,7 +1272,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         // batch with the newer revision: the server's durable batch marker is
         // bound to the original request revision and must remain untouched.
         if (batch.every((entry) => planItemsByMutationId.get(entry.mutationId)?.status === "acked")) continue;
-        const current = await getAccountSyncState();
+        const current = await quizSegment("sync_state_read", () => getAccountSyncState());
         if (current.syncPlan?.planId !== plan.planId) throw new AccountDataFailure("account_sync_state_invalid");
         const request = {
           canonicalVersion: "canonical-json-v1",
@@ -1271,7 +1285,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         } as const;
         let response: Awaited<ReturnType<PatternlyApiClient["syncProgress"]>>;
         try {
-          response = await api.syncProgress(request);
+          response = await quizSegment("sync_post", () => api.syncProgress(request));
         } catch (error) {
           const conflictCode = confirmedSyncConflictCode(error);
           if (conflictCode) confirmedConflict = buildConfirmedSyncConflict({ code: conflictCode, request, planId: plan.planId, batchId, batchIndex, batch });

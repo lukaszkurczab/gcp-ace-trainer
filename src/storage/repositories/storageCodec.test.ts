@@ -55,3 +55,40 @@ test("outcome write marks prerequisite transport failures retryable but leaves c
   assert.equal(corrupt.kind, "conflict");
   assert.equal(storage.getString("outcome"), "{");
 });
+
+// T4.2: large envelopes skip re-parsing bytes this module verified, never stale or unverified bytes.
+const largePayload = (marker: string) => ({ marker, filler: "x".repeat(20_000) });
+
+test("T4.2: a large write after a verified write keeps exact revisions without re-parsing, and an outside writer is always honoured", () => {
+  class CountingParseStorage extends MemoryKeyValueStorage {}
+  const storage = new CountingParseStorage();
+  installKeyValueStorageForTests(storage);
+  assert.equal(writeCanonicalJson("big", largePayload("a")).revision, 1);
+  assert.equal(writeCanonicalJson("big", largePayload("b")).revision, 2);
+  const parse = JSON.parse;
+  let parsedBig = 0;
+  JSON.parse = ((text: string, reviver?: Parameters<typeof JSON.parse>[1]) => { if (typeof text === "string" && text.length > 20_000) parsedBig += 1; return parse(text, reviver); }) as typeof JSON.parse;
+  try { assert.equal(writeCanonicalJson("big", largePayload("c"), 2).revision, 3); }
+  finally { JSON.parse = parse; }
+  assert.equal(parsedBig, 0, "the prior bytes were this module's verified bytes: no parse, no re-serialization");
+  // Another writer (a restore, a journal apply) puts different bytes there: they are parsed and their revision wins.
+  storage.setString("big", JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision: 10, payload: largePayload("outside") }));
+  assert.throws(() => writeCanonicalJson("big", largePayload("d"), 3));
+  assert.equal(writeCanonicalJson("big", largePayload("d"), 10).revision, 11);
+  assert.equal(readCanonicalJson("big", (v): v is { marker: string } => typeof v === "object")?.marker, "d");
+  // Corrupt outside bytes are still rejected.
+  storage.setString("big", "{ not json");
+  assert.throws(() => writeCanonicalJson("big", largePayload("e")), CorruptStoredRecordError);
+});
+
+test("T4.2: a readback that differs from the written bytes takes the full verification and fails when the payload differs", () => {
+  class AlteringStorage extends MemoryKeyValueStorage {
+    alter = false;
+    override getString(key: string) { const raw = super.getString(key); return this.alter && key === "big" && raw !== undefined ? raw.replace('"marker":"b"', '"marker":"z"') : raw; }
+  }
+  const storage = new AlteringStorage();
+  installKeyValueStorageForTests(storage);
+  writeCanonicalJson("big", largePayload("a"));
+  storage.alter = true;
+  assert.throws(() => writeCanonicalJson("big", largePayload("b")), (error: unknown) => error instanceof Error && /could not be verified/u.test(String((error as Error & { cause?: unknown }).cause)));
+});

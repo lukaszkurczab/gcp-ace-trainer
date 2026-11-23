@@ -16,9 +16,25 @@ type ProfileSink = Readonly<{ begin(stage: `quiz_seg:${string}`): () => void; ma
 let sink: ProfileSink | null = null;
 export function installQuizCommandProfileSink(next: ProfileSink): void { if (ENABLED) sink = next; }
 
-type Counters = { gets: number; chars: number; keyLists: number; sets: number; setChars: number; removes: number };
+type Counters = { gets: number; chars: number; keyLists: number; sets: number; setChars: number; removes: number; getMs: number; setMs: number; maxSetMs: number; maxSetChars: number };
+const emptyCounters = (): Counters => ({ gets: 0, chars: 0, keyLists: 0, sets: 0, setChars: 0, removes: 0, getMs: 0, setMs: 0, maxSetMs: 0, maxSetChars: 0 });
+const now = (): number => (typeof globalThis.performance?.now === "function" ? globalThis.performance.now() : Date.now());
 let active = 0;
-let counters: Counters = { gets: 0, chars: 0, keyLists: 0, sets: 0, setChars: 0, removes: 0 };
+let counters: Counters = emptyCounters();
+/** T4.2: per key family (namespace stripped, first segment): [gets, chars, sets, setChars]. */
+let families = new Map<string, [number, number, number, number]>();
+function family(key: string): string {
+  const parts = key.split(":");
+  const start = parts[0] === "patternly" ? (parts[1] === "canonical" || parts[1] === "derived" ? 3 : 1) : 0;
+  return `${parts.slice(0, start).join(".")}/${parts[start] ?? ""}`.replace(/[^a-zA-Z0-9_./-]/gu, "_");
+}
+function noteFamily(key: string | undefined, index: 0 | 2, chars: number): void {
+  if (key === undefined) return;
+  const name = family(key);
+  const row = families.get(name) ?? [0, 0, 0, 0];
+  row[index] += 1; row[index + 1] = (row[index + 1] ?? 0) + chars;
+  families.set(name, row);
+}
 const completionListeners: (() => void)[] = [];
 
 export function quizCommandProfileEnabled(): boolean { return ENABLED; }
@@ -27,7 +43,7 @@ export function quizCommandProfileEnabled(): boolean { return ENABLED; }
 export function beginQuizCommandProfile(): () => void {
   if (!ENABLED || !sink) return () => undefined;
   active += 1;
-  if (active === 1) counters = { gets: 0, chars: 0, keyLists: 0, sets: 0, setChars: 0, removes: 0 };
+  if (active === 1) { counters = emptyCounters(); families = new Map(); }
   let ended = false;
   return () => {
     if (ended) return;
@@ -35,7 +51,9 @@ export function beginQuizCommandProfile(): () => void {
     active -= 1;
     if (active === 0) {
       const c = counters;
-      sink?.mark(`quiz_counter:gets=${c.gets}:chars=${c.chars}:keylists=${c.keyLists}:sets=${c.sets}:setchars=${c.setChars}:removes=${c.removes}`);
+      sink?.mark(`quiz_counter:gets=${c.gets}:chars=${c.chars}:keylists=${c.keyLists}:sets=${c.sets}:setchars=${c.setChars}:removes=${c.removes}:getms=${Math.round(c.getMs)}:setms=${Math.round(c.setMs)}:maxsetms=${Math.round(c.maxSetMs)}:maxsetchars=${c.maxSetChars}`);
+      const top = [...families.entries()].sort((left, right) => (right[1][1] + right[1][3]) - (left[1][1] + left[1][3])).slice(0, 14);
+      for (const [name, row] of top) sink?.mark(`quiz_counter:fam:${name}:gets=${row[0]}:chars=${row[1]}:sets=${row[2]}:setchars=${row[3]}`);
       for (const listener of completionListeners.splice(0)) { try { listener(); } catch { /* diagnostics only */ } }
     }
   };
@@ -55,14 +73,26 @@ export function quizSegment<T>(name: string, work: () => T): T {
   return result;
 }
 
-export function noteProfiledStorageRead(raw: string | undefined): void {
+export function noteProfiledStorageRead(raw: string | undefined, key?: string): void {
   if (active === 0) return;
+  noteFamily(key, 0, raw?.length ?? 0);
   counters.gets += 1;
   counters.chars += raw?.length ?? 0;
 }
 export function noteProfiledStorageKeyList(): void { if (active > 0) counters.keyLists += 1; }
-export function noteProfiledStorageWrite(value: string | undefined): void {
+export function noteProfiledStorageWrite(value: string | undefined, key?: string): void {
   if (active === 0) return;
+  noteFamily(key, 2, value?.length ?? 0);
   if (value === undefined) counters.removes += 1;
   else { counters.sets += 1; counters.setChars += value.length; }
+}
+
+/** T4.2: time spent inside the storage call itself (the profiled wrapper calls these around it). */
+export function profiledStorageClock(): number { return active > 0 ? now() : 0; }
+export function noteProfiledStorageReadTime(startedAt: number): void { if (active > 0 && startedAt > 0) counters.getMs += now() - startedAt; }
+export function noteProfiledStorageWriteTime(startedAt: number, value: string | undefined): void {
+  if (active === 0 || startedAt <= 0) return;
+  const elapsed = now() - startedAt;
+  counters.setMs += elapsed;
+  if (elapsed > counters.maxSetMs) { counters.maxSetMs = elapsed; counters.maxSetChars = value?.length ?? 0; }
 }

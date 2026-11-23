@@ -13,7 +13,7 @@ import { applySynchronousForegroundTimerRaw } from "./foregroundTimerRawCas";
 import type { ForegroundClockCapability, ForegroundClockScope } from "./foregroundClockCapability";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { sha256Utf8 } from "../identity/sha256";
-import { noteProfiledStorageKeyList, noteProfiledStorageRead, noteProfiledStorageWrite, quizCommandProfileEnabled } from "../diagnostics/quizCommandProfile";
+import { noteProfiledStorageKeyList, noteProfiledStorageRead, noteProfiledStorageReadTime, noteProfiledStorageWrite, noteProfiledStorageWriteTime, profiledStorageClock, quizCommandProfileEnabled } from "../diagnostics/quizCommandProfile";
 
 let client: KeyValueStorage | null = null;
 
@@ -786,9 +786,9 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
   };
   const scopedStorage = prepared.router.storage;
   const publishedStorage: KeyValueStorage = quizCommandProfileEnabled() ? {
-    getString(key) { checkPublished(); const value = scopedStorage.getString(key); noteProfiledStorageRead(value); return value; },
-    setString(key, value) { checkPublished(); noteProfiledStorageWrite(value); try { scopedStorage.setString(key, value); } finally { noteKeyValueWrite(publishedStorage, key); } },
-    remove(key) { checkPublished(); noteProfiledStorageWrite(undefined); try { scopedStorage.remove(key); } finally { noteKeyValueWrite(publishedStorage, key); } },
+    getString(key) { checkPublished(); const startedAt = profiledStorageClock(); const value = scopedStorage.getString(key); noteProfiledStorageReadTime(startedAt); noteProfiledStorageRead(value, key); return value; },
+    setString(key, value) { checkPublished(); noteProfiledStorageWrite(value, key); const startedAt = profiledStorageClock(); try { scopedStorage.setString(key, value); } finally { noteProfiledStorageWriteTime(startedAt, value); noteKeyValueWrite(publishedStorage, key); } },
+    remove(key) { checkPublished(); noteProfiledStorageWrite(undefined, key); const startedAt = profiledStorageClock(); try { scopedStorage.remove(key); } finally { noteProfiledStorageWriteTime(startedAt, undefined); noteKeyValueWrite(publishedStorage, key); } },
     contains(key) { checkPublished(); return scopedStorage.contains(key); },
     getAllKeys() { checkPublished(); noteProfiledStorageKeyList(); return scopedStorage.getAllKeys(); },
   } : {
