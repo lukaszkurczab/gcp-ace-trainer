@@ -993,8 +993,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi.ts": {
-      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Obejmuje /v1/bootstrap (profil app_check_bearer, składniki jako dokładne odpowiedzi tras samodzielnych), snapshotScope/snapshotToken i warunkową kontrolę rewizji progress oraz opcjonalny proof w sync. Nie zmienia trwałych receipts. Kontrakt nie zawiera tras i schematów Recovery Codes.",
-      "reviewedHash": "4aaec02e6748e99e9890deb134f5be98c91c6f1ca7078073bb352c61214d2042",
+      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Obejmuje /v1/bootstrap (profil app_check_bearer, składniki jako dokładne odpowiedzi tras samodzielnych), snapshotScope/snapshotToken i warunkową kontrolę rewizji progress oraz opcjonalny proof w sync. Nie zmienia trwałych receipts. Kontrakt nie zawiera tras i schematów Recovery Codes. GET /v1/me ma zakres konsumenta backend-only (klient mobilny czyta /me przez /v1/bootstrap); trasa zostaje dla parytetu, testów i narzędzi QA.",
+      "reviewedHash": "5b4201d454ce4da08f3a6f156b6a3cdc4bd8bad97ceab6fc9483c8788b251ddf",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi-validator.ts": {
@@ -1853,9 +1853,9 @@
       "reviewedHash": "bc6cc20457d5fc278731ebac5aafebe28b157c7d101badab7b610c0e02f409a7"
     },
     "patternly-web/src/generated/demoQuestions.json": {
-      "description": "Wygenerowana istniejącym exporterem APP projekcja current-source dla zainstalowanego pakietu: dwa interaktywne pytania z Details i trzy publicSamples, w tym obraz bez payloadu. Odświeżenie28.10 zmienia26pól metadata/provenance; payloady pytań i Details oraz capture pozostają identyczne. To lokalna pochodna, bez publikacji lub APP sync.",
+      "description": "Wygenerowana istniejącym exporterem APP projekcja current-source dla zainstalowanego pakietu: dwa interaktywne pytania z Details i trzy publicSamples, w tym obraz bez payloadu. Odświeżenie28.10 zmienia26pól metadata/provenance; payloady pytań i Details oraz capture pozostają identyczne. To lokalna pochodna, bez publikacji lub APP sync. Odświeżenie 24.11.2026 po synchronizacji release lock: zmieniły się tylko pola proweniencji i identyfikatory wydania (artefakt, lock, fingerprint, releaseId); payloady pytań bez zmian.",
       "flow": "Witryna, demo i panel",
-      "reviewedHash": "3accacf49916fe9cce6bf5b84804df27a3bbb9fb505c41e299710153ace7b903"
+      "reviewedHash": "8106a77bc19cfad28eb67cad84e44c0a8d860c1c2eaa1e4697a38cadfdc1fd5c"
     },
     "patternly/scripts/runLocalProfile.mjs": {
       "description": "Przygotowuje bieżący bank i zwalidowany smoke/sandbox przed Expo. Android Local wiąże token, local native tree i dokładny serial; android-local-start uruchamia wyłącznie packager localhost8081 dla istniejącego APK. Sprawdza wszystkie konflikty czterech same-port reverse przed dodaniem brakujących. Rozróżnia pełne ready od dozwolonego smoke content-only503.",
@@ -2988,7 +2988,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "b1bd642ce69d395b70e57c059d75c60f4cf5f99d409f312e8065d252e4885c2b"
+      "reviewedDigest": "6208085551406f4a7d5ff061bd587b6a60267de0975682201e2cce869ba703d1"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -3094,7 +3094,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "97e320d5df0d6c76f53505d48a830342a6dac0b2607c5ad65a7d5840e6f5f432"
+      "reviewedDigest": "6a34c04042dfbf2ac8d0ec9692692a8a3513b7f885deacc0238a18a7e6df26c9"
     }
   ]
 }

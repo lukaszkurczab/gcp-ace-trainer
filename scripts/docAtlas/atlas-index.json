@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "2fe0cb0717ef6fa44eb62d9b6f14f87dda4978b4",
+      "head": "beb5dfb7acf627ad3e4c43961d9b4529313f265b",
       "files": [
         {
           "path": ".easignore",
@@ -4628,8 +4628,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "f5ad135fcfddc802e9d1ccd46de482d9691ab380d62fe6407bdc3f8b6c730572",
-          "bytes": 255666,
+          "sha256": "68097f225a1f5cffd87d47bfff949d870778851aabf4e931aeeeab7fe4903b2a",
+          "bytes": 256001,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -84395,7 +84395,7 @@
       ]
     },
     "patternly-backend": {
-      "head": "d4d14ee62c3e12b5e1b04c8ac7153829b505c214",
+      "head": "ceda40e5a869d617a3b491d85437ec029a428b04",
       "files": [
         {
           "path": ".dockerignore",
@@ -84637,8 +84637,8 @@
         },
         {
           "path": "openapi/patternly-v1.json",
-          "sha256": "32c892c2f7dab2544f6f2f2e7486ba1e79cbfe1cfcb977a946f6e89bc8536b11",
-          "bytes": 500597,
+          "sha256": "93d2b1889d3b0f0af4f8ed44bb3e5b7502dc02eec28d2612849a85823231333b",
+          "bytes": 500609,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -87886,8 +87886,8 @@
         },
         {
           "path": "src/api/openapi.ts",
-          "sha256": "4aaec02e6748e99e9890deb134f5be98c91c6f1ca7078073bb352c61214d2042",
-          "bytes": 160799,
+          "sha256": "5b4201d454ce4da08f3a6f156b6a3cdc4bd8bad97ceab6fc9483c8788b251ddf",
+          "bytes": 160805,
           "symbols": [
             "OPENAPI_DOCUMENT",
             "OpenApiDocument"
@@ -93095,8 +93095,8 @@
         },
         {
           "path": "tests/openapiContracts.test.ts",
-          "sha256": "b229e07a443c9ad00218daf8e855dceae62c5165436d9f55e275b11f8784cd98",
-          "bytes": 23557,
+          "sha256": "aa5bb9471e639ed8aa19603e718fb8c6cb0a8a8df1812abb6753c5ec48f8906c",
+          "bytes": 23577,
           "symbols": [],
           "imports": [
             {
@@ -96222,6 +96222,10 @@
         },
         {
           "path": "[lokalne pliki środowiska lub kluczy — nazwy ukryte]",
+          "reason": "private-or-dependency-boundary-not-read"
+        },
+        {
+          "path": "dist",
           "reason": "private-or-dependency-boundary-not-read"
         },
         {
@@ -125063,7 +125067,7 @@
       ]
     },
     "patternly-web": {
-      "head": "7f88f45be62a4ed778641208d9d53fa2ddc38a41",
+      "head": "6f4e96f385c490a98c360e81567829aa87a5b096",
       "files": [
         {
           "path": ".firebaserc",
@@ -127110,8 +127114,8 @@
         },
         {
           "path": "src/generated/demoQuestions.json",
-          "sha256": "3accacf49916fe9cce6bf5b84804df27a3bbb9fb505c41e299710153ace7b903",
-          "bytes": 13993,
+          "sha256": "8106a77bc19cfad28eb67cad84e44c0a8d860c1c2eaa1e4697a38cadfdc1fd5c",
+          "bytes": 13953,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -127728,6 +127732,10 @@
           "reason": "outside-git-inventory-tree"
         },
         {
+          "path": "dist",
+          "reason": "private-or-dependency-boundary-not-read"
+        },
+        {
           "path": "docs",
           "reason": "outside-git-inventory-tree"
         },
@@ -127747,7 +127755,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "f5ad135fcfddc802e9d1ccd46de482d9691ab380d62fe6407bdc3f8b6c730572",
+  "catalogHash": "68097f225a1f5cffd87d47bfff949d870778851aabf4e931aeeeab7fe4903b2a",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "df9df8beadd1def2f55372abbf76c01997f32e863efad4e72eef978c34f1da03",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "32cd65f402258bcb4d38fb22f296803b905c0ea2b22ddcd01808ba4c6ea80873",
@@ -129481,7 +129489,7 @@
     "Atlas/Struktura/patternly/src/utils/_Pliki/domain.ts — aplikacja · src › utils.md": "ab75e12c59a43a013ebafd834ade1e661a7774f3ccbba5a79565aafb324f5193",
     "Atlas/Struktura/patternly/src/utils/_Pliki/index.ts — aplikacja · src › utils.md": "505267fb8914a8715951af6e080814828e7ed9c97411762b72b0cb5170892aaf",
     "Atlas/Struktura/patternly/src/utils/_Pliki/scoring.ts — aplikacja · src › utils.md": "9fca9ee6c47789d9dc7db89bd07bb440e52a22d3063a5152f827251274007eaf",
-    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "43ae1546140ab45583c2e202bded40b460ff1a709ce9bb5fc7f8d0e3f9940f89",
+    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "f04aef4ba0b2ef07b3bc28d64b9ec76f3ef7e3a0032e540e52d6dcf5e9a3c5c7",
     "Atlas/Struktura/patternly-backend/~2E~github/~2E~github — folder backend.md": "170e83b4b7bb5934fc7dd5cc63c11c5bbfaf95d1053e31ceba7bda7c046d10f6",
     "Atlas/Struktura/patternly-backend/~2E~github/workflows/workflows — folder backend · ~2E~github.md": "d58690acc4d532a53748757667f5a5f12aaeb1adbedc17469e7725a0d221787a",
     "Atlas/Struktura/patternly-backend/config/config — folder backend.md": "68dc58442959d179dad3d5f9958234f7599afbbb8c3517e3b6952ba3051b13d5",
@@ -129494,7 +129502,7 @@
     "Atlas/Struktura/patternly-backend/scripts/qa/cost03/cost03 — folder backend · scripts › qa.md": "baf2d6c5cb883fad814e37e10e44f5d37f6dffde42834fd03e043cb38873cf4d",
     "Atlas/Struktura/patternly-backend/scripts/qa/cost04/cost04 — folder backend · scripts › qa.md": "e5310800b8b492628018348a04bf9fc0f66cc5f7e58507cc38683e489527b70a",
     "Atlas/Struktura/patternly-backend/src/src — folder backend.md": "65e013176854a310e694d9139d2f0c2c1dc59f6a9642f907b4eef6545ac3a66b",
-    "Atlas/Struktura/patternly-backend/src/api/api — folder backend · src.md": "67cc83bcfef54a26080c799d9f544f214697e230f29bc6424831606cd08a2813",
+    "Atlas/Struktura/patternly-backend/src/api/api — folder backend · src.md": "86ba5d2b986b3e2df9daffaec211da0dda66b624c6664266ced751259b7d7e43",
     "Atlas/Struktura/patternly-backend/src/config/config — folder backend · src.md": "aa61c613f7d7ec4e2ca1c820d3959b4331bb69c928f75718e0eba44437be12c6",
     "Atlas/Struktura/patternly-backend/src/infrastructure/infrastructure — folder backend · src.md": "ad2be6f9535a6a78c92d5743102c6a6b7b03538bf3689da40159a2636f9a181e",
     "Atlas/Struktura/patternly-backend/src/infrastructure/content/content — folder backend · src › infrastructure.md": "bef8118fdc7f4c0c911cf5b646f193b25fb7df8cddd0531a3b01f06a6d9e7388",
@@ -129603,7 +129611,7 @@
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-terminal-wire-tests.mjs — backend · scripts.md": "8bf00aa6c9434a7ba7b4c16d4bcb8e2c2d46fcff21d6907e13b152ccca771e82",
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/app.ts — backend · src › api.md": "f3be8822322839bf1d4eecfdf038a25a2f7e9c5840ad12a3257cd76d4e3fdd0f",
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/openapi-validator.ts — backend · src › api.md": "f6f4639b16f09243ffd31d1409d87875804a8968f9e1f66411df2ee9d88bd9c4",
-    "Atlas/Struktura/patternly-backend/src/api/_Pliki/openapi.ts — backend · src › api.md": "a59064dc1fee997fca3e60bf9fc9c5ff23172ad18c25db8b9cc5874ffedf820e",
+    "Atlas/Struktura/patternly-backend/src/api/_Pliki/openapi.ts — backend · src › api.md": "354c0923a8b8e14f4c96f3f6733a6165c09b6ee934aedb6306b044adc68b68b6",
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/route-contract.ts — backend · src › api.md": "32a4bb2a7b12209bdaa4cd24b0258a69713fe16075e341e94a69ee01d1b297ee",
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/security-probes.ts — backend · src › api.md": "c46b8c816c48911d127b10b99e5596b09a33363e7b4a1b2d7b790d0b12fdcdf8",
     "Atlas/Struktura/patternly-backend/src/config/_Pliki/environment.ts — backend · src › config.md": "cd1585345b1b83ecc493fbd2306d000dfc28199786c104e025b6e924876d9bbd",
@@ -129706,7 +129714,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/legalRequests.emulator.test.ts — backend · tests.md": "ad95fd36c599a9a8958dea92a586728feea282382ccb7701fd870c12e4343477",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/localSmoke.test.ts — backend · tests.md": "6fa418d15958a0208c611a290427c9f22030aaab683b9af6d9ea888911141db0",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/merge.test.ts — backend · tests.md": "f4ac76a9caec6fc9e734890f172cfd39797220b55270f0e18225ee3589402f7c",
-    "Atlas/Struktura/patternly-backend/tests/_Pliki/openapiContracts.test.ts — backend · tests.md": "322523cf954fb60786b3d218cd08b1b890860776a17a1c03016e3737a00d4ad8",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/openapiContracts.test.ts — backend · tests.md": "898ef0ddc05419a9cdc30441b70a36351197c0c93fa609a11ec008693754bbce",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/operatorCli.test.ts — backend · tests.md": "8e50871694d5cc1faee9f7431b1f28402f9046491960705af05cadbeec67b39d",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/operatorCli.tty.test.ts — backend · tests.md": "09f7a8f499b24879b2a0ad19a78d4cc98f071ab0b3f0b2c692b4bea689d62ded",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/operatorCliTestSupport.ts — backend · tests.md": "016956197d5a6be7724f11287de9e4e1e1ea158886a20935345c36129fc553f4",
@@ -130038,7 +130046,7 @@
     "Atlas/Struktura/patternly-content/tests/_Pliki/shared-contract.test.mjs — treści · tests.md": "07d9baaf9d21668f04e5c030c8c6a3324dbea505c410b335c28a92918fa5cc48",
     "Atlas/Struktura/patternly-content/tests/_Pliki/simp03-phase-a.test.mjs — treści · tests.md": "022b0170311f0a09f8d3d704bfff2fbf31a1cb88ac970f5cddf605e1919c5596",
     "Atlas/Struktura/patternly-content/tests/_Pliki/simp03-verifier.test.mjs — treści · tests.md": "ed7924e7dfb1b5e1880ac020cb927d96233a9aedf2af485ed3fda63b375c4819",
-    "Atlas/Struktura/patternly-web/witryna — repozytorium.md": "b4cf09da5d887fd343fef2fe8245cbe9a4a5600dfb805e0c870e7cc5f6de6873",
+    "Atlas/Struktura/patternly-web/witryna — repozytorium.md": "75b5aa38f2413bad12e132f02e345acb43eaa05f4dddd210da94ac9f86e578f5",
     "Atlas/Struktura/patternly-web/~2E~github/~2E~github — folder witryna.md": "a74fae076c9c4cff134f42af92d011778182d598824849bda9179917d19adcb9",
     "Atlas/Struktura/patternly-web/~2E~github/workflows/workflows — folder witryna · ~2E~github.md": "e84480807f42fcc8091ae181b1c154943866a3d61894cd67de18c8ae14940828",
     "Atlas/Struktura/patternly-web/assets/assets — folder witryna.md": "4f14931bb065b8ca8e3c3590edbd0a243bd9774cb63f0aaae6e82c63997c1c2a",
@@ -130052,7 +130060,7 @@
     "Atlas/Struktura/patternly-web/scripts/qa/qa — folder witryna · scripts.md": "48ce1facc1ec358242ea07c6b84e5aef65265c971382bea08111e6fc54a2c97c",
     "Atlas/Struktura/patternly-web/src/src — folder witryna.md": "0e0278741dd4621a95c8c1e22bb6df54e12317fddb5062e6afca2600d8ba84b7",
     "Atlas/Struktura/patternly-web/src/components/components — folder witryna · src.md": "2bc43519e4c7d8a6975e3dd3298777e2f45930267aa39931b83c633df0712a14",
-    "Atlas/Struktura/patternly-web/src/generated/generated — folder witryna · src.md": "9ee29317a41f3dd03bd3a82e1b94c2bcf072735cb22fdea494b2f6d9a3879a3d",
+    "Atlas/Struktura/patternly-web/src/generated/generated — folder witryna · src.md": "97aa4a00b02eebfaabc42954731f4986b3d32cf05f140baaaf276749124c3fd7",
     "Atlas/Struktura/patternly-web/src/hooks/hooks — folder witryna · src.md": "68e4226ad8aba799de7d1f3061744e1e111bd2722d7f196d06f66a036ad8ffa8",
     "Atlas/Struktura/patternly-web/src/pages/pages — folder witryna · src.md": "30f3bfcd0a6525f165c64a7180fd7cc833e6a0a84e2f212860e0c1077050104c",
     "Atlas/Struktura/patternly-web/~2E~github/workflows/_Pliki/verify.yml — witryna · ~2E~github › workflows.md": "9f91ca0586425134da678f56dc80247a4003ea908bc6a6b52303e476ef229285",
@@ -130107,7 +130115,7 @@
     "Atlas/Struktura/patternly-web/src/components/_Pliki/LegalRequestsPanel.jsx — witryna · src › components.md": "8d1c4c2b1b4b81e91fc25c445781835b1f9bd39ca8398f39f185cfed8df57408",
     "Atlas/Struktura/patternly-web/src/components/_Pliki/PrivacyRequestsPanel.jsx — witryna · src › components.md": "9cdea55bd99da0c88057b113bac00cdcb51b75523621b0916a7fba51b75cecda",
     "Atlas/Struktura/patternly-web/src/components/_Pliki/SecurityIncidentsPanel.jsx — witryna · src › components.md": "53413fc5b120dea2fe7722ce56c8b55b2a07a782baa255cf3bd85cd3fd6b4ec4",
-    "Atlas/Struktura/patternly-web/src/generated/_Pliki/demoQuestions.json — witryna · src › generated.md": "a8d2df805fdbf499935c55e6ddcb76a89a097d1af3fb390925cc8703587f09a0",
+    "Atlas/Struktura/patternly-web/src/generated/_Pliki/demoQuestions.json — witryna · src › generated.md": "790a36375d7fc2c962972dbcb9dce1e650f5002ae9f9bbdd9e465a35997b2118",
     "Atlas/Struktura/patternly-web/src/hooks/_Pliki/useClientReady.js — witryna · src › hooks.md": "76e0e988c0ed10291fe2b10905b75c6ccdad382b3029b14501a58ba4ff0dc660",
     "Atlas/Struktura/patternly-web/src/hooks/_Pliki/useReveal.jsx — witryna · src › hooks.md": "c7f223a47827adeee14f217f2aff48b26f364bc995d9c02243030d1f9e663ca1",
     "Atlas/Struktura/patternly-web/src/_Pliki/main.jsx — witryna · src.md": "6eafac0fdc12b113736e3f2292191f43568d6e98d2f34037615753aaed3b135d",
