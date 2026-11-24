@@ -16,7 +16,8 @@
       "env": {
         "PATTERNLY_RUNTIME_MODE": "sandbox",
         "EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE": "sandbox"
-      }
+      },
+      "node": "24.21.0"
     },
     "release": {
       "distribution": "store",
