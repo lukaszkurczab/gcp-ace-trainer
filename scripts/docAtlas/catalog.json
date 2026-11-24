@@ -1633,9 +1633,9 @@
       "reviewedHash": "48d291a35d32ea94912295eeb7c5f417f283a0f612aca531a624432aec1ee9f3"
     },
     "patternly/integration/contracts/content-release/release.lock.json": {
-      "description": "Pochodna tożsamość dziewięciu zwykłych banków APP: fingerprint źródeł, hashe/rozmiary i kategorie kontroli. ACM przechowuje osobny, dokładnie przypięty challenge bank i nie zmienia liczby ani zakresu zwykłych banków w tym locku. Lokalny kandydat pozostaje dirty/unpublished; semantic approval, publikacja, deployment i device acceptance nie są deklarowane.",
+      "description": "Pochodna tożsamość dziewięciu zwykłych banków APP: fingerprint źródeł, hashe/rozmiary i kategorie kontroli. ACM przechowuje osobny, dokładnie przypięty challenge bank i nie zmienia liczby ani zakresu zwykłych banków w tym locku. Od 24.11.2026 lock przypina czysty CONTENT (sourceTree clean, commit b994cd7); semantic approval, publikacja, deployment i device acceptance nie są deklarowane.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "1511d8610ee8b75e460796b5665f1d0550036bd694c92f04d20149be4554f1a0"
+      "reviewedHash": "6a26475781c3ae6769198d75948381708462b00bc888de064a14945a7cc54c67"
     },
     "patternly/scripts/fixtures/currentContentProducer.ts": {
       "description": "Wejście aktualnych testów integracyjnych: sprawdza pełną bieżącą tożsamość wybranego CONTENT i niezależnie zweryfikowany pakiet APP, porównując fingerprint oraz dokładny hash i rozmiar ścieżki. Bez odtwarzania historii Git.",
@@ -2467,9 +2467,9 @@
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly-content/tests/content-builder.test.mjs": {
-      "description": "Testy rzeczywistego buildera: walidacja źródeł i profili, deterministyczne artefakty/lock, legalne v1→v2 z nową polityką i regułą ukończenia, ochrona pozostawionych ścieżek, uszkodzonych i niepełnych par oraz rollback/retry po błędzie stagingu lub rename podczas przejścia wersji. Opcjonalnie utrwalają syntetyczne snapshoty w nowym katalogu dowodów.",
+      "description": "Testy rzeczywistego buildera: walidacja źródeł i profili, deterministyczne artefakty/lock, legalne v1→v2 z nową polityką i regułą ukończenia, ochrona pozostawionych ścieżek, uszkodzonych i niepełnych par oraz rollback/retry po błędzie stagingu lub rename podczas przejścia wersji. Opcjonalnie utrwalają syntetyczne snapshoty w nowym katalogu dowodów. Dla toru Coding sprawdzają też liczby banku ACM w artefakcie (472 zadania / 944 pytania, Free 16 / Premium 456) przy niezmienionych 3404 zwykłych pytaniach.",
       "flow": "Treść od producenta do sesji",
-      "reviewedHash": "983184af0641199a35487033f57d9b050f8337a759750b6d9c679394c15fd2c4"
+      "reviewedHash": "77b9df76a63c5a2acd5ac60d776f959fc88cd62a23a3cf59d18e0f93906c2470"
     },
     "patternly-content/scripts/content/reproduce-content-version-transition.mjs": {
       "description": "Izolowany reproduktor PAT-CODE-018: minimalna fixture AWS, dziewięć przypadków legalnej zmiany contentVersion, uszkodzenia starej pary i obsłużonych błędów rename. Używa produkcyjnego buildTrack/buildAll i prawdziwego filesystemu; każdy przebieg zachowuje scope, candidate i actual w nowym ignorowanym katalogu .local.",
@@ -3000,7 +3000,7 @@
         "patternly/scripts/syncBundledContentRelease",
         "patternly/scripts/releaseManifest.test.mjs"
       ],
-      "reviewedDigest": "e1932782c69f0ada2dabb0536720606f68e1032b17e6703d8552a7cd5641e127"
+      "reviewedDigest": "8ddfb30786dcaa7ee9cae7910e220890ed22c7f13f10761f7dd5dc2ceea3bace"
     },
     {
       "name": "Sesja, odpowiedź i trwały wynik",

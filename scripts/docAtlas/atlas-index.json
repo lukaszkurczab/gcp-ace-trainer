@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "744d65049f8d42ff6bb5e66b33a617941303219c",
+      "head": "2fe0cb0717ef6fa44eb62d9b6f14f87dda4978b4",
       "files": [
         {
           "path": ".easignore",
@@ -1281,7 +1281,7 @@
         },
         {
           "path": "integration/contracts/content-release/release.lock.json",
-          "sha256": "1511d8610ee8b75e460796b5665f1d0550036bd694c92f04d20149be4554f1a0",
+          "sha256": "6a26475781c3ae6769198d75948381708462b00bc888de064a14945a7cc54c67",
           "bytes": 8572,
           "symbols": [],
           "imports": [],
@@ -4628,8 +4628,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "8365f38274419bb5167a81795c889098a4b350355ad89533c2c36d256f64c33b",
-          "bytes": 255473,
+          "sha256": "f5ad135fcfddc802e9d1ccd46de482d9691ab380d62fe6407bdc3f8b6c730572",
+          "bytes": 255666,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -96229,13 +96229,17 @@
           "reason": "symlink-not-followed"
         },
         {
+          "path": "firestore-debug.log",
+          "reason": "ignored-or-outside-git-inventory"
+        },
+        {
           "path": "node_modules",
           "reason": "private-or-dependency-boundary-not-read"
         }
       ]
     },
     "patternly-content": {
-      "head": "44934f9d54c0d366d377b46a88be15b63bb8519b",
+      "head": "b994cd7c5c66dd2e28e060d1ece6cb7d56f07ad1",
       "files": [
         {
           "path": ".gitattributes",
@@ -96249,13 +96253,13 @@
         },
         {
           "path": ".github/workflows/content-quality.yml",
-          "sha256": "08c79788a2c8e523af322b213da34be8d70e8d489c9688c8dd4ad9a22973b89e",
-          "bytes": 3997,
+          "sha256": "913832c9315fc4df1b1ff55c26ee9be1670f098862a51f46b823f9b7930f9287",
+          "bytes": 4151,
           "symbols": [],
           "imports": [],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 84
+          "lines": 86
         },
         {
           "path": ".gitignore",
@@ -96279,13 +96283,13 @@
         },
         {
           "path": "README.md",
-          "sha256": "759aa27634517b30e83a6493d4741fa2c0757d2e368f19c7667251e8dcc1192e",
-          "bytes": 788,
+          "sha256": "6165789336451375fc419ff3a053d0f3b5e12d40a7baed12581b3b69c21653d4",
+          "bytes": 923,
           "symbols": [],
           "imports": [],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 6
+          "lines": 8
         },
         {
           "path": "config/approach-challenge-registries/coding-interview-dsa-problem-solving.json",
@@ -96574,8 +96578,8 @@
         },
         {
           "path": "config/current-content-audit-state.json",
-          "sha256": "4b42a200d81ffe087e9c2596ab1f5d60a4602dd3a7b145639bb6c7064d10c1ab",
-          "bytes": 12480585,
+          "sha256": "e823ea8f3efb7a0809c08ce0951237ced8664311518b38d958ec279911e1c25c",
+          "bytes": 12584722,
           "symbols": [],
           "imports": [],
           "jsonKeys": [],
@@ -122278,8 +122282,8 @@
         },
         {
           "path": "tests/ccarp-20261026-feedback-corrections.test.mjs",
-          "sha256": "c1138d6561cb81047518b6cabb0b800a42ae1262903222d55f920cfd0c27a88c",
-          "bytes": 8393,
+          "sha256": "81e4b0d9ce5bb9666a0f9f72453b525b3e7f58399f67081955d67f6089057540",
+          "bytes": 8399,
           "symbols": [],
           "imports": [
             {
@@ -122620,8 +122624,8 @@
         },
         {
           "path": "tests/content-builder.test.mjs",
-          "sha256": "983184af0641199a35487033f57d9b050f8337a759750b6d9c679394c15fd2c4",
-          "bytes": 74650,
+          "sha256": "77b9df76a63c5a2acd5ac60d776f959fc88cd62a23a3cf59d18e0f93906c2470",
+          "bytes": 74664,
           "symbols": [],
           "imports": [
             {
@@ -127743,7 +127747,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "8365f38274419bb5167a81795c889098a4b350355ad89533c2c36d256f64c33b",
+  "catalogHash": "f5ad135fcfddc802e9d1ccd46de482d9691ab380d62fe6407bdc3f8b6c730572",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "df9df8beadd1def2f55372abbf76c01997f32e863efad4e72eef978c34f1da03",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "32cd65f402258bcb4d38fb22f296803b905c0ea2b22ddcd01808ba4c6ea80873",
@@ -127759,7 +127763,7 @@
     "Atlas/Struktura/patternly/docs/specs/business-quality/business-quality — folder aplikacja · docs › specs.md": "3f2dc21a1e06d9196258bce35d5850a94dfdc05ee219e581569affce09c821d6",
     "Atlas/Struktura/patternly/integration/integration — folder aplikacja.md": "ea69ec29309eeec40531a615039ded5a7c6dd12103f14449e379b37904b508ad",
     "Atlas/Struktura/patternly/integration/contracts/contracts — folder aplikacja · integration.md": "604a62800c807cdeef9cea7e1fe6398929691182a50f1a3ac82650220ab8d227",
-    "Atlas/Struktura/patternly/integration/contracts/content-release/content-release — folder aplikacja · integration › contracts.md": "ccd1b9795cbd1c7fe06d32b1b75a6bcbc25a13971f4f26bdc12074c7a291e1df",
+    "Atlas/Struktura/patternly/integration/contracts/content-release/content-release — folder aplikacja · integration › contracts.md": "102ee3f0551581105a01badbab3caecd09e04bf99932408151901137403356ef",
     "Atlas/Struktura/patternly/integration/contracts/content-release/local-claude/local-claude — folder aplikacja · integration › contracts › content-release.md": "c45a1bf32276f2f1fd315cccba48ca727fb82292e09635d49243416ddefe38a5",
     "Atlas/Struktura/patternly/integration/contracts/identity-parity/identity-parity — folder aplikacja · integration › contracts.md": "03343e1c164e093fd56bd608ed6bf971a29e024e12358484792a223b5906df21",
     "Atlas/Struktura/patternly/integration/contracts/record-fingerprint/record-fingerprint — folder aplikacja · integration › contracts.md": "6ad8dad34a539714a2f75a540476a8edd428bb1b2eeaafc72a06a3069af26d9e",
@@ -127968,7 +127972,7 @@
     "Atlas/Struktura/patternly/_Pliki/app.config.js — aplikacja.md": "bc3a452f27eb2869364f86a6c56057d0d590072d4b9b19f9ccbc155f5a70dce6",
     "Atlas/Struktura/patternly/_Pliki/App.tsx — aplikacja.md": "f4dfb913875c3495bd92c9c4bfc5b718193cde6954ae56b6a7980a94378a7c88",
     "Atlas/Struktura/patternly/config/_Pliki/public-legal.release.json — aplikacja · config.md": "3f69d8ee455494eae4daea5bc1f22c3af64938bd1cc5408d3fab36cbac40be0d",
-    "Atlas/Struktura/patternly/integration/contracts/content-release/_Pliki/release.lock.json — aplikacja · integration › contracts › content-release.md": "292bf7218381da2ec6a69137797dbb11c54555ce39a49f0dbd2c41196d80185c",
+    "Atlas/Struktura/patternly/integration/contracts/content-release/_Pliki/release.lock.json — aplikacja · integration › contracts › content-release.md": "33772a69b7be2c1f4f39d0df2cccbb7870fe8eb44f24bd7c46d33e0261ede815",
     "Atlas/Struktura/patternly/integration/contracts/identity-parity/_Pliki/vectors.v1.json — aplikacja · integration › contracts › identity-parity.md": "639d94c58e8105f325baed96e2a4de0f9b24f14b1f6b76e9b544739026d028a4",
     "Atlas/Struktura/patternly/_Pliki/metro.config.js — aplikacja.md": "a2a209fe21a55082b914d3b2feb958c7021e7eb8dad182bacfe9fa42181f4e29",
     "Atlas/Struktura/patternly/native/foreground-clock/_Pliki/ACMNativeFixtureIdentity.mm — aplikacja · native › foreground-clock.md": "4b7ac4139d8f8c91c9b28a6572871c8efc7387c950b119545c135480b4e1a0ea",
@@ -129477,7 +129481,7 @@
     "Atlas/Struktura/patternly/src/utils/_Pliki/domain.ts — aplikacja · src › utils.md": "ab75e12c59a43a013ebafd834ade1e661a7774f3ccbba5a79565aafb324f5193",
     "Atlas/Struktura/patternly/src/utils/_Pliki/index.ts — aplikacja · src › utils.md": "505267fb8914a8715951af6e080814828e7ed9c97411762b72b0cb5170892aaf",
     "Atlas/Struktura/patternly/src/utils/_Pliki/scoring.ts — aplikacja · src › utils.md": "9fca9ee6c47789d9dc7db89bd07bb440e52a22d3063a5152f827251274007eaf",
-    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "6e679c7bb329a2ced361cb18a080f2790d96b19fc69d3959705d81d627a2e0fe",
+    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "43ae1546140ab45583c2e202bded40b460ff1a709ce9bb5fc7f8d0e3f9940f89",
     "Atlas/Struktura/patternly-backend/~2E~github/~2E~github — folder backend.md": "170e83b4b7bb5934fc7dd5cc63c11c5bbfaf95d1053e31ceba7bda7c046d10f6",
     "Atlas/Struktura/patternly-backend/~2E~github/workflows/workflows — folder backend · ~2E~github.md": "d58690acc4d532a53748757667f5a5f12aaeb1adbedc17469e7725a0d221787a",
     "Atlas/Struktura/patternly-backend/config/config — folder backend.md": "68dc58442959d179dad3d5f9958234f7599afbbb8c3517e3b6952ba3051b13d5",
@@ -129751,10 +129755,10 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/support.ts — backend · tests.md": "77804dfe747b93ddaf033ac28c977d1a775f89e9840e3665ae399d8a104b7cc4",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/syncMutationReceipts.emulator.test.ts — backend · tests.md": "7e3d3f961233d471aa0ca5db72f3e4441876e6bacf5027d3b5ef0242563ac53e",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/usersStoreLegacyDeletedIdentities.test.ts — backend · tests.md": "7de85800844223fb492216b9d966955e86c81d94860afce8c3050bab344e0e8f",
-    "Atlas/Struktura/patternly-content/treści — repozytorium.md": "2d1744acc2a67a384dbbf0f0082429ea81a997a8ab4ba3b081bad2fe99258d6a",
+    "Atlas/Struktura/patternly-content/treści — repozytorium.md": "32d508b4971154ad85f8e89b36498fd4794b124e43095429c73c42e6b90b9752",
     "Atlas/Struktura/patternly-content/~2E~github/~2E~github — folder treści.md": "bd629df900e15ab94891128aa6a67ca55b3798151a8ac297c45ca9cdc797394d",
-    "Atlas/Struktura/patternly-content/~2E~github/workflows/workflows — folder treści · ~2E~github.md": "8e3024009828eb07ad2db23c328cc0c3fbdc2b831519afbf7ef750680b29b66c",
-    "Atlas/Struktura/patternly-content/config/config — folder treści.md": "dd0d07188638e8897258724bee0fa8f2132d369848f9f6074a3083c6e8e58d1a",
+    "Atlas/Struktura/patternly-content/~2E~github/workflows/workflows — folder treści · ~2E~github.md": "a6320b5891b2814e3c84d62c70ba47afb0feef1a420884cbc956414a9d6697d5",
+    "Atlas/Struktura/patternly-content/config/config — folder treści.md": "29e9d0824546838a1d08149b53287ad88d147c8d007b3e4d18a97ae52136a5d8",
     "Atlas/Struktura/patternly-content/config/approach-challenge-registries/approach-challenge-registries — folder treści · config.md": "40e1689fd4e4117d0f9778398677308213acdb70bf3ea8f65c2bf5e2a7094003",
     "Atlas/Struktura/patternly-content/config/certification-objective-registries/certification-objective-registries — folder treści · config.md": "f6c524ef85e59a022f32101903c2485ee42c94412c1e7c27fea2592c9578f185",
     "Atlas/Struktura/patternly-content/config/certification-source-registries/certification-source-registries — folder treści · config.md": "a8050b4c0170a17a6a7b6bcce4ab5673664859c40b7ad86ea1cdbd081aaa399d",
@@ -129941,7 +129945,7 @@
     "Atlas/Struktura/patternly-content/supplements/supplements — folder treści.md": "4f4cd5cc9b0552f090a63a752ca48202b152cb0ba22c3d06399ea5a6a8f67866",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/claude-certified-architect-professional-certification — folder treści · supplements.md": "63878e372743a7d77accbee472aaac8d2593273e4f28c0c42193152ddbb488e1",
     "Atlas/Struktura/patternly-content/supplements/claude-certified-architect-professional-certification/cc02-course-supplement-v1/cc02-course-supplement-v1 — folder treści · supplements › claude-certified-architect-professional-certification.md": "5b47aadb9495fa51d4bab9752dafb2e3022840d8617838add18e97d9769e8eec",
-    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "2e775b7a60c96d00935a1fc9801b73efcae94d987dce2edfaac62625b88fe37d",
+    "Atlas/Struktura/patternly-content/tests/tests — folder treści.md": "0a42665427ee399457d5f6db4e5490252bd61145d6c15e4c107d4e1ee1412057",
     "Atlas/Struktura/patternly-content/tests/fixtures/fixtures — folder treści · tests.md": "f3288c052348f51e0ccf3d22482130e908886c648dca3aa68d3a3cdeff82c2c3",
     "Atlas/Struktura/patternly-content/tests/fixtures/approach-challenge/approach-challenge — folder treści · tests › fixtures.md": "21859b387ff3514d7facafd5434837b87c70e43c6c6c7fb48546bb38af57e4fd",
     "Atlas/Struktura/patternly-content/tests/fixtures/model-evaluation/model-evaluation — folder treści · tests › fixtures.md": "2abd22e6c5d9d61d699c51ad9760d9b20677bb89203bcbbe612b7dc9cb5e0bbe",
@@ -129994,13 +129998,13 @@
     "Atlas/Struktura/patternly-content/tests/_Pliki/bizq01-source-copy.test.mjs — treści · tests.md": "b9ba81dc4ad8711e2fbcbc8e808129384226c97ebf62439c9cf6e57efd6da786",
     "Atlas/Struktura/patternly-content/tests/_Pliki/bizq01-source-slice.test.mjs — treści · tests.md": "8678eeee23e77725d18e4f22a812efe6c02fd30db8f9c93b89e68e7b3f72b7bf",
     "Atlas/Struktura/patternly-content/tests/_Pliki/ccarp-20261018-targeted-corrections.test.mjs — treści · tests.md": "f55d62625135d23033bb9774a78995cd309c55914f9caeb5739bcd807f1a2360",
-    "Atlas/Struktura/patternly-content/tests/_Pliki/ccarp-20261026-feedback-corrections.test.mjs — treści · tests.md": "686f0da00e446ae8fc5c115659d0810400f6cd2ce4462c093051131017b7c41b",
+    "Atlas/Struktura/patternly-content/tests/_Pliki/ccarp-20261026-feedback-corrections.test.mjs — treści · tests.md": "ead0af755503299c5d0545017284aefbccee6e47a9a905dc9a194ebbcb9d4587",
     "Atlas/Struktura/patternly-content/tests/_Pliki/ccarp-exam-response-contract.test.mjs — treści · tests.md": "c7d5a45d0e7113a11df9daf169c0fc57bcd362f37edbd581efd7414fb16e5cfa",
     "Atlas/Struktura/patternly-content/tests/_Pliki/claude-cc02-content-coverage.test.mjs — treści · tests.md": "a95c3ef17de54de70a5ed01ea81ea05c6356bca626dac2bfe46177edeca3e533",
     "Atlas/Struktura/patternly-content/tests/_Pliki/claude-content-audit-20261007.test.mjs — treści · tests.md": "6d6303a84583248e017efdf97c6059ad8662ad7635b18fc7ddee0408dcbe8c72",
     "Atlas/Struktura/patternly-content/tests/_Pliki/claude-course-links.test.mjs — treści · tests.md": "5a08b6a887420c748795f6b11aee1cd44d434580086cae1e8a0acbd2ca3e3f4c",
     "Atlas/Struktura/patternly-content/tests/_Pliki/content-boundary.test.mjs — treści · tests.md": "0bb82ddd45aadcb915a182bef702efe94bccfe920446480174624e3ff962db05",
-    "Atlas/Struktura/patternly-content/tests/_Pliki/content-builder.test.mjs — treści · tests.md": "9ffbe87b1302a6e3174ce33261eb4197815f5f59502a627e7c85b116581171ff",
+    "Atlas/Struktura/patternly-content/tests/_Pliki/content-builder.test.mjs — treści · tests.md": "06787b5e1d4b26d95cbd2a89b18535fba4e5b03f9f5162024a76e236c186f24a",
     "Atlas/Struktura/patternly-content/tests/_Pliki/contentReviewConsole.test.mjs — treści · tests.md": "25b25fdf75866ec90d2344e146c52e3cdc4365ef890b668817fafff9e747a492",
     "Atlas/Struktura/patternly-content/tests/_Pliki/currentContentAudit.test.mjs — treści · tests.md": "c007cc93ff434100e54e3c0a6c1e519ee0d560f9c024340d57465a567de892b0",
     "Atlas/Struktura/patternly-content/tests/_Pliki/currentCourseMap.test.mjs — treści · tests.md": "2d101051202a4819b61e696292b3f2c3b4ce59ad7d54d133d5a0a048084809a3",
