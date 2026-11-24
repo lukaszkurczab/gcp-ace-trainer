@@ -36,7 +36,7 @@ test("EAS release configuration has explicit version, runtime, and channel polic
   assert.match(eas.cli.version, /^>= /u);
 
   assert.deepEqual(eas.build, {
-    sandbox: { distribution: "internal", android: { buildType: "apk" }, channel: "sandbox", environment: "preview", env: { PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox" } },
+    sandbox: { distribution: "internal", android: { buildType: "apk" }, channel: "sandbox", environment: "preview", env: { PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox" }, node: "24.21.0" },
     "android-isolation-probe": {
       extends: "sandbox", channel: "android-isolation-probe",
       android: { gradleCommand: ":app:assembleRelease --stacktrace --max-workers=1 --no-parallel" },

@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "877a7134944313d9fe3d7ecbba49870fb2c3f465",
+      "head": "744d65049f8d42ff6bb5e66b33a617941303219c",
       "files": [
         {
           "path": ".easignore",
@@ -5091,8 +5091,8 @@
         },
         {
           "path": "scripts/easReleaseConfiguration.test.ts",
-          "sha256": "029ba661ed973234c9230a1c347b3127ea559b11b9d64d31d211cda814634e89",
-          "bytes": 6087,
+          "sha256": "e43d01a0bd64ab4321eb2c5d8ef980f16162d023c63cc72f358b51118163d4e1",
+          "bytes": 6104,
           "symbols": [],
           "imports": [
             {
@@ -128025,7 +128025,7 @@
     "Atlas/Struktura/patternly/scripts/docAtlas/_Pliki/retireOrphanNotes.mjs — aplikacja · scripts › docAtlas.md": "e21b0f821b9e11f7294b1e32923201beea9bf766c3c66635184ddbef1125b8ed",
     "Atlas/Struktura/patternly/scripts/docAtlas/_Pliki/retireOrphanNotes.test.mjs — aplikacja · scripts › docAtlas.md": "cbc0411e182455141b78d721f629e873fa60d4f966f1bbfe0e3249f0f264450d",
     "Atlas/Struktura/patternly/scripts/docAtlas/_Pliki/runIosAuditMetro.mjs — aplikacja · scripts › docAtlas.md": "aff14eed7718362c89ebe06554658922687257fe3955247ef9ce050e6e1692e6",
-    "Atlas/Struktura/patternly/scripts/_Pliki/easReleaseConfiguration.test.ts — aplikacja · scripts.md": "66a5dba53318d616a760fcebd41a9cb8fc9f051b75bd4fc7148b8a4b5bb0941d",
+    "Atlas/Struktura/patternly/scripts/_Pliki/easReleaseConfiguration.test.ts — aplikacja · scripts.md": "9c8513c670ba0fd38ae8e4de652185171d47d617abb5cf5052b5e9238be47c59",
     "Atlas/Struktura/patternly/scripts/_Pliki/exportPublicDemo.mjs — aplikacja · scripts.md": "0531e1e80af4d9a5d22f089d04d6d52293928de63908825999d4bb7f186145b9",
     "Atlas/Struktura/patternly/scripts/_Pliki/exportPublicDemo.test.mjs — aplikacja · scripts.md": "2b27bcfbbab3c18e6569e1cbf77839bb4196d4933e7feb9612856786f864c230",
     "Atlas/Struktura/patternly/scripts/_Pliki/exportPublicLegal.mjs — aplikacja · scripts.md": "4d8880d3ef455f04c94aa4978492ed22dd64e47409f82520ed3e23ab21917d3c",
