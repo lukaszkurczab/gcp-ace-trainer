@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "2c94a7f2d9d0f37ce2c14891748042658ccb219a",
+      "head": "a7661f85d5421bef6197f8fa8fa871524cf4ab0a",
       "files": [
         {
           "path": ".easignore",
@@ -4628,7 +4628,7 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "aaa077b4e6625c81b5eca8002f30edfbcec7f9ce0c41e6aacef6f17569e21a91",
+          "sha256": "c3a922b8428f82f9f0095bec5cbcbdca44e7990df0306faeea05315bf2831f30",
           "bytes": 256104,
           "symbols": [],
           "imports": [],
@@ -21673,8 +21673,8 @@
         },
         {
           "path": "src/application/bootstrap/trainingLifecycleComposition.test.ts",
-          "sha256": "7ea04d200d7a0bd514a80d05597e086cb3cb22948b699703fc2247da2ba13e50",
-          "bytes": 51142,
+          "sha256": "26bd8b47156c144b4186f2e3929d9411608ae154dbff9c234a0bcef73befba1a",
+          "bytes": 58738,
           "symbols": [],
           "imports": [
             {
@@ -21805,9 +21805,10 @@
             "real composition rejects the original frozen journal retry after the same-profile lease changes away and back",
             "real composition retries the exact prewrite practice command once under the original lease",
             "real composition retries the exact prewrite abandonment under its original eligibility checks",
-            "real composition refuses an abandonment retry after the original same-profile lease is replaced"
+            "real composition refuses an abandonment retry after the original same-profile lease is replaced",
+            "16.2 process death after manual accepted D and before the finalization journal completes the exact command once across two cold starts"
           ],
-          "lines": 798
+          "lines": 919
         },
         {
           "path": "src/application/bootstrap/trainingLifecycleComposition.ts",
@@ -31801,8 +31802,8 @@
         },
         {
           "path": "src/application/learningMutations/localReset.test.ts",
-          "sha256": "bd8306026ee6decaf2f537de8cae8999070b96fb6196f4cf7c659fe993f01efb",
-          "bytes": 16625,
+          "sha256": "43bb4bd1c17c7a4016fcf0ef6a5a70db03558ca16ba8fbb176d092524228c3dc",
+          "bytes": 20740,
           "symbols": [],
           "imports": [
             {
@@ -31910,9 +31911,10 @@
             "durable reset replay keeps latest settings and reminder bytes across a fresh lifecycle",
             "durable reset rejects changed or new physical targets before deleting and keeps journal bytes",
             "reset recovers after every physical target deletion boundary across fresh lifecycle instances and double replay",
-            "legacy reset journals without an exact target plan fail closed and remain byte-identical"
+            "legacy reset journals without an exact target plan fail closed and remain byte-identical",
+            "17.2 process death after the first reset target delete and before the next keeps the plan, then two cold recoveries finish it"
           ],
-          "lines": 266
+          "lines": 338
         },
         {
           "path": "src/application/learningMutations/mutationJournal.test.ts",
@@ -127763,7 +127765,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "aaa077b4e6625c81b5eca8002f30edfbcec7f9ce0c41e6aacef6f17569e21a91",
+  "catalogHash": "c3a922b8428f82f9f0095bec5cbcbdca44e7990df0306faeea05315bf2831f30",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "8079e488f0dda21fe1749063aada710787351693f7d5e353850d2c8009e984f5",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "32cd65f402258bcb4d38fb22f296803b905c0ea2b22ddcd01808ba4c6ea80873",
@@ -127867,7 +127869,7 @@
     "Atlas/Struktura/patternly/src/src — folder aplikacja.md": "9b8097f12987487807a81a48579966fce53e1c5748890b82dd16964e250b23dd",
     "Atlas/Struktura/patternly/src/application/application — folder aplikacja · src.md": "5ac7a23f770d17de4f3fd34a79a0fd510ec52417a5ddd4ef1a519b8898434a5f",
     "Atlas/Struktura/patternly/src/application/account/account — folder aplikacja · src › application.md": "ee06e8377f329184caf58f020dd9c4830c1ab104dd2005027b0a88b29673dd97",
-    "Atlas/Struktura/patternly/src/application/bootstrap/bootstrap — folder aplikacja · src › application.md": "068e09ba7a0297a8f146f1f7755785114012c4256a07666317a29af825835dc6",
+    "Atlas/Struktura/patternly/src/application/bootstrap/bootstrap — folder aplikacja · src › application.md": "12c2f71e6f1de7f1bd6cf14f2607f46b0cd5b0bf8d5acacb2595576b71e1a3f6",
     "Atlas/Struktura/patternly/src/application/canonical/canonical — folder aplikacja · src › application.md": "21c8873aae6d7012187cdab359124c2a28f89fa0909c9102d635bceaf6fcacac",
     "Atlas/Struktura/patternly/src/application/certification/certification — folder aplikacja · src › application.md": "468ea26c0cc94d3d0c097785378af733c88446995871bfac242b820c9f035e8b",
     "Atlas/Struktura/patternly/src/application/coding-interview/coding-interview — folder aplikacja · src › application.md": "3e659d54d15dd845f59647b80b9d4b8f5d988dff3c3007b4a4732290c06b529e",
@@ -127876,7 +127878,7 @@
     "Atlas/Struktura/patternly/src/application/guest/guest — folder aplikacja · src › application.md": "0e1eb06f983f07d12efc6363b03df305ef0481dc360a439f2e0f1381fabfb06f",
     "Atlas/Struktura/patternly/src/application/home/home — folder aplikacja · src › application.md": "a99cf3b51378332838dcc7b0c527e1a0bbdd02f2f64a633a3314fe9722da32e1",
     "Atlas/Struktura/patternly/src/application/identity/identity — folder aplikacja · src › application.md": "a2464519ed12b7304c2300051e97af24ddae436322f4d5113adb8dcffc3c8a41",
-    "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "4f8f5bc82beebac8f26b27cf5c860496f26e82e434ca4e1b2e3591dc2694fb20",
+    "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "494691d79246a291cc41aee70d5196e4597938d17f006cac2897f54e30427a0c",
     "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "73dbc43363f1f3507e53cfe175f033ac064f149277cdb77170b40deaceadbadd",
     "Atlas/Struktura/patternly/src/application/practice/practice — folder aplikacja · src › application.md": "9c8cf687d4a8bcf551f42543f86303418f9a056ac014fcab676bacae4f37f164",
     "Atlas/Struktura/patternly/src/application/runtime/runtime — folder aplikacja · src › application.md": "25464f3e8b74dc6600bfd055268a3d2b2d223e4d69e879e920cd1362000d0cdb",
@@ -128359,7 +128361,7 @@
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/parallelBoot.test.ts — aplikacja · src › application › bootstrap.md": "bf8fc1e811a8e678d124adcd949fbf08c98b783b9f5edef52b128c1324e047eb",
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/parallelBoot.ts — aplikacja · src › application › bootstrap.md": "0ffa911f32f7372130f11847d161dbbbda417a516146b4397f1761a80e4d9265",
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/parallelBootLargeHistory.test.ts — aplikacja · src › application › bootstrap.md": "10ba58ec54e61b61d7f946185ea118ef948c1fce1173c8e4ac2a3448d7a5a31c",
-    "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/trainingLifecycleComposition.test.ts — aplikacja · src › application › bootstrap.md": "fe247ba7ad1f75c386d147526c784d6bd2b9902b0768c00946c954a1ca7ef92d",
+    "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/trainingLifecycleComposition.test.ts — aplikacja · src › application › bootstrap.md": "47e9c6a18d21b21d11c0e87a42b5f303ab3e4ab73a23308a6fd040eb3de8ae3f",
     "Atlas/Struktura/patternly/src/application/bootstrap/_Pliki/trainingLifecycleComposition.ts — aplikacja · src › application › bootstrap.md": "6f6ab7535c15aadd38f2a328ff3ed4a831124a0b19da7ada264d65bbc5c45be5",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/ai90120261018Repairs.test.ts — aplikacja · src › application › canonical.md": "010fb65a3fecffed294a6849ecd2ceee82042a809fb23be502a963b11f3b3fa5",
     "Atlas/Struktura/patternly/src/application/canonical/_Pliki/AUD02DCandidateFeedbackFlow.test.ts — aplikacja · src › application › canonical.md": "34004d1e9eca5788c8d73c9eb8528bea80bd166c5d0dc94f2bcb22abe1673741",
@@ -128490,7 +128492,7 @@
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/journaledSessionLifecycle.test.ts — aplikacja · src › application › learningMutations.md": "91663bcfe397b7d1a44f5670ae13fa6334497e42cad8c37796d5841b2d553756",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/localCommitAccountSync.test.ts — aplikacja · src › application › learningMutations.md": "1b61a90f77f618dfd6f03a5cb078a584ce8e77a0491202d2573e76231512d355",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/localLearningWriteOperation.ts — aplikacja · src › application › learningMutations.md": "8e78a5978bcc3fc71696505cb0d452cb88f8491f995c740b4f2040d21efb5a0f",
-    "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/localReset.test.ts — aplikacja · src › application › learningMutations.md": "ad6e783a2637a76f4c981a0573d040b9340c1e37180af1be9e8b709b33e85640",
+    "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/localReset.test.ts — aplikacja · src › application › learningMutations.md": "7bbd44e8d4e508b1d02e05746c5b34408c4f397295f240d54e04dc4b796d8052",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationJournal.test.ts — aplikacja · src › application › learningMutations.md": "dd94ced803cebffd18b64df1770d34bbf757c2d9d3d967c91b5c8929d7d37f4a",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationJournalBuilder.ts — aplikacja · src › application › learningMutations.md": "07aa943b4eee6d5b2f8f39ab2435a2cfe9367e6a1947598f9dc8d8cb12f332bc",
     "Atlas/Struktura/patternly/src/application/learningMutations/_Pliki/mutationJournalCache.test.ts — aplikacja · src › application › learningMutations.md": "fb0ff91f15235a9f1633b5d1c67f6576398a6e281fc3ba0c8b6ffca49458d2eb",

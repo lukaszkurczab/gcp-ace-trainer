@@ -23,7 +23,7 @@ import { saveTrainingSessionResult } from "../../storage/repositories/trainingSe
 import { createContentIdentityArchivalHistoryRecord, createContentIdentityUnavailableActiveRecord, createContentIdentityUnavailableReviewRecord, saveArchivalHistoryRecord, saveUnavailableActiveRecord, saveUnavailableReviewRecord } from "../../storage/repositories/contentIdentityUnavailableRepository";
 import { captureLearningStateResetTargetPlan } from "../../storage/repositories/learningStateResetRepository";
 import { saveSettings } from "../../storage/repositories/settingsRepository";
-import { installKeyValueStorageForTests, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
+import { installKeyValueStorageForTests, MemoryKeyValueStorage, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
 import { attempt, installMemoryStorage, journal, review, session } from "../../testing/journalTestSupport";
 import { productionTrackAdmissionContext } from "../tracks/trackAdmissionContext";
 import { productionLearningDataAdmissionContext } from "../tracks/trackAdmissionContext";
@@ -262,4 +262,76 @@ test("legacy reset journals without an exact target plan fail closed and remain 
   assert.deepEqual(storage.snapshot(), before);
   assert.ok(storage.getString(STORAGE_KEYS.trainingSession("session-1")));
   assert.ok(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL));
+});
+
+function survivingDisk(snapshot: ReadonlyMap<string, string>): MemoryKeyValueStorage {
+  const disk = new MemoryKeyValueStorage();
+  for (const [key, value] of snapshot) disk.setString(key, value);
+  disk.resetCounters();
+  return disk;
+}
+
+test("17.2 process death after the first reset target delete and before the next keeps the plan, then two cold recoveries finish it", async () => {
+  const profile = { id: "guest-test-profile", kind: "guest" as const, accountId: null };
+  const storage = installMemoryStorage();
+  await seedAllResetTargets();
+  const plan = captureLearningStateResetTargetPlan(productionTrackAdmissionContext);
+  const targetKeys = plan.targets.map((target) => target.key);
+  assert.ok(targetKeys.length >= 2);
+  const before = storage.snapshot();
+  assert.equal(before.has(STORAGE_KEYS.ACTIVE_JOURNAL), false);
+
+  // Cut RESET-FIRST-DELETE-BEFORE-NEXT: the process dies when the second target delete is attempted.
+  const originalRemove = storage.remove.bind(storage);
+  const originalSet = storage.setString.bind(storage);
+  const removedTargets: string[] = [];
+  let cutDisk: ReadonlyMap<string, string> | null = null;
+  const dead = () => { throw new Error("simulated process death"); };
+  storage.setString = (key: string, value: string) => { if (cutDisk) dead(); originalSet(key, value); };
+  storage.remove = (key: string) => {
+    if (cutDisk) dead();
+    if (targetKeys.includes(key) && removedTargets.length === 1) { cutDisk = storage.snapshot(); dead(); }
+    originalRemove(key);
+    if (targetKeys.includes(key)) removedTargets.push(key);
+  };
+  await assert.rejects(commitLearningStateReset(new Date().toISOString()));
+  assert.ok(cutDisk, "the cut was reached");
+  const disk: ReadonlyMap<string, string> = cutDisk;
+
+  // State at the cut: durable journal, exactly one target absent, every other byte unchanged.
+  const journalBytes = disk.get(STORAGE_KEYS.ACTIVE_JOURNAL);
+  assert.ok(journalBytes, "J is physically present at the cut");
+  const journalPayload = (JSON.parse(journalBytes) as { payload: { operation: string; status: string } }).payload;
+  assert.equal(journalPayload.operation, "reset_learning_state");
+  assert.equal(journalPayload.status, "journal_durable");
+  assert.equal(removedTargets.length, 1);
+  assert.equal(disk.has(removedTargets[0]!), false);
+  const changedKeys = [...new Set([...before.keys(), ...disk.keys()])].filter((key) => before.get(key) !== disk.get(key)).sort();
+  assert.deepEqual(changedKeys, [STORAGE_KEYS.ACTIVE_JOURNAL, removedTargets[0]!].sort());
+
+  // RESET-READ-UNKNOWN-01: an unreadable remaining target blocks recovery without fake success or further deletes.
+  const unknownRead = survivingDisk(disk);
+  const remainingTarget = targetKeys.find((key) => key !== removedTargets[0])!;
+  installKeyValueStorageForTests(unknownRead);
+  setActiveProfileLeaseForTests(profile);
+  unknownRead.setFailurePlan({ kind: "fail_on_key_read", key: remainingTarget });
+  await assert.rejects(recoverPendingMutation());
+  unknownRead.setFailurePlan(null);
+  assert.deepEqual(unknownRead.snapshot(), disk, "an unknown read preserves J and every store byte");
+
+  // Two cold recoveries on the surviving disk complete the same journaled plan.
+  const survivor = survivingDisk(disk);
+  const recoveries: ReadonlyMap<string, string>[] = [];
+  for (let launch = 0; launch < 2; launch += 1) {
+    installKeyValueStorageForTests(survivor);
+    setActiveProfileLeaseForTests(profile);
+    await recoverPendingMutation();
+    recoveries.push(survivor.snapshot());
+  }
+  assert.deepEqual(recoveries[1], recoveries[0], "the second cold recovery is a no-op");
+  assert.equal(survivor.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
+  assert.deepEqual(survivor.getAllKeys().filter((key) => targetKeys.includes(key)), []);
+  for (const { key } of plan.preserved) assert.equal(survivor.getString(key), before.get(key), `preserved ${key}`);
+  const unrelated = [...before.keys()].filter((key) => !targetKeys.includes(key));
+  for (const key of unrelated) assert.equal(survivor.getString(key), before.get(key), `unrelated ${key}`);
 });

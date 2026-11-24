@@ -3,7 +3,7 @@ import test, { afterEach } from "node:test";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { createTrainingSessionDraft, type TrackId } from "../../domain";
 import { bootstrapApplication } from "./applicationBootstrap";
-import { DesignInterviewSimulationExpiredError, getDesignInterviewSimulationProjection, getDesignInterviewSimulationResult, openDesignInterviewSimulation, saveDesignInterviewSimulationStage } from "../design-interview/designInterviewSimulationFacade";
+import { DesignInterviewSimulationExpiredError, getDesignInterviewSimulationProjection, finishDesignInterviewSimulation, getDesignInterviewSimulationResult, openDesignInterviewSimulation, saveDesignInterviewSimulationStage } from "../design-interview/designInterviewSimulationFacade";
 import { DesignSimulationDraftDrain } from "../../features/simulation/designSimulationDraftDrain";
 import { addReviewQueueItems, addTrainingAttempt, getActiveMutationJournal, getActiveTrainingSession, getActiveTrainingSessionDraft, getReviewQueueItems, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions, provisionGuestInstallation, removeReviewQueueEntry } from "../../storage/repositories";
 import { readActiveTrainingSessionDraftStateProof } from "../../storage/repositories/trainingSessionDraftRepository";
@@ -795,3 +795,124 @@ test("real composition refuses an abandonment retry after the original same-prof
   assert.equal("error" in blocked ? blocked.error.allowedAction : null, null, "the canonical active session is reprojected without exposing a retry for the stale command");
   assert.deepEqual(storage.snapshot(), beforeRetry, "the stale frozen abandonment cannot write through a replacement lease generation");
 });
+
+function survivingDisk(snapshot: ReadonlyMap<string, string>): MemoryKeyValueStorage {
+  const disk = new MemoryKeyValueStorage();
+  for (const [key, value] of snapshot) disk.setString(key, value);
+  disk.resetCounters();
+  return disk;
+}
+
+function rawEnvelope(bytes: string | undefined): Readonly<{ revision: number; payload: Record<string, unknown> }> {
+  assert.ok(bytes);
+  return JSON.parse(bytes) as { revision: number; payload: Record<string, unknown> };
+}
+
+test("16.2 process death after manual accepted D and before the finalization journal completes the exact command once across two cold starts", async () => {
+  const BACKEND_DESIGN_TRACK_ID = "backend-system-design-interview" as TrackId;
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  setActiveProfileLeaseForTests(PROFILE_A);
+  initializeStorageMetadata();
+  await provisionGuestInstallation();
+  const track = (await loadCanonicalRuntimeCatalog()).getTrack(BACKEND_DESIGN_TRACK_ID);
+  const profile = track.simulationProfiles?.find((candidate) => candidate.modeId === "design-interview-simulation");
+  assert.ok(profile);
+  const wallClock = createAdjustableWallClock(() => PROBE_BASE_TIME);
+  const lifecycle = composeDesignLifecycle("persist16-2-cut", { wallClock });
+  await contentPackageRuntimeOwner.resolveForDiscovery(BACKEND_DESIGN_TRACK_ID, "design_interview");
+  const projection = await openDesignInterviewSimulation({ trackId: BACKEND_DESIGN_TRACK_ID, profileId: profile.profileId });
+  const responses = {
+    requirements: "Deliver each webhook at least once with per-endpoint ordering.",
+    architecture: "Outbox table, dispatcher workers, per-endpoint queues and a retry scheduler.",
+    tradeoffs: "At-least-once with idempotency keys instead of exactly-once coordination.",
+    final_answer: "Durable outbox plus bounded exponential retries and a dead-letter queue.",
+  } as const;
+  for (const [stage, response] of Object.entries(responses)) {
+    wallClock.advanceBy(1_000);
+    await saveDesignInterviewSimulationStage(stage as keyof typeof responses, response);
+  }
+  wallClock.advanceBy(1_000);
+  const sessionKey = STORAGE_KEYS.trainingSession(projection.session.id);
+  const draftBefore = await getActiveTrainingSessionDraft(productionTrackAdmissionContext);
+  assert.ok(draftBefore);
+  const beforeFinish = storage.snapshot();
+  const draftEnvelopeBefore = rawEnvelope(beforeFinish.get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT));
+  assert.equal(beforeFinish.has(STORAGE_KEYS.ACTIVE_JOURNAL), false, "F01: no journal exists before Finish");
+  const attemptsBefore = (await getTrainingAttempts(productionTrackAdmissionContext)).value;
+  const reviewsBefore = (await getReviewQueueItems(productionTrackAdmissionContext)).value;
+
+  // Cut: the accepted D is durable; the process dies on the first finalization journal write, before any ACK.
+  const originalSet = storage.setString.bind(storage);
+  const originalRemove = storage.remove.bind(storage);
+  let acceptedDurable = false;
+  let cutDisk: ReadonlyMap<string, string> | null = null;
+  const effectsAfterAcceptance: string[] = [];
+  const dead = () => { throw new Error("simulated process death"); };
+  storage.setString = (key: string, value: string) => {
+    if (cutDisk) dead();
+    if (acceptedDurable && key === STORAGE_KEYS.ACTIVE_JOURNAL) { cutDisk = storage.snapshot(); dead(); }
+    if (acceptedDurable) effectsAfterAcceptance.push(`write:${key}`);
+    originalSet(key, value);
+    if (key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT && value.includes("\"accepted_simulation_finalization\"")) acceptedDurable = true;
+  };
+  storage.remove = (key: string) => {
+    if (cutDisk) dead();
+    if (acceptedDurable) effectsAfterAcceptance.push(`remove:${key}`);
+    originalRemove(key);
+  };
+  await assert.rejects(finishDesignInterviewSimulation());
+  assert.equal(acceptedDurable, true);
+  assert.ok(cutDisk, "the cut was reached before the journal write");
+  assert.deepEqual(effectsAfterAcceptance, [], "no storage effect lies between accepted D and the journal write");
+  const disk: ReadonlyMap<string, string> = cutDisk;
+
+  // F02: the only physical delta is the D envelope r -> r+1 holding the exact saved draft and manual command.
+  const changedKeys = [...new Set([...beforeFinish.keys(), ...disk.keys()])].filter((key) => beforeFinish.get(key) !== disk.get(key));
+  assert.deepEqual(changedKeys, [STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT]);
+  assert.equal(disk.has(STORAGE_KEYS.ACTIVE_JOURNAL), false, "J is physically absent at the cut");
+  const acceptedEnvelope = rawEnvelope(disk.get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT));
+  assert.equal(acceptedEnvelope.revision, draftEnvelopeBefore.revision + 1);
+  const accepted = acceptedEnvelope.payload as unknown as { kind: string; responseDraft: unknown; acceptance: { trigger: string; capturedAt: string; commandId: string; sessionId: string } };
+  assert.equal(accepted.kind, "accepted_simulation_finalization");
+  assert.equal(accepted.acceptance.trigger, "manual");
+  assert.equal(accepted.acceptance.sessionId, projection.session.id);
+  assert.equal(accepted.acceptance.capturedAt, wallClock.now());
+  assert.deepEqual(accepted.responseDraft, draftBefore);
+  void lifecycle;
+
+  // Cold start 1 on the surviving disk, then cold start 2: the same command completes exactly once.
+  wallClock.advanceBy(60_000);
+  const survivor = survivingDisk(disk);
+  const boots: ReadonlyMap<string, string>[] = [];
+  for (let launch = 0; launch < 2; launch += 1) {
+    installKeyValueStorageForTests(survivor);
+    setActiveProfileLeaseForTests(PROFILE_A);
+    let restored!: ReturnType<typeof composeDesignLifecycle>;
+    const bootstrapped = await bootstrapApplication(
+      () => contentPackageRuntimeOwner.verifyBundledPackages(),
+      async () => { await restored.resumeActiveSession(); },
+      async () => { restored = composeDesignLifecycle(`persist16-2-cold-${launch}`, { wallClock }); },
+    );
+    assert.deepEqual(bootstrapped, { kind: "ready", activeSessionId: null }, `cold start ${launch + 1}`);
+    boots.push(survivor.snapshot());
+  }
+  assert.deepEqual(boots[1], boots[0], "F04: the second cold start preserves the first recovery byte-for-byte");
+  for (const key of [STORAGE_KEYS.ACTIVE_JOURNAL, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, STORAGE_KEYS.ACTIVE_TRAINING_SESSION, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER]) {
+    assert.equal(survivor.contains(key), false, `${key} is physically absent after recovery`);
+  }
+  const sessions = (await getTrainingSessions(productionTrackAdmissionContext)).value.filter((candidate) => candidate.id === projection.session.id);
+  assert.equal(sessions.length, 1);
+  assert.equal(sessions[0]!.status, "completed");
+  assert.equal(sessions[0]!.completedAt, accepted.acceptance.capturedAt, "completion uses the accepted capture time, not the restart time");
+  assert.ok(survivor.contains(sessionKey));
+  const result = await getDesignInterviewSimulationResult(projection.session.id);
+  assert.deepEqual(result.responsesByStage, responses);
+  assert.equal(areAllStagesComplete(result.stageCompleteness), true);
+  assert.deepEqual((await getTrainingAttempts(productionTrackAdmissionContext)).value, attemptsBefore, "no attempts are created");
+  assert.deepEqual((await getReviewQueueItems(productionTrackAdmissionContext)).value, reviewsBefore, "no review items are created");
+});
+
+function areAllStagesComplete(stages: Readonly<Record<string, boolean>>): boolean {
+  return Object.values(stages).length === 4 && Object.values(stages).every(Boolean);
+}

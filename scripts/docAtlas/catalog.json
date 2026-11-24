@@ -2976,7 +2976,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "aee6dd17aac803b18e0da6ac089049085de5f1fd32988c7171efcd082811e946"
+      "reviewedDigest": "0a9c1a1bc5b1aaa9586761b0156546e201ed324412836dfd3832ae6aeffc5fef"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -3050,7 +3050,7 @@
         "patternly/scripts/qa/persist13-start-cutpoint-seed.yaml",
         "patternly/scripts/qa/persist13-start-recovery.yaml"
       ],
-      "reviewedDigest": "ba3207148af124962d43a7810e4bef1afed9142a3872b3309bc99a58b9dac207"
+      "reviewedDigest": "829d5d884300a7ef267d1fc53ada73b5946b564a8de420bf21f6887bd90cbd6b"
     },
     {
       "name": "Cel, plan i postęp",
