@@ -303,3 +303,40 @@ test("a safe draft retry reuses the exact prior response and revision, then bloc
   const stale = await lifecycle.getSimulationOperationState(session);
   assert.equal("error" in stale ? stale.error.allowedAction : null, "none");
 });
+
+test("a non-Approach practice session cannot advance past an occurrence without one durably accepted attempt", async () => {
+  const catalog = await loadCanonicalRuntimeCatalog();
+  const track = catalog.getTrack("coding-interview-dsa-problem-solving");
+  const runtime = createCanonicalTrainingFamilyRuntime(track);
+  const mode = track.getMode("coding-interview-guided-practice");
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "non-approach-advance-guard", requestedLength: mode.requestedLengths[0] }, attempts: [], reviews: [], now: "2026-10-01T12:00:00.000Z" });
+  const question = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!;
+  let active = prepared.session;
+  const attempts: unknown[] = [];
+  let advanceCalls = 0;
+  const ports = {
+    clock: { now: () => "2026-10-01T12:00:00.000Z" }, tracks: { getTrackRegistration },
+    packages: { async resolveExactArtifact() { return { track, runtime }; } },
+    repositories: {
+      async getActiveSession() { return active; }, async getSession() { return active; }, async getAttempts() { return attempts; },
+      async getReviews() { return []; }, async getDraft() { return null; }, async getPendingMutation() { return null; },
+    },
+    mutations: {
+      async submitPractice(outcome: { attempt: unknown; session: typeof active }) { attempts.push(outcome.attempt); active = outcome.session; },
+      async advance(next: typeof active) { advanceCalls += 1; active = next; }, async recover() {},
+    },
+  } as unknown as TrainingLifecyclePorts;
+  const lifecycle = new TrainingLifecycleUseCases(ports);
+
+  await assert.rejects(lifecycle.advancePracticeSession(), /durably answered/u);
+  await assert.rejects(lifecycle.advancePracticeSession(), /durably answered/u);
+  assert.equal(advanceCalls, 0);
+  assert.equal(active.currentItemIndex, 0);
+
+  await lifecycle.submitPracticeResponse(question.answer);
+  const advanced = await lifecycle.advancePracticeSession();
+  assert.equal(advanced.currentItemIndex, 1);
+  assert.equal(advanceCalls, 1);
+  await assert.rejects(lifecycle.advancePracticeSession(), /durably answered/u);
+  assert.equal(active.currentItemIndex, 1);
+});

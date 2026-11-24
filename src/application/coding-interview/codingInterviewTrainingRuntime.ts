@@ -225,6 +225,10 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
     const expectedOccurrences: string[] = [];
     for (const [index, entry] of manifest.entries.entries()) {
       const problem = this.resolveManifestProblem(entry, session);
+      // The session pin must also be the runtime catalog's exact pin, otherwise the resolved problem is not the artifact this runtime serves.
+      if (session.contentVersion !== this.catalog.contentVersion || session.artifactSha256 !== this.catalog.artifactSha256 || validateApproachChallengeProblemRef(entry.problemRef, problem, this.catalog).length > 0) {
+        throw new ProductModeUnavailableError("Approach Challenge pinned content does not match the runtime catalog.");
+      }
       const expected = [
         [entry.approachOccurrenceId, problem.approachQuestion],
         [entry.complexityOccurrenceId, problem.complexityQuestion],
@@ -233,6 +237,7 @@ export class CodingInterviewTrainingRuntime implements TrainingFamilyRuntime {
         const occurrence = session.itemOrder[index * 2 + stageIndex];
         if (!occurrence || occurrence.occurrenceId !== occurrenceId || occurrence.item.questionId !== question.questionId || occurrence.item.trackId !== session.trackId ||
           occurrence.item.contentVersion !== session.contentVersion || occurrence.item.artifactSha256 !== session.artifactSha256 ||
+          occurrence.item.contentVersion !== this.catalog.contentVersion || occurrence.item.artifactSha256 !== this.catalog.artifactSha256 ||
           !isCanonicalOptionOrder(question, session.optionOrderByOccurrence[occurrenceId])) throw new ProductModeUnavailableError("Approach Challenge pinned pair references are corrupt or unavailable.");
         expectedOccurrences.push(occurrenceId);
       }

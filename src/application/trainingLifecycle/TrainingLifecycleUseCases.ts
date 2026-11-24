@@ -537,13 +537,15 @@ export class TrainingLifecycleUseCases {
   private async advancePracticeSessionInLane(): Promise<TrainingSession> {
     const session = await this.requireActive();
     await this.assertNoAcceptedSimulationFinalization(session.id);
+    const current = session.itemOrder[session.currentItemIndex];
+    const attempts = await this.ports.repositories.getAttempts();
+    const accepted = current ? attempts.filter((attempt) => attempt.sessionId === session.id && attempt.modeId === session.modeId && attempt.occurrenceId === current.occurrenceId) : [];
     if (isApproachChallengeTrainingAttempt(session.trackId, session.modeId)) {
-      const current = session.itemOrder[session.currentItemIndex];
-      const attempts = await this.ports.repositories.getAttempts();
-      const accepted = current ? attempts.filter((attempt) => attempt.sessionId === session.id && attempt.modeId === session.modeId && attempt.occurrenceId === current.occurrenceId) : [];
       const operation = await this.getPracticeOperationState(session, accepted.length === 1);
       if (operation.kind !== "feedback" && operation.kind !== "unanswered") throw new TrainingApplicationFailure("commit_verification_failed", "Approach Challenge cannot advance while its exact stage journal is unresolved.");
       if (accepted.length !== 1) throw new TrainingApplicationFailure("invalid_response", "Approach Challenge cannot reveal or advance before the current stage is durably accepted.");
+    } else if (accepted.length !== 1) {
+      throw new TrainingApplicationFailure("invalid_response", "The current practice occurrence must be durably answered before advancing.");
     }
     await this.resolveRuntimeForSession(session);
     this.operationStates.set(session.id, practice("advancing"));

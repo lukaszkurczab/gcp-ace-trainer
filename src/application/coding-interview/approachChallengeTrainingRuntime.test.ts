@@ -97,3 +97,12 @@ test("history does not turn a missing or corrupt manifest into a zero-task resul
   assert.deepEqual(projectApproachChallengeManifestIntegrity(undefined, pin), { manifestIntegrity: "unavailable", problemCount: null });
   assert.deepEqual(projectApproachChallengeManifestIntegrity("{bad json", pin), { manifestIntegrity: "unavailable", problemCount: null });
 });
+
+test("resume rejects a session whose pinned content does not match the runtime catalog", async () => {
+  const { track, catalog, problem, prepared } = await harness();
+  const serving = (pin: { contentVersion: string; artifactSha256: string }) => new CodingInterviewTrainingRuntime(Object.freeze({ ...catalog, ...pin }), createTrainingInteractionPort(track));
+  await assert.rejects(serving({ contentVersion: catalog.contentVersion, artifactSha256: "f".repeat(64) }).validateResume({ session: prepared.session, draft: null }), /exact pinned|runtime catalog|unavailable/u);
+  await assert.rejects(serving({ contentVersion: `${catalog.contentVersion}-other`, artifactSha256: catalog.artifactSha256 }).validateResume({ session: prepared.session, draft: null }), /exact pinned|runtime catalog|unavailable/u);
+  await serving({ contentVersion: catalog.contentVersion, artifactSha256: catalog.artifactSha256 }).validateResume({ session: prepared.session, draft: null });
+  assert.ok(problem.problemId);
+});

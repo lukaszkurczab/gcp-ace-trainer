@@ -158,14 +158,20 @@ async function readApproachChallengeStageProjection(): Promise<ApproachChallenge
       problemIndex: stageInfo.problemIndex + 1, problemCount: manifest.actualProblemCount, stage: stageInfo.stage, questionId: question.questionId,
       prompt: question.prompt, constraints: Object.freeze([...(question.constraints ?? [])]),
       interaction: Object.freeze({ interactionType: question.interaction.type, model: attempt
-        ? canonicalInteractionRegistry.presentReview(question, attempt.response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? [])
-        : canonicalInteractionRegistry.present(question, null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []) }),
+        ? canonicalInteractionRegistry.presentReview(question, attempt.response, requirePinnedOptionOrder(session, occurrence.occurrenceId))
+        : canonicalInteractionRegistry.present(question, null, requirePinnedOptionOrder(session, occurrence.occurrenceId)) }),
       accepted: Boolean(attempt), result: attempt ? Object.freeze({ kind: attempt.result.kind, earnedPoints: attempt.result.earnedPoints, maxPoints: attempt.result.maxPoints }) : null,
       feedback: attempt && evaluation?.feedback ? projectStageFeedback(problem, stageInfo.stage, evaluation.feedback) : null,
       analyzedApproachId: reveal?.analyzedApproachId ?? null, methodReveal: reveal?.methodReveal ?? null });
   } catch {
     return unavailable("artifact_unavailable");
   }
+}
+
+function requirePinnedOptionOrder(session: TrainingSession, occurrenceId: string): readonly string[] {
+  const order = session.optionOrderByOccurrence[occurrenceId];
+  if (!order) throw new Error("The pinned option order for this occurrence is missing.");
+  return order;
 }
 
 export async function submitApproachChallengeStage(response: unknown): Promise<void> {
@@ -253,12 +259,12 @@ export async function getApproachChallengeDetailedHistory(sessionId: string): Pr
         if (occurrence.item.questionId !== question.questionId) throw new Error("Historical question identity does not match the exact paired problem.");
         const attempt = byOccurrence.get(occurrence.occurrenceId);
         if (!attempt) return Object.freeze({ stage, occurrenceId: occurrence.occurrenceId, questionId: question.questionId, prompt: question.prompt,
-          constraints: Object.freeze([...(question.constraints ?? [])]), interaction: canonicalInteractionRegistry.present(question, null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []), response: null, result: null, feedback: null });
+          constraints: Object.freeze([...(question.constraints ?? [])]), interaction: canonicalInteractionRegistry.present(question, null, requirePinnedOptionOrder(session, occurrence.occurrenceId)), response: null, result: null, feedback: null });
         const evaluation = canonicalInteractionRegistry.evaluate(question, attempt.response);
         if (!evaluation.complete || !evaluation.result || evaluation.result.kind !== attempt.result.kind || evaluation.result.earnedPoints !== attempt.result.earnedPoints || evaluation.result.maxPoints !== attempt.result.maxPoints) throw new Error("Historical response no longer matches its pinned result.");
         return Object.freeze({ stage, occurrenceId: occurrence.occurrenceId, questionId: question.questionId, prompt: question.prompt,
           constraints: Object.freeze([...(question.constraints ?? [])]), interaction: Object.freeze({ interactionType: question.interaction.type,
-            model: canonicalInteractionRegistry.presentReview(question, attempt.response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []) }),
+            model: canonicalInteractionRegistry.presentReview(question, attempt.response, requirePinnedOptionOrder(session, occurrence.occurrenceId)) }),
           response: attempt.response, result: Object.freeze({ kind: attempt.result.kind, earnedPoints: attempt.result.earnedPoints, maxPoints: attempt.result.maxPoints }),
           feedback: evaluation.feedback ? projectStageFeedback(problem, stage, evaluation.feedback) : null });
       }) as [ApproachChallengeDetailedStage, ApproachChallengeDetailedStage];
