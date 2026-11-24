@@ -1333,9 +1333,9 @@
       "flow": "Premium i zakup"
     },
     "patternly/src/infrastructure/runtime/EnvironmentGate.tsx": {
-      "description": "Przed otwarciem providerów i danych porównuje fingerprint konfiguracji z tożsamością środowiska, a następnie z trwałym markerem instalacji. Niezgodność, błąd i brak przypisania mają jawne powierzchnie; stan terminalny zgłasza natywnemu pierwszemu ekranowi gotowość (other).",
+      "description": "Przed otwarciem providerów i danych porównuje fingerprint konfiguracji z tożsamością środowiska i trwałym markerem instalacji. Brak markera (czysta instalacja) jest automatycznie, jednorazowo i z weryfikacją zapisu przypisywany; niezgodność i błąd mają jawne powierzchnie i nigdy nie otwierają danych, a stan terminalny zgłasza natywnemu pierwszemu ekranowi gotowość (other).",
       "flow": "Start aplikacji i nawigacja",
-      "reviewedHash": "0add285678929e28f65ed764f7916d60551317885a70f2604f599d1851edccd2"
+      "reviewedHash": "3baeca6e4daa71868f568737ade52b44da6938580b6abd0b7fae41ebf671aeb3"
     },
     "patternly/src/infrastructure/runtime/environmentIdentity.ts": {
       "description": "Wylicza tożsamość właściciela danych z trybu, endpointów i konfiguracji dostawców. Bezpośrednie odczyty zmiennych są wymagane przez zastępowanie publicznych env w Expo.",
@@ -2976,7 +2976,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "13f0e3daddf90449e3259314f315beeb8ddf476741528a56f764725d99c6e63b"
+      "reviewedDigest": "aee6dd17aac803b18e0da6ac089049085de5f1fd32988c7171efcd082811e946"
     },
     {
       "name": "Konto, Gość i synchronizacja",

@@ -28,7 +28,11 @@ export default function EnvironmentGate({ loadApplication }: Readonly<{ loadAppl
     setState({ kind: "loading" });
     void Promise.resolve().then(async () => {
       const { guard, identity } = environmentRuntime();
-      const kind = await guard.inspect();
+      let kind = await guard.inspect();
+      // F-ENV-01: the product has no pre-guard installations to protect, so a missing marker is a clean install
+      // and is enrolled automatically; mismatch/corrupt markers still close the data. A failed or unconfirmed
+      // write surfaces as an error state and never opens the application.
+      if (kind === "unassigned") kind = await guard.assign();
       if (active) setState({ kind, identity });
       // T2.5: a terminal environment surface is React Native's first usable frame (the overlay leaves at once).
       if (active && kind !== "ready") reportFirstScreenReady("other");

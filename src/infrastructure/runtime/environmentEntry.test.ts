@@ -66,17 +66,8 @@ function entry(rawMarker: string | null, configMatches = true) {
   return { render, settle, writes: () => writes, rootLoads: () => rootLoads, alerts };
 }
 
-function findButton(element: Element): Element | undefined {
-  if (element.type === "button") return element;
-  const children = element.props?.children;
-  for (const child of Array.isArray(children) ? children.flat() : [children]) {
-    if (typeof child === "object" && child !== null) { const found = findButton(child as Element); if (found) return found; }
-  }
-  return undefined;
-}
-
-test("actual App/Gate never require regular providers for unassigned, mismatch, corrupt or config mismatch", async () => {
-  for (const [marker, configMatches] of [[null, true], [JSON.stringify({ version: 1, fingerprint: "b".repeat(64) }), true], ["corrupt", true], [JSON.stringify({ version: 1, fingerprint: identity.fingerprint }), false]] as const) {
+test("actual App/Gate never require regular providers for mismatch, corrupt or config mismatch", async () => {
+  for (const [marker, configMatches] of [[JSON.stringify({ version: 1, fingerprint: "b".repeat(64) }), true], ["corrupt", true], [JSON.stringify({ version: 1, fingerprint: identity.fingerprint }), false]] as const) {
     const state = entry(marker, configMatches);
     state.render(); await state.settle();
     assert.equal(state.rootLoads(), 0);
@@ -84,17 +75,15 @@ test("actual App/Gate never require regular providers for unassigned, mismatch, 
   }
 });
 
-test("explicit assignment needs confirmation, verified write and reinspection before the regular require", async () => {
+test("clean installation (no marker) is enrolled automatically with one verified write, then reinspected before the regular require", async () => {
   const state = entry(null);
   state.render();
-  const surface = await state.settle();
-  (findButton(surface)!.props.onPress as () => void)();
-  assert.equal(state.writes(), 0); assert.equal(state.rootLoads(), 0);
-  state.alerts[0]![1]!.onPress!();
+  assert.equal(state.rootLoads(), 0);
   await state.settle();
-  assert.equal(state.writes(), 1); assert.equal(state.rootLoads(), 0);
+  assert.equal(state.writes(), 1); assert.equal(state.alerts.length, 0);
+  assert.equal(state.rootLoads(), 0);
   await state.settle();
-  assert.equal(state.rootLoads(), 1);
+  assert.equal(state.rootLoads(), 1); assert.equal(state.writes(), 1);
 });
 
 test("matching stored fingerprint opens regular providers after inspection without rewriting data", async () => {

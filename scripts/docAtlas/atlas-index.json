@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "beb5dfb7acf627ad3e4c43961d9b4529313f265b",
+      "head": "2c94a7f2d9d0f37ce2c14891748042658ccb219a",
       "files": [
         {
           "path": ".easignore",
@@ -4628,8 +4628,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "68097f225a1f5cffd87d47bfff949d870778851aabf4e931aeeeab7fe4903b2a",
-          "bytes": 256001,
+          "sha256": "aaa077b4e6625c81b5eca8002f30edfbcec7f9ce0c41e6aacef6f17569e21a91",
+          "bytes": 256104,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -71743,8 +71743,8 @@
         },
         {
           "path": "src/infrastructure/runtime/environmentEntry.test.ts",
-          "sha256": "9d5133180176fd6e7cd88a24d274af88e5ae5a993dc900c4ef5c7197390bfefe",
-          "bytes": 6742,
+          "sha256": "6a59e564582db99e11d222775ae07066fa0c2611a2769d2d433e74756c227621",
+          "bytes": 6265,
           "symbols": [],
           "imports": [
             {
@@ -71792,16 +71792,16 @@
           ],
           "jsonKeys": [],
           "testNames": [
-            "actual App/Gate never require regular providers for unassigned, mismatch, corrupt or config mismatch",
-            "explicit assignment needs confirmation, verified write and reinspection before the regular require",
+            "actual App/Gate never require regular providers for mismatch, corrupt or config mismatch",
+            "clean installation (no marker) is enrolled automatically with one verified write, then reinspected before the regular require",
             "matching stored fingerprint opens regular providers after inspection without rewriting data"
           ],
-          "lines": 105
+          "lines": 94
         },
         {
           "path": "src/infrastructure/runtime/EnvironmentGate.tsx",
-          "sha256": "0add285678929e28f65ed764f7916d60551317885a70f2604f599d1851edccd2",
-          "bytes": 5254,
+          "sha256": "3baeca6e4daa71868f568737ade52b44da6938580b6abd0b7fae41ebf671aeb3",
+          "bytes": 5613,
           "symbols": [
             "EnvironmentGate",
             "default"
@@ -71852,7 +71852,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 81
+          "lines": 85
         },
         {
           "path": "src/infrastructure/runtime/environmentGuard.test.ts",
@@ -84353,6 +84353,10 @@
           "reason": "ignored-or-outside-git-inventory"
         },
         {
+          "path": ".expo",
+          "reason": "private-or-dependency-boundary-not-read"
+        },
+        {
           "path": ".git",
           "reason": "private-or-dependency-boundary-not-read"
         },
@@ -96231,6 +96235,10 @@
         {
           "path": "docs/cloud-run-manual-deploy.md",
           "reason": "symlink-not-followed"
+        },
+        {
+          "path": "firebase-debug.log",
+          "reason": "ignored-or-outside-git-inventory"
         },
         {
           "path": "firestore-debug.log",
@@ -127755,9 +127763,9 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "68097f225a1f5cffd87d47bfff949d870778851aabf4e931aeeeab7fe4903b2a",
+  "catalogHash": "aaa077b4e6625c81b5eca8002f30edfbcec7f9ce0c41e6aacef6f17569e21a91",
   "notes": {
-    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "df9df8beadd1def2f55372abbf76c01997f32e863efad4e72eef978c34f1da03",
+    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "8079e488f0dda21fe1749063aada710787351693f7d5e353850d2c8009e984f5",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "32cd65f402258bcb4d38fb22f296803b905c0ea2b22ddcd01808ba4c6ea80873",
     "Atlas/Struktura/patternly/~2E~github/workflows/workflows — folder aplikacja · ~2E~github.md": "ccf46ba77ca3765d99a803b3aef8bc60e98f09a861a19d48698dd270b4c44d9d",
     "Atlas/Struktura/patternly/~2E~maestro/~2E~maestro — folder aplikacja.md": "70c51a5f0838a2a1426145b35d68fb66671fb3ab096c22b2f8dd54b3c58abee7",
@@ -127935,7 +127943,7 @@
     "Atlas/Struktura/patternly/src/infrastructure/identity/identity — folder aplikacja · src › infrastructure.md": "b5fb921cf87b6e48c95f53781ee09d82f1fdad3a4bf16b6a872f36110c36d0b5",
     "Atlas/Struktura/patternly/src/infrastructure/notifications/notifications — folder aplikacja · src › infrastructure.md": "f5d81bb4aac161981efa74dba4ee4327a856bac6ecd365d1e2e92207a8fee6ce",
     "Atlas/Struktura/patternly/src/infrastructure/purchases/purchases — folder aplikacja · src › infrastructure.md": "8a7b3bd261c5f4f7f850c2c51fb94b03aeb248f7638b13c5538cf98e730795b5",
-    "Atlas/Struktura/patternly/src/infrastructure/runtime/runtime — folder aplikacja · src › infrastructure.md": "028a0734ada52bce771d95e32fe5e7c51a8344e45e0bf659e76a94c2551626e2",
+    "Atlas/Struktura/patternly/src/infrastructure/runtime/runtime — folder aplikacja · src › infrastructure.md": "83add70363ec62461b32090466518a18189e0f64aba596eb35a04abde2dc81c8",
     "Atlas/Struktura/patternly/src/infrastructure/scheduling/scheduling — folder aplikacja · src › infrastructure.md": "648d78e1ebe6a6a8982e79106ed1cb081b1fae5c3b3b667683d3d8a35b6c41ac",
     "Atlas/Struktura/patternly/src/infrastructure/storage/storage — folder aplikacja · src › infrastructure.md": "682a0a08b300196dc8f0f3e742dda0228209f0a83893c69a3c05ffa967b0c400",
     "Atlas/Struktura/patternly/src/legal/legal — folder aplikacja · src.md": "db378f7f1c4f58bc7e8e8be5a8d5433486b2a90ef86ae7f21a5c720cbc2e3d7c",
@@ -129221,8 +129229,8 @@
     "Atlas/Struktura/patternly/src/infrastructure/purchases/_Pliki/index.ts — aplikacja · src › infrastructure › purchases.md": "1ed605a7063286e59fc2f67681d5da73ca503a998040311f11a13e34ee0931df",
     "Atlas/Struktura/patternly/src/infrastructure/purchases/_Pliki/lazySdk.test.ts — aplikacja · src › infrastructure › purchases.md": "f651494c306b54efbbf84934d6853917d3d736e5c5b0e2d20ac6e19cb22e620c",
     "Atlas/Struktura/patternly/src/infrastructure/purchases/_Pliki/logPrivacy.test.ts — aplikacja · src › infrastructure › purchases.md": "d9a9d7d35cd91ef70b1475661d2fb3b00a1520a03b6aa901809d4a955fd916ca",
-    "Atlas/Struktura/patternly/src/infrastructure/runtime/_Pliki/environmentEntry.test.ts — aplikacja · src › infrastructure › runtime.md": "071b80bee5700e947db8781506c45487dfe07586b04add7ff794f3e19309e4e3",
-    "Atlas/Struktura/patternly/src/infrastructure/runtime/_Pliki/EnvironmentGate.tsx — aplikacja · src › infrastructure › runtime.md": "29413c9323bd62128a159bacc4b053e9c1dab05e7ed43e29869b4d8f9c76f95e",
+    "Atlas/Struktura/patternly/src/infrastructure/runtime/_Pliki/environmentEntry.test.ts — aplikacja · src › infrastructure › runtime.md": "cca941f38e5b65c37aea44910e8db3a63cd4be9d61015104730eb784018c8f81",
+    "Atlas/Struktura/patternly/src/infrastructure/runtime/_Pliki/EnvironmentGate.tsx — aplikacja · src › infrastructure › runtime.md": "89566e4fa79d686f4c57d654bfb6cbcf8098bdb5d313285e7ceb17e9ed292237",
     "Atlas/Struktura/patternly/src/infrastructure/runtime/_Pliki/environmentGuard.test.ts — aplikacja · src › infrastructure › runtime.md": "3a56bd2b58f4b2239efaf23b8f450db844a077b3fef40378320afe69f58e1af3",
     "Atlas/Struktura/patternly/src/infrastructure/runtime/_Pliki/environmentGuard.ts — aplikacja · src › infrastructure › runtime.md": "317aa309f30b8d362a66b8b4b2c980c5ed2564ea99472a0d2cfc9dc7ad3bade3",
     "Atlas/Struktura/patternly/src/infrastructure/runtime/_Pliki/environmentIdentity.test.ts — aplikacja · src › infrastructure › runtime.md": "1f355c5118c7461e928f6c689f050a5f5f95af28ed5a2325b136c344bfc2450b",
@@ -129489,7 +129497,7 @@
     "Atlas/Struktura/patternly/src/utils/_Pliki/domain.ts — aplikacja · src › utils.md": "ab75e12c59a43a013ebafd834ade1e661a7774f3ccbba5a79565aafb324f5193",
     "Atlas/Struktura/patternly/src/utils/_Pliki/index.ts — aplikacja · src › utils.md": "505267fb8914a8715951af6e080814828e7ed9c97411762b72b0cb5170892aaf",
     "Atlas/Struktura/patternly/src/utils/_Pliki/scoring.ts — aplikacja · src › utils.md": "9fca9ee6c47789d9dc7db89bd07bb440e52a22d3063a5152f827251274007eaf",
-    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "f04aef4ba0b2ef07b3bc28d64b9ec76f3ef7e3a0032e540e52d6dcf5e9a3c5c7",
+    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "542e30bfa848d710252af5c40e3fa359530b21a43b1310d299a027c37f2eca8b",
     "Atlas/Struktura/patternly-backend/~2E~github/~2E~github — folder backend.md": "170e83b4b7bb5934fc7dd5cc63c11c5bbfaf95d1053e31ceba7bda7c046d10f6",
     "Atlas/Struktura/patternly-backend/~2E~github/workflows/workflows — folder backend · ~2E~github.md": "d58690acc4d532a53748757667f5a5f12aaeb1adbedc17469e7725a0d221787a",
     "Atlas/Struktura/patternly-backend/config/config — folder backend.md": "68dc58442959d179dad3d5f9958234f7599afbbb8c3517e3b6952ba3051b13d5",
