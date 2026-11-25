@@ -988,13 +988,13 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly-backend/src/api/app.ts": {
-      "description": "Rejestruje endpointy i ich guardy. Dodaje GET /v1/bootstrap jako agregat tras me, entitlements, pierwszej strony progress i tracks, zwracający dokładny status i body każdej trasy samodzielnej. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK. Obie ścieżki używają tych samych odmów konta/autoryzacji. Globalny error handler odpowiada na puste lub niepoprawne ciało JSON (FST_ERR_CTP_EMPTY_JSON_BODY/INVALID_JSON_BODY, parser przed guardami) kodem 400 invalid_request bez szczegółów parsera i z logiem request_rejected; pozostałe nieobsłużone błędy to 500 internal_error.",
-      "reviewedHash": "969d3c1d64c1c3dca688c18d3097c4bbc9a39aed2ec569dfba083398cd7f255b",
+      "description": "Rejestruje endpointy i ich guardy. Dodaje GET /v1/bootstrap jako agregat tras me, entitlements, pierwszej strony progress i tracks, zwracający dokładny status i body każdej trasy samodzielnej. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK. Obie ścieżki używają tych samych odmów konta/autoryzacji. Globalny error handler mapuje błędy klienta parsera ciała (przed guardami) bez szczegółów parsera i z logiem request_rejected: puste/niepoprawne JSON lub niezgodny Content-Length → 400 invalid_request, ciało > 1 MiB → 413 request_too_large, nieobsługiwany content-type → 415 unsupported_media_type; pozostałe nieobsłużone błędy to 500 internal_error.",
+      "reviewedHash": "539b8d231a13cc3592fad6d9699a594c23460b474805ef2109c4b3e0f8fedce1",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi.ts": {
-      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Obejmuje /v1/bootstrap (profil app_check_bearer, składniki jako dokładne odpowiedzi tras samodzielnych), snapshotScope/snapshotToken i warunkową kontrolę rewizji progress oraz opcjonalny proof w sync. Nie zmienia trwałych receipts. Kontrakt nie zawiera tras i schematów Recovery Codes. GET /v1/me ma zakres konsumenta backend-only (klient mobilny czyta /me przez /v1/bootstrap); trasa zostaje dla parytetu, testów i narzędzi QA. Każda operacja z JSON requestBody dokumentuje 400 z invalid_request dla pustego lub niepoprawnego ciała odrzucanego przed guardami.",
-      "reviewedHash": "9772098e4410e6eb78f526474fd0a7e450184c677e6cfdaa156b35c630661291",
+      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Obejmuje /v1/bootstrap (profil app_check_bearer, składniki jako dokładne odpowiedzi tras samodzielnych), snapshotScope/snapshotToken i warunkową kontrolę rewizji progress oraz opcjonalny proof w sync. Nie zmienia trwałych receipts. Kontrakt nie zawiera tras i schematów Recovery Codes. GET /v1/me ma zakres konsumenta backend-only (klient mobilny czyta /me przez /v1/bootstrap); trasa zostaje dla parytetu, testów i narzędzi QA. Każda operacja z JSON requestBody dokumentuje odrzucenia parsera przed guardami: 400 invalid_request (puste/niepoprawne ciało, niezgodny Content-Length), 413 request_too_large i 415 unsupported_media_type.",
+      "reviewedHash": "21604dba05ca7396da2dc46986606d7e345666a09cfeb58d0b509704395874d2",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi-validator.ts": {
@@ -1018,8 +1018,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/infrastructure/logging/logger.ts": {
-      "description": "Ogranicza dane logów do bezpiecznych pól, zdarzeń i kodów. Żądanie loguje metodę i zarejestrowany szablon trasy (nigdy surowy URL, query, parametry, nagłówki ani body); niedopasowane żądania logują stałą UNMATCHED. Zachowuje redakcję historycznych kodów/tokenów. Dopuszcza zdarzenie request_rejected dla odrzuceń klienta przed guardami.",
-      "reviewedHash": "1b550061f013a9686efd7943f8ecd90532614f66153d7e71a1be29222476bc70",
+      "description": "Ogranicza dane logów do bezpiecznych pól, zdarzeń i kodów. Żądanie loguje metodę i zarejestrowany szablon trasy (nigdy surowy URL, query, parametry, nagłówki ani body); niedopasowane żądania logują stałą UNMATCHED. Zachowuje redakcję historycznych kodów/tokenów. Dopuszcza zdarzenie request_rejected i kody request_too_large/unsupported_media_type dla odrzuceń klienta przed guardami.",
+      "reviewedHash": "369e0d98bdd22b3cb9e881aec45d08da6afc4b8ae3ce818e94f08e5492f7e59f",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-backend/src/infrastructure/revenuecat/client.ts": {
