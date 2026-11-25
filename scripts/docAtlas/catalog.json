@@ -988,8 +988,8 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly-backend/src/api/app.ts": {
-      "description": "Rejestruje endpointy i ich guardy. Dodaje GET /v1/bootstrap jako agregat tras me, entitlements, pierwszej strony progress i tracks, zwracający dokładny status i body każdej trasy samodzielnej. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK. Obie ścieżki używają tych samych odmów konta/autoryzacji. Globalny error handler mapuje błędy klienta parsera ciała (przed guardami) bez szczegółów parsera i z logiem request_rejected: puste/niepoprawne JSON lub niezgodny Content-Length → 400 invalid_request, ciało > 1 MiB → 413 request_too_large, nieobsługiwany content-type → 415 unsupported_media_type; pozostałe nieobsłużone błędy to 500 internal_error.",
-      "reviewedHash": "539b8d231a13cc3592fad6d9699a594c23460b474805ef2109c4b3e0f8fedce1",
+      "description": "Rejestruje endpointy i ich guardy. Dodaje GET /v1/bootstrap jako agregat tras me, entitlements, pierwszej strony progress i tracks, zwracający dokładny status i body każdej trasy samodzielnej. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK. Obie ścieżki używają tych samych odmów konta/autoryzacji. Globalny error handler mapuje błędy klienta parsera ciała (przed guardami) bez szczegółów parsera i z logiem request_rejected: puste/niepoprawne JSON lub niezgodny Content-Length → 400 invalid_request, ciało > 1 MiB → 413 request_too_large, nieobsługiwany content-type → 415 unsupported_media_type; pozostałe nieobsłużone błędy to 500 internal_error. trustProxy ufa tylko łączu frontu Cloud Run (169.254.0.0/16), więc request.ip — klucz limitów Gościa i zgłoszeń treści — to klient dopisany jako ostatni element X-Forwarded-For; podrobione elementy i inne łącza go nie zmieniają (SEC-BE-01).",
+      "reviewedHash": "adb08c5ccd20e26e371fb9fd28731ad16fd8b3314e0a8f49c7e65c81fad0c667",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi.ts": {
@@ -2988,7 +2988,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "c720f2ba6a2420a35ba9961e6e3bf972a5c6c53cd42474853537c0d0f883d41a"
+      "reviewedDigest": "5a00fa14981173d1f77f4ed9dbd4bf40f4827e62d47aa01f2360491215b4c00c"
     },
     {
       "name": "Treść od producenta do sesji",
