@@ -126,18 +126,18 @@ export function GuestPrivacyRequestsScreen({ onBack }: Readonly<{ onBack: () => 
     <InfoBlock body={t("guestPrivacy.intro")} title={t("guestPrivacy.title")} />
     <SettingsGroup title={t("guestPrivacy.newRequest")}>
       <Text style={styles.label}>{t("guestPrivacy.email")}</Text>
-      <TextInput autoCapitalize="none" autoComplete="email" editable={!busy} keyboardType="email-address" onChangeText={setEmail} style={styles.input} testID="guest-privacy-email" value={email} />
+      <TextInput accessibilityLabel={t("guestPrivacy.email")} autoCapitalize="none" autoComplete="email" editable={!busy} keyboardType="email-address" onChangeText={setEmail} style={styles.input} testID="guest-privacy-email" value={email} />
       <View accessibilityRole="radiogroup" style={styles.choices}>{RIGHTS.map((value) => <ChoiceRow detail={t(`privacyRequests.rightDetails.${value}`)} key={value} onPress={() => setRight(value)} selected={right === value} title={t(`privacyRequests.rights.${value}`)} />)}</View>
       <Text style={styles.label}>{t("privacyRequests.narrativeLabel")}</Text>
-      <TextInput editable={!busy} maxLength={2000} multiline onChangeText={setNarrative} style={[styles.input, styles.narrative]} testID="guest-privacy-narrative" value={narrative} />
+      <TextInput accessibilityLabel={t("privacyRequests.narrativeLabel")} editable={!busy} maxLength={2000} multiline onChangeText={setNarrative} style={[styles.input, styles.narrative]} testID="guest-privacy-narrative" value={narrative} />
       <Button disabled={!storageReady} loading={busy} onPress={() => { void submit(); }} testID="guest-privacy-submit">{t("privacyRequests.submit")}</Button>
     </SettingsGroup>
     <SettingsGroup title={t("guestPrivacy.existingRequest")}>
       <Text style={styles.label}>{t("guestPrivacy.requestId")}</Text>
-      <TextInput autoCapitalize="none" editable={!busy} onChangeText={setRequestId} style={styles.input} testID="guest-privacy-request-id" value={requestId} />
+      <TextInput accessibilityLabel={t("guestPrivacy.requestId")} autoCapitalize="none" editable={!busy} onChangeText={setRequestId} style={styles.input} testID="guest-privacy-request-id" value={requestId} />
       <Button disabled={!requestId.trim() || !email.trim()} loading={busy} onPress={() => { void resend(); }} testID="guest-privacy-resend" variant="secondary">{t("guestPrivacy.resend")}</Button>
       <Text style={styles.label}>{t("guestPrivacy.code")}</Text>
-      <TextInput autoCapitalize="none" editable={!busy} onChangeText={setCode} style={styles.input} testID="guest-privacy-code" value={code} />
+      <TextInput accessibilityLabel={t("guestPrivacy.code")} autoCapitalize="none" editable={!busy} onChangeText={setCode} style={styles.input} testID="guest-privacy-code" value={code} />
       <Button disabled={!code.trim()} loading={busy} onPress={() => { void verify(); }} testID="guest-privacy-verify">{t("guestPrivacy.verify")}</Button>
     </SettingsGroup>
     {session ? <Button onPress={() => { void refresh(); }} testID="guest-privacy-refresh" variant="secondary">{t("guestPrivacy.refresh")}</Button> : null}

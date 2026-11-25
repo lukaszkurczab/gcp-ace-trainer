@@ -802,7 +802,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         <View style={styles.authForm}>
           {feedback?.kind === "success" && feedback.next === "passwordResetEmailSent" ? <InfoBlock body={text.recoveryAcceptedDescription} title={text.recoveryAccepted} testID="account-recovery-accepted" tone="success" /> : null}
           <FormField error={feedback?.kind === "failure" && feedback.failure === "invalidEmail" ? text.invalidEmail : undefined} errorTestID="account-recovery-email-error" label={text.email}>
-            <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" maxFontSizeMultiplier={2} onChangeText={(value) => { setPasswordResetCompleted(false); setFeedback(null); setEmail(value); }} placeholder={text.enterEmail} placeholderTextColor={styles.authPlaceholder.color} style={[styles.authInput, styles.centeredInput, feedback?.kind === "failure" && feedback.failure === "invalidEmail" ? styles.authInputError : null]} testID="account-recovery-email" value={email} />
+            <TextInput accessibilityLabel={text.email} autoCapitalize="none" autoComplete="email" keyboardType="email-address" maxFontSizeMultiplier={2} onChangeText={(value) => { setPasswordResetCompleted(false); setFeedback(null); setEmail(value); }} placeholder={text.enterEmail} placeholderTextColor={styles.authPlaceholder.color} style={[styles.authInput, styles.centeredInput, feedback?.kind === "failure" && feedback.failure === "invalidEmail" ? styles.authInputError : null]} testID="account-recovery-email" value={email} />
           </FormField>
           <Button labelStyle={styles.authPrimaryLabel} onPress={() => void account.requestPasswordRecovery(email).then(setResult(setFeedback))} style={styles.authPrimaryButton} testID="account-recovery-submit" variant="primary">{text.sendRecovery}</Button>
         </View>
@@ -1415,6 +1415,7 @@ function SignInForm({
           {text.email}
         </AuthText>
         <TextInput
+          accessibilityLabel={text.email}
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -1434,6 +1435,7 @@ function SignInForm({
         </AuthText>
         <View style={styles.passwordField}>
           <TextInput
+            accessibilityLabel={text.password}
             autoCapitalize="none"
             autoComplete="password"
             onChangeText={onPasswordChange}
