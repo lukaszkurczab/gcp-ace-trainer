@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "fbe64b4b4ab581f23b378838ae891d62cd2cfd5e",
+      "head": "9f553af2a00e9050699bf96aae957081d73d18b4",
       "files": [
         {
           "path": ".easignore",
@@ -4628,8 +4628,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "b56e0a55be977fa543d8f019795ed7d3351b9edabf640a9f92ad2c7bf40000e8",
-          "bytes": 257061,
+          "sha256": "e6cf4f3528486eb0c088006179ae92208dd95024e4667c254caaa33a10e9afba",
+          "bytes": 258158,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -4640,7 +4640,7 @@
             "flows"
           ],
           "testNames": [],
-          "lines": 3101
+          "lines": 3106
         },
         {
           "path": "scripts/docAtlas/ios-certification-complete.yaml",
@@ -34833,8 +34833,8 @@
         },
         {
           "path": "src/application/learningPlan/LearningPlanProposalCoordinator.test.ts",
-          "sha256": "b4c525fa8a4de79f17a04ddbbc91d06b5ceafb608ec79d673f720ef5089e8354",
-          "bytes": 65716,
+          "sha256": "7bdb071b8ba25ca5d4e44d165aeb59cceca043c08d925b8fc98b8fdffdf6db1a",
+          "bytes": 69336,
           "symbols": [],
           "imports": [
             {
@@ -35003,7 +35003,7 @@
               "specifier": "../../storage/repositories/learningStateResetRepository",
               "kind": "dynamic",
               "target": "src/storage/repositories/learningStateResetRepository.ts",
-              "line": 888
+              "line": 940
             }
           ],
           "jsonKeys": [],
@@ -35013,12 +35013,14 @@
             "proposal resolution rejects a timezone change during package resolution",
             "proposal becomes stale when the accepted-day session window closes at its local scheduled time",
             "editing a proposal's local time recomputes its calendar before acceptance",
+            "staging a schedule without a day removes that day from the recomputed calendar capacity",
             "unchanged persisted GCP inputs stay ready through the synchronous commit guard",
             "removing abandoned proposals makes them stale while an active proposal stays resolvable",
             "installed StackRouter pop and replace remove only proposal routes that actually leave the stack",
             "late canonical proposal creation after its source route is popped is discarded",
             "late editor creation is discarded after proposal-route removal while its proposal stays guarded until settle",
             "route removal during accept retains the proposal through the actual editor commit guard, then disposes it",
+            "accepting the same proposal again after acceptance writes no second goal-plan pair",
             "proposal accepts a goal whose optional target date was explicitly cleared by the UI",
             "real GCP proposals schedule one exact diagnostic across short and long 20-minute horizons without repeating it",
             "an active diagnostic resumes its persisted legal 40-question session with only unanswered items remaining",
@@ -35040,12 +35042,12 @@
             "exact duplicate evidence preserves order and conflicting duplicate IDs fail closed",
             "a repository read failure after package await remains retryable"
           ],
-          "lines": 959
+          "lines": 1011
         },
         {
           "path": "src/application/learningPlan/LearningPlanProposalCoordinator.ts",
-          "sha256": "14b753e630675cc1cd6e460bcda3eb5c7d1ffe5b95d0953a28cb6ec93abf336f",
-          "bytes": 41346,
+          "sha256": "439b2bc9edc40c4503bef6590ab2f22c5428d2a5d6562d5e2b54a588fcc143ff",
+          "bytes": 42054,
           "symbols": [
             "ProposalId",
             "CoordinatedLearningPlanProposal",
@@ -35083,183 +35085,183 @@
               "line": 4
             },
             {
+              "specifier": "../../domain/goals/goalContracts",
+              "kind": "static",
+              "target": "src/domain/goals/goalContracts.ts",
+              "line": 5
+            },
+            {
               "specifier": "../../domain/learning/learningPlan",
               "kind": "type",
               "target": "src/domain/learning/learningPlan.ts",
-              "line": 5
+              "line": 6
             },
             {
               "specifier": "../contentPackageRuntimeOwner",
               "kind": "static",
               "target": "src/application/contentPackageRuntimeOwner.ts",
-              "line": 6
+              "line": 7
             },
             {
               "specifier": "../../domain",
               "kind": "static",
               "target": "src/domain/index.ts",
-              "line": 7
+              "line": 8
             },
             {
               "specifier": "../../domain/tracks/trackRegistry",
               "kind": "static",
               "target": "src/domain/tracks/trackRegistry.ts",
-              "line": 16
+              "line": 17
             },
             {
               "specifier": "../../domain/identity/canonicalSerialization",
               "kind": "static",
               "target": "src/domain/identity/canonicalSerialization.ts",
-              "line": 17
+              "line": 18
             },
             {
               "specifier": "../../infrastructure/identity/sha256",
               "kind": "static",
               "target": "src/infrastructure/identity/sha256.ts",
-              "line": 18
+              "line": 19
             },
             {
               "specifier": "../../domain/learning/slotIdentity",
               "kind": "static",
               "target": "src/domain/learning/slotIdentity.ts",
-              "line": 19
+              "line": 20
             },
             {
               "specifier": "../../storage/repositories/learningPlanInputSnapshot",
               "kind": "static",
               "target": "src/storage/repositories/learningPlanInputSnapshot.ts",
-              "line": 20
-            },
-            {
-              "specifier": "./learningPlanModeRecommendation",
-              "kind": "static",
-              "target": "src/application/learningPlan/learningPlanModeRecommendation.ts",
               "line": 21
             },
             {
               "specifier": "./learningPlanModeRecommendation",
-              "kind": "type",
+              "kind": "static",
               "target": "src/application/learningPlan/learningPlanModeRecommendation.ts",
               "line": 22
             },
             {
-              "specifier": "./nextSessionTimeEstimate",
-              "kind": "static",
-              "target": "src/application/learningPlan/nextSessionTimeEstimate.ts",
+              "specifier": "./learningPlanModeRecommendation",
+              "kind": "type",
+              "target": "src/application/learningPlan/learningPlanModeRecommendation.ts",
               "line": 23
             },
             {
               "specifier": "./nextSessionTimeEstimate",
-              "kind": "type",
+              "kind": "static",
               "target": "src/application/learningPlan/nextSessionTimeEstimate.ts",
               "line": 24
             },
             {
-              "specifier": "./fullGoalWorkloadProjection",
-              "kind": "static",
-              "target": "src/application/learningPlan/fullGoalWorkloadProjection.ts",
+              "specifier": "./nextSessionTimeEstimate",
+              "kind": "type",
+              "target": "src/application/learningPlan/nextSessionTimeEstimate.ts",
               "line": 25
             },
             {
               "specifier": "./fullGoalWorkloadProjection",
-              "kind": "type",
+              "kind": "static",
               "target": "src/application/learningPlan/fullGoalWorkloadProjection.ts",
               "line": 26
+            },
+            {
+              "specifier": "./fullGoalWorkloadProjection",
+              "kind": "type",
+              "target": "src/application/learningPlan/fullGoalWorkloadProjection.ts",
+              "line": 27
             },
             {
               "specifier": "./fullGoalTimeCapacity",
               "kind": "static",
               "target": "src/application/learningPlan/fullGoalTimeCapacity.ts",
-              "line": 27
+              "line": 28
             },
             {
               "specifier": "./fullGoalTimeCapacity",
               "kind": "type",
               "target": "src/application/learningPlan/fullGoalTimeCapacity.ts",
-              "line": 28
+              "line": 29
             },
             {
               "specifier": "../../domain/learning/planningWorkEstimate",
               "kind": "type",
               "target": "src/domain/learning/planningWorkEstimate.ts",
-              "line": 29
+              "line": 30
             },
             {
               "specifier": "../../domain/learning/planningCalendar",
               "kind": "static",
               "target": "src/domain/learning/planningCalendar.ts",
-              "line": 30
+              "line": 31
             },
             {
               "specifier": "../../domain/goals/goalTargetDateSemantics",
               "kind": "static",
               "target": "src/domain/goals/goalTargetDateSemantics.ts",
-              "line": 31
+              "line": 32
             },
             {
               "specifier": "../../domain/tracks/trackGoalPolicies",
               "kind": "static",
               "target": "src/domain/tracks/trackGoalPolicies.ts",
-              "line": 32
+              "line": 33
             },
             {
               "specifier": "../../storage/repositories/activeTrackRepository",
               "kind": "static",
               "target": "src/storage/repositories/activeTrackRepository.ts",
-              "line": 33
+              "line": 34
             },
             {
               "specifier": "../trainingLifecycle/applicationLifecycle",
               "kind": "static",
               "target": "src/application/trainingLifecycle/applicationLifecycle.ts",
-              "line": 34
+              "line": 35
             },
             {
               "specifier": "../trainingSessions/sessionDurability",
               "kind": "static",
               "target": "src/application/trainingSessions/sessionDurability.ts",
-              "line": 35
+              "line": 36
             },
             {
               "specifier": "../tracks/trackAdmissionContext",
               "kind": "static",
               "target": "src/application/tracks/trackAdmissionContext.ts",
-              "line": 36
+              "line": 37
             },
             {
               "specifier": "../../domain/goals/goalPolicy",
               "kind": "type",
               "target": "src/domain/goals/goalPolicy.ts",
-              "line": 78
+              "line": 79
             },
             {
               "specifier": "../../domain/learning/trackIdentity",
               "kind": "type",
               "target": "src/domain/learning/trackIdentity.ts",
-              "line": 82
+              "line": 83
             },
             {
               "specifier": "../../domain/goals/goalContracts",
               "kind": "type",
               "target": "src/domain/goals/goalContracts.ts",
-              "line": 89
+              "line": 90
             },
             {
               "specifier": "../../domain/learning/learningPlan",
               "kind": "type",
               "target": "src/domain/learning/learningPlan.ts",
-              "line": 96
+              "line": 97
             },
             {
               "specifier": "../../domain",
               "kind": "type",
               "target": "src/domain/index.ts",
-              "line": 106
-            },
-            {
-              "specifier": "../../domain/learning/planningCalendar",
-              "kind": "type",
-              "target": "src/domain/learning/planningCalendar.ts",
               "line": 107
             },
             {
@@ -35269,111 +35271,123 @@
               "line": 108
             },
             {
-              "specifier": "../../domain/learning/trackIdentity",
+              "specifier": "../../domain/learning/planningCalendar",
               "kind": "type",
-              "target": "src/domain/learning/trackIdentity.ts",
-              "line": 129
+              "target": "src/domain/learning/planningCalendar.ts",
+              "line": 109
             },
             {
               "specifier": "../../domain/learning/trackIdentity",
               "kind": "type",
               "target": "src/domain/learning/trackIdentity.ts",
-              "line": 271
+              "line": 130
             },
             {
               "specifier": "../../domain/learning/trackIdentity",
               "kind": "type",
               "target": "src/domain/learning/trackIdentity.ts",
-              "line": 424
+              "line": 272
+            },
+            {
+              "specifier": "../../domain/learning/trackIdentity",
+              "kind": "type",
+              "target": "src/domain/learning/trackIdentity.ts",
+              "line": 428
             },
             {
               "specifier": "../../domain/goals/goalContracts",
               "kind": "type",
               "target": "src/domain/goals/goalContracts.ts",
-              "line": 482
+              "line": 486
             },
             {
               "specifier": "../../domain/goals/goalContracts",
               "kind": "type",
               "target": "src/domain/goals/goalContracts.ts",
-              "line": 482
+              "line": 492
             },
             {
               "specifier": "../../domain/goals/goalContracts",
               "kind": "type",
               "target": "src/domain/goals/goalContracts.ts",
-              "line": 489
+              "line": 492
+            },
+            {
+              "specifier": "../../domain/goals/goalContracts",
+              "kind": "type",
+              "target": "src/domain/goals/goalContracts.ts",
+              "line": 499
             },
             {
               "specifier": "../../domain",
               "kind": "type",
               "target": "src/domain/index.ts",
-              "line": 526
+              "line": 536
             },
             {
               "specifier": "../../domain/learning/planningCalendar",
               "kind": "type",
               "target": "src/domain/learning/planningCalendar.ts",
-              "line": 527
+              "line": 537
             },
             {
               "specifier": "../../domain/goals/goalContracts",
               "kind": "type",
               "target": "src/domain/goals/goalContracts.ts",
-              "line": 529
+              "line": 539
             },
             {
               "specifier": "../../domain/learning/planningCalendar",
               "kind": "type",
               "target": "src/domain/learning/planningCalendar.ts",
-              "line": 556
+              "line": 566
             },
             {
               "specifier": "../../domain/learning/planningCalendar",
               "kind": "type",
               "target": "src/domain/learning/planningCalendar.ts",
-              "line": 558
-            },
-            {
-              "specifier": "../../domain",
-              "kind": "type",
-              "target": "src/domain/index.ts",
               "line": 568
             },
             {
-              "specifier": "../../domain/learning/planningCalendar",
+              "specifier": "../../domain",
               "kind": "type",
-              "target": "src/domain/learning/planningCalendar.ts",
-              "line": 569
+              "target": "src/domain/index.ts",
+              "line": 578
             },
             {
               "specifier": "../../domain/learning/planningCalendar",
               "kind": "type",
               "target": "src/domain/learning/planningCalendar.ts",
-              "line": 570
+              "line": 579
+            },
+            {
+              "specifier": "../../domain/learning/planningCalendar",
+              "kind": "type",
+              "target": "src/domain/learning/planningCalendar.ts",
+              "line": 580
             },
             {
               "specifier": "../../domain/goals/goalContracts",
               "kind": "type",
               "target": "src/domain/goals/goalContracts.ts",
-              "line": 572
+              "line": 582
             },
             {
               "specifier": "../../domain",
               "kind": "type",
               "target": "src/domain/index.ts",
-              "line": 597
+              "line": 607
             },
             {
               "specifier": "../../domain/learning/trackIdentity",
               "kind": "type",
               "target": "src/domain/learning/trackIdentity.ts",
-              "line": 625
+              "line": 635
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 654
+          "lines": 664
         },
         {
           "path": "src/application/learningPlan/learningPlanQualityGuard.test.ts",
@@ -50678,8 +50692,8 @@
         },
         {
           "path": "src/domain/goals/goalContracts.ts",
-          "sha256": "08ac6e2d14ee688e243ea11e7be8b472482c11a20579aaf8f22c64066f6f4c5f",
-          "bytes": 4732,
+          "sha256": "17012e5851269c099e8940c87f025b97ce52a921d392e636a2e4522f1cacd54a",
+          "bytes": 5101,
           "symbols": [
             "GOAL_TEMPLATE_IDS",
             "GoalPolicy",
@@ -50696,6 +50710,7 @@
             "isGoalRecordForPolicy",
             "createDefaultGoal",
             "normalizeGoalRecord",
+            "togglePreferredDay",
             "isGoalRecordForTrack",
             "isGoalTemplateId",
             "isGoalDay",
@@ -50741,7 +50756,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 101
+          "lines": 107
         },
         {
           "path": "src/domain/goals/goalPolicy.ts",
@@ -56503,8 +56518,8 @@
         },
         {
           "path": "src/features/home/goalCadencePresentation.test.ts",
-          "sha256": "4cf3db0bb93c1b82c130842d5a6efe8c280e1b25b6aef387aeb80c08ddf189e1",
-          "bytes": 19097,
+          "sha256": "eb040166d5c604fead07fb668e3a1cb33ee0f79475c47213c68a2ef52ebc6fd5",
+          "bytes": 19637,
           "symbols": [],
           "imports": [
             {
@@ -56545,12 +56560,12 @@
             "goal editing uses local keyboard avoidance while preserving the shared sticky footer",
             "goal loading uses the shared named return action outside the busy content announcement"
           ],
-          "lines": 274
+          "lines": 280
         },
         {
           "path": "src/features/home/GoalCadenceScreen.tsx",
-          "sha256": "9ba01bec647dfac2f344c5e2450a6c1a87a2d07bfb7605e1f2527ce575d75618",
-          "bytes": 38394,
+          "sha256": "d042de70971915efc36d86593f8120338d32d209467c903e1aa82a6c027b5471",
+          "bytes": 39710,
           "symbols": [
             "GoalLoadingSkeleton",
             "GoalCadenceScreen"
@@ -56575,128 +56590,243 @@
               "line": 3
             },
             {
-              "specifier": "react-native",
+              "specifier": "@react-navigation/native",
               "kind": "static",
               "resolution": "external",
               "line": 4
             },
             {
+              "specifier": "react-native",
+              "kind": "static",
+              "resolution": "external",
+              "line": 5
+            },
+            {
               "specifier": "../../components",
               "kind": "static",
               "target": "src/components/index.ts",
-              "line": 6
+              "line": 7
             },
             {
               "specifier": "../../application/operationalDiagnostics",
               "kind": "static",
               "target": "src/application/operationalDiagnostics.ts",
-              "line": 16
+              "line": 17
             },
             {
               "specifier": "../../application/profileReadFence",
               "kind": "static",
               "target": "src/application/profileReadFence.ts",
-              "line": 17
+              "line": 18
             },
             {
               "specifier": "../../application/learningPlan",
               "kind": "static",
               "target": "src/application/learningPlan/index.ts",
-              "line": 18
+              "line": 19
             },
             {
               "specifier": "../../application/learningReadModels",
               "kind": "static",
               "target": "src/application/learningReadModels.ts",
-              "line": 19
+              "line": 20
             },
             {
               "specifier": "../../preferences",
               "kind": "static",
               "target": "src/preferences/index.ts",
-              "line": 20
+              "line": 21
             },
             {
               "specifier": "../../constants/routes",
               "kind": "static",
               "target": "src/constants/routes.ts",
-              "line": 21
+              "line": 22
             },
             {
               "specifier": "../../domain",
               "kind": "static",
               "target": "src/domain/index.ts",
-              "line": 22
+              "line": 23
             },
             {
               "specifier": "../../domain/tracks/trackGoalPolicies",
               "kind": "static",
               "target": "src/domain/tracks/trackGoalPolicies.ts",
-              "line": 32
+              "line": 34
             },
             {
               "specifier": "../../domain",
               "kind": "static",
               "target": "src/domain/index.ts",
-              "line": 33
+              "line": 35
             },
             {
               "specifier": "../../navigation",
               "kind": "type",
               "target": "src/navigation/index.ts",
-              "line": 34
+              "line": 36
             },
             {
               "specifier": "../../preferences",
               "kind": "static",
               "target": "src/preferences/index.ts",
-              "line": 35
+              "line": 37
             },
             {
               "specifier": "../../theme",
               "kind": "static",
               "target": "src/theme/index.ts",
-              "line": 36
+              "line": 38
             },
             {
               "specifier": "../../testing/runtimeSelectors",
               "kind": "static",
               "target": "src/testing/runtimeSelectors.ts",
-              "line": 37
+              "line": 39
             },
             {
               "specifier": "../../application/notificationPreferences",
               "kind": "type",
               "target": "src/application/notificationPreferences.ts",
-              "line": 38
+              "line": 40
             },
             {
               "specifier": "./goalTargetDatePicker",
               "kind": "static",
               "target": "src/features/home/goalTargetDatePicker.ts",
-              "line": 39
+              "line": 41
             },
             {
               "specifier": "./GoalTargetDateCalendar",
               "kind": "static",
               "target": "src/features/home/GoalTargetDateCalendar.tsx",
-              "line": 40
+              "line": 42
             },
             {
               "specifier": "./routeLifetime",
               "kind": "static",
               "target": "src/features/home/routeLifetime.ts",
-              "line": 41
+              "line": 43
+            },
+            {
+              "specifier": "./goalScreenFreshness",
+              "kind": "static",
+              "target": "src/features/home/goalScreenFreshness.ts",
+              "line": 44
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 764
+          "lines": 788
         },
         {
           "path": "src/features/home/goalContracts.test.ts",
-          "sha256": "41f27e1e4c0b7b02264de81c44da7f0975efb91802a66e4e7f547ed9204d4c91",
-          "bytes": 9559,
+          "sha256": "df5dd0bc1389d3aef69f6fab6abbf1f3691d57f47fe63d18db1f234610eb6ee5",
+          "bytes": 10415,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:fs",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "node:crypto",
+              "kind": "static",
+              "resolution": "external",
+              "line": 3
+            },
+            {
+              "specifier": "node:test",
+              "kind": "static",
+              "resolution": "external",
+              "line": 4
+            },
+            {
+              "specifier": "../../domain",
+              "kind": "static",
+              "target": "src/domain/index.ts",
+              "line": 6
+            },
+            {
+              "specifier": "../../domain/tracks/trackGoalPolicies",
+              "kind": "static",
+              "target": "src/domain/tracks/trackGoalPolicies.ts",
+              "line": 19
+            },
+            {
+              "specifier": "../../domain/tracks/trackGoalPolicies",
+              "kind": "static",
+              "target": "src/domain/tracks/trackGoalPolicies.ts",
+              "line": 20
+            },
+            {
+              "specifier": "../../testing/journalTestSupport",
+              "kind": "static",
+              "target": "src/testing/journalTestSupport.ts",
+              "line": 21
+            },
+            {
+              "specifier": "../../storage/repositories/canonicalRecordCodec",
+              "kind": "static",
+              "target": "src/storage/repositories/canonicalRecordCodec.ts",
+              "line": 22
+            },
+            {
+              "specifier": "../../storage/errors",
+              "kind": "static",
+              "target": "src/storage/errors.ts",
+              "line": 23
+            },
+            {
+              "specifier": "../../storage/keys",
+              "kind": "static",
+              "target": "src/storage/keys.ts",
+              "line": 24
+            },
+            {
+              "specifier": "../../storage/repositories",
+              "kind": "static",
+              "target": "src/storage/repositories/index.ts",
+              "line": 25
+            },
+            {
+              "specifier": "../../domain/identity/canonicalSerialization",
+              "kind": "static",
+              "target": "src/domain/identity/canonicalSerialization.ts",
+              "line": 26
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [
+            "goal templates are sourced from every canonical track descriptor",
+            "default goal is valid and keeps optional date unset",
+            "goal persistence guard rejects invalid cadence, date, track template, and extra fields",
+            "goal normalizer derives ordered cadence from legacy targets and every day count",
+            "goal normalizer omits an explicitly unset optional date from canonical records",
+            "goal repository normalizes legacy records on read without repairing storage",
+            "empty legacy goals remain readable, but saving an empty selection is rejected without data loss",
+            "goal repository rejects a zero target with selected days without repairing the record",
+            "saving a goal persists the normalized cadence while preserving other fields",
+            "goal repository persists one canonical record per track",
+            "target-date projection follows goal type and explicit own-pace saves remove only legacy dates",
+            "toggling draft days keeps the canonical Monday-first order regardless of tap order",
+            "goal draft day toggles use the canonical-order helper"
+          ],
+          "lines": 202
+        },
+        {
+          "path": "src/features/home/goalScreenFreshness.test.ts",
+          "sha256": "c0251692b8d02a491c03139e188793311277adc82abac7f276813b94f0f37275",
+          "bytes": 1811,
           "symbols": [],
           "imports": [
             {
@@ -56706,7 +56836,7 @@
               "line": 1
             },
             {
-              "specifier": "node:crypto",
+              "specifier": "node:fs",
               "kind": "static",
               "resolution": "external",
               "line": 2
@@ -56727,66 +56857,46 @@
               "specifier": "../../domain/tracks/trackGoalPolicies",
               "kind": "static",
               "target": "src/domain/tracks/trackGoalPolicies.ts",
-              "line": 17
+              "line": 6
             },
             {
-              "specifier": "../../domain/tracks/trackGoalPolicies",
+              "specifier": "./goalScreenFreshness",
               "kind": "static",
-              "target": "src/domain/tracks/trackGoalPolicies.ts",
-              "line": 18
-            },
+              "target": "src/features/home/goalScreenFreshness.ts",
+              "line": 7
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [
+            "goal screen persisted state changes when a goal-plan pair is accepted elsewhere",
+            "goal screen re-reads persisted goal and plan on refocus and reloads only on change"
+          ],
+          "lines": 27
+        },
+        {
+          "path": "src/features/home/goalScreenFreshness.ts",
+          "sha256": "f603bb19cfb4d9b03f36a310267865132f9dcbe653ab111fb7ce662048b974dc",
+          "bytes": 846,
+          "symbols": [
+            "goalScreenPersistedState"
+          ],
+          "imports": [
             {
-              "specifier": "../../testing/journalTestSupport",
-              "kind": "static",
-              "target": "src/testing/journalTestSupport.ts",
-              "line": 19
-            },
-            {
-              "specifier": "../../storage/repositories/canonicalRecordCodec",
-              "kind": "static",
-              "target": "src/storage/repositories/canonicalRecordCodec.ts",
-              "line": 20
-            },
-            {
-              "specifier": "../../storage/errors",
-              "kind": "static",
-              "target": "src/storage/errors.ts",
-              "line": 21
-            },
-            {
-              "specifier": "../../storage/keys",
-              "kind": "static",
-              "target": "src/storage/keys.ts",
-              "line": 22
-            },
-            {
-              "specifier": "../../storage/repositories",
-              "kind": "static",
-              "target": "src/storage/repositories/index.ts",
-              "line": 23
+              "specifier": "../../domain",
+              "kind": "type",
+              "target": "src/domain/index.ts",
+              "line": 1
             },
             {
               "specifier": "../../domain/identity/canonicalSerialization",
               "kind": "static",
               "target": "src/domain/identity/canonicalSerialization.ts",
-              "line": 24
+              "line": 2
             }
           ],
           "jsonKeys": [],
-          "testNames": [
-            "goal templates are sourced from every canonical track descriptor",
-            "default goal is valid and keeps optional date unset",
-            "goal persistence guard rejects invalid cadence, date, track template, and extra fields",
-            "goal normalizer derives ordered cadence from legacy targets and every day count",
-            "goal normalizer omits an explicitly unset optional date from canonical records",
-            "goal repository normalizes legacy records on read without repairing storage",
-            "empty legacy goals remain readable, but saving an empty selection is rejected without data loss",
-            "goal repository rejects a zero target with selected days without repairing the record",
-            "saving a goal persists the normalized cadence while preserving other fields",
-            "goal repository persists one canonical record per track",
-            "target-date projection follows goal type and explicit own-pace saves remove only legacy dates"
-          ],
-          "lines": 186
+          "testNames": [],
+          "lines": 18
         },
         {
           "path": "src/features/home/GoalTargetDateCalendar.test.ts",
@@ -58086,8 +58196,8 @@
         },
         {
           "path": "src/features/home/learningPlanProposalPresentation.test.ts",
-          "sha256": "4114793d48d9a4af809a07bcc58a7cfb01992391338b4609535224e75879ffc0",
-          "bytes": 17365,
+          "sha256": "fe35c95785d0a643aa7ec442815ee07751f1a259146956e56dd5c12f35f6cdcf",
+          "bytes": 17602,
           "symbols": [],
           "imports": [
             {
@@ -58124,7 +58234,7 @@
             "goal and time remain staged until the accepted plan; reminders reconcile after acceptance",
             "target guidance retry performs a real canonical snapshot reload"
           ],
-          "lines": 177
+          "lines": 180
         },
         {
           "path": "src/features/home/learningPlanProposalRuntime.ts",
@@ -58186,8 +58296,8 @@
         },
         {
           "path": "src/features/home/LearningPlanProposalScreen.tsx",
-          "sha256": "4676c727ba104b7fe3437dc4304fbc6acac4549a6a3178251923f9f85f5cd7b6",
-          "bytes": 44714,
+          "sha256": "65c8465a5f7c85db4cc809ecb36efba0a3f3e4eb224b458bef9f6ec96fb66f64",
+          "bytes": 44494,
           "symbols": [
             "LearningPlanProposalScreen",
             "LearningPlanProposalLoadingSkeleton"
@@ -58302,74 +58412,68 @@
               "line": 22
             },
             {
-              "specifier": "../practice/trackRoadmapCatalog",
-              "kind": "static",
-              "target": "src/features/practice/trackRoadmapCatalog.ts",
-              "line": 23
-            },
-            {
               "specifier": "./learningPlanWorkloadPresentation",
               "kind": "static",
               "target": "src/features/home/learningPlanWorkloadPresentation.ts",
-              "line": 24
+              "line": 23
             },
             {
               "specifier": "../../infrastructure/runtime/runtimeMode",
               "kind": "static",
               "target": "src/infrastructure/runtime/runtimeMode.ts",
-              "line": 25
+              "line": 24
             },
             {
               "specifier": "../../application/learningReadModels",
               "kind": "static",
               "target": "src/application/learningReadModels.ts",
-              "line": 26
+              "line": 25
             },
             {
               "specifier": "./routeLifetime",
               "kind": "static",
               "target": "src/features/home/routeLifetime.ts",
-              "line": 27
+              "line": 26
             },
             {
               "specifier": "../../application/learningPlan/LearningPlanProposalCoordinator",
               "kind": "type",
               "target": "src/application/learningPlan/LearningPlanProposalCoordinator.ts",
-              "line": 340
+              "line": 339
             },
             {
               "specifier": "../../domain",
               "kind": "type",
               "target": "src/domain/index.ts",
-              "line": 365
+              "line": 364
             },
             {
               "specifier": "../../application/learningPlan/fullGoalWorkloadProjection",
               "kind": "type",
               "target": "src/application/learningPlan/fullGoalWorkloadProjection.ts",
-              "line": 366
+              "line": 365
             },
             {
               "specifier": "../../application/learningPlan/LearningPlanProposalCoordinator",
               "kind": "type",
               "target": "src/application/learningPlan/LearningPlanProposalCoordinator.ts",
-              "line": 367
+              "line": 366
             },
             {
               "specifier": "../../application/learningPlan/fullGoalTimeCapacity",
               "kind": "type",
               "target": "src/application/learningPlan/fullGoalTimeCapacity.ts",
-              "line": 368
+              "line": 367
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 557
+          "lines": 555
         },
         {
           "path": "src/features/home/learningPlanWorkloadPresentation.test.ts",
-          "sha256": "4a4835adc1d6ab9a0ddb1c653d16d8f62df7dfacdf6fc51fafe6e7f580c5006d",
-          "bytes": 7848,
+          "sha256": "a703519045624926dd4939b49aa613e47fa3c86e951bdfdf9c8500be0a8422d9",
+          "bytes": 8347,
           "symbols": [],
           "imports": [
             {
@@ -58410,17 +58514,19 @@
             "incomplete projection preserves named canonical chapter and exact unavailable reason without inferring Premium entitlement",
             "missing display metadata remains explicit and does not turn a source id into a fabricated chapter name",
             "real due reviews, unbounded quality work and estimate provenance stay available to the details view",
-            "one bounded next practice stage remains separate from C3 response credits"
+            "one bounded next practice stage remains separate from C3 response credits",
+            "proposal chapter titles use the shared roadmap catalog for certification tracks, as Progress does"
           ],
-          "lines": 122
+          "lines": 129
         },
         {
           "path": "src/features/home/learningPlanWorkloadPresentation.ts",
-          "sha256": "cf0f92902f4ea17aba4cb0ae75f943c05ce0ee36a31dff996ef01ad9746d5c43",
-          "bytes": 4509,
+          "sha256": "4cb2458cf7bf160c6c71f72a1e1c980be515bad8781c2757c8af2a811462489d",
+          "bytes": 5095,
           "symbols": [
             "LearningPlanWorkloadPresentation",
-            "buildLearningPlanWorkloadPresentation"
+            "buildLearningPlanWorkloadPresentation",
+            "proposalChapterTitles"
           ],
           "imports": [
             {
@@ -58434,11 +58540,23 @@
               "kind": "type",
               "target": "src/application/learningPlan/fullGoalWorkloadProjection.ts",
               "line": 2
+            },
+            {
+              "specifier": "../../domain",
+              "kind": "type",
+              "target": "src/domain/index.ts",
+              "line": 3
+            },
+            {
+              "specifier": "../practice/trackRoadmapCatalog",
+              "kind": "static",
+              "target": "src/features/practice/trackRoadmapCatalog.ts",
+              "line": 4
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 89
+          "lines": 104
         },
         {
           "path": "src/features/home/LegalInformationScreen.tsx",
@@ -59566,8 +59684,8 @@
         },
         {
           "path": "src/features/home/soloUi22.test.mjs",
-          "sha256": "4c7dbc0f2f90eba2cf9a0a6f5414acd490735d8f65567e57f8a723cc401b4d68",
-          "bytes": 11169,
+          "sha256": "2a992a4400a387835d261c8444d057eb8e4643af5aedc07c51715f31add97607",
+          "bytes": 11273,
           "symbols": [],
           "imports": [
             {
@@ -59653,16 +59771,22 @@
               "kind": "require",
               "target": "src/features/home/routeLifetime.ts",
               "line": 15
+            },
+            {
+              "specifier": "./goalScreenFreshness.ts",
+              "kind": "require",
+              "target": "src/features/home/goalScreenFreshness.ts",
+              "line": 16
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 171
+          "lines": 173
         },
         {
           "path": "src/features/home/soloUi22TestHarness.mjs",
-          "sha256": "d4af4f60596a4778db16d91a521bf64f7ff13cedd72ef1e5160832789b3d36df",
-          "bytes": 3136,
+          "sha256": "56f5c9d954af0fc73be829ccfefca5824aa26d685f9c5ea081fc644e6f6e6cd4",
+          "bytes": 3204,
           "symbols": [
             "subject",
             "controlledHooks",
@@ -59704,7 +59828,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 77
+          "lines": 78
         },
         {
           "path": "src/features/home/tabs/activityModel.test.ts",
@@ -127911,9 +128035,9 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "b56e0a55be977fa543d8f019795ed7d3351b9edabf640a9f92ad2c7bf40000e8",
+  "catalogHash": "e6cf4f3528486eb0c088006179ae92208dd95024e4667c254caaa33a10e9afba",
   "notes": {
-    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "ecf4870634a12442f8993d6e4ae8c1b9fd962ae919abfbd1e28bfaa53800f9a5",
+    "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "85022eee3bd85eec2d2daeef53d1f729005cbe853f7ec52e215b68001431f863",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "32cd65f402258bcb4d38fb22f296803b905c0ea2b22ddcd01808ba4c6ea80873",
     "Atlas/Struktura/patternly/~2E~github/workflows/workflows — folder aplikacja · ~2E~github.md": "ccf46ba77ca3765d99a803b3aef8bc60e98f09a861a19d48698dd270b4c44d9d",
     "Atlas/Struktura/patternly/~2E~maestro/~2E~maestro — folder aplikacja.md": "70c51a5f0838a2a1426145b35d68fb66671fb3ab096c22b2f8dd54b3c58abee7",
@@ -128012,7 +128136,7 @@
     "Atlas/Struktura/patternly/scripts/qa/flows/premium18/premium18 — folder aplikacja · scripts › qa › flows.md": "a320543337f2ba96df4fa86da2a2b08805b9087f72a8d176a208710d8989d982",
     "Atlas/Struktura/patternly/scripts/qa/soloHome23/soloHome23 — folder aplikacja · scripts › qa.md": "651971cf9502df9e65cd4247f5cdcda7ff1655ace73b6e02ab00f13e5955f490",
     "Atlas/Struktura/patternly/scripts/qa/soloUi22/soloUi22 — folder aplikacja · scripts › qa.md": "9c7ba8c29f29235816ea44069ef5f24a6bc2f8de37b2275c57e573d0fc4a7d05",
-    "Atlas/Struktura/patternly/src/src — folder aplikacja.md": "ed4626cad180dede23e0d02ff517a8e060c56dcf6a108d69c2579b8cab427c8a",
+    "Atlas/Struktura/patternly/src/src — folder aplikacja.md": "79e6b91f3404b23d81e9472481f2b84d40a6ae2ea15f829aeb86c0f92aff1cd8",
     "Atlas/Struktura/patternly/src/application/application — folder aplikacja · src.md": "5ac7a23f770d17de4f3fd34a79a0fd510ec52417a5ddd4ef1a519b8898434a5f",
     "Atlas/Struktura/patternly/src/application/account/account — folder aplikacja · src › application.md": "ee06e8377f329184caf58f020dd9c4830c1ab104dd2005027b0a88b29673dd97",
     "Atlas/Struktura/patternly/src/application/bootstrap/bootstrap — folder aplikacja · src › application.md": "12c2f71e6f1de7f1bd6cf14f2607f46b0cd5b0bf8d5acacb2595576b71e1a3f6",
@@ -128025,7 +128149,7 @@
     "Atlas/Struktura/patternly/src/application/home/home — folder aplikacja · src › application.md": "a99cf3b51378332838dcc7b0c527e1a0bbdd02f2f64a633a3314fe9722da32e1",
     "Atlas/Struktura/patternly/src/application/identity/identity — folder aplikacja · src › application.md": "a2464519ed12b7304c2300051e97af24ddae436322f4d5113adb8dcffc3c8a41",
     "Atlas/Struktura/patternly/src/application/learningMutations/learningMutations — folder aplikacja · src › application.md": "494691d79246a291cc41aee70d5196e4597938d17f006cac2897f54e30427a0c",
-    "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "73dbc43363f1f3507e53cfe175f033ac064f149277cdb77170b40deaceadbadd",
+    "Atlas/Struktura/patternly/src/application/learningPlan/learningPlan — folder aplikacja · src › application.md": "59476d9609af25e414048d87b740d7d91a12f17d077d9bbd8b767f23debc4801",
     "Atlas/Struktura/patternly/src/application/practice/practice — folder aplikacja · src › application.md": "9c8cf687d4a8bcf551f42543f86303418f9a056ac014fcab676bacae4f37f164",
     "Atlas/Struktura/patternly/src/application/runtime/runtime — folder aplikacja · src › application.md": "25464f3e8b74dc6600bfd055268a3d2b2d223e4d69e879e920cd1362000d0cdb",
     "Atlas/Struktura/patternly/src/application/runtimeAuditability/runtimeAuditability — folder aplikacja · src › application.md": "1e36d828dc6f8e9dcc5a0c857c41f0da235f46c206c6b8fcca2ba74e4018244b",
@@ -128063,16 +128187,16 @@
     "Atlas/Struktura/patternly/src/domain/domain — folder aplikacja · src.md": "58d874b0a5459d47e9a8c6b17899bd57dc182b18336047e3e53fb16b30d03ae5",
     "Atlas/Struktura/patternly/src/domain/account/account — folder aplikacja · src › domain.md": "94c4338a84b7e9be7347811630080140d6011d347544eb39e8e3735a68f6ecdc",
     "Atlas/Struktura/patternly/src/domain/entitlements/entitlements — folder aplikacja · src › domain.md": "b4291674bef78afdb59db1cf76e856354be8f7566e42e4f1f9bb19ba09f14a8f",
-    "Atlas/Struktura/patternly/src/domain/goals/goals — folder aplikacja · src › domain.md": "af9949a4165e642e273f196d46e2c5369b1e82ba9ea03529307a1851b7225953",
+    "Atlas/Struktura/patternly/src/domain/goals/goals — folder aplikacja · src › domain.md": "04e815025b7db168f1acfe303607e9dae9c59370ec929a52a2decd03ec7a264e",
     "Atlas/Struktura/patternly/src/domain/identity/identity — folder aplikacja · src › domain.md": "3584174f83d1ab9f02b32f2c68b16333b1713835cf9184b9635cb4507334332f",
     "Atlas/Struktura/patternly/src/domain/learning/learning — folder aplikacja · src › domain.md": "9cb760d0ab30846a368f0b46eb610eb20758738517e6586fff2b7d9e87f2ddf9",
     "Atlas/Struktura/patternly/src/domain/tracks/tracks — folder aplikacja · src › domain.md": "214aeda177c12b59f4c62bad902833e4cdc3ec61b898408799a357af14135502",
-    "Atlas/Struktura/patternly/src/features/features — folder aplikacja · src.md": "43125305da5ffeefc5a1778acc3b863bbd559e2245b2ece4ab582b6d7973457f",
+    "Atlas/Struktura/patternly/src/features/features — folder aplikacja · src.md": "e573d6d1745345cf7924049815ac30d587814a60b08cd46876ed88b0916ce0cc",
     "Atlas/Struktura/patternly/src/features/account/account — folder aplikacja · src › features.md": "695157e2ddc0c2ec555370aec874fe77590ca080eff094929d94c6c247bcc92b",
     "Atlas/Struktura/patternly/src/features/coding-interview/coding-interview — folder aplikacja · src › features.md": "55fec102a47decda0e16a91ca73fd8c7df0d648f89ec12a3a00da86f2931d7c5",
     "Atlas/Struktura/patternly/src/features/coding-interview/session/session — folder aplikacja · src › features › coding-interview.md": "e6ece47f41debc04e59c8f0dde159897e2fc17d410b46613c5f7b57db4cbe8db",
     "Atlas/Struktura/patternly/src/features/exam/exam — folder aplikacja · src › features.md": "fb83337e69d4101edeb0cc82706d59879562fbd4d12640f329932a6cb74850d7",
-    "Atlas/Struktura/patternly/src/features/home/home — folder aplikacja · src › features.md": "4e18d2331af13e69950167825723a72def166764cb005052058fa84ead952d6f",
+    "Atlas/Struktura/patternly/src/features/home/home — folder aplikacja · src › features.md": "36d137b261960895ed5716ac9a91292898b82f55b328f724f73d82b7af349f6f",
     "Atlas/Struktura/patternly/src/features/home/tabs/tabs — folder aplikacja · src › features › home.md": "659b479b7f1591a227868e864e500bfa3a34f3bcb65070ffe663257b3cad1d63",
     "Atlas/Struktura/patternly/src/features/navigation/navigation — folder aplikacja · src › features.md": "5b50b556556834a3c1894b908043565856cf5b4fc560d47519c318ffecd14a76",
     "Atlas/Struktura/patternly/src/features/practice/practice — folder aplikacja · src › features.md": "48d0a096bdea455f2a2dab5faa63ebc37b82c914960699dd5841b056beeb6ffe",
@@ -128671,8 +128795,8 @@
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanMutationRuntime.ts — aplikacja · src › application › learningPlan.md": "a0e34d9f6763856079c9673e57df5acbdb766fd54fc0a0dd223cbb05484f1a81",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanMutationRuntimeCore.ts — aplikacja · src › application › learningPlan.md": "79fdf298660e0a2921110e3b569b862d19910e19a875e63e8b1d45d22d6f7691",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanProjectionIntegration.test.mjs — aplikacja · src › application › learningPlan.md": "b8c3bdfea86ed10a4000c3f2833c5329647bface94a885b55bc532bb9e5ecec7",
-    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/LearningPlanProposalCoordinator.test.ts — aplikacja · src › application › learningPlan.md": "5fa0a4cf228a0351055f8e2d8ac1eb970c97e96c9e2db95d7b53bc3b97b17331",
-    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/LearningPlanProposalCoordinator.ts — aplikacja · src › application › learningPlan.md": "e974476c207b6470586ac956391d316c5d4ac55d3fe496a6dee7552ecada214f",
+    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/LearningPlanProposalCoordinator.test.ts — aplikacja · src › application › learningPlan.md": "74f3c0e0bd8ac39da60781b33fb9fb02790e02df42a96b68480857c8c05a8739",
+    "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/LearningPlanProposalCoordinator.ts — aplikacja · src › application › learningPlan.md": "397aa967fc8be579c0d2ed6cb669ac696108fb2a6b297cc6ac0f1fd6d0954b45",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/learningPlanQualityGuard.test.ts — aplikacja · src › application › learningPlan.md": "88cfaa1ac5d60fa0f86d0fab6fa77ce8d3fcf66025b20d9c0f0e3b06997bceb0",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/nextSessionTimeEstimate.integration.test.ts — aplikacja · src › application › learningPlan.md": "5d08a7e2e62165b0287de80a5cff993087dcac580c49206661afa761279e49bf",
     "Atlas/Struktura/patternly/src/application/learningPlan/_Pliki/nextSessionTimeEstimate.test.ts — aplikacja · src › application › learningPlan.md": "2acad72dd6f6de14cf55acdbf73f76832659458927fb7135f7594cf2d0280f91",
@@ -128985,12 +129109,12 @@
     "Atlas/Struktura/patternly/src/domain/_Pliki/contentReports.ts — aplikacja · src › domain.md": "d78d2a7379bcf4f7135fb2fcd7f7b1c70c96a258d570e09bc5e6457367cb3875",
     "Atlas/Struktura/patternly/src/domain/entitlements/_Pliki/index.ts — aplikacja · src › domain › entitlements.md": "ecfe71bdbb283bd0d902c219e11c43799eef783f64583bb6326040a1220eaef1",
     "Atlas/Struktura/patternly/src/domain/entitlements/_Pliki/premiumEntitlement.ts — aplikacja · src › domain › entitlements.md": "81b86e6fd2427755c0511928b78a43c467ab2c550033cad630a83f4d92dd0adf",
-    "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalContracts.ts — aplikacja · src › domain › goals.md": "6350b80bbb6eff8f15c18aa76cd6e8b730c7008b9b7c5b19f47da985a2bf5a15",
+    "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalContracts.ts — aplikacja · src › domain › goals.md": "0fa4671cc72d6613cc015592b35e43425a56bf3f5457c288e8aec5a2aa91b8d2",
     "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalPolicy.ts — aplikacja · src › domain › goals.md": "d32af74047991010d0f9b9d2a6431926eaca2727e3a9983508bd35533684ce79",
     "Atlas/Struktura/patternly/src/domain/goals/_Pliki/goalTargetDateSemantics.ts — aplikacja · src › domain › goals.md": "e34bbae61db9ca3e6094261d25dc2c5c4221f89a2e0e8c45366f2db5624d2d50",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalIdentity.ts — aplikacja · src › domain › identity.md": "74309afe438ed4ceedff0c0d79e2dc8876604e7ea5eb7dad4faa18b0f292fc73",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalSerialization.test.ts — aplikacja · src › domain › identity.md": "f0049d4ba2e03e22063de3bc75b5a3fa88ebb8ae3915d978f3f4a2fd8ef605fe",
-    "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalSerialization.ts — aplikacja · src › domain › identity.md": "e6d30f593d6fc9593b879ee037ac81e554184b301b27d3f8b43b3be0118d9b24",
+    "Atlas/Struktura/patternly/src/domain/identity/_Pliki/canonicalSerialization.ts — aplikacja · src › domain › identity.md": "516ddcd720253227028c32404057e8ffb51691cae964537984d1ff7766d3cf00",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/exactJson.test.ts — aplikacja · src › domain › identity.md": "49de538b0dfcb286361f5068a3c26394893f545df142d612fa6439097a8d496c",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/exactJson.ts — aplikacja · src › domain › identity.md": "ec6c2149b393336edaeb74da0ed557b8b303dce35f883dcac52203801c90b058",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/identityParity.test.ts — aplikacja · src › domain › identity.md": "133abb5adf420a2ca4398286176714863b37379121bf7c727c0240d8e59b5248",
@@ -128998,7 +129122,7 @@
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/recordFingerprint.ts — aplikacja · src › domain › identity.md": "c3c0daad01729218dd7c2de6049d169e8483fd0d39bfede31bcb70f150d108f2",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/sha256.test.ts — aplikacja · src › domain › identity.md": "c1a08e58fc5c2604a6cefd8c62e4f0190ed8b090e5803f4bfa664675f1dc1c3b",
     "Atlas/Struktura/patternly/src/domain/identity/_Pliki/sha256.ts — aplikacja · src › domain › identity.md": "e8670d488f7564616ce35c7748ada0cabed354acde5f457a1930cb6fba926428",
-    "Atlas/Struktura/patternly/src/domain/_Pliki/index.ts — aplikacja · src › domain.md": "58b5f07d04fad2dfa4f650bfac65b280a2a6222207cb52ba0c0f1b7d05d9b3fa",
+    "Atlas/Struktura/patternly/src/domain/_Pliki/index.ts — aplikacja · src › domain.md": "e8ff118a88de21ba3172b5967f3bed0c1df380e78d247ee5f67765b46b84cd55",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/attemptResult.ts — aplikacja · src › domain › learning.md": "bb85790f2915012f49ef277000b52b818d583a3ed5ab859c54f574097cff5273",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/caseEvidence.ts — aplikacja · src › domain › learning.md": "013ba81d599a21abae74315abcf4f473581df32c5bc1101211b17943541da23b",
     "Atlas/Struktura/patternly/src/domain/learning/_Pliki/contentItemRef.ts — aplikacja · src › domain › learning.md": "ad87479b66afb34870ab86b15bd42bca59d779cd91017efbba8f6fe5c8c12e45",
@@ -129048,7 +129172,7 @@
     "Atlas/Struktura/patternly/src/domain/tracks/_Pliki/trackAdmission.ts — aplikacja · src › domain › tracks.md": "0202651279aac657c3c59d0c5c9ddd3f6c0daa3847c7bf87ff9370cb618eb9e7",
     "Atlas/Struktura/patternly/src/domain/tracks/_Pliki/trackAdmissionContext.test.ts — aplikacja · src › domain › tracks.md": "96b86d9fd9958b8f698b439c2ebcf12a18917d31233b9af56d46800183dc4484",
     "Atlas/Struktura/patternly/src/domain/tracks/_Pliki/trackAdmissionContext.ts — aplikacja · src › domain › tracks.md": "05058798db79ee012fd7fba819cc563535a35caa9be04183a2de9e0f14b6dd6f",
-    "Atlas/Struktura/patternly/src/domain/tracks/_Pliki/trackGoalPolicies.ts — aplikacja · src › domain › tracks.md": "d91abb6b8decfcf7fb0495de9c9970956a7d816c64510bd3fd9a18ed8d6c820a",
+    "Atlas/Struktura/patternly/src/domain/tracks/_Pliki/trackGoalPolicies.ts — aplikacja · src › domain › tracks.md": "9e0fc6c3f22c405bec087c053b9f6aa881100ef2760f7e089e3564931cad4b48",
     "Atlas/Struktura/patternly/src/domain/tracks/_Pliki/trackMetadata.ts — aplikacja · src › domain › tracks.md": "473a27168b8c5544784a81fa8a3883ad3b4538663da9699754c4d6dd111fe1f4",
     "Atlas/Struktura/patternly/src/domain/tracks/_Pliki/trackRegistry.ts — aplikacja · src › domain › tracks.md": "4e4446531ecacbfd7c9e2a686e3caeeb252fe6be9d4a031339b579bc215fa8cc",
     "Atlas/Struktura/patternly/src/features/account/_Pliki/AccountEmailChangePendingScreen.tsx — aplikacja · src › features › account.md": "bc526c2e9098aff61b49a3aef11a9502076a28a2ebb8c5659c2946d4b79c0561",
@@ -129109,9 +129233,11 @@
     "Atlas/Struktura/patternly/src/features/home/_Pliki/AppearanceSettingsScreen.tsx — aplikacja · src › features › home.md": "20040fc903e7e9293922c80e84824c5169bd524f600db2a392d035e595eba06b",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/BackendDiagnosticsScreen.test.ts — aplikacja · src › features › home.md": "af392a14ea9ac2dbdeb691486e560e886765df708f730afc489260a7773fe2e0",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/BackendDiagnosticsScreen.tsx — aplikacja · src › features › home.md": "ab40d65fdccf1255df5dc81ac7439ef36b0f9c5dd9b78c76265bfec9d0a432f7",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/goalCadencePresentation.test.ts — aplikacja · src › features › home.md": "35fcaaa4b3ca238677e795068512db908ba82ab1d7f2eec7fd36504edfc343d6",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/GoalCadenceScreen.tsx — aplikacja · src › features › home.md": "eb0273364fb4a1f766ef6de6ff726142f6bfd374a03bf76c7b937b344771752f",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/goalContracts.test.ts — aplikacja · src › features › home.md": "5f3db863242a2ac5c6bce16bb89860d6eda50bff4d94ccf064920136c5bf9b53",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/goalCadencePresentation.test.ts — aplikacja · src › features › home.md": "bd99bbf20365bd2bc278764aa372690f988ae8e12be4ddb5139be6aae0af0b1f",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/GoalCadenceScreen.tsx — aplikacja · src › features › home.md": "9a224476a5f44212281091235b1e9ae00d12c45643ee9fdfed3c116cd3848ad6",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/goalContracts.test.ts — aplikacja · src › features › home.md": "0ee72df42a4079dbe9ed77b051635effbba69edcc8daf7ccce16ced955c7b898",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/goalScreenFreshness.test.ts — aplikacja · src › features › home.md": "849cdf2df0dbdd82feee936e70bc8e5760331a1f7dd8990c40dae6abcbf42888",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/goalScreenFreshness.ts — aplikacja · src › features › home.md": "702d4c3fba77bd17b51fe72291fae443eb50aa33a9df7404162c9fd8e4338817",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/GoalTargetDateCalendar.test.ts — aplikacja · src › features › home.md": "2bbe762024cc86c0d38d2f69322e103cf0446c7f5979c4f7137775ad4f93e935",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/GoalTargetDateCalendar.tsx — aplikacja · src › features › home.md": "35312a715b08a71a52a0e5136e4c3448a921d83e6f00769b535ce4b94bc51293",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/goalTargetDateCalendarModel.ts — aplikacja · src › features › home.md": "bfffa1e1e545494b49f9b41cd470963b3340565facdb3cdd05cf89c9d98d7e03",
@@ -129137,11 +129263,11 @@
     "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanProposalFixtureRuntime.smoke.ts — aplikacja · src › features › home.md": "ad8d904cfe34bccfe64433a62df56ccf46447815f7b5640db01955823461cdfb",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanProposalFixtureRuntime.test.ts — aplikacja · src › features › home.md": "0652f7619a78f2faa66a6b44b5e8f24202da6503fb349f4805c3a9275e963a96",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanProposalFixtureRuntime.ts — aplikacja · src › features › home.md": "87542da4d852240c7cc02ddf6d249406253a16550afc1ddb42ba14b66642f07c",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanProposalPresentation.test.ts — aplikacja · src › features › home.md": "16250eac0feec16c6e0d8812ba38db03ce853cf436ca7d9b7784bba2f5ddbd7b",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanProposalPresentation.test.ts — aplikacja · src › features › home.md": "d53de546d1c335c7c24e6b0c2c16b16fc9c03edd4ccd434e6b0e7b21cfff918c",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanProposalRuntime.ts — aplikacja · src › features › home.md": "b574e8d02b6b2263866a30975fe6c556149d51f05a14823e9240e29aeaef9b7a",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/LearningPlanProposalScreen.tsx — aplikacja · src › features › home.md": "578f188648ae46cd351786aff55879f63ffaf53b2acbec75a107cfaa9f27efe6",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanWorkloadPresentation.test.ts — aplikacja · src › features › home.md": "2353400e209fd505ef83ba8044c297b2b5d1510b6bdf0ded39672862e2684ecc",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanWorkloadPresentation.ts — aplikacja · src › features › home.md": "dde5a2ca37d1a8d147ebac8693fd211433c56bc693ee2cdfa3779863835cec48",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/LearningPlanProposalScreen.tsx — aplikacja · src › features › home.md": "e22771d4583a855f575343c730cb420fe08c54967f23a1d534108e048fc772ec",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanWorkloadPresentation.test.ts — aplikacja · src › features › home.md": "94a8d25cf4b0563b0f3d332643bbe867456d21eabc8b38ac9f896078831298c7",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/learningPlanWorkloadPresentation.ts — aplikacja · src › features › home.md": "0a58de9f721d4c9e6e2fef4308e1665ff87948cba2cd56dc5b7ac860f6075426",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/LegalInformationScreen.tsx — aplikacja · src › features › home.md": "5d8c689a1d159c27f2032d1c082d842ed46e53f6df4398a7d63d952565890b05",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/LegalRequestsScreen.tsx — aplikacja · src › features › home.md": "bc96c02766d7fe6591c81fa3f626183e9580d5f7a7069754eb688dc70d575489",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/legalRequestSubmission.test.ts — aplikacja · src › features › home.md": "15ef43c908e66b848f4339e7753ba2575f6f8d51154f687f97b8b44a9990d507",
@@ -129162,8 +129288,8 @@
     "Atlas/Struktura/patternly/src/features/home/_Pliki/SettingsInformationScreen.tsx — aplikacja · src › features › home.md": "65c58e8aa0d5e5dbc91b3e49e66c03a589d4e7569547408c7c98d6bdb87ad8a8",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/shellModel.ts — aplikacja · src › features › home.md": "1f6a413f4a046170563b45722d4708473faecb452331e7b96ade687b3a156303",
     "Atlas/Struktura/patternly/src/features/home/_Pliki/soloHome23.test.mjs — aplikacja · src › features › home.md": "caab82015e2c5146a18c9bcbaf595334bcf6aafd2301fb78065ca4e42b5b2132",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/soloUi22.test.mjs — aplikacja · src › features › home.md": "f8bb889663a36a6103d44042bacb53ed5c2b64e6ac4c2e04c690bbd0301c53dc",
-    "Atlas/Struktura/patternly/src/features/home/_Pliki/soloUi22TestHarness.mjs — aplikacja · src › features › home.md": "9fcaa7c675b552dd1e09057fcfdcf8580acfaf83fe0ab5e034fab8b168ab3834",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/soloUi22.test.mjs — aplikacja · src › features › home.md": "30f133aafc3f78c3a41f626c19e38e1ec451b81ef81a460fddad009c70f66efe",
+    "Atlas/Struktura/patternly/src/features/home/_Pliki/soloUi22TestHarness.mjs — aplikacja · src › features › home.md": "47641678dff1abf8447054716911ebbc17fa2aeb6058519aef15638418065432",
     "Atlas/Struktura/patternly/src/features/home/tabs/_Pliki/activityModel.test.ts — aplikacja · src › features › home › tabs.md": "7c4272eee05e22bbbac39c3afcf5fa07daa2b356c1215b9c0dba394f40a9b38a",
     "Atlas/Struktura/patternly/src/features/home/tabs/_Pliki/activityModel.ts — aplikacja · src › features › home › tabs.md": "a90e07b8f4eb77f85c542d8ba6cfac1685193eea0d2c3c09df76bc4f5c0f56b5",
     "Atlas/Struktura/patternly/src/features/home/tabs/_Pliki/activityPresentation.ts — aplikacja · src › features › home › tabs.md": "da000803faf2a116b620fbb98cc3fb423b6005755ce6c45be6b6029cf28e1ef3",
@@ -129266,7 +129392,7 @@
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/TopicRoadmapScreen.tsx — aplikacja · src › features › practice.md": "fe7b4caf1a377a98c150b691e556d6aa6860893b8152c8c8816d937644b396b0",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/trackPresentationRender.test.mjs — aplikacja · src › features › practice.md": "eeda433f3d91402e1504ef8a338cd269422c0ef4ab600954f95f576dde4a2d13",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/trackRoadmapCatalog.test.ts — aplikacja · src › features › practice.md": "e4a6c96ee0a7fc6e4ce7571efdcae945ba5d10e5f82baf5c68e17811f773dc1f",
-    "Atlas/Struktura/patternly/src/features/practice/_Pliki/trackRoadmapCatalog.ts — aplikacja · src › features › practice.md": "eb55f37bf92d4b60be1b2f7dc1f76d2065e786522c46b7ddd853fc99be07341b",
+    "Atlas/Struktura/patternly/src/features/practice/_Pliki/trackRoadmapCatalog.ts — aplikacja · src › features › practice.md": "268699c9669236507c9fac9202688f0a2cc04330efd064a3d7c7c3db3567225e",
     "Atlas/Struktura/patternly/src/features/practice/_Pliki/usePracticeReadModel.ts — aplikacja · src › features › practice.md": "38cca46570fd84b751075b0078f9b74cdab312c8882197ade709416a5b9ba719",
     "Atlas/Struktura/patternly/src/features/premium/_Pliki/premiumEntitlement.test.ts — aplikacja · src › features › premium.md": "aa4df7ce7e88a402d17d0d6fae44bf0743290f96e2238c96e666e02692e9fcf9",
     "Atlas/Struktura/patternly/src/features/premium/_Pliki/PremiumPurchaseScreen.tsx — aplikacja · src › features › premium.md": "3ce40f3067c8ece9a6094eb1ce16d16a861306a6b88558fba2e0df7ca3833927",
