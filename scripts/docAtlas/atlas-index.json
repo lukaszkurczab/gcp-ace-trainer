@@ -2,7 +2,7 @@
   "schemaVersion": "patternly-atlas-v1",
   "repositories": {
     "patternly": {
-      "head": "a7661f85d5421bef6197f8fa8fa871524cf4ab0a",
+      "head": "751a01db30644305338d0831a5111ad9f12244c9",
       "files": [
         {
           "path": ".easignore",
@@ -4628,8 +4628,8 @@
         },
         {
           "path": "scripts/docAtlas/catalog.json",
-          "sha256": "c3a922b8428f82f9f0095bec5cbcbdca44e7990df0306faeea05315bf2831f30",
-          "bytes": 256104,
+          "sha256": "9fba5da75de7d75314a8b38c7b7b01aac1f94f3d46bfca064f6fe4fbad221605",
+          "bytes": 256592,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -84643,8 +84643,8 @@
         },
         {
           "path": "openapi/patternly-v1.json",
-          "sha256": "93d2b1889d3b0f0af4f8ed44bb3e5b7502dc02eec28d2612849a85823231333b",
-          "bytes": 500609,
+          "sha256": "3d5f254f9eab0e49904a08fa9b0fd23d3e1c9778703b5fe5d0a5ffa40ecfe8ea",
+          "bytes": 508628,
           "symbols": [],
           "imports": [],
           "jsonKeys": [
@@ -84656,7 +84656,7 @@
             "components"
           ],
           "testNames": [],
-          "lines": 16221
+          "lines": 16371
         },
         {
           "path": "package-lock.json",
@@ -87580,8 +87580,8 @@
         },
         {
           "path": "src/api/app.ts",
-          "sha256": "f3804c7649656520e775bb8a91e31f255b26e88c3bd117ba21968cecab7ff3f5",
-          "bytes": 121828,
+          "sha256": "969d3c1d64c1c3dca688c18d3097c4bbc9a39aed2ec569dfba083398cd7f255b",
+          "bytes": 122663,
           "symbols": [
             "ApplicationDependencies",
             "buildApplication"
@@ -87843,12 +87843,12 @@
               "specifier": "../modules/security-incidents/store.js",
               "kind": "type",
               "target": "src/modules/security-incidents/store.ts",
-              "line": 429
+              "line": 435
             }
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 1740
+          "lines": 1755
         },
         {
           "path": "src/api/openapi-validator.ts",
@@ -87892,8 +87892,8 @@
         },
         {
           "path": "src/api/openapi.ts",
-          "sha256": "5b4201d454ce4da08f3a6f156b6a3cdc4bd8bad97ceab6fc9483c8788b251ddf",
-          "bytes": 160805,
+          "sha256": "9772098e4410e6eb78f526474fd0a7e450184c677e6cfdaa156b35c630661291",
+          "bytes": 161765,
           "symbols": [
             "OPENAPI_DOCUMENT",
             "OpenApiDocument"
@@ -87908,7 +87908,7 @@
           ],
           "jsonKeys": [],
           "testNames": [],
-          "lines": 1028
+          "lines": 1038
         },
         {
           "path": "src/api/route-contract.ts",
@@ -88623,8 +88623,8 @@
         },
         {
           "path": "src/infrastructure/logging/logger.ts",
-          "sha256": "5248add69fa34a51932036a92fb2dc29cef9d2f147351ca3189202e4d92591fd",
-          "bytes": 6486,
+          "sha256": "1b550061f013a9686efd7943f8ecd90532614f66153d7e71a1be29222476bc70",
+          "bytes": 6526,
           "symbols": [
             "createLogger",
             "createBootstrapLogger"
@@ -91574,6 +91574,58 @@
             "CH-03 incident detail/export and delivery paths reject corrupt enums before reminders, audit, SMTP, or delivery finalization"
           ],
           "lines": 308
+        },
+        {
+          "path": "tests/clientRequestErrors.test.ts",
+          "sha256": "5bcf6b510247e703559ab9117be7d6d8ca1ab402c37f7840ecd1d345ed3ad178",
+          "bytes": 7597,
+          "symbols": [],
+          "imports": [
+            {
+              "specifier": "node:assert/strict",
+              "kind": "static",
+              "resolution": "external",
+              "line": 1
+            },
+            {
+              "specifier": "node:test",
+              "kind": "static",
+              "resolution": "external",
+              "line": 2
+            },
+            {
+              "specifier": "../src/api/app.js",
+              "kind": "static",
+              "target": "src/api/app.ts",
+              "line": 3
+            },
+            {
+              "specifier": "../src/api/openapi.js",
+              "kind": "static",
+              "target": "src/api/openapi.ts",
+              "line": 4
+            },
+            {
+              "specifier": "../src/infrastructure/firestore/stores.js",
+              "kind": "type",
+              "target": "src/infrastructure/firestore/stores.ts",
+              "line": 5
+            },
+            {
+              "specifier": "../src/config/environment.js",
+              "kind": "static",
+              "target": "src/config/environment.ts",
+              "line": 6
+            }
+          ],
+          "jsonKeys": [],
+          "testNames": [
+            "malformed or empty JSON bodies are a bounded 400 invalid_request on public and protected routes",
+            "a well-formed body still cannot reach a protected handler without App Check",
+            "unexpected handler failures remain an opaque 500 internal_error",
+            "OpenAPI documents the malformed-body 400 on every operation with a JSON request body"
+          ],
+          "lines": 149
         },
         {
           "path": "tests/contentPackages.emulator.test.ts",
@@ -96237,10 +96289,6 @@
         {
           "path": "docs/cloud-run-manual-deploy.md",
           "reason": "symlink-not-followed"
-        },
-        {
-          "path": "firebase-debug.log",
-          "reason": "ignored-or-outside-git-inventory"
         },
         {
           "path": "firestore-debug.log",
@@ -127765,7 +127813,7 @@
     }
   },
   "noteLayoutVersion": 2,
-  "catalogHash": "c3a922b8428f82f9f0095bec5cbcbdca44e7990df0306faeea05315bf2831f30",
+  "catalogHash": "9fba5da75de7d75314a8b38c7b7b01aac1f94f3d46bfca064f6fe4fbad221605",
   "notes": {
     "Atlas/Struktura/patternly/aplikacja — repozytorium.md": "8079e488f0dda21fe1749063aada710787351693f7d5e353850d2c8009e984f5",
     "Atlas/Struktura/patternly/~2E~github/~2E~github — folder aplikacja.md": "32cd65f402258bcb4d38fb22f296803b905c0ea2b22ddcd01808ba4c6ea80873",
@@ -129499,7 +129547,7 @@
     "Atlas/Struktura/patternly/src/utils/_Pliki/domain.ts — aplikacja · src › utils.md": "ab75e12c59a43a013ebafd834ade1e661a7774f3ccbba5a79565aafb324f5193",
     "Atlas/Struktura/patternly/src/utils/_Pliki/index.ts — aplikacja · src › utils.md": "505267fb8914a8715951af6e080814828e7ed9c97411762b72b0cb5170892aaf",
     "Atlas/Struktura/patternly/src/utils/_Pliki/scoring.ts — aplikacja · src › utils.md": "9fca9ee6c47789d9dc7db89bd07bb440e52a22d3063a5152f827251274007eaf",
-    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "542e30bfa848d710252af5c40e3fa359530b21a43b1310d299a027c37f2eca8b",
+    "Atlas/Struktura/patternly-backend/backend — repozytorium.md": "26c19d7513abf7957deeeb7d0dfcd93fae869cc03306904aa3f04cc45072b00d",
     "Atlas/Struktura/patternly-backend/~2E~github/~2E~github — folder backend.md": "170e83b4b7bb5934fc7dd5cc63c11c5bbfaf95d1053e31ceba7bda7c046d10f6",
     "Atlas/Struktura/patternly-backend/~2E~github/workflows/workflows — folder backend · ~2E~github.md": "d58690acc4d532a53748757667f5a5f12aaeb1adbedc17469e7725a0d221787a",
     "Atlas/Struktura/patternly-backend/config/config — folder backend.md": "68dc58442959d179dad3d5f9958234f7599afbbb8c3517e3b6952ba3051b13d5",
@@ -129512,7 +129560,7 @@
     "Atlas/Struktura/patternly-backend/scripts/qa/cost03/cost03 — folder backend · scripts › qa.md": "baf2d6c5cb883fad814e37e10e44f5d37f6dffde42834fd03e043cb38873cf4d",
     "Atlas/Struktura/patternly-backend/scripts/qa/cost04/cost04 — folder backend · scripts › qa.md": "e5310800b8b492628018348a04bf9fc0f66cc5f7e58507cc38683e489527b70a",
     "Atlas/Struktura/patternly-backend/src/src — folder backend.md": "65e013176854a310e694d9139d2f0c2c1dc59f6a9642f907b4eef6545ac3a66b",
-    "Atlas/Struktura/patternly-backend/src/api/api — folder backend · src.md": "86ba5d2b986b3e2df9daffaec211da0dda66b624c6664266ced751259b7d7e43",
+    "Atlas/Struktura/patternly-backend/src/api/api — folder backend · src.md": "02f579e71a46a8f4da1ac40f486e35333ed71052bd8775262a58cb3a6eab6ed9",
     "Atlas/Struktura/patternly-backend/src/config/config — folder backend · src.md": "aa61c613f7d7ec4e2ca1c820d3959b4331bb69c928f75718e0eba44437be12c6",
     "Atlas/Struktura/patternly-backend/src/infrastructure/infrastructure — folder backend · src.md": "ad2be6f9535a6a78c92d5743102c6a6b7b03538bf3689da40159a2636f9a181e",
     "Atlas/Struktura/patternly-backend/src/infrastructure/content/content — folder backend · src › infrastructure.md": "bef8118fdc7f4c0c911cf5b646f193b25fb7df8cddd0531a3b01f06a6d9e7388",
@@ -129520,7 +129568,7 @@
     "Atlas/Struktura/patternly-backend/src/infrastructure/firebase/firebase — folder backend · src › infrastructure.md": "9de839d03f2801076be3b40de0e2219a1a0d48618e6a29dfe5827cfed3fb6cc4",
     "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/firestore — folder backend · src › infrastructure.md": "7f84d2c00be6591541c2bc91b70831d8658db7bfdbd701708b60c4abd87b8b3a",
     "Atlas/Struktura/patternly-backend/src/infrastructure/identity/identity — folder backend · src › infrastructure.md": "c7fc9f7ef429febdbbe44319656deb3413dec4421954832c638a44730bbef886",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/logging/logging — folder backend · src › infrastructure.md": "71ff6e2da29654cd38ee33592c36c040fbacd017a1eb8539b28188beda8c9618",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/logging/logging — folder backend · src › infrastructure.md": "7c21bcc15e10b4e9e4c0e36f4e1db76e30bf0e8d77654e912a876b7b0c37f6bb",
     "Atlas/Struktura/patternly-backend/src/infrastructure/operator/operator — folder backend · src › infrastructure.md": "f8ab3b2a67a711d948390907685880d012b00ff15ffe3fb04eb70a0d6a2a8d5d",
     "Atlas/Struktura/patternly-backend/src/infrastructure/revenuecat/revenuecat — folder backend · src › infrastructure.md": "ac4327e0b0f7657e31d1436d0d64ee03fb994f42ae5981b5a6ae85b4cdb0c798",
     "Atlas/Struktura/patternly-backend/src/infrastructure/security/security — folder backend · src › infrastructure.md": "8d8c81a68ab11710ca62d27bd4aeac304f65a0426d53e700f35e240515ebfc89",
@@ -129545,7 +129593,7 @@
     "Atlas/Struktura/patternly-backend/src/modules/security-incidents/security-incidents — folder backend · src › modules.md": "af9e80e0e1d06888964a963b7d9bf59dba48c4029f43620897af054a14fa2fdf",
     "Atlas/Struktura/patternly-backend/src/modules/tracks/tracks — folder backend · src › modules.md": "e3b3afb2f0cdcbcc095d4ee9ad111fd298dd1e469af49375f64d74c3ddeb3916",
     "Atlas/Struktura/patternly-backend/src/modules/users/users — folder backend · src › modules.md": "59c80bea7baa3aed3b70fd0690f0ae0f1c51db29c79baf6ed316cee3c0fa3a28",
-    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "4878aa1efa6e8dadae6fb035e3dfbb59f730c511966cd58b2823d3740de20c4d",
+    "Atlas/Struktura/patternly-backend/tests/tests — folder backend.md": "9c3197efd21a5b6db93bd346fd31aec6afb72faa50ec64fd6da7f0987340ef32",
     "Atlas/Struktura/patternly-backend/tests/fixtures/fixtures — folder backend · tests.md": "f373ff9893299f18c3794d5a13e0bb764a9c039a2c08f43a607d32e7ce9f4b2c",
     "Atlas/Struktura/patternly-backend/tests/fixtures/account-wire/account-wire — folder backend · tests › fixtures.md": "814a378c02399db1a06acb14022e806569bebcb67728794affb2fecf4e77f9aa",
     "Atlas/Struktura/patternly-backend/tests/fixtures/cost02-package/cost02-package — folder backend · tests › fixtures.md": "61379944c8cf263c2bb548dc1c25cd897644cf7641a2753fdef9fd9260c160ac",
@@ -129619,12 +129667,12 @@
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-sync-conflict-tests.mjs — backend · scripts.md": "60ecd2b39607f2cb5ccba1b4f32fef70b65dc424f738db756c4a181ea52ea8ee",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-sync-receipt-tests.mjs — backend · scripts.md": "25400a866c2acdcdfbde6bb3a3b863ea48471a1c972f9ccfe5ac1293efc13b2b",
     "Atlas/Struktura/patternly-backend/scripts/_Pliki/run-terminal-wire-tests.mjs — backend · scripts.md": "8bf00aa6c9434a7ba7b4c16d4bcb8e2c2d46fcff21d6907e13b152ccca771e82",
-    "Atlas/Struktura/patternly-backend/src/api/_Pliki/app.ts — backend · src › api.md": "f3be8822322839bf1d4eecfdf038a25a2f7e9c5840ad12a3257cd76d4e3fdd0f",
+    "Atlas/Struktura/patternly-backend/src/api/_Pliki/app.ts — backend · src › api.md": "23641ed5bfbb4316f4150e8ff8c531134921e862aacd2464579ffc708858b099",
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/openapi-validator.ts — backend · src › api.md": "f6f4639b16f09243ffd31d1409d87875804a8968f9e1f66411df2ee9d88bd9c4",
-    "Atlas/Struktura/patternly-backend/src/api/_Pliki/openapi.ts — backend · src › api.md": "354c0923a8b8e14f4c96f3f6733a6165c09b6ee934aedb6306b044adc68b68b6",
+    "Atlas/Struktura/patternly-backend/src/api/_Pliki/openapi.ts — backend · src › api.md": "d57fc5e3c4179b499a0ffcb10ba35c266a1de816896429c4c22d6a8d1d1e4cc6",
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/route-contract.ts — backend · src › api.md": "32a4bb2a7b12209bdaa4cd24b0258a69713fe16075e341e94a69ee01d1b297ee",
     "Atlas/Struktura/patternly-backend/src/api/_Pliki/security-probes.ts — backend · src › api.md": "c46b8c816c48911d127b10b99e5596b09a33363e7b4a1b2d7b790d0b12fdcdf8",
-    "Atlas/Struktura/patternly-backend/src/config/_Pliki/environment.ts — backend · src › config.md": "cd1585345b1b83ecc493fbd2306d000dfc28199786c104e025b6e924876d9bbd",
+    "Atlas/Struktura/patternly-backend/src/config/_Pliki/environment.ts — backend · src › config.md": "14079f8e195b949192465ff7191a86126934ef214f2b5a1e815a1fa5112d5f45",
     "Atlas/Struktura/patternly-backend/src/config/_Pliki/premiumMap.ts — backend · src › config.md": "3b204d52d89aa13edefd3df257ec1ba88a23e75ba36db2c8ec6fbfac961d84f6",
     "Atlas/Struktura/patternly-backend/src/config/_Pliki/sandboxPromotionalAccess.ts — backend · src › config.md": "bf9da708637d4e01aac5ad53eeade544b995ca7d670ea1bd556cf16dfb57e8d2",
     "Atlas/Struktura/patternly-backend/src/_Pliki/index.ts — backend · src.md": "42113d725ef48b5593177ebdc026a2e42d084f7438f48574c35bdb0639bfd55f",
@@ -129635,11 +129683,11 @@
     "Atlas/Struktura/patternly-backend/src/infrastructure/firebase/_Pliki/verifier.ts — backend · src › infrastructure › firebase.md": "b47a5b0dce91d0d4e33360aa6ba164405b8ad8e17b3136d521e5b2e2411b6d5e",
     "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/client.ts — backend · src › infrastructure › firestore.md": "e3fb197f0e432c5e5f8012c85dc39257303024fc868d4376b6db5c23ce432e27",
     "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/paths.ts — backend · src › infrastructure › firestore.md": "eac1ceaf4081818ee0e4e709c48538241919b7bc3889fc37779a5ef709775d5a",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/stores.ts — backend · src › infrastructure › firestore.md": "7389c07e23fb784ea2ea21163e18a65c98d7e41f91b018bfeb5ae46d60e4c48d",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/stores.ts — backend · src › infrastructure › firestore.md": "38f331310b4c680bfb6a0545420cc386fc616e54eda2befb7f3cd42c994b6e61",
     "Atlas/Struktura/patternly-backend/src/infrastructure/firestore/_Pliki/values.ts — backend · src › infrastructure › firestore.md": "046c9c4d22d38cebde730bb681088761c3480e89f9c59e6ed33f94c3ee2cc217",
     "Atlas/Struktura/patternly-backend/src/infrastructure/identity/_Pliki/canonicalJson.ts — backend · src › infrastructure › identity.md": "1afe7ba0284e2131e88c23f9eaa6e45957271acf62300055cacb27635664df84",
     "Atlas/Struktura/patternly-backend/src/infrastructure/identity/_Pliki/recordFingerprint.ts — backend · src › infrastructure › identity.md": "6b51158366065e8c1bdc202cb10b79b4e55b8a2cd300f786f05767ad16058daa",
-    "Atlas/Struktura/patternly-backend/src/infrastructure/logging/_Pliki/logger.ts — backend · src › infrastructure › logging.md": "364e378b20ff1ecc3ac7a65710de40773a86b9d11455bf98d41350f2eb30c31e",
+    "Atlas/Struktura/patternly-backend/src/infrastructure/logging/_Pliki/logger.ts — backend · src › infrastructure › logging.md": "7b115df150c2f7567ed4ac25feb492bce2126c3a5d2dd0ab47d58a4e8653cbdb",
     "Atlas/Struktura/patternly-backend/src/infrastructure/operator/_Pliki/oidcVerifier.ts — backend · src › infrastructure › operator.md": "82de4ba759cfb3f5ece3eabf4d52b04f79cc963a5a6acef26bfaa546de74924b",
     "Atlas/Struktura/patternly-backend/src/infrastructure/revenuecat/_Pliki/client.ts — backend · src › infrastructure › revenuecat.md": "4bc41ce89d200603cd8b1eb99bf0b9c223ad3f07bf7561cae55900bdecfdeb00",
     "Atlas/Struktura/patternly-backend/src/infrastructure/revenuecat/_Pliki/customerDeletion.ts — backend · src › infrastructure › revenuecat.md": "1918222f5a076ecf20932fe77e651d5d5bfd2dad2b5b0db7be1fa3dd0ae0163b",
@@ -129697,6 +129745,7 @@
     "Atlas/Struktura/patternly-backend/tests/_Pliki/bootstrap.test.ts — backend · tests.md": "b9613316ca34c8e5684455b4dace7d5c4e5ebec295f052c6a63b104034941de2",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/ch03Acceptance.emulator.test.mjs — backend · tests.md": "1cc90b2716807be701e324b45c5f38e9171c4be740a0eeeb7b1cecf0f098e658",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/ch03StoredEnums.emulator.test.ts — backend · tests.md": "88010537390b23f644070661d70adb230ef98f806d8427d19b33a8584716a63a",
+    "Atlas/Struktura/patternly-backend/tests/_Pliki/clientRequestErrors.test.ts — backend · tests.md": "75e1931bf5730bc36297afad14c809bc5540ffbbe9f18daf4ec77e852ebe0c2f",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/contentPackages.emulator.test.ts — backend · tests.md": "b0b4f113099d5c7a1d8091f671892e2f6f9c5299e2709ff24536cc33574d871d",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/contentPackages.test.ts — backend · tests.md": "0ac62dbb8e3abee7878e70554118d0ebda0c9f1ba1b6b68505a8b34bb43b0cdc",
     "Atlas/Struktura/patternly-backend/tests/_Pliki/contentReportContracts.test.ts — backend · tests.md": "605ab9082131d68922e8e94b454f312aced1b4507300eee5ab3f63b9009d40d4",

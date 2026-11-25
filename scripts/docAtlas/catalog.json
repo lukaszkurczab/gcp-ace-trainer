@@ -988,13 +988,13 @@
       "flow": "Start aplikacji i nawigacja"
     },
     "patternly-backend/src/api/app.ts": {
-      "description": "Rejestruje endpointy i ich guardy. Dodaje GET /v1/bootstrap jako agregat tras me, entitlements, pierwszej strony progress i tracks, zwracający dokładny status i body każdej trasy samodzielnej. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK. Obie ścieżki używają tych samych odmów konta/autoryzacji.",
-      "reviewedHash": "f3804c7649656520e775bb8a91e31f255b26e88c3bd117ba21968cecab7ff3f5",
+      "description": "Rejestruje endpointy i ich guardy. Dodaje GET /v1/bootstrap jako agregat tras me, entitlements, pierwszej strony progress i tracks, zwracający dokładny status i body każdej trasy samodzielnej. Conditional progress waliduje wykluczające się knownSnapshot lub knownScope+knownRevision; opt-in x-patternly-progress-cache:1 w sync żąda nietrwałego dowodu świeżego ACK. Obie ścieżki używają tych samych odmów konta/autoryzacji. Globalny error handler odpowiada na puste lub niepoprawne ciało JSON (FST_ERR_CTP_EMPTY_JSON_BODY/INVALID_JSON_BODY, parser przed guardami) kodem 400 invalid_request bez szczegółów parsera i z logiem request_rejected; pozostałe nieobsłużone błędy to 500 internal_error.",
+      "reviewedHash": "969d3c1d64c1c3dca688c18d3097c4bbc9a39aed2ec569dfba083398cd7f255b",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi.ts": {
-      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Obejmuje /v1/bootstrap (profil app_check_bearer, składniki jako dokładne odpowiedzi tras samodzielnych), snapshotScope/snapshotToken i warunkową kontrolę rewizji progress oraz opcjonalny proof w sync. Nie zmienia trwałych receipts. Kontrakt nie zawiera tras i schematów Recovery Codes. GET /v1/me ma zakres konsumenta backend-only (klient mobilny czyta /me przez /v1/bootstrap); trasa zostaje dla parytetu, testów i narzędzi QA.",
-      "reviewedHash": "5b4201d454ce4da08f3a6f156b6a3cdc4bd8bad97ceab6fc9483c8788b251ddf",
+      "description": "Kanoniczny katalog metod, ścieżek, schematów i bezpieczeństwa. Obejmuje /v1/bootstrap (profil app_check_bearer, składniki jako dokładne odpowiedzi tras samodzielnych), snapshotScope/snapshotToken i warunkową kontrolę rewizji progress oraz opcjonalny proof w sync. Nie zmienia trwałych receipts. Kontrakt nie zawiera tras i schematów Recovery Codes. GET /v1/me ma zakres konsumenta backend-only (klient mobilny czyta /me przez /v1/bootstrap); trasa zostaje dla parytetu, testów i narzędzi QA. Każda operacja z JSON requestBody dokumentuje 400 z invalid_request dla pustego lub niepoprawnego ciała odrzucanego przed guardami.",
+      "reviewedHash": "9772098e4410e6eb78f526474fd0a7e450184c677e6cfdaa156b35c630661291",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/api/openapi-validator.ts": {
@@ -1018,8 +1018,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly-backend/src/infrastructure/logging/logger.ts": {
-      "description": "Ogranicza dane logów do bezpiecznych pól, zdarzeń i kodów. Żądanie loguje metodę i zarejestrowany szablon trasy (nigdy surowy URL, query, parametry, nagłówki ani body); niedopasowane żądania logują stałą UNMATCHED. Zachowuje redakcję historycznych kodów/tokenów.",
-      "reviewedHash": "5248add69fa34a51932036a92fb2dc29cef9d2f147351ca3189202e4d92591fd",
+      "description": "Ogranicza dane logów do bezpiecznych pól, zdarzeń i kodów. Żądanie loguje metodę i zarejestrowany szablon trasy (nigdy surowy URL, query, parametry, nagłówki ani body); niedopasowane żądania logują stałą UNMATCHED. Zachowuje redakcję historycznych kodów/tokenów. Dopuszcza zdarzenie request_rejected dla odrzuceń klienta przed guardami.",
+      "reviewedHash": "1b550061f013a9686efd7943f8ecd90532614f66153d7e71a1be29222476bc70",
       "flow": "Dane, prywatność i zgłoszenia"
     },
     "patternly-backend/src/infrastructure/revenuecat/client.ts": {
@@ -2988,7 +2988,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "6208085551406f4a7d5ff061bd587b6a60267de0975682201e2cce869ba703d1"
+      "reviewedDigest": "b29e5177167ce3044dfd463132f7588e6a7c5a3c479ca5f43a479ece6cb75e62"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -3085,7 +3085,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "488baf8bacfd7460ea124b4c7dd1d9068301da216ae5799cd952c6f6e1de158c"
+      "reviewedDigest": "cbced778ea3c09d3b0878f014ddaf97c36a46c3453e9dc08a639470596768f03"
     },
     {
       "name": "Witryna, demo i panel",
