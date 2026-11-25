@@ -17,7 +17,7 @@ export const colors = {
     onDanger: "#FFFFFF",
     primaryPressed: "#0F766E",
     textSecondary: "#506176",
-    textMuted: "#7B8798",
+    textMuted: "#626E82",
     primary: "#0F766E",
     primarySoft: "#E6F6F4",
     success: "#15803D",
@@ -40,7 +40,7 @@ export const colors = {
       active: "#0F766E",
       pressedSurface: "#F3F7F6",
       textPrimary: "#102433",
-      textMuted: "#7A8B95",
+      textMuted: "#5F7079",
     },
     iconButton: {
       border: "#E3EAE9",
@@ -81,7 +81,7 @@ export const colors = {
     },
     emptyState: {
       textPrimary: "#102433",
-      textMuted: "#7A8B95",
+      textMuted: "#5F7079",
     },
     bottomSheet: {
       surface: "#F7FAF9",
@@ -135,7 +135,7 @@ export const colors = {
     onDanger: "#081328",
     primaryPressed: "#2DD4A8",
     textSecondary: "#AAB6C8",
-    textMuted: "#738198",
+    textMuted: "#7A889E",
     primary: "#20C997",
     primarySoft: "#143A38",
     success: "#34B564",
@@ -158,7 +158,7 @@ export const colors = {
       active: "#20C997",
       pressedSurface: "#0F172A",
       textPrimary: "#F1F5F9",
-      textMuted: "#738198",
+      textMuted: "#7A889E",
     },
     iconButton: {
       border: "#1E293B",
@@ -199,7 +199,7 @@ export const colors = {
     },
     emptyState: {
       textPrimary: "#F1F5F9",
-      textMuted: "#738198",
+      textMuted: "#7A889E",
     },
     bottomSheet: {
       surface: "#0F172A",

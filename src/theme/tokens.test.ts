@@ -40,3 +40,21 @@ test("onPrimary keeps goal status and selected day labels above normal-text cont
   assert.ok(contrastRatio(colors.dark.onPrimary, colors.dark.success) >= minimumNormalTextContrast, "dark onPrimary on success");
   assert.ok(contrastRatio(colors.dark.onPrimary, colors.dark.warning) >= minimumNormalTextContrast, "dark onPrimary on warning");
 });
+
+test("muted text keeps normal-text contrast on every base surface in both themes", () => {
+  const minimumNormalTextContrast = 4.5;
+
+  for (const mode of ["light", "dark"] as const) {
+    const palette = colors[mode];
+    for (const surface of ["background", "surface", "surfaceInput", "elevatedSurface"] as const) {
+      const ratio = contrastRatio(palette.textMuted, palette[surface]);
+      assert.ok(ratio >= minimumNormalTextContrast, `${mode} textMuted on ${surface}: ${ratio.toFixed(2)}`);
+    }
+    const navigationRatio = contrastRatio(palette.navigation.textMuted, palette.navigation.surface);
+    assert.ok(navigationRatio >= minimumNormalTextContrast, `${mode} navigation.textMuted: ${navigationRatio.toFixed(2)}`);
+    for (const surface of ["background", "surface"] as const) {
+      const ratio = contrastRatio(palette.emptyState.textMuted, palette[surface]);
+      assert.ok(ratio >= minimumNormalTextContrast, `${mode} emptyState.textMuted on ${surface}: ${ratio.toFixed(2)}`);
+    }
+  }
+});
