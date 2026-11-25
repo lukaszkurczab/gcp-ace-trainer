@@ -13,6 +13,7 @@ const policies = require('../../domain/tracks/trackGoalPolicies.ts');
 const { homePlanPlacement } = require('./tabs/homeTabModel.ts');
 const { presentTargetDateGuidance } = require('../../application/learningPlan/targetDateGuidancePresentation.ts');
 const { createRouteLifetime } = require('./routeLifetime.ts');
+const { goalScreenPersistedState } = require('./goalScreenFreshness.ts');
 const trackId = 'aws-certified-solutions-architect-associate';
 const track = domain.getTrackDisplay(trackId);
 const goal = domain.createDefaultGoal(policies.requireGoalPolicy(trackId));
@@ -78,6 +79,7 @@ function screen(kind, ports = {}) {
     loadGoal: async () => goal, loadLearningPlan: async () => null,
     ...domain, ...policies, useNotificationSettings: () => ({ loading: false, trackId, status: 'disabled' }),
     ROUTES: { HOME: 'Home' }, Platform: { OS: 'ios' },
+    goalScreenPersistedState,
     // 475b1e5b: screens own an actual route lifetime (removed in an effect cleanup on unmount).
     useRouteLifetime: identity => hooks.bindings.useMemo(() => createRouteLifetime(), [identity]), ...ports,
   };

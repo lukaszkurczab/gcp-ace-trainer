@@ -76,6 +76,12 @@ export function normalizeGoalRecord(value: GoalRecord, policy: GoalPolicy): Goal
   });
 }
 
+/** Toggles one draft day and returns the days in the canonical GOAL_DAY_IDS order used on save. */
+export function togglePreferredDay(preferredDays: readonly GoalDay[], day: GoalDay): readonly GoalDay[] {
+  const selected = preferredDays.includes(day);
+  return GOAL_DAY_IDS.filter((candidate) => candidate === day ? !selected : preferredDays.includes(candidate));
+}
+
 export function isGoalRecordForTrack(value: unknown, policy: GoalPolicy): value is GoalRecord {
   return isGoalRecordForPolicy(value, policy) && value.preferredDays.length > 0 && value.weeklySessionTarget === value.preferredDays.length;
 }

@@ -42,6 +42,7 @@ export function controlledHooks() {
         return [slots[i].value, next => { publications++; slots[i].value = typeof next === 'function' ? next(slots[i].value) : next; }];
       },
       useMemo, useCallback: (fn, deps) => useMemo(() => fn, deps), useEffect,
+      useRef: initial => useMemo(() => ({ current: initial }), []),
       useFocusEffect: fn => useEffect(fn, [fn]),
     },
     render(fn, props) {

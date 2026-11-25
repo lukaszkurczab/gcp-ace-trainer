@@ -151,7 +151,7 @@ test("preferred-day shortcuts preserve domain ids and translate every EN/PL labe
   assert.match(goalForm, /selectedDays\.includes\(day\)/);
   assert.match(goalForm, /\{t\(DAY_SHORT_LABELS\[day\]\)\}/);
   assert.match(activeGoalSummary, /\{t\(DAY_SHORT_LABELS\[day\]\)\}/);
-  assert.match(screen, /preferredDays\.filter\(\(candidate\) => candidate !== day\)/);
+  assert.match(screen, /const preferredDays = togglePreferredDay\(currentDraft\.preferredDays, day\)/);
   assert.match(screen, /preferredDays, weeklySessionTarget: preferredDays\.length/);
   assert.match(screen, /createAndOpenPlan\(track\.id, nextGoal, minutesPerStudyDay\)/);
   assert.doesNotMatch(screen.slice(screen.indexOf("async function save()"), screen.indexOf("async function createAndOpenPlan")), /persistGoal|reconcileDeviceReminder/);
@@ -267,7 +267,13 @@ test("goal loading uses the shared named return action outside the busy content 
   assert.match(screen, /loadingTrackContext[\s\S]*?loadingTrackAccent[\s\S]*?loadingTrack/);
   assert.match(screen, /if \(loading\) return <GoalLoadingSkeleton destinationLabel=\{backDestinationLabel\} onBack=\{handleBack\} \/>/);
   assert.match(screen, /useEffect\(\(\) => \{[\s\S]*?\}, \[route\.params\?\.trackId, readRevision\]\);/);
-  assert.doesNotMatch(screen, /useFocusEffect/);
+  // ODK-E2E-023: refocus must not overwrite an unsaved draft. The only focus
+  // effect re-reads storage and reloads solely when the persisted goal/plan
+  // changed (OBS-8E2-GOAL-STALE); it never sets the draft itself.
+  const focusEffect = screen.slice(screen.indexOf("useFocusEffect(useCallback"), screen.indexOf("}, []));"));
+  assert.match(focusEffect, /goalScreenPersistedState\(savedGoal, savedPlan\) !== loaded\.state\) setReadRevision/);
+  assert.doesNotMatch(focusEffect, /setDraft|setDateInput/);
+  assert.equal(screen.match(/useFocusEffect\(/g)?.length, 1);
   const pendingBranch = screen.slice(screen.indexOf("if (loading)"), screen.indexOf("if (loadError"));
   assert.doesNotMatch(pendingBranch, /scroll=\{false\}/);
 });

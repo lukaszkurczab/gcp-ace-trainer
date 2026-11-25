@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 
 import {
@@ -25,6 +26,7 @@ import {
   normalizeGoalRecord,
   normalizeGoalForExplicitSave,
   projectGoalTargetDate,
+  togglePreferredDay,
   type GoalDay,
   type GoalRecord,
   type GoalTemplateId,
@@ -39,6 +41,7 @@ import type { LearningPlanReminderFailure, LearningPlanReminderResult } from "..
 import { targetDatePickerValue, targetDateToLocalIso } from "./goalTargetDatePicker";
 import { GoalTargetDateCalendar } from "./GoalTargetDateCalendar";
 import { useRouteLifetime } from "./routeLifetime";
+import { goalScreenPersistedState } from "./goalScreenFreshness";
 
 type GoalCadenceScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.GOAL_CADENCE>;
 const GOAL_COPY: Readonly<Record<GoalTemplateId, Readonly<{ detail: string; title: string }>>> = {
@@ -147,6 +150,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [creatingPlan, setCreatingPlan] = useState(false);
+  const loadedPersistedState = useRef<Readonly<{ trackId: TrackId; state: string }> | null>(null);
   const returnTo: GoalCadenceReturnTo = route.params?.returnTo ?? "progress";
   const context = t(returnTo === "settings" ? "Settings" : returnTo === "home" ? "Today" : "Progress");
 
@@ -185,6 +189,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
         const [savedGoal, savedPlan] = await Promise.all([loadGoal(savedTrackId), loadLearningPlan(savedTrackId)]);
         assertCurrentProfile();
         if (active) {
+          loadedPersistedState.current = { trackId: savedTrackId, state: goalScreenPersistedState(savedGoal, savedPlan) };
           setTrackId(savedTrackId);
           setGoal(savedGoal);
           setAcceptedPlan(savedPlan?.plan.status === "accepted");
@@ -205,6 +210,28 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     })();
     return () => { active = false; };
   }, [route.params?.trackId, readRevision]);
+
+  // Returning from the proposal route after an acceptance must not keep showing
+  // the pre-acceptance draft. Re-read on refocus; reload only when the persisted
+  // goal or plan changed, so an unchanged draft survives a plain Back.
+  // The callback is stable, so it runs only on focus, never on state changes.
+  useFocusEffect(useCallback(() => {
+    const loaded = loadedPersistedState.current;
+    if (loaded === null) return undefined;
+    const focusedTrackId = loaded.trackId;
+    let active = true;
+    void (async () => {
+      try {
+        const assertCurrentProfile = captureProfileReadFence();
+        const [savedGoal, savedPlan] = await Promise.all([loadGoal(focusedTrackId), loadLearningPlan(focusedTrackId)]);
+        assertCurrentProfile();
+        if (active && loadedPersistedState.current === loaded && goalScreenPersistedState(savedGoal, savedPlan) !== loaded.state) setReadRevision((revision) => revision + 1);
+      } catch {
+        // The explicit load path owns read-failure presentation.
+      }
+    })();
+    return () => { active = false; };
+  }, []));
 
   const track = useMemo(() => trackId ? getTrackDisplay(trackId) : null, [trackId]);
   const editing = draft !== null;
@@ -231,10 +258,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
 
   function toggleDay(day: GoalDay): void {
     updateDraft((currentDraft) => {
-      const selected = currentDraft.preferredDays.includes(day);
-      const preferredDays = selected
-        ? currentDraft.preferredDays.filter((candidate) => candidate !== day)
-        : [...currentDraft.preferredDays, day];
+      const preferredDays = togglePreferredDay(currentDraft.preferredDays, day);
       return { ...currentDraft, preferredDays, weeklySessionTarget: preferredDays.length };
     });
   }

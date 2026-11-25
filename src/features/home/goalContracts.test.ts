@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test, { beforeEach } from "node:test";
@@ -13,6 +14,7 @@ import {
   TRACK_DENSITY_DESCRIPTORS,
   type GoalDay,
   type GoalRecord,
+  togglePreferredDay,
 } from "../../domain";
 import { requireGoalPolicy } from "../../domain/tracks/trackGoalPolicies";
 import { TRACK_GOAL_POLICIES } from "../../domain/tracks/trackGoalPolicies";
@@ -182,4 +184,18 @@ test("target-date projection follows goal type and explicit own-pace saves remov
   assert.equal(projectGoalTargetDate(ownPace).availability, "ignored_legacy");
   await saveGoal(ownPace);
   assert.equal((await getGoal(CODING_TRACK))?.targetDate, undefined);
+});
+
+test("toggling draft days keeps the canonical Monday-first order regardless of tap order", () => {
+  let days: readonly GoalDay[] = [];
+  for (const day of ["sat", "mon", "wed", "tue"] as const) days = togglePreferredDay(days, day);
+  assert.deepEqual(days, ["mon", "tue", "wed", "sat"]);
+  assert.deepEqual(togglePreferredDay(days, "wed"), ["mon", "tue", "sat"]);
+  assert.deepEqual(togglePreferredDay(["sun", "mon"], "fri"), ["mon", "fri", "sun"]);
+});
+
+test("goal draft day toggles use the canonical-order helper", () => {
+  const screen = readFileSync("src/features/home/GoalCadenceScreen.tsx", "utf8");
+  assert.match(screen, /const preferredDays = togglePreferredDay\(currentDraft\.preferredDays, day\)/);
+  assert.doesNotMatch(screen, /\[\.\.\.currentDraft\.preferredDays, day\]/);
 });
