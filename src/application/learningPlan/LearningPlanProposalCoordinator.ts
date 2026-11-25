@@ -2,6 +2,7 @@ import { projectLearningEvidence } from "./learningEvidenceProjection";
 import { ContentError } from "../../content/errors";
 import type { ResolvedPackageRuntime } from "../contentPackageRuntimeOwner";
 import type { GoalRecord } from "../../domain/goals/goalContracts";
+import { GOAL_DAY_IDS } from "../../domain/goals/goalContracts";
 import type { LearningPlan } from "../../domain/learning/learningPlan";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import {
@@ -384,11 +385,14 @@ export class LearningPlanProposalCoordinator {
     const scheduled = Object.freeze(slots.map((slot) => Object.freeze({ ...slot, slotId: createProposalSlotId(`proposal-slot:v1:${slot.day}:18-00`) })));
     const context = withCalendarSchedule(stored.context, scheduled, now, timezone);
     const localTimes = sessionTimesByDay(scheduled);
-    const nextSessionCalendar = buildNextSessionCalendar({ goal: context.goalRecord, minutesPerStudyDay: context.minutesPerStudyDay, localToday: context.localToday,
+    // Capacity follows the staged schedule: a removed day is no study window
+    // and an added day is one. The proposed goal record itself is unchanged.
+    const calendarGoal = goalForScheduledDays(context.goalRecord, scheduled);
+    const nextSessionCalendar = buildNextSessionCalendar({ goal: calendarGoal, minutesPerStudyDay: context.minutesPerStudyDay, localToday: context.localToday,
       timezone: context.timezone, now, sessions: stored.calendarInputs.sessions,
       legalSessions: legalOptionsForNextSession(stored.calendarInputs.legalSessions, stored.proposal.outcome.nextSession.requestedLength),
       sessionDemands: stored.proposal.fullGoalWorkload.sessionDemands.filter((demand) => demand.kind === "continue_existing"), sessionLocalTimesByDay: localTimes });
-    const fullGoalCalendar = buildFullGoalCalendar({ goal: context.goalRecord, minutesPerStudyDay: context.minutesPerStudyDay, localToday: context.localToday,
+    const fullGoalCalendar = buildFullGoalCalendar({ goal: calendarGoal, minutesPerStudyDay: context.minutesPerStudyDay, localToday: context.localToday,
       timezone: context.timezone, now, sessions: stored.calendarInputs.sessions, legalSessions: stored.calendarInputs.legalSessions,
       sessionLocalTimesByDay: localTimes, dueObligations: stored.calendarInputs.dueObligations, sessionDemands: stored.calendarInputs.sessionDemands });
     const fullGoalTimeCapacity = assessFullGoalTimeCapacity({ workload: stored.proposal.fullGoalWorkload, calendar: fullGoalCalendar.kind === "available" ? fullGoalCalendar.calendar : null });
@@ -477,6 +481,12 @@ function contextsEqual(left: ProposalContext, right: ProposalContext): boolean {
 function normalizeCalendarSchedule(goal: GoalRecord, slots?: readonly ProposalOutcome["slots"][number][]): ProposalContext["calendarSchedule"] {
   const values = slots ? slots.map(({ day, localTime }) => ({ day, localTime })) : goal.preferredDays.map((day) => ({ day, localTime: "18:00" }));
   return Object.freeze([...values].sort((left, right) => left.day.localeCompare(right.day)).map((entry) => Object.freeze(entry)));
+}
+
+function goalForScheduledDays(goal: GoalRecord, slots: readonly Readonly<{ day: import("../../domain/goals/goalContracts").GoalDay }>[]): GoalRecord {
+  const scheduledDays = new Set(slots.map((slot) => slot.day));
+  const preferredDays = GOAL_DAY_IDS.filter((day) => scheduledDays.has(day));
+  return Object.freeze({ ...goal, preferredDays: Object.freeze(preferredDays), weeklySessionTarget: preferredDays.length });
 }
 
 function sessionTimesByDay(slots: readonly Readonly<{ day: import("../../domain/goals/goalContracts").GoalDay; localTime: string }>[]): Partial<Readonly<Record<import("../../domain/goals/goalContracts").GoalDay, string>>> {

@@ -295,6 +295,29 @@ test("editing a proposal's local time recomputes its calendar before acceptance"
   }
 });
 
+test("staging a schedule without a day removes that day from the recomputed calendar capacity", async () => {
+  const f = await fixture();
+  const allDays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+  const goal = { ...createDefaultGoal(requireGoalPolicy(TRACK)), preferredDays: allDays, weeklySessionTarget: 7, targetDate: "2026-10-08" };
+  const created = await f.coordinator.create(TRACK, { goal, minutesPerStudyDay: 60 });
+  assert.equal(created.kind, "ready");
+  if (!("proposal" in created)) throw new Error("Expected a proposal.");
+  const before = created.proposal.fullGoalTimeCapacity.availableMinutes;
+  assert.notEqual(before, null);
+  const withoutSunday = created.proposal.outcome.slots.filter((slot) => slot.day !== "sun");
+  assert.equal(withoutSunday.length, 6);
+  assert.equal(f.coordinator.updateSchedule(created.proposal.proposalId, TRACK, withoutSunday), true);
+  const resolved = await f.coordinator.resolve(created.proposal.proposalId, TRACK);
+  assert.equal(resolved.kind, "ready");
+  if (!("proposal" in resolved)) throw new Error("Expected the staged proposal.");
+  assert.deepEqual(resolved.proposal.outcome.slots.map((slot) => slot.day), ["mon", "tue", "wed", "thu", "fri", "sat"]);
+  assert.equal(resolved.proposal.fullGoalCalendar.kind, "available");
+  if (resolved.proposal.fullGoalCalendar.kind === "available") {
+    assert.equal(resolved.proposal.fullGoalCalendar.calendar.availableDays.some((day) => day.localDate === "2026-10-04"), false, "an unscheduled Sunday is not study capacity");
+  }
+  assert.equal(resolved.proposal.fullGoalTimeCapacity.availableMinutes, before! - 60, "removing one 60-minute day lowers the available time");
+});
+
 test("unchanged persisted GCP inputs stay ready through the synchronous commit guard", async () => {
   const f = await fixture();
   const created = await createProposal(f);
@@ -451,6 +474,35 @@ test("route removal during accept retains the proposal through the actual editor
   acceptingRouteAction();
   assert.equal(result.kind, "accepted", `fixture commit error: ${editor.getAcceptFailure() ?? "none"}; commit result: ${editor.getAcceptDiagnostics()}`);
   assert.deepEqual(await f.coordinator.resolve(created.proposal.proposalId, TRACK), { kind: "stale" });
+});
+
+test("accepting the same proposal again after acceptance writes no second goal-plan pair", async () => {
+  const f = await fixture();
+  const policy = requireGoalPolicy(TRACK);
+  const created = await createProposal(f);
+  assert.equal(created.kind, "ready");
+  if (!("proposal" in created)) throw new Error("Expected a proposal.");
+  const editor = createEditorForRouteFixture(f);
+  const first = await editor.coordinator.acceptProposal(created.proposal.proposalId, TRACK);
+  assert.equal(first.kind, "accepted", `fixture commit error: ${editor.getAcceptFailure() ?? "none"}`);
+  const goalBytes = f.storage.getString(STORAGE_KEYS.goal(TRACK));
+  const planBytes = f.storage.getString(STORAGE_KEYS.learningPlan(TRACK));
+  const goalRevision = readGoalSnapshot(TRACK, policy)?.revision;
+  const planRevision = getLearningPlanSnapshot(TRACK, policy)?.revision;
+  assert.ok(goalBytes && planBytes && goalRevision !== undefined && planRevision !== undefined, "the accepted pair is persisted");
+
+  // A second tap on a still-visible "Accept plan" replays the terminal result.
+  const replay = await editor.coordinator.acceptProposal(created.proposal.proposalId, TRACK);
+  assert.equal(replay.kind, "accepted");
+  if (replay.kind === "accepted" && first.kind === "accepted") assert.equal(replay.snapshot.revision, first.snapshot.revision);
+  // Without the in-memory terminal result (fresh coordinator), the consumed proposal is stale.
+  const fresh = createEditorForRouteFixture(f);
+  assert.deepEqual(await fresh.coordinator.acceptProposal(created.proposal.proposalId, TRACK), { kind: "stale", reason: "proposal" });
+
+  assert.equal(readGoalSnapshot(TRACK, policy)?.revision, goalRevision);
+  assert.equal(getLearningPlanSnapshot(TRACK, policy)?.revision, planRevision);
+  assert.equal(f.storage.getString(STORAGE_KEYS.goal(TRACK)), goalBytes);
+  assert.equal(f.storage.getString(STORAGE_KEYS.learningPlan(TRACK)), planBytes);
 });
 
 test("proposal accepts a goal whose optional target date was explicitly cleared by the UI", async () => {
