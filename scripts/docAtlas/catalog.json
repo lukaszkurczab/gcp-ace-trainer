@@ -1304,7 +1304,7 @@
     },
     "patternly/src/features/account/AccountEntryScreen.tsx": {
       "description": "Wejście do konta, kontynuacja Gościa i synchronizacja/adoption. Recovery pokazuje konkretny błąd journalu przed ogólną blokadą aktywnej sesji. Stały BackLink nazywa rzeczywisty cel; reset hasła używa Firebase e-mail/oobCode. Ekran wylogowany przekazuje natywny pierwszy ekran i znaczy pierwszą użyteczną klatkę (tylko przy włączonym śladzie).",
-      "reviewedHash": "ad69746051fe757a6473b94581ccf74b0cca19252a18fa9ffad65341e274b10d",
+      "reviewedHash": "619d7969939f0463202ecf7cd3452e5d8b212d39c206f7c69169375cfa02f2f4",
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/features/account/AccountSecurityScreen.tsx": {
@@ -1535,7 +1535,7 @@
     "patternly-backend/package.json": {
       "description": "Dodaje wąskie polecenia izolowanych emulator suites dla usunięcia, expiry i offline restore; nie uruchamia produkcyjnej operacji. Silnik Node ograniczony do >=22 <23. Dedykowany runner Recovery Codes usunięto także z CI; pozostałe lifecycle/klienckie bramki pozostają.",
       "flow": "Dane, prywatność i zgłoszenia",
-      "reviewedHash": "19dc59c924b68573dd40302f4fc3cec9280af70ff270cce5e6689bb4bddca354"
+      "reviewedHash": "85f1319172db53ca8c2cf0def0f815736221f650877eee2bee8eab9fee3d8ba8"
     },
     "patternly-backend/scripts/run-account-deletion-expiry-emulator-tests.mjs": {
       "description": "Uruchamia lokalny emulator regression dla logicznego expiry/tombstone i wznowienia; fixed demo/loopback only.",
@@ -2976,7 +2976,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "0a9c1a1bc5b1aaa9586761b0156546e201ed324412836dfd3832ae6aeffc5fef"
+      "reviewedDigest": "d09d525d8054708cd089a5c98985e2a87faa4ac3ae1a780030291d274861c921"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -2988,7 +2988,7 @@
         "patternly-backend/src/modules/users",
         "patternly-backend/src/modules/progress"
       ],
-      "reviewedDigest": "b29e5177167ce3044dfd463132f7588e6a7c5a3c479ca5f43a479ece6cb75e62"
+      "reviewedDigest": "c720f2ba6a2420a35ba9961e6e3bf972a5c6c53cd42474853537c0d0f883d41a"
     },
     {
       "name": "Treść od producenta do sesji",
@@ -3085,7 +3085,7 @@
         "patternly-backend/src/modules/security-incidents",
         "patternly-backend/src/modules/retention"
       ],
-      "reviewedDigest": "cbced778ea3c09d3b0878f014ddaf97c36a46c3453e9dc08a639470596768f03"
+      "reviewedDigest": "30b26b50ff1289ec2cc38aabe916a2d52f2d609fb5b8db0886a752c9dec20699"
     },
     {
       "name": "Witryna, demo i panel",
@@ -3094,7 +3094,7 @@
         "patternly-content/scripts/review",
         "patternly-backend/src/modules/admin"
       ],
-      "reviewedDigest": "6a34c04042dfbf2ac8d0ec9692692a8a3513b7f885deacc0238a18a7e6df26c9"
+      "reviewedDigest": "5564684994332ec66b67aefb50d289272650830b52ed71f61ea96f62b5d1d512"
     }
   ]
 }
