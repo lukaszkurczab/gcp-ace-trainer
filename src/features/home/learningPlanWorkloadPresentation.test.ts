@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { FullGoalTimeCapacity } from "../../application/learningPlan/fullGoalTimeCapacity";
 import type { FullGoalWorkloadProjection } from "../../application/learningPlan/fullGoalWorkloadProjection";
-import { buildLearningPlanWorkloadPresentation } from "./learningPlanWorkloadPresentation";
+import { buildLearningPlanWorkloadPresentation, proposalChapterTitles } from "./learningPlanWorkloadPresentation";
 
 const availableCapacity = { kind: "range_within_available_time" } as FullGoalTimeCapacity;
 
@@ -119,3 +119,10 @@ function workload(overrides: Partial<FullGoalWorkloadProjection>): FullGoalWorkl
     activeContinuation: overrides.activeContinuation ?? null,
   };
 }
+
+test("proposal chapter titles use the shared roadmap catalog for certification tracks, as Progress does", () => {
+  const titles = proposalChapterTitles("aws-certified-solutions-architect-associate");
+  assert.equal(titles.get("aws_secure_architecture_foundations"), "AWS Secure Architecture Foundations");
+  const coding = proposalChapterTitles("coding-interview-dsa-problem-solving");
+  assert.ok(coding.size > 0, "coding interview keeps its authored roadmap labels");
+});

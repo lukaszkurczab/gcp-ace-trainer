@@ -1,5 +1,7 @@
 import type { FullGoalTimeCapacity } from "../../application/learningPlan/fullGoalTimeCapacity";
 import type { FullGoalWorkloadProjection } from "../../application/learningPlan/fullGoalWorkloadProjection";
+import type { TrackId } from "../../domain";
+import { getTrackRoadmapCatalog } from "../practice/trackRoadmapCatalog";
 
 export type LearningPlanWorkloadPresentation = Readonly<{
   kind: "complete" | "reviews_due" | "estimated" | "incomplete" | "unknown";
@@ -85,4 +87,17 @@ export function buildLearningPlanWorkloadPresentation(input: Readonly<{
     }))),
     dueReviews: Object.freeze([...workload.dueReviews]),
   });
+}
+
+/**
+ * Chapter titles for proposal details come from the same roadmap catalog as
+ * Progress and the completion copy. A track without a catalog keeps the
+ * explicit canonical-ID fallback instead of failing the proposal screen.
+ */
+export function proposalChapterTitles(trackId: TrackId): ReadonlyMap<string, string> {
+  try {
+    return new Map(getTrackRoadmapCatalog(trackId).map((chapter) => [chapter.id, chapter.title]));
+  } catch {
+    return new Map();
+  }
 }

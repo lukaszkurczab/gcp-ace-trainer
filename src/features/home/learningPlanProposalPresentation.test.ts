@@ -126,7 +126,10 @@ test("review title is localized in all seven locales and removed goal-context co
   assert.match(screen, /calendar\.calendar\.unscheduledSessionCount/);
   assert.match(screen, /FullGoalWorkloadSummary trackId=\{trackId\} workload=\{state\.proposal\.fullGoalWorkload\}/);
   assert.match(screen, /calendar=\{state\.proposal\.fullGoalCalendar\}/);
-  assert.match(screen, /trackId === CODING_INTERVIEW_TRACK_ID \? getTrackRoadmapCatalog\(trackId\) : \[\]/);
+  // Chapter titles come from the shared roadmap catalog for every track, as in
+  // Progress and completionCopy; the canonical-ID fallback stays for missing titles.
+  assert.doesNotMatch(screen, /trackId === CODING_INTERVIEW_TRACK_ID \? getTrackRoadmapCatalog/);
+  assert.match(screen, /const chapterTitles = proposalChapterTitles\(trackId\)/);
   assert.match(screen, /accessibilityState=\{\{ expanded \}\}/);
   assert.match(screen, /expanded \? <View accessibilityLabel=\{tCommon\("Details"\)\}/);
   assert.match(screen, /selectedDay\.selectedSession\.minMinutes/);

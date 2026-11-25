@@ -12,7 +12,7 @@ import {
 import { productionLearningPlanProposalRuntime, type LearningPlanProposalScreenRuntime } from "./learningPlanProposalRuntime";
 import { AppShellHeader, Button, Card, EmptyState, Icon, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { CODING_INTERVIEW_TRACK_ID, type GoalDay, type LearningPlan, type PlanningWorkEstimateResult, type ProposalOutcome } from "../../domain";
+import { type GoalDay, type LearningPlan, type PlanningWorkEstimateResult, type ProposalOutcome } from "../../domain";
 import { getTrackDisplay, type TrackId } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../preferences";
@@ -20,8 +20,7 @@ import { completionCopy, targetCopy, type Translate } from "./homePlanUiContract
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { radius, spacing, typography, type AppColors } from "../../theme";
 import { TRACK_DENSITY_DESCRIPTORS } from "../../domain/tracks/trackAdmission";
-import { getTrackRoadmapCatalog } from "../practice/trackRoadmapCatalog";
-import { buildLearningPlanWorkloadPresentation } from "./learningPlanWorkloadPresentation";
+import { buildLearningPlanWorkloadPresentation, proposalChapterTitles } from "./learningPlanWorkloadPresentation";
 import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
 import { readLearningPlanStorageScope } from "../../application/learningReadModels";
 import { useRouteLifetime } from "./routeLifetime";
@@ -373,8 +372,7 @@ function FullGoalWorkloadSummary({ trackId, workload, calendar, capacity, locale
   onToggleDetails(): void;
 }>) {
   const styles = useThemedStyles(createStyles);
-  const chapterCatalog = trackId === CODING_INTERVIEW_TRACK_ID ? getTrackRoadmapCatalog(trackId) : [];
-  const chapterTitles = new Map(chapterCatalog.map((chapter) => [chapter.id, chapter.title]));
+  const chapterTitles = proposalChapterTitles(trackId);
   const trackDescriptor = TRACK_DENSITY_DESCRIPTORS.find((descriptor) => descriptor.trackId === trackId);
   const view = buildLearningPlanWorkloadPresentation({ workload, capacity, chapterTitles, freeNodeId: trackDescriptor?.freeNodeId ?? null });
   const dueReviewDate = (value: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: calendar.kind === "available" ? calendar.calendar.timezone : undefined }).format(new Date(value));
