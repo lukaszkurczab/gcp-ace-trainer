@@ -1268,8 +1268,8 @@
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/GoalCadenceScreen.tsx": {
-      "description": "Zbiera cel i budżet jako draft do propozycji. Po usunięciu trasy późny wynik create jest zwalniany, a nie otwierany; zapis pary goal/plan pozostaje przy akceptacji. Dni szkicu w kolejności kanonicznej; stabilny focus effect przeładowuje ekran tylko po zmianie zapisanego celu/planu (np. po akceptacji), zachowując niezapisany szkic po zwykłym powrocie.",
-      "reviewedHash": "d042de70971915efc36d86593f8120338d32d209467c903e1aa82a6c027b5471",
+      "description": "Zbiera cel i budżet jako draft do propozycji. Po usunięciu trasy późny wynik create jest zwalniany, a nie otwierany; zapis pary goal/plan pozostaje przy akceptacji. Dni szkicu w kolejności kanonicznej; stabilny focus effect przeładowuje ekran tylko po zmianie zapisanego celu/planu (np. po akceptacji), zachowując niezapisany szkic po zwykłym powrocie. Takie przeładowanie odświeża też status przypomnień, by nie pokazywać statusu sprzed akceptacji (RECHECK 8E.2 R2, 26.11).",
+      "reviewedHash": "a1702b40873bb9c57da0fd53f239b34eb5ba5097a574dda86776e77b315e6aea",
       "flow": "Cel, plan i postęp"
     },
     "patternly/src/features/home/YourDataScreen.tsx": {
@@ -1313,8 +1313,8 @@
       "flow": "Konto, Gość i synchronizacja"
     },
     "patternly/src/features/practice/PracticeSetupScreen.tsx": {
-      "description": "Właściciel draftu ustawień tematu, liczby pytań i feedbacku. TopicRoadmap obsługuje wybór i przygotowanie Premium; Start ponownie sprawdza dokładnie przygotowany pakiet. Powrót jest poza scrollem formularza.",
-      "reviewedHash": "e8152beff23b1a6e873c66fc89fca57fecc684f8ad1c1936065752077715dfc2",
+      "description": "Właściciel draftu ustawień tematu, liczby pytań i feedbacku. TopicRoadmap obsługuje wybór i przygotowanie Premium; Start ponownie sprawdza dokładnie przygotowany pakiet. Powrót jest poza scrollem formularza. Tryb review zależny od dowodów (evidence_conditioned) bez bieżącej powtórki lub ręcznej prośby pokazuje stan niedostępny zamiast aktywnego Start, tak jak hub Practice (obserwacja 8B.R3).",
+      "reviewedHash": "a64f7fbfe94a9e55ad31948782fb497b5bb102a8e59b6402868b5d45562862d5",
       "flow": "Sesja, odpowiedź i trwały wynik"
     },
     "patternly/src/features/practice/PracticeHubScreen.tsx": {
@@ -2611,7 +2611,7 @@
     },
     "patternly/src/navigation/loadingStateOwnership.test.ts": {
       "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
-      "reviewedHash": "2f395b30328e4c8d25f8f05b0f8a5e894ef5e48c5d43271b54a0dfc2882c718a"
+      "reviewedHash": "26ef4e7fe802a2f27da2290da86930fa51a85cc189f678ebc1ca97a8170db6d0"
     },
     "patternly/src/navigation/startupLoadingSurface.test.ts": {
       "description": "Test kontraktu i regresji UI-STARTUP-REPAIR-01; weryfikuje właściwego ownera lub czystą granicę preview, bez claimu runtime.",
@@ -2969,6 +2969,16 @@
       "description": "Porównywalna tożsamość zapisanego celu i planu odczytanego przez ekran celu; zmiana po powrocie na ekran (np. akceptacja na trasie propozycji) wymusza przeładowanie zamiast pokazywania szkicu sprzed akceptacji.",
       "flow": "Cel, plan i postęp",
       "reviewedHash": "f603bb19cfb4d9b03f36a310267865132f9dcbe653ab111fb7ce662048b974dc"
+    },
+    "patternly/src/features/practice/practiceSetupModel.ts": {
+      "description": "Czyste reguły ekranu ustawień praktyki: copy zachowania review, lista trybów review zależnych od dowodów (odczyt kolejki tylko dla nich) oraz bramka dowodów review jak w hubie; trasy z session_misses lub jawnymi refami pozycji nie są blokowane.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "1b348567fc4f2b690bd2d4692d9e225da9f51549b3a0654f0a4842db4b9f0f5a"
+    },
+    "patternly/src/features/practice/practiceSetupModel.test.ts": {
+      "description": "Chroni bramkę dowodów review na ekranie ustawień praktyki: brak bieżącej powtórki daje stan niedostępny, kolejkę czytają tylko setupy trybów review, a ich lista zgadza się z trybami evidence_conditioned w konfiguracji produktu; nie dowodzi renderu natywnego.",
+      "flow": "Sesja, odpowiedź i trwały wynik",
+      "reviewedHash": "eecf185d671a8102152b6b37660a55bc78aa2f62344873cc98aecabc49d46b17"
     }
   },
   "flows": [
@@ -2981,7 +2991,7 @@
         "patternly/src/application/bootstrap",
         "patternly/src/preferences"
       ],
-      "reviewedDigest": "132e0bbdfd994d729906d09587622c6d541c8ca78dafe696dbdd175937363e0f"
+      "reviewedDigest": "852e0d56cfb8dfca3fbd69ce2e82fa3554fcf978a7d8683e07046ef733d76528"
     },
     {
       "name": "Konto, Gość i synchronizacja",
@@ -3055,7 +3065,7 @@
         "patternly/scripts/qa/persist13-start-cutpoint-seed.yaml",
         "patternly/scripts/qa/persist13-start-recovery.yaml"
       ],
-      "reviewedDigest": "829d5d884300a7ef267d1fc53ada73b5946b564a8de420bf21f6887bd90cbd6b"
+      "reviewedDigest": "a2ad79f99949124e51352bec80535dca329086562dbfcce683e40a34a1c0a09f"
     },
     {
       "name": "Cel, plan i postęp",
@@ -3066,7 +3076,7 @@
         "patternly/src/preferences",
         "patternly-content/config/curricula"
       ],
-      "reviewedDigest": "7e7564fde2497b395e394f5816a3309cafb2ba0a9946c898e9bff28d0c49dca4"
+      "reviewedDigest": "0c7afe450bc7e65699e6c96309ad3fbb457ee15a7f7a508efacde26d3c92e544"
     },
     {
       "name": "Premium i zakup",
