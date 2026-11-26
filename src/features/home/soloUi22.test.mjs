@@ -77,7 +77,7 @@ function screen(kind, ports = {}) {
     loadTrackReviewQueueViewModel: async () => ({ id: 'new' }),
     buildReviewQueueScreenModel: value => ({ ...value, dueRows: [], upcomingRows: [], unavailableRows: [] }),
     loadGoal: async () => goal, loadLearningPlan: async () => null,
-    ...domain, ...policies, useNotificationSettings: () => ({ loading: false, trackId, status: 'disabled' }),
+    ...domain, ...policies, useNotificationSettings: () => ({ loading: false, trackId, status: 'disabled', refresh: async () => undefined }),
     ROUTES: { HOME: 'Home' }, Platform: { OS: 'ios' },
     goalScreenPersistedState,
     // 475b1e5b: screens own an actual route lifetime (removed in an effect cleanup on unmount).

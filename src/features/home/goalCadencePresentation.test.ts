@@ -277,3 +277,10 @@ test("goal loading uses the shared named return action outside the busy content 
   const pendingBranch = screen.slice(screen.indexOf("if (loading)"), screen.indexOf("if (loadError"));
   assert.doesNotMatch(pendingBranch, /scroll=\{false\}/);
 });
+
+test("a reload after the persisted goal or plan changed also refreshes the reminder status", () => {
+  // RECHECK 8E.2 R2 (26.11.2026): after Accept plan → Go back the goal screen
+  // reloaded the saved goal but kept the reminder status read before
+  // acceptance ("Set an active goal before enabling plan reminders").
+  assert.match(screen, /useEffect\(\(\) => \{\s*if \(readRevision > 0\) void notificationSettings\.refresh\(\);\s*\}, \[readRevision\]\);/u);
+});

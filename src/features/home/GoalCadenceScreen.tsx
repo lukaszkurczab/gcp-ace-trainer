@@ -233,6 +233,13 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     return () => { active = false; };
   }, []));
 
+  // A reload after the persisted goal or plan changed (for example a plan
+  // accepted on the proposal route) must not keep the reminder status read
+  // before that change.
+  useEffect(() => {
+    if (readRevision > 0) void notificationSettings.refresh();
+  }, [readRevision]);
+
   const track = useMemo(() => trackId ? getTrackDisplay(trackId) : null, [trackId]);
   const editing = draft !== null;
   const current = draft ?? goal;
