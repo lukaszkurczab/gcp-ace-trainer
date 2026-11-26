@@ -399,7 +399,7 @@ test("the six read owners end rejected reads in explicit unavailable EmptyStates
   }
 });
 
-test("scoped practice reads honor explicit route identity and only load reviews on Hub", () => {
+test("scoped practice reads honor explicit route identity and load reviews on Hub and review-mode setup only", () => {
   const practiceReadModel = source("src/application/practiceReadModels.ts");
   const hub = source("src/features/practice/PracticeHubScreen.tsx");
   const roadmap = source("src/features/practice/TopicRoadmapScreen.tsx");
@@ -410,6 +410,8 @@ test("scoped practice reads honor explicit route identity and only load reviews 
   assert.match(hub, /usePracticeReadModel\(\{[\s\S]*?includeReviews: true/);
   assert.doesNotMatch(roadmap, /includeReviews: true/);
   assert.doesNotMatch(setup, /includeReviews: true/);
+  // 8B.R3: a review-mode setup reads the queue to gate Start on current review evidence; other setups do not.
+  assert.match(setup, /includeReviews: practiceSetupNeedsReviewRead\(route\.params\?\.mode\)/);
   for (const file of [roadmap, setup]) {
     assert.match(file, /requestedTrackId: route\.params\?\.trackId/);
     assert.doesNotMatch(file, /loadActiveTrackId|loadTrainingAttempts/);

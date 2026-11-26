@@ -32,7 +32,7 @@ import {
   type PracticeSessionLength,
 } from "./sessionConfig";
 import type { CanonicalPracticeModeId } from "../../application/practice/practiceModeContract";
-import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
+import { getPracticeReviewBehaviorCopy, isPracticeSetupReviewEvidenceMissing, practiceSetupNeedsReviewRead } from "./practiceSetupModel";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { PracticeSetupSectionHeader, PracticeSetupSegment, PracticeSetupSegmentGroup } from "./PracticeSetupControls";
@@ -197,6 +197,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const account = usePatternlyAccount();
   const { ownerMatches, readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load the session settings."),
+    includeReviews: practiceSetupNeedsReviewRead(route.params?.mode),
     requestedTrackId: route.params?.trackId,
   });
   const routeFormIdentity = buildPracticeSetupRouteIdentity(route.params);
@@ -330,6 +331,12 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   } catch (error) {
     return renderUnavailable(describeOperationalFailure(error, t("This practice mode is unavailable.")));
   }
+  if (isPracticeSetupReviewEvidenceMissing({
+    availability: selectedPackageMode.availability,
+    hasReviewEvidence: readState.hasReviewEvidence,
+    reviewSource: route.params?.reviewSource,
+    hasReviewItemRefs: (route.params?.reviewItemRefs?.length ?? 0) > 0,
+  })) return renderUnavailable(t("There are no questions to review right now."));
   const certificationTrack = activeTrack.familyId === "certification";
   const diagnosticBaseline = certificationTrack && selectedMode === "certification-diagnostic-baseline";
   const focusPractice = certificationTrack && selectedMode === "certification-focus-practice";
